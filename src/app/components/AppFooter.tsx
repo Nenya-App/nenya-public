@@ -31,6 +31,21 @@ export function AppFooter({ className = '' }: AppFooterProps) {
             <p>Public infrastructure for emotional literacy</p>
           </div>
         </div>
+
+        {/* Open source + hosting attribution */}
+        <div className="mt-4 pt-4 border-t border-border/50 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+          <a
+            href="https://github.com/Nenya-App/nenya-public"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors underline underline-offset-2"
+          >
+            Open source on GitHub (AGPL-3.0)
+          </a>
+          <a href="https://www.netlify.com" target="_blank" rel="noopener noreferrer" aria-label="Deploys by Netlify">
+            <img src="/badges/netlify-badge.svg" alt="Deploys by Netlify" width="76" height="33" />
+          </a>
+        </div>
       </div>
     </footer>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Heart, Shield, Sparkles, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Heart, Shield, Sparkles, ExternalLink, Code } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { ReturnToTop } from '../ReturnToTop';
@@ -179,6 +179,45 @@ export default function Structure({ onBack }: StructureProps) {
                 <p className="text-sm text-muted-foreground">No equity investors, no federal funding, no outside stakeholders with claims on how this project develops.</p>
               </Card>
             </div>
+          </div>
+
+          {/* Open Source */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-6 px-2">
+              <div className="p-3 bg-nenya-gold/20 rounded-lg">
+                <Code className="size-6 text-nenya-gold-dark dark:text-nenya-gold" />
+              </div>
+              <h2 className="text-2xl md:text-3xl text-nenya-gold-dark dark:text-nenya-gold-light">Open Source</h2>
+            </div>
+            <Card className="p-6 md:p-8 bg-muted/50 border-border">
+              <div className="space-y-4 text-sm md:text-base text-foreground leading-relaxed">
+                <p>
+                  Nenya's source code is publicly available under the{' '}
+                  <a
+                    href="https://github.com/Nenya-App/nenya-public/blob/main/LICENSE"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2 hover:text-nenya-gold-dark dark:hover:text-nenya-gold transition-colors"
+                  >
+                    GNU Affero General Public License v3.0
+                  </a>
+                  . Every privacy claim made on this site — that nothing is tracked, that nothing persists between
+                  sessions — is something you can verify yourself by reading the code, not just something you have
+                  to take our word for.
+                </p>
+                <p className="text-muted-foreground text-xs md:text-sm">
+                  The Nenya name and logo are reserved separately from the code license — see the repository's{' '}
+                  <code className="text-xs bg-background px-1.5 py-0.5 rounded">TRADEMARK.md</code> for details.
+                </p>
+                <Button variant="outline" size="sm" className="gap-2" asChild>
+                  <a href="https://github.com/Nenya-App/nenya-public" target="_blank" rel="noopener noreferrer">
+                    <Code className="size-4" />
+                    View source on GitHub
+                    <ExternalLink className="size-4" />
+                  </a>
+                </Button>
+              </div>
+            </Card>
           </div>
         </div>
       </div>
