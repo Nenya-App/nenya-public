@@ -8,6 +8,7 @@ import { ScrollHint } from '../ScrollHint';
 import NenyaLogo from '../NenyaLogo';
 import { BloomInstant } from '../BloomOnScroll';
 import { valarColors } from '../ValarBreathingLogo';
+import { AppFooter } from '../AppFooter';
 
 interface AboutTheFounderProps {
   onBack: () => void;
@@ -141,6 +142,8 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
       <ScrollHint />
       <ReturnToTop onClick={scrollToTop} />
       <ScrollIndicator containerRef={scrollContainerRef} />
+
+      <AppFooter />
     </div>
   );
 }

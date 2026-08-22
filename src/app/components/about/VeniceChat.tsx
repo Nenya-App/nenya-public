@@ -2,6 +2,7 @@ import { useTheme } from '../ThemeProvider';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { MessageCircle, ExternalLink, AlertTriangle, Shield, Waves } from 'lucide-react';
+import { AppFooter } from '../AppFooter';
 
 interface VeniceChatProps {
   onBack: () => void;
@@ -180,6 +181,8 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
           </div>
         </div>
       </div>
+
+      <AppFooter />
     </div>
   );
 }

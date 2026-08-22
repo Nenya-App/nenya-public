@@ -5,6 +5,7 @@ import { Card } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
+import { AppFooter } from '../AppFooter';
 
 interface PowerOfColorProps {
   onBack: () => void;
@@ -206,6 +207,8 @@ export default function PowerOfColor({ onBack }: PowerOfColorProps) {
           <ReturnToTop onClick={scrollToTop} />
         </div>
       </div>
+
+      <AppFooter />
     </div>
   );
 }

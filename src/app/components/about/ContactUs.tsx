@@ -5,6 +5,7 @@ import { Card } from '../ui/card';
 import NenyaLogo from '../NenyaLogo';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
+import { AppFooter } from '../AppFooter';
 
 interface ContactUsProps {
   onBack: () => void;
@@ -155,6 +156,8 @@ export default function ContactUs({ onBack }: ContactUsProps) {
       </div>
 
       <ReturnToTop onClick={scrollToTop} />
+
+      <AppFooter />
     </div>
   );
 }

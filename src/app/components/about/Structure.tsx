@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollHint } from '../ScrollHint';
+import { AppFooter } from '../AppFooter';
 
 interface StructureProps {
   onBack: () => void;
@@ -223,6 +224,8 @@ export default function Structure({ onBack }: StructureProps) {
       </div>
       <ScrollHint />
       <ReturnToTop onClick={scrollToTop} />
+
+      <AppFooter />
     </div>
   );
 }

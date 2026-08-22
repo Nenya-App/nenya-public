@@ -9,6 +9,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { AppFooter } from '../AppFooter';
 
 interface InsightGatewayPageProps {
   onComplete: (data: any) => void;
@@ -498,6 +499,8 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
             </div>
           </div>
         )}
+
+        <AppFooter />
       </div>
     </div>
   );

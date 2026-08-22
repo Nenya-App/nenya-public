@@ -71,8 +71,8 @@ export function BreathingPopout({
               stiffness: 300,
               duration: 0.3
             }}
-            className="fixed top-16 left-4 z-[70] bg-background border border-border rounded-lg shadow-2xl overflow-hidden"
-            style={{ width: 'min(500px, calc(100vw - 2rem))' }}
+            className="fixed top-16 left-4 z-[70] bg-background border border-border rounded-lg shadow-2xl overflow-y-auto"
+            style={{ width: 'min(500px, calc(100vw - 2rem))', maxHeight: 'calc(100dvh - 5rem)' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
@@ -109,7 +109,7 @@ export function BreathingPopout({
               </div>
 
               {/* Right: Accessibility Controls */}
-              <div className="p-4 max-h-[60vh] overflow-y-auto">
+              <div className="p-4 md:max-h-[60vh] md:overflow-y-auto">
                 {onBreathingToggle && onOrbitToggle && onValarSelect && onOpacityChange && onTextSizeChange ? (
                   <AccessibilitySettingsContent
                     breathingEnabled={breathingEnabled}

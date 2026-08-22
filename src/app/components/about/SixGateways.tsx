@@ -1,5 +1,6 @@
 import { Eye, Music, Hand, Leaf, TrendingUp, Lightbulb } from 'lucide-react';
 import { Card } from '../ui/card';
+import { AppFooter } from '../AppFooter';
 
 interface SixGatewaysProps {
   onBack: () => void;
@@ -174,6 +175,8 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
         </div>
       </Card>
       </div>
+
+      <AppFooter />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { ReturnToTop } from '../ReturnToTop';
 import { ScrollHint } from '../ScrollHint';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import comparisonImage from 'figma:asset/8b1166a7ff9c50323c4170d2aef3f1791b4907f9.png';
+import { AppFooter } from '../AppFooter';
 
 interface NamePhilosophyProps {
   onBack: () => void;
@@ -206,6 +207,8 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
           <ReturnToTop onClick={scrollToTop} />
         </div>
       </div>
+
+      <AppFooter />
     </div>
   );
 }

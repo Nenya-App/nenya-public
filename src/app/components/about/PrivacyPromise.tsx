@@ -5,6 +5,7 @@ import { Card } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
+import { AppFooter } from '../AppFooter';
 
 interface PrivacyPromiseProps {
   onBack: () => void;
@@ -371,6 +372,8 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
           <ReturnToTop onClick={scrollToTop} />
         </div>
       </div>
+
+      <AppFooter />
     </div>
   );
 }

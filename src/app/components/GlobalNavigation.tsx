@@ -330,7 +330,7 @@ export function GlobalNavigation({
       {/* Accessibility Settings Dialog */}
       {showAnimationControls && onBreathingToggle && onOrbitToggle && onValarSelect && onOpacityChange ? (
         <Dialog open={accessibilityOpen} onOpenChange={setAccessibilityOpen}>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-md max-h-[85dvh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Accessibility Settings</DialogTitle>
               <DialogDescription>

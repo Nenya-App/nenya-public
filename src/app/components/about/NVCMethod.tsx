@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollIndicator } from '../ScrollIndicator';
+import { AppFooter } from '../AppFooter';
 
 interface NVCMethodProps {
   onBack: () => void;
@@ -309,6 +310,8 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
       
       {/* Scroll indicator */}
       <ScrollIndicator containerRef={scrollContainerRef} />
+
+      <AppFooter />
     </div>
   );
 }

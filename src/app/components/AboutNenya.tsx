@@ -18,6 +18,7 @@ import SupportUs from './about/SupportUs';
 import TermsOfService from './about/TermsOfService';
 import PIIScrubbingDemo from './PIIScrubbingDemo';
 import { ErrorBoundary } from './ErrorBoundary';
+import { AppFooter } from './AppFooter';
 
 interface AboutNenyaProps {
   onBack: () => void;
@@ -80,6 +81,8 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection }: Ab
               ← Back to Menu
             </button>
             <Mellonamin />
+
+            <AppFooter />
           </div>
         </div>
       )}
@@ -113,6 +116,8 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection }: Ab
             ← Back to Menu
           </button>
           <PantheonOfNeeds onExploreGateways={onRestartDemo} />
+
+          <AppFooter />
         </div>
       )}
       {currentSection === 'nvc-method' && (

@@ -7,6 +7,7 @@ import NenyaLogo from '../NenyaLogo';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollIndicator } from '../ScrollIndicator';
+import { AppFooter } from '../AppFooter';
 
 interface EvolvedLeadershipProps {
   onBack: () => void;
@@ -499,6 +500,8 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
       
       {/* Scroll indicator */}
       <ScrollIndicator containerRef={scrollContainerRef} />
+
+      <AppFooter />
     </div>
   );
 }

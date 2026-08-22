@@ -8,6 +8,7 @@ import { Textarea } from '../ui/textarea';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { AppFooter } from '../AppFooter';
 import {
   PENTATONIC_FREQS,
   NOTE_NAMES,
@@ -700,6 +701,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
             </div>
           </div>
         )}
+
+        <AppFooter />
       </div>
     </div>
   );

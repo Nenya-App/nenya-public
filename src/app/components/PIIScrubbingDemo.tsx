@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Shield, Eye, EyeOff, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Card } from './ui/card';
 import { ConversationControls } from './ConversationControls';
+import { AppFooter } from './AppFooter';
 
 interface PIIScrubbingDemoProps {
   onComplete?: () => void;
@@ -409,6 +410,8 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
         <div className="max-w-4xl mx-auto">
           {renderStepContent()}
         </div>
+
+        <AppFooter />
       </div>
 
       {/* Footer */}

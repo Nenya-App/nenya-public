@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollHint } from '../ScrollHint';
+import { AppFooter } from '../AppFooter';
 
 interface SupportUsProps {
   onBack: () => void;
@@ -114,6 +115,8 @@ export default function SupportUs({ onBack }: SupportUsProps) {
       </div>
       <ScrollHint />
       <ReturnToTop onClick={scrollToTop} />
+
+      <AppFooter />
     </div>
   );
 }

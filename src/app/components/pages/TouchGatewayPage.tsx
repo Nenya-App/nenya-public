@@ -6,6 +6,7 @@ import { SnappingSlider } from '../ui/snapping-slider';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { AppFooter } from '../AppFooter';
 
 interface TouchGatewayPageProps {
   onComplete: (data: any) => void;
@@ -320,6 +321,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
             </div>
           </div>
         )}
+
+        <AppFooter />
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ReturnToTop } from '../ReturnToTop';
+import { AppFooter } from '../AppFooter';
 
 interface TermsOfServiceProps {
   onBack: () => void;
@@ -94,6 +95,8 @@ export default function TermsOfService({ onBack }: TermsOfServiceProps) {
           <ReturnToTop onClick={scrollToTop} />
         </div>
       </div>
+
+      <AppFooter />
     </div>
   );
 }

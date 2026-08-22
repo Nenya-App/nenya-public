@@ -7,6 +7,7 @@ import { HexagonColorPicker } from '../HexagonColorPicker';
 import { Input } from '../ui/input';
 import { UserColors } from '../../App';
 import { useTheme } from '../ThemeProvider';
+import { AppFooter } from '../AppFooter';
 
 interface InterfaceColorSelectionProps {
   onComplete: (colors: UserColors) => void;
@@ -284,6 +285,8 @@ export default function InterfaceColorSelection({ onComplete, onBack }: Interfac
             )}
           </AnimatePresence>
         </div>
+
+        <AppFooter />
       </div>
     </div>
   );

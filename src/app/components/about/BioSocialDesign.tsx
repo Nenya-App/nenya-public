@@ -8,6 +8,7 @@ import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import HumanCenteredDesign from './HumanCenteredDesign';
 import TheoryU from './TheoryU';
+import { AppFooter } from '../AppFooter';
 
 interface BioSocialDesignProps {
   onBack: () => void;
@@ -564,6 +565,8 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
           <ReturnToTop onClick={scrollToTop} />
         </div>
       </div>
+
+      <AppFooter />
     </div>
   );
 }

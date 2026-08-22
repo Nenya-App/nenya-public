@@ -5,6 +5,7 @@ import { Gateway, GatewayData } from '../../App';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { BodyMapData } from '../BodyMapAvatar';
+import { AppFooter } from '../AppFooter';
 // jsPDF is only needed if the visitor clicks "Download PDF Report" -- loaded
 // on demand inside downloadPDFReport() instead of shipped with every page.
 import { NOTE_NAMES } from '../../../lib/audio';
@@ -555,6 +556,8 @@ export default function GatewayReviewPage({
             </Button>
           </div>
         </div>
+
+        <AppFooter />
       </div>
     </div>
   );
