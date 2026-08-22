@@ -1,4 +1,4 @@
-import { Home, BookOpen, Menu, X, ChevronDown, Settings } from 'lucide-react';
+import { Home, BookOpen, Menu, X, ChevronDown, Settings, HelpCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState } from 'react';
 import NenyaLogo from './NenyaLogo';
@@ -38,6 +38,7 @@ interface GlobalNavigationProps {
   showAnimationControls?: boolean;
   onEmergencyExit?: () => void;
   onBreathingPopoutToggle?: () => void;
+  onTutorialReplay?: () => void;
 }
 
 export function GlobalNavigation({
@@ -64,6 +65,7 @@ export function GlobalNavigation({
   showAnimationControls = false,
   onEmergencyExit,
   onBreathingPopoutToggle,
+  onTutorialReplay,
 }: GlobalNavigationProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accessibilityOpen, setAccessibilityOpen] = useState(false);
@@ -124,13 +126,27 @@ export function GlobalNavigation({
 
             {/* Right side controls */}
             <div className="flex items-center gap-3">
+              {/* Replay Tutorial */}
+              {showAnimationControls && onTutorialReplay ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onTutorialReplay}
+                  aria-label="Replay tutorial"
+                  title="Replay tutorial"
+                >
+                  <HelpCircle className="size-4" />
+                </Button>
+              ) : null}
+
               {/* Theme Toggle */}
               <ThemeToggle />
-              
+
               {/* Simple Dropdown Menu */}
               <div className="relative">
-                <Button 
-                  variant="outline" 
+                <Button
+                  id="tutorial-menu-desktop"
+                  variant="outline"
                   size="sm"
                   className="gap-2"
                   onClick={() => setMenuOpen(!menuOpen)}
@@ -222,11 +238,25 @@ export function GlobalNavigation({
 
           {/* Mobile Menu Controls */}
           <div className="flex items-center gap-2">
+            {/* Replay Tutorial */}
+            {showAnimationControls && onTutorialReplay ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onTutorialReplay}
+                aria-label="Replay tutorial"
+                title="Replay tutorial"
+              >
+                <HelpCircle className="size-5" />
+              </Button>
+            ) : null}
+
             {/* Theme Toggle */}
             <ThemeToggle />
-            
+
             {/* Simple Menu Button */}
             <Button
+              id="tutorial-menu-mobile"
               variant="ghost"
               size="icon"
               onClick={() => setMenuOpen(!menuOpen)}

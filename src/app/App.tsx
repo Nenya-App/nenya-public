@@ -4,6 +4,7 @@ import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
 import { BreathingCounter } from './components/BreathingCounter';
+import { WelcomeTutorial } from './components/WelcomeTutorial';
 import { BreathingTechnique } from './components/ValarBreathingLogo';
 import TermsAgreementPage from './components/pages/TermsAgreementPage';
 import WelcomePage from './components/pages/WelcomePage';
@@ -76,12 +77,26 @@ export default function App() {
   const [selectedValarIndices, setSelectedValarIndices] = useState<number[]>([]); // Empty array = all colors
   const [breathingOpacity, setBreathingOpacity] = useState(0.5); // Default 50%
   const [textSize, setTextSize] = useState(16); // Default text size
-  const [showBreathingCounter, setShowBreathingCounter] = useState(false);
+  const [showBreathingCounter, setShowBreathingCounter] = useState(true);
   const [colorBlindMode, setColorBlindMode] = useState('');
   const [breathingTechnique, setBreathingTechnique] = useState<BreathingTechnique>({ ih: 5000, hi: 0, ex: 5000, ho: 0 });
 
   // Breathing popout state
   const [breathingPopoutOpen, setBreathingPopoutOpen] = useState(false);
+
+  // Gated by the "Speak, Friend, and Enter" welcome card — the breathing
+  // counter and tutorial only appear once a visitor has moved past it.
+  const [entryUnlocked, setEntryUnlocked] = useState(false);
+  const [tutorialActive, setTutorialActive] = useState(false);
+  const hasAutoShownTutorial = useRef(false);
+
+  useEffect(() => {
+    if (entryUnlocked && currentScreen === 'welcome' && !hasAutoShownTutorial.current) {
+      hasAutoShownTutorial.current = true;
+      const t = setTimeout(() => setTutorialActive(true), 400);
+      return () => clearTimeout(t);
+    }
+  }, [entryUnlocked, currentScreen]);
 
   // Track emergency exit to disable beforeunload warning
   const isEmergencyExiting = useRef(false);
@@ -336,10 +351,12 @@ export default function App() {
           showAnimationControls={currentScreen === 'welcome'}
           onEmergencyExit={() => { isEmergencyExiting.current = true; }}
           onBreathingPopoutToggle={() => setBreathingPopoutOpen(!breathingPopoutOpen)}
+          onTutorialReplay={() => setTutorialActive(true)}
         />
 
-        {currentScreen === 'welcome' && (
+        {currentScreen === 'welcome' && entryUnlocked && (
           <BreathingCounter
+            id="tutorial-breathing-counter"
             enabled={breathingEnabled}
             show={showBreathingCounter}
             ih={breathingTechnique.ih}
@@ -348,6 +365,10 @@ export default function App() {
             ho={breathingTechnique.ho || 0}
             onTechniqueChange={setBreathingTechnique}
           />
+        )}
+
+        {currentScreen === 'welcome' && (
+          <WelcomeTutorial isOpen={tutorialActive} onClose={() => setTutorialActive(false)} />
         )}
 
         {/* Main Content Area */}
@@ -364,9 +385,10 @@ export default function App() {
               onNavigateToAbout={handleNavigateToAbout}
               technique={breathingTechnique}
               cvMode={colorBlindMode}
+              onEntryUnlocked={() => setEntryUnlocked(true)}
             />
           )}
-          
+
           {currentScreen === 'home' && (
             <GatewaysPage 
               onGatewaysSelected={handleGatewaysSelected}

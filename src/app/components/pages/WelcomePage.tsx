@@ -17,6 +17,7 @@ interface WelcomePageProps {
   onNavigateToAbout?: (section?: string) => void;
   technique?: BreathingTechnique | null;
   cvMode?: string;
+  onEntryUnlocked?: () => void;
 }
 
 export default function WelcomePage({
@@ -29,6 +30,7 @@ export default function WelcomePage({
   onNavigateToAbout,
   technique = null,
   cvMode = '',
+  onEntryUnlocked,
 }: WelcomePageProps) {
   const [logoSize, setLogoSize] = useState(400);
   const [isBreathingInfoExpanded, setIsBreathingInfoExpanded] = useState(false);
@@ -55,12 +57,12 @@ export default function WelcomePage({
   return (
     <div className="size-full relative overflow-y-auto snap-y snap-mandatory">
       {/* Welcome Popup */}
-      <WelcomePopup onNavigateToAbout={onNavigateToAbout} />
-      
+      <WelcomePopup onNavigateToAbout={onNavigateToAbout} onDismiss={onEntryUnlocked} />
+
       {/* First Section: Full Viewport with Large Logo */}
       <div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">
         <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0.7s both' }} className={`flex-1 flex items-center justify-center transition-all duration-500`}>
-          <div className={`transition-all duration-500 nenya-logo-clickable`}>
+          <div id="tutorial-logo" className={`transition-all duration-500 nenya-logo-clickable`}>
             <ValarBreathingLogo
               enabled={breathingEnabled}
               selectedValarIndices={selectedValarIndices}
@@ -106,6 +108,7 @@ export default function WelcomePage({
           {/* Call to Action */}
           <div className="pt-6">
             <Button
+              id="tutorial-cta"
               size="lg"
               onClick={onContinue}
               className="gap-2 text-lg px-8 py-6 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-background-elevated"

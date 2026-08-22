@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { GripHorizontal } from 'lucide-react';
 
 export interface BreathingTechnique {
   ih: number;
@@ -29,6 +31,7 @@ interface BreathingCounterProps {
   ex?: number;
   ho?: number;
   onTechniqueChange?: (technique: BreathingTechnique) => void;
+  id?: string;
 }
 
 export function BreathingCounter({
@@ -39,6 +42,7 @@ export function BreathingCounter({
   ex: EX = 5000,
   ho: HO = 0,
   onTechniqueChange,
+  id,
 }: BreathingCounterProps) {
   const [count, setCount] = useState(1);
   const [phase, setPhase] = useState<'i' | 'h' | 'e'>('i');
@@ -71,42 +75,59 @@ export function BreathingCounter({
   const phaseLabel = phase === 'i' ? 'inhale' : phase === 'e' ? 'exhale' : 'hold';
 
   return (
-    <div
+    <motion.div
+      id={id}
+      drag
+      dragMomentum={false}
+      dragElastic={0.06}
+      whileDrag={{ scale: 1.03, boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
       style={{
         position: 'fixed',
         top: '8.5rem',
         right: '1rem',
         zIndex: 39,
-        background: 'rgba(13,19,33,0.88)',
-        border: '1px solid rgba(232,160,32,0.3)',
-        borderRadius: '12px',
+        background: 'rgba(13,19,33,0.92)',
+        border: '1px solid rgba(232,160,32,0.35)',
+        borderRadius: '14px',
         backdropFilter: 'blur(10px)',
         boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-        width: '178px',
+        width: '212px',
         overflow: 'hidden',
       }}
     >
-      <div style={{ padding: '10px 14px 8px' }}>
+      {/* Drag handle */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '4px 0 0',
+          cursor: 'grab',
+          touchAction: 'none',
+        }}
+      >
+        <GripHorizontal size={14} color="rgba(232,160,32,0.4)" />
+      </div>
+      <div style={{ padding: '4px 16px 10px' }}>
         <div
           style={{
-            fontSize: '8px',
+            fontSize: '11px',
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
-            color: 'rgba(232,160,32,0.45)',
+            color: 'rgba(232,160,32,0.55)',
             fontFamily: "'Manrope',sans-serif",
-            marginBottom: '4px',
+            marginBottom: '5px',
           }}
         >
           breathe
         </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
           <div
             key={count + phase}
             style={{
               fontFamily: "'Cinzel',serif",
-              fontSize: '2rem',
+              fontSize: '2.75rem',
               fontWeight: 400,
-              color: 'rgba(232,160,32,0.92)',
+              color: 'rgba(232,160,32,0.96)',
               lineHeight: 1,
               animation: `${pulseAnim} 0.45s ease-out`,
             }}
@@ -115,8 +136,8 @@ export function BreathingCounter({
           </div>
           <div
             style={{
-              fontSize: '11px',
-              color: 'rgba(232,160,32,0.55)',
+              fontSize: '14px',
+              color: 'rgba(232,160,32,0.7)',
               fontFamily: "'Manrope',sans-serif",
               letterSpacing: '0.08em',
             }}
@@ -125,8 +146,8 @@ export function BreathingCounter({
           </div>
         </div>
       </div>
-      <div style={{ height: '1px', background: 'rgba(232,160,32,0.12)', margin: '0 14px' }} />
-      <div style={{ padding: '6px 0 8px' }}>
+      <div style={{ height: '1px', background: 'rgba(232,160,32,0.14)', margin: '0 16px' }} />
+      <div style={{ padding: '6px 0 10px' }}>
         {PRESETS.map((preset) => {
           const active = preset.ih === IH && (preset.hi || 0) === HI && preset.ex === EX && (preset.ho || 0) === HO;
           return (
@@ -136,9 +157,9 @@ export function BreathingCounter({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '10px',
                 width: '100%',
-                padding: '5px 14px',
+                padding: '6px 16px',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
@@ -148,11 +169,11 @@ export function BreathingCounter({
             >
               <div
                 style={{
-                  width: '6px',
-                  height: '6px',
+                  width: '7px',
+                  height: '7px',
                   borderRadius: '50%',
                   flexShrink: 0,
-                  background: active ? 'rgba(232,160,32,0.9)' : 'rgba(232,160,32,0.2)',
+                  background: active ? 'rgba(232,160,32,0.95)' : 'rgba(232,160,32,0.25)',
                 }}
               />
               <div style={{ flex: 1 }}>
@@ -160,21 +181,21 @@ export function BreathingCounter({
                   <span
                     style={{
                       fontFamily: "'Manrope',sans-serif",
-                      fontSize: '11px',
-                      color: active ? 'rgba(232,160,32,0.92)' : 'rgba(232,160,32,0.55)',
+                      fontSize: '13px',
+                      color: active ? 'rgba(232,160,32,0.96)' : 'rgba(232,160,32,0.65)',
                       fontWeight: active ? 600 : 400,
                     }}
                   >
                     {preset.lb}
                   </span>
-                  <span style={{ fontSize: '9px', color: 'rgba(232,160,32,0.35)', fontFamily: "'Manrope',sans-serif" }}>
+                  <span style={{ fontSize: '10px', color: 'rgba(232,160,32,0.4)', fontFamily: "'Manrope',sans-serif" }}>
                     {preset.lb === 'Box' ? '4·4·4·4' : preset.lb === '4-7-8' ? 'no hold-out' : ''}
                   </span>
                 </div>
                 <div
                   style={{
-                    fontSize: '9px',
-                    color: active ? 'rgba(232,160,32,0.5)' : 'rgba(232,160,32,0.3)',
+                    fontSize: '11px',
+                    color: active ? 'rgba(232,160,32,0.6)' : 'rgba(232,160,32,0.35)',
                     fontFamily: "'Manrope',sans-serif",
                     lineHeight: 1.3,
                     marginTop: '1px',
@@ -187,6 +208,6 @@ export function BreathingCounter({
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 }

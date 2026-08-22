@@ -5,15 +5,17 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface WelcomePopupProps {
   onNavigateToAbout?: (section?: string) => void;
+  onDismiss?: () => void;
 }
 
-export default function WelcomePopup({ onNavigateToAbout }: WelcomePopupProps) {
+export default function WelcomePopup({ onNavigateToAbout, onDismiss }: WelcomePopupProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
 
   const handleMinimize = () => {
     setIsMinimized(true);
     setIsOpen(false);
+    onDismiss?.();
   };
 
   const handleReopen = () => {
