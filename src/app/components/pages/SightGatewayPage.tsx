@@ -13,6 +13,7 @@ import { useTheme } from '../ThemeProvider';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { TermInfo } from '../TermInfo';
 import { ScrollIndicator } from '../ScrollIndicator';
+import { AppFooter } from '../AppFooter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import {
   Dialog,
@@ -494,6 +495,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               </div>
             </div>
           )}
+
+          <AppFooter />
         </div>
         <ScrollIndicator />
       </div>

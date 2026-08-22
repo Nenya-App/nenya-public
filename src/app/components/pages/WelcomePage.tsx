@@ -5,6 +5,7 @@ import { ValarBreathingLogo, BreathingTechnique } from '../ValarBreathingLogo';
 import WelcomePopup from '../WelcomePopup';
 import { ArrowRight, ChevronDown, ChevronUp, Heart, ExternalLink } from 'lucide-react';
 import { Card } from '../ui/card';
+import { AppFooter } from '../AppFooter';
 
 interface WelcomePageProps {
   onContinue: () => void;
@@ -54,7 +55,7 @@ export default function WelcomePage({
   }, []);
 
   return (
-    <div className="size-full relative overflow-y-auto snap-y snap-mandatory">
+    <div className="size-full relative overflow-y-auto snap-y snap-proximity">
       {/* Welcome Popup */}
       <WelcomePopup onNavigateToAbout={onNavigateToAbout} onDismiss={onEntryUnlocked} />
 
@@ -261,6 +262,8 @@ export default function WelcomePage({
           </Card>
         </div>
       </div>
+
+      <AppFooter onNavigateToAbout={() => onNavigateToAbout?.()} />
     </div>
   );
 }

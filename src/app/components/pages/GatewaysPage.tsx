@@ -3,6 +3,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Eye, Music, Hand, Droplet, Zap, Lightbulb, Check } from 'lucide-react';
 import { Gateway } from '../../App';
+import { AppFooter } from '../AppFooter';
 
 interface GatewaysPageProps {
   onGatewaysSelected: (gateways: Gateway[]) => void;
@@ -180,6 +181,8 @@ export default function GatewaysPage({ onGatewaysSelected }: GatewaysPageProps) 
           </div>
         </div>
       </div>
+
+      <AppFooter />
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
 import { BreathingCounter } from './components/BreathingCounter';
 import { WelcomeTutorial } from './components/WelcomeTutorial';
-import { AppFooter } from './components/AppFooter';
 import { BreathingTechnique } from './components/ValarBreathingLogo';
 import TermsAgreementPage from './components/pages/TermsAgreementPage';
 import WelcomePage from './components/pages/WelcomePage';
@@ -508,9 +507,6 @@ export default function App() {
           )}
           </Suspense>
         </div>
-
-        {/* Persistent footer, visible on every screen without needing to scroll */}
-        <AppFooter onNavigateToAbout={() => handleNavigateToAbout()} />
 
         {/* Breathing Popout */}
         <BreathingPopout
