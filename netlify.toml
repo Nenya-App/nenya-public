@@ -1,0 +1,113 @@
+[build]
+  command = "npm install && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# ── Rate limiting ─────────────────────────────────────────────────────────
+# Free/Starter/Personal plans allow 2 code-based rate-limit rules per project
+# (UI-configured rulesets require Enterprise + High-Performance Edge). Real
+# static files are served before redirects are evaluated, so app entry and
+# the compiled asset bundle need separate rules to both be covered.
+
+# Rule 1: app entry point. Caps how many fresh app loads a single IP can
+# request per minute -- the main "someone is hammering the site" vector.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+  [redirects.rate_limit]
+    window_limit = 300
+    window_size = 60
+    aggregate_by = ["ip", "domain"]
+
+# Rule 2: compiled JS/CSS bundle under /assets/*. force = true is required
+# here because these are real files Netlify would otherwise serve directly,
+# bypassing redirects (and therefore rate limiting) entirely. This is the
+# highest-bandwidth-cost target for a scripted download loop.
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+  force = true
+
+  [redirects.rate_limit]
+    window_limit = 200
+    window_size = 60
+    aggregate_by = ["ip", "domain"]
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # ── Framing ───────────────────────────────────────────────────────────────
+    # Belt-and-suspenders with CSP frame-ancestors below
+    X-Frame-Options = "DENY"
+
+    # ── MIME sniffing ────────────────────────────────────────────────────────
+    X-Content-Type-Options = "nosniff"
+
+    # ── Referrer ──────────────────────────────────────────────────────────────
+    # Send origin on same-site requests only; nothing on cross-site navigation
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # ── Browser features ─────────────────────────────────────────────────────
+    # Deny access to hardware and tracking APIs the site never needs
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=(), browsing-topics=()"
+
+    # ── HTTPS enforcement ────────────────────────────────────────────────────
+    # 1 year; include subdomains
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+    # ── Content Security Policy ───────────────────────────────────────────────
+    #
+    # Notes on each directive:
+    #
+    # script-src 'self'
+    #   Only self-hosted scripts. No inline scripts exist in this build.
+    #   UPGRADE PATH: Install the Netlify CSP Nonce extension in the dashboard
+    #   (Extensions → Content Security Policy). It injects a per-request nonce
+    #   via Edge Function, changing 'self' to 'nonce-{random}' automatically —
+    #   the strongest available protection against injected scripts.
+    #
+    # style-src 'self' 'unsafe-inline'
+    #   'unsafe-inline' required: React renders inline style props as style=""
+    #   attributes (Framer Motion, breathing counter positioning, colorblind
+    #   filters, etc.). Removing it requires migrating all inline styles to
+    #   CSS classes. Risk is bounded: inline styles cannot execute JS.
+    #
+    # font-src 'self'
+    #   Cinzel, Manrope, and Cormorant Garamond are self-hosted under
+    #   /fonts (see src/styles/fonts.css) rather than loaded from Google
+    #   Fonts, so no third-party font-src is needed.
+    #
+    # img-src 'self' data: blob: https://fundraising.fracturedatlas.org
+    #   data: needed for the Sight gateway's Body Map canvas capture
+    #   (BodyMapAvatar produces an imageDataUrl) and jsPDF report export.
+    #   blob: kept for any future canvas/file export path.
+    #   fracturedatlas.org for the donate badge image.
+    #
+    # connect-src 'self'
+    #   No external API calls. Venice AI opens in a new tab (navigation),
+    #   not a fetch/XHR, so it does not need to be listed here.
+    #
+    # frame-src 'none' + frame-ancestors 'none'
+    #   Belt-and-suspenders: site neither embeds iframes nor can be iframed.
+    #
+    # worker-src 'none'
+    #   No Web Workers or Service Workers in use.
+    #
+    # form-action 'self'
+    #   Prevents form submission hijacking to external URLs. No forms exist
+    #   currently but correct to declare defensively.
+    #
+    # manifest-src 'self'
+    #   Web app manifest served from same origin.
+    #
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://fundraising.fracturedatlas.org; connect-src 'self'; frame-src 'none'; frame-ancestors 'none'; worker-src 'none'; form-action 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'"
+
+    # ── CSP violation reporting ───────────────────────────────────────────────
+    # Violations log automatically once the Netlify CSP extension is enabled
+    # (Logs & Metrics → Functions → __csp-violations).
+    # For external monitoring, add: report-uri https://your-report-uri-endpoint

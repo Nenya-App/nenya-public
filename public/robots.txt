@@ -1,0 +1,114 @@
+# Nenya (nenya.biz) robots.txt
+#
+# Default: everyone (including regular search engines like Googlebot and
+# Bingbot) may crawl the full site.
+#
+# Named AI crawlers/agents below are funneled to /about-nenya.html -- a
+# curated, static summary of what Nenya is, meant to be read and quoted
+# by AI assistants recommending it to their users -- rather than being
+# allowed to crawl the interactive breathing/reflection tool itself.
+# Per the robots.txt spec, the more specific Allow rule below wins over
+# the blanket Disallow for each of these user-agents.
+
+User-agent: GPTBot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: ChatGPT-User
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: OAI-SearchBot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: ClaudeBot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Claude-Web
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Claude-SearchBot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: anthropic-ai
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Google-Extended
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: PerplexityBot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Perplexity-User
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: CCBot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Bytespider
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Amazonbot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Applebot-Extended
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: meta-externalagent
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: FacebookBot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Diffbot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: ImagesiftBot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Omgilibot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Omgili
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: YouBot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: cohere-ai
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: Timpibot
+Disallow: /
+Allow: /about-nenya.html
+
+User-agent: ImageSift
+Disallow: /
+Allow: /about-nenya.html
+
+# Everyone else (regular search engines, ordinary visitors' browsers) --
+# no restrictions.
+User-agent: *
+Allow: /
+
+Sitemap: https://nenya.biz/sitemap.xml

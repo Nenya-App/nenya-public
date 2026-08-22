@@ -1,0 +1,980 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+
+  /* Smooth theme transitions */
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease;
+
+  /* Nenya Light Mode - Warm, meditative palette */
+  --background: #DCD9D6;
+  --background-secondary: #F5F1ED;
+  --background-elevated: #FFFFFF;
+  --foreground: #4A4440;
+  
+  --card: #FFFFFF;
+  --card-foreground: #4A4440;
+  --popover: #FFFFFF;
+  --popover-foreground: #4A4440;
+  
+  --primary: #D4AF87;
+  --primary-foreground: #4A4440;
+  --secondary: #F5F1ED;
+  --secondary-foreground: #4A4440;
+  
+  --muted: #F5F1ED;
+  --muted-foreground: #756F6A;
+  
+  --accent: #E8C4A8;
+  --accent-foreground: #4A4440;
+  
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  
+  --border: #E6DFD8;
+  --border-emphasis: #D4C8BD;
+  --input: transparent;
+  --input-background: #F5F1ED;
+  --switch-background: #D4C8BD;
+  
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #D4AF87;
+  
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  
+  --radius: 0.625rem;
+  
+  /* Nenya Accent Colors - consistent across modes */
+  --nenya-accent-primary: #D4AF87;
+  --nenya-accent-secondary: #C9A88A;
+  --nenya-accent-metallic: #E8C4A8;
+  --nenya-accent-warm: #DDB88C;
+  
+  /* Nenya Logo Colors */
+  --nenya-gold: #DDB88C;
+  --nenya-gold-light: #E8C4A8;
+  --nenya-gold-dark: #C9A88A;
+  --nenya-silver: #C0C0C0;
+  --nenya-silver-light: #E8E8E8;
+  
+  /* Text hierarchy */
+  --text-primary: #4A4440;
+  --text-secondary: #756F6A;
+  --text-tertiary: #9B948E;
+  
+  --nenya-prism-start: #FF1493;
+  --nenya-prism-mid: #FFD700;
+  --nenya-prism-end: #00CED1;
+  
+  --sidebar: #F5F1ED;
+  --sidebar-foreground: #4A4440;
+  --sidebar-primary: #D4AF87;
+  --sidebar-primary-foreground: #4A4440;
+  --sidebar-accent: #FFFFFF;
+  --sidebar-accent-foreground: #4A4440;
+  --sidebar-border: #E6DFD8;
+  --sidebar-ring: #D4AF87;
+}
+
+.dark {
+  /* Nenya Dark Mode - Deep, contemplative palette with warm brown tones */
+  --background: #1A1512;
+  --background-secondary: #221C18;
+  --background-elevated: #2D2621;
+  --foreground: #FAF8F5;
+  
+  --card: #221C18;
+  --card-foreground: #FAF8F5;
+  --popover: #2D2621;
+  --popover-foreground: #FAF8F5;
+  
+  --primary: #D4AF87;
+  --primary-foreground: #1A1512;
+  --secondary: #221C18;
+  --secondary-foreground: #FAF8F5;
+  
+  --muted: #221C18;
+  --muted-foreground: #D4C8BD;
+  
+  --accent: #E8C4A8;
+  --accent-foreground: #1A1512;
+  
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  
+  --border: #3A342F;
+  --border-emphasis: #4A443F;
+  --input: #2D2621;
+  --input-background: #221C18;
+  --switch-background: #4A443F;
+  --ring: #D4AF87;
+  
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  
+  /* Nenya Accent Colors - same as light mode */
+  --nenya-accent-primary: #D4AF87;
+  --nenya-accent-secondary: #C9A88A;
+  --nenya-accent-metallic: #E8C4A8;
+  --nenya-accent-warm: #DDB88C;
+  
+  /* Nenya Logo Colors */
+  --nenya-gold: #DDB88C;
+  --nenya-gold-light: #E8C4A8;
+  --nenya-gold-dark: #C9A88A;
+  --nenya-silver: #D0D0D0;
+  --nenya-silver-light: #F0F0F0;
+  
+  /* Text hierarchy */
+  --text-primary: #FAF8F5;
+  --text-secondary: #D4C8BD;
+  --text-tertiary: #9B948E;
+  
+  --nenya-prism-start: #FF1493;
+  --nenya-prism-mid: #FFD700;
+  --nenya-prism-end: #00CED1;
+  
+  --sidebar: #221C18;
+  --sidebar-foreground: #FAF8F5;
+  --sidebar-primary: #D4AF87;
+  --sidebar-primary-foreground: #1A1512;
+  --sidebar-accent: #2D2621;
+  --sidebar-accent-foreground: #FAF8F5;
+  --sidebar-border: #3A342F;
+  --sidebar-ring: #D4AF87;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-elevated: var(--background-elevated);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-emphasis: var(--border-emphasis);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-nenya-accent-primary: var(--nenya-accent-primary);
+  --color-nenya-accent-secondary: var(--nenya-accent-secondary);
+  --color-nenya-accent-metallic: var(--nenya-accent-metallic);
+  --color-nenya-accent-warm: var(--nenya-accent-warm);
+  --color-nenya-gold: var(--nenya-gold);
+  --color-nenya-gold-light: var(--nenya-gold-light);
+  --color-nenya-gold-dark: var(--nenya-gold-dark);
+  --color-nenya-silver: var(--nenya-silver);
+  --color-nenya-silver-light: var(--nenya-silver-light);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-nenya-prism-start: var(--nenya-prism-start);
+  --color-nenya-prism-mid: var(--nenya-prism-mid);
+  --color-nenya-prism-end: var(--nenya-prism-end);
+}
+
+/* Nenya prismatic border effect */
+@layer utilities {
+  .nenya-prism-border {
+    position: relative;
+    background: linear-gradient(135deg, 
+      var(--nenya-prism-start) 0%, 
+      var(--nenya-prism-mid) 33%,
+      var(--nenya-prism-end) 66%,
+      var(--nenya-prism-start) 100%);
+    background-size: 200% 200%;
+    animation: prism-flow 6s ease infinite;
+  }
+  
+  .nenya-prism-border::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: var(--card);
+    border-radius: inherit;
+  }
+  
+  .nenya-gold-glow {
+    box-shadow: 0 0 20px var(--nenya-gold-light), 0 0 40px var(--nenya-gold);
+  }
+  
+  /* Animated lotus/mandala background - optimized for mobile */
+  .nenya-background {
+    position: fixed;
+    inset: 0;
+    pointer-events: none !important;
+    z-index: 0;
+    opacity: 0.02;
+    will-change: transform;
+  }
+  
+  .dark .nenya-background {
+    opacity: 0.03;
+  }
+  
+  /* Disable complex animations on mobile */
+  @media (max-width: 768px) {
+    .nenya-background {
+      display: none;
+    }
+  }
+  
+  .nenya-background::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%,
+      transparent 0%,
+      transparent 40%,
+      var(--nenya-prism-start) 40.5%,
+      transparent 41%,
+      transparent 45%,
+      var(--nenya-prism-mid) 45.5%,
+      transparent 46%,
+      transparent 50%,
+      var(--nenya-prism-end) 50.5%,
+      transparent 51%,
+      transparent 55%,
+      var(--nenya-prism-start) 55.5%,
+      transparent 56%,
+      transparent 60%,
+      var(--nenya-prism-mid) 60.5%,
+      transparent 61%,
+      transparent 65%,
+      var(--nenya-prism-end) 65.5%,
+      transparent 66%,
+      transparent 100%);
+    animation: lotus-pulse 12s ease-in-out infinite;
+  }
+  
+  .nenya-background::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 200px;
+    margin: -100px 0 0 -100px;
+    background: radial-gradient(circle,
+      var(--nenya-gold) 0%,
+      var(--nenya-prism-mid) 30%,
+      transparent 70%);
+    border-radius: 50%;
+    filter: blur(40px);
+    animation: diamond-glow 8s ease-in-out infinite;
+  }
+  
+  @keyframes prism-flow {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  
+  @keyframes lotus-pulse {
+    0%, 100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 0.03;
+    }
+    50% {
+      transform: scale(1.05) rotate(3deg);
+      opacity: 0.05;
+    }
+  }
+  
+  @keyframes diamond-glow {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.1);
+    }
+  }
+  
+  /* Light emanation animation for the intro logo */
+  .nenya-light-emanation {
+    position: relative;
+    display: inline-block;
+    z-index: 1;
+    transform: translateZ(0); /* Force GPU acceleration */
+    backface-visibility: hidden; /* Prevent flickering */
+  }
+  
+  /* 0.1Hz breathing pulse - 10 second cycle for deep coherence */
+  .nenya-breathe-pulse {
+    animation: breathe-pulse 10s ease-in-out infinite;
+  }
+  
+  @keyframes breathe-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+    }
+  }
+
+  /* BreathingCounter digit pulse: bcs = steady-state tick, bcd = entry pulse (double-beat) */
+  @keyframes bcs {
+    0% { transform: scale(0.88); opacity: 0; }
+    30% { transform: scale(1.1); opacity: 1; }
+    60% { transform: scale(1); opacity: 0.85; }
+    100% { transform: scale(1); opacity: 0.85; }
+  }
+
+  @keyframes nenya-bg-reveal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes glimmer-ring {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232,160,32,0.5), 0 4px 20px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(232,160,32,0), 0 4px 20px rgba(0,0,0,0.4); }
+  }
+
+  @keyframes scroll-bounce {
+    0%, 100% { transform: translateY(0); opacity: 0.5; }
+    50% { transform: translateY(5px); opacity: 0.85; }
+  }
+
+  @keyframes gem-shimmer {
+    0%, 100% { filter: brightness(1.4) hue-rotate(0deg) saturate(1); }
+    20% { filter: brightness(1.48) hue-rotate(18deg) saturate(1.25); }
+    40% { filter: brightness(1.36) hue-rotate(-8deg) saturate(1.12); }
+    60% { filter: brightness(1.46) hue-rotate(22deg) saturate(1.32); }
+    80% { filter: brightness(1.37) hue-rotate(-14deg) saturate(1.18); }
+  }
+
+  @keyframes bcd {
+    0% { transform: scale(0.88); opacity: 0; }
+    18% { transform: scale(1.12); opacity: 1; }
+    30% { transform: scale(1); opacity: 0.8; }
+    46% { transform: scale(1.1); opacity: 1; }
+    62% { transform: scale(1); opacity: 0.85; }
+    100% { transform: scale(1); opacity: 0.85; }
+  }
+  
+  .nenya-light-emanation::before,
+  .nenya-light-emanation::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  /* Ensure the logo image sits above the animation */
+  .nenya-light-emanation > * {
+    position: relative;
+    z-index: 2;
+  }
+  
+  /* Light mode - alternating golden brown & darker pink breathing */
+  .nenya-light-emanation::before {
+    width: 100%;
+    height: 100%;
+    animation: emanate-light-gold-brown 10s ease-in-out infinite;
+    animation-delay: 0s;
+  }
+  
+  .nenya-light-emanation::after {
+    width: 100%;
+    height: 100%;
+    animation: emanate-light-dark-pink 10s ease-in-out infinite;
+    animation-delay: 10s;
+  }
+  
+  @keyframes emanate-light-gold-brown {
+    /* Start - tiny point under logo */
+    0% {
+      transform: translate(-50%, -50%) scale(0.01);
+      opacity: 0;
+      background: radial-gradient(circle, 
+        rgba(184, 149, 111, 0.65) 0%,
+        rgba(184, 149, 111, 0.45) 50%,
+        transparent 100%);
+    }
+    /* Expand outward - breathe in (4 seconds) */
+    40% {
+      transform: translate(-50%, -50%) scale(1.4);
+      opacity: 0.7;
+      background: radial-gradient(circle,
+        rgba(184, 149, 111, 0.65) 0%,
+        rgba(184, 149, 111, 0.45) 40%,
+        transparent 100%);
+    }
+    /* Hold at peak - 2 second pause */
+    60% {
+      transform: translate(-50%, -50%) scale(1.4);
+      opacity: 0.7;
+      background: radial-gradient(circle,
+        rgba(184, 149, 111, 0.65) 0%,
+        rgba(184, 149, 111, 0.45) 40%,
+        transparent 100%);
+    }
+    /* Gradual retraction - first half of fade */
+    75% {
+      transform: translate(-50%, -50%) scale(0.85);
+      opacity: 0.48;
+      background: radial-gradient(circle,
+        rgba(184, 149, 111, 0.5) 0%,
+        rgba(184, 149, 111, 0.32) 45%,
+        transparent 100%);
+    }
+    /* Gradual retraction - second half of fade */
+    90% {
+      transform: translate(-50%, -50%) scale(0.25);
+      opacity: 0.18;
+      background: radial-gradient(circle,
+        rgba(184, 149, 111, 0.35) 0%,
+        rgba(184, 149, 111, 0.18) 50%,
+        transparent 100%);
+    }
+    /* Complete fade - final retraction */
+    100% {
+      transform: translate(-50%, -50%) scale(0.01);
+      opacity: 0;
+      background: radial-gradient(circle,
+        rgba(184, 149, 111, 0.2) 0%,
+        rgba(184, 149, 111, 0.1) 50%,
+        transparent 100%);
+    }
+  }
+  
+  @keyframes emanate-light-dark-pink {
+    /* Start - tiny point under logo */
+    0% {
+      transform: translate(-50%, -50%) scale(0.01);
+      opacity: 0;
+      background: radial-gradient(circle, 
+        rgba(201, 137, 149, 0.65) 0%,
+        rgba(201, 137, 149, 0.45) 50%,
+        transparent 100%);
+    }
+    /* Expand outward - breathe in (4 seconds) */
+    40% {
+      transform: translate(-50%, -50%) scale(1.4);
+      opacity: 0.7;
+      background: radial-gradient(circle,
+        rgba(201, 137, 149, 0.65) 0%,
+        rgba(201, 137, 149, 0.45) 40%,
+        transparent 100%);
+    }
+    /* Hold at peak - 2 second pause */
+    60% {
+      transform: translate(-50%, -50%) scale(1.4);
+      opacity: 0.7;
+      background: radial-gradient(circle,
+        rgba(201, 137, 149, 0.65) 0%,
+        rgba(201, 137, 149, 0.45) 40%,
+        transparent 100%);
+    }
+    /* Gradual retraction - first half of fade */
+    75% {
+      transform: translate(-50%, -50%) scale(0.85);
+      opacity: 0.48;
+      background: radial-gradient(circle,
+        rgba(201, 137, 149, 0.5) 0%,
+        rgba(201, 137, 149, 0.32) 45%,
+        transparent 100%);
+    }
+    /* Gradual retraction - second half of fade */
+    90% {
+      transform: translate(-50%, -50%) scale(0.25);
+      opacity: 0.18;
+      background: radial-gradient(circle,
+        rgba(201, 137, 149, 0.35) 0%,
+        rgba(201, 137, 149, 0.18) 50%,
+        transparent 100%);
+    }
+    /* Complete fade - final retraction */
+    100% {
+      transform: translate(-50%, -50%) scale(0.01);
+      opacity: 0;
+      background: radial-gradient(circle,
+        rgba(201, 137, 149, 0.2) 0%,
+        rgba(201, 137, 149, 0.1) 50%,
+        transparent 100%);
+    }
+  }
+  
+  /* Dark mode - alternating silver & warm gold breathing */
+  .dark .nenya-light-emanation::before {
+    width: 100%;
+    height: 100%;
+    animation: emanate-dark-silver 10s ease-in-out infinite;
+    animation-delay: 0s;
+  }
+  
+  .dark .nenya-light-emanation::after {
+    width: 100%;
+    height: 100%;
+    animation: emanate-dark-gold 10s ease-in-out infinite;
+    animation-delay: 10s;
+  }
+  
+  @keyframes emanate-dark-silver {
+    /* Start - tiny point under logo */
+    0% {
+      transform: translate(-50%, -50%) scale(0.01);
+      opacity: 0;
+      background: radial-gradient(circle, 
+        rgba(208, 208, 208, 0.35) 0%,
+        rgba(208, 208, 208, 0.22) 30%,
+        rgba(208, 208, 208, 0.12) 60%,
+        transparent 100%);
+    }
+    /* Expand outward - breathe in (4 seconds) */
+    40% {
+      transform: translate(-50%, -50%) scale(1.4);
+      opacity: 0.5;
+      background: radial-gradient(circle,
+        rgba(208, 208, 208, 0.35) 0%,
+        rgba(208, 208, 208, 0.22) 30%,
+        rgba(208, 208, 208, 0.12) 60%,
+        transparent 100%);
+    }
+    /* Hold at peak - 2 second pause */
+    60% {
+      transform: translate(-50%, -50%) scale(1.4);
+      opacity: 0.5;
+      background: radial-gradient(circle,
+        rgba(208, 208, 208, 0.35) 0%,
+        rgba(208, 208, 208, 0.22) 30%,
+        rgba(208, 208, 208, 0.12) 60%,
+        transparent 100%);
+    }
+    /* Gradual retraction - first half of fade */
+    75% {
+      transform: translate(-50%, -50%) scale(0.85);
+      opacity: 0.34;
+      background: radial-gradient(circle,
+        rgba(208, 208, 208, 0.28) 0%,
+        rgba(208, 208, 208, 0.18) 35%,
+        rgba(208, 208, 208, 0.1) 65%,
+        transparent 100%);
+    }
+    /* Gradual retraction - second half of fade */
+    90% {
+      transform: translate(-50%, -50%) scale(0.25);
+      opacity: 0.12;
+      background: radial-gradient(circle,
+        rgba(208, 208, 208, 0.18) 0%,
+        rgba(208, 208, 208, 0.11) 45%,
+        transparent 100%);
+    }
+    /* Complete fade - final retraction */
+    100% {
+      transform: translate(-50%, -50%) scale(0.01);
+      opacity: 0;
+      background: radial-gradient(circle,
+        rgba(208, 208, 208, 0.1) 0%,
+        rgba(208, 208, 208, 0.05) 50%,
+        transparent 100%);
+    }
+  }
+  
+  @keyframes emanate-dark-gold {
+    /* Start - tiny point under logo */
+    0% {
+      transform: translate(-50%, -50%) scale(0.01);
+      opacity: 0;
+      background: radial-gradient(circle, 
+        rgba(221, 184, 140, 0.45) 0%,
+        rgba(221, 184, 140, 0.3) 50%,
+        transparent 100%);
+    }
+    /* Expand outward - breathe in (4 seconds) */
+    40% {
+      transform: translate(-50%, -50%) scale(1.4);
+      opacity: 0.48;
+      background: radial-gradient(circle,
+        rgba(221, 184, 140, 0.45) 0%,
+        rgba(221, 184, 140, 0.3) 40%,
+        transparent 100%);
+    }
+    /* Hold at peak - 2 second pause */
+    60% {
+      transform: translate(-50%, -50%) scale(1.4);
+      opacity: 0.48;
+      background: radial-gradient(circle,
+        rgba(221, 184, 140, 0.45) 0%,
+        rgba(221, 184, 140, 0.3) 40%,
+        transparent 100%);
+    }
+    /* Gradual retraction - first half of fade */
+    75% {
+      transform: translate(-50%, -50%) scale(0.85);
+      opacity: 0.33;
+      background: radial-gradient(circle,
+        rgba(221, 184, 140, 0.36) 0%,
+        rgba(221, 184, 140, 0.24) 45%,
+        transparent 100%);
+    }
+    /* Gradual retraction - second half of fade */
+    90% {
+      transform: translate(-50%, -50%) scale(0.25);
+      opacity: 0.12;
+      background: radial-gradient(circle,
+        rgba(221, 184, 140, 0.24) 0%,
+        rgba(221, 184, 140, 0.14) 50%,
+        transparent 100%);
+    }
+    /* Complete fade - final retraction */
+    100% {
+      transform: translate(-50%, -50%) scale(0.01);
+      opacity: 0;
+      background: radial-gradient(circle,
+        rgba(221, 184, 140, 0.12) 0%,
+        rgba(221, 184, 140, 0.06) 50%,
+        transparent 100%);
+    }
+  }
+  
+  /* Add subtle inner glow using warm accent colors */
+  .nenya-logo-glow {
+    filter: drop-shadow(0 0 8px var(--nenya-accent-warm)) 
+            drop-shadow(0 0 16px var(--nenya-accent-metallic))
+            drop-shadow(0 0 24px var(--nenya-accent-primary));
+    transition: filter 0.3s ease;
+  }
+  
+  .dark .nenya-logo-glow {
+    filter: drop-shadow(0 0 10px var(--nenya-accent-warm)) 
+            drop-shadow(0 0 20px var(--nenya-accent-metallic))
+            drop-shadow(0 0 30px var(--nenya-accent-primary));
+  }
+
+  /* Clickable logo hint - works on hover and touch */
+  .nenya-logo-clickable {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  
+  .nenya-logo-clickable:hover .nenya-logo-glow,
+  .nenya-logo-clickable:active .nenya-logo-glow {
+    filter: drop-shadow(0 0 12px var(--nenya-accent-warm)) 
+            drop-shadow(0 0 24px var(--nenya-accent-metallic))
+            drop-shadow(0 0 36px var(--nenya-accent-primary));
+  }
+  
+  .dark .nenya-logo-clickable:hover .nenya-logo-glow,
+  .dark .nenya-logo-clickable:active .nenya-logo-glow {
+    filter: drop-shadow(0 0 16px var(--nenya-accent-warm)) 
+            drop-shadow(0 0 32px var(--nenya-accent-metallic))
+            drop-shadow(0 0 48px var(--nenya-accent-primary));
+  }
+  
+  /* Performance optimizations for animations */
+  @media (prefers-reduced-motion: reduce) {
+    .nenya-breathe-pulse,
+    .nenya-light-emanation::before,
+    .nenya-light-emanation::after {
+      animation: none !important;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  /* Smooth theme transitions - only for color properties */
+  html,
+  body,
+  [class*="bg-"],
+  [class*="text-"],
+  [class*="border-"] {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-in-out;
+  }
+
+  /* View Transitions API for theme switching */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.5s;
+    animation-timing-function: ease-in-out;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+    /* Better text rendering on mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent text size adjustment on mobile */
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Hide any "Skip to Main Content" links that might be injected by hosting platforms or browser extensions */
+  a[href="#main"],
+  a[href="#content"],
+  a[href="#main-content"],
+  a[href^="#skip"],
+  a[href*="skip"],
+  .skip-link,
+  .skip-to-content,
+  .skip-navigation,
+  [class*="skip"],
+  [id*="skip"],
+  [aria-label*="skip" i],
+  [aria-label*="Skip" i],
+  [title*="skip" i] {
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    display: none !important;
+  }
+
+  /* Target any link at the very top of the body that might be a skip link */
+  body > a:first-child,
+  body > div:first-child > a:first-child {
+    position: absolute !important;
+    left: -9999px !important;
+    clip: rect(0, 0, 0, 0) !important;
+    visibility: hidden !important;
+    display: none !important;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+    /* Prevent pull-to-refresh bounce on mobile */
+    overscroll-behavior-y: contain;
+    /* Better touch response */
+    touch-action: manipulation;
+    /* Safe area for notched devices */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Smooth scroll for all containers */
+  .scroll-container {
+    scroll-behavior: smooth;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+  
+  /* Ensure all scrollable content is accessible */
+  .scroll-container * {
+    pointer-events: auto;
+  }
+
+  /* Better touch response for all interactive elements */
+  button, a, input, textarea, select {
+    touch-action: manipulation;
+    /* Prevent tap highlight color on mobile */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Ensure proper touch targets for touch devices (min 44x44px for accessibility) */
+  @media (hover: none) and (pointer: coarse) {
+    button:not([data-slot="button"]), 
+    a:not([data-slot="button"]), 
+    [role="button"]:not([data-slot="button"]) {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+  
+  /* Cinzel font for main headings (h1, h2) */
+  h1, h2 {
+    font-family: 'Cinzel', serif;
+  }
+  
+  /* Cormorant Garamond font for subheadings (h3, h4, h5, h6) */
+  h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif;
+  }
+  
+  /* Enhanced shadows for colored cards */
+  .shadow-colored-sm {
+    box-shadow: 0 1px 2px 0 currentColor;
+  }
+  
+  .shadow-colored {
+    box-shadow: 0 4px 6px -1px currentColor, 0 2px 4px -2px currentColor;
+  }
+  
+  .shadow-colored-lg {
+    box-shadow: 0 10px 15px -3px currentColor, 0 4px 6px -4px currentColor;
+  }
+  
+  /* Nenya elevation system - subtle depth */
+  .nenya-elevation-sm {
+    box-shadow: 0 2px 8px rgba(74, 68, 64, 0.08);
+  }
+  
+  .nenya-elevation-md {
+    box-shadow: 0 4px 12px rgba(74, 68, 64, 0.1);
+  }
+  
+  .nenya-elevation-lg {
+    box-shadow: 0 8px 20px rgba(74, 68, 64, 0.12);
+  }
+  
+  .dark .nenya-elevation-sm {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+  
+  .dark .nenya-elevation-md {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  }
+  
+  .dark .nenya-elevation-lg {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  }
+  
+  /* Hover states with subtle accent glow */
+  .nenya-hover-glow {
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .nenya-hover-glow:hover {
+    background-color: rgba(232, 196, 168, 0.05);
+  }
+  
+  .dark .nenya-hover-glow:hover {
+    background-color: rgba(232, 196, 168, 0.08);
+  }
+  
+  /* Mobile optimizations */
+  @media (max-width: 640px) {
+    html {
+      font-size: 14px;
+    }
+  }
+  
+  @media (min-width: 641px) and (max-width: 1024px) {
+    html {
+      font-size: 15px;
+    }
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}

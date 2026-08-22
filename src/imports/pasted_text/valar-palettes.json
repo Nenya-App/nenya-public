@@ -1,0 +1,254 @@
+## 6‑Color Palettes for the Sixteen Valar (for Figma AI Designer)
+
+Below are 16 hex palettes, each with six colors. The **first color** is the *Gravity Well* – the primary diagnostic hue that draws attention to this need domain. The remaining five are supporting shades (lighter/darker, adjacent hues, or complementary) for visual design (gradients, chromatic vectors, UI accents). Use these directly in Figma or any design tool.
+
+---
+
+### Manwë (Air, Kingship, Law, Vision)
+Domain: Perspective, clarity, governance, fair order.  
+Palette: high, cool, ethereal blues and soft greys.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#4A6FA5` |
+| 2 | `#6B8DB8` |
+| 3 | `#8DABCE` |
+| 4 | `#B0C6DF` |
+| 5 | `#D2E1F0` |
+| 6 | `#EAF1F8` |
+
+---
+
+### Varda (Stars, Light, Hope, Sacredness)
+Domain: Hope, illumination, self‑worth, shared vision.  
+Palette: starry whites, pale golds, celestial blue‑white.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#F5E6B8` |
+| 2 | `#F9EFD0` |
+| 3 | `#FDF7E6` |
+| 4 | `#FFFFFF` |
+| 5 | `#D4E0F0` |
+| 6 | `#A8C0E0` |
+
+---
+
+### Ulmo (Water, Deep Currents, Intuition, Emotional Flow)
+Domain: Flow, intuition, emotional depth, collective rhythm.  
+Palette: deep ocean blues, teals, sea‑foam.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#1B4F72` |
+| 2 | `#2E6A8C` |
+| 3 | `#4A86A8` |
+| 4 | `#6EA3C4` |
+| 5 | `#9DC3E0` |
+| 6 | `#C9E2F0` |
+
+---
+
+### Yavanna (Earth, Growth, Vitality, Nourishment)
+Domain: Nourishment, health, embodiment, ecosystemic balance.  
+Palette: rich greens, moss, earth browns.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#4A7A4A` |
+| 2 | `#6B9E6B` |
+| 3 | `#8DBF8D` |
+| 4 | `#B0D8B0` |
+| 5 | `#D2ECD2` |
+| 6 | `#EAF6EA` |
+
+---
+
+### Aulë (Craft, Mastery, Structure, Foundation)
+Domain: Structure, competence, self‑efficacy, reliable infrastructure.  
+Palette: warm earths, terracotta, stone, metal.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#A5673F` |
+| 2 | `#BD825C` |
+| 3 | `#D49F7A` |
+| 4 | `#E8BC9A` |
+| 5 | `#F2D6BC` |
+| 6 | `#F9ECE0` |
+
+---
+
+### Mandos (Fate, Memory, Judgment, Finality)
+Domain: Finality, acceptance, justice, collective reckoning.  
+Palette: subdued purples, slate, twilight.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#5E5A80` |
+| 2 | `#7B78A0` |
+| 3 | `#9C99BC` |
+| 4 | `#BDBAD6` |
+| 5 | `#DCDAEC` |
+| 6 | `#F0EFF6` |
+
+---
+
+### Nienna (Grief, Mercy, Compassion, Healing)
+Domain: Grief processing, self‑compassion, empathy, shared lament.  
+Palette: soft greys, muted silver, gentle lavender.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#9E9E9E` |
+| 2 | `#B8B8B8` |
+| 3 | `#D0D0D0` |
+| 4 | `#E5E5E5` |
+| 5 | `#F2F2F2` |
+| 6 | `#FCFCFC` |
+
+---
+
+### Oromë (Hunting, Action, Strength, Vigor)
+Domain: Strength, vitality, uncomplicated power, collective resilience.  
+Palette: forest greens, leather brown, bold amber.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#5C6E3E` |
+| 2 | `#7E8E5C` |
+| 3 | `#A2B07E` |
+| 4 | `#C5D0A4` |
+| 5 | `#E2E8CC` |
+| 6 | `#F2F5E8` |
+
+---
+
+### Tulkas (Joy, Strength, Play, Uninhibited Energy)
+Domain: Joy, rhythm, embodied movement, celebration.  
+Palette: warm oranges, gold, apricot.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#E07A3C` |
+| 2 | `#E8955C` |
+| 3 | `#F0B080` |
+| 4 | `#F6CAA6` |
+| 5 | `#FCE2CC` |
+| 6 | `#FEF1E6` |
+
+---
+
+### Irmo (Lórien) (Dreams, Vision, Imagination, Creativity)
+Domain: Imagination, creative expression, shared myth, visions.  
+Palette: dreamy purples, lavender, soft magenta.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#8866AA` |
+| 2 | `#A588C2` |
+| 3 | `#C2ABD6` |
+| 4 | `#DCCEE8` |
+| 5 | `#EEE6F4` |
+| 6 | `#F8F4FB` |
+
+---
+
+### Estë (Rest, Healing, Sanctuary, Peace)
+Domain: Restoration, sanctuary, deep peace, safe space.  
+Palette: pale aqua, seafoam, soft turquoise.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#5B9C8E` |
+| 2 | `#7DB5A8` |
+| 3 | `#A0CCBF` |
+| 4 | `#C2E0D6` |
+| 5 | `#E1F0EA` |
+| 6 | `#F2F8F5` |
+
+---
+
+### Nessa (Dance, Movement, Joy, Radiance)
+Domain: Raw power, sovereignty, vibrant life, delight.  
+Palette: bright coral, rose, warm pink.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#D9776E` |
+| 2 | `#E39389` |
+| 3 | `#ECB1A8` |
+| 4 | `#F4CEC8` |
+| 5 | `#FAE4E0` |
+| 6 | `#FDF2F0` |
+
+---
+
+### Vána (Youth, Blossoming, Radiance, Unconfined Joy)
+Domain: Vibrant life, flourishing, beauty, delight.  
+Palette: spring greens, soft yellows, blossom.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#A6B84C` |
+| 2 | `#BCC96E` |
+| 3 | `#D2DC94` |
+| 4 | `#E6EDBC` |
+| 5 | `#F2F5DE` |
+| 6 | `#F9FAEF` |
+
+---
+
+### Melkor (Shadow, Pride, Power Twisted)
+Domain: Raw power, sovereignty (distorted), transformation of dominance.  
+Palette: dark greys, deep red‑purple, black.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#4A2C2C` |
+| 2 | `#6B4242` |
+| 3 | `#8D5E5E` |
+| 4 | `#B08080` |
+| 5 | `#D2A8A8` |
+| 6 | `#EAD2D2` |
+
+---
+
+### Ungoliant (Void, Hunger, Isolation, Unhealed Wound)
+Domain: Pain as wound, destructive consumption, need for compassionate intervention.  
+Palette: near‑black, deep indigo, dark violet.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#1E1E2E` |
+| 2 | `#3A3A50` |
+| 3 | `#5C5C78` |
+| 4 | `#8585A0` |
+| 5 | `#B3B3C8` |
+| 6 | `#DCDCE8` |
+
+---
+
+### Vairë (Weaver of Time, History, Consequence)
+Domain: Memory, narrative, interweaving of past and future, contextual meaning.  
+Palette: woven textures – deep teal, indigo, gold thread.
+
+| Step | Hex |
+|------|-----|
+| 1 (Gravity Well) | `#3F6A6A` |
+| 2 | `#5F8A8A` |
+| 3 | `#85ACAC` |
+| 4 | `#ACC8C8` |
+| 5 | `#D3E3E3` |
+| 6 | `#EDF4F4` |
+
+---
+
+## Usage Instructions for Figma AI Designer
+
+- Each Valar palette is a **6‑step chromatic vector**. Use the first color as the **gravity well** (primary diagnostic) – it should be the most saturated or darkest, drawing the eye.
+- The remaining five colors are for building gradients, tag backgrounds, dot fills, or hover states.
+- For strategy dots that have multiple Valar tags, blend the gravity well colors (or use a split/pattern) to indicate mixed needs.
+- For the ellipse fill or perimeter accents, use the third or fourth color from a Valar’s palette when that need domain is most resonant.
+
+These palettes are intended for **digital interface design** (light mode with dark accents) – adjust brightness/contrast as needed for accessibility.
