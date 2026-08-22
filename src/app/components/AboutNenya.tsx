@@ -16,7 +16,6 @@ import PrivacyPromise from './about/PrivacyPromise';
 import Structure from './about/Structure';
 import SupportUs from './about/SupportUs';
 import TermsOfService from './about/TermsOfService';
-import { AppFooter } from './AppFooter';
 import PIIScrubbingDemo from './PIIScrubbingDemo';
 import { ErrorBoundary } from './ErrorBoundary';
 
@@ -151,7 +150,6 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection }: Ab
       {currentSection === 'terms' && (
         <TermsOfService onBack={handleBackToMenu} />
       )}
-      <AppFooter />
     </ErrorBoundary>
   );
 }
