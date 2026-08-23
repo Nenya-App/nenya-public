@@ -97,6 +97,15 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
     if (h && Math.abs(h - cardHeight) > 2) setCardHeight(h);
   });
 
+  const handleClose = () => {
+    // The tutorial scrolls the page around to spotlight each step's target;
+    // land back at the top rather than wherever the last step left it.
+    const container = document.querySelector('.snap-y');
+    if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   const step = STEPS[stepIndex];
@@ -134,7 +143,7 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[95] bg-black/55"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       {/* Spotlight ring */}
@@ -182,7 +191,7 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
       >
         <div ref={cardRef} className="relative rounded-2xl border border-nenya-accent-warm/30 bg-background/95 backdrop-blur-xl shadow-2xl p-5 space-y-4">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="absolute top-3 right-3 p-1 rounded-full hover:bg-muted/50 transition-colors"
             aria-label="Skip tutorial"
           >
@@ -207,7 +216,7 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-muted-foreground">
+            <Button variant="ghost" size="sm" onClick={handleClose} className="text-muted-foreground">
               Skip
             </Button>
             <div className="flex items-center gap-2">
@@ -219,7 +228,7 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
               )}
               <Button
                 size="sm"
-                onClick={() => (isLast ? onClose() : setStepIndex((i) => i + 1))}
+                onClick={() => (isLast ? handleClose() : setStepIndex((i) => i + 1))}
                 className="gap-1 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-background-elevated"
               >
                 {isLast ? 'Done' : 'Next'}
