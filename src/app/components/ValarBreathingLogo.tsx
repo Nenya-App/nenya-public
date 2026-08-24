@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 // Valar Sigils: Dual Focus (Individual/Communal) with 6-Color Chromatic Vectors
 // Gravity Well (first color) is the primary diagnostic color
@@ -185,24 +185,30 @@ export function ValarBreathingLogo({
 
   const cvFilter = cvMode && CB_FILTERS[cvMode] ? CB_FILTERS[cvMode] : undefined;
 
-  // How far into the shared cycle we already are, so a remount (triggered
-  // by the key below) resumes at the correct phase instead of restarting
-  // the pulse from scratch -- this is what keeps it aligned with the
-  // numeric counter even when opacity/colorblind-mode/etc. change.
-  const elapsedSec = cycleStart != null ? ((Date.now() - cycleStart) / 1000) % totalDuration : 0;
+  // Identifies an "epoch" of the pulse animation -- changes only when the
+  // animation's actual structure or timing shape changes (on/off, which
+  // colors render, the technique's phase proportions). Opacity and
+  // colorblind mode are deliberately excluded: they're plain style
+  // changes and must not restart the pulse.
+  const ringsEpochKey = `valar-breathing-${enabled}-${selectedValarIndices.join(',')}-${
+    technique ? `${technique.ih}_${technique.hi || 0}_${technique.ex}_${technique.ho || 0}` : cycleDuration
+  }`;
+
+  // How far into the shared cycle we already are, computed once per epoch
+  // (via useMemo) rather than on every render -- recomputing this on
+  // every unrelated re-render was itself feeding a new `delay` into an
+  // already-running Framer Motion animation each time, which is what kept
+  // knocking it back out of sync with the counter even after the epoch
+  // key stopped changing.
+  const elapsedSec = useMemo(
+    () => (cycleStart != null ? ((Date.now() - cycleStart) / 1000) % totalDuration : 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ringsEpochKey, cycleStart, totalDuration]
+  );
 
   return (
     <div className="flex items-center justify-center p-8 sm:p-12">
       <div
-        // Only remount for changes that actually alter the animation's
-        // structure or timing shape (on/off, which colors render, the
-        // technique's phase proportions). Opacity and colorblind mode are
-        // plain style changes and must NOT restart the pulse -- they used
-        // to be in this key, which is what caused the visual to fall out
-        // of sync with the counter whenever either was adjusted.
-        key={`valar-breathing-${enabled}-${selectedValarIndices.join(',')}-${
-          technique ? `${technique.ih}_${technique.hi || 0}_${technique.ex}_${technique.ho || 0}` : cycleDuration
-        }`}
         className="relative"
         style={{
           width: logoSize,
@@ -212,7 +218,12 @@ export function ValarBreathingLogo({
           filter: cvFilter,
         }}
       >
-        {/* Breathing animation - cycles through all 96 colors sequentially */}
+        {/* Breathing animation - cycles through all 96 colors sequentially.
+            Keyed on its own so changing the breathing pulse's settings
+            doesn't also tear down and restart the orbit/logo content below,
+            which has nothing to do with the breathing timing and should
+            keep running uninterrupted. */}
+        <div key={ringsEpochKey}>
         {enabled && allColors.map((color, index) => {
           return (
             <motion.div
@@ -252,8 +263,12 @@ export function ValarBreathingLogo({
             />
           );
         })}
+        </div>
 
-        {/* Content (logo with orbs) - centered and above breathing */}
+        {/* Content (logo with orbs) - centered and above breathing.
+            Outside the rings' keyed wrapper above, so it stays mounted
+            continuously and its own animation (e.g. the Valar orbit)
+            keeps running when the breathing pulse's settings change. */}
         <div
           className="absolute"
           style={{
