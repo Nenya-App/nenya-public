@@ -129,9 +129,16 @@ export default function TermsAgreementPage({ onAgree }: TermsAgreementPageProps)
                 </div>
                 
                 <div>
-                  <h4 className="mb-1.5 sm:mb-2 text-xs sm:text-sm">6. Intellectual Property</h4>
+                  <h4 className="mb-1.5 sm:mb-2 text-xs sm:text-sm">6. Open Source License</h4>
                   <p className="text-xs sm:text-sm leading-relaxed">
-                    The Nenya environment, including its design, concepts, and underlying technology, is a copyrighted artistic work. The personal reflections and reports you generate are your own.
+                    Nenya's source code is published under the GNU Affero General Public License v3.0 (AGPL-3.0) — you're welcome to inspect, run, modify, and share it under that license's terms. The Nenya name and logo are reserved separately as trademarks. The personal reflections and reports you generate are your own.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="mb-1.5 sm:mb-2 text-xs sm:text-sm">7. A Note on Visual Content</h4>
+                  <p className="text-xs sm:text-sm leading-relaxed">
+                    Nenya includes dynamic visual elements — a pulsing breathing animation, slowly shifting colors, and gently rotating imagery. Nothing here is designed to strobe, flash rapidly, or otherwise trigger photosensitive seizures, but if you're sensitive to moving light or color, you can reduce or turn off these animations any time from the menu's Accessibility Settings.
                   </p>
                 </div>
               </div>

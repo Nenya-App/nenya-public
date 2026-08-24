@@ -77,9 +77,25 @@ export default function TermsOfService({ onBack }: TermsOfServiceProps) {
                 </div>
                 
                 <div>
-                  <h4 className="mb-2">6. Intellectual Property</h4>
+                  <h4 className="mb-2">6. Open Source License</h4>
                   <p>
-                    The Nenya environment, including its design, concepts, and underlying technology, is a copyrighted artistic work. The personal reflections and reports you generate are your own.
+                    Nenya's source code is publicly available under the{' '}
+                    <a
+                      href="https://github.com/Nenya-App/nenya-public/blob/main/LICENSE"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-2 hover:text-foreground transition-colors"
+                    >
+                      GNU Affero General Public License v3.0
+                    </a>
+                    {' '}— you're welcome to inspect, run, modify, and share it under that license's terms. The Nenya name and logo are reserved separately as trademarks; see the repository's <code className="text-xs bg-background px-1.5 py-0.5 rounded">TRADEMARK.md</code> for details. The personal reflections and reports you generate are your own.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="mb-2">7. A Note on Visual Content</h4>
+                  <p>
+                    Nenya includes dynamic visual elements — a pulsing breathing animation, slowly shifting colors, and gently rotating imagery. Nothing here is designed to strobe, flash rapidly, or otherwise trigger photosensitive seizures, but if you're sensitive to moving light or color, you can reduce or turn off these animations any time from the menu's Accessibility Settings.
                   </p>
                 </div>
               </div>

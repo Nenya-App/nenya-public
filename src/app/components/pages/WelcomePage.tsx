@@ -200,10 +200,12 @@ export default function WelcomePage({
                 leave you more present than when you arrived.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                It is built by Estëlle, a developer-philosopher and
-                artist whose practice asks what technology could look like if it
-                helped us feel more human rather than less. Nenya models that
-                answer: a free, open tool that gives more than it takes.
+                It is built by Estëlle, a Minnesota-based designer, educator, and
+                artist — though the intention has always been for the work to
+                speak for itself. The practice behind it asks what technology
+                could look like if it helped us feel more human rather than
+                less. Nenya models that answer: a free, open tool that gives
+                more than it takes.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Nenya is fiscally sponsored by Fractured Atlas, a 501(c)(3) public

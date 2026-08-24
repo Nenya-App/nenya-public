@@ -47,13 +47,15 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
 
           <div className="prose dark:prose-invert max-w-none space-y-4">
             <p className="text-lg">
-              Nenya is built by Estëlle — a developer-philosopher and artist whose practice explores the emotional and ethical dimensions of
-              technology. Their work asks what it would mean to build digital tools that give more than they take, that make space for reflection
-              rather than demanding attention.
+              Nenya is built by Estëlle, a Minnesota-based designer, educator, and artist. This page exists mainly as a matter of transparency —
+              Nenya isn't an anonymous product — but the intention has always been for the work to stand on its own rather than to center its
+              maker.
             </p>
             <p className="text-lg">
-              Nenya is the current expression of that question — a hybrid work of visual art, literature, and contemplative technology, grounded in
-              Nonviolent Communication and designed to leave you more present than when you arrived.
+              The practice behind it explores the emotional and ethical dimensions of technology, asking what it would mean to build digital tools
+              that give more than they take, that make space for reflection rather than demanding attention. Nenya is the current expression of
+              that question — a hybrid work of visual art, literature, and contemplative technology, grounded in Nonviolent Communication and
+              designed to leave you more present than when you arrived.
             </p>
           </div>
 
