@@ -91,6 +91,28 @@ export default function App() {
     setBreathingCycleStart(Date.now());
   }, [breathingTechnique]);
 
+  // Pause/play for the breathing pulse, orbit, and numeric counter together
+  // (triggered by clicking the large logo). On resume we shift the shared
+  // clock forward by however long playback was frozen, so every animation
+  // picks back up at the same phase it paused at instead of jumping ahead
+  // to "catch up" for the paused duration.
+  const [breathingPaused, setBreathingPaused] = useState(false);
+  const pausedAtRef = useRef<number | null>(null);
+  const toggleBreathingPaused = () => {
+    setBreathingPaused((wasPaused) => {
+      if (wasPaused) {
+        if (pausedAtRef.current != null) {
+          const pausedMs = Date.now() - pausedAtRef.current;
+          setBreathingCycleStart((s) => s + pausedMs);
+          pausedAtRef.current = null;
+        }
+        return false;
+      }
+      pausedAtRef.current = Date.now();
+      return true;
+    });
+  };
+
   // Breathing popout state
   const [breathingPopoutOpen, setBreathingPopoutOpen] = useState(false);
 
@@ -375,6 +397,7 @@ export default function App() {
             ho={breathingTechnique.ho || 0}
             onTechniqueChange={setBreathingTechnique}
             cycleStart={breathingCycleStart}
+            paused={breathingPaused}
           />
         )}
 
@@ -398,6 +421,8 @@ export default function App() {
               cvMode={colorBlindMode}
               onEntryUnlocked={() => setEntryUnlocked(true)}
               cycleStart={breathingCycleStart}
+              paused={breathingPaused}
+              onTogglePaused={toggleBreathingPaused}
             />
           )}
 

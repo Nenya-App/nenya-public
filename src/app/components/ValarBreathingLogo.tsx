@@ -1,5 +1,4 @@
-import { motion } from 'motion/react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 // Valar Sigils: Dual Focus (Individual/Communal) with 6-Color Chromatic Vectors
 // Gravity Well (first color) is the primary diagnostic color
@@ -151,6 +150,10 @@ interface ValarBreathingLogoProps {
    *  numeric breathing counter instead of timing itself from whenever this
    *  component happened to last mount. */
   cycleStart?: number;
+  /** Freezes the pulse at its current frame. Expects the caller to shift
+   *  cycleStart forward by the paused duration on resume, so playback
+   *  continues from the same phase instead of jumping ahead. */
+  paused?: boolean;
 }
 
 export function ValarBreathingLogo({
@@ -163,6 +166,7 @@ export function ValarBreathingLogo({
   technique = null,
   cvMode = '',
   cycleStart,
+  paused = false,
 }: ValarBreathingLogoProps) {
   // Build array of all 96 colors (16 Valar × 6 colors each) in order
   const allColors: string[] = [];
@@ -194,17 +198,49 @@ export function ValarBreathingLogo({
     technique ? `${technique.ih}_${technique.hi || 0}_${technique.ex}_${technique.ho || 0}` : cycleDuration
   }`;
 
-  // How far into the shared cycle we already are, computed once per epoch
-  // (via useMemo) rather than on every render -- recomputing this on
-  // every unrelated re-render was itself feeding a new `delay` into an
-  // already-running Framer Motion animation each time, which is what kept
-  // knocking it back out of sync with the counter even after the epoch
-  // key stopped changing.
-  const elapsedSec = useMemo(
-    () => (cycleStart != null ? ((Date.now() - cycleStart) / 1000) % totalDuration : 0),
+  // Only one ring is ever visually active at a time -- the breath cycles
+  // sequentially through all 96 colors, one fully faded out before the next
+  // fades in. Previously all 96 were mounted and animating simultaneously,
+  // each holding its own compositor layer, which is what was making the
+  // pulse stutter on less powerful displays. A single ring, swapped on a
+  // schedule, produces the identical visual sequence for a fraction of the
+  // cost.
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [ringDelay, setRingDelay] = useState(0);
+
+  useEffect(() => {
+    if (!enabled || paused || cycleStart == null) return;
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const scheduleNext = () => {
+      const elapsed = (Date.now() - cycleStart) / 1000;
+      const cyclePos = ((elapsed % totalDuration) + totalDuration) % totalDuration;
+      const idx = Math.floor(cyclePos / cycleDuration) % allColors.length;
+      const phaseIntoRing = cyclePos - idx * cycleDuration;
+      setActiveIndex(idx);
+      setRingDelay(-phaseIntoRing);
+      const msUntilNext = (cycleDuration - phaseIntoRing) * 1000;
+      timeoutId = setTimeout(scheduleNext, Math.max(msUntilNext, 16));
+    };
+    scheduleNext();
+    return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ringsEpochKey, cycleStart, totalDuration]
-  );
+  }, [enabled, paused, cycleStart, cycleDuration, totalDuration, allColors.length, ringsEpochKey]);
+
+  const activeColor = allColors[activeIndex] ?? allColors[0];
+
+  // Plain CSS animation instead of Motion's JS-driven `animate` -- CSS's
+  // animation-play-state genuinely freezes this on pause, where Motion's
+  // `animate={false}` does not reliably cancel an already-running infinite
+  // WAAPI loop. The keyframe shape depends on the technique's phase
+  // fractions, so it's generated per epoch rather than declared statically.
+  const ringAnimName = `nenya-ring-${ringsEpochKey.replace(/[^a-zA-Z0-9]/g, '_')}`;
+  const ringKeyframesCss = `@keyframes ${ringAnimName} {
+    0% { transform: scale(0.1); opacity: 0; }
+    ${t1 * 100}% { transform: scale(1); opacity: ${opacity * 0.6}; }
+    ${t2 * 100}% { transform: scale(1); opacity: ${opacity * 0.6}; }
+    ${t3 * 100}% { transform: scale(0.1); opacity: 0; }
+    100% { transform: scale(0.1); opacity: 0; }
+  }`;
 
   return (
     <div className="flex items-center justify-center p-8 sm:p-12">
@@ -218,51 +254,37 @@ export function ValarBreathingLogo({
           filter: cvFilter,
         }}
       >
-        {/* Breathing animation - cycles through all 96 colors sequentially.
-            Keyed on its own so changing the breathing pulse's settings
-            doesn't also tear down and restart the orbit/logo content below,
-            which has nothing to do with the breathing timing and should
-            keep running uninterrupted. */}
+        {/* Breathing animation - cycles through all 96 colors sequentially,
+            one ring at a time. Keyed on its own so changing the breathing
+            pulse's settings doesn't also tear down and restart the
+            orbit/logo content below, which has nothing to do with the
+            breathing timing and should keep running uninterrupted. */}
         <div key={ringsEpochKey}>
-        {enabled && allColors.map((color, index) => {
-          return (
-            <motion.div
-              key={`breath-${index}`}
-              className="absolute rounded-full pointer-events-none"
-              style={{
-                width: logoSize,
-                height: logoSize,
-                left: 0,
-                top: 0,
-                // Use closest-side so 100% is at the circle edge, then keep colors fully transparent past that
-                // This prevents square corner artifacts when the box is scaled/transformed
-                background: `radial-gradient(circle closest-side, transparent 0%, transparent 30%, ${hexToRgba(color, opacity * 0.08)} 50%, ${hexToRgba(color, opacity * 0.15)} 70%, ${hexToRgba(color, opacity * 0.25)} 90%, ${hexToRgba(color, opacity * 0.4)} 99%, transparent 100%)`,
-                borderRadius: '50%',
-                zIndex: 1,
-                willChange: 'transform, opacity',
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
-              }}
-              initial={{ scale: 0.1, opacity: 0 }}
-              animate={{
-                scale: [0.1, 1.0, 1.0, 0.1, 0.1],
-                opacity: [0, opacity * 0.6, opacity * 0.6, 0, 0],
-              }}
-              transition={{
-                duration: cycleDuration,
-                repeat: Infinity,
-                times,
-                ease: "linear",
-                // Negative delay is intentional -- Framer Motion starts the
-                // animation partway through when this is negative, which is
-                // what lets a fresh mount resume mid-cycle instead of
-                // restarting at phase 0.
-                delay: index * cycleDuration - elapsedSec,
-                repeatDelay: totalDuration - cycleDuration,
-              }}
-            />
-          );
-        })}
+        {enabled && (
+          <>
+          <style>{ringKeyframesCss}</style>
+          <div
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              width: logoSize,
+              height: logoSize,
+              left: 0,
+              top: 0,
+              // Use closest-side so 100% is at the circle edge, then keep colors fully transparent past that
+              // This prevents square corner artifacts when the box is scaled/transformed
+              background: `radial-gradient(circle closest-side, transparent 0%, transparent 30%, ${hexToRgba(activeColor, opacity * 0.08)} 50%, ${hexToRgba(activeColor, opacity * 0.15)} 70%, ${hexToRgba(activeColor, opacity * 0.25)} 90%, ${hexToRgba(activeColor, opacity * 0.4)} 99%, transparent 100%)`,
+              borderRadius: '50%',
+              zIndex: 1,
+              animation: `${ringAnimName} ${cycleDuration}s linear infinite`,
+              animationDelay: `${ringDelay}s`,
+              animationPlayState: paused ? 'paused' : 'running',
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+            }}
+          />
+          </>
+        )}
         </div>
 
         {/* Content (logo with orbs) - centered and above breathing.

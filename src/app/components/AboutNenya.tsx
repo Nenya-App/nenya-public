@@ -10,6 +10,7 @@ import BioSocialDesign from './about/BioSocialDesign';
 import NamePhilosophy from './about/NamePhilosophy';
 import PowerOfColor from './about/PowerOfColor';
 import SixGateways from './about/SixGateways';
+import BreathingTool from './about/BreathingTool';
 import PantheonOfNeeds from './about/PantheonOfNeeds';
 import NVCMethod from './about/NVCMethod';
 import PrivacyPromise from './about/PrivacyPromise';
@@ -36,6 +37,7 @@ type AboutSection =
   | 'name-philosophy' 
   | 'power-of-color'
   | 'six-gateways'
+  | 'breathing-tool'
   | 'pantheon-of-needs'
   | 'nvc-method' 
   | 'privacy-promise'
@@ -106,6 +108,9 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection }: Ab
       )}
       {currentSection === 'six-gateways' && (
         <SixGateways onBack={handleBackToMenu} />
+      )}
+      {currentSection === 'breathing-tool' && (
+        <BreathingTool onBack={handleBackToMenu} />
       )}
       {currentSection === 'pantheon-of-needs' && (
         <div className="size-full overflow-y-auto scroll-container">

@@ -35,6 +35,9 @@ interface BreathingCounterProps {
   /** Shared clock anchor (ms epoch) so this stays in phase with the
    *  breathing pulse animation instead of timing itself independently. */
   cycleStart?: number;
+  /** Freezes the count/phase at its current value. Expects the caller to
+   *  shift cycleStart forward by the paused duration on resume. */
+  paused?: boolean;
 }
 
 export function BreathingCounter({
@@ -47,12 +50,13 @@ export function BreathingCounter({
   onTechniqueChange,
   id,
   cycleStart,
+  paused = false,
 }: BreathingCounterProps) {
   const [count, setCount] = useState(1);
   const [phase, setPhase] = useState<'i' | 'h' | 'e'>('i');
 
   useEffect(() => {
-    if (!enabled || !show) return;
+    if (!enabled || !show || paused) return;
     const start = cycleStart ?? Date.now();
     const interval = setInterval(() => {
       const cycle = IH + HI + EX + HO;
@@ -70,7 +74,7 @@ export function BreathingCounter({
       setPhase(ph);
     }, 80);
     return () => clearInterval(interval);
-  }, [enabled, show, IH, HI, EX, HO, cycleStart]);
+  }, [enabled, show, IH, HI, EX, HO, cycleStart, paused]);
 
   if (!enabled || !show) return null;
 

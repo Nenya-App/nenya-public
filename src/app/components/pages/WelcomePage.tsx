@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import NenyaLogo from '../NenyaLogo';
 import { ValarBreathingLogo, BreathingTechnique } from '../ValarBreathingLogo';
 import WelcomePopup from '../WelcomePopup';
-import { ArrowRight, ChevronDown, ChevronUp, Heart, ExternalLink } from 'lucide-react';
+import { ArrowRight, ChevronDown, Heart, ExternalLink, Play, Pause } from 'lucide-react';
 import { Card } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 
@@ -19,6 +19,8 @@ interface WelcomePageProps {
   cvMode?: string;
   onEntryUnlocked?: () => void;
   cycleStart?: number;
+  paused?: boolean;
+  onTogglePaused?: () => void;
 }
 
 export default function WelcomePage({
@@ -33,9 +35,10 @@ export default function WelcomePage({
   cvMode = '',
   onEntryUnlocked,
   cycleStart,
+  paused = false,
+  onTogglePaused,
 }: WelcomePageProps) {
   const [logoSize, setLogoSize] = useState(400);
-  const [isBreathingInfoExpanded, setIsBreathingInfoExpanded] = useState(false);
 
   // Calculate logo size to fill viewport
   useEffect(() => {
@@ -64,7 +67,20 @@ export default function WelcomePage({
       {/* First Section: Full Viewport with Large Logo */}
       <div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">
         <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0.7s both' }} className={`flex-1 flex items-center justify-center transition-all duration-500`}>
-          <div id="tutorial-logo" className={`transition-all duration-500 nenya-logo-clickable`}>
+          <div
+            id="tutorial-logo"
+            role="button"
+            aria-label={paused ? 'Resume breathing animation' : 'Pause breathing animation'}
+            tabIndex={0}
+            onClick={onTogglePaused}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onTogglePaused?.();
+              }
+            }}
+            className={`relative transition-all duration-500 nenya-logo-clickable cursor-pointer group`}
+          >
             <ValarBreathingLogo
               enabled={breathingEnabled}
               selectedValarIndices={selectedValarIndices}
@@ -74,23 +90,47 @@ export default function WelcomePage({
               technique={technique}
               cvMode={cvMode}
               cycleStart={cycleStart}
+              paused={paused}
             >
               <div className="nenya-logo-glow">
-                <NenyaLogo size={logoSize} showValarOrbit={orbitEnabled} showLogo={logoVisible} />
+                <NenyaLogo
+                  size={logoSize}
+                  showValarOrbit={orbitEnabled}
+                  showLogo={logoVisible}
+                  cycleStart={cycleStart}
+                  paused={paused}
+                />
               </div>
             </ValarBreathingLogo>
+
+            {/* Pause/play affordance - visible on hover, or always while paused.
+                z-30 so it renders above ValarBreathingLogo's content layer (z-10). */}
+            <div
+              className={`pointer-events-none absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-300 ${
+                paused ? 'opacity-100' : 'opacity-0 group-hover:opacity-70'
+              }`}
+            >
+              <div className="rounded-full bg-background/70 backdrop-blur-sm p-4">
+                {paused ? (
+                  <Play className="size-8 text-foreground fill-current" />
+                ) : (
+                  <Pause className="size-8 text-foreground fill-current" />
+                )}
+              </div>
+            </div>
           </div>
         </div>
-        
+
         {/* Breathing Text with Scroll Indicator */}
-        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0.7s both' }} className={`pb-8 space-y-4 transition-opacity duration-500`}>
+        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0.7s both' }} className={`pb-8 -mt-2 sm:-mt-4 space-y-3 transition-opacity duration-500`}>
           <p className="text-xl md:text-2xl text-center text-muted-foreground">
-            Take a Moment to Breathe
+            Give Yourself a Moment to Breathe
           </p>
-          
+
           {/* Animated Scroll Indicator */}
-          <div className="flex justify-center animate-bounce">
+          <div className="flex flex-col items-center gap-1 animate-bounce">
             <ChevronDown className="size-6 text-muted-foreground/50" />
+            <span className="text-xs text-muted-foreground/50">Scroll down for more</span>
           </div>
         </div>
       </div>
@@ -128,69 +168,7 @@ export default function WelcomePage({
         </div>
       </div>
 
-      {/* Third Section: About the Breathing Tool */}
-      <div className="min-h-screen flex items-center justify-center px-6 py-12 relative snap-start">
-        <div className="text-center space-y-8 max-w-4xl w-full" style={{ color: '#FFF8E7' }}>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl">
-            About the Breathing Tool
-          </h2>
-
-          <Card className="bg-card/80 dark:bg-card/50 backdrop-blur-sm border-border">
-            <button
-              onClick={() => setIsBreathingInfoExpanded(!isBreathingInfoExpanded)}
-              className="w-full p-6 flex items-center justify-between text-left transition-all hover:opacity-90"
-            >
-              <h3 className="text-xl md:text-2xl">
-                Learn About Resonance Breathing
-              </h3>
-              {isBreathingInfoExpanded ? (
-                <ChevronUp className="size-6 flex-shrink-0 ml-2" />
-              ) : (
-                <ChevronDown className="size-6 flex-shrink-0 ml-2" />
-              )}
-            </button>
-
-            {isBreathingInfoExpanded && (
-              <div className="px-6 pb-6 space-y-6 text-left">
-                <p className="text-lg md:text-xl">
-                  The pulsing animation isn't just there to look nice — it's meant to guide your actual breath, using something called a <strong>resonance breathing technique</strong>.
-                </p>
-
-                <div className="space-y-4">
-                  <h4 className="text-xl md:text-2xl text-center">One Approach: Resonance Breathing</h4>
-                  <p className="text-lg md:text-xl">
-                    The Breathing Tool pulses at a rhythm of <strong>around 6 breaths per minute</strong>. This specific frequency is scientifically recognized for its profound effect on the nervous system. Research, such as that cited by the National Institutes of Health, indicates that breathing at this pace:
-                  </p>
-
-                  <ul className="space-y-3 text-base md:text-lg pl-6">
-                    <li className="list-disc">
-                      <strong>Can support Heart Rate Variability (HRV):</strong> This is a key marker of your body's resilience and ability to self-regulate.
-                    </li>
-                    <li className="list-disc">
-                      <strong>May activate the Baroreflex:</strong> This is your body's primary blood pressure regulation system, promoting a state of calm and balance.
-                    </li>
-                    <li className="list-disc">
-                      <strong>Encourages synchronisation of cardiovascular and respiratory rhythms:</strong> This synchronization creates a powerful, coherent state between your heart, lungs, and brain, reducing psychological and physiological stress.
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="text-xl md:text-2xl text-center">Your Built-In Breathing Pacer</h4>
-                  <p className="text-lg md:text-xl">
-                    By simply sitting with the Breathing Tool and synchronizing your breath to its gentle pulse—<em>inhaling as it brightens, exhaling as it softens</em>—you engage in a proven self-regulation technique before you even begin your sensory reflection.
-                  </p>
-
-                  <p className="text-lg md:text-xl">
-                    This is the first gift of the sanctuary: a moment of somatic stillness. It prepares the ground for introspection by first calming the body, allowing you to step out of the frantic rhythm of daily life and into a state receptive enough to hear the subtle language of your own senses.
-                  </p>
-                </div>
-              </div>
-            )}
-          </Card>
-        </div>
-      </div>
-      {/* Fourth Section: Support This Work */}
+      {/* Third Section: Support This Work */}
       <div className="min-h-screen flex items-center justify-center px-6 py-12 relative snap-start">
         <div className="text-center space-y-8 max-w-3xl w-full">
           <div className="space-y-4">

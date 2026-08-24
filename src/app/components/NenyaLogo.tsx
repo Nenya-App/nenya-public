@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import nenyaLogo from 'figma:asset/2d6974b805d90d34c0a281273e556b545b1c5632.png';
 import { valarColors } from './ValarBreathingLogo';
 
@@ -7,22 +8,42 @@ interface NenyaLogoProps {
   className?: string;
   showValarOrbit?: boolean;
   showLogo?: boolean;
+  /** Shared clock anchor (ms epoch) used to phase-align the orbit's
+   *  rotation on mount/resume, the same anchor the breathing pulse uses. */
+  cycleStart?: number;
+  /** Freezes the orbit (rotation and per-orb shimmer) at its current frame. */
+  paused?: boolean;
 }
+
+const ORBIT_DURATION = 120; // seconds for one complete orbit
 
 export default function NenyaLogo({
   size = 80,
   className = '',
   showValarOrbit = false,
-  showLogo = true
+  showLogo = true,
+  cycleStart,
+  paused = false,
 }: NenyaLogoProps) {
   // Inner orbit - tight orbit creates dense overlapping effect
   const orbitRadius = size * 0.0625; // 37.5px for 600px logo, 12.5px for 200px logo
   const orbSize = Math.max(8.5, size * 0.102); // Reduced by 15% from previous size (0.12 * 0.85 = 0.102)
-  
+
   // Outer orbit - at the edge of the breathing animation (logoSize / 2)
   // Breathing animation expands to 1.4x its base size (logoSize / 1.4), so at peak it reaches logoSize diameter
   const outerOrbitRadius = size / 2; // Half the logo size = outer edge of breathing animation
   const outerOrbSize = orbSize * 0.5; // Half the size of inner orbs
+
+  // Recomputed only on mount and on pause/resume, so a fresh mount or a
+  // resume-from-pause starts the rotation at the correct phase instead of
+  // snapping back to angle 0.
+  const [orbitDelay, setOrbitDelay] = useState(0);
+  useEffect(() => {
+    if (cycleStart == null) return;
+    const elapsed = (Date.now() - cycleStart) / 1000;
+    const phase = ((elapsed % ORBIT_DURATION) + ORBIT_DURATION) % ORBIT_DURATION;
+    setOrbitDelay(-phase);
+  }, [cycleStart, paused]);
   
   return (
     <div 
@@ -55,7 +76,7 @@ export default function NenyaLogo({
       
       {/* Orbiting Valar - only show if enabled */}
       {showValarOrbit && (
-        <motion.div
+        <div
           className="absolute pointer-events-none"
           style={{
             width: orbitRadius * 2,
@@ -66,12 +87,13 @@ export default function NenyaLogo({
             marginTop: -orbitRadius,
             zIndex: 20,
             willChange: 'transform',
-          }}
-          animate={{ rotate: 360 }}
-          transition={{
-            duration: 120, // 2 minutes for one complete orbit
-            repeat: Infinity,
-            ease: "linear"
+            // Plain CSS animation rather than Motion's JS-driven `animate` --
+            // animation-play-state genuinely freezes this on pause, where
+            // Motion's `animate={false}` does not reliably cancel an
+            // already-running infinite WAAPI loop.
+            animation: `nenya-orbit-cw ${ORBIT_DURATION}s linear infinite`,
+            animationDelay: `${orbitDelay}s`,
+            animationPlayState: paused ? 'paused' : 'running',
           }}
         >
           {valarColors.map((valar, index) => {
@@ -100,7 +122,7 @@ export default function NenyaLogo({
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
                 }}
-                animate={{
+                animate={paused ? false : {
                   background: [
                     `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
                     `radial-gradient(circle at 30% 30%, ${colors[1]}ff, ${colors[1]}ee 50%, ${colors[1]}99 80%, ${colors[1]}44)`,
@@ -140,12 +162,12 @@ export default function NenyaLogo({
               />
             );
           })}
-        </motion.div>
+        </div>
       )}
-      
+
       {/* Outer Orbiting Valar - smaller orbs at breathing animation edge, rotating opposite direction */}
       {showValarOrbit && (
-        <motion.div
+        <div
           className="absolute pointer-events-none"
           style={{
             width: outerOrbitRadius * 2,
@@ -156,12 +178,9 @@ export default function NenyaLogo({
             marginTop: -outerOrbitRadius,
             zIndex: 5, // Below inner orbit (20) but above base logo (10)
             willChange: 'transform',
-          }}
-          animate={{ rotate: -360 }} // Opposite direction
-          transition={{
-            duration: 120, // Same 2 minutes for one complete orbit
-            repeat: Infinity,
-            ease: "linear"
+            animation: `nenya-orbit-ccw ${ORBIT_DURATION}s linear infinite`, // Opposite direction
+            animationDelay: `${orbitDelay}s`,
+            animationPlayState: paused ? 'paused' : 'running',
           }}
         >
           {valarColors.map((valar, index) => {
@@ -190,7 +209,7 @@ export default function NenyaLogo({
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
                 }}
-                animate={{
+                animate={paused ? false : {
                   background: [
                     `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
                     `radial-gradient(circle at 30% 30%, ${colors[1]}ff, ${colors[1]}ee 50%, ${colors[1]}99 80%, ${colors[1]}44)`,
@@ -230,9 +249,9 @@ export default function NenyaLogo({
               />
             );
           })}
-        </motion.div>
+        </div>
       )}
-      
+
       {/* Opaque logo overlay - creates effect of light emanating from within.
           With the orbit enabled this becomes the separated gem layer with a shimmer animation. */}
       {showLogo && (
@@ -250,6 +269,7 @@ export default function NenyaLogo({
             top: '50%',
             transform: 'translate(-50%,-50%)',
             animation: showValarOrbit ? 'gem-shimmer 14s ease-in-out infinite' : undefined,
+            animationPlayState: paused ? 'paused' : 'running',
             opacity: 1,
             pointerEvents: 'none',
             display: 'block',

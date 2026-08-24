@@ -1,4 +1,4 @@
-import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Waves, Crown, Hexagon, User, MessageCircle, Mail } from 'lucide-react';
+import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Waves, Crown, Hexagon, User, MessageCircle, Mail, Wind } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import nenyaLogo from 'figma:asset/97ae39e7ed6444a186091920628ca9206a54a124.png';
@@ -59,6 +59,12 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       title: 'The Six Gateways',
       description: 'Multi-sensory pathways to emotional intelligence',
       icon: Eye,
+    },
+    {
+      id: 'breathing-tool',
+      title: 'About the Breathing Tool',
+      description: 'The resonance breathing technique behind the pulsing logo',
+      icon: Wind,
     },
     {
       id: 'pantheon-of-needs',
