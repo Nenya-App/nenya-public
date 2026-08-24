@@ -147,6 +147,10 @@ interface ValarBreathingLogoProps {
   cycleDuration?: number; // seconds for one complete breath cycle
   technique?: BreathingTechnique | null; // overrides the default even 40/50/50/... timing shape
   cvMode?: string; // colorblind mode key into CB_FILTERS
+  /** Shared clock anchor (ms epoch) so this animation's phase matches the
+   *  numeric breathing counter instead of timing itself from whenever this
+   *  component happened to last mount. */
+  cycleStart?: number;
 }
 
 export function ValarBreathingLogo({
@@ -158,6 +162,7 @@ export function ValarBreathingLogo({
   cycleDuration = 10,
   technique = null,
   cvMode = '',
+  cycleStart,
 }: ValarBreathingLogoProps) {
   // Build array of all 96 colors (16 Valar × 6 colors each) in order
   const allColors: string[] = [];
@@ -180,12 +185,24 @@ export function ValarBreathingLogo({
 
   const cvFilter = cvMode && CB_FILTERS[cvMode] ? CB_FILTERS[cvMode] : undefined;
 
+  // How far into the shared cycle we already are, so a remount (triggered
+  // by the key below) resumes at the correct phase instead of restarting
+  // the pulse from scratch -- this is what keeps it aligned with the
+  // numeric counter even when opacity/colorblind-mode/etc. change.
+  const elapsedSec = cycleStart != null ? ((Date.now() - cycleStart) / 1000) % totalDuration : 0;
+
   return (
     <div className="flex items-center justify-center p-8 sm:p-12">
       <div
-        key={`valar-breathing-${enabled}-${selectedValarIndices.join(',')}-${opacity}-${
+        // Only remount for changes that actually alter the animation's
+        // structure or timing shape (on/off, which colors render, the
+        // technique's phase proportions). Opacity and colorblind mode are
+        // plain style changes and must NOT restart the pulse -- they used
+        // to be in this key, which is what caused the visual to fall out
+        // of sync with the counter whenever either was adjusted.
+        key={`valar-breathing-${enabled}-${selectedValarIndices.join(',')}-${
           technique ? `${technique.ih}_${technique.hi || 0}_${technique.ex}_${technique.ho || 0}` : cycleDuration
-        }-${cvMode}`}
+        }`}
         className="relative"
         style={{
           width: logoSize,
@@ -225,7 +242,11 @@ export function ValarBreathingLogo({
                 repeat: Infinity,
                 times,
                 ease: "linear",
-                delay: index * cycleDuration,
+                // Negative delay is intentional -- Framer Motion starts the
+                // animation partway through when this is negative, which is
+                // what lets a fresh mount resume mid-cycle instead of
+                // restarting at phase 0.
+                delay: index * cycleDuration - elapsedSec,
                 repeatDelay: totalDuration - cycleDuration,
               }}
             />

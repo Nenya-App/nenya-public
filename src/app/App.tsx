@@ -81,6 +81,16 @@ export default function App() {
   const [colorBlindMode, setColorBlindMode] = useState('');
   const [breathingTechnique, setBreathingTechnique] = useState<BreathingTechnique>({ ih: 5000, hi: 0, ex: 5000, ho: 0 });
 
+  // Single shared clock anchor for the breathing pulse animation and the
+  // numeric counter, so they read the same phase instead of each timing
+  // itself from whenever it happened to last mount. Only resets when the
+  // technique itself changes (a real change in cycle shape) -- not for
+  // opacity, colorblind mode, or visibility toggles.
+  const [breathingCycleStart, setBreathingCycleStart] = useState(() => Date.now());
+  useEffect(() => {
+    setBreathingCycleStart(Date.now());
+  }, [breathingTechnique]);
+
   // Breathing popout state
   const [breathingPopoutOpen, setBreathingPopoutOpen] = useState(false);
 
@@ -364,6 +374,7 @@ export default function App() {
             ex={breathingTechnique.ex}
             ho={breathingTechnique.ho || 0}
             onTechniqueChange={setBreathingTechnique}
+            cycleStart={breathingCycleStart}
           />
         )}
 
@@ -386,6 +397,7 @@ export default function App() {
               technique={breathingTechnique}
               cvMode={colorBlindMode}
               onEntryUnlocked={() => setEntryUnlocked(true)}
+              cycleStart={breathingCycleStart}
             />
           )}
 

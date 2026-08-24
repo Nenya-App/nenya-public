@@ -32,6 +32,9 @@ interface BreathingCounterProps {
   ho?: number;
   onTechniqueChange?: (technique: BreathingTechnique) => void;
   id?: string;
+  /** Shared clock anchor (ms epoch) so this stays in phase with the
+   *  breathing pulse animation instead of timing itself independently. */
+  cycleStart?: number;
 }
 
 export function BreathingCounter({
@@ -43,13 +46,14 @@ export function BreathingCounter({
   ho: HO = 0,
   onTechniqueChange,
   id,
+  cycleStart,
 }: BreathingCounterProps) {
   const [count, setCount] = useState(1);
   const [phase, setPhase] = useState<'i' | 'h' | 'e'>('i');
 
   useEffect(() => {
     if (!enabled || !show) return;
-    const start = Date.now();
+    const start = cycleStart ?? Date.now();
     const interval = setInterval(() => {
       const cycle = IH + HI + EX + HO;
       const d = (Date.now() - start) % cycle;
@@ -66,7 +70,7 @@ export function BreathingCounter({
       setPhase(ph);
     }, 80);
     return () => clearInterval(interval);
-  }, [enabled, show, IH, HI, EX, HO]);
+  }, [enabled, show, IH, HI, EX, HO, cycleStart]);
 
   if (!enabled || !show) return null;
 

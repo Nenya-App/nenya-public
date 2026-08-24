@@ -18,6 +18,7 @@ interface WelcomePageProps {
   technique?: BreathingTechnique | null;
   cvMode?: string;
   onEntryUnlocked?: () => void;
+  cycleStart?: number;
 }
 
 export default function WelcomePage({
@@ -31,6 +32,7 @@ export default function WelcomePage({
   technique = null,
   cvMode = '',
   onEntryUnlocked,
+  cycleStart,
 }: WelcomePageProps) {
   const [logoSize, setLogoSize] = useState(400);
   const [isBreathingInfoExpanded, setIsBreathingInfoExpanded] = useState(false);
@@ -71,6 +73,7 @@ export default function WelcomePage({
               cycleDuration={technique ? (technique.ih + (technique.hi || 0) + technique.ex + (technique.ho || 0)) / 1000 : 10}
               technique={technique}
               cvMode={cvMode}
+              cycleStart={cycleStart}
             >
               <div className="nenya-logo-glow">
                 <NenyaLogo size={logoSize} showValarOrbit={orbitEnabled} showLogo={logoVisible} />
