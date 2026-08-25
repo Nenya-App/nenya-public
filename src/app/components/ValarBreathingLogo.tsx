@@ -198,15 +198,33 @@ export function ValarBreathingLogo({
     technique ? `${technique.ih}_${technique.hi || 0}_${technique.ex}_${technique.ho || 0}` : cycleDuration
   }`;
 
+  // Phase-alignment delay for the CSS animation, computed ONCE per epoch
+  // (and once per resume-from-pause, since cycleStart itself shifts then)
+  // rather than on every cycle boundary. The CSS animation's own timeline
+  // is precise on its own once correctly phase-aligned at the start --
+  // re-touching `animation-delay` every cycle was itself the bug: each
+  // touch forces the browser to reset the animation's internal clock using
+  // a freshly (and setTimeout-jitter-prone) computed value, which is what
+  // kept knocking it out of sync with the counter rather than fixing it.
+  const [ringDelay, setRingDelay] = useState(0);
+  useEffect(() => {
+    if (cycleStart == null) return;
+    const elapsed = (Date.now() - cycleStart) / 1000;
+    const phaseIntoRing = ((elapsed % cycleDuration) + cycleDuration) % cycleDuration;
+    setRingDelay(-phaseIntoRing);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cycleStart, cycleDuration, ringsEpochKey]);
+
   // Only one ring is ever visually active at a time -- the breath cycles
   // sequentially through all 96 colors, one fully faded out before the next
   // fades in. Previously all 96 were mounted and animating simultaneously,
   // each holding its own compositor layer, which is what was making the
   // pulse stutter on less powerful displays. A single ring, swapped on a
   // schedule, produces the identical visual sequence for a fraction of the
-  // cost.
+  // cost. This scheduler only ever writes `activeIndex` (a plain
+  // `background` style, not part of the `animation` shorthand), so it can
+  // never perturb the CSS animation set up above.
   const [activeIndex, setActiveIndex] = useState(0);
-  const [ringDelay, setRingDelay] = useState(0);
 
   useEffect(() => {
     if (!enabled || paused || cycleStart == null) return;
@@ -217,7 +235,6 @@ export function ValarBreathingLogo({
       const idx = Math.floor(cyclePos / cycleDuration) % allColors.length;
       const phaseIntoRing = cyclePos - idx * cycleDuration;
       setActiveIndex(idx);
-      setRingDelay(-phaseIntoRing);
       const msUntilNext = (cycleDuration - phaseIntoRing) * 1000;
       timeoutId = setTimeout(scheduleNext, Math.max(msUntilNext, 16));
     };
