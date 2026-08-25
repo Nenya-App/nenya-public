@@ -1,0 +1,759 @@
+[
+  {
+    "category": "essence-taste",
+    "label": "Bitter",
+    "source": "openverse",
+    "query": "coffee beans",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-taste/bitter--openverse.jpg",
+    "title": "Coffee beans",
+    "creator": "jphilipg",
+    "creator_url": "https://www.flickr.com/photos/15708236@N07",
+    "license": "by",
+    "license_version": "2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/15708236@N07/3577941255",
+    "provider": "flickr",
+    "attribution_required": true
+  },
+  {
+    "category": "essence-taste",
+    "label": "Sweet",
+    "source": "openverse",
+    "query": "honey drizzle",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-taste/sweet--openverse.jpg",
+    "title": "honey drizzle",
+    "creator": "missy & the universe",
+    "creator_url": "https://www.flickr.com/photos/33598632@N00",
+    "license": "by",
+    "license_version": "2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/33598632@N00/3022958272",
+    "provider": "flickr",
+    "attribution_required": true
+  },
+  {
+    "category": "essence-taste",
+    "label": "Sour",
+    "source": "openverse",
+    "query": "lemon slice",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-taste/sour--openverse.jpg",
+    "title": "Lemon slices",
+    "creator": "Thad Zajdowicz",
+    "creator_url": "https://www.flickr.com/photos/40632439@N00",
+    "license": "cc0",
+    "license_version": "1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/40632439@N00/16282281827",
+    "provider": "flickr",
+    "attribution_required": false
+  },
+  {
+    "category": "essence-taste",
+    "label": "Salty",
+    "source": "openverse",
+    "query": "sea salt crystals",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-taste/salty--openverse.jpg",
+    "title": "Crystal Heart",
+    "creator": "geishaboy500",
+    "creator_url": "https://www.flickr.com/photos/49503154413@N01",
+    "license": "by",
+    "license_version": "2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/49503154413@N01/133100456",
+    "provider": "flickr",
+    "attribution_required": true
+  },
+  {
+    "category": "essence-taste",
+    "label": "Umami",
+    "source": "openverse",
+    "query": "soy sauce",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-taste/umami--openverse.jpg",
+    "title": "making soy sauce the traditional way \u751f\u91a4\u6cb9",
+    "creator": "spinster cardigan",
+    "creator_url": "https://www.flickr.com/photos/84906483@N08",
+    "license": "by",
+    "license_version": "2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/84906483@N08/8661806567",
+    "provider": "flickr",
+    "attribution_required": true
+  },
+  {
+    "category": "essence-taste",
+    "label": "Astringent",
+    "source": "openverse",
+    "query": "red wine glass",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-taste/astringent--openverse.jpg",
+    "title": "Red Wine Glass #dailyshoot",
+    "creator": "Leshaines123",
+    "creator_url": "https://www.flickr.com/photos/46018453@N06",
+    "license": "by",
+    "license_version": "2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/46018453@N06/9031746040",
+    "provider": "flickr",
+    "attribution_required": true
+  },
+  {
+    "category": "essence-taste",
+    "label": "Pungent",
+    "source": "openverse",
+    "query": "chili pepper",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-taste/pungent--openverse.jpg",
+    "title": "India - Koyambedu Market - Chili Peppers 01",
+    "creator": "mckaysavage",
+    "creator_url": "https://www.flickr.com/photos/56796376@N00",
+    "license": "by",
+    "license_version": "2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/56796376@N00/3986954258",
+    "provider": "flickr",
+    "attribution_required": true
+  },
+  {
+    "category": "essence-taste",
+    "label": "Metallic",
+    "source": "openverse",
+    "query": "silver coins",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-taste/metallic--openverse.jpg",
+    "title": "Silver coin of Neapolis / Naples with head of the Siren Parthenope (beginning 4th century BC) - Naples Archaeological Museum",
+    "creator": "Carlo Raso",
+    "creator_url": "https://www.flickr.com/photos/70125105@N06",
+    "license": "pdm",
+    "license_version": "1.0",
+    "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/70125105@N06/27469291894",
+    "provider": "flickr",
+    "attribution_required": false
+  },
+  {
+    "category": "essence-scent",
+    "label": "Earthy",
+    "source": "openverse",
+    "query": "forest soil moss",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/earthy--openverse.jpg",
+    "title": "Nurse Log",
+    "creator": "Nicholas_T",
+    "creator_url": "https://www.flickr.com/photos/14922165@N00",
+    "license": "by",
+    "license_version": "2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/14922165@N00/7458324304",
+    "provider": "flickr",
+    "attribution_required": true
+  },
+  {
+    "category": "essence-scent",
+    "label": "Floral",
+    "source": "lucide",
+    "key": "flower-2",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/floral--lucide-flower-2.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "essence-scent",
+    "label": "Citrus",
+    "source": "lucide",
+    "key": "citrus",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/citrus--lucide-citrus.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "essence-scent",
+    "label": "Woody",
+    "source": "lucide",
+    "key": "tree-pine",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/woody--lucide-tree-pine.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "essence-scent",
+    "label": "Smoky",
+    "source": "openverse",
+    "query": "smoke wisps black background",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/smoky--openverse.jpg",
+    "title": "Green Smoke",
+    "creator": "Jordan McCullough",
+    "creator_url": "https://www.flickr.com/photos/27752256@N05",
+    "license": "by",
+    "license_version": "2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/27752256@N05/3380819757",
+    "provider": "flickr",
+    "attribution_required": true
+  },
+  {
+    "category": "essence-scent",
+    "label": "Musky",
+    "source": "openverse",
+    "query": "amber perfume bottle",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/musky--openverse.jpg",
+    "title": "Figured flask | Kensington Glass Works 1816\u201338",
+    "creator": "museado",
+    "creator_url": "https://www.flickr.com/photos/200781279@N05",
+    "license": "cc0",
+    "license_version": "1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/200781279@N05/53904006675",
+    "provider": "flickr",
+    "attribution_required": false
+  },
+  {
+    "category": "essence-scent",
+    "label": "Fresh",
+    "source": "lucide",
+    "key": "droplets",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/fresh--lucide-droplets.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "essence-scent",
+    "label": "Spicy",
+    "source": "openverse",
+    "query": "chili spice",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/spicy--openverse.jpg",
+    "title": "Line caught ling cod tacos on a corn tortilla, with ancho chili spiced, jalapeno avocado crema, pineapple salsa, pickled red onion, and radish.",
+    "creator": "ppacificvancouver",
+    "creator_url": "https://www.flickr.com/photos/46246687@N05",
+    "license": "by",
+    "license_version": "2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/46246687@N05/35765839116",
+    "provider": "flickr",
+    "attribution_required": true
+  },
+  {
+    "category": "essence-scent",
+    "label": "Sweet",
+    "source": "lucide",
+    "key": "candy",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/sweet--lucide-candy.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "essence-scent",
+    "label": "Sharp",
+    "source": "lucide",
+    "key": "zap",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/sharp--lucide-zap.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "essence-scent",
+    "label": "Herbal",
+    "source": "openverse",
+    "query": "dried herbs bundle",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/herbal--openverse.jpg",
+    "title": "~dried and bundled~",
+    "creator": "uteart",
+    "creator_url": "https://www.flickr.com/photos/47346831@N00",
+    "license": "by",
+    "license_version": "2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0/",
+    "foreign_landing_url": "https://www.flickr.com/photos/47346831@N00/4309590712",
+    "provider": "flickr",
+    "attribution_required": true
+  },
+  {
+    "category": "essence-scent",
+    "label": "Ocean",
+    "source": "lucide",
+    "key": "waves",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/essence-scent/ocean--lucide-waves.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Upward",
+    "source": "lucide",
+    "key": "arrow-up",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/upward--lucide-arrow-up.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Downward",
+    "source": "lucide",
+    "key": "arrow-down",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/downward--lucide-arrow-down.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Inward",
+    "source": "lucide",
+    "key": "move-diagonal-2",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/inward--lucide-move-diagonal-2.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Outward",
+    "source": "lucide",
+    "key": "move-diagonal",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/outward--lucide-move-diagonal.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Expansive",
+    "source": "lucide",
+    "key": "expand",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/expansive--lucide-expand.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Contracting",
+    "source": "lucide",
+    "key": "shrink",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/contracting--lucide-shrink.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Spiraling",
+    "source": "phosphor",
+    "key": "spiral",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/spiraling--phosphor-spiral.svg",
+    "license": "MIT",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Oscillating",
+    "source": "lucide",
+    "key": "move-horizontal",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/oscillating--lucide-move-horizontal.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Flowing",
+    "source": "lucide",
+    "key": "waves",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/flowing--lucide-waves.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Stuck",
+    "source": "lucide",
+    "key": "anchor",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/stuck--lucide-anchor.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-direction",
+    "label": "Still",
+    "source": "lucide",
+    "key": "pause",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-direction/still--lucide-pause.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-quality",
+    "label": "Fluid",
+    "source": "lucide",
+    "key": "droplets",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-quality/fluid--lucide-droplets.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-quality",
+    "label": "Jerky",
+    "source": "lucide",
+    "key": "activity",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-quality/jerky--lucide-activity.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-quality",
+    "label": "Graceful",
+    "source": "lucide",
+    "key": "feather",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-quality/graceful--lucide-feather.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-quality",
+    "label": "Forceful",
+    "source": "lucide",
+    "key": "zap",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-quality/forceful--lucide-zap.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-quality",
+    "label": "Hesitant",
+    "source": "lucide",
+    "key": "circle-dashed",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-quality/hesitant--lucide-circle-dashed.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-quality",
+    "label": "Determined",
+    "source": "lucide",
+    "key": "compass",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-quality/determined--lucide-compass.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-quality",
+    "label": "Gentle",
+    "source": "lucide",
+    "key": "droplet",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-quality/gentle--lucide-droplet.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "movement-quality",
+    "label": "Turbulent",
+    "source": "lucide",
+    "key": "wind",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/movement-quality/turbulent--lucide-wind.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Fragmented",
+    "source": "lucide",
+    "key": "puzzle",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/fragmented--lucide-puzzle.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Linear",
+    "source": "lucide",
+    "key": "route",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/linear--lucide-route.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Branching",
+    "source": "lucide",
+    "key": "git-branch",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/branching--lucide-git-branch.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Circular",
+    "source": "lucide",
+    "key": "circle",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/circular--lucide-circle.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Layered",
+    "source": "lucide",
+    "key": "layers",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/layered--lucide-layers.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Web-like",
+    "source": "lucide",
+    "key": "network",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/web-like--lucide-network.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Crystalline",
+    "source": "lucide",
+    "key": "gem",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/crystalline--lucide-gem.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Fractal",
+    "source": "lucide",
+    "key": "snowflake",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/fractal--lucide-snowflake.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Spiraling",
+    "source": "phosphor",
+    "key": "spiral",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/spiraling--phosphor-spiral.svg",
+    "license": "MIT",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Chaotic",
+    "source": "lucide",
+    "key": "shuffle",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/chaotic--lucide-shuffle.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-pattern",
+    "label": "Unified",
+    "source": "lucide",
+    "key": "circle-dot",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-pattern/unified--lucide-circle-dot.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-perspective",
+    "label": "Narrow",
+    "source": "lucide",
+    "key": "scan",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-perspective/narrow--lucide-scan.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-perspective",
+    "label": "Focused",
+    "source": "lucide",
+    "key": "focus",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-perspective/focused--lucide-focus.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-perspective",
+    "label": "Panoramic",
+    "source": "phosphor",
+    "key": "panorama",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-perspective/panoramic--phosphor-panorama.svg",
+    "license": "MIT",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-perspective",
+    "label": "Microscopic",
+    "source": "lucide",
+    "key": "microscope",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-perspective/microscopic--lucide-microscope.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-perspective",
+    "label": "Telescopic",
+    "source": "lucide",
+    "key": "telescope",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-perspective/telescopic--lucide-telescope.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-perspective",
+    "label": "Multi-faceted",
+    "source": "lucide",
+    "key": "gem",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-perspective/multi-faceted--lucide-gem.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-perspective",
+    "label": "Birds-Eye",
+    "source": "phosphor",
+    "key": "bird",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-perspective/birds-eye--phosphor-bird.svg",
+    "license": "MIT",
+    "attribution_required": false
+  },
+  {
+    "category": "insight-perspective",
+    "label": "Immersed",
+    "source": "lucide",
+    "key": "waves",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/insight-perspective/immersed--lucide-waves.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-timbre",
+    "label": "Resonant",
+    "source": "lucide",
+    "key": "waves",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-timbre/resonant--lucide-waves.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-timbre",
+    "label": "Hollow",
+    "source": "lucide",
+    "key": "circle-dashed",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-timbre/hollow--lucide-circle-dashed.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-timbre",
+    "label": "Bright",
+    "source": "lucide",
+    "key": "sun",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-timbre/bright--lucide-sun.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-timbre",
+    "label": "Warm",
+    "source": "lucide",
+    "key": "flame",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-timbre/warm--lucide-flame.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-timbre",
+    "label": "Metallic",
+    "source": "lucide",
+    "key": "gem",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-timbre/metallic--lucide-gem.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-timbre",
+    "label": "Breathy",
+    "source": "lucide",
+    "key": "wind",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-timbre/breathy--lucide-wind.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-timbre",
+    "label": "Rich",
+    "source": "lucide",
+    "key": "sparkles",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-timbre/rich--lucide-sparkles.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-timbre",
+    "label": "Thin",
+    "source": "lucide",
+    "key": "minus",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-timbre/thin--lucide-minus.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-rhythm",
+    "label": "Steady",
+    "source": "lucide",
+    "key": "minus",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-rhythm/steady--lucide-minus.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-rhythm",
+    "label": "Syncopated",
+    "source": "lucide",
+    "key": "shuffle",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-rhythm/syncopated--lucide-shuffle.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-rhythm",
+    "label": "Flowing",
+    "source": "lucide",
+    "key": "waves",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-rhythm/flowing--lucide-waves.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-rhythm",
+    "label": "Staccato",
+    "source": "lucide",
+    "key": "zap",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-rhythm/staccato--lucide-zap.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-rhythm",
+    "label": "Irregular",
+    "source": "lucide",
+    "key": "activity",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-rhythm/irregular--lucide-activity.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-rhythm",
+    "label": "Pulsing",
+    "source": "lucide",
+    "key": "heart-pulse",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-rhythm/pulsing--lucide-heart-pulse.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-rhythm",
+    "label": "Languid",
+    "source": "lucide",
+    "key": "feather",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-rhythm/languid--lucide-feather.svg",
+    "license": "ISC",
+    "attribution_required": false
+  },
+  {
+    "category": "sound-rhythm",
+    "label": "Urgent",
+    "source": "lucide",
+    "key": "alert-triangle",
+    "file": "/Users/estellestreiff/Desktop/nenya-public/public/pdf-assets/visual-aids-review/sound-rhythm/urgent--lucide-alert-triangle.svg",
+    "license": "ISC",
+    "attribution_required": false
+  }
+]

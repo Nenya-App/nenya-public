@@ -30,8 +30,8 @@ const gatewayIcons = {
 
 const gatewayTitles = {
   sight: 'Sight - Chromesthesia',
-  sound: 'Sound - Sonesthesia',
-  touch: 'Touch - Haptic Resonance',
+  sound: 'Sound - Audition',
+  touch: 'Touch - Somatosensation',
   essence: 'Essence - Aromatic Memory',
   movement: 'Movement - Kinesthesia',
   insight: 'Insight - Noesis',

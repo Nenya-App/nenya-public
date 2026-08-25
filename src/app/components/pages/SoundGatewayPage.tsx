@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '../ui/button';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, Link2, Unlink } from 'lucide-react';
+import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
 import { Checkbox } from '../ui/checkbox';
@@ -344,7 +345,10 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
           <div className="flex items-center gap-3">
             <NenyaLogo size={32} />
             <div className="text-center">
-              <h1 className="text-lg">Sound · Sonesthesia</h1>
+              <h1 className="text-lg">
+                Sound · Audition
+                <GatewaySubtitleLink href="https://bio.libretexts.org/Bookshelves/Human_Biology/Human_Anatomy_Lab/13:_The_Somatic_Nervous_System_(Special_Senses)/13.03:_Audition_(Hearing)" />
+              </h1>
               <p className="text-xs text-muted-foreground">
                 Gateway {currentIndex + 1} of {totalGateways}
               </p>

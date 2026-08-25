@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
+import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
 import { Checkbox } from '../ui/checkbox';
@@ -148,7 +149,10 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
           <div className="flex items-center gap-3">
             <NenyaLogo size={32} />
             <div className="text-center">
-              <h1 className="text-lg">Insight - Noesis</h1>
+              <h1 className="text-lg">
+                Insight - Noesis
+                <GatewaySubtitleLink href="https://en.wikipedia.org/wiki/Noesis" />
+              </h1>
               <p className="text-xs text-muted-foreground">
                 Gateway {currentIndex + 1} of {totalGateways}
               </p>

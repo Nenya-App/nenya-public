@@ -21,7 +21,7 @@ const gateways = [
   {
     id: 'sound',
     name: 'Sound',
-    subtitle: 'Sonesthesia',
+    subtitle: 'Audition',
     icon: Music,
     description: 'Navigate through rhythm & tone',
     explanation: 'Sound and rhythm directly influence our nervous system. The Sound Gateway translates emotional states into acoustic qualities—frequency, rhythm, tone—allowing those who think in auditory patterns to access their inner experience.',
@@ -32,7 +32,7 @@ const gateways = [
   {
     id: 'touch',
     name: 'Touch',
-    subtitle: 'Hapthesthesia',
+    subtitle: 'Somatosensation',
     icon: Hand,
     description: 'Feel through texture & sensation',
     explanation: 'Physical sensation grounds us in the present. The Touch Gateway uses texture, temperature, and haptic metaphors to help those who process emotions somatically—as bodily sensations rather than thoughts or images.',

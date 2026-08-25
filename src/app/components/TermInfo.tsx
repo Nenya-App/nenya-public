@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Info } from 'lucide-react';
+import { Info, ExternalLink } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -290,6 +290,45 @@ const termData: Record<string, {
   },
 };
 
+// termData is keyed by term text alone, and "Metallic" is used for two
+// unrelated things: a taste (Essence gateway) and a tone quality (Sound
+// gateway). Without this, the taste option would silently show the sound
+// description ("sharp, hard tones... like striking metal"). Checked here
+// first, ahead of the flat termData lookup, for any category/term pair
+// that needs its own copy instead of the flat-keyed default.
+const categoryOverrides: Partial<Record<TermInfoProps['category'], Record<string, { description: string }>>> = {
+  taste: {
+    'Metallic': {
+      description: 'Sharp, mineral, almost electric taste, like blood or touching a battery to your tongue -- often a sign your other senses are reading something your mouth alone can\'t place.',
+    },
+  },
+};
+
+// External "learn more" links for terms that benefit from a real-world
+// explainer -- selective, not exhaustive. Sourced and verified live on
+// 2026-08-25; see docs/REFERENCE_LINKS.md for the full record and how to
+// add or replace one.
+//
+// Keyed by category first for the same reason as categoryOverrides above:
+// "Metallic" needs its taste-specific link, not the sound one.
+const LEARN_MORE_LINKS: Partial<Record<TermInfoProps['category'], Record<string, string>>> = {
+  taste: {
+    'Umami': 'https://www.umamiinfo.com',
+    'Astringent': 'https://sciencemeetsfood.org/what-is-astringency/',
+    'Metallic': 'https://health.clevelandclinic.org/common-causes-for-metallic-taste-in-your-mouth',
+    'Pungent': 'https://en.wikipedia.org/wiki/Chemesthesis',
+  },
+  scent: {
+    'Musky': 'https://en.wikipedia.org/wiki/Musk',
+  },
+  pattern: {
+    'Fractal': 'https://fractalfoundation.org/resources/what-are-fractals/',
+  },
+  rhythm: {
+    'Syncopated': 'https://en.wikipedia.org/wiki/Syncopation',
+  },
+};
+
 function VisualDemo({ term, category }: { term: string; category: string }) {
   // Get data from the correct source based on category
   let data;
@@ -466,7 +505,7 @@ function VisualDemo({ term, category }: { term: string; category: string }) {
 
 export function TermInfo({ term, category }: TermInfoProps) {
   const [open, setOpen] = useState(false);
-  
+
   // Get data from the correct source based on category
   let data;
   if (category === 'lightQuality') {
@@ -474,10 +513,12 @@ export function TermInfo({ term, category }: TermInfoProps) {
   } else if (category === 'rhythm') {
     data = rhythmData[term];
   } else {
-    data = termData[term];
+    data = categoryOverrides[category]?.[term] ?? termData[term];
   }
 
   if (!data) return null;
+
+  const learnMoreUrl = LEARN_MORE_LINKS[category]?.[term];
 
   return (
     <>
@@ -514,6 +555,18 @@ export function TermInfo({ term, category }: TermInfoProps) {
                 <h4 className="text-sm font-medium mb-3">Visual Example</h4>
                 <VisualDemo term={term} category={category} />
               </div>
+            )}
+
+            {learnMoreUrl && (
+              <a
+                href={learnMoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+              >
+                Learn more
+                <ExternalLink className="size-3.5" />
+              </a>
             )}
           </div>
         </DialogContent>

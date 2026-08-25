@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { ArrowLeft, Shuffle, User, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
+import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { ValarColorPicker } from '../ValarColorPicker';
 import { Input } from '../ui/input';
@@ -199,7 +200,10 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
             <div className="flex items-center gap-3">
               <NenyaLogo size={32} />
               <div className="text-center">
-                <h1 className="text-lg">Sight - Chromesthesia</h1>
+                <h1 className="text-lg">
+                  Sight - Chromesthesia
+                  <GatewaySubtitleLink href="https://en.wikipedia.org/wiki/Chromesthesia" />
+                </h1>
                 <p className="text-xs text-muted-foreground">
                   Gateway {currentIndex + 1} of {totalGateways}
                 </p>

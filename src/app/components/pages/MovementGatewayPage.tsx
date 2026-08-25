@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
+import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
 import { Checkbox } from '../ui/checkbox';
@@ -148,7 +149,10 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
           <div className="flex items-center gap-3">
             <NenyaLogo size={32} />
             <div className="text-center">
-              <h1 className="text-lg">Movement - Kinesthesia</h1>
+              <h1 className="text-lg">
+                Movement - Kinesthesia
+                <GatewaySubtitleLink href="https://open.lib.umn.edu/sensationandperception/chapter/kinesthesia-and-prorioception/" />
+              </h1>
               <p className="text-xs text-muted-foreground">
                 Gateway {currentIndex + 1} of {totalGateways}
               </p>
