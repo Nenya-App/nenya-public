@@ -7,7 +7,7 @@ export const NOTE_NAMES = ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5',
 export type Timbre = 'soft' | 'pure' | 'bell' | 'pluck' | 'bowl';
 
 /** Maps a hex color's R/G/B channels to three note indices (0-9 each). */
-export function hexToMelodyIndices(hex: string): number[] {
+function hexToMelodyIndices(hex: string): number[] {
   const clean = hex.replace('#', '').padEnd(6, '0');
   const r = parseInt(clean.slice(0, 2), 16);
   const g = parseInt(clean.slice(2, 4), 16);
@@ -48,10 +48,6 @@ let currentTimbre: Timbre = 'soft';
 
 export function setTimbre(timbre: Timbre) {
   currentTimbre = timbre;
-}
-
-export function getTimbre(): Timbre {
-  return currentTimbre;
 }
 
 /** Plays a single preview note (e.g. on hover/click in the note picker). */

@@ -45,13 +45,6 @@ export interface GatewayData {
   data: any;
 }
 
-export interface AppState {
-  selectedGateways: Gateway[];
-  currentGatewayIndex: number;
-  gatewayData: GatewayData[];
-  interfaceColors: UserColors;
-}
-
 type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about';
 
 export default function App() {

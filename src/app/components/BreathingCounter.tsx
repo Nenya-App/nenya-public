@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { GripHorizontal } from 'lucide-react';
 
-export interface BreathingTechnique {
+interface BreathingTechnique {
   ih: number;
   hi: number;
   ex: number;
