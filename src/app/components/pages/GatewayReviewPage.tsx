@@ -1,5 +1,5 @@
 import { Button } from '../ui/button';
-import { ArrowRight, Edit2, Eye, Music, Hand, Sparkles, Zap, Brain, Download, User, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Edit2, Eye, Music, Hand, Sparkles, Zap, Brain, Download, User, FileText } from 'lucide-react';
 import NenyaLogo from '../NenyaLogo';
 import { Gateway, GatewayData } from '../../App';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -17,6 +17,7 @@ interface GatewayReviewPageProps {
   selectedGateways: Gateway[];
   onContinue: () => void;
   onEditGateway: (gateway: Gateway) => void;
+  onBack: () => void;
 }
 
 const gatewayIcons = {
@@ -237,11 +238,12 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
   return info.length > 0 ? info : ['No data captured'];
 };
 
-export default function GatewayReviewPage({ 
-  gatewayData, 
-  selectedGateways, 
+export default function GatewayReviewPage({
+  gatewayData,
+  selectedGateways,
   onContinue,
-  onEditGateway 
+  onEditGateway,
+  onBack,
 }: GatewayReviewPageProps) {
   
   const generateSensoryReport = () => {
@@ -297,14 +299,23 @@ export default function GatewayReviewPage({
     <div className="size-full flex flex-col bg-background">
       {/* Header */}
       <div className="border-b border-border px-4 md:px-6 py-4">
-        <div className="flex items-center justify-center gap-3">
-          <NenyaLogo size={32} />
-          <div className="text-center">
-            <h1 className="text-xl">Gateway Review</h1>
-            <p className="text-sm text-muted-foreground">
-              Review and adjust your sensory pathways
-            </p>
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+
+          <div className="flex items-center gap-3">
+            <NenyaLogo size={32} />
+            <div className="text-center">
+              <h1 className="text-xl">Gateway Review</h1>
+              <p className="text-sm text-muted-foreground">
+                Review and adjust your sensory pathways
+              </p>
+            </div>
           </div>
+
+          <div className="w-20" />
         </div>
       </div>
 

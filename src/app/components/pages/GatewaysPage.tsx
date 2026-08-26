@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Eye, Music, Hand, Droplet, Zap, Lightbulb, Check } from 'lucide-react';
+import { ArrowLeft, Eye, Music, Hand, Droplet, Zap, Lightbulb, Check } from 'lucide-react';
 import { Gateway } from '../../App';
 import { AppFooter } from '../AppFooter';
 
 interface GatewaysPageProps {
   onGatewaysSelected: (gateways: Gateway[]) => void;
+  onBack: () => void;
 }
 
 const gatewayCards = [
@@ -54,7 +55,7 @@ const gatewayCards = [
   },
 ];
 
-export default function GatewaysPage({ onGatewaysSelected }: GatewaysPageProps) {
+export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPageProps) {
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
 
   const toggleGateway = (gatewayId: Gateway) => {
@@ -73,7 +74,19 @@ export default function GatewaysPage({ onGatewaysSelected }: GatewaysPageProps) 
 
   return (
     <div className="size-full flex flex-col overflow-auto scroll-container">
-      <div className="flex-1 flex flex-col items-center px-4 sm:px-6 py-8 pt-20 md:pt-24 md:py-12">
+      {/* Header -- matches every gateway sub-page's back-button placement,
+          which this screen previously lacked entirely. */}
+      <div className="border-b border-border px-4 md:px-6 py-4">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+          <div className="w-20" />
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center px-4 sm:px-6 py-8 md:py-12">
         {/* Gateway Selection Section */}
         <div className="w-full max-w-5xl space-y-6 flex-shrink-0">
           <div className="text-center space-y-4 max-w-3xl mx-auto">

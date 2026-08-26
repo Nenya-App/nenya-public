@@ -49,7 +49,13 @@ type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' |
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('welcome');
-  const [previousScreen, setPreviousScreen] = useState<ScreenType>('welcome');
+  // Real navigation history instead of a single "previousScreen" value.
+  // A single value can only ever answer "what screen came immediately
+  // before this one" -- it breaks the moment a screen is reachable more
+  // than one step deep (which is most of the gateway flow), since each
+  // forward step overwrites the one before it. A stack lets "back" from
+  // gateway 3 correctly land on gateway 2, not jump all the way home.
+  const [screenHistory, setScreenHistory] = useState<ScreenType[]>([]);
   const [aboutSection, setAboutSection] = useState<string | undefined>();
   const [termsAgreed, setTermsAgreed] = useState(false);
   
@@ -156,11 +162,42 @@ export default function App() {
     document.documentElement.style.setProperty('--font-size', `${textSize}px`);
   }, [textSize]);
 
-  // Warn user before refresh if they have gateway data
+  // Navigate forward: remember where we came from, then switch screens.
+  const navigateTo = (screen: ScreenType) => {
+    setScreenHistory((h) => [...h, currentScreen]);
+    setCurrentScreen(screen);
+  };
+
+  // Navigate back: pop the most recent screen off history. Falls back to
+  // a caller-supplied default if history is somehow empty (shouldn't
+  // normally happen, but a screen reached by a direct link or a future
+  // bug shouldn't leave "back" with nowhere to go).
+  const navigateBack = (fallback: ScreenType = 'welcome') => {
+    setScreenHistory((h) => {
+      if (h.length === 0) {
+        setCurrentScreen(fallback);
+        return h;
+      }
+      const next = [...h];
+      const target = next.pop()!;
+      setCurrentScreen(target);
+      return next;
+    });
+  };
+
+  // Warn user before refresh/close if they'd lose in-progress reflection
+  // data. Previously this only checked gatewayData.length, which is empty
+  // until a gateway is fully completed -- so refreshing mid-way through
+  // even the very first gateway (colors picked, sliders moved, nothing
+  // submitted yet) triggered no warning at all and silently lost it.
+  // Nothing persists to a server or localStorage, so any screen inside the
+  // actual reflection flow represents work that a refresh would destroy.
   useEffect(() => {
+    const screensWithNothingToLose: ScreenType[] = ['welcome', 'home', 'about'];
+    const hasUnsavedProgress = !screensWithNothingToLose.includes(currentScreen);
+
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Only show warning if user has gateway data (has started/completed gateways)
-      if (gatewayData.length > 0 && !isEmergencyExiting.current) {
+      if (hasUnsavedProgress && !isEmergencyExiting.current) {
         // Standard way to trigger browser's confirmation dialog
         e.preventDefault();
         e.returnValue = ''; // Required for Chrome
@@ -175,66 +212,60 @@ export default function App() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [gatewayData]);
+  }, [currentScreen]);
 
   // Gateway selection from home
   const handleGatewaysSelected = (gateways: Gateway[]) => {
     setSelectedGateways(gateways);
     setCurrentGatewayIndex(0);
     setGatewayData([]);
-    setPreviousScreen(currentScreen);
-    // Navigate to first selected gateway
-    setCurrentScreen(gateways[0]);
+    navigateTo(gateways[0]);
   };
 
   // Complete a gateway and move to next
   const handleGatewayComplete = (gateway: Gateway, data: any) => {
-    // Update or add gateway data
+    const wasAlreadyComplete = gatewayData.length === selectedGateways.length;
     const existingIndex = gatewayData.findIndex(g => g.gateway === gateway);
-    let newGatewayData: GatewayData[];
-    
-    if (existingIndex >= 0) {
-      // Update existing gateway data - user is editing
-      newGatewayData = [...gatewayData];
-      newGatewayData[existingIndex] = { gateway, data };
-      setGatewayData(newGatewayData);
-      
-      // If this was the Sight gateway and colors were provided, update interface colors
-      if (gateway === 'sight' && data.color1 && data.color2) {
-        setInterfaceColors(data);
-      }
-      
-      // Return to where they came from (review or session)
-      setCurrentScreen(previousScreen === 'session' || previousScreen === 'gateway-review' ? previousScreen : 'gateway-review');
-    } else {
-      // Add new gateway data - initial creation flow
-      newGatewayData = [...gatewayData, { gateway, data }];
-      setGatewayData(newGatewayData);
 
-      // If this was the Sight gateway and colors were provided, set interface colors
-      if (gateway === 'sight' && data.color1 && data.color2) {
-        setInterfaceColors(data);
-      }
+    const newGatewayData =
+      existingIndex >= 0
+        ? gatewayData.map((g, i) => (i === existingIndex ? { gateway, data } : g))
+        : [...gatewayData, { gateway, data }];
+    setGatewayData(newGatewayData);
 
-      const nextIndex = currentGatewayIndex + 1;
-      
-      if (nextIndex < selectedGateways.length) {
-        // Move to next gateway
-        setCurrentGatewayIndex(nextIndex);
-        setPreviousScreen(currentScreen);
-        setCurrentScreen(selectedGateways[nextIndex]);
+    // If this was the Sight gateway and colors were provided, sync interface colors
+    if (gateway === 'sight' && data.color1 && data.color2) {
+      setInterfaceColors(data);
+    }
+
+    const allComplete = selectedGateways.every((g) => newGatewayData.some((gd) => gd.gateway === g));
+
+    if (allComplete) {
+      if (wasAlreadyComplete) {
+        // Every gateway already had data *before* this update -- this was
+        // a genuine edit-in-place (reached via the Edit button on review
+        // or session), so return to wherever that edit was launched from.
+        navigateBack('gateway-review');
       } else {
-        // All gateways complete - go to review page
-        setPreviousScreen(currentScreen);
-        setCurrentScreen('gateway-review');
+        // Finishing the sequence for the first time.
+        navigateTo('gateway-review');
+      }
+    } else {
+      // Still gateways left with no data yet. Advance to the next one
+      // that's actually incomplete -- not just "index + 1" -- so that
+      // going Back to an earlier gateway mid-sequence and re-submitting
+      // it resumes forward progress instead of jumping to review or home.
+      const nextGateway = selectedGateways.find((g) => !newGatewayData.some((gd) => gd.gateway === g));
+      if (nextGateway) {
+        setCurrentGatewayIndex(selectedGateways.indexOf(nextGateway));
+        navigateTo(nextGateway);
       }
     }
   };
 
   // Handle editing a gateway from session or review
   const handleEditGateway = (gateway: Gateway) => {
-    setPreviousScreen(currentScreen);
-    setCurrentScreen(gateway);
+    navigateTo(gateway);
   };
 
   // Handle continuing from gateway review
@@ -242,53 +273,46 @@ export default function App() {
     // Check if we need color selection
     const sightData = gatewayData.find(g => g.gateway === 'sight');
     const hasValidSightColors = sightData && sightData.data.color1 && sightData.data.color2;
-    
-    setPreviousScreen(currentScreen);
-    setCurrentScreen(hasValidSightColors ? 'session' : 'color-selection');
+
+    navigateTo(hasValidSightColors ? 'session' : 'color-selection');
   };
 
   // Handle color selection completion
   const handleColorSelectionComplete = (colors: UserColors) => {
     setInterfaceColors(colors);
-    setPreviousScreen(currentScreen);
-    setCurrentScreen('session');
+    navigateTo('session');
   };
 
   // Navigation handlers
   const handleNavigateToCell = () => {
-    setPreviousScreen(currentScreen);
-    setCurrentScreen('cell-creation');
+    navigateTo('cell-creation');
   };
 
   const handleCreateCell = (code: string) => {
     setCellCode(code);
-    setPreviousScreen(currentScreen);
-    setCurrentScreen('cell-interface');
+    navigateTo('cell-interface');
   };
 
   const handleBackToSession = () => {
-    setPreviousScreen(currentScreen);
-    setCurrentScreen('session');
+    navigateBack('session');
   };
 
   const handleNavigateToAbout = (section?: string) => {
-    setPreviousScreen(currentScreen);
     setAboutSection(section);
-    setCurrentScreen('about');
+    navigateTo('about');
   };
 
   const handleBackFromAbout = () => {
     setAboutSection(undefined);
-    setCurrentScreen(previousScreen === 'about' ? 'welcome' : previousScreen);
+    navigateBack('welcome');
   };
-  
+
   const handleWelcomeContinue = () => {
-    setPreviousScreen(currentScreen);
-    setCurrentScreen('home');
+    navigateTo('home');
   };
 
   const handleRestartDemo = () => {
-    setPreviousScreen('welcome');
+    setScreenHistory([]);
     setCurrentScreen('welcome');
     setAboutSection(undefined);
     setSelectedGateways([]);
@@ -299,20 +323,13 @@ export default function App() {
   };
 
   const handleGlobalNavigation = (screen: 'home' | 'session' | 'about' | 'welcome') => {
-    setPreviousScreen(currentScreen);
     setAboutSection(undefined);
-    
+
     // If navigating to session but no gateways completed, go to home instead
     if (screen === 'session' && gatewayData.length === 0) {
-      setCurrentScreen('home');
-    } else if (screen === 'home') {
-      // Home now means the Gateways page
-      setCurrentScreen('home');
-    } else if (screen === 'welcome') {
-      // Navigate to the welcome/initialization page
-      setCurrentScreen('welcome');
+      navigateTo('home');
     } else {
-      setCurrentScreen(screen as ScreenType);
+      navigateTo(screen as ScreenType);
     }
   };
 
@@ -420,15 +437,16 @@ export default function App() {
           )}
 
           {currentScreen === 'home' && (
-            <GatewaysPage 
+            <GatewaysPage
               onGatewaysSelected={handleGatewaysSelected}
+              onBack={() => navigateBack('welcome')}
             />
           )}
           
           {currentScreen === 'sight' && (
             <SightGatewayPage 
               onComplete={(data) => handleGatewayComplete('sight', data)}
-              onBack={() => setCurrentScreen(previousScreen === 'gateway-review' || previousScreen === 'session' ? previousScreen : 'home')}
+              onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('sight')}
               totalGateways={selectedGateways.length}
             />
@@ -437,7 +455,7 @@ export default function App() {
           {currentScreen === 'sound' && (
             <SoundGatewayPage
               onComplete={(data) => handleGatewayComplete('sound', data)}
-              onBack={() => setCurrentScreen(previousScreen === 'gateway-review' || previousScreen === 'session' ? previousScreen : 'home')}
+              onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('sound')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
@@ -447,7 +465,7 @@ export default function App() {
           {currentScreen === 'touch' && (
             <TouchGatewayPage
               onComplete={(data) => handleGatewayComplete('touch', data)}
-              onBack={() => setCurrentScreen(previousScreen === 'gateway-review' || previousScreen === 'session' ? previousScreen : 'home')}
+              onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('touch')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
@@ -457,7 +475,7 @@ export default function App() {
           {currentScreen === 'essence' && (
             <EssenceGatewayPage
               onComplete={(data) => handleGatewayComplete('essence', data)}
-              onBack={() => setCurrentScreen(previousScreen === 'gateway-review' || previousScreen === 'session' ? previousScreen : 'home')}
+              onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('essence')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
@@ -467,7 +485,7 @@ export default function App() {
           {currentScreen === 'movement' && (
             <MovementGatewayPage
               onComplete={(data) => handleGatewayComplete('movement', data)}
-              onBack={() => setCurrentScreen(previousScreen === 'gateway-review' || previousScreen === 'session' ? previousScreen : 'home')}
+              onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('movement')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
@@ -477,7 +495,7 @@ export default function App() {
           {currentScreen === 'insight' && (
             <InsightGatewayPage
               onComplete={(data) => handleGatewayComplete('insight', data)}
-              onBack={() => setCurrentScreen(previousScreen === 'gateway-review' || previousScreen === 'session' ? previousScreen : 'home')}
+              onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('insight')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
@@ -485,28 +503,29 @@ export default function App() {
           )}
           
           {currentScreen === 'color-selection' && (
-            <InterfaceColorSelection 
+            <InterfaceColorSelection
               onComplete={handleColorSelectionComplete}
-              onBack={() => setCurrentScreen('gateway-review')}
+              onBack={() => navigateBack('gateway-review')}
             />
           )}
-          
+
           {currentScreen === 'gateway-review' && (
             <GatewayReviewPage
               gatewayData={gatewayData}
               selectedGateways={selectedGateways}
               onContinue={handleContinueFromReview}
               onEditGateway={handleEditGateway}
+              onBack={() => navigateBack('home')}
             />
           )}
-          
+
           {currentScreen === 'session' && (
-            <SessionInterface 
+            <SessionInterface
               interfaceColors={interfaceColors}
               gatewayData={gatewayData}
               selectedGateways={selectedGateways}
               onNavigateToCell={handleNavigateToCell}
-              onBackToHome={() => setCurrentScreen('home')}
+              onBackToHome={() => navigateBack('home')}
               onNavigateToAbout={handleNavigateToAbout}
               onUpdateGatewayData={setGatewayData}
               onEditGateway={handleEditGateway}
