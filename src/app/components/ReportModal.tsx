@@ -69,7 +69,7 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
           <div className="bg-muted/20 rounded-lg p-3 text-xs text-muted-foreground">
             <p className="mb-1 text-foreground text-xs sm:text-sm">Privacy Note:</p>
             <p className="leading-relaxed">
-              All reports are reviewed by our human team. If you want to include conversation content, please use the <span className="text-foreground">Eagle Protocol Transcript</span> feature, which generates a cryptographically signed zero-knowledge proof that protects your privacy while allowing us to verify and review the interaction.
+              This reporting system is a preview — submission is disabled and there's no human team receiving reports yet. In the finished design, if you wanted to include conversation content, you'd use the <span className="text-foreground">Eagle Protocol Transcript</span> feature, which would generate a cryptographically-signed, zero-knowledge proof protecting your privacy while allowing review. That feature is also a preview today — please don't include real personal or identifying details in this field, or in any system, even one that claims to be secure.
             </p>
           </div>
 
@@ -81,7 +81,7 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
                   <strong>For Serious Concerns:</strong> Report AI Deviation (Verified Protocol Required)
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  For the most serious accountability claims (platform misconduct, partner behavior violations, safety concerns), only <strong className="text-foreground">cryptographically-signed Eagle Protocol transcripts</strong> hold legal and ethical weight as verifiable evidence.
+                  For the most serious accountability claims (platform misconduct, partner behavior violations, safety concerns), the design calls for only <strong className="text-foreground">cryptographically-signed Eagle Protocol transcripts</strong> to hold legal and ethical weight as verifiable evidence — once that capability exists.
                 </p>
               </div>
             </div>

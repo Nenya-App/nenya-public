@@ -197,8 +197,9 @@ export default function EagleProtocolDemoSelector() {
               evokes compassionate depth, gentle warmth, and healing hope. Sessions end here with compassion, redirecting to human support.
             </p>
             <p className="text-xs">
-              After protocol activation, you'll have the option to generate a cryptographically-signed Zero-Knowledge Transcript 
-              for your records or to report the interaction.
+              After protocol activation, you'll see a preview of the transcript feature we're building — a
+              cryptographically-signed, zero-knowledge transcript you could generate for your records or to report
+              the interaction. That signing and review pipeline isn't built yet; this only demonstrates the design.
             </p>
           </div>
         </div>

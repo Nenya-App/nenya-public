@@ -102,12 +102,12 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
             <div className="flex justify-center mb-6">
               <Shield className="size-16 text-primary" />
             </div>
-            <h2 className="text-center">Privacy-First Processing</h2>
+            <h2 className="text-center">Privacy-First Processing (Planned)</h2>
             <p className="text-muted-foreground text-center max-w-2xl mx-auto">
-              Before any conversation begins, Nenya automatically detects and removes personally identifiable information (PII) from your messages. This ensures your privacy while allowing the AI to understand and respond to your emotional needs.
+              This is a preview of the privacy pipeline we're building for Nenya's AI conversations: before any message reaches the AI, it would automatically detect and remove personally identifiable information (PII). <strong className="text-foreground">This isn't connected to a live AI yet</strong> — it's a walkthrough of the design, not something active today.
             </p>
             <p className="text-muted-foreground text-center max-w-2xl mx-auto">
-              Let's walk through how this works with a real example.
+              Let's walk through how it's designed to work, using an example.
             </p>
           </div>
         );
@@ -131,7 +131,7 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
                       <strong>What's happening:</strong> This is an example message a user might send. Notice it contains personal information like name, address, email, and phone number alongside the emotional content.
                     </p>
                     <p className="text-sm text-blue-900 dark:text-blue-100">
-                      Nenya will process this message to protect your privacy while preserving the emotional content that matters.
+                      In the finished design, Nenya would process this message to protect your privacy while preserving the emotional content that matters.
                     </p>
                   </div>
                 </div>
@@ -177,7 +177,7 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
                       <strong>What's happening:</strong> Nenya's privacy system has identified 5 pieces of personally identifiable information highlighted in yellow.
                     </p>
                     <p className="text-sm text-blue-900 dark:text-blue-100">
-                      These items will be replaced with generic placeholders before your message is processed.
+                      In the finished pipeline, these items would be replaced with generic placeholders before your message reaches the AI.
                     </p>
                   </div>
                 </div>
@@ -229,7 +229,7 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
                   <AlertCircle className="size-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <div className="space-y-2">
                     <p className="text-sm text-blue-900 dark:text-blue-100">
-                      <strong>What's happening:</strong> Each piece of PII is being replaced with a generic placeholder. Your actual personal information is discarded and never stored.
+                      <strong>What's happening:</strong> This preview replaces each piece of PII with a generic placeholder to show the intended flow. In the finished design, your actual personal information would be discarded and never stored.
                     </p>
                     <p className="text-sm text-blue-900 dark:text-blue-100">
                       The emotional content—"I've been feeling really overwhelmed at work"—remains intact because that's what matters for the conversation.
@@ -274,10 +274,10 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
                   <AlertCircle className="size-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <div className="space-y-2">
                     <p className="text-sm text-blue-900 dark:text-blue-100">
-                      <strong>What's happening:</strong> This automatic scrubbing happens with every message you send in Nenya, protecting your privacy while maintaining the emotional depth of your communication.
+                      <strong>What's happening:</strong> In the finished version, this automatic scrubbing would happen with every message you send, protecting your privacy while maintaining the emotional depth of your communication.
                     </p>
                     <p className="text-sm text-blue-900 dark:text-blue-100">
-                      You can now proceed to your practice session knowing your personal information is safe.
+                      That pipeline isn't live yet — please avoid typing real personal or identifying details into Nenya for now, or into any system, even one that claims to be secure.
                     </p>
                   </div>
                 </div>
@@ -294,12 +294,12 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
                 <CheckCircle2 className="size-10 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <h2>Privacy Protection Active</h2>
+            <h2>The Privacy Design We're Building</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Your conversations in Nenya are now protected. Every message you send will be automatically scrubbed of personal information before processing.
+              This walkthrough isn't live yet — Nenya doesn't currently scrub messages before processing, because there's no live AI conversation pipeline to scrub them for. Please don't include real names, addresses, or other identifying details in anything you write, here or in any system, even one that claims to be secure.
             </p>
             <div className="bg-muted/50 rounded-lg p-6 max-w-2xl mx-auto">
-              <h4 className="mb-3">Key Privacy Features:</h4>
+              <h4 className="mb-3">Planned Privacy Features (not yet active):</h4>
               <ul className="text-sm text-muted-foreground space-y-2 text-left">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />

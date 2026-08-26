@@ -90,9 +90,36 @@ export default function EagleProtocolTranscriptFlow({
   };
 
   const handleDownload = () => {
-    // In a real app, this would trigger a download
-    console.log('Downloading Cryptographically-Signed Eagle Protocol Transcript...');
-    console.log('NVC+ Report:', nvcReport);
+    // This flow is a preview, not a working feature -- previously this
+    // button silently did nothing (console.log only), which is its own
+    // honesty problem: clicking "Download Report" with zero visible result
+    // reads as broken, not as "not implemented." Downloading a file that
+    // says plainly what it is closes that gap without pretending the real
+    // (cryptographically-signed, PII-scrubbed) version exists yet.
+    const notice = [
+      'NENYA — EAGLE PROTOCOL TRANSCRIPT (DEMO PREVIEW)',
+      '='.repeat(50),
+      '',
+      'This file is a placeholder from a UI preview. It is NOT:',
+      '  - cryptographically signed',
+      '  - zero-knowledge proved',
+      '  - PII-scrubbed by any real pipeline',
+      '  - reviewed by, or sent to, any safety team',
+      '',
+      'No conversation content, transcript, or NVC+ report text was',
+      'actually captured, transmitted, or stored by this preview.',
+      '',
+      `Generated: ${new Date().toLocaleString()}`,
+    ].join('\n');
+    const blob = new Blob([notice], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nenya-eagle-protocol-DEMO-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleClose = () => {
@@ -115,6 +142,19 @@ export default function EagleProtocolTranscriptFlow({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        {/* Always-visible: this whole flow is a preview of a feature we're
+            building, not something functioning today. Shown across every
+            state below since the specific claims (cryptographic signing,
+            zero-knowledge proofs, a live safety-review team) are dense
+            enough that a single top-of-flow disclaimer wouldn't reliably
+            reach someone who lands mid-flow. */}
+        <div className="mb-4 p-3 sm:p-4 rounded-lg border-2 border-amber-500/60 bg-amber-500/10 flex items-start gap-2 sm:gap-3">
+          <AlertTriangle className="size-4 sm:size-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <strong className="text-foreground">Preview of a feature we're building.</strong> Nothing in this flow is cryptographically signed, zero-knowledge proved, or reviewed by a live safety team yet — this demonstrates the design we're working toward, not something that functions today. Please don't include real personal or identifying details here, or in any system, even one that claims to be secure.
+          </p>
+        </div>
+
         {/* PROMPT STATE */}
         {flowState === 'prompt' && (
           <>
@@ -138,7 +178,7 @@ export default function EagleProtocolTranscriptFlow({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <FileText className="size-4 sm:size-5 flex-shrink-0" />
-                <span className="leading-tight">Generate Cryptographically-Signed Transcript?</span>
+                <span className="leading-tight">Preview: Generate a Verified Transcript?</span>
               </DialogTitle>
               <DialogDescription className="pt-2 text-xs sm:text-sm">
                 You initiated the Emergency Exit. Your session has been terminated and purged from visible history.
@@ -151,10 +191,10 @@ export default function EagleProtocolTranscriptFlow({
                 borderColor: NIENNA_SKY
               }}>
                 <p className="text-xs sm:text-sm mb-2 sm:mb-3">
-                  <strong>The Sole Verifiable Evidence:</strong> The system has automatically prepared a <strong style={{ color: NIENNA_PRIMARY }}>Cryptographically-Signed Transcript</strong> of the last 5 minutes of conversation.
+                  <strong>The Design Goal:</strong> In the finished version, the system would automatically prepare a <strong style={{ color: NIENNA_PRIMARY }}>cryptographically-signed transcript</strong> of the last 5 minutes of conversation. This preview doesn't do that yet.
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  This is the <strong className="text-foreground">only verifiable evidence</strong> that Nenya Labs will accept for review, maintaining the integrity of the "Chain of Custody" for your data.
+                  In that design, this would be the <strong className="text-foreground">only verifiable evidence</strong> Nenya Labs accepts for review, maintaining a clear chain of custody for your data. That review pipeline doesn't exist yet either.
                 </p>
               </div>
 
@@ -165,23 +205,23 @@ export default function EagleProtocolTranscriptFlow({
                 <div className="flex items-start gap-2 sm:gap-3">
                   <Lock className="size-4 sm:size-5 mt-0.5 flex-shrink-0" style={{ color: NIENNA_PRIMARY }} />
                   <div className="space-y-1 sm:space-y-2">
-                    <h4 className="text-xs sm:text-sm">Security Summary</h4>
+                    <h4 className="text-xs sm:text-sm">Security Summary (Planned)</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Before signing, the transcript was automatically <strong className="text-foreground">scrubbed of all PII on your device</strong>. Only patterns, tone analysis, and the scrubbed text remain. We trust your device's signature over any external claim.
+                      In the finished version, the transcript would be automatically <strong className="text-foreground">scrubbed of PII on your device</strong> before signing, leaving only patterns, tone analysis, and the scrubbed text. This preview doesn't perform real scrubbing or signing — please don't type anything personally identifying below.
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="rounded-lg p-3 sm:p-4 border bg-muted/20">
-                <h4 className="text-xs sm:text-sm mb-2">Actionable Data Choice</h4>
+                <h4 className="text-xs sm:text-sm mb-2">Actionable Data Choice (Planned)</h4>
                 <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
-                  You may choose to submit the <strong className="text-foreground">entire log</strong>, or only the <strong className="text-foreground">final segment</strong>, based on what produces the most actionable data for the safety team.
+                  In the finished design, you'd be able to choose to submit the <strong className="text-foreground">entire log</strong>, or only the <strong className="text-foreground">final segment</strong> — whichever produces the most actionable data for a safety team, once one exists to review it.
                 </p>
-                
+
                 <div className="space-y-2 mt-3 sm:mt-4">
                   <Label htmlFor="nvc-report" className="text-xs sm:text-sm" style={{ color: NIENNA_PRIMARY }}>
-                    NVC+ Report (Optional - Highly Recommended)
+                    NVC+ Report (Optional — this preview doesn't send it anywhere)
                   </Label>
                   <Textarea
                     id="nvc-report"
@@ -191,7 +231,10 @@ export default function EagleProtocolTranscriptFlow({
                     className="min-h-[120px] sm:min-h-[140px] text-xs resize-none"
                   />
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    <strong>Invitation to Re-engage:</strong> The safety team's primary goal is to return you to a path of relational health. Your structured feedback helps us serve you better.
+                    Nothing typed here is sent anywhere — this field only exists to preview the flow. Please don't include real names or other identifying details.
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    <strong>The Design Goal:</strong> once a safety team exists, its primary purpose would be to return you to a path of relational health, using feedback like this to serve you better.
                   </p>
                 </div>
               </div>
@@ -213,7 +256,7 @@ export default function EagleProtocolTranscriptFlow({
                   color: 'white'
                 }}
               >
-                Submit Signed Report & Request Review
+                Continue Preview (No Data Sent)
               </Button>
             </DialogFooter>
           </>
@@ -225,7 +268,7 @@ export default function EagleProtocolTranscriptFlow({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <Shield className="size-4 sm:size-5 animate-pulse flex-shrink-0" style={{ color: NIENNA_PRIMARY }} />
-                <span className="leading-tight">Processing Secure Transcript</span>
+                <span className="leading-tight">Previewing the Verification Flow (Demo)</span>
               </DialogTitle>
             </DialogHeader>
 
@@ -269,10 +312,10 @@ export default function EagleProtocolTranscriptFlow({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <CheckCircle2 className="size-4 sm:size-5 text-green-600 flex-shrink-0" />
-                <span className="leading-tight">Verified Transcript Ready for Download</span>
+                <span className="leading-tight">Demo Complete — This Is a Preview</span>
               </DialogTitle>
               <DialogDescription className="text-xs sm:text-sm">
-                Your cryptographically-signed Eagle Protocol transcript has been generated successfully.
+                This walked through what generating a cryptographically-signed transcript would look like. No real file, signature, or proof was created.
               </DialogDescription>
             </DialogHeader>
 
@@ -285,9 +328,9 @@ export default function EagleProtocolTranscriptFlow({
                   <Shield className="size-5 sm:size-6 flex-shrink-0" style={{ color: NIENNA_PRIMARY }} />
                   <div>
                     <h3 className="text-sm sm:text-base" style={{ color: NIENNA_PRIMARY }}>
-                      Official Eagle Protocol Transcript
+                      Sample Eagle Protocol Transcript (Demo)
                     </h3>
-                    <p className="text-xs text-muted-foreground">Cryptographically Verified & PII-Scrubbed</p>
+                    <p className="text-xs text-muted-foreground">Not real — nothing below is cryptographically verified</p>
                   </div>
                 </div>
 
@@ -298,14 +341,14 @@ export default function EagleProtocolTranscriptFlow({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Protocol Status:</span>
-                    <span className="text-green-600 flex items-center gap-1">
-                      <CheckCircle2 className="size-3" />
-                      Zero-Knowledge Verified
+                    <span className="text-amber-600 dark:text-amber-500 flex items-center gap-1">
+                      <AlertTriangle className="size-3" />
+                      Demo Preview (not verified)
                     </span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0 sm:items-start">
-                    <span className="text-muted-foreground">Device Signature:</span>
-                    <span className="font-mono text-xs text-left sm:text-right sm:max-w-[200px] break-all">
+                    <span className="text-muted-foreground">Sample Signature (not real):</span>
+                    <span className="font-mono text-xs text-left sm:text-right sm:max-w-[200px] break-all opacity-60">
                       0x{Array.from({length: 16}, () => Math.floor(Math.random() * 16).toString(16)).join('')}...
                     </span>
                   </div>
@@ -315,20 +358,21 @@ export default function EagleProtocolTranscriptFlow({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Format:</span>
-                    <span>.EPT (Eagle Protocol Transcript)</span>
+                    <span>Planned: .EPT — this demo downloads plain .txt</span>
                   </div>
                 </div>
               </div>
 
               <div className="bg-muted/20 rounded-lg p-3 text-xs text-muted-foreground space-y-2">
-                <p className="text-foreground text-xs sm:text-sm">What happens next?</p>
+                <p className="text-foreground text-xs sm:text-sm">What this is designed to do, once built:</p>
                 <ul className="space-y-1 ml-3 sm:ml-4 list-disc leading-relaxed">
-                  <li>This transcript can be submitted to Nenya's safety team for review</li>
-                  <li>Your actual conversation content remains PII-scrubbed and encrypted</li>
-                  <li>Only patterns, tone analysis, and cryptographic proofs are included</li>
-                  <li>You maintain full control over when and how to share this file</li>
-                  <li>This is the <strong className="text-foreground">sole verifiable evidence</strong> for accountability claims</li>
+                  <li>Be submittable to Nenya's safety team for review — no such team or intake exists yet</li>
+                  <li>Keep your actual conversation content PII-scrubbed and encrypted</li>
+                  <li>Include only patterns, tone analysis, and cryptographic proofs</li>
+                  <li>Leave you in full control over when and how to share the file</li>
+                  <li>Serve as the <strong className="text-foreground">sole verifiable evidence</strong> for accountability claims</li>
                 </ul>
+                <p className="pt-1">None of this happened in this preview — no file was created and nothing was sent anywhere.</p>
               </div>
 
               {nvcReport && (
@@ -337,10 +381,10 @@ export default function EagleProtocolTranscriptFlow({
                   borderColor: AULE_EMERALD
                 }}>
                   <p className="text-xs mb-2" style={{ color: AULE_EMERALD }}>
-                    <strong>✓ NVC+ Report Included</strong>
+                    <strong>✓ NVC+ Report Text Entered (Demo)</strong>
                   </p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Your structured feedback using the NVC+ framework has been attached to the transcript and will help the safety team provide targeted support.
+                    In the finished design, structured feedback like this would be attached to the transcript and help a safety team provide targeted support. It wasn't sent anywhere just now.
                   </p>
                 </div>
               )}
@@ -363,7 +407,7 @@ export default function EagleProtocolTranscriptFlow({
                 }}
               >
                 <Download className="size-4 mr-2" />
-                Download Report (.EPT)
+                Download Demo Placeholder (.txt)
               </Button>
             </DialogFooter>
           </>
@@ -375,21 +419,21 @@ export default function EagleProtocolTranscriptFlow({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <AlertTriangle className="size-4 sm:size-5 text-destructive flex-shrink-0" />
-                <span className="leading-tight">Confirm Permanent Purge</span>
+                <span className="leading-tight">Leave This Preview?</span>
               </DialogTitle>
               <DialogDescription className="text-xs sm:text-sm">
-                This action cannot be undone.
+                Nothing has been generated yet, so there's nothing real to lose — this just closes the demo.
               </DialogDescription>
             </DialogHeader>
 
             <div className="py-3 sm:py-4 space-y-3 sm:space-y-4">
               <p className="text-xs sm:text-sm leading-relaxed">
-                Are you sure you want to permanently purge the prepared Eagle Protocol transcript? This is your <strong className="text-foreground">only opportunity</strong> to generate verifiable evidence of this interaction.
+                Are you sure you want to leave this preview? In the finished design, this step would be where you'd confirm purging a prepared transcript — <strong className="text-foreground">that capability doesn't exist yet</strong>, so nothing is actually being discarded right now.
               </p>
 
               <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 sm:p-4">
                 <p className="text-xs sm:text-sm text-muted-foreground mb-2">
-                  Once purged, you will not be able to:
+                  Once built, purging would mean you could no longer:
                 </p>
                 <ul className="space-y-1 ml-3 sm:ml-4 list-disc text-xs text-muted-foreground leading-relaxed">
                   <li>Generate a verified transcript of this session</li>
@@ -405,7 +449,7 @@ export default function EagleProtocolTranscriptFlow({
                 borderColor: MANDOS_GREY
               }}>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  <strong className="text-foreground">Privacy Note:</strong> Because of our privacy-first infrastructure, we do not record or store your conversations. This means this is your only opportunity to create a verifiable record.
+                  <strong className="text-foreground">Privacy Note:</strong> Nenya doesn't record or store your conversations, so once this pipeline is real, this would be your only opportunity to create a verifiable record.
                 </p>
               </div>
             </div>
