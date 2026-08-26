@@ -66,7 +66,11 @@ export default function WelcomePage({
 
       {/* First Section: Full Viewport with Large Logo */}
       <div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">
-        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0.7s both' }} className={`flex-1 flex items-center justify-center transition-all duration-500`}>
+        {/* No flex-1 here -- letting this grow-to-fill was pinning the text
+            below to the bottom of the viewport on shorter/wider screens,
+            leaving a large empty gap above it. The outer section's own
+            justify-center now centers this + the text block as one unit. */}
+        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0.7s both' }} className={`flex items-center justify-center transition-all duration-500`}>
           <div
             id="tutorial-logo"
             role="button"

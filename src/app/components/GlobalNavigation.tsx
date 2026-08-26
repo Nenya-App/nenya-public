@@ -1,4 +1,4 @@
-import { Home, BookOpen, Menu, X, ChevronDown, Settings, HelpCircle } from 'lucide-react';
+import { Home, BookOpen, Menu, X, ChevronDown, Settings, HelpCircle, Heart } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState } from 'react';
 import NenyaLogo from './NenyaLogo';
@@ -92,6 +92,11 @@ export function GlobalNavigation({
     setMenuOpen(false);
   };
 
+  const handleSupportUsClick = () => {
+    onNavigateToAbout?.('support-us');
+    setMenuOpen(false);
+  };
+
   return (
     <>
       {/* Desktop Navigation */}
@@ -136,6 +141,19 @@ export function GlobalNavigation({
                   title="Replay tutorial"
                 >
                   <HelpCircle className="size-4" />
+                </Button>
+              ) : null}
+
+              {/* Support Us */}
+              {onNavigateToAbout ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-nenya-gold/40 hover:border-nenya-gold hover:bg-nenya-gold/10 hover:text-nenya-gold-dark text-nenya-gold-dark"
+                  onClick={handleSupportUsClick}
+                >
+                  <Heart className="size-4" />
+                  Support Us
                 </Button>
               ) : null}
 
@@ -302,7 +320,20 @@ export function GlobalNavigation({
                     <div className="text-xs text-muted-foreground">Learn about Nenya</div>
                   </div>
                 </button>
-                
+
+                {onNavigateToAbout ? (
+                  <button
+                    onClick={handleSupportUsClick}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors text-left"
+                  >
+                    <Heart className="size-5 text-nenya-gold-dark" />
+                    <div className="flex-1">
+                      <div className="text-sm">Support Us</div>
+                      <div className="text-xs text-muted-foreground">Help keep Nenya free</div>
+                    </div>
+                  </button>
+                ) : null}
+
                 {showAnimationControls && onBreathingToggle && onOrbitToggle && onValarSelect && onOpacityChange ? (
                   <>
                     <div className="border-t border-border my-2" />
