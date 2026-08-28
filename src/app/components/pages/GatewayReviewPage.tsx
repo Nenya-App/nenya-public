@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Badge } from '../ui/badge';
 import { BodyMapData } from '../BodyMapAvatar';
 import { AppFooter } from '../AppFooter';
+import { SubmitSensoryReportForm } from '../SubmitSensoryReportForm';
 import { NOTE_NAMES } from '../../../lib/audio';
 // jsPDF (and the report's fonts/logo) are only needed if the visitor clicks
 // "Download PDF Report" -- loaded on demand inside downloadNenyaPdfReport()
@@ -356,6 +357,8 @@ export default function GatewayReviewPage({
                 </Button>
               </div>
             </div>
+
+            <SubmitSensoryReportForm report={generateSensoryReport()} />
           </div>
 
           {/* Gateway Cards */}

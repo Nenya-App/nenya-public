@@ -28,6 +28,23 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Netlify Forms only detects forms present in the built HTML at
+         deploy time -- it can't see forms rendered later by React. This
+         static, hidden copy exists purely so Netlify's build step
+         registers the "report-submission" form and its fields; the real,
+         interactive version is rendered by React and POSTs here with the
+         same field names (see src/lib/reportSubmission.ts). Never remove
+         this without also removing the JS-side submission logic, or
+         submissions will silently start failing. -->
+    <form name="report-submission" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="report-submission" />
+      <input type="text" name="bot-field" />
+      <input type="text" name="type" />
+      <textarea name="report"></textarea>
+      <textarea name="comments"></textarea>
+    </form>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
