@@ -8,6 +8,7 @@ import { WelcomeTutorial } from './components/WelcomeTutorial';
 import { BreathingTechnique } from './components/ValarBreathingLogo';
 import TermsAgreementPage from './components/pages/TermsAgreementPage';
 import WelcomePage from './components/pages/WelcomePage';
+import { BodyMapData } from './components/BodyMapAvatar';
 
 // Everything past the welcome/breathing screen is code-split: a visitor who
 // only ever does the breathing exercise shouldn't pay for the Sound
@@ -37,6 +38,14 @@ export interface UserColors {
   color2Random?: boolean;
   color1Qualities?: string[] | null;
   color2Qualities?: string[] | null;
+  // These three were being set by SightGatewayPage's onComplete payload and
+  // read downstream (the sensory report's intensity lines, the body-map
+  // image embed) without ever being declared here -- harmless at runtime
+  // since nothing enforces this type, but it meant the interface didn't
+  // actually describe the data flowing through it.
+  color1Intensity?: number;
+  color2Intensity?: number;
+  bodyMap?: BodyMapData;
   gradientDirection?: string;
 }
 

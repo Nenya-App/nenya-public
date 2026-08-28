@@ -425,7 +425,7 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
               </ul>
             </div>
             <p className="text-sm text-muted-foreground">
-              <strong>Note:</strong> The core Nenya platform remains ephemeral by design. The Archivist's Journal is a <em>Structured Integration</em> from Nenya Labs Public Benefit Corporation that provides optional personal archiving while maintaining privacy-first principles.
+              <strong>Note:</strong> The core Nenya platform remains ephemeral by design. The Archivist's Journal is a <em>Structured Integration</em> from Nenya, a fiscally sponsored project of Fractured Atlas, that provides optional personal archiving while maintaining privacy-first principles.
             </p>
             <p className="text-sm text-muted-foreground">
               <strong>In the full application:</strong> You would be able to add the Archivist's Journal to your practice. For this prototype, click below to simulate access.

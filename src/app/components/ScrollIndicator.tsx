@@ -18,7 +18,12 @@ export function ScrollIndicator({
 }: ScrollIndicatorProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [hasScrollableContent, setHasScrollableContent] = useState(false);
-  const checkTimeoutRef = useRef<NodeJS.Timeout>();
+  // ReturnType<typeof setTimeout>, not NodeJS.Timeout -- this runs in the
+  // browser, where setTimeout returns a number, not Node's Timeout object.
+  // The environment-agnostic form resolves correctly either way and
+  // doesn't silently depend on @types/node being installed (which this
+  // project doesn't have as a dependency).
+  const checkTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     const checkScrollable = () => {

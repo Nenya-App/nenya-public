@@ -385,7 +385,6 @@ export function GlobalNavigation({
               onCounterToggle={onCounterToggle}
               cvMode={cvMode}
               onCvModeChange={onCvModeChange}
-              onBreathingPopoutToggle={onBreathingPopoutToggle}
             />
           </DialogContent>
         </Dialog>

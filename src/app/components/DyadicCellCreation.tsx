@@ -115,7 +115,7 @@ export default function DyadicCellCreation({ onCreateCell, onBack }: DyadicCellC
               <div className="space-y-2">
                 <h4 className="text-sm">Accountability & Safety</h4>
                 <p className="text-xs text-muted-foreground">
-                  Dyadic Cells are a <em>Structured Integration</em> from Nenya Labs Public Benefit Corporation. This allows for revocation of access in the event of verified, repeated abuse. While Nenya prioritizes privacy and anonymity, this accountability mechanism helps protect the community from harmful behavior.
+                  Dyadic Cells are a <em>Structured Integration</em> from Nenya, a fiscally sponsored project of Fractured Atlas, a nonprofit arts service organization. This allows for revocation of access in the event of verified, repeated abuse. While Nenya prioritizes privacy and anonymity, this accountability mechanism helps protect the community from harmful behavior.
                 </p>
               </div>
             </div>

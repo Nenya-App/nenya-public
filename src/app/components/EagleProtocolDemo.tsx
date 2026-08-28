@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, Waves, AlertTriangle, FileText, AlertCircle } from 'lucide-react';
+import { Shield, Waves, AlertTriangle, FileText, AlertCircle, Info } from 'lucide-react';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -25,6 +25,30 @@ const NIENNA_SKY = '#87CEEB'; // Sky Blue - Healing hope
 const NIENNA_BACKGROUND = '#FFFFFF'; // White - Pure peace
 const NIENNA_TEXT = '#1C1C1C'; // Near Black - Clear text
 const NIENNA_EARTH = '#8B4513'; // Saddle Brown - Grounding
+
+// Shown at the top of every state of this flow. This modal makes strong,
+// specific claims -- a session ending, a report reaching "our human safety
+// team" -- that read as fully real, and it's reachable from a live Session
+// screen (via an explicitly-labeled demo-conversation button), not only
+// from the About page. Someone who clicks through a couple of demo options
+// without registering that label could otherwise take this at face value.
+// The crisis resources themselves are real and are left untouched below --
+// this note only qualifies the session/reporting narrative around them.
+function DemoPreviewNote() {
+  return (
+    <div
+      className="flex items-start gap-2 rounded-lg border-2 p-3 text-xs"
+      style={{ borderColor: NIENNA_WARM, background: `${NIENNA_WARM}12`, color: NIENNA_TEXT }}
+    >
+      <Info className="size-4 mt-0.5 flex-shrink-0" style={{ color: NIENNA_PRIMARY }} />
+      <p>
+        <strong>You're viewing a demo.</strong> No real session was ended and nothing typed here is sent
+        anywhere. The crisis resources below are real — everything else on this screen is a preview of a
+        safety system we're building, not something functioning today.
+      </p>
+    </div>
+  );
+}
 
 export default function EagleProtocolDemo({ isActive, onComplete }: EagleProtocolDemoProps) {
   const [demoState, setDemoState] = useState<DemoState>('inactive');
@@ -94,12 +118,14 @@ export default function EagleProtocolDemo({ isActive, onComplete }: EagleProtoco
               EAGLE PROTOCOL: INVOKING SAFETY MODE
             </DialogTitle>
             <DialogDescription style={{ color: NIENNA_TEXT }}>
-              This session has been ended for your safety. Please seek human support.
+              In the finished version, this session would now be ended for your safety. Please seek human
+              support regardless — the resources below are real.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <div className="rounded-lg p-4 space-y-3" style={{ 
+            <DemoPreviewNote />
+            <div className="rounded-lg p-4 space-y-3" style={{
               background: `${NIENNA_SKY}15`,
               border: `2px solid ${NIENNA_SKY}`
             }}>
@@ -179,13 +205,18 @@ export default function EagleProtocolDemo({ isActive, onComplete }: EagleProtoco
               Submit a Report?
             </DialogTitle>
             <DialogDescription>
-              This is your only opportunity to report this interaction.
+              Preview: in the finished version, this would be your only opportunity to report this
+              interaction.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            <DemoPreviewNote />
+
             <p className="text-sm text-muted-foreground">
-              The Eagle Protocol has ended your session to protect your safety. Would you like to optionally submit a report about what just happened?
+              In the finished design, the Eagle Protocol would have ended your session to protect your
+              safety. This screen previews the optional report you'd then be able to submit about what
+              happened.
             </p>
 
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
@@ -193,18 +224,22 @@ export default function EagleProtocolDemo({ isActive, onComplete }: EagleProtoco
                 <AlertTriangle className="size-5 text-primary mt-0.5 flex-shrink-0" />
                 <div className="space-y-2 text-sm">
                   <p>
-                    Because of our privacy-first infrastructure, we do not record or store your conversations. This means <strong>this is your only opportunity to make a report.</strong> If you do not submit one, there will be no record for our human team to review.
+                    Because of our privacy-first infrastructure, Nenya doesn't record or store your
+                    conversations — so in the finished design, <strong>this would be your only opportunity to
+                    make a report.</strong> That reporting pipeline doesn't exist yet, though: nothing typed
+                    on the next screen is actually sent anywhere.
                   </p>
                 </div>
               </div>
             </div>
 
             <p className="text-sm text-muted-foreground">
-              Submitting a report is the only way we can verify the AI's behavior, improve its safety systems, or take action against platform abuse.
+              Once built, submitting a report would be the way to verify the AI's behavior, improve its
+              safety systems, or take action against platform abuse.
             </p>
 
             <p className="text-sm">
-              Would you like to submit an anonymous report now?
+              Continue the preview of the report flow?
             </p>
           </div>
 
@@ -213,7 +248,7 @@ export default function EagleProtocolDemo({ isActive, onComplete }: EagleProtoco
               No, Thank You
             </Button>
             <Button onClick={handleYesReport}>
-              Yes, Submit a Report
+              Continue Preview
             </Button>
           </div>
         </DialogContent>
@@ -223,19 +258,22 @@ export default function EagleProtocolDemo({ isActive, onComplete }: EagleProtoco
       <Dialog open={demoState === 'report-form'} onOpenChange={() => {}}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Submit an Anonymous Report</DialogTitle>
+            <DialogTitle>Preview: Submit an Anonymous Report</DialogTitle>
             <DialogDescription>
-              Help us improve our safety protocols
+              A preview of the safety-protocol reporting flow we're building
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            <DemoPreviewNote />
+
             <p className="text-sm text-muted-foreground">
-              Please briefly describe what led to the session being ended. This helps our human team verify system behavior and improve our safety protocols.
+              In the finished version, you'd briefly describe what led to the session being ended, helping
+              a human team verify system behavior and improve safety protocols.
             </p>
 
             <div className="space-y-2">
-              <Label htmlFor="eagle-report">Your Report (Optional)</Label>
+              <Label htmlFor="eagle-report">Your Report (Preview only — input disabled)</Label>
               <Textarea
                 id="eagle-report"
                 placeholder="Example: I was exploring difficult feelings about self-worth and the system correctly identified crisis language..."
@@ -245,14 +283,16 @@ export default function EagleProtocolDemo({ isActive, onComplete }: EagleProtoco
                 disabled
               />
               <p className="text-xs text-muted-foreground">
-                Note: Text input is disabled in this demo
+                Text input is disabled here on purpose — this step doesn't send anything anywhere yet.
               </p>
             </div>
 
             <div className="bg-muted/20 rounded-lg p-3 text-xs text-muted-foreground">
-              <p className="mb-1 text-foreground">Privacy Note:</p>
+              <p className="mb-1 text-foreground">Privacy Note (Planned):</p>
               <p>
-                Your report is completely anonymous. It will be reviewed by our human safety team to ensure the Eagle Protocol is functioning correctly and to improve our crisis detection systems.
+                In the finished design, your report would be completely anonymous and reviewed by a human
+                safety team to ensure the Eagle Protocol is functioning correctly and to improve crisis
+                detection. No such review pipeline exists yet.
               </p>
             </div>
           </div>
@@ -262,7 +302,7 @@ export default function EagleProtocolDemo({ isActive, onComplete }: EagleProtoco
               Cancel
             </Button>
             <Button onClick={handleSubmitReport}>
-              Submit Report (Demo)
+              Continue Preview
             </Button>
           </div>
         </DialogContent>
@@ -274,16 +314,18 @@ export default function EagleProtocolDemo({ isActive, onComplete }: EagleProtoco
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="size-5 text-green-600" />
-              Report Submitted
+              Preview Complete
             </DialogTitle>
             <DialogDescription>
-              Thank you for helping us improve Nenya's safety systems.
+              This is where a real report would have been sent, once that pipeline exists.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
+          <div className="py-4 space-y-3">
+            <DemoPreviewNote />
             <p className="text-sm text-center text-muted-foreground">
-              Thank you. Your anonymous report has been submitted to our human review team. This concludes the demo of our safety system.
+              Nothing was actually submitted anywhere — this concludes the demo of the safety system we're
+              building.
             </p>
           </div>
 

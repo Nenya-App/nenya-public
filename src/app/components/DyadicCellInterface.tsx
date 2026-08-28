@@ -182,7 +182,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
           extraContent: (
             <Card className="p-4 bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800">
               <p className="text-sm text-purple-900 dark:text-purple-100">
-                <strong>Notice the difference:</strong> You can see the partner's raw emotional expression. If you toggle "Receive Translated", the AI will help you identify the underlying feelings and needs using NVC+ framework.
+                <strong>Notice the difference:</strong> You can see the partner's raw emotional expression. If you toggle "Receive Translated", this preview shows what an AI-assisted NVC+ translation would look like — the actual translation isn't live yet, this walkthrough uses a scripted example.
               </p>
             </Card>
           )
@@ -263,7 +263,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowEagleProtocol(true)}
-                title="Eagle Protocol"
+                title="Eagle Protocol (planned safety feature)"
               >
                 <Waves className="size-4" />
               </Button>

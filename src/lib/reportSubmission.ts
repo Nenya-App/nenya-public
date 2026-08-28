@@ -6,7 +6,7 @@
 // has. See index.html for the static form Netlify needs to detect this
 // form at build time.
 
-export type ReportSubmissionType = 'error-report' | 'sensory-reflection';
+type ReportSubmissionType = 'error-report' | 'sensory-reflection';
 
 const MAX_REPORT_LENGTH = 20000; // generous -- a full multi-gateway sensory report can be long
 const MAX_COMMENTS_LENGTH = 2000;
@@ -21,7 +21,7 @@ const MAX_COMMENTS_LENGTH = 2000;
  * the team's inbox is exactly what it claims to be: plain text, nothing
  * else.
  */
-export function sanitizePlainText(input: string, maxLength: number): string {
+function sanitizePlainText(input: string, maxLength: number): string {
   const withoutTags = input.replace(/<[^>]*>/g, '');
 
   // Filtering control characters by char code rather than a regex literal:
@@ -40,11 +40,11 @@ export function sanitizePlainText(input: string, maxLength: number): string {
   return printableOnly.trim().slice(0, maxLength);
 }
 
-export function sanitizeComments(input: string): string {
+function sanitizeComments(input: string): string {
   return sanitizePlainText(input, MAX_COMMENTS_LENGTH);
 }
 
-export function sanitizeReportBody(input: string): string {
+function sanitizeReportBody(input: string): string {
   return sanitizePlainText(input, MAX_REPORT_LENGTH);
 }
 

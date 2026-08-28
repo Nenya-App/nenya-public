@@ -194,7 +194,7 @@ export default function EagleProtocolTranscriptFlow({
                   <strong>The Design Goal:</strong> In the finished version, the system would automatically prepare a <strong style={{ color: NIENNA_PRIMARY }}>cryptographically-signed transcript</strong> of the last 5 minutes of conversation. This preview doesn't do that yet.
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  In that design, this would be the <strong className="text-foreground">only verifiable evidence</strong> Nenya Labs accepts for review, maintaining a clear chain of custody for your data. That review pipeline doesn't exist yet either.
+                  In that design, this would be the <strong className="text-foreground">only verifiable evidence</strong> Nenya accepts for review, maintaining a clear chain of custody for your data. That review pipeline doesn't exist yet either.
                 </p>
               </div>
 
@@ -438,7 +438,7 @@ export default function EagleProtocolTranscriptFlow({
                 <ul className="space-y-1 ml-3 sm:ml-4 list-disc text-xs text-muted-foreground leading-relaxed">
                   <li>Generate a verified transcript of this session</li>
                   <li>Submit cryptographically-signed evidence for safety review</li>
-                  <li>Request formal accountability or intervention from Nenya Labs</li>
+                  <li>Request formal accountability or intervention from Nenya</li>
                   <li>Contribute this interaction to training data improvements</li>
                   <li>Recover any session metadata or tone analysis</li>
                 </ul>
