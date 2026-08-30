@@ -5,6 +5,7 @@
 // the web app already) are fetched and embedded, along with the actual
 // logo mark, so the document reads as an artifact of the app itself.
 import type { Gateway, GatewayData } from '../app/App';
+import type { BodyMapData } from '../app/components/BodyMapAvatar';
 import { NOTE_NAMES } from './audio';
 
 // Matches the --nenya-* custom properties in src/styles/globals.css.
@@ -197,7 +198,9 @@ function drawMelodyVisualizer(
 export async function downloadNenyaPdfReport(
   gatewayData: GatewayData[],
   gatewayTitles: Record<Gateway, string>,
-  formatGatewayData: (gateway: Gateway, data: any) => string[]
+  formatGatewayData: (gateway: Gateway, data: any) => string[],
+  bodyMapData?: BodyMapData,
+  formatBodyMapLines?: (bodyMapData: BodyMapData) => string[]
 ) {
   const { jsPDF } = await import('jspdf');
   const [fonts, logoDataUrl] = await Promise.all([loadFonts(), loadLogo()]);
@@ -312,14 +315,13 @@ export async function downloadNenyaPdfReport(
 
   gatewayData.forEach((gd) => {
     const dataLines = formatGatewayData(gd.gateway, gd.data);
-    const hasBodyMap = gd.gateway === 'sight' && !!gd.data?.bodyMap?.imageDataUrl;
     const hasColorSwatches = gd.gateway === 'sight' && !!gd.data?.color1 && !!gd.data?.color2;
     const melody: (number | null)[] | null =
       gd.gateway === 'sound' && Array.isArray(gd.data?.melody) && gd.data.melody.some((n: number | null) => n !== null)
         ? gd.data.melody
         : null;
     const estimatedHeight =
-      14 + dataLines.length * 5.6 + (hasBodyMap ? 62 : 0) + (hasColorSwatches ? 26 : 0) + (melody ? 33 : 0) + 10;
+      14 + dataLines.length * 5.6 + (hasColorSwatches ? 26 : 0) + (melody ? 33 : 0) + 10;
 
     if (y + estimatedHeight > pageHeight - 26) {
       y = newContentPage();
@@ -392,7 +394,36 @@ export async function downloadNenyaPdfReport(
       y += 5.6;
     });
 
-    if (hasBodyMap) {
+    y += 6;
+  });
+
+  // ---------------------------------------------------------------
+  // Body Map -- shared across every gateway rather than owned by one, so
+  // it's its own section after all gateway sections rather than nested
+  // under Sight. Only included at all if the caller determined it was
+  // actually used (bodyMapData is undefined otherwise).
+  // ---------------------------------------------------------------
+  if (bodyMapData && formatBodyMapLines) {
+    const bodyMapLines = formatBodyMapLines(bodyMapData);
+    const hasImage = !!bodyMapData.imageDataUrl;
+    const estimatedHeight = 14 + bodyMapLines.length * 5.6 + (hasImage ? 62 : 0) + 10;
+
+    if (y + estimatedHeight > pageHeight - 26) {
+      y = newContentPage();
+    }
+
+    doc.setGState(doc.GState({ opacity: 0.24 }));
+    doc.setFillColor(...COLORS.gold);
+    doc.roundedRect(margin, y - 5, contentWidth, 11, 2, 2, 'F');
+    doc.setGState(doc.GState({ opacity: 1 }));
+
+    doc.setFont('CinzelSemiBold', 'normal');
+    doc.setFontSize(11.5);
+    doc.setTextColor(...COLORS.warmBrown);
+    doc.text('Body Map', margin + 4, y + 2.5);
+    y += 13;
+
+    if (hasImage) {
       if (y + 60 > pageHeight - 26) {
         y = newContentPage();
       }
@@ -402,7 +433,7 @@ export async function downloadNenyaPdfReport(
         doc.setDrawColor(...COLORS.gold);
         doc.setLineWidth(0.3);
         doc.roundedRect(margin + 4, y, imgW, imgH, 2, 2);
-        doc.addImage(gd.data.bodyMap.imageDataUrl, 'JPEG', margin + 5, y + 1, imgW - 2, imgH - 2);
+        doc.addImage(bodyMapData.imageDataUrl!, 'JPEG', margin + 5, y + 1, imgW - 2, imgH - 2);
         y += imgH + 8;
       } catch {
         // If the captured body-map image fails to decode, skip it rather
@@ -410,8 +441,31 @@ export async function downloadNenyaPdfReport(
       }
     }
 
-    y += 6;
-  });
+    bodyMapLines.forEach((line) => {
+      if (y > pageHeight - 26) {
+        y = newContentPage();
+      }
+      if (line.startsWith('  ')) {
+        doc.setFont('Manrope', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...COLORS.textMuted);
+        const wrapped: string[] = doc.splitTextToSize(line.trim(), contentWidth - 12);
+        wrapped.forEach((wrappedLine) => {
+          if (y > pageHeight - 26) {
+            y = newContentPage();
+          }
+          doc.text(wrappedLine, margin + 8, y);
+          y += 5.6;
+        });
+        return;
+      }
+      doc.setFont('ManropeSemiBold', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(...COLORS.ink);
+      doc.text(line, margin + 4, y);
+      y += 5.6;
+    });
+  }
 
   // ---------------------------------------------------------------
   // Footer stamp + page numbers on every content page (cover excluded)

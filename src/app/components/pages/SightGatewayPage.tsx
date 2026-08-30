@@ -29,6 +29,8 @@ interface SightGatewayPageProps {
   onBack: () => void;
   currentIndex: number;
   totalGateways: number;
+  bodyMapData: BodyMapData;
+  onUpdateBodyMap: (data: BodyMapData) => void;
 }
 
 const generateRandomColor = () => {
@@ -104,7 +106,7 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways }: SightGatewayPageProps) {
+export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap }: SightGatewayPageProps) {
   const { theme } = useTheme();
 
   // Step state: 'instructions' or 'selection'
@@ -123,7 +125,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   const [gradientDirection, setGradientDirection] = useState('to-right');
   const [showBodyMap, setShowBodyMap] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<'present' | 'potential' | null>(null);
-  const [bodyMapData, setBodyMapData] = useState<BodyMapData | null>(null);
+  // bodyMapData/onUpdateBodyMap come from props -- shared App-level state
+  // accessible from every gateway, not local to Sight.
 
   const handleSurpriseMe = () => {
     const randomColor1 = generateRandomColor();
@@ -151,7 +154,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
       color1Intensity,
       color2Intensity,
       gradientDirection,
-      bodyMap: bodyMapData,
     });
   };
 
@@ -510,8 +512,9 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
         <BodyMapAvatar
           userColors={{ color1, color2, color1Name, color2Name }}
           onClose={() => setShowBodyMap(false)}
-          onSave={(data) => setBodyMapData(data)}
-          initialPlacements={bodyMapData?.placements || []}
+          onSave={(data) => onUpdateBodyMap(data)}
+          initialPlacements={bodyMapData.placements}
+          initialNotes={bodyMapData.notes}
         />
       )}
 

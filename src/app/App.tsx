@@ -38,14 +38,13 @@ export interface UserColors {
   color2Random?: boolean;
   color1Qualities?: string[] | null;
   color2Qualities?: string[] | null;
-  // These three were being set by SightGatewayPage's onComplete payload and
-  // read downstream (the sensory report's intensity lines, the body-map
-  // image embed) without ever being declared here -- harmless at runtime
-  // since nothing enforces this type, but it meant the interface didn't
-  // actually describe the data flowing through it.
+  // These were being set by SightGatewayPage's onComplete payload and read
+  // downstream (the sensory report's intensity lines) without ever being
+  // declared here -- harmless at runtime since nothing enforces this type,
+  // but it meant the interface didn't actually describe the data flowing
+  // through it.
   color1Intensity?: number;
   color2Intensity?: number;
-  bodyMap?: BodyMapData;
   gradientDirection?: string;
 }
 
@@ -72,6 +71,10 @@ export default function App() {
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
   const [currentGatewayIndex, setCurrentGatewayIndex] = useState(0);
   const [gatewayData, setGatewayData] = useState<GatewayData[]>([]);
+  // Shared across every gateway -- not owned by Sight or any one gateway's
+  // data blob, so it persists regardless of which gateways are visited or
+  // in what order.
+  const [bodyMapData, setBodyMapData] = useState<BodyMapData>({ placements: [], notes: {} });
   const [interfaceColors, setInterfaceColors] = useState<UserColors>({ 
     color1: '#7A9B9E', 
     color2: '#DAC682' 
@@ -453,14 +456,16 @@ export default function App() {
           )}
           
           {currentScreen === 'sight' && (
-            <SightGatewayPage 
+            <SightGatewayPage
               onComplete={(data) => handleGatewayComplete('sight', data)}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('sight')}
               totalGateways={selectedGateways.length}
+              bodyMapData={bodyMapData}
+              onUpdateBodyMap={setBodyMapData}
             />
           )}
-          
+
           {currentScreen === 'sound' && (
             <SoundGatewayPage
               onComplete={(data) => handleGatewayComplete('sound', data)}
@@ -468,6 +473,8 @@ export default function App() {
               currentIndex={selectedGateways.indexOf('sound')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
+              bodyMapData={bodyMapData}
+              onUpdateBodyMap={setBodyMapData}
             />
           )}
 
@@ -478,6 +485,8 @@ export default function App() {
               currentIndex={selectedGateways.indexOf('touch')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
+              bodyMapData={bodyMapData}
+              onUpdateBodyMap={setBodyMapData}
             />
           )}
 
@@ -488,6 +497,8 @@ export default function App() {
               currentIndex={selectedGateways.indexOf('essence')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
+              bodyMapData={bodyMapData}
+              onUpdateBodyMap={setBodyMapData}
             />
           )}
 
@@ -498,6 +509,8 @@ export default function App() {
               currentIndex={selectedGateways.indexOf('movement')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
+              bodyMapData={bodyMapData}
+              onUpdateBodyMap={setBodyMapData}
             />
           )}
 
@@ -508,6 +521,8 @@ export default function App() {
               currentIndex={selectedGateways.indexOf('insight')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
+              bodyMapData={bodyMapData}
+              onUpdateBodyMap={setBodyMapData}
             />
           )}
           
@@ -525,6 +540,7 @@ export default function App() {
               onContinue={handleContinueFromReview}
               onEditGateway={handleEditGateway}
               onBack={() => navigateBack('home')}
+              bodyMapData={bodyMapData}
             />
           )}
 

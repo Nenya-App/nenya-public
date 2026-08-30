@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '../ui/button';
-import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, Link2, Unlink } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, Link2, Unlink, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
@@ -10,7 +10,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
-import { sanitizePlainText } from '../../../lib/textSanitize';
+import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import {
   PENTATONIC_FREQS,
   NOTE_NAMES,
@@ -29,6 +29,8 @@ interface SoundGatewayPageProps {
   currentIndex: number;
   totalGateways: number;
   userColors?: { color1?: string; color2?: string };
+  bodyMapData: BodyMapData;
+  onUpdateBodyMap: (data: BodyMapData) => void;
 }
 
 const timbres = ['Resonant', 'Hollow', 'Bright', 'Warm', 'Metallic', 'Breathy', 'Rich', 'Thin'];
@@ -181,8 +183,9 @@ function NotePicker({
   );
 }
 
-export default function SoundGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors }: SoundGatewayPageProps) {
+export default function SoundGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: SoundGatewayPageProps) {
   const hasValidColors = !!userColors?.color1 && !!userColors?.color2 && isValidHex(userColors.color1) && isValidHex(userColors.color2);
+  const [showBodyMap, setShowBodyMap] = useState(false);
 
   // Step state
   const [step, setStep] = useState<'instructions' | 'melody' | 'qualitative'>('instructions');
@@ -279,7 +282,6 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const [currentRhythms, setCurrentRhythms] = useState<string[]>([]);
   const [currentRhythmOther, setCurrentRhythmOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
-  const [currentBodyLocation, setCurrentBodyLocation] = useState('');
 
   // Potential state
   const [potentialPitch, setPotentialPitch] = useState([50]);
@@ -289,7 +291,6 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const [potentialRhythms, setPotentialRhythms] = useState<string[]>([]);
   const [potentialRhythmOther, setPotentialRhythmOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
-  const [potentialBodyLocation, setPotentialBodyLocation] = useState('');
 
   const handleCheckboxChange = (
     value: string,
@@ -325,7 +326,6 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
       currentRhythms: currentRhythms.length > 0 ? currentRhythms : null,
       currentRhythmOther: currentRhythmOther || null,
       currentDescription: currentDescription || null,
-      currentBodyLocation: currentBodyLocation ? sanitizePlainText(currentBodyLocation, 300) : null,
       potentialPitch: potentialPitch[0],
       potentialVolume: potentialVolume[0],
       potentialTimbres: potentialTimbres.length > 0 ? potentialTimbres : null,
@@ -333,7 +333,6 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
       potentialRhythms: potentialRhythms.length > 0 ? potentialRhythms : null,
       potentialRhythmOther: potentialRhythmOther || null,
       potentialDescription: potentialDescription || null,
-      potentialBodyLocation: potentialBodyLocation ? sanitizePlainText(potentialBodyLocation, 300) : null,
     });
   };
 
@@ -523,6 +522,12 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
             <div className="text-center space-y-1">
               <p className="text-sm text-muted-foreground">Optional — words for what you just heard</p>
             </div>
+            <div className="flex justify-center">
+              <Button variant="outline" size="sm" onClick={() => setShowBodyMap(true)} className="gap-2">
+                <User className="size-4" />
+                Open Body Map
+              </Button>
+            </div>
             <div className="grid md:grid-cols-2 gap-6 md:gap-8">
               {/* Current State Card */}
               <Card
@@ -609,11 +614,6 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                   <div className="space-y-2">
                     <Label className="text-sm">Describe the sounds (optional)</Label>
                     <Textarea placeholder="What song or sounds come to mind?" value={currentDescription} onChange={(e) => setCurrentDescription(e.target.value)} className="min-h-20 resize-none text-sm" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm">Where do you feel this in your body? (optional)</Label>
-                    <Textarea placeholder="e.g., throat, chest, ears..." value={currentBodyLocation} onChange={(e) => setCurrentBodyLocation(e.target.value)} className="min-h-16 resize-none text-sm" />
                   </div>
                 </CardContent>
               </Card>
@@ -704,11 +704,6 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                     <Label className="text-sm">Describe the sounds (optional)</Label>
                     <Textarea placeholder="What sounds would you like to move toward?" value={potentialDescription} onChange={(e) => setPotentialDescription(e.target.value)} className="min-h-20 resize-none text-sm" />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm">Where would you feel this in your body? (optional)</Label>
-                    <Textarea placeholder="e.g., throat, chest, ears..." value={potentialBodyLocation} onChange={(e) => setPotentialBodyLocation(e.target.value)} className="min-h-16 resize-none text-sm" />
-                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -723,6 +718,16 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
         <AppFooter />
       </div>
+
+      {showBodyMap && (
+        <BodyMapAvatar
+          userColors={userColors?.color1 && userColors?.color2 ? { color1: userColors.color1, color2: userColors.color2 } : undefined}
+          onClose={() => setShowBodyMap(false)}
+          onSave={(data) => onUpdateBodyMap(data)}
+          initialPlacements={bodyMapData.placements}
+          initialNotes={bodyMapData.notes}
+        />
+      )}
     </div>
   );
 }

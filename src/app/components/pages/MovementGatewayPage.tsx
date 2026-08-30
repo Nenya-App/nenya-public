@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
-import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
@@ -11,7 +11,7 @@ import { Label } from '../ui/label';
 import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
-import { sanitizePlainText } from '../../../lib/textSanitize';
+import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 
 interface MovementGatewayPageProps {
   onComplete: (data: any) => void;
@@ -19,6 +19,8 @@ interface MovementGatewayPageProps {
   currentIndex: number;
   totalGateways: number;
   userColors?: { color1?: string; color2?: string };
+  bodyMapData: BodyMapData;
+  onUpdateBodyMap: (data: BodyMapData) => void;
 }
 
 const directions = [
@@ -64,10 +66,11 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function MovementGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors }: MovementGatewayPageProps) {
+export default function MovementGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: MovementGatewayPageProps) {
   // Step state
   const [step, setStep] = useState<'instructions' | 'selection'>('instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
+  const [showBodyMap, setShowBodyMap] = useState(false);
 
   // Current state
   const [currentDirections, setCurrentDirections] = useState<string[]>([]);
@@ -77,7 +80,6 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [currentQualities, setCurrentQualities] = useState<string[]>([]);
   const [currentQualityOther, setCurrentQualityOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
-  const [currentBodyLocation, setCurrentBodyLocation] = useState('');
 
   // Potential state
   const [potentialDirections, setPotentialDirections] = useState<string[]>([]);
@@ -87,7 +89,6 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [potentialQualities, setPotentialQualities] = useState<string[]>([]);
   const [potentialQualityOther, setPotentialQualityOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
-  const [potentialBodyLocation, setPotentialBodyLocation] = useState('');
 
   const handleCheckboxChange = (
     value: string,
@@ -119,15 +120,13 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
       currentQualities: currentQualities.length > 0 ? currentQualities : null,
       currentQualityOther: currentQualityOther || null,
       currentDescription: currentDescription || null,
-      currentBodyLocation: currentBodyLocation ? sanitizePlainText(currentBodyLocation, 300) : null,
       potentialDirections: potentialDirections.length > 0 ? potentialDirections : null,
       potentialDirectionOther: potentialDirectionOther || null,
       potentialEnergy: potentialEnergy[0],
       potentialSpeed: potentialSpeed[0],
       potentialQualities: potentialQualities.length > 0 ? potentialQualities : null,
       potentialQualityOther: potentialQualityOther || null,
-      potentialDescription: potentialDescription || null,
-      potentialBodyLocation: potentialBodyLocation ? sanitizePlainText(potentialBodyLocation, 300) : null
+      potentialDescription: potentialDescription || null
     });
   };
 
@@ -213,6 +212,12 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
         ) : (
           /* Selection Cards */
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
+            <div className="flex justify-center">
+              <Button variant="outline" size="sm" onClick={() => setShowBodyMap(true)} className="gap-2">
+                <User className="size-4" />
+                Open Body Map
+              </Button>
+            </div>
             <div className="grid md:grid-cols-2 gap-6 md:gap-8">
               {/* Present State Card */}
               <Card
@@ -349,16 +354,6 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                       value={currentDescription}
                       onChange={(e) => setCurrentDescription(e.target.value)}
                       className="min-h-20 resize-none text-sm"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm">Where do you feel this in your body? (optional)</Label>
-                    <Textarea
-                      placeholder="e.g., legs, chest, hands..."
-                      value={currentBodyLocation}
-                      onChange={(e) => setCurrentBodyLocation(e.target.value)}
-                      className="min-h-16 resize-none text-sm"
                     />
                   </div>
                 </CardContent>
@@ -501,16 +496,6 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm">Where would you feel this in your body? (optional)</Label>
-                    <Textarea
-                      placeholder="e.g., legs, chest, hands..."
-                      value={potentialBodyLocation}
-                      onChange={(e) => setPotentialBodyLocation(e.target.value)}
-                      className="min-h-16 resize-none text-sm"
-                    />
-                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -531,6 +516,16 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
 
         <AppFooter />
       </div>
+
+      {showBodyMap && (
+        <BodyMapAvatar
+          userColors={color1 && color2 ? { color1, color2 } : undefined}
+          onClose={() => setShowBodyMap(false)}
+          onSave={(data) => onUpdateBodyMap(data)}
+          initialPlacements={bodyMapData.placements}
+          initialNotes={bodyMapData.notes}
+        />
+      )}
     </div>
   );
 }

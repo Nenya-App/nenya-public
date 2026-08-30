@@ -19,6 +19,7 @@ interface GatewayReviewPageProps {
   onContinue: () => void;
   onEditGateway: (gateway: Gateway) => void;
   onBack: () => void;
+  bodyMapData: BodyMapData;
 }
 
 const gatewayIcons = {
@@ -61,6 +62,36 @@ const getBodyPartLabel = (bodyPartId: string): string => {
   return labels[bodyPartId] || bodyPartId;
 };
 
+// The body map is shared across every gateway rather than owned by one, so
+// whether it's "used" is a property of the whole map, not any single
+// gateway's data -- true only if at least one color was placed or one note
+// was written.
+const isBodyMapUsed = (bodyMapData: BodyMapData): boolean =>
+  bodyMapData.placements.length > 0 || Object.values(bodyMapData.notes).some((note) => note.trim().length > 0);
+
+// One line per body part that has a color and/or a note. A part with a
+// note but no color explicitly says "No color chosen" per body-part rather
+// than being silently omitted or ambiguous.
+const formatBodyMapLines = (bodyMapData: BodyMapData): string[] => {
+  const lines: string[] = [];
+  const partIds = new Set([
+    ...bodyMapData.placements.map((p) => p.bodyPartId),
+    ...Object.keys(bodyMapData.notes).filter((id) => bodyMapData.notes[id]?.trim()),
+  ]);
+
+  partIds.forEach((bodyPartId) => {
+    const placement = bodyMapData.placements.find((p) => p.bodyPartId === bodyPartId);
+    const note = bodyMapData.notes[bodyPartId]?.trim();
+    if (!placement && !note) return;
+
+    lines.push(getBodyPartLabel(bodyPartId));
+    lines.push(`  Color: ${placement ? placement.colorName || placement.color : 'No color chosen'}`);
+    if (note) lines.push(`  Note: ${note}`);
+  });
+
+  return lines;
+};
+
 const formatGatewayData = (gateway: Gateway, data: any): string[] => {
   const info: string[] = [];
   
@@ -83,11 +114,6 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.color2Intensity !== undefined) {
         info.push(`  Intensity: ${data.color2Intensity}/100`);
       }
-
-      // Add body map info if available
-      if (data.bodyMap && data.bodyMap.placements && data.bodyMap.placements.length > 0) {
-        info.push(`Body Map: ${data.bodyMap.placements.length} locations mapped`);
-      }
       break;
       
     case 'sound':
@@ -105,7 +131,6 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.currentRhythmOther) info.push(`  Rhythm (other): ${data.currentRhythmOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
-      if (data.currentBodyLocation) info.push(`  Body sensation: ${data.currentBodyLocation}`);
 
       info.push(`Wish: Pitch ${data.potentialPitch}/100, Volume ${data.potentialVolume}/100`);
       if (data.potentialTimbres && Array.isArray(data.potentialTimbres) && data.potentialTimbres.length > 0) {
@@ -121,7 +146,6 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.potentialRhythmOther) info.push(`  Rhythm (other): ${data.potentialRhythmOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
-      if (data.potentialBodyLocation) info.push(`  Body sensation: ${data.potentialBodyLocation}`);
       if (data.melody && Array.isArray(data.melody) && data.melody.some((n: number | null) => n !== null)) {
         info.push(`Melody: ${data.melody.filter((n: number | null) => n !== null).map((n: number) => NOTE_NAMES[n] || '').join(' – ')}`);
       }
@@ -131,12 +155,10 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       info.push(`Present: Texture ${data.currentTexture}/100, Temperature ${data.currentTemperature}/100`);
       info.push(`  Pressure: ${data.currentPressure}/100, Weight: ${data.currentWeight}/100`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
-      if (data.currentBodyLocation) info.push(`  Body sensation: ${data.currentBodyLocation}`);
 
       info.push(`Wish: Texture ${data.potentialTexture}/100, Temperature ${data.potentialTemperature}/100`);
       info.push(`  Pressure: ${data.potentialPressure}/100, Weight: ${data.potentialWeight}/100`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
-      if (data.potentialBodyLocation) info.push(`  Body sensation: ${data.potentialBodyLocation}`);
       break;
       
     case 'essence':
@@ -154,7 +176,6 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.currentScentOther) info.push(`  Scent (other): ${data.currentScentOther}`);
       if (data.currentIntensity) info.push(`  Intensity: ${data.currentIntensity}/100`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
-      if (data.currentBodyLocation) info.push(`  Body sensation: ${data.currentBodyLocation}`);
 
       if (data.potentialTastes && Array.isArray(data.potentialTastes) && data.potentialTastes.length > 0) {
         info.push(`Potential Taste: ${data.potentialTastes.join(', ')}`);
@@ -170,7 +191,6 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialScentOther) info.push(`  Scent (other): ${data.potentialScentOther}`);
       if (data.potentialIntensity) info.push(`  Intensity: ${data.potentialIntensity}/100`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
-      if (data.potentialBodyLocation) info.push(`  Body sensation: ${data.potentialBodyLocation}`);
       break;
 
     case 'movement':
@@ -189,7 +209,6 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.currentQualityOther) info.push(`  Quality (other): ${data.currentQualityOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
-      if (data.currentBodyLocation) info.push(`  Body sensation: ${data.currentBodyLocation}`);
 
       if (data.potentialDirections && Array.isArray(data.potentialDirections) && data.potentialDirections.length > 0) {
         info.push(`Potential Direction: ${data.potentialDirections.join(', ')}`);
@@ -206,7 +225,6 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.potentialQualityOther) info.push(`  Quality (other): ${data.potentialQualityOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
-      if (data.potentialBodyLocation) info.push(`  Body sensation: ${data.potentialBodyLocation}`);
       break;
 
     case 'insight':
@@ -225,7 +243,6 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.currentPerspectiveOther) info.push(`  Perspective (other): ${data.currentPerspectiveOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
-      if (data.currentBodyLocation) info.push(`  Body sensation: ${data.currentBodyLocation}`);
 
       if (data.potentialPatterns && Array.isArray(data.potentialPatterns) && data.potentialPatterns.length > 0) {
         info.push(`Potential Pattern: ${data.potentialPatterns.join(', ')}`);
@@ -242,7 +259,6 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.potentialPerspectiveOther) info.push(`  Perspective (other): ${data.potentialPerspectiveOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
-      if (data.potentialBodyLocation) info.push(`  Body sensation: ${data.potentialBodyLocation}`);
       break;
   }
   
@@ -255,8 +271,11 @@ export default function GatewayReviewPage({
   onContinue,
   onEditGateway,
   onBack,
+  bodyMapData,
 }: GatewayReviewPageProps) {
-  
+  const bodyMapUsed = isBodyMapUsed(bodyMapData);
+
+
   const generateSensoryReport = () => {
     const timestamp = new Date().toLocaleString();
     let report = `NENYA SENSORY REFLECTION REPORT\n`;
@@ -279,7 +298,16 @@ export default function GatewayReviewPage({
       });
       report += `\n`;
     });
-    
+
+    if (bodyMapUsed) {
+      report += `\nBODY MAP\n`;
+      report += `${'-'.repeat(60)}\n`;
+      formatBodyMapLines(bodyMapData).forEach((line) => {
+        report += `${line}\n`;
+      });
+      report += `\n`;
+    }
+
     report += `\n${'='.repeat(60)}\n`;
     report += `\nEnd of Report\n`;
     report += `\nThis report was generated by Nenya (nenya.biz)\n`;
@@ -303,7 +331,7 @@ export default function GatewayReviewPage({
   };
 
   const downloadPDFReport = () => {
-    downloadNenyaPdfReport(gatewayData, gatewayTitles, formatGatewayData);
+    downloadNenyaPdfReport(gatewayData, gatewayTitles, formatGatewayData, bodyMapUsed ? bodyMapData : undefined, formatBodyMapLines);
   };
   
   return (
@@ -421,45 +449,66 @@ export default function GatewayReviewPage({
                         </div>
                       ))}
                     </div>
-                    
-                    {/* Display Body Map if available (Sight gateway only) */}
-                    {gd.gateway === 'sight' && gd.data.bodyMap && gd.data.bodyMap.imageDataUrl && (
-                      <div className="border-t border-border pt-4 mt-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="text-sm font-medium flex items-center gap-2">
-                            <User className="size-4" />
-                            Body Emotion Map
-                          </h4>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const link = document.createElement('a');
-                              link.download = `nenya-body-map-${new Date().toISOString().split('T')[0]}.jpg`;
-                              link.href = gd.data.bodyMap.imageDataUrl;
-                              link.click();
-                            }}
-                            className="gap-2"
-                          >
-                            <Download className="size-3.5" />
-                            Download
-                          </Button>
-                        </div>
-                        <div className="bg-muted/30 rounded-lg p-4 flex justify-center">
-                          <img 
-                            src={gd.data.bodyMap.imageDataUrl} 
-                            alt="Body emotion map" 
-                            className="max-w-full h-auto rounded"
-                            style={{ maxHeight: '300px' }}
-                          />
-                        </div>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               );
             })}
           </div>
+
+          {/* Body Map -- shared across every gateway, not owned by any one
+              of them, so it's its own section rather than nested under a
+              gateway card. Only shown if it was actually used. */}
+          {bodyMapUsed && (
+            <Card className="overflow-hidden">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <User className="size-5 text-muted-foreground" />
+                  <div>
+                    <CardTitle className="text-lg">Body Map</CardTitle>
+                    <CardDescription className="mt-1">Colors and notes placed across your gateways</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {bodyMapData.imageDataUrl && (
+                  <div className="flex items-center justify-between">
+                    <div />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.download = `nenya-body-map-${new Date().toISOString().split('T')[0]}.jpg`;
+                        link.href = bodyMapData.imageDataUrl!;
+                        link.click();
+                      }}
+                      className="gap-2"
+                    >
+                      <Download className="size-3.5" />
+                      Download
+                    </Button>
+                  </div>
+                )}
+                {bodyMapData.imageDataUrl && (
+                  <div className="bg-muted/30 rounded-lg p-4 flex justify-center">
+                    <img
+                      src={bodyMapData.imageDataUrl}
+                      alt="Body emotion map"
+                      className="max-w-full h-auto rounded"
+                      style={{ maxHeight: '300px' }}
+                    />
+                  </div>
+                )}
+                <div className="space-y-1 text-sm">
+                  {formatBodyMapLines(bodyMapData).map((line, idx) => (
+                    <div key={idx} className={line.startsWith('  ') ? 'text-muted-foreground pl-4' : ''}>
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Continue Button */}
           <div className="flex justify-center pt-8">
