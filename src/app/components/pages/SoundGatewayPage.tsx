@@ -10,6 +10,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
+import { sanitizePlainText } from '../../../lib/textSanitize';
 import {
   PENTATONIC_FREQS,
   NOTE_NAMES,
@@ -278,6 +279,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const [currentRhythms, setCurrentRhythms] = useState<string[]>([]);
   const [currentRhythmOther, setCurrentRhythmOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
+  const [currentBodyLocation, setCurrentBodyLocation] = useState('');
 
   // Potential state
   const [potentialPitch, setPotentialPitch] = useState([50]);
@@ -287,6 +289,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const [potentialRhythms, setPotentialRhythms] = useState<string[]>([]);
   const [potentialRhythmOther, setPotentialRhythmOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialBodyLocation, setPotentialBodyLocation] = useState('');
 
   const handleCheckboxChange = (
     value: string,
@@ -322,6 +325,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
       currentRhythms: currentRhythms.length > 0 ? currentRhythms : null,
       currentRhythmOther: currentRhythmOther || null,
       currentDescription: currentDescription || null,
+      currentBodyLocation: currentBodyLocation ? sanitizePlainText(currentBodyLocation, 300) : null,
       potentialPitch: potentialPitch[0],
       potentialVolume: potentialVolume[0],
       potentialTimbres: potentialTimbres.length > 0 ? potentialTimbres : null,
@@ -329,6 +333,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
       potentialRhythms: potentialRhythms.length > 0 ? potentialRhythms : null,
       potentialRhythmOther: potentialRhythmOther || null,
       potentialDescription: potentialDescription || null,
+      potentialBodyLocation: potentialBodyLocation ? sanitizePlainText(potentialBodyLocation, 300) : null,
     });
   };
 
@@ -605,6 +610,11 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                     <Label className="text-sm">Describe the sounds (optional)</Label>
                     <Textarea placeholder="What song or sounds come to mind?" value={currentDescription} onChange={(e) => setCurrentDescription(e.target.value)} className="min-h-20 resize-none text-sm" />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Where do you feel this in your body? (optional)</Label>
+                    <Textarea placeholder="e.g., throat, chest, ears..." value={currentBodyLocation} onChange={(e) => setCurrentBodyLocation(e.target.value)} className="min-h-16 resize-none text-sm" />
+                  </div>
                 </CardContent>
               </Card>
 
@@ -693,6 +703,11 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                   <div className="space-y-2">
                     <Label className="text-sm">Describe the sounds (optional)</Label>
                     <Textarea placeholder="What sounds would you like to move toward?" value={potentialDescription} onChange={(e) => setPotentialDescription(e.target.value)} className="min-h-20 resize-none text-sm" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Where would you feel this in your body? (optional)</Label>
+                    <Textarea placeholder="e.g., throat, chest, ears..." value={potentialBodyLocation} onChange={(e) => setPotentialBodyLocation(e.target.value)} className="min-h-16 resize-none text-sm" />
                   </div>
                 </CardContent>
               </Card>

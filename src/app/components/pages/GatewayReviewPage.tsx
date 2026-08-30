@@ -105,7 +105,8 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.currentRhythmOther) info.push(`  Rhythm (other): ${data.currentRhythmOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
-      
+      if (data.currentBodyLocation) info.push(`  Body sensation: ${data.currentBodyLocation}`);
+
       info.push(`Wish: Pitch ${data.potentialPitch}/100, Volume ${data.potentialVolume}/100`);
       if (data.potentialTimbres && Array.isArray(data.potentialTimbres) && data.potentialTimbres.length > 0) {
         info.push(`  Timbre: ${data.potentialTimbres.join(', ')}`);
@@ -120,6 +121,7 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.potentialRhythmOther) info.push(`  Rhythm (other): ${data.potentialRhythmOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
+      if (data.potentialBodyLocation) info.push(`  Body sensation: ${data.potentialBodyLocation}`);
       if (data.melody && Array.isArray(data.melody) && data.melody.some((n: number | null) => n !== null)) {
         info.push(`Melody: ${data.melody.filter((n: number | null) => n !== null).map((n: number) => NOTE_NAMES[n] || '').join(' – ')}`);
       }
@@ -129,10 +131,12 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       info.push(`Present: Texture ${data.currentTexture}/100, Temperature ${data.currentTemperature}/100`);
       info.push(`  Pressure: ${data.currentPressure}/100, Weight: ${data.currentWeight}/100`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
+      if (data.currentBodyLocation) info.push(`  Body sensation: ${data.currentBodyLocation}`);
 
       info.push(`Wish: Texture ${data.potentialTexture}/100, Temperature ${data.potentialTemperature}/100`);
       info.push(`  Pressure: ${data.potentialPressure}/100, Weight: ${data.potentialWeight}/100`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
+      if (data.potentialBodyLocation) info.push(`  Body sensation: ${data.potentialBodyLocation}`);
       break;
       
     case 'essence':
@@ -150,7 +154,8 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.currentScentOther) info.push(`  Scent (other): ${data.currentScentOther}`);
       if (data.currentIntensity) info.push(`  Intensity: ${data.currentIntensity}/100`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
-      
+      if (data.currentBodyLocation) info.push(`  Body sensation: ${data.currentBodyLocation}`);
+
       if (data.potentialTastes && Array.isArray(data.potentialTastes) && data.potentialTastes.length > 0) {
         info.push(`Potential Taste: ${data.potentialTastes.join(', ')}`);
       } else if (data.potentialTaste) {
@@ -165,8 +170,9 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialScentOther) info.push(`  Scent (other): ${data.potentialScentOther}`);
       if (data.potentialIntensity) info.push(`  Intensity: ${data.potentialIntensity}/100`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
+      if (data.potentialBodyLocation) info.push(`  Body sensation: ${data.potentialBodyLocation}`);
       break;
-      
+
     case 'movement':
       if (data.currentDirections && Array.isArray(data.currentDirections) && data.currentDirections.length > 0) {
         info.push(`Present Direction: ${data.currentDirections.join(', ')}`);
@@ -183,7 +189,8 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.currentQualityOther) info.push(`  Quality (other): ${data.currentQualityOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
-      
+      if (data.currentBodyLocation) info.push(`  Body sensation: ${data.currentBodyLocation}`);
+
       if (data.potentialDirections && Array.isArray(data.potentialDirections) && data.potentialDirections.length > 0) {
         info.push(`Potential Direction: ${data.potentialDirections.join(', ')}`);
       } else if (data.potentialDirection) {
@@ -199,8 +206,9 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.potentialQualityOther) info.push(`  Quality (other): ${data.potentialQualityOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
+      if (data.potentialBodyLocation) info.push(`  Body sensation: ${data.potentialBodyLocation}`);
       break;
-      
+
     case 'insight':
       if (data.currentPatterns && Array.isArray(data.currentPatterns) && data.currentPatterns.length > 0) {
         info.push(`Present Pattern: ${data.currentPatterns.join(', ')}`);
@@ -217,7 +225,8 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.currentPerspectiveOther) info.push(`  Perspective (other): ${data.currentPerspectiveOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
-      
+      if (data.currentBodyLocation) info.push(`  Body sensation: ${data.currentBodyLocation}`);
+
       if (data.potentialPatterns && Array.isArray(data.potentialPatterns) && data.potentialPatterns.length > 0) {
         info.push(`Potential Pattern: ${data.potentialPatterns.join(', ')}`);
       } else if (data.potentialPattern) {
@@ -233,6 +242,7 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.potentialPerspectiveOther) info.push(`  Perspective (other): ${data.potentialPerspectiveOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
+      if (data.potentialBodyLocation) info.push(`  Body sensation: ${data.potentialBodyLocation}`);
       break;
   }
   

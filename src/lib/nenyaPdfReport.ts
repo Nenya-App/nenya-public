@@ -372,13 +372,23 @@ export async function downloadNenyaPdfReport(
         doc.setFont('Manrope', 'normal');
         doc.setFontSize(9);
         doc.setTextColor(...COLORS.textMuted);
-        doc.text(line.trim(), margin + 8, y);
-      } else {
-        doc.setFont('ManropeSemiBold', 'normal');
-        doc.setFontSize(10);
-        doc.setTextColor(...COLORS.ink);
-        doc.text(line, margin + 4, y);
+        // Free-text fields (Description, Body sensation) can run well
+        // past a single line's width -- wrap rather than let them run off
+        // the page edge.
+        const wrapped: string[] = doc.splitTextToSize(line.trim(), contentWidth - 12);
+        wrapped.forEach((wrappedLine) => {
+          if (y > pageHeight - 26) {
+            y = newContentPage();
+          }
+          doc.text(wrappedLine, margin + 8, y);
+          y += 5.6;
+        });
+        return;
       }
+      doc.setFont('ManropeSemiBold', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(...COLORS.ink);
+      doc.text(line, margin + 4, y);
       y += 5.6;
     });
 

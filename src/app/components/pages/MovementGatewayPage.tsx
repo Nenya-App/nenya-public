@@ -11,6 +11,7 @@ import { Label } from '../ui/label';
 import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
+import { sanitizePlainText } from '../../../lib/textSanitize';
 
 interface MovementGatewayPageProps {
   onComplete: (data: any) => void;
@@ -76,7 +77,8 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [currentQualities, setCurrentQualities] = useState<string[]>([]);
   const [currentQualityOther, setCurrentQualityOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
-  
+  const [currentBodyLocation, setCurrentBodyLocation] = useState('');
+
   // Potential state
   const [potentialDirections, setPotentialDirections] = useState<string[]>([]);
   const [potentialDirectionOther, setPotentialDirectionOther] = useState('');
@@ -85,6 +87,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [potentialQualities, setPotentialQualities] = useState<string[]>([]);
   const [potentialQualityOther, setPotentialQualityOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialBodyLocation, setPotentialBodyLocation] = useState('');
 
   const handleCheckboxChange = (
     value: string,
@@ -116,13 +119,15 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
       currentQualities: currentQualities.length > 0 ? currentQualities : null,
       currentQualityOther: currentQualityOther || null,
       currentDescription: currentDescription || null,
+      currentBodyLocation: currentBodyLocation ? sanitizePlainText(currentBodyLocation, 300) : null,
       potentialDirections: potentialDirections.length > 0 ? potentialDirections : null,
       potentialDirectionOther: potentialDirectionOther || null,
       potentialEnergy: potentialEnergy[0],
       potentialSpeed: potentialSpeed[0],
       potentialQualities: potentialQualities.length > 0 ? potentialQualities : null,
       potentialQualityOther: potentialQualityOther || null,
-      potentialDescription: potentialDescription || null
+      potentialDescription: potentialDescription || null,
+      potentialBodyLocation: potentialBodyLocation ? sanitizePlainText(potentialBodyLocation, 300) : null
     });
   };
 
@@ -346,6 +351,16 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Where do you feel this in your body? (optional)</Label>
+                    <Textarea
+                      placeholder="e.g., legs, chest, hands..."
+                      value={currentBodyLocation}
+                      onChange={(e) => setCurrentBodyLocation(e.target.value)}
+                      className="min-h-16 resize-none text-sm"
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
@@ -484,6 +499,16 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                       value={potentialDescription}
                       onChange={(e) => setPotentialDescription(e.target.value)}
                       className="min-h-20 resize-none text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Where would you feel this in your body? (optional)</Label>
+                    <Textarea
+                      placeholder="e.g., legs, chest, hands..."
+                      value={potentialBodyLocation}
+                      onChange={(e) => setPotentialBodyLocation(e.target.value)}
+                      className="min-h-16 resize-none text-sm"
                     />
                   </div>
                 </CardContent>

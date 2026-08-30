@@ -10,6 +10,7 @@ import { Label } from '../ui/label';
 import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
+import { sanitizePlainText } from '../../../lib/textSanitize';
 
 interface EssenceGatewayPageProps {
   onComplete: (data: any) => void;
@@ -75,7 +76,8 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
   const [currentScentOther, setCurrentScentOther] = useState('');
   const [currentIntensity, setCurrentIntensity] = useState([50]);
   const [currentDescription, setCurrentDescription] = useState('');
-  
+  const [currentBodyLocation, setCurrentBodyLocation] = useState('');
+
   // Potential state
   const [potentialTastes, setPotentialTastes] = useState<string[]>([]);
   const [potentialTasteOther, setPotentialTasteOther] = useState('');
@@ -83,6 +85,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
   const [potentialScentOther, setPotentialScentOther] = useState('');
   const [potentialIntensity, setPotentialIntensity] = useState([50]);
   const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialBodyLocation, setPotentialBodyLocation] = useState('');
 
   const handleCheckboxChange = (
     value: string,
@@ -113,12 +116,14 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
       currentScentOther: currentScentOther || null,
       currentIntensity: currentIntensity[0],
       currentDescription: currentDescription || null,
+      currentBodyLocation: currentBodyLocation ? sanitizePlainText(currentBodyLocation, 300) : null,
       potentialTastes: potentialTastes.length > 0 ? potentialTastes : null,
       potentialTasteOther: potentialTasteOther || null,
       potentialScents: potentialScents.length > 0 ? potentialScents : null,
       potentialScentOther: potentialScentOther || null,
       potentialIntensity: potentialIntensity[0],
-      potentialDescription: potentialDescription || null
+      potentialDescription: potentialDescription || null,
+      potentialBodyLocation: potentialBodyLocation ? sanitizePlainText(potentialBodyLocation, 300) : null
     });
   };
 
@@ -330,6 +335,16 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Where do you feel this in your body? (optional)</Label>
+                    <Textarea
+                      placeholder="e.g., mouth, nose, chest..."
+                      value={currentBodyLocation}
+                      onChange={(e) => setCurrentBodyLocation(e.target.value)}
+                      className="min-h-16 resize-none text-sm"
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
@@ -459,6 +474,16 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                       value={potentialDescription}
                       onChange={(e) => setPotentialDescription(e.target.value)}
                       className="min-h-20 resize-none text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Where would you feel this in your body? (optional)</Label>
+                    <Textarea
+                      placeholder="e.g., mouth, nose, chest..."
+                      value={potentialBodyLocation}
+                      onChange={(e) => setPotentialBodyLocation(e.target.value)}
+                      className="min-h-16 resize-none text-sm"
                     />
                   </div>
                 </CardContent>

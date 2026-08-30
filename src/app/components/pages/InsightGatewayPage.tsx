@@ -11,6 +11,7 @@ import { Label } from '../ui/label';
 import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
+import { sanitizePlainText } from '../../../lib/textSanitize';
 
 interface InsightGatewayPageProps {
   onComplete: (data: any) => void;
@@ -76,7 +77,8 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [currentPerspectives, setCurrentPerspectives] = useState<string[]>([]);
   const [currentPerspectiveOther, setCurrentPerspectiveOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
-  
+  const [currentBodyLocation, setCurrentBodyLocation] = useState('');
+
   // Potential state
   const [potentialPatterns, setPotentialPatterns] = useState<string[]>([]);
   const [potentialPatternOther, setPotentialPatternOther] = useState('');
@@ -85,6 +87,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [potentialPerspectives, setPotentialPerspectives] = useState<string[]>([]);
   const [potentialPerspectiveOther, setPotentialPerspectiveOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialBodyLocation, setPotentialBodyLocation] = useState('');
 
   const handleCheckboxChange = (
     value: string,
@@ -116,13 +119,15 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
       currentPerspectives: currentPerspectives.length > 0 ? currentPerspectives : null,
       currentPerspectiveOther: currentPerspectiveOther || null,
       currentDescription: currentDescription || null,
+      currentBodyLocation: currentBodyLocation ? sanitizePlainText(currentBodyLocation, 300) : null,
       potentialPatterns: potentialPatterns.length > 0 ? potentialPatterns : null,
       potentialPatternOther: potentialPatternOther || null,
       potentialClarity: potentialClarity[0],
       potentialDepth: potentialDepth[0],
       potentialPerspectives: potentialPerspectives.length > 0 ? potentialPerspectives : null,
       potentialPerspectiveOther: potentialPerspectiveOther || null,
-      potentialDescription: potentialDescription || null
+      potentialDescription: potentialDescription || null,
+      potentialBodyLocation: potentialBodyLocation ? sanitizePlainText(potentialBodyLocation, 300) : null
     });
   };
 
@@ -346,6 +351,16 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Where do you feel this in your body? (optional)</Label>
+                    <Textarea
+                      placeholder="e.g., head, gut, chest..."
+                      value={currentBodyLocation}
+                      onChange={(e) => setCurrentBodyLocation(e.target.value)}
+                      className="min-h-16 resize-none text-sm"
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
@@ -484,6 +499,16 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                       value={potentialDescription}
                       onChange={(e) => setPotentialDescription(e.target.value)}
                       className="min-h-20 resize-none text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Where would you feel this in your body? (optional)</Label>
+                    <Textarea
+                      placeholder="e.g., head, gut, chest..."
+                      value={potentialBodyLocation}
+                      onChange={(e) => setPotentialBodyLocation(e.target.value)}
+                      className="min-h-16 resize-none text-sm"
                     />
                   </div>
                 </CardContent>

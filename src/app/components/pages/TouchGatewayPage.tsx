@@ -8,6 +8,7 @@ import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
+import { sanitizePlainText } from '../../../lib/textSanitize';
 
 interface TouchGatewayPageProps {
   onComplete: (data: any) => void;
@@ -47,6 +48,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   const [currentWeight, setCurrentWeight] = useState([50]);
   const [currentSharpness, setCurrentSharpness] = useState([50]);
   const [currentDescription, setCurrentDescription] = useState('');
+  const [currentBodyLocation, setCurrentBodyLocation] = useState('');
 
   // Potential state
   const [potentialTexture, setPotentialTexture] = useState([50]);
@@ -55,6 +57,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   const [potentialWeight, setPotentialWeight] = useState([50]);
   const [potentialSharpness, setPotentialSharpness] = useState([50]);
   const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialBodyLocation, setPotentialBodyLocation] = useState('');
 
   const handleNextInstructionCard = () => {
     if (instructionCardIndex < INSTRUCTION_CARDS.length - 1) {
@@ -72,12 +75,14 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
       currentWeight: currentWeight[0],
       currentSharpness: currentSharpness[0],
       currentDescription: currentDescription || null,
+      currentBodyLocation: currentBodyLocation ? sanitizePlainText(currentBodyLocation, 300) : null,
       potentialTexture: potentialTexture[0],
       potentialTemperature: potentialTemperature[0],
       potentialPressure: potentialPressure[0],
       potentialWeight: potentialWeight[0],
       potentialSharpness: potentialSharpness[0],
-      potentialDescription: potentialDescription || null
+      potentialDescription: potentialDescription || null,
+      potentialBodyLocation: potentialBodyLocation ? sanitizePlainText(potentialBodyLocation, 300) : null
     });
   };
 
@@ -234,6 +239,16 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Where do you feel this in your body? (optional)</Label>
+                    <Textarea
+                      placeholder="e.g., shoulders, hands, stomach..."
+                      value={currentBodyLocation}
+                      onChange={(e) => setCurrentBodyLocation(e.target.value)}
+                      className="min-h-16 resize-none text-sm"
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
@@ -307,6 +322,16 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                       value={potentialDescription}
                       onChange={(e) => setPotentialDescription(e.target.value)}
                       className="min-h-20 resize-none text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Where would you feel this in your body? (optional)</Label>
+                    <Textarea
+                      placeholder="e.g., shoulders, hands, stomach..."
+                      value={potentialBodyLocation}
+                      onChange={(e) => setPotentialBodyLocation(e.target.value)}
+                      className="min-h-16 resize-none text-sm"
                     />
                   </div>
                 </CardContent>
