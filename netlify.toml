@@ -83,8 +83,9 @@
     #   Fonts, so no third-party font-src is needed.
     #
     # img-src 'self' data: blob: https://fundraising.fracturedatlas.org
-    #   data: needed for the Sight gateway's Body Map canvas capture
-    #   (BodyMapAvatar produces an imageDataUrl) and jsPDF report export.
+    #   data: needed for the shared Body Map's canvas capture (BodyMapAvatar
+    #   produces an imageDataUrl, reachable from every gateway) and jsPDF
+    #   report export.
     #   blob: kept for any future canvas/file export path.
     #   fracturedatlas.org for the donate badge image.
     #
@@ -99,8 +100,8 @@
     #   No Web Workers or Service Workers in use.
     #
     # form-action 'self'
-    #   Prevents form submission hijacking to external URLs. No forms exist
-    #   currently but correct to declare defensively.
+    #   Prevents form submission hijacking to external URLs. Covers the
+    #   Netlify Forms report-submission POST to "/" (see reportSubmission.ts).
     #
     # manifest-src 'self'
     #   Web app manifest served from same origin.
