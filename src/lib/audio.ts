@@ -87,24 +87,31 @@ export function getNoteNames(system: TonalSystem): string[] {
 
 export type Timbre = 'soft' | 'pure' | 'bell' | 'pluck' | 'bowl';
 
-/** Maps a hex color's R/G/B channels to three note indices within CHROMATIC_NOTES. */
-function hexToMelodyIndices(hex: string): number[] {
+// Color<->melody translation is deliberately generic over scale length
+// rather than hardcoded to CHROMATIC_NOTES: it maps an 8-bit channel value
+// (0-255) onto whatever range of note indices [0, scaleLength) the active
+// tonal system actually has, so the same algorithm produces a correct,
+// in-range melody for Western (25 notes), Rast (15 notes), or any future
+// tonal system without special-casing -- only the note count changes.
+
+/** Maps a hex color's R/G/B channels to three note indices within [0, scaleLength). */
+function hexToMelodyIndices(hex: string, scaleLength: number): number[] {
   const clean = hex.replace('#', '').padEnd(6, '0');
   const r = parseInt(clean.slice(0, 2), 16);
   const g = parseInt(clean.slice(2, 4), 16);
   const b = parseInt(clean.slice(4, 6), 16);
-  const max = CHROMATIC_NOTES.length - 1;
-  const scale = (v: number) => Math.min(max, Math.floor((v / 256) * CHROMATIC_NOTES.length));
-  return [scale(r), scale(g), scale(b)];
+  const max = scaleLength - 1;
+  const toIndex = (v: number) => Math.min(max, Math.floor((v / 256) * scaleLength));
+  return [toIndex(r), toIndex(g), toIndex(b)];
 }
 
 /** Combines two colors into a 6-note melody: first color's RGB, then second's. */
-export function colorsToMelody(hex1: string, hex2: string): number[] {
-  return [...hexToMelodyIndices(hex1), ...hexToMelodyIndices(hex2)];
+export function colorsToMelody(hex1: string, hex2: string, scaleLength: number = CHROMATIC_NOTES.length): number[] {
+  return [...hexToMelodyIndices(hex1, scaleLength), ...hexToMelodyIndices(hex2, scaleLength)];
 }
 
-function indicesToHex(indices: number[]): string {
-  const max = CHROMATIC_NOTES.length - 1;
+function indicesToHex(indices: number[], scaleLength: number): string {
+  const max = scaleLength - 1;
   const toByte = (v: number) => Math.round((255 * v) / max);
   const toHexPair = (v: number) => v.toString(16).padStart(2, '0').toUpperCase();
   const r = toByte(indices[0] ?? 0);
@@ -114,9 +121,9 @@ function indicesToHex(indices: number[]): string {
 }
 
 /** Reverses a 6-note melody back into its two seed colors. */
-export function melodyToColors(indices: number[]): [string, string] {
+export function melodyToColors(indices: number[], scaleLength: number = CHROMATIC_NOTES.length): [string, string] {
   const filled = indices.map((v) => v ?? 0);
-  return [indicesToHex(filled.slice(0, 3)), indicesToHex(filled.slice(3, 6))];
+  return [indicesToHex(filled.slice(0, 3), scaleLength), indicesToHex(filled.slice(3, 6), scaleLength)];
 }
 
 export function isValidHex(hex: string): boolean {

@@ -140,30 +140,32 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const noteNames = getNoteNames(tonalSystem);
 
   // Melody state
-  const [melodyConnected, setMelodyConnected] = useState(hasValidColors && tonalSystem === 'western');
+  const [melodyConnected, setMelodyConnected] = useState(hasValidColors);
   const seedMelody = useCallback(
-    () => (hasValidColors && melodyConnected ? colorsToMelody(userColors!.color1!, userColors!.color2!) : Array(6).fill(null)),
-    [hasValidColors, melodyConnected, userColors]
+    () => (hasValidColors && melodyConnected ? colorsToMelody(userColors!.color1!, userColors!.color2!, scale.length) : Array(6).fill(null)),
+    [hasValidColors, melodyConnected, userColors, scale.length]
   );
   const [melody, setMelody] = useState<(number | null)[]>(seedMelody);
   useEffect(() => {
     if (melodyConnected && hasValidColors) {
-      setMelody(colorsToMelody(userColors!.color1!, userColors!.color2!));
+      setMelody(colorsToMelody(userColors!.color1!, userColors!.color2!, scale.length));
     } else if (!melodyConnected) {
       setMelody(Array(6).fill(null));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [melodyConnected]);
+  }, [melodyConnected, scale.length]);
 
   const handleSelectTonalSystem = (system: TonalSystem) => {
     if (system === tonalSystem) return;
     setTonalSystem(system);
-    if (system !== 'western') setMelodyConnected(false);
-    setMelody(Array(6).fill(null));
+    // Melody re-seeds automatically: the effect above reacts to scale.length,
+    // re-translating from the same two colors when connected, or clearing
+    // when independent (a manually composed melody's indices don't carry
+    // meaning across a different note count).
     setHasPlayed(false);
   };
 
-  const [melodyColor1, melodyColor2] = melodyToColors(melody.map((n) => n ?? 0));
+  const [melodyColor1, melodyColor2] = melodyToColors(melody.map((n) => n ?? 0), scale.length);
   const melodyComplete = melody.every((n) => n !== null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
@@ -376,45 +378,41 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               ))}
             </div>
 
-            {tonalSystem === 'western' && (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">{melodyConnected ? 'Connected to Sight' : 'Independent melody'}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {melodyConnected ? 'Your colors shape the melody. Adjust freely.' : 'Composing from silence. Colors and melody are separate.'}
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setMelodyConnected((c) => !c)}
-                  className="gap-2 shrink-0"
-                  disabled={!hasValidColors}
-                  title={hasValidColors ? undefined : 'Visit the Sight gateway first to enable connection'}
-                >
-                  {melodyConnected ? (
-                    <>
-                      <Link2 className="size-3.5" /> Connected
-                    </>
-                  ) : (
-                    <>
-                      <Unlink className="size-3.5" /> Disconnected
-                    </>
-                  )}
-                </Button>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">{melodyConnected ? 'Connected to Sight' : 'Independent melody'}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {melodyConnected ? 'Your colors shape the melody. Adjust freely.' : 'Composing from silence. Colors and melody are separate.'}
+                </p>
               </div>
-            )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setMelodyConnected((c) => !c)}
+                className="gap-2 shrink-0"
+                disabled={!hasValidColors}
+                title={hasValidColors ? undefined : 'Visit the Sight gateway first to enable connection'}
+              >
+                {melodyConnected ? (
+                  <>
+                    <Link2 className="size-3.5" /> Connected
+                  </>
+                ) : (
+                  <>
+                    <Unlink className="size-3.5" /> Disconnected
+                  </>
+                )}
+              </Button>
+            </div>
 
-            {tonalSystem === 'western' && (
-              <div className="flex items-center justify-center gap-8">
-                <ColorSwatch hex={melodyColor1} label="current" muted={!melodyConnected && !melodyComplete} />
-                <div
-                  className="h-px flex-1 max-w-16 transition-opacity"
-                  style={{ background: `linear-gradient(to right, ${melodyColor1}, ${melodyColor2})`, opacity: melodyComplete ? 0.6 : 0.15 }}
-                />
-                <ColorSwatch hex={melodyColor2} label="wish" muted={!melodyConnected && !melodyComplete} />
-              </div>
-            )}
+            <div className="flex items-center justify-center gap-8">
+              <ColorSwatch hex={melodyColor1} label="current" muted={!melodyConnected && !melodyComplete} />
+              <div
+                className="h-px flex-1 max-w-16 transition-opacity"
+                style={{ background: `linear-gradient(to right, ${melodyColor1}, ${melodyColor2})`, opacity: melodyComplete ? 0.6 : 0.15 }}
+              />
+              <ColorSwatch hex={melodyColor2} label="wish" muted={!melodyConnected && !melodyComplete} />
+            </div>
 
             <div className="grid grid-cols-2 gap-6">
               {[0, 1].map((half) => {
