@@ -7,7 +7,7 @@ import { Badge } from '../ui/badge';
 import { BodyMapData } from '../BodyMapAvatar';
 import { AppFooter } from '../AppFooter';
 import { SubmitSensoryReportForm } from '../SubmitSensoryReportForm';
-import { NOTE_NAMES } from '../../../lib/audio';
+import { getNoteNames } from '../../../lib/audio';
 // jsPDF (and the report's fonts/logo) are only needed if the visitor clicks
 // "Download PDF Report" -- loaded on demand inside downloadNenyaPdfReport()
 // instead of shipped with every page.
@@ -147,7 +147,8 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialRhythmOther) info.push(`  Rhythm (other): ${data.potentialRhythmOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       if (data.melody && Array.isArray(data.melody) && data.melody.some((n: number | null) => n !== null)) {
-        info.push(`Melody: ${data.melody.filter((n: number | null) => n !== null).map((n: number) => NOTE_NAMES[n] || '').join(' – ')}`);
+        const soundNoteNames = getNoteNames(data.tonalSystem ?? 'western');
+        info.push(`Melody: ${data.melody.filter((n: number | null) => n !== null).map((n: number) => soundNoteNames[n] || '').join(' – ')}`);
       }
       break;
 

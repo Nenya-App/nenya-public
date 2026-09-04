@@ -6,7 +6,7 @@
 // logo mark, so the document reads as an artifact of the app itself.
 import type { Gateway, GatewayData } from '../app/App';
 import type { BodyMapData } from '../app/components/BodyMapAvatar';
-import { NOTE_NAMES } from './audio';
+import { getNoteNames, TonalSystem } from './audio';
 
 // Matches the --nenya-* custom properties in src/styles/globals.css.
 const COLORS = {
@@ -146,13 +146,15 @@ function drawMelodyVisualizer(
   width: number,
   melody: (number | null)[],
   colorA: string,
-  colorB: string
+  colorB: string,
+  tonalSystem: TonalSystem = 'western'
 ): number {
+  const noteNames = getNoteNames(tonalSystem);
   const steps = melody.length;
   const chartHeight = 20;
   const baseY = y + chartHeight;
   const stepGap = steps > 1 ? width / (steps - 1) : 0;
-  const maxIdx = NOTE_NAMES.length - 1;
+  const maxIdx = noteNames.length - 1;
   const denom = Math.max(steps - 1, 1);
 
   doc.setDrawColor(...COLORS.goldLight);
@@ -189,7 +191,7 @@ function drawMelodyVisualizer(
     doc.setFont('Manrope', 'normal');
     doc.setFontSize(6.5);
     doc.setTextColor(...COLORS.textMuted);
-    doc.text(NOTE_NAMES[idx], px, baseY + 5, { align: 'center' });
+    doc.text(noteNames[idx], px, baseY + 5, { align: 'center' });
   });
 
   return chartHeight + 11;
@@ -361,7 +363,8 @@ export async function downloadNenyaPdfReport(
         contentWidth - 8,
         melody,
         gd.data.melodyColor1 || '#DDB88C',
-        gd.data.melodyColor2 || '#C9A88A'
+        gd.data.melodyColor2 || '#C9A88A',
+        gd.data.tonalSystem ?? 'western'
       );
       y += consumed;
     }
