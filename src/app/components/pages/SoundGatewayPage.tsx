@@ -11,9 +11,8 @@ import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
-import { MelodyContourCanvas } from '../MelodyContourCanvas';
+import { MusicalStaff } from '../MusicalStaff';
 import {
-  PENTATONIC_FREQS,
   NOTE_NAMES,
   colorsToMelody,
   melodyToColors,
@@ -121,69 +120,6 @@ function ColorSwatch({ hex, label, muted }: { hex: string; label: string; muted:
   );
 }
 
-function NotePicker({
-  notes,
-  onSelect,
-}: {
-  notes: (number | null)[];
-  onSelect: (noteIndex: number) => void;
-}) {
-  const nextSlot = notes.findIndex((n) => n === null);
-  const isFull = nextSlot === -1;
-  const stateIdx = nextSlot < 3 ? 0 : 1;
-  const promptColor = stateIdx === 0 ? '#E07060' : '#60B86C';
-
-  return (
-    <div>
-      {!isFull && (
-        <p className="text-xs text-center mb-3" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Sans', sans-serif" }}>
-          Selecting{' '}
-          <span style={{ color: promptColor, fontFamily: "'JetBrains Mono', monospace", fontSize: '11px' }}>
-            {['R', 'G', 'B'][nextSlot % 3]}
-          </span>{' '}
-          channel for{' '}
-          <span style={{ color: promptColor }}>{STATE_LABELS[stateIdx]} state</span>
-        </p>
-      )}
-      <div className="flex items-end justify-center gap-1">
-        {PENTATONIC_FREQS.map((_, i) => {
-          const barHeight = 5 + 1.8 * i;
-          return (
-            <button
-              key={i}
-              onClick={() => {
-                if (!isFull) {
-                  playNote(i);
-                  onSelect(i);
-                }
-              }}
-              onMouseEnter={() => {
-                if (!isFull) playNote(i);
-              }}
-              disabled={isFull}
-              className="flex flex-col items-center justify-end gap-1.5 rounded-xl transition-all duration-150 active:scale-90"
-              style={{
-                width: '36px',
-                paddingTop: '10px',
-                paddingBottom: '8px',
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                opacity: isFull ? 0.35 : 1,
-                cursor: isFull ? 'default' : 'pointer',
-              }}
-            >
-              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.02em' }}>
-                {NOTE_NAMES[i]}
-              </span>
-              <div style={{ width: '3px', height: `${barHeight}px`, borderRadius: '2px', background: `rgba(255,255,255,${0.1 + 0.02 * i})` }} />
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 export default function SoundGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: SoundGatewayPageProps) {
   const hasValidColors = !!userColors?.color1 && !!userColors?.color2 && isValidHex(userColors.color1) && isValidHex(userColors.color2);
   const [showBodyMap, setShowBodyMap] = useState(false);
@@ -227,6 +163,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   };
 
   const handleSelectNote = (noteIndex: number) => {
+    if (melody.every((n) => n !== null)) return; // all six slots already filled
     setMelody((prev) => {
       const next = [...prev];
       const slot = next.findIndex((n) => n === null);
@@ -235,6 +172,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
       return next;
     });
     setHasPlayed(false);
+    playNote(noteIndex);
   };
 
   const handleUndo = () => {
@@ -462,17 +400,23 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               })}
             </div>
 
-            <NotePicker notes={melody} onSelect={handleSelectNote} />
-
-            <MelodyContourCanvas
-              noteCount={PENTATONIC_FREQS.length}
-              accentCurrent={accentCurrent}
-              accentWish={accentWish}
-              onDraw={(sampled) => {
-                setMelody(sampled);
-                setHasPlayed(false);
-              }}
-            />
+            <div className="space-y-2">
+              {!melodyComplete && (
+                <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Sans', sans-serif" }}>
+                  Click a note on the staff for the{' '}
+                  <span style={{ color: melody.findIndex((n) => n === null) < 3 ? accentCurrent : accentWish }}>
+                    {STATE_LABELS[melody.findIndex((n) => n === null) < 3 ? 0 : 1]} state
+                  </span>
+                </p>
+              )}
+              <MusicalStaff
+                currentSelected={melody.slice(0, 3).filter((n): n is number => n !== null)}
+                wishSelected={melody.slice(3, 6).filter((n): n is number => n !== null)}
+                onSelect={handleSelectNote}
+                accentCurrent={accentCurrent}
+                accentWish={accentWish}
+              />
+            </div>
 
             <div className="flex items-center justify-between">
               <div className="flex gap-2">

@@ -114,7 +114,6 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.color2Intensity !== undefined) {
         info.push(`  Intensity: ${data.color2Intensity}/100`);
       }
-      if (data.colorBlendDrawing) info.push(`  Blend: painted`);
       break;
 
     case 'sound':
@@ -454,17 +453,6 @@ export default function GatewayReviewPage({
                         </div>
                       ))}
                     </div>
-
-                    {gd.gateway === 'sight' && gd.data.colorBlendDrawing && (
-                      <div className="pt-2">
-                        <p className="text-xs text-muted-foreground mb-1">Color blend</p>
-                        <img
-                          src={gd.data.colorBlendDrawing}
-                          alt="Painted blend between the present and wish colors"
-                          className="w-full rounded border border-border bg-muted/20"
-                        />
-                      </div>
-                    )}
 
                     {(() => {
                       // Movement and Insight both offer a freehand drawing,

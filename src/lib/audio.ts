@@ -1,18 +1,49 @@
-// Sound gateway audio engine: maps colors to a 6-note pentatonic melody and
-// plays notes/melodies via the Web Audio API.
+// Sound gateway audio engine: maps colors to a 6-note melody and plays
+// notes/melodies via the Web Audio API.
+//
+// Notes are drawn from a real two-octave Western chromatic scale (C4-C6,
+// 25 notes including sharps) rather than a fixed 10-note pentatonic set --
+// this is what makes an actual musical-staff picker meaningful instead of
+// just relabeling the old bar-graph buttons. Frequencies are computed from
+// the standard 12-tone equal-temperament formula (A4 = 440Hz) rather than
+// hand-typed, so they're exact.
+const NOTE_LETTERS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const FIRST_MIDI = 60; // C4 ("middle C")
+const LAST_MIDI = 84; // C6
 
-export const PENTATONIC_FREQS = [261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25, 783.99, 880];
-export const NOTE_NAMES = ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5', 'A5'];
+export interface ChromaticNote {
+  name: string; // e.g. "C#5"
+  freq: number;
+  midi: number;
+  letter: string; // 'C'..'B', without octave, without sharp -- the natural this note sits on/near
+  sharp: boolean;
+  octave: number;
+}
+
+export const CHROMATIC_NOTES: ChromaticNote[] = [];
+for (let midi = FIRST_MIDI; midi <= LAST_MIDI; midi++) {
+  const letterIndex = midi % 12;
+  const octave = Math.floor(midi / 12) - 1;
+  const letter = NOTE_LETTERS[letterIndex];
+  const sharp = letter.includes('#');
+  const freq = 440 * Math.pow(2, (midi - 69) / 12);
+  CHROMATIC_NOTES.push({ name: `${letter}${octave}`, freq, midi, letter: letter.replace('#', ''), sharp, octave });
+}
+
+/** @deprecated kept for the few call sites that only need names/length generically */
+export const NOTE_NAMES = CHROMATIC_NOTES.map((n) => n.name);
 
 export type Timbre = 'soft' | 'pure' | 'bell' | 'pluck' | 'bowl';
 
-/** Maps a hex color's R/G/B channels to three note indices (0-9 each). */
+/** Maps a hex color's R/G/B channels to three note indices within CHROMATIC_NOTES. */
 function hexToMelodyIndices(hex: string): number[] {
   const clean = hex.replace('#', '').padEnd(6, '0');
   const r = parseInt(clean.slice(0, 2), 16);
   const g = parseInt(clean.slice(2, 4), 16);
   const b = parseInt(clean.slice(4, 6), 16);
-  return [Math.min(9, Math.floor(r / 25.6)), Math.min(9, Math.floor(g / 25.6)), Math.min(9, Math.floor(b / 25.6))];
+  const max = CHROMATIC_NOTES.length - 1;
+  const scale = (v: number) => Math.min(max, Math.floor((v / 256) * CHROMATIC_NOTES.length));
+  return [scale(r), scale(g), scale(b)];
 }
 
 /** Combines two colors into a 6-note melody: first color's RGB, then second's. */
@@ -21,7 +52,8 @@ export function colorsToMelody(hex1: string, hex2: string): number[] {
 }
 
 function indicesToHex(indices: number[]): string {
-  const toByte = (v: number) => Math.round((255 * v) / 9);
+  const max = CHROMATIC_NOTES.length - 1;
+  const toByte = (v: number) => Math.round((255 * v) / max);
   const toHexPair = (v: number) => v.toString(16).padStart(2, '0').toUpperCase();
   const r = toByte(indices[0] ?? 0);
   const g = toByte(indices[1] ?? 0);
@@ -63,12 +95,12 @@ export function playNote(noteIndex: number) {
     if (currentTimbre === 'bell') {
       filter.frequency.value = 4000;
       osc.type = 'sine';
-      osc.frequency.value = PENTATONIC_FREQS[noteIndex];
+      osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
       const modOsc = ctx.createOscillator();
       const modGain = ctx.createGain();
       modOsc.type = 'sine';
-      modOsc.frequency.value = PENTATONIC_FREQS[noteIndex] * 5;
-      modGain.gain.value = PENTATONIC_FREQS[noteIndex] * 6;
+      modOsc.frequency.value = CHROMATIC_NOTES[noteIndex].freq * 5;
+      modGain.gain.value = CHROMATIC_NOTES[noteIndex].freq * 6;
       modOsc.connect(modGain);
       modGain.connect(osc.frequency);
       osc.connect(filter);
@@ -85,7 +117,7 @@ export function playNote(noteIndex: number) {
     } else if (currentTimbre === 'pluck') {
       filter.frequency.value = 2000;
       osc.type = 'sawtooth';
-      osc.frequency.value = PENTATONIC_FREQS[noteIndex];
+      osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
@@ -97,7 +129,7 @@ export function playNote(noteIndex: number) {
     } else if (currentTimbre === 'bowl') {
       filter.frequency.value = 1200;
       osc.type = 'sine';
-      osc.frequency.value = PENTATONIC_FREQS[noteIndex];
+      osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
@@ -110,7 +142,7 @@ export function playNote(noteIndex: number) {
     } else {
       filter.frequency.value = currentTimbre === 'pure' ? 3000 : 1800;
       osc.type = currentTimbre === 'pure' ? 'sine' : 'triangle';
-      osc.frequency.value = PENTATONIC_FREQS[noteIndex];
+      osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
@@ -141,12 +173,12 @@ export function playMelody(indices: (number | null)[], onComplete?: () => void) 
       if (currentTimbre === 'bell') {
         filter.frequency.value = 4000;
         osc.type = 'sine';
-        osc.frequency.value = PENTATONIC_FREQS[noteIndex];
+        osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
         const modOsc = ctx.createOscillator();
         const modGain = ctx.createGain();
         modOsc.type = 'sine';
-        modOsc.frequency.value = PENTATONIC_FREQS[noteIndex] * 5;
-        modGain.gain.value = PENTATONIC_FREQS[noteIndex] * 6;
+        modOsc.frequency.value = CHROMATIC_NOTES[noteIndex].freq * 5;
+        modGain.gain.value = CHROMATIC_NOTES[noteIndex].freq * 6;
         modOsc.connect(modGain);
         modGain.connect(osc.frequency);
         osc.connect(filter);
@@ -162,7 +194,7 @@ export function playMelody(indices: (number | null)[], onComplete?: () => void) 
       } else if (currentTimbre === 'pluck') {
         filter.frequency.value = 2000;
         osc.type = 'sawtooth';
-        osc.frequency.value = PENTATONIC_FREQS[noteIndex];
+        osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
         osc.connect(filter);
         filter.connect(gain);
         gain.connect(ctx.destination);
@@ -173,7 +205,7 @@ export function playMelody(indices: (number | null)[], onComplete?: () => void) 
       } else if (currentTimbre === 'bowl') {
         filter.frequency.value = 1200;
         osc.type = 'sine';
-        osc.frequency.value = PENTATONIC_FREQS[noteIndex];
+        osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
         osc.connect(filter);
         filter.connect(gain);
         gain.connect(ctx.destination);
@@ -185,7 +217,7 @@ export function playMelody(indices: (number | null)[], onComplete?: () => void) 
       } else {
         filter.frequency.value = currentTimbre === 'pure' ? 3000 : 2000;
         osc.type = currentTimbre === 'pure' ? 'sine' : 'triangle';
-        osc.frequency.value = PENTATONIC_FREQS[noteIndex];
+        osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
         osc.connect(filter);
         filter.connect(gain);
         gain.connect(ctx.destination);

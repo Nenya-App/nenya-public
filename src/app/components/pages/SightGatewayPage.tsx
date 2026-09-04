@@ -12,7 +12,6 @@ import { Slider } from '../ui/slider';
 import { UserColors } from '../../App';
 import { useTheme } from '../ThemeProvider';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
-import { ColorBlendCanvas } from '../ColorBlendCanvas';
 import { TermInfo } from '../TermInfo';
 import { ScrollIndicator } from '../ScrollIndicator';
 import { AppFooter } from '../AppFooter';
@@ -26,7 +25,7 @@ import {
 } from '../ui/dialog';
 
 interface SightGatewayPageProps {
-  onComplete: (data: UserColors & { gradientDirection?: string; colorBlendDrawing?: string | null }) => void;
+  onComplete: (data: UserColors & { gradientDirection?: string }) => void;
   onBack: () => void;
   currentIndex: number;
   totalGateways: number;
@@ -124,7 +123,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   const [color1Intensity, setColor1Intensity] = useState(50);
   const [color2Intensity, setColor2Intensity] = useState(50);
   const [gradientDirection, setGradientDirection] = useState('to-right');
-  const [colorBlendDrawing, setColorBlendDrawing] = useState<string | null>(null);
   const [showBodyMap, setShowBodyMap] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<'present' | 'potential' | null>(null);
   // bodyMapData/onUpdateBodyMap come from props -- shared App-level state
@@ -156,7 +154,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
       color1Intensity,
       color2Intensity,
       gradientDirection,
-      colorBlendDrawing: colorBlendDrawing || null,
     });
   };
 
@@ -490,17 +487,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   </CardContent>
                 </Card>
               </div>
-
-              {/* Color Blend Canvas */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Blend Your Colors (optional)</CardTitle>
-                  <CardDescription>Paint the gap between where you are and where you wish to be</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ColorBlendCanvas color1={color1} color2={color2} onChange={setColorBlendDrawing} />
-                </CardContent>
-              </Card>
 
               {/* Next Button */}
               <div className="flex justify-center pt-4">
