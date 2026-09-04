@@ -209,6 +209,7 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.currentQualityOther) info.push(`  Quality (other): ${data.currentQualityOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
+      if (data.currentMovementDrawing) info.push(`  Drawing: captured`);
 
       if (data.potentialDirections && Array.isArray(data.potentialDirections) && data.potentialDirections.length > 0) {
         info.push(`Potential Direction: ${data.potentialDirections.join(', ')}`);
@@ -225,6 +226,7 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.potentialQualityOther) info.push(`  Quality (other): ${data.potentialQualityOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
+      if (data.potentialMovementDrawing) info.push(`  Drawing: captured`);
       break;
 
     case 'insight':
@@ -441,14 +443,39 @@ export default function GatewayReviewPage({
                   <CardContent className="space-y-3">
                     <div className="space-y-1 text-sm">
                       {dataLines.map((line, idx) => (
-                        <div 
-                          key={idx} 
+                        <div
+                          key={idx}
                           className={line.startsWith('  ') ? 'text-muted-foreground pl-4' : ''}
                         >
                           {line}
                         </div>
                       ))}
                     </div>
+
+                    {gd.gateway === 'movement' && (gd.data.currentMovementDrawing || gd.data.potentialMovementDrawing) && (
+                      <div className="grid grid-cols-2 gap-3 pt-2">
+                        {gd.data.currentMovementDrawing && (
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">Present</p>
+                            <img
+                              src={gd.data.currentMovementDrawing}
+                              alt="Movement pattern drawn for the present state"
+                              className="w-full rounded border border-border bg-muted/20"
+                            />
+                          </div>
+                        )}
+                        {gd.data.potentialMovementDrawing && (
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">Wish</p>
+                            <img
+                              src={gd.data.potentialMovementDrawing}
+                              alt="Movement pattern drawn for the wish state"
+                              className="w-full rounded border border-border bg-muted/20"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );

@@ -12,6 +12,7 @@ import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
+import { MovementDrawingCanvas } from '../MovementDrawingCanvas';
 
 interface MovementGatewayPageProps {
   onComplete: (data: any) => void;
@@ -80,6 +81,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [currentQualities, setCurrentQualities] = useState<string[]>([]);
   const [currentQualityOther, setCurrentQualityOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
+  const [currentMovementDrawing, setCurrentMovementDrawing] = useState<string | null>(null);
 
   // Potential state
   const [potentialDirections, setPotentialDirections] = useState<string[]>([]);
@@ -89,6 +91,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [potentialQualities, setPotentialQualities] = useState<string[]>([]);
   const [potentialQualityOther, setPotentialQualityOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialMovementDrawing, setPotentialMovementDrawing] = useState<string | null>(null);
 
   const handleCheckboxChange = (
     value: string,
@@ -120,13 +123,15 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
       currentQualities: currentQualities.length > 0 ? currentQualities : null,
       currentQualityOther: currentQualityOther || null,
       currentDescription: currentDescription || null,
+      currentMovementDrawing: currentMovementDrawing || null,
       potentialDirections: potentialDirections.length > 0 ? potentialDirections : null,
       potentialDirectionOther: potentialDirectionOther || null,
       potentialEnergy: potentialEnergy[0],
       potentialSpeed: potentialSpeed[0],
       potentialQualities: potentialQualities.length > 0 ? potentialQualities : null,
       potentialQualityOther: potentialQualityOther || null,
-      potentialDescription: potentialDescription || null
+      potentialDescription: potentialDescription || null,
+      potentialMovementDrawing: potentialMovementDrawing || null
     });
   };
 
@@ -348,6 +353,14 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   </div>
 
                   <div className="space-y-2">
+                    <Label className="text-sm">Draw your movement pattern (optional)</Label>
+                    <MovementDrawingCanvas
+                      strokeColor={color1}
+                      onChange={setCurrentMovementDrawing}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label className="text-sm">Describe the movement (optional)</Label>
                     <Textarea
                       placeholder="Describe the kinesthetic qualities..."
@@ -485,6 +498,15 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                       </div>
                     </div>
                   </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Draw your movement pattern (optional)</Label>
+                    <MovementDrawingCanvas
+                      strokeColor={color2}
+                      onChange={setPotentialMovementDrawing}
+                      placeholder="Trace the shape you're moving toward instead."
+                    />
                   </div>
 
                   <div className="space-y-2">

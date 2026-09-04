@@ -23,6 +23,10 @@ enforces that.
 Nenya is fiscally sponsored by [Fractured Atlas](https://www.fracturedatlas.org),
 a 501(c)(3) public charity. It accepts no equity investors.
 
+For a fuller description — the Tolkien naming, the Valar color language, and
+what makes it different from other reflection/mindfulness tools — see
+[nenya.biz/about-nenya.html](https://nenya.biz/about-nenya.html).
+
 ## Running it locally
 
 ```bash
