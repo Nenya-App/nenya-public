@@ -1,8 +1,9 @@
+import * as React from 'react';
 import { useRef, useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Eraser } from 'lucide-react';
 
-interface MovementDrawingCanvasProps {
+interface DrawingCanvasProps {
   // Falls back to a neutral ink tone when no gateway color is available yet
   // (e.g. Sight hasn't been visited), matching how BodyMapAvatar handles
   // the same situation.
@@ -19,12 +20,12 @@ interface MovementDrawingCanvasProps {
 const CANVAS_W = 400;
 const CANVAS_H = 180;
 
-export function MovementDrawingCanvas({
+export function DrawingCanvas({
   strokeColor = '#4A4440',
   initialDataUrl,
   onChange,
-  placeholder = 'Trace the shape this movement takes — a spiral, a straight line, a knot, whatever it is.',
-}: MovementDrawingCanvasProps) {
+  placeholder = 'Trace the shape it takes.',
+}: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
   const lastPoint = useRef<{ x: number; y: number } | null>(null);

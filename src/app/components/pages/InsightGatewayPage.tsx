@@ -12,6 +12,7 @@ import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
+import { DrawingCanvas } from '../DrawingCanvas';
 
 interface InsightGatewayPageProps {
   onComplete: (data: any) => void;
@@ -80,6 +81,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [currentPerspectives, setCurrentPerspectives] = useState<string[]>([]);
   const [currentPerspectiveOther, setCurrentPerspectiveOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
+  const [currentPatternDrawing, setCurrentPatternDrawing] = useState<string | null>(null);
 
   // Potential state
   const [potentialPatterns, setPotentialPatterns] = useState<string[]>([]);
@@ -89,6 +91,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [potentialPerspectives, setPotentialPerspectives] = useState<string[]>([]);
   const [potentialPerspectiveOther, setPotentialPerspectiveOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialPatternDrawing, setPotentialPatternDrawing] = useState<string | null>(null);
 
   const handleCheckboxChange = (
     value: string,
@@ -120,13 +123,15 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
       currentPerspectives: currentPerspectives.length > 0 ? currentPerspectives : null,
       currentPerspectiveOther: currentPerspectiveOther || null,
       currentDescription: currentDescription || null,
+      currentPatternDrawing: currentPatternDrawing || null,
       potentialPatterns: potentialPatterns.length > 0 ? potentialPatterns : null,
       potentialPatternOther: potentialPatternOther || null,
       potentialClarity: potentialClarity[0],
       potentialDepth: potentialDepth[0],
       potentialPerspectives: potentialPerspectives.length > 0 ? potentialPerspectives : null,
       potentialPerspectiveOther: potentialPerspectiveOther || null,
-      potentialDescription: potentialDescription || null
+      potentialDescription: potentialDescription || null,
+      potentialPatternDrawing: potentialPatternDrawing || null
     });
   };
 
@@ -348,6 +353,15 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   </div>
 
                   <div className="space-y-2">
+                    <Label className="text-sm">Draw the shape of this pattern (optional)</Label>
+                    <DrawingCanvas
+                      strokeColor={color1}
+                      onChange={setCurrentPatternDrawing}
+                      placeholder="Spiraling, fragmented, web-like, layered — trace it."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label className="text-sm">Describe the patterns (optional)</Label>
                     <Textarea
                       placeholder="Describe the patterns and perspectives..."
@@ -485,6 +499,15 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                       </div>
                     </div>
                   </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Draw the shape of this pattern (optional)</Label>
+                    <DrawingCanvas
+                      strokeColor={color2}
+                      onChange={setPotentialPatternDrawing}
+                      placeholder="What shape would you rather your thinking take?"
+                    />
                   </div>
 
                   <div className="space-y-2">

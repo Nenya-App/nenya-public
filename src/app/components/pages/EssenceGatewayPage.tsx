@@ -3,14 +3,13 @@ import { Button } from '../ui/button';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
-import { Checkbox } from '../ui/checkbox';
 import { Textarea } from '../ui/textarea';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
+import { FlavorWheel } from '../FlavorWheel';
 
 interface EssenceGatewayPageProps {
   onComplete: (data: any) => void;
@@ -232,94 +231,24 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 <CardContent className="space-y-5">
                   <div className="space-y-2">
                     <Label className="text-sm">Taste (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {tastes.map((taste) => (
-                      <div key={taste} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`current-taste-${taste}`}
-                            checked={currentTastes.includes(taste)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(taste, checked as boolean, currentTastes, setCurrentTastes)
-                            }
-                          />
-                          <label
-                            htmlFor={`current-taste-${taste}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {taste}
-                          </label>
-                        </div>
-                        <TermInfo term={taste} category="taste" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="current-taste-other"
-                        checked={currentTasteOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setCurrentTasteOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="current-taste-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={currentTasteOther}
-                          onChange={(e) => setCurrentTasteOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <FlavorWheel terms={tastes} selected={currentTastes} onToggle={(t) => handleCheckboxChange(t, !currentTastes.includes(t), currentTastes, setCurrentTastes)} accentColor="#8FA98C" />
+                    <Input
+                      placeholder="Other taste..."
+                      value={currentTasteOther}
+                      onChange={(e) => setCurrentTasteOther(e.target.value)}
+                      className="h-8 text-sm"
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Scent (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {scents.map((scent) => (
-                      <div key={scent} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`current-scent-${scent}`}
-                            checked={currentScents.includes(scent)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(scent, checked as boolean, currentScents, setCurrentScents)
-                            }
-                          />
-                          <label
-                            htmlFor={`current-scent-${scent}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {scent}
-                          </label>
-                        </div>
-                        <TermInfo term={scent} category="scent" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="current-scent-other"
-                        checked={currentScentOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setCurrentScentOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="current-scent-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={currentScentOther}
-                          onChange={(e) => setCurrentScentOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <FlavorWheel terms={scents} selected={currentScents} onToggle={(t) => handleCheckboxChange(t, !currentScents.includes(t), currentScents, setCurrentScents)} accentColor="#B79ACB" />
+                    <Input
+                      placeholder="Other scent..."
+                      value={currentScentOther}
+                      onChange={(e) => setCurrentScentOther(e.target.value)}
+                      className="h-8 text-sm"
+                    />
                   </div>
 
                   <SnappingSlider
@@ -363,94 +292,24 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 <CardContent className="space-y-5">
                   <div className="space-y-2">
                     <Label className="text-sm">Taste (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {tastes.map((taste) => (
-                      <div key={taste} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`potential-taste-${taste}`}
-                            checked={potentialTastes.includes(taste)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(taste, checked as boolean, potentialTastes, setPotentialTastes)
-                            }
-                          />
-                          <label
-                            htmlFor={`potential-taste-${taste}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {taste}
-                          </label>
-                        </div>
-                        <TermInfo term={taste} category="taste" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="potential-taste-other"
-                        checked={potentialTasteOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setPotentialTasteOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="potential-taste-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={potentialTasteOther}
-                          onChange={(e) => setPotentialTasteOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <FlavorWheel terms={tastes} selected={potentialTastes} onToggle={(t) => handleCheckboxChange(t, !potentialTastes.includes(t), potentialTastes, setPotentialTastes)} accentColor="#8FA98C" />
+                    <Input
+                      placeholder="Other taste..."
+                      value={potentialTasteOther}
+                      onChange={(e) => setPotentialTasteOther(e.target.value)}
+                      className="h-8 text-sm"
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Scent (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {scents.map((scent) => (
-                      <div key={scent} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`potential-scent-${scent}`}
-                            checked={potentialScents.includes(scent)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(scent, checked as boolean, potentialScents, setPotentialScents)
-                            }
-                          />
-                          <label
-                            htmlFor={`potential-scent-${scent}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {scent}
-                          </label>
-                        </div>
-                        <TermInfo term={scent} category="scent" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="potential-scent-other"
-                        checked={potentialScentOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setPotentialScentOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="potential-scent-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={potentialScentOther}
-                          onChange={(e) => setPotentialScentOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <FlavorWheel terms={scents} selected={potentialScents} onToggle={(t) => handleCheckboxChange(t, !potentialScents.includes(t), potentialScents, setPotentialScents)} accentColor="#B79ACB" />
+                    <Input
+                      placeholder="Other scent..."
+                      value={potentialScentOther}
+                      onChange={(e) => setPotentialScentOther(e.target.value)}
+                      className="h-8 text-sm"
+                    />
                   </div>
 
                   <SnappingSlider

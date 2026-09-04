@@ -12,7 +12,7 @@ import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
-import { MovementDrawingCanvas } from '../MovementDrawingCanvas';
+import { DrawingCanvas } from '../DrawingCanvas';
 
 interface MovementGatewayPageProps {
   onComplete: (data: any) => void;
@@ -354,7 +354,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
 
                   <div className="space-y-2">
                     <Label className="text-sm">Draw your movement pattern (optional)</Label>
-                    <MovementDrawingCanvas
+                    <DrawingCanvas
                       strokeColor={color1}
                       onChange={setCurrentMovementDrawing}
                     />
@@ -502,7 +502,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
 
                   <div className="space-y-2">
                     <Label className="text-sm">Draw your movement pattern (optional)</Label>
-                    <MovementDrawingCanvas
+                    <DrawingCanvas
                       strokeColor={color2}
                       onChange={setPotentialMovementDrawing}
                       placeholder="Trace the shape you're moving toward instead."

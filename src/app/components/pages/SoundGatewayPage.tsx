@@ -11,6 +11,7 @@ import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
+import { MelodyContourCanvas } from '../MelodyContourCanvas';
 import {
   PENTATONIC_FREQS,
   NOTE_NAMES,
@@ -462,6 +463,16 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
             </div>
 
             <NotePicker notes={melody} onSelect={handleSelectNote} />
+
+            <MelodyContourCanvas
+              noteCount={PENTATONIC_FREQS.length}
+              accentCurrent={accentCurrent}
+              accentWish={accentWish}
+              onDraw={(sampled) => {
+                setMelody(sampled);
+                setHasPlayed(false);
+              }}
+            />
 
             <div className="flex items-center justify-between">
               <div className="flex gap-2">

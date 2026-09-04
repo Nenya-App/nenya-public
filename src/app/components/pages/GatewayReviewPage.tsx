@@ -114,8 +114,9 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.color2Intensity !== undefined) {
         info.push(`  Intensity: ${data.color2Intensity}/100`);
       }
+      if (data.colorBlendDrawing) info.push(`  Blend: painted`);
       break;
-      
+
     case 'sound':
       info.push(`Present: Pitch ${data.currentPitch}/100, Volume ${data.currentVolume}/100`);
       if (data.currentTimbres && Array.isArray(data.currentTimbres) && data.currentTimbres.length > 0) {
@@ -245,6 +246,7 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.currentPerspectiveOther) info.push(`  Perspective (other): ${data.currentPerspectiveOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
+      if (data.currentPatternDrawing) info.push(`  Drawing: captured`);
 
       if (data.potentialPatterns && Array.isArray(data.potentialPatterns) && data.potentialPatterns.length > 0) {
         info.push(`Potential Pattern: ${data.potentialPatterns.join(', ')}`);
@@ -261,6 +263,7 @@ const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       }
       if (data.potentialPerspectiveOther) info.push(`  Perspective (other): ${data.potentialPerspectiveOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
+      if (data.potentialPatternDrawing) info.push(`  Drawing: captured`);
       break;
   }
   
@@ -452,30 +455,57 @@ export default function GatewayReviewPage({
                       ))}
                     </div>
 
-                    {gd.gateway === 'movement' && (gd.data.currentMovementDrawing || gd.data.potentialMovementDrawing) && (
-                      <div className="grid grid-cols-2 gap-3 pt-2">
-                        {gd.data.currentMovementDrawing && (
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">Present</p>
-                            <img
-                              src={gd.data.currentMovementDrawing}
-                              alt="Movement pattern drawn for the present state"
-                              className="w-full rounded border border-border bg-muted/20"
-                            />
-                          </div>
-                        )}
-                        {gd.data.potentialMovementDrawing && (
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">Wish</p>
-                            <img
-                              src={gd.data.potentialMovementDrawing}
-                              alt="Movement pattern drawn for the wish state"
-                              className="w-full rounded border border-border bg-muted/20"
-                            />
-                          </div>
-                        )}
+                    {gd.gateway === 'sight' && gd.data.colorBlendDrawing && (
+                      <div className="pt-2">
+                        <p className="text-xs text-muted-foreground mb-1">Color blend</p>
+                        <img
+                          src={gd.data.colorBlendDrawing}
+                          alt="Painted blend between the present and wish colors"
+                          className="w-full rounded border border-border bg-muted/20"
+                        />
                       </div>
                     )}
+
+                    {(() => {
+                      // Movement and Insight both offer a freehand drawing,
+                      // under gateway-specific field names -- resolve
+                      // whichever pair applies rather than duplicating this
+                      // render block per gateway.
+                      const drawingFields: Partial<Record<Gateway, [string, string]>> = {
+                        movement: ['currentMovementDrawing', 'potentialMovementDrawing'],
+                        insight: ['currentPatternDrawing', 'potentialPatternDrawing'],
+                      };
+                      const fields = drawingFields[gd.gateway];
+                      if (!fields) return null;
+                      const [currentField, potentialField] = fields;
+                      const currentDrawing = gd.data[currentField];
+                      const potentialDrawing = gd.data[potentialField];
+                      if (!currentDrawing && !potentialDrawing) return null;
+                      return (
+                        <div className="grid grid-cols-2 gap-3 pt-2">
+                          {currentDrawing && (
+                            <div className="space-y-1">
+                              <p className="text-xs text-muted-foreground">Present</p>
+                              <img
+                                src={currentDrawing}
+                                alt="Drawing for the present state"
+                                className="w-full rounded border border-border bg-muted/20"
+                              />
+                            </div>
+                          )}
+                          {potentialDrawing && (
+                            <div className="space-y-1">
+                              <p className="text-xs text-muted-foreground">Wish</p>
+                              <img
+                                src={potentialDrawing}
+                                alt="Drawing for the wish state"
+                                className="w-full rounded border border-border bg-muted/20"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               );
