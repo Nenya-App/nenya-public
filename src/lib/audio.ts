@@ -30,8 +30,60 @@ for (let midi = FIRST_MIDI; midi <= LAST_MIDI; midi++) {
   CHROMATIC_NOTES.push({ name: `${letter}${octave}`, freq, midi, letter: letter.replace('#', ''), sharp, octave });
 }
 
-/** @deprecated kept for the few call sites that only need names/length generically */
-export const NOTE_NAMES = CHROMATIC_NOTES.map((n) => n.name);
+export const WESTERN_NOTE_NAMES = CHROMATIC_NOTES.map((n) => n.name);
+/** @deprecated use WESTERN_NOTE_NAMES -- kept as an alias for existing call sites */
+export const NOTE_NAMES = WESTERN_NOTE_NAMES;
+
+// Maqam Rast, the tonal system most commonly used to introduce Arabic
+// maqam theory (and the one whose "neutral third" is the clearest example
+// of what a quarter-tone actually sounds like). Verified interval
+// structure: two Rast tetrachords (whole tone, neutral second, neutral
+// second -- i.e. 4/3/3 quarter-tone steps), the second built a fifth above
+// the first: C, D, E half-flat, F, G, A, B half-flat, C.
+//
+// Tuning uses 24-tone equal temperament (each step = 50 cents), the
+// standard theoretical approximation used to teach and notate maqam music
+// -- documented as a "conceptual map" real performance practice varies
+// around, not a claim that this is exactly what a performer would play.
+// This is one maqam, not a general Arabic-music system; more tonal systems
+// are a real follow-up, not something this claims to cover.
+export interface ScaleNote {
+  name: string; // e.g. "E4 (half-flat)"
+  freq: number;
+}
+
+const C4_FREQ = 440 * Math.pow(2, (60 - 69) / 12);
+// Quarter-tone steps from each octave's C, for one Rast tetrachord+pentachord:
+// C, D, E-half-flat, F, G, A, B-half-flat (the octave-completing C is the
+// next octave's degree 0, not repeated here).
+const RAST_DEGREE_STEPS = [0, 4, 7, 10, 14, 18, 21];
+const RAST_DEGREE_LABELS = ['C', 'D', 'E½♭', 'F', 'G', 'A', 'B½♭'];
+
+export const MAQAM_RAST_NOTES: ScaleNote[] = [];
+// Two octaves (C4-C5, C5-C6) plus the final C6 -- octave number is derived
+// from the actual quarter-step count, not a loop variable, so the closing
+// note is correctly labeled C6 rather than inheriting the wrong octave.
+for (let octaveOffset = 0; octaveOffset <= 2; octaveOffset++) {
+  const degreesToAdd = octaveOffset < 2 ? RAST_DEGREE_STEPS.length : 1; // stop at C6 itself
+  for (let d = 0; d < degreesToAdd; d++) {
+    const quarterSteps = octaveOffset * 24 + RAST_DEGREE_STEPS[d];
+    const octave = 4 + octaveOffset;
+    const freq = C4_FREQ * Math.pow(2, quarterSteps / 24);
+    MAQAM_RAST_NOTES.push({ name: `${RAST_DEGREE_LABELS[d]}${octave}`, freq });
+  }
+}
+
+export const RAST_NOTE_NAMES = MAQAM_RAST_NOTES.map((n) => n.name);
+
+export type TonalSystem = 'western' | 'rast';
+
+export function getScale(system: TonalSystem): ScaleNote[] {
+  return system === 'rast' ? MAQAM_RAST_NOTES : CHROMATIC_NOTES;
+}
+
+export function getNoteNames(system: TonalSystem): string[] {
+  return system === 'rast' ? RAST_NOTE_NAMES : WESTERN_NOTE_NAMES;
+}
 
 export type Timbre = 'soft' | 'pure' | 'bell' | 'pluck' | 'bowl';
 
@@ -83,7 +135,7 @@ export function setTimbre(timbre: Timbre) {
 }
 
 /** Plays a single preview note (e.g. on hover/click in the note picker). */
-export function playNote(noteIndex: number) {
+export function playNote(noteIndex: number, scale: ScaleNote[] = CHROMATIC_NOTES) {
   try {
     const ctx = getAudioContext();
     const osc = ctx.createOscillator();
@@ -95,12 +147,12 @@ export function playNote(noteIndex: number) {
     if (currentTimbre === 'bell') {
       filter.frequency.value = 4000;
       osc.type = 'sine';
-      osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
+      osc.frequency.value = scale[noteIndex].freq;
       const modOsc = ctx.createOscillator();
       const modGain = ctx.createGain();
       modOsc.type = 'sine';
-      modOsc.frequency.value = CHROMATIC_NOTES[noteIndex].freq * 5;
-      modGain.gain.value = CHROMATIC_NOTES[noteIndex].freq * 6;
+      modOsc.frequency.value = scale[noteIndex].freq * 5;
+      modGain.gain.value = scale[noteIndex].freq * 6;
       modOsc.connect(modGain);
       modGain.connect(osc.frequency);
       osc.connect(filter);
@@ -117,7 +169,7 @@ export function playNote(noteIndex: number) {
     } else if (currentTimbre === 'pluck') {
       filter.frequency.value = 2000;
       osc.type = 'sawtooth';
-      osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
+      osc.frequency.value = scale[noteIndex].freq;
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
@@ -129,7 +181,7 @@ export function playNote(noteIndex: number) {
     } else if (currentTimbre === 'bowl') {
       filter.frequency.value = 1200;
       osc.type = 'sine';
-      osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
+      osc.frequency.value = scale[noteIndex].freq;
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
@@ -142,7 +194,7 @@ export function playNote(noteIndex: number) {
     } else {
       filter.frequency.value = currentTimbre === 'pure' ? 3000 : 1800;
       osc.type = currentTimbre === 'pure' ? 'sine' : 'triangle';
-      osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
+      osc.frequency.value = scale[noteIndex].freq;
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(ctx.destination);
@@ -159,7 +211,7 @@ export function playNote(noteIndex: number) {
 }
 
 /** Plays a full 6-note melody in sequence, staggered by 390ms each. */
-export function playMelody(indices: (number | null)[], onComplete?: () => void) {
+export function playMelody(indices: (number | null)[], scale: ScaleNote[] = CHROMATIC_NOTES, onComplete?: () => void) {
   try {
     const ctx = getAudioContext();
     indices.forEach((noteIndex, i) => {
@@ -173,12 +225,12 @@ export function playMelody(indices: (number | null)[], onComplete?: () => void) 
       if (currentTimbre === 'bell') {
         filter.frequency.value = 4000;
         osc.type = 'sine';
-        osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
+        osc.frequency.value = scale[noteIndex].freq;
         const modOsc = ctx.createOscillator();
         const modGain = ctx.createGain();
         modOsc.type = 'sine';
-        modOsc.frequency.value = CHROMATIC_NOTES[noteIndex].freq * 5;
-        modGain.gain.value = CHROMATIC_NOTES[noteIndex].freq * 6;
+        modOsc.frequency.value = scale[noteIndex].freq * 5;
+        modGain.gain.value = scale[noteIndex].freq * 6;
         modOsc.connect(modGain);
         modGain.connect(osc.frequency);
         osc.connect(filter);
@@ -194,7 +246,7 @@ export function playMelody(indices: (number | null)[], onComplete?: () => void) 
       } else if (currentTimbre === 'pluck') {
         filter.frequency.value = 2000;
         osc.type = 'sawtooth';
-        osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
+        osc.frequency.value = scale[noteIndex].freq;
         osc.connect(filter);
         filter.connect(gain);
         gain.connect(ctx.destination);
@@ -205,7 +257,7 @@ export function playMelody(indices: (number | null)[], onComplete?: () => void) 
       } else if (currentTimbre === 'bowl') {
         filter.frequency.value = 1200;
         osc.type = 'sine';
-        osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
+        osc.frequency.value = scale[noteIndex].freq;
         osc.connect(filter);
         filter.connect(gain);
         gain.connect(ctx.destination);
@@ -217,7 +269,7 @@ export function playMelody(indices: (number | null)[], onComplete?: () => void) 
       } else {
         filter.frequency.value = currentTimbre === 'pure' ? 3000 : 2000;
         osc.type = currentTimbre === 'pure' ? 'sine' : 'triangle';
-        osc.frequency.value = CHROMATIC_NOTES[noteIndex].freq;
+        osc.frequency.value = scale[noteIndex].freq;
         osc.connect(filter);
         filter.connect(gain);
         gain.connect(ctx.destination);
