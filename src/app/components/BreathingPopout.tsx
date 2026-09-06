@@ -33,7 +33,7 @@ export function BreathingPopout({
   orbitEnabled = true,
   logoVisible = true,
   selectedValarIndices = [],
-  breathingOpacity = 0.5,
+  breathingOpacity = 1,
   textSize = 16,
   onBreathingToggle,
   onOrbitToggle,

@@ -86,7 +86,7 @@ export default function App() {
   const [orbitEnabled, setOrbitEnabled] = useState(true);
   const [logoVisible, setLogoVisible] = useState(true);
   const [selectedValarIndices, setSelectedValarIndices] = useState<number[]>([]); // Empty array = all colors
-  const [breathingOpacity, setBreathingOpacity] = useState(0.5); // Default 50%
+  const [breathingOpacity, setBreathingOpacity] = useState(1); // Default 100%
   const [textSize, setTextSize] = useState(16); // Default text size
   const [showBreathingCounter, setShowBreathingCounter] = useState(true);
   const [colorBlindMode, setColorBlindMode] = useState('');
