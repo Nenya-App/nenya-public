@@ -84,6 +84,20 @@ export function ScrollIndicator({
     return null;
   }
 
+  // Advances by one viewport's worth of the scrollable area rather than to
+  // any specific DOM landmark -- most pages that use this indicator don't
+  // mark their content with distinct <section> boundaries, so a full-page
+  // scroll is the one behavior that's correct regardless of a given page's
+  // structure.
+  const handleClick = () => {
+    const element = containerRef?.current;
+    if (element) {
+      element.scrollBy({ top: element.clientHeight * 0.9, behavior: 'smooth' });
+    } else {
+      window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' });
+    }
+  };
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -92,7 +106,7 @@ export function ScrollIndicator({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none ${className}`}
+          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-40 ${className}`}
           style={{
             // Ensure it appears above content but below modals
             paddingBottom: 'env(safe-area-inset-bottom)',
@@ -105,14 +119,24 @@ export function ScrollIndicator({
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-            className="flex flex-col items-center gap-1"
+            className="flex flex-col items-center gap-1 cursor-pointer"
+            onClick={handleClick}
+            role="button"
+            tabIndex={0}
+            aria-label="Scroll to next section"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleClick();
+              }
+            }}
           >
-            <ChevronDown 
-              className="w-6 h-6 text-primary drop-shadow-lg" 
+            <ChevronDown
+              className="w-6 h-6 text-primary drop-shadow-lg"
               strokeWidth={2.5}
             />
-            <ChevronDown 
-              className="w-6 h-6 text-primary/60 drop-shadow-lg -mt-4" 
+            <ChevronDown
+              className="w-6 h-6 text-primary/60 drop-shadow-lg -mt-4"
               strokeWidth={2.5}
             />
           </motion.div>
