@@ -1,7 +1,19 @@
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import nenyaLogo from 'figma:asset/2d6974b805d90d34c0a281273e556b545b1c5632.png';
+// The source asset is a 1024x1024 PNG (~253KB) -- appropriate for the large
+// welcome-screen breathing logo (rendered up to 400px), but most call sites
+// use this component as a small persistent header mark (28-40px), where a
+// 1024px source is over 25x more image data than the display size can ever
+// show. This pre-resized/re-encoded 128x128 WebP (~5KB) is swapped in below
+// for those small sizes instead.
+import nenyaLogoSmall from '../../assets/nenya-logo-small.webp';
 import { valarColors } from './ValarBreathingLogo';
+
+// Above this size, the full-resolution source is used instead -- 128px
+// covers up to ~40px CSS at 3x device pixel ratio (the largest "small"
+// usage in the app today) with headroom to spare.
+const SMALL_LOGO_MAX_SIZE = 48;
 
 interface NenyaLogoProps {
   size?: number;
@@ -25,6 +37,8 @@ export default function NenyaLogo({
   cycleStart,
   paused = false,
 }: NenyaLogoProps) {
+  const flatLogoSrc = size <= SMALL_LOGO_MAX_SIZE ? nenyaLogoSmall : nenyaLogo;
+
   // Inner orbit - tight orbit creates dense overlapping effect
   const orbitRadius = size * 0.0625; // 37.5px for 600px logo, 12.5px for 200px logo
   const orbSize = Math.max(8.5, size * 0.102); // Reduced by 15% from previous size (0.12 * 0.85 = 0.102)
@@ -57,7 +71,7 @@ export default function NenyaLogo({
           swapped for the separated petals layer (brightened) under the gem overlay below. */}
       {showLogo && (
         <img
-          src={showValarOrbit ? '/assets/petals-sep.png' : nenyaLogo}
+          src={showValarOrbit ? '/assets/petals-sep.png' : flatLogoSrc}
           alt="Nenya Logo"
           width={showValarOrbit ? size * 0.765 : size * 0.85}
           height={showValarOrbit ? size * 0.765 : size * 0.85}
@@ -256,7 +270,7 @@ export default function NenyaLogo({
           With the orbit enabled this becomes the separated gem layer with a shimmer animation. */}
       {showLogo && (
         <img
-          src={showValarOrbit ? '/assets/gem-sep.png' : nenyaLogo}
+          src={showValarOrbit ? '/assets/gem-sep.png' : flatLogoSrc}
           alt=""
           width={showValarOrbit ? size * 0.765 : size * 0.85}
           height={showValarOrbit ? size * 0.765 : size * 0.85}
