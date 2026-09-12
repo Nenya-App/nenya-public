@@ -1,8 +1,12 @@
-import { CHROMATIC_NOTES, ChromaticNote } from '../../lib/audio';
+import { CHROMATIC_NOTES, StaffNote } from '../../lib/audio';
 
 interface MusicalStaffProps {
-  currentSelected: number[]; // indices into CHROMATIC_NOTES filling the "current state" slots
-  wishSelected: number[]; // indices into CHROMATIC_NOTES filling the "wish state" slots
+  // Defaults to the Western chromatic scale, but any scale whose notes
+  // carry a real letter/octave/accidental (Rast, Blues) can be staff-
+  // notated the same way -- this is not Western-specific plumbing.
+  notes?: StaffNote[];
+  currentSelected: number[]; // indices into `notes` filling the "current state" slots
+  wishSelected: number[]; // indices into `notes` filling the "wish state" slots
   onSelect: (index: number) => void;
   accentCurrent: string;
   accentWish: string;
@@ -17,10 +21,10 @@ const X_END = 545;
 
 const LETTER_STEP: Record<string, number> = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
 
-// Diatonic staff index (0 = C4, one full step per natural letter, sharps
-// share their natural's index) -- this is what actually places a note on a
-// specific line/space, the way real notation works.
-function diatonicIndex(note: ChromaticNote): number {
+// Diatonic staff index (0 = C4, one full step per natural letter,
+// accidentals share their natural's index) -- this is what actually
+// places a note on a specific line/space, the way real notation works.
+function diatonicIndex(note: StaffNote): number {
   return (note.octave - 4) * 7 + LETTER_STEP[note.letter];
 }
 
@@ -41,8 +45,8 @@ function ledgerLinesFor(index: number): number[] {
   return [];
 }
 
-export function MusicalStaff({ currentSelected, wishSelected, onSelect, accentCurrent, accentWish }: MusicalStaffProps) {
-  const colWidth = (X_END - X_START) / (CHROMATIC_NOTES.length - 1);
+export function MusicalStaff({ notes = CHROMATIC_NOTES, currentSelected, wishSelected, onSelect, accentCurrent, accentWish }: MusicalStaffProps) {
+  const colWidth = (X_END - X_START) / (notes.length - 1);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full select-none" role="group" aria-label="Musical staff, click a note to select it">
@@ -50,16 +54,19 @@ export function MusicalStaff({ currentSelected, wishSelected, onSelect, accentCu
         <line key={idx} x1={X_START - 10} y1={yFor(idx)} x2={X_END + 10} y2={yFor(idx)} stroke="currentColor" strokeOpacity={0.35} strokeWidth={1} />
       ))}
 
-      {CHROMATIC_NOTES.map((note, i) => {
+      {notes.map((note, i) => {
         const x = X_START + i * colWidth;
         const dIndex = diatonicIndex(note);
         const y = yFor(dIndex);
         const isCurrent = currentSelected.includes(i);
         const isWish = wishSelected.includes(i);
         const accent = isCurrent ? accentCurrent : isWish ? accentWish : undefined;
+        // Wider labels (e.g. Rast's "½♭") need more clearance from the
+        // notehead than a single sharp sign does.
+        const accidentalOffset = 9 + Math.max(0, (note.accidentalLabel?.length ?? 1) - 1) * 6;
 
         return (
-          <g key={note.name} onClick={() => onSelect(i)} className="cursor-pointer">
+          <g key={`${note.name}-${i}`} onClick={() => onSelect(i)} className="cursor-pointer">
             {ledgerLinesFor(dIndex).map((ledgerIdx) => (
               <line
                 key={ledgerIdx}
@@ -72,9 +79,9 @@ export function MusicalStaff({ currentSelected, wishSelected, onSelect, accentCu
                 strokeWidth={1}
               />
             ))}
-            {note.sharp && (
-              <text x={x - 9} y={y + 3} fontSize={9} fill={accent ?? 'currentColor'} opacity={accent ? 1 : 0.45}>
-                #
+            {note.accidentalLabel && (
+              <text x={x - accidentalOffset} y={y + 3} fontSize={9} fill={accent ?? 'currentColor'} opacity={accent ? 1 : 0.45}>
+                {note.accidentalLabel}
               </text>
             )}
             {/* Larger transparent click target than the visible notehead itself */}

@@ -16,8 +16,12 @@ export interface ChromaticNote {
   freq: number;
   midi: number;
   letter: string; // 'C'..'B', without octave, without sharp -- the natural this note sits on/near
-  sharp: boolean;
   octave: number;
+  // undefined = natural. A plain string rather than a `sharp: boolean` so
+  // any staff-positioned scale (not just 12-TET ones) can carry whatever
+  // accidental mark it needs -- e.g. Rast's half-flat "½♭" below -- through
+  // the same field MusicalStaff already knows how to render.
+  accidentalLabel?: string;
 }
 
 export const CHROMATIC_NOTES: ChromaticNote[] = [];
@@ -25,9 +29,9 @@ for (let midi = FIRST_MIDI; midi <= LAST_MIDI; midi++) {
   const letterIndex = midi % 12;
   const octave = Math.floor(midi / 12) - 1;
   const letter = NOTE_LETTERS[letterIndex];
-  const sharp = letter.includes('#');
+  const accidentalLabel = letter.includes('#') ? '#' : undefined;
   const freq = 440 * Math.pow(2, (midi - 69) / 12);
-  CHROMATIC_NOTES.push({ name: `${letter}${octave}`, freq, midi, letter: letter.replace('#', ''), sharp, octave });
+  CHROMATIC_NOTES.push({ name: `${letter}${octave}`, freq, midi, letter: letter.replace('#', ''), octave, accidentalLabel });
 }
 
 export const WESTERN_NOTE_NAMES = CHROMATIC_NOTES.map((n) => n.name);
@@ -52,10 +56,22 @@ export interface ScaleNote {
   freq: number;
 }
 
+// A scale note that also carries a real staff position -- a letter line/
+// space plus an optional accidental -- so MusicalStaff can place it
+// without needing to know anything about which tonal system it came from.
+// Only scales that actually map onto the seven natural letters (Western,
+// Rast, Blues) get one of these; Slendro and Miyako-bushi use their own
+// non-staff notations instead (see below).
+export interface StaffNote extends ScaleNote {
+  letter: string; // 'C'..'B'
+  octave: number;
+  accidentalLabel?: string; // e.g. '#' or '½♭'; undefined = natural
+}
+
 const C4_FREQ = 440 * Math.pow(2, (60 - 69) / 12);
 
 // Generic N-tone-equal-division-of-the-octave scale builder -- every
-// non-Western tonal system here (Rast's 24-TET quarter-tones, Slendro's
+// non-12-TET tonal system here (Rast's 24-TET quarter-tones, Slendro's
 // 5-EDO, and whatever comes after) is "some number of equal steps per
 // octave, labeled per degree," so this is the one algorithm all of them
 // share rather than each reimplementing its own octave/frequency loop.
@@ -66,11 +82,18 @@ const C4_FREQ = 440 * Math.pow(2, (60 - 69) / 12);
 // variable (a real bug caught here during Rast's original implementation:
 // the closing note was mislabeled with the wrong octave when the octave
 // number came from the loop index instead).
+//
+// `formatName` lets each caller control how a degree label and its octave
+// combine into a display name -- Rast just appends the octave number
+// (the default), but Slendro's authentic cipher notation marks register
+// with a dot above/below the digit instead of a trailing number, which a
+// flat "label+octave" concatenation can't express.
 function buildEqualDivisionScale(
   divisionsPerOctave: number,
   degreeSteps: number[],
   degreeLabels: string[],
-  octaves: number = 2
+  octaves: number = 2,
+  formatName: (label: string, octaveOffset: number, octave: number) => string = (label, _octaveOffset, octave) => `${label}${octave}`
 ): ScaleNote[] {
   const notes: ScaleNote[] = [];
   for (let octaveOffset = 0; octaveOffset <= octaves; octaveOffset++) {
@@ -79,7 +102,33 @@ function buildEqualDivisionScale(
       const steps = octaveOffset * divisionsPerOctave + degreeSteps[d];
       const octave = 4 + octaveOffset;
       const freq = C4_FREQ * Math.pow(2, steps / divisionsPerOctave);
-      notes.push({ name: `${degreeLabels[d]}${octave}`, freq });
+      notes.push({ name: formatName(degreeLabels[d], octaveOffset, octave), freq });
+    }
+  }
+  return notes;
+}
+
+// Same construction as above, but for scales that map onto real staff
+// positions (a letter + an accidental) rather than an arbitrary label --
+// Rast's degrees are real letters (C, D, E...) with a half-flat on two of
+// them, so its staff form is this builder, not a separate reimplementation.
+function buildEqualDivisionStaffScale(
+  divisionsPerOctave: number,
+  degreeSteps: number[],
+  degreeLetters: string[],
+  degreeAccidentals: (string | undefined)[],
+  octaves: number = 2
+): StaffNote[] {
+  const notes: StaffNote[] = [];
+  for (let octaveOffset = 0; octaveOffset <= octaves; octaveOffset++) {
+    const degreesToAdd = octaveOffset < octaves ? degreeSteps.length : 1;
+    for (let d = 0; d < degreesToAdd; d++) {
+      const steps = octaveOffset * divisionsPerOctave + degreeSteps[d];
+      const octave = 4 + octaveOffset;
+      const freq = C4_FREQ * Math.pow(2, steps / divisionsPerOctave);
+      const letter = degreeLetters[d];
+      const accidentalLabel = degreeAccidentals[d];
+      notes.push({ name: `${letter}${accidentalLabel ?? ''}${octave}`, freq, letter, octave, accidentalLabel });
     }
   }
   return notes;
@@ -97,10 +146,18 @@ function buildEqualDivisionScale(
 // -- documented as a "conceptual map" real performance practice varies
 // around, not a claim that this is exactly what a performer would play.
 // This is one maqam, not a general Arabic-music system.
+//
+// Rast's degrees are real staff letters (each note is "C," "D," etc.,
+// just like Western notation) with a half-flat accidental on two of them
+// -- unlike Slendro/Miyako-bushi below, that means Rast can reuse the
+// same staff MusicalStaff already draws for Western notes, just with a
+// different accidental symbol, rather than needing its own notation.
 const RAST_DEGREE_STEPS = [0, 4, 7, 10, 14, 18, 21];
-const RAST_DEGREE_LABELS = ['C', 'D', 'E½♭', 'F', 'G', 'A', 'B½♭'];
+const RAST_DEGREE_LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+const RAST_DEGREE_ACCIDENTALS: (string | undefined)[] = [undefined, undefined, '½♭', undefined, undefined, undefined, '½♭'];
 
-export const MAQAM_RAST_NOTES: ScaleNote[] = buildEqualDivisionScale(24, RAST_DEGREE_STEPS, RAST_DEGREE_LABELS);
+export const RAST_STAFF_NOTES: StaffNote[] = buildEqualDivisionStaffScale(24, RAST_DEGREE_STEPS, RAST_DEGREE_LETTERS, RAST_DEGREE_ACCIDENTALS);
+export const MAQAM_RAST_NOTES: ScaleNote[] = RAST_STAFF_NOTES.map((n) => ({ name: n.name, freq: n.freq }));
 export const RAST_NOTE_NAMES = MAQAM_RAST_NOTES.map((n) => n.name);
 
 // Slendro, the five-tone Javanese gamelan tuning. Real gamelans vary
@@ -114,10 +171,32 @@ export const RAST_NOTE_NAMES = MAQAM_RAST_NOTES.map((n) => n.name);
 // -- degrees 4 and 7 are conventionally skipped so the numbering stays
 // comparable to pelog's seven-tone system; this is authentic notation,
 // not a typo).
+//
+// Cipher notation marks octave register with a dot above or below the
+// digit rather than a trailing octave number (a plain "label+octave"
+// concatenation would render our first two degrees as "14"/"24", which
+// reads as fourteen/twenty-four -- genuinely ambiguous, not just
+// inauthentic). This mirrors the real convention: a middle/reference
+// octave carries no mark, the octave below gets a dot underneath, and the
+// octave above gets a dot on top.
 const SLENDRO_DEGREE_STEPS = [0, 1, 2, 3, 4];
 const SLENDRO_DEGREE_LABELS = ['1', '2', '3', '5', '6'];
+const COMBINING_DOT_BELOW = '̣';
+const COMBINING_DOT_ABOVE = '̇';
 
-export const SLENDRO_NOTES: ScaleNote[] = buildEqualDivisionScale(5, SLENDRO_DEGREE_STEPS, SLENDRO_DEGREE_LABELS);
+function slendroCipherName(label: string, octaveOffset: number): string {
+  if (octaveOffset === 0) return label + COMBINING_DOT_BELOW;
+  if (octaveOffset >= 2) return label + COMBINING_DOT_ABOVE;
+  return label;
+}
+
+export const SLENDRO_NOTES: ScaleNote[] = buildEqualDivisionScale(
+  5,
+  SLENDRO_DEGREE_STEPS,
+  SLENDRO_DEGREE_LABELS,
+  2,
+  (label, octaveOffset) => slendroCipherName(label, octaveOffset)
+);
 export const SLENDRO_NOTE_NAMES = SLENDRO_NOTES.map((n) => n.name);
 
 // Bhairav, Miyako-bushi, and the (minor) blues scale are all standard
@@ -125,17 +204,18 @@ export const SLENDRO_NOTE_NAMES = SLENDRO_NOTES.map((n) => n.name);
 // classes from the same chromatic grid CHROMATIC_NOTES already computes,
 // unlike Rast/Slendro's non-12-TET tunings above. So rather than
 // reimplementing 12-TET frequency math a third time, this filters the
-// already-verified CHROMATIC_NOTES array down to each scale's degrees --
-// reusing its exact frequencies and real pitch-letter names (e.g. "C#4")
-// rather than inventing a separate scale-degree naming scheme. Some of
-// these traditions conventionally spell certain degrees with flats
-// (e.g. Bhairav's komal notes as Db/Ab) rather than sharps; this app
-// spells everything with sharps for consistency with the existing
-// Western chromatic scale, the same simplification already implicit
-// there.
-function subsetOfChromatic(pitchClassesFromC: number[]): ScaleNote[] {
+// already-verified CHROMATIC_NOTES array down to each scale's degrees,
+// reusing its exact frequencies (and, since CHROMATIC_NOTES entries are
+// already ChromaticNote/StaffNote-shaped, its real staff positions too --
+// which is what lets Blues below reuse MusicalStaff directly rather than
+// needing its own notation). `degreeLabels`, if given, overrides the
+// plain pitch-letter name per scale degree -- used by Bhairav so its
+// picker shows real Sargam solfège instead of absolute pitch letters.
+function subsetOfChromatic(pitchClassesFromC: number[], degreeLabels?: string[]): StaffNote[] {
   const wanted = new Set(pitchClassesFromC);
-  return CHROMATIC_NOTES.filter((n) => wanted.has((n.midi - FIRST_MIDI) % 12)).map((n) => ({ name: n.name, freq: n.freq }));
+  const filtered = CHROMATIC_NOTES.filter((n) => wanted.has((n.midi - FIRST_MIDI) % 12));
+  if (!degreeLabels) return filtered;
+  return filtered.map((n, i) => ({ ...n, name: `${degreeLabels[i % pitchClassesFromC.length]}${n.octave}` }));
 }
 
 // Bhairav, the thaat (parent scale) most associated with dawn ragas in
@@ -143,7 +223,16 @@ function subsetOfChromatic(pitchClassesFromC: number[]): ScaleNote[] {
 // Ga, Ma, Pa, komal Dha, Ni -- semitone offsets from the tonic 0, 1, 4,
 // 5, 7, 8, 11 (the two "komal"/flattened degrees, re and dha, are what
 // give it its distinctive character against a plain major scale).
-export const BHAIRAV_NOTES: ScaleNote[] = subsetOfChromatic([0, 1, 4, 5, 7, 8, 11]);
+//
+// Labeled with real Sargam solfège (S r G M P d N) rather than absolute
+// pitch letters -- Hindustani notation is degree-relative, not staff-
+// based, and lowercase marks a komal (flattened) degree, matching how
+// it's actually written (conventionally an underline under the letter;
+// simplified to case here since this is a plain-text label, not a staff).
+const BHAIRAV_STEPS = [0, 1, 4, 5, 7, 8, 11];
+const SARGAM_BHAIRAV_LABELS = ['S', 'r', 'G', 'M', 'P', 'd', 'N'];
+
+export const BHAIRAV_NOTES: ScaleNote[] = subsetOfChromatic(BHAIRAV_STEPS, SARGAM_BHAIRAV_LABELS);
 export const BHAIRAV_NOTE_NAMES = BHAIRAV_NOTES.map((n) => n.name);
 
 // Miyako-bushi (also called the "in" scale), one of the two pentatonic
@@ -151,6 +240,13 @@ export const BHAIRAV_NOTE_NAMES = BHAIRAV_NOTES.map((n) => n.name);
 // interval structure: semitone offsets 0, 1, 5, 7, 8 from the tonic --
 // a spare minor second and minor sixth above the root give it its
 // characteristic sound, distinct from the more consonant "yo" scale.
+//
+// Kept with plain pitch-letter names here (used in review/PDF text and
+// for playback) -- the interactive picker for this one is a numbered
+// koto-string diagram (KotoStringDiagram.tsx) rather than a label-based
+// row, since koto/shamisen music is traditionally notated by string
+// number, not pitch name; that numbering is positional (string N = the
+// Nth entry of this array) and doesn't need to live in the data itself.
 export const MIYAKOBUSHI_NOTES: ScaleNote[] = subsetOfChromatic([0, 1, 5, 7, 8]);
 export const MIYAKOBUSHI_NOTE_NAMES = MIYAKOBUSHI_NOTES.map((n) => n.name);
 
@@ -158,7 +254,13 @@ export const MIYAKOBUSHI_NOTE_NAMES = MIYAKOBUSHI_NOTES.map((n) => n.name);
 // "blue note" -- a flattened fifth (6 semitones, a tritone from the
 // root) inserted as a chromatic passing tone between the fourth and
 // fifth degrees. Verified six-note structure: 0, 3, 5, 6, 7, 10.
-export const BLUES_NOTES: ScaleNote[] = subsetOfChromatic([0, 3, 5, 6, 7, 10]);
+//
+// Unlike Bhairav/Miyako-bushi, blues has no notation system of its own --
+// it's conventionally just written on an ordinary staff -- so this stays
+// as real staff-positioned notes (BLUES_STAFF_NOTES) for MusicalStaff to
+// render directly, the same way Rast's staff notes work above.
+export const BLUES_STAFF_NOTES: StaffNote[] = subsetOfChromatic([0, 3, 5, 6, 7, 10]);
+export const BLUES_NOTES: ScaleNote[] = BLUES_STAFF_NOTES.map((n) => ({ name: n.name, freq: n.freq }));
 export const BLUES_NOTE_NAMES = BLUES_NOTES.map((n) => n.name);
 
 export type TonalSystem = 'western' | 'rast' | 'slendro' | 'bhairav' | 'miyakobushi' | 'blues';

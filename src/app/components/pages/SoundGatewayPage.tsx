@@ -13,8 +13,11 @@ import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { MusicalStaff } from '../MusicalStaff';
 import { ScaleRow } from '../ScaleRow';
+import { KotoStringDiagram } from '../KotoStringDiagram';
 import {
   TonalSystem,
+  RAST_STAFF_NOTES,
+  BLUES_STAFF_NOTES,
   colorsToMelody,
   melodyToColors,
   isValidHex,
@@ -57,6 +60,27 @@ const TONAL_SYSTEM_LABELS: Record<TonalSystem, string> = {
 };
 
 const TONAL_SYSTEM_ORDER: TonalSystem[] = ['western', 'rast', 'slendro', 'bhairav', 'miyakobushi', 'blues'];
+
+// Which of the three note-picker modalities each tonal system uses:
+// 'staff' for systems that map onto real staff positions (Western, Rast's
+// quarter-tone accidentals, and Blues, which has no notation of its own so
+// borrows the ordinary staff), 'row' for cipher/solfège-style plain labels
+// (Slendro's numerals, Bhairav's Sargam), and 'koto' for Miyako-bushi's
+// numbered-string convention.
+const PICKER_KIND: Record<TonalSystem, 'staff' | 'row' | 'koto'> = {
+  western: 'staff',
+  rast: 'staff',
+  blues: 'staff',
+  slendro: 'row',
+  bhairav: 'row',
+  miyakobushi: 'koto',
+};
+
+const PICKER_HINT: Record<'staff' | 'row' | 'koto', string> = {
+  staff: 'on the staff',
+  row: 'below',
+  koto: 'on a string',
+};
 
 const INSTRUCTION_CARDS = [
   {
@@ -461,14 +485,24 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
             <div className="space-y-2">
               {!melodyComplete && (
                 <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Sans', sans-serif" }}>
-                  Click a note {tonalSystem === 'western' ? 'on the staff' : 'below'} for the{' '}
+                  Click a note {PICKER_HINT[PICKER_KIND[tonalSystem]]} for the{' '}
                   <span style={{ color: melody.findIndex((n) => n === null) < 3 ? accentCurrent : accentWish }}>
                     {STATE_LABELS[melody.findIndex((n) => n === null) < 3 ? 0 : 1]} state
                   </span>
                 </p>
               )}
-              {tonalSystem === 'western' ? (
+              {PICKER_KIND[tonalSystem] === 'staff' ? (
                 <MusicalStaff
+                  notes={tonalSystem === 'rast' ? RAST_STAFF_NOTES : tonalSystem === 'blues' ? BLUES_STAFF_NOTES : undefined}
+                  currentSelected={melody.slice(0, 3).filter((n): n is number => n !== null)}
+                  wishSelected={melody.slice(3, 6).filter((n): n is number => n !== null)}
+                  onSelect={handleSelectNote}
+                  accentCurrent={accentCurrent}
+                  accentWish={accentWish}
+                />
+              ) : PICKER_KIND[tonalSystem] === 'koto' ? (
+                <KotoStringDiagram
+                  notes={scale}
                   currentSelected={melody.slice(0, 3).filter((n): n is number => n !== null)}
                   wishSelected={melody.slice(3, 6).filter((n): n is number => n !== null)}
                   onSelect={handleSelectNote}
