@@ -106,13 +106,9 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
                 <Card
                   key={gateway.id}
                   className={`p-4 sm:p-6 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl relative ${
-                    isSelected 
-                      ? 'border-nenya-accent-warm bg-nenya-accent-warm/10 shadow-lg' 
+                    isSelected
+                      ? 'border-nenya-accent-warm bg-nenya-accent-warm/10 shadow-lg'
                       : 'border-border hover:border-nenya-accent-warm/50'
-                  } ${
-                    gateway.id === 'sight'
-                      ? 'shadow-[0_0_20px_rgba(218,198,130,0.4)] dark:shadow-[0_0_25px_rgba(218,198,130,0.3)] border-nenya-gold/30'
-                      : ''
                   }`}
                   onClick={() => toggleGateway(gateway.id)}
                   role="button"
@@ -126,15 +122,6 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
                     }
                   }}
                 >
-                  {/* Recommended badge for Sight gateway */}
-                  {gateway.id === 'sight' && (
-                    <div className="absolute top-3 right-3 z-10">
-                      <div className="bg-nenya-gold text-background px-2.5 py-1 rounded-full shadow-lg text-xs font-medium">
-                        Recommended
-                      </div>
-                    </div>
-                  )}
-                  
                   <div className="space-y-4">
                     {/* Icon and Selection Indicator */}
                     <div className="flex items-center justify-between">

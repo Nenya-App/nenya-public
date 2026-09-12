@@ -14,7 +14,6 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { MusicalStaff } from '../MusicalStaff';
 import { ScaleRow } from '../ScaleRow';
 import {
-  MAQAM_RAST_NOTES,
   TonalSystem,
   colorsToMelody,
   melodyToColors,
@@ -47,6 +46,17 @@ const TIMBRE_OPTIONS: { label: string; value: Timbre }[] = [
   { label: 'Pluck', value: 'pluck' },
   { label: 'Bowl', value: 'bowl' },
 ];
+
+const TONAL_SYSTEM_LABELS: Record<TonalSystem, string> = {
+  western: 'Western',
+  rast: 'Arabic (Maqam Rast)',
+  slendro: 'Javanese (Slendro)',
+  bhairav: 'Hindustani (Bhairav)',
+  miyakobushi: 'Japanese (Miyako-bushi)',
+  blues: 'Blues',
+};
+
+const TONAL_SYSTEM_ORDER: TonalSystem[] = ['western', 'rast', 'slendro', 'bhairav', 'miyakobushi', 'blues'];
 
 const INSTRUCTION_CARDS = [
   {
@@ -360,8 +370,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
         {step === 'melody' && (
           <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-            <div className="flex items-center justify-center gap-2">
-              {(['western', 'rast'] as TonalSystem[]).map((system) => (
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              {TONAL_SYSTEM_ORDER.map((system) => (
                 <button
                   key={system}
                   onClick={() => handleSelectTonalSystem(system)}
@@ -373,7 +383,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                     fontFamily: "'DM Sans', sans-serif",
                   }}
                 >
-                  {system === 'western' ? 'Western' : 'Arabic (Maqam Rast)'}
+                  {TONAL_SYSTEM_LABELS[system]}
                 </button>
               ))}
             </div>
@@ -467,7 +477,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 />
               ) : (
                 <ScaleRow
-                  notes={MAQAM_RAST_NOTES}
+                  notes={scale}
                   currentSelected={melody.slice(0, 3).filter((n): n is number => n !== null)}
                   wishSelected={melody.slice(3, 6).filter((n): n is number => n !== null)}
                   onSelect={handleSelectNote}

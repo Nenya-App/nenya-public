@@ -117,7 +117,7 @@ export default function NenyaLogo({
                   top: orbitRadius - orbSize / 2 + y,
                   borderRadius: '50%',
                   willChange: 'background, opacity, transform',
-                  opacity: 0.8,
+                  opacity: 0.64,
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
@@ -132,7 +132,7 @@ export default function NenyaLogo({
                     `radial-gradient(circle at 30% 30%, ${colors[5]}ff, ${colors[5]}ee 50%, ${colors[5]}99 80%, ${colors[5]}44)`,
                     `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
                   ],
-                  opacity: [0.73, 1.0, 0.73],
+                  opacity: [0.584, 0.8, 0.584],
                   scale: [0.95, 1.05, 0.95],
                   rotate: -360,
                 }}
