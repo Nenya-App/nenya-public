@@ -16,6 +16,7 @@ import { ScaleRow } from '../ScaleRow';
 import { KotoStringDiagram } from '../KotoStringDiagram';
 import {
   TonalSystem,
+  TONAL_SYSTEM_LABELS,
   RAST_STAFF_NOTES,
   BLUES_STAFF_NOTES,
   colorsToMelody,
@@ -49,15 +50,6 @@ const TIMBRE_OPTIONS: { label: string; value: Timbre }[] = [
   { label: 'Pluck', value: 'pluck' },
   { label: 'Bowl', value: 'bowl' },
 ];
-
-const TONAL_SYSTEM_LABELS: Record<TonalSystem, string> = {
-  western: 'Western',
-  rast: 'Arabic (Maqam Rast)',
-  slendro: 'Javanese (Slendro)',
-  bhairav: 'Hindustani (Bhairav)',
-  miyakobushi: 'Japanese (Miyako-bushi)',
-  blues: 'Blues',
-};
 
 const TONAL_SYSTEM_ORDER: TonalSystem[] = ['western', 'rast', 'slendro', 'bhairav', 'miyakobushi', 'blues'];
 

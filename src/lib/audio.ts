@@ -291,6 +291,19 @@ export function getNoteNames(system: TonalSystem): string[] {
   return SCALE_NOTE_NAMES[system];
 }
 
+// The one place a tonal system's display name is spelled out -- shared by
+// the Sound gateway's own toggle UI and the review/PDF report, so the name
+// a melody was composed under and the name shown when reporting on it can
+// never drift apart from each other.
+export const TONAL_SYSTEM_LABELS: Record<TonalSystem, string> = {
+  western: 'Western',
+  rast: 'Arabic (Maqam Rast)',
+  slendro: 'Javanese (Slendro)',
+  bhairav: 'Hindustani (Bhairav)',
+  miyakobushi: 'Japanese (Miyako-bushi)',
+  blues: 'Blues',
+};
+
 export type Timbre = 'soft' | 'pure' | 'bell' | 'pluck' | 'bowl';
 
 // Color<->melody translation is deliberately generic over scale length
