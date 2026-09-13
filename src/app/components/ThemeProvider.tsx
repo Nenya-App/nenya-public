@@ -26,9 +26,19 @@ export function ThemeProvider({
   defaultTheme = 'dark',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem('nenya-theme') as Theme) || defaultTheme
-  );
+  // In-memory only, by design: the theme choice is not persisted across
+  // sessions, so every fresh visit starts from `defaultTheme` regardless
+  // of what was picked last time -- consistent with the rest of the app
+  // storing nothing about a visitor between sessions.
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
+
+  // One-time cleanup: a visitor who used the app before this was made
+  // ephemeral may still have the old persisted value sitting in their
+  // browser. It's never read anymore, but leaving it there would still be
+  // retained information, which is exactly what this is meant to avoid.
+  useEffect(() => {
+    localStorage.removeItem('nenya-theme');
+  }, []);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -63,12 +73,10 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      localStorage.setItem('nenya-theme', theme);
       setTheme(theme);
     },
     toggleTheme: () => {
       const newTheme = theme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('nenya-theme', newTheme);
       setTheme(newTheme);
     },
   };
