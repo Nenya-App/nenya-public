@@ -133,10 +133,21 @@ export default function App() {
   const [tutorialActive, setTutorialActive] = useState(false);
   const hasAutoShownTutorial = useRef(false);
 
+  // The breathing counter starts maximized (showing the technique picker)
+  // for the tutorial's benefit, then collapses to just the counter itself
+  // the moment the tutorial ends -- whether by finishing, skipping, or the
+  // "x" close, all of which funnel through WelcomeTutorial's single
+  // onClose. Outside of a tutorial run, this is just the counter's normal
+  // controlled minimize/maximize state, toggled from its own corner button.
+  const [breathingCounterMinimized, setBreathingCounterMinimized] = useState(false);
+
   useEffect(() => {
     if (entryUnlocked && currentScreen === 'welcome' && !hasAutoShownTutorial.current) {
       hasAutoShownTutorial.current = true;
-      const t = setTimeout(() => setTutorialActive(true), 400);
+      const t = setTimeout(() => {
+        setBreathingCounterMinimized(false);
+        setTutorialActive(true);
+      }, 400);
       return () => clearTimeout(t);
     }
   }, [entryUnlocked, currentScreen]);
@@ -405,7 +416,10 @@ export default function App() {
           showAnimationControls={currentScreen === 'welcome'}
           onEmergencyExit={() => { isEmergencyExiting.current = true; }}
           onBreathingPopoutToggle={() => setBreathingPopoutOpen(!breathingPopoutOpen)}
-          onTutorialReplay={() => setTutorialActive(true)}
+          onTutorialReplay={() => {
+            setBreathingCounterMinimized(false);
+            setTutorialActive(true);
+          }}
         />
 
         {currentScreen === 'welcome' && entryUnlocked && (
@@ -420,11 +434,19 @@ export default function App() {
             onTechniqueChange={setBreathingTechnique}
             cycleStart={breathingCycleStart}
             paused={breathingPaused}
+            minimized={breathingCounterMinimized}
+            onMinimizedChange={setBreathingCounterMinimized}
           />
         )}
 
         {currentScreen === 'welcome' && (
-          <WelcomeTutorial isOpen={tutorialActive} onClose={() => setTutorialActive(false)} />
+          <WelcomeTutorial
+            isOpen={tutorialActive}
+            onClose={() => {
+              setTutorialActive(false);
+              setBreathingCounterMinimized(true);
+            }}
+          />
         )}
 
         {/* Main Content Area */}

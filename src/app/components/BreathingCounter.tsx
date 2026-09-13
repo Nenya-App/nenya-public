@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { GripHorizontal } from 'lucide-react';
+import { GripHorizontal, Minus, Square } from 'lucide-react';
 
 interface BreathingTechnique {
   ih: number;
@@ -38,6 +38,11 @@ interface BreathingCounterProps {
   /** Freezes the count/phase at its current value. Expects the caller to
    *  shift cycleStart forward by the paused duration on resume. */
   paused?: boolean;
+  /** Controlled: when true, only the drag handle and the counter itself
+   *  show -- the technique picker below is hidden. Defaults to false
+   *  (maximized) if omitted, since not every caller needs the collapse. */
+  minimized?: boolean;
+  onMinimizedChange?: (minimized: boolean) => void;
 }
 
 export function BreathingCounter({
@@ -51,6 +56,8 @@ export function BreathingCounter({
   id,
   cycleStart,
   paused = false,
+  minimized = false,
+  onMinimizedChange,
 }: BreathingCounterProps) {
   const [count, setCount] = useState(1);
   const [phase, setPhase] = useState<'i' | 'h' | 'e'>('i');
@@ -103,9 +110,10 @@ export function BreathingCounter({
         overflow: 'hidden',
       }}
     >
-      {/* Drag handle */}
+      {/* Drag handle, with the minimize/maximize toggle in the corner */}
       <div
         style={{
+          position: 'relative',
           display: 'flex',
           justifyContent: 'center',
           padding: '4px 0 0',
@@ -114,6 +122,27 @@ export function BreathingCounter({
         }}
       >
         <GripHorizontal size={14} color="rgba(232,160,32,0.4)" />
+        {onMinimizedChange && (
+          <button
+            onClick={() => onMinimizedChange(!minimized)}
+            onPointerDown={(e) => e.stopPropagation()}
+            aria-label={minimized ? 'Maximize breathing counter' : 'Minimize breathing counter'}
+            title={minimized ? 'Maximize' : 'Minimize'}
+            style={{
+              position: 'absolute',
+              top: '2px',
+              right: '4px',
+              padding: '3px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              color: 'rgba(232,160,32,0.55)',
+            }}
+          >
+            {minimized ? <Square size={11} /> : <Minus size={13} />}
+          </button>
+        )}
       </div>
       <div style={{ padding: '4px 16px 10px' }}>
         <div
@@ -154,9 +183,11 @@ export function BreathingCounter({
           </div>
         </div>
       </div>
-      <div style={{ height: '1px', background: 'rgba(232,160,32,0.14)', margin: '0 16px' }} />
-      <div style={{ padding: '6px 0 10px' }}>
-        {PRESETS.map((preset) => {
+      {!minimized && (
+        <>
+          <div style={{ height: '1px', background: 'rgba(232,160,32,0.14)', margin: '0 16px' }} />
+          <div style={{ padding: '6px 0 10px' }}>
+            {PRESETS.map((preset) => {
           const active = preset.ih === IH && (preset.hi || 0) === HI && preset.ex === EX && (preset.ho || 0) === HO;
           return (
             <button
@@ -213,9 +244,11 @@ export function BreathingCounter({
                 </div>
               </div>
             </button>
-          );
-        })}
-      </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </motion.div>
   );
 }
