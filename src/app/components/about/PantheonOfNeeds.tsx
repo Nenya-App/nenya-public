@@ -1,11 +1,17 @@
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useState, RefObject } from 'react';
 import { ChevronDown, ChevronUp, User, Users } from 'lucide-react';
 import { valarColors } from '../ValarBreathingLogo';
 import { ScrollIndicator } from '../ScrollIndicator';
 
 interface PantheonOfNeedsProps {
   onExploreGateways?: () => void;
+  /** The ancestor scroll container that actually scrolls this page (this
+   *  component doesn't own its own scroll wrapper -- its parent, AboutNenya,
+   *  does). Passed through to ScrollIndicator so it detects and scrolls the
+   *  real scrolling element instead of falling back to the window, which
+   *  never scrolls in this layout. */
+  containerRef?: RefObject<HTMLElement>;
 }
 
 interface ValaData {
@@ -335,7 +341,7 @@ function ValaCard({ vala, isExpanded, onToggle }: {
   );
 }
 
-export default function PantheonOfNeeds({ onExploreGateways }: PantheonOfNeedsProps) {
+export default function PantheonOfNeeds({ onExploreGateways, containerRef }: PantheonOfNeedsProps) {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
   const toggleCard = (id: string) => {
@@ -407,7 +413,7 @@ export default function PantheonOfNeeds({ onExploreGateways }: PantheonOfNeedsPr
       </div>
       
       {/* Scroll indicator for page scrolling */}
-      <ScrollIndicator />
+      <ScrollIndicator containerRef={containerRef} />
     </div>
   );
 }

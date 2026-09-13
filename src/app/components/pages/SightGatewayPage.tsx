@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '../ui/button';
 import { ArrowLeft, Shuffle, User, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
@@ -108,6 +108,7 @@ const INSTRUCTION_CARDS = [
 
 export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap }: SightGatewayPageProps) {
   const { theme } = useTheme();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Step state: 'instructions' or 'selection'
   const [step, setStep] = useState<'instructions' | 'selection'>('instructions');
@@ -217,7 +218,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto scroll-container">
+        <div ref={scrollContainerRef} className="flex-1 overflow-auto scroll-container">
           {step === 'instructions' ? (
             /* Instruction Cards */
             <div className="h-full flex items-center justify-center px-4 sm:px-6 py-8">
@@ -504,7 +505,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
 
           <AppFooter />
         </div>
-        <ScrollIndicator />
+        <ScrollIndicator containerRef={scrollContainerRef} />
       </div>
 
       {/* Body Map Avatar Modal */}

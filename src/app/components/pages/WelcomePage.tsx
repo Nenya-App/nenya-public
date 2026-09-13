@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import NenyaLogo from '../NenyaLogo';
 import { ValarBreathingLogo, BreathingTechnique } from '../ValarBreathingLogo';
@@ -39,6 +39,20 @@ export default function WelcomePage({
   onTogglePaused,
 }: WelcomePageProps) {
   const [logoSize, setLogoSize] = useState(400);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Advances by one screen's worth of this page's own scroll container
+  // (each section below is exactly one viewport tall, and CSS scroll-snap
+  // settles the rest of the way) -- matching the same "scroll by ~90% of
+  // the viewport" convention ScrollIndicator uses elsewhere, since this
+  // page's sections aren't wired through that shared component (its
+  // fixed-position, single-instance design doesn't fit three stacked
+  // snap-scroll sections each wanting their own in-flow cue).
+  const scrollToNextSection = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    container.scrollBy({ top: container.clientHeight * 0.9, behavior: 'smooth' });
+  };
 
   // Calculate logo size to fill viewport
   useEffect(() => {
@@ -60,7 +74,7 @@ export default function WelcomePage({
   }, []);
 
   return (
-    <div className="size-full relative overflow-y-auto snap-y snap-proximity">
+    <div ref={scrollContainerRef} className="size-full relative overflow-y-auto snap-y snap-proximity">
       {/* Welcome Popup */}
       <WelcomePopup onNavigateToAbout={onNavigateToAbout} onDismiss={onEntryUnlocked} />
 
@@ -132,13 +146,25 @@ export default function WelcomePage({
           </p>
 
           {/* Animated Scroll Indicator */}
-          <div className="flex flex-col items-center gap-1 animate-bounce">
+          <div
+            className="flex flex-col items-center gap-1 animate-bounce cursor-pointer"
+            onClick={scrollToNextSection}
+            role="button"
+            tabIndex={0}
+            aria-label="See more"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                scrollToNextSection();
+              }
+            }}
+          >
             <ChevronDown className="size-6 text-muted-foreground/50" />
-            <span className="text-xs text-muted-foreground/50">Scroll down for more</span>
+            <span className="text-xs text-muted-foreground/50">More below</span>
           </div>
         </div>
       </div>
-      
+
       {/* Second Section: Welcome Text and CTA */}
       <div className="min-h-screen flex items-center justify-center px-6 py-8 relative snap-start">
         <div className={`text-center space-y-12 max-w-3xl w-full transition-opacity duration-500`}>
@@ -166,7 +192,19 @@ export default function WelcomePage({
           </div>
 
           {/* Animated Scroll Indicator */}
-          <div className="flex justify-center animate-bounce pt-8">
+          <div
+            className="flex justify-center animate-bounce pt-8 cursor-pointer"
+            onClick={scrollToNextSection}
+            role="button"
+            tabIndex={0}
+            aria-label="See more"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                scrollToNextSection();
+              }
+            }}
+          >
             <ChevronDown className="size-6 text-muted-foreground/50" />
           </div>
         </div>

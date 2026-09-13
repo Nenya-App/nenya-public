@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import EagleProtocolDemoSelector from './EagleProtocolDemoSelector';
 import VeniceChat from './about/VeniceChat';
 import AboutTheFounder from './about/AboutTheFounder';
@@ -52,6 +52,7 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection }: Ab
   const [currentSection, setCurrentSection] = useState<AboutSection>(
     (initialSection as AboutSection) || 'menu'
   );
+  const pantheonScrollRef = useRef<HTMLDivElement>(null);
 
   // Scroll to top when section changes
   useEffect(() => {
@@ -113,14 +114,14 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection }: Ab
         <BreathingTool onBack={handleBackToMenu} />
       )}
       {currentSection === 'pantheon-of-needs' && (
-        <div className="size-full overflow-y-auto scroll-container">
-          <button 
+        <div ref={pantheonScrollRef} className="size-full overflow-y-auto scroll-container">
+          <button
             onClick={handleBackToMenu}
             className="sticky top-0 left-0 z-40 m-4 px-4 py-2 text-sm bg-background/80 backdrop-blur-sm border rounded-lg text-muted-foreground hover:text-foreground transition-colors"
           >
             ← Back to Menu
           </button>
-          <PantheonOfNeeds onExploreGateways={onRestartDemo} />
+          <PantheonOfNeeds onExploreGateways={onRestartDemo} containerRef={pantheonScrollRef} />
 
           <AppFooter />
         </div>
