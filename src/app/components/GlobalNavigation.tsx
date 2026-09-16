@@ -5,6 +5,7 @@ import NenyaLogo from './NenyaLogo';
 import { ThemeToggle } from './ThemeToggle';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
 import { EmergencyExitButton } from './EmergencyExit';
+import { AddToHomeScreen } from './AddToHomeScreen';
 import {
   Dialog,
   DialogContent,
@@ -157,6 +158,9 @@ export function GlobalNavigation({
                 </Button>
               ) : null}
 
+              {/* Add to Home Screen */}
+              <AddToHomeScreen variant="icon" />
+
               {/* Theme Toggle */}
               <ThemeToggle />
 
@@ -268,6 +272,9 @@ export function GlobalNavigation({
                 <HelpCircle className="size-5" />
               </Button>
             ) : null}
+
+            {/* Add to Home Screen */}
+            <AddToHomeScreen variant="icon" />
 
             {/* Theme Toggle */}
             <ThemeToggle />

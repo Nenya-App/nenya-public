@@ -1,0 +1,31 @@
+{
+  "name": "Nenya — Take a Moment to Breathe",
+  "short_name": "Nenya",
+  "description": "A free, private digital sanctuary for reflection, emotional regulation, and ethical self-inquiry. No accounts, no tracking, no data collection.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#1A1512",
+  "theme_color": "#1A1512",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
