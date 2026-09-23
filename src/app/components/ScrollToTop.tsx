@@ -19,16 +19,18 @@ function resetScroll() {
   document.body.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
 }
 
+if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
 export function ScrollToTop({ trigger }: ScrollToTopProps) {
   useEffect(() => {
-    // Reset immediately for instant feedback...
+    // Reset immediately, then again as things settle: lazy chunks mount late
+    // after a hard refresh, and Firefox reapplies saved inner-container
+    // scroll positions after load, both of which land after the first reset.
     resetScroll();
-
-    // ...and again shortly after, in case late-loading images, fonts, or
-    // entrance animations on the incoming screen shift its layout height
-    // enough to drag the scroll position back down after the first reset.
-    const timer = setTimeout(resetScroll, 120);
-    return () => clearTimeout(timer);
+    const timers = [120, 400, 1000].map((ms) => setTimeout(resetScroll, ms));
+    return () => timers.forEach(clearTimeout);
   }, [trigger]);
 
   return null;

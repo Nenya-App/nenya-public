@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { ArrowLeft, Eye, Music, Hand, Droplet, Zap, Lightbulb, Check } from 'lucide-react';
@@ -57,6 +57,16 @@ const gatewayCards = [
 
 export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPageProps) {
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Firefox can reapply a saved scroll position to this container after a
+  // hard refresh; keep forcing the top while the page settles.
+  useEffect(() => {
+    const toTop = () => scrollRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    toTop();
+    const timers = [100, 400, 1000].map((ms) => setTimeout(toTop, ms));
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   const toggleGateway = (gatewayId: Gateway) => {
     if (selectedGateways.includes(gatewayId)) {
@@ -73,7 +83,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
   };
 
   return (
-    <div className="size-full flex flex-col overflow-auto scroll-container">
+    <div ref={scrollRef} className="size-full flex flex-col overflow-auto scroll-container">
       {/* Header -- matches every gateway sub-page's back-button placement,
           which this screen previously lacked entirely. */}
       <div className="border-b border-border px-4 md:px-6 py-4">
