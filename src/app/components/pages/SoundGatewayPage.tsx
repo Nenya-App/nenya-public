@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '../ui/button';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, Link2, Unlink, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
@@ -159,6 +159,14 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   // Step state
   const [step, setStep] = useState<'instructions' | 'melody' | 'qualitative'>('instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Advancing between steps swaps content inside this same persistently-
+  // mounted scroll container -- it never unmounts, so nothing else resets
+  // its scroll position when the step changes.
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+  }, [step]);
 
   // Tonal system state
   const [tonalSystem, setTonalSystem] = useState<TonalSystem>('western');
@@ -351,7 +359,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto scroll-container">
+      <div ref={scrollContainerRef} className="flex-1 overflow-auto scroll-container">
         {step === 'instructions' && (
           <div className="h-full flex items-center justify-center px-4 sm:px-6 py-8">
             <div className="max-w-2xl w-full">

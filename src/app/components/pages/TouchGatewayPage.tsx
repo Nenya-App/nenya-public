@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
@@ -43,6 +43,14 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   const [step, setStep] = useState<'instructions' | 'selection'>('instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
   const [showBodyMap, setShowBodyMap] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Advancing between steps swaps content inside this same persistently-
+  // mounted scroll container -- it never unmounts, so nothing else resets
+  // its scroll position when the step changes.
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+  }, [step]);
 
   // Current state
   const [currentTexture, setCurrentTexture] = useState([50]);
@@ -121,7 +129,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto scroll-container">
+      <div ref={scrollContainerRef} className="flex-1 overflow-auto scroll-container">
         {step === 'instructions' ? (
           /* Instruction Cards */
           <div className="h-full flex items-center justify-center px-4 sm:px-6 py-8">

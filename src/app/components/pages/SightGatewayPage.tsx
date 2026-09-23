@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { ArrowLeft, Shuffle, User, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
@@ -113,6 +113,16 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   // Step state: 'instructions' or 'selection'
   const [step, setStep] = useState<'instructions' | 'selection'>('instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
+
+  // Advancing between steps swaps content inside this same persistently-
+  // mounted scroll container -- it never unmounts, so nothing else resets
+  // its scroll position when the step changes (the app-level ScrollToTop
+  // only fires when you leave the gateway entirely). Without this, landing
+  // on 'selection' after scrolling through 'instructions' keeps whatever
+  // scroll position 'instructions' was left at.
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+  }, [step]);
 
   // Set default colors based on theme: dark mode = white, light mode = black
   const [color1, setColor1] = useState(theme === 'dark' ? '#FFFFFF' : '#000000');
