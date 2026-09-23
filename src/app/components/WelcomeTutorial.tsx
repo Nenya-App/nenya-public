@@ -73,7 +73,14 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
       return;
     }
 
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Fixed-position targets (the header menu) never need scrolling to, so
+    // return the page to the top rather than leaving it where the previous
+    // step's target dragged it.
+    if (getComputedStyle(el).position === 'fixed' || el.closest('nav, header')) {
+      document.querySelector('.snap-y')?.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
     const update = () => setRect(el.getBoundingClientRect());
     update();
@@ -100,9 +107,15 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
   const handleClose = () => {
     // The tutorial scrolls the page around to spotlight each step's target;
     // land back at the top rather than wherever the last step left it.
-    const container = document.querySelector('.snap-y');
-    if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
-    else window.scrollTo({ top: 0, behavior: 'smooth' });
+    const toTop = () => {
+      const container = document.querySelector('.snap-y');
+      if (container) container.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+      else window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    };
+    toTop();
+    // A smooth scroll from the previous step can still be in flight and
+    // pull the page back down; reset again once it has settled.
+    setTimeout(toTop, 400);
     onClose();
   };
 
