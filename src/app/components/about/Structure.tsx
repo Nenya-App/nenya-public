@@ -113,7 +113,7 @@ export default function Structure({ onBack }: StructureProps) {
                       <a href="https://fundraising.fracturedatlas.org/nenya" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: '12px' }}>
                         <img
                           alt="Donate now at Fractured Atlas!"
-                          src="https://fundraising.fracturedatlas.org/images/fundraiser-share-buttons/share-button--dark--alpha.png"
+                          src="/badges/fractured-atlas-donate.png"
                           style={{ height: '40px', width: 'auto' }}
                         />
                       </a>

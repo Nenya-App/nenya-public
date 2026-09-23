@@ -82,12 +82,11 @@
     #   /fonts (see src/styles/fonts.css) rather than loaded from Google
     #   Fonts, so no third-party font-src is needed.
     #
-    # img-src 'self' data: blob: https://fundraising.fracturedatlas.org
+    # img-src 'self' data: blob:
     #   data: needed for the shared Body Map's canvas capture (BodyMapAvatar
     #   produces an imageDataUrl, reachable from every gateway) and jsPDF
     #   report export.
     #   blob: kept for any future canvas/file export path.
-    #   fracturedatlas.org for the donate badge image.
     #
     # connect-src 'self'
     #   No external API calls. Venice AI opens in a new tab (navigation),
@@ -106,7 +105,7 @@
     # manifest-src 'self'
     #   Web app manifest served from same origin.
     #
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://fundraising.fracturedatlas.org; connect-src 'self'; frame-src 'none'; frame-ancestors 'none'; worker-src 'none'; form-action 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src 'none'; frame-ancestors 'none'; worker-src 'none'; form-action 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'"
 
     # ── CSP violation reporting ───────────────────────────────────────────────
     # Violations log automatically once the Netlify CSP extension is enabled
