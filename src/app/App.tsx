@@ -131,26 +131,24 @@ export default function App() {
   // counter and tutorial only appear once a visitor has moved past it.
   const [entryUnlocked, setEntryUnlocked] = useState(false);
   const [tutorialActive, setTutorialActive] = useState(false);
-  const hasAutoShownTutorial = useRef(false);
 
-  // The breathing counter starts maximized (showing the technique picker)
-  // for the tutorial's benefit, then collapses to just the counter itself
-  // the moment the tutorial ends -- whether by finishing, skipping, or the
-  // "x" close, all of which funnel through WelcomeTutorial's single
-  // onClose. Outside of a tutorial run, this is just the counter's normal
-  // controlled minimize/maximize state, toggled from its own corner button.
-  const [breathingCounterMinimized, setBreathingCounterMinimized] = useState(false);
+  // The tutorial no longer auto-launches -- the site keeps no memory of past
+  // visits, so an automatic tour had no way to know it had already been
+  // seen and interrupted every single visit. It's opt-in now, started from
+  // the welcome page's own quiet link or replayed from the menu.
+  //
+  // The breathing counter starts minimized and only maximizes (showing the
+  // technique picker) while the tutorial is actively running, collapsing
+  // back the moment it ends -- whether by finishing, skipping, or the "x"
+  // close, all of which funnel through WelcomeTutorial's single onClose.
+  // Outside of a tutorial run, this is just the counter's normal controlled
+  // minimize/maximize state, toggled from its own corner button.
+  const [breathingCounterMinimized, setBreathingCounterMinimized] = useState(true);
 
-  useEffect(() => {
-    if (entryUnlocked && currentScreen === 'welcome' && !hasAutoShownTutorial.current) {
-      hasAutoShownTutorial.current = true;
-      const t = setTimeout(() => {
-        setBreathingCounterMinimized(false);
-        setTutorialActive(true);
-      }, 400);
-      return () => clearTimeout(t);
-    }
-  }, [entryUnlocked, currentScreen]);
+  const handleStartTutorial = () => {
+    setBreathingCounterMinimized(false);
+    setTutorialActive(true);
+  };
 
   // Track emergency exit to disable beforeunload warning
   const isEmergencyExiting = useRef(false);
@@ -416,10 +414,7 @@ export default function App() {
           showAnimationControls={currentScreen === 'welcome'}
           onEmergencyExit={() => { isEmergencyExiting.current = true; }}
           onBreathingPopoutToggle={() => setBreathingPopoutOpen(!breathingPopoutOpen)}
-          onTutorialReplay={() => {
-            setBreathingCounterMinimized(false);
-            setTutorialActive(true);
-          }}
+          onTutorialReplay={handleStartTutorial}
         />
 
         {currentScreen === 'welcome' && entryUnlocked && (
@@ -467,6 +462,7 @@ export default function App() {
               cycleStart={breathingCycleStart}
               paused={breathingPaused}
               onTogglePaused={toggleBreathingPaused}
+              onStartTutorial={handleStartTutorial}
             />
           )}
 

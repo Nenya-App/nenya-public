@@ -21,6 +21,7 @@ interface WelcomePageProps {
   cycleStart?: number;
   paused?: boolean;
   onTogglePaused?: () => void;
+  onStartTutorial?: () => void;
 }
 
 export default function WelcomePage({
@@ -37,6 +38,7 @@ export default function WelcomePage({
   cycleStart,
   paused = false,
   onTogglePaused,
+  onStartTutorial,
 }: WelcomePageProps) {
   const [logoSize, setLogoSize] = useState(400);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -190,6 +192,21 @@ export default function WelcomePage({
               <ArrowRight className="size-5" />
             </Button>
           </div>
+
+          {/* Quiet, opt-in entry point for the tutorial -- it never launches
+              on its own, since the site keeps no memory of whether a given
+              visitor has already seen it. */}
+          {onStartTutorial && (
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={onStartTutorial}
+                className="text-sm text-muted-foreground/70 hover:text-muted-foreground underline underline-offset-4 transition-colors"
+              >
+                New here? Take a quick tour
+              </button>
+            </div>
+          )}
 
           {/* Animated Scroll Indicator */}
           <div
