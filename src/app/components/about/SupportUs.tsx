@@ -97,7 +97,7 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                   </a>
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  Fiscally sponsored by{' '}
+                  Nenya is a sponsored project of{' '}
                   <a
                     href="https://www.fracturedatlas.org"
                     target="_blank"
@@ -106,7 +106,7 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                   >
                     Fractured Atlas
                   </a>
-                  , a 501(c)(3) public charity. Donations are tax-deductible to the extent permitted by law.
+                  , a non-profit arts service organization. Contributions for the charitable purposes of Nenya must be made payable to “Fractured Atlas” only and are tax-deductible to the extent permitted by law.
                 </p>
               </div>
             </Card>

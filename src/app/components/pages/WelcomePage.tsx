@@ -290,7 +290,7 @@ export default function WelcomePage({
             </Button>
 
             <p className="text-xs text-muted-foreground">
-              Fiscally sponsored by{' '}
+              Nenya is a sponsored project of{' '}
               <a
                 href="https://www.fracturedatlas.org"
                 target="_blank"
@@ -299,7 +299,7 @@ export default function WelcomePage({
               >
                 Fractured Atlas
               </a>
-              , a 501(c)(3) public charity
+              , a non-profit arts service organization. Contributions for the charitable purposes of Nenya must be made payable to “Fractured Atlas” only and are tax-deductible to the extent permitted by law.
             </p>
           </Card>
         </div>
