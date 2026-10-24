@@ -116,8 +116,8 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
     },
     {
       id: 'terms',
-      title: 'Terms of Use',
-      description: 'Key principles and agreements',
+      title: 'Terms of Use & Privacy Policy',
+      description: 'Our agreement and exactly what we do and don\'t collect',
       icon: FileText,
     },
   ];
