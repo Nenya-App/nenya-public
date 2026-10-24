@@ -22,6 +22,7 @@ interface WelcomePageProps {
   paused?: boolean;
   onTogglePaused?: () => void;
   onStartTutorial?: () => void;
+  entryUnlocked?: boolean;
 }
 
 export default function WelcomePage({
@@ -39,6 +40,7 @@ export default function WelcomePage({
   paused = false,
   onTogglePaused,
   onStartTutorial,
+  entryUnlocked = false,
 }: WelcomePageProps) {
   const [logoSize, setLogoSize] = useState(400);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -147,9 +149,27 @@ export default function WelcomePage({
             Give Yourself a Moment to Breathe
           </p>
 
+          {/* Opt-in tutorial entry. It never launches on its own (the site keeps
+              no memory of past visits), but once the welcome card is dismissed
+              it gets a brief gold pulse so it isn't missed. */}
+          {onStartTutorial && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={onStartTutorial}
+                className={`rounded-full border border-nenya-accent-warm/50 px-4 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:border-nenya-accent-warm transition-colors ${
+                  entryUnlocked ? 'nenya-tour-highlight' : ''
+                }`}
+                style={entryUnlocked ? { animation: 'nenya-tour-pulse 1.6s ease-out 0.4s 3' } : undefined}
+              >
+                New here? Take a quick tour
+              </button>
+            </div>
+          )}
+
           {/* Animated Scroll Indicator */}
           <div
-            className="flex flex-col items-center gap-1 animate-bounce cursor-pointer"
+            className="flex flex-col items-center gap-0.5 animate-bounce cursor-pointer pt-1"
             onClick={scrollToNextSection}
             role="button"
             tabIndex={0}
@@ -161,8 +181,8 @@ export default function WelcomePage({
               }
             }}
           >
-            <ChevronDown className="size-6 text-muted-foreground/50" />
-            <span className="text-xs text-muted-foreground/50">More below</span>
+            <span className="text-base font-medium text-muted-foreground">More below</span>
+            <ChevronDown className="size-9 text-muted-foreground" />
           </div>
         </div>
       </div>
@@ -193,21 +213,6 @@ export default function WelcomePage({
             </Button>
           </div>
 
-          {/* Quiet, opt-in entry point for the tutorial -- it never launches
-              on its own, since the site keeps no memory of whether a given
-              visitor has already seen it. */}
-          {onStartTutorial && (
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={onStartTutorial}
-                className="text-sm text-muted-foreground/70 hover:text-muted-foreground underline underline-offset-4 transition-colors"
-              >
-                New here? Take a quick tour
-              </button>
-            </div>
-          )}
-
           {/* Animated Scroll Indicator */}
           <div
             className="flex justify-center animate-bounce pt-8 cursor-pointer"
@@ -222,7 +227,7 @@ export default function WelcomePage({
               }
             }}
           >
-            <ChevronDown className="size-6 text-muted-foreground/50" />
+            <ChevronDown className="size-8 text-muted-foreground/70" />
           </div>
         </div>
       </div>

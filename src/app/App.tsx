@@ -463,6 +463,7 @@ export default function App() {
               paused={breathingPaused}
               onTogglePaused={toggleBreathingPaused}
               onStartTutorial={handleStartTutorial}
+              entryUnlocked={entryUnlocked}
             />
           )}
 
