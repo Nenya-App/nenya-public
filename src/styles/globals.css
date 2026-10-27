@@ -767,8 +767,10 @@
 
   html {
     scroll-behavior: smooth;
-    /* Prevent horizontal scrolling */
-    overflow-x: hidden;
+    /* The page itself never scrolls -- every screen scrolls inside its own
+       container. Leaving the document scrollable lets iPhone Safari drag
+       the whole page (and the header with it) up under the status bar. */
+    overflow: hidden;
     /* Better text rendering on mobile */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -820,10 +822,14 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    /* Prevent horizontal scrolling */
-    overflow-x: hidden;
+    /* Pinned to the screen so the document can't scroll, bounce, or slide
+       the header out of view on iOS. */
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    overflow: hidden;
     /* Prevent pull-to-refresh bounce on mobile */
-    overscroll-behavior-y: contain;
+    overscroll-behavior: none;
     /* Better touch response */
     touch-action: manipulation;
     /* Safe area for notched devices */

@@ -102,7 +102,7 @@ export function GlobalNavigation({
     <>
       {/* Desktop Navigation */}
       <nav 
-        className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm pt-[env(safe-area-inset-top)]"
+        className="hidden md:flex relative shrink-0 z-50 bg-background border-b border-border shadow-sm pt-[env(safe-area-inset-top)]"
         aria-label="Main navigation"
         role="navigation"
       >
@@ -231,7 +231,7 @@ export function GlobalNavigation({
 
       {/* Mobile Navigation */}
       <nav 
-        className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm pt-[env(safe-area-inset-top)]"
+        className="md:hidden relative shrink-0 z-50 bg-background border-b border-border shadow-sm pt-[env(safe-area-inset-top)]"
         aria-label="Main navigation"
         role="navigation"
       >
@@ -365,9 +365,6 @@ export function GlobalNavigation({
           </>
         )}
       </nav>
-
-      {/* Spacer to prevent content from going under fixed nav */}
-      <div className="h-[calc(4rem+env(safe-area-inset-top))]" aria-hidden="true" />
 
       {/* Accessibility Settings Dialog */}
       {showAnimationControls && onBreathingToggle && onOrbitToggle && onValarSelect && onOpacityChange ? (
