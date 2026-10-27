@@ -7,6 +7,7 @@ The live Terms of Use & Privacy Policy is `src/lib/legalDocument.ts` (one source
 | Version | In effect | File |
 | --- | --- | --- |
 | Terms of Use (seven sections, no separate privacy policy) | until 2026-10-24 | `archive/terms-of-use-until-2026-10-24.md` |
-| Terms of Use & Privacy Policy | from 2026-10-24 | `src/lib/legalDocument.ts` |
+| Terms of Use & Privacy Policy (first combined version) | 2026-10-24 to 2026-10-26 | `archive/terms-and-privacy-until-2026-10-26.md` |
+| Terms of Use & Privacy Policy (adds contact messages to the optional form) | from 2026-10-26 | `src/lib/legalDocument.ts` |
 
 When this document changes, copy the outgoing text into `archive/` (named with the date it stopped being in effect) before editing.

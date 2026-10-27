@@ -6,6 +6,7 @@ import WelcomePopup from '../WelcomePopup';
 import { ArrowRight, ChevronDown, Heart, ExternalLink, Play, Pause } from 'lucide-react';
 import { Card } from '../ui/card';
 import { AppFooter } from '../AppFooter';
+import { ContactSection } from '../ContactSection';
 
 interface WelcomePageProps {
   onContinue: () => void;
@@ -305,7 +306,29 @@ export default function WelcomePage({
               , a non-profit arts service organization. Contributions for the charitable purposes of Nenya must be made payable to “Fractured Atlas” only and are tax-deductible to the extent permitted by law.
             </p>
           </Card>
+
+          <div
+            className="flex flex-col items-center gap-0.5 animate-bounce cursor-pointer pt-2"
+            onClick={scrollToNextSection}
+            role="button"
+            tabIndex={0}
+            aria-label="Go to contact"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                scrollToNextSection();
+              }
+            }}
+          >
+            <span className="text-sm text-muted-foreground">Get in touch</span>
+            <ChevronDown className="size-8 text-muted-foreground/70" />
+          </div>
         </div>
+      </div>
+
+      {/* Fourth Section: Stay in Touch */}
+      <div className="min-h-screen flex items-center justify-center px-6 py-12 relative snap-start">
+        <ContactSection />
       </div>
 
       <AppFooter onNavigateToAbout={() => onNavigateToAbout?.()} />

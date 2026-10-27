@@ -82,7 +82,7 @@ export function BreathingCounter({
       whileDrag={{ scale: 1.03, boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
       style={{
         position: 'fixed',
-        top: '8.5rem',
+        top: 'calc(8.5rem + env(safe-area-inset-top))',
         right: '1rem',
         zIndex: 39,
         background: 'rgba(13,19,33,0.92)',

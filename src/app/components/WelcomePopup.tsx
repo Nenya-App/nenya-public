@@ -42,7 +42,7 @@ export default function WelcomePopup({ onNavigateToAbout, onDismiss, initiallyOp
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             onClick={handleReopen}
-            className="fixed top-[4.5rem] md:top-20 right-4 z-40 p-3 bg-nenya-accent-warm/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-nenya-accent-secondary transition-colors border border-nenya-accent-metallic/30"
+            className="fixed top-[calc(4.5rem+env(safe-area-inset-top))] md:top-[calc(5rem+env(safe-area-inset-top))] right-4 z-40 p-3 bg-nenya-accent-warm/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-nenya-accent-secondary transition-colors border border-nenya-accent-metallic/30"
             aria-label="Reopen welcome message"
             style={{ animation: 'glimmer-ring 2.5s ease-in-out infinite' }}
           >

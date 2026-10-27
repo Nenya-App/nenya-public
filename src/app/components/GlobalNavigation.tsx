@@ -102,7 +102,7 @@ export function GlobalNavigation({
     <>
       {/* Desktop Navigation */}
       <nav 
-        className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
+        className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm pt-[env(safe-area-inset-top)]"
         aria-label="Main navigation"
         role="navigation"
       >
@@ -231,11 +231,11 @@ export function GlobalNavigation({
 
       {/* Mobile Navigation */}
       <nav 
-        className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
+        className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm pt-[env(safe-area-inset-top)]"
         aria-label="Main navigation"
         role="navigation"
       >
-        <div className="flex items-center justify-between h-14 px-4">
+        <div className="flex items-center justify-between h-14 px-2 min-[360px]:px-3 min-[400px]:px-4">
           {/* Logo */}
           <div className="flex items-center gap-2">
             <button
@@ -259,20 +259,7 @@ export function GlobalNavigation({
           </div>
 
           {/* Mobile Menu Controls */}
-          <div className="flex items-center gap-2">
-            {/* Replay Tutorial */}
-            {showAnimationControls && onTutorialReplay ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onTutorialReplay}
-                aria-label="Replay tutorial"
-                title="Replay tutorial"
-              >
-                <HelpCircle className="size-5" />
-              </Button>
-            ) : null}
-
+          <div className="flex items-center gap-0.5 min-[400px]:gap-1.5">
             {/* Add to Home Screen */}
             <AddToHomeScreen variant="icon" />
 
@@ -284,6 +271,7 @@ export function GlobalNavigation({
               id="tutorial-menu-mobile"
               variant="ghost"
               size="icon"
+              className="max-[359px]:size-8"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >
@@ -300,12 +288,12 @@ export function GlobalNavigation({
           <>
             {/* Backdrop */}
             <div 
-              className="fixed inset-0 top-14 bg-black/20 z-40" 
+              className="fixed inset-0 top-[calc(3.5rem+env(safe-area-inset-top))] bg-black/20 z-40" 
               onClick={() => setMenuOpen(false)}
             />
             
             {/* Menu Content */}
-            <div className="absolute top-14 left-0 right-0 bg-background border-b border-border shadow-lg z-50">
+            <div className="absolute top-[calc(3.5rem+env(safe-area-inset-top))] left-0 right-0 bg-background border-b border-border shadow-lg z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto">
               <div className="flex flex-col p-2">
                 <button
                   onClick={() => handleNavigate('intro')}
@@ -341,6 +329,22 @@ export function GlobalNavigation({
                   </button>
                 ) : null}
 
+                {showAnimationControls && onTutorialReplay ? (
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onTutorialReplay();
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors text-left"
+                  >
+                    <HelpCircle className="size-5" />
+                    <div className="flex-1">
+                      <div className="text-sm">Replay tutorial</div>
+                      <div className="text-xs text-muted-foreground">Take the quick tour again</div>
+                    </div>
+                  </button>
+                ) : null}
+
                 {showAnimationControls && onBreathingToggle && onOrbitToggle && onValarSelect && onOpacityChange ? (
                   <>
                     <div className="border-t border-border my-2" />
@@ -363,7 +367,7 @@ export function GlobalNavigation({
       </nav>
 
       {/* Spacer to prevent content from going under fixed nav */}
-      <div className="h-16 md:h-16" aria-hidden="true" />
+      <div className="h-[calc(4rem+env(safe-area-inset-top))]" aria-hidden="true" />
 
       {/* Accessibility Settings Dialog */}
       {showAnimationControls && onBreathingToggle && onOrbitToggle && onValarSelect && onOpacityChange ? (

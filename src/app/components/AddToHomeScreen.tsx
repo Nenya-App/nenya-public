@@ -83,7 +83,7 @@ export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | '
   return (
     <div className="relative">
       {variant === 'icon' ? (
-        <Button variant="ghost" size="icon" onClick={() => setOpen((o) => !o)} aria-label={triggerLabel} title={triggerLabel}>
+        <Button variant="ghost" size="icon" className="max-[359px]:size-8" onClick={() => setOpen((o) => !o)} aria-label={triggerLabel} title={triggerLabel}>
           <Download className="size-4" />
         </Button>
       ) : (
@@ -98,7 +98,7 @@ export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | '
           {/* Backdrop to close when clicking outside, matching the header's other dropdowns */}
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
-          <div className="absolute right-0 top-full mt-2 w-80 bg-background border border-border rounded-lg shadow-lg z-50 p-4 space-y-3">
+          <div className="fixed inset-x-3 top-[calc(3.5rem+env(safe-area-inset-top)+0.5rem)] max-h-[calc(100dvh-6rem)] overflow-y-auto md:absolute md:inset-x-auto md:right-0 md:top-full md:mt-2 md:w-80 md:max-h-none bg-background border border-border rounded-lg shadow-lg z-50 p-4 space-y-3">
             <div>
               <p className="text-sm font-medium">Keep Nenya close by</p>
               <p className="text-xs text-muted-foreground mt-1">

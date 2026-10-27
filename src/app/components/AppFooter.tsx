@@ -42,6 +42,12 @@ export function AppFooter({ className = '' }: AppFooterProps) {
           >
             Open source on GitHub (AGPL-3.0)
           </a>
+          <a
+            href="mailto:info@nenya.biz"
+            className="hover:text-foreground transition-colors underline underline-offset-2"
+          >
+            Contact: info@nenya.biz
+          </a>
           <a href="https://www.netlify.com" target="_blank" rel="noopener noreferrer" aria-label="Deploys by Netlify">
             <img src="/badges/netlify-badge.svg" alt="Deploys by Netlify" width="76" height="33" />
           </a>

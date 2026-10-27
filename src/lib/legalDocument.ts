@@ -16,7 +16,7 @@ export interface LegalPart {
 }
 
 export const LEGAL_TITLE = 'Terms of Use & Privacy Policy';
-export const LEGAL_EFFECTIVE_DATE = 'October 24, 2026';
+export const LEGAL_EFFECTIVE_DATE = 'October 26, 2026';
 
 export const LEGAL_INTRO =
   'Welcome. Please read this before you begin. This document has two parts: Terms of Use, which cover how you may use Nenya, and a Privacy Policy, which covers what little information touches us at all. They sit together because Nenya’s privacy design is also its central promise.';
@@ -75,7 +75,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 7,
         heading: 'Reports and Feedback You Choose to Send',
         paragraphs: [
-          'The site has an optional form for sending us a report or feedback. Using it is entirely your choice. By submitting, you allow us to read, store, and use what you send to understand problems and improve Nenya, and to share it in anonymized or summarized form. Please do not include names, contact details, or other information that identifies you or anyone else. We will not use a submission to contact you unless you ask us to. To have a submission deleted, email us at the address in Section 21.',
+          'The site has an optional form for sending us a report, feedback, or a message. Using it is entirely your choice. By submitting, you allow us to read, store, and use what you send to understand problems and improve Nenya, and to share it in anonymized or summarized form. Please do not include names, contact details, or other information that identifies you or anyone else. We will not use a submission to contact you unless you ask us to. To have a submission deleted, email us at the address in Section 21.',
         ],
       },
       {
@@ -146,11 +146,11 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 16,
         heading: 'Information You Choose to Submit',
         paragraphs: [
-          'The site has an optional form for sending us a bug report or a reflection report you decide to share, described in Section 7. Using Nenya never requires it.',
+          'The site has an optional form for sending us a bug report, a reflection report you decide to share, or a general message, described in Section 7. Using Nenya never requires it.',
         ],
         bullets: [
-          'What you submit is the report text and an optional comment, delivered to us through Netlify Forms.',
-          'We do not ask for your name or email. If you type personal information into the comment or report, it becomes part of the submission. Please leave it out.',
+          'What you submit is the text of your report or message, plus an optional comment, delivered to us through Netlify Forms.',
+          'We do not ask for your name or email. If you type personal information into a comment, report, or message, it becomes part of the submission, so please leave out anything you would not want us to keep. If you would like a reply to a message, you can include your email address in it; we use it only to answer you.',
           'Netlify may keep a copy of the submission under its own retention practices.',
         ],
       },

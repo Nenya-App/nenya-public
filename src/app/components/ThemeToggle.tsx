@@ -14,7 +14,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className={className}
+      className={`max-[359px]:size-8 ${className ?? ''}`}
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {theme === 'dark' ? (
