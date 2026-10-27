@@ -6,11 +6,14 @@ import { motion, AnimatePresence } from 'motion/react';
 interface WelcomePopupProps {
   onNavigateToAbout?: (section?: string) => void;
   onDismiss?: () => void;
+  /** The first-visit onboarding now covers this content, so the card
+   *  starts tucked away behind its sparkle button and reopens on demand. */
+  initiallyOpen?: boolean;
 }
 
-export default function WelcomePopup({ onNavigateToAbout, onDismiss }: WelcomePopupProps) {
-  const [isOpen, setIsOpen] = useState(true);
-  const [isMinimized, setIsMinimized] = useState(false);
+export default function WelcomePopup({ onNavigateToAbout, onDismiss, initiallyOpen = true }: WelcomePopupProps) {
+  const [isOpen, setIsOpen] = useState(initiallyOpen);
+  const [isMinimized, setIsMinimized] = useState(!initiallyOpen);
 
   const handleMinimize = () => {
     setIsMinimized(true);
@@ -110,7 +113,7 @@ export default function WelcomePopup({ onNavigateToAbout, onDismiss }: WelcomePo
                         <li>Reflect to gain clarity.</li>
                       </ol>
                       <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-                        Your journey here is private by design. Nothing you do is recorded, tracked, or stored.
+                        Your journey here is private by design. Nothing you enter is saved or sent to us, and it’s gone when you close the tab.
                       </p>
                       <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
                         When you are ready, close this card to begin.

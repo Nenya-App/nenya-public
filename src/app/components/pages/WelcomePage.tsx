@@ -17,7 +17,6 @@ interface WelcomePageProps {
   onNavigateToAbout?: (section?: string) => void;
   technique?: BreathingTechnique | null;
   cvMode?: string;
-  onEntryUnlocked?: () => void;
   cycleStart?: number;
   paused?: boolean;
   onTogglePaused?: () => void;
@@ -35,7 +34,6 @@ export default function WelcomePage({
   onNavigateToAbout,
   technique = null,
   cvMode = '',
-  onEntryUnlocked,
   cycleStart,
   paused = false,
   onTogglePaused,
@@ -80,7 +78,7 @@ export default function WelcomePage({
   return (
     <div ref={scrollContainerRef} className="size-full relative overflow-y-auto snap-y snap-proximity">
       {/* Welcome Popup */}
-      <WelcomePopup onNavigateToAbout={onNavigateToAbout} onDismiss={onEntryUnlocked} />
+      <WelcomePopup onNavigateToAbout={onNavigateToAbout} initiallyOpen={false} />
 
       {/* First Section: Full Viewport with Large Logo */}
       <div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">

@@ -6,7 +6,7 @@ import { BreathingPopout } from './components/BreathingPopout';
 import { BreathingCounter } from './components/BreathingCounter';
 import { WelcomeTutorial } from './components/WelcomeTutorial';
 import { BreathingTechnique } from './components/ValarBreathingLogo';
-import TermsAgreementPage from './components/pages/TermsAgreementPage';
+import OnboardingFlow, { type OnboardingStep } from './components/OnboardingFlow';
 import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
 
@@ -127,8 +127,9 @@ export default function App() {
   // Breathing popout state
   const [breathingPopoutOpen, setBreathingPopoutOpen] = useState(false);
 
-  // Gated by the "Speak, Friend, and Enter" welcome card — the breathing
-  // counter and tutorial only appear once a visitor has moved past it.
+  // The first-visit onboarding (rhythm choice, counter tour, how it works,
+  // then the terms) runs as an overlay on the welcome page. The breathing
+  // counter appears once it reaches the counter step.
   const [entryUnlocked, setEntryUnlocked] = useState(false);
   const [tutorialActive, setTutorialActive] = useState(false);
 
@@ -148,6 +149,19 @@ export default function App() {
   const handleStartTutorial = () => {
     setBreathingCounterMinimized(false);
     setTutorialActive(true);
+  };
+
+  const handleOnboardingStep = (step: OnboardingStep) => {
+    if (step === 'rhythm') return;
+    setEntryUnlocked(true);
+    // Keep the pattern list open for the counter step so its features show,
+    // and tuck it away again once the visitor moves on to the terms.
+    setBreathingCounterMinimized(step !== 'counter');
+  };
+
+  const handleOnboardingFinish = () => {
+    setBreathingCounterMinimized(true);
+    setTermsAgreed(true);
   };
 
   // Track emergency exit to disable beforeunload warning
@@ -357,18 +371,21 @@ export default function App() {
   // Check if user has completed at least one gateway
   const userHasGatewayData = gatewayData.length > 0;
 
-  // If terms haven't been agreed to, show only the terms page
-  if (!termsAgreed) {
-    return (
-      <ThemeProvider defaultTheme="dark">
-        <TermsAgreementPage onAgree={() => setTermsAgreed(true)} />
-      </ThemeProvider>
-    );
-  }
-
   return (
     <ThemeProvider defaultTheme="dark">
-      <div className="size-full bg-background relative overflow-hidden flex flex-col">
+      {!termsAgreed && (
+        <OnboardingFlow
+          technique={breathingTechnique}
+          onTechniqueChange={setBreathingTechnique}
+          onStepChange={handleOnboardingStep}
+          onFinish={handleOnboardingFinish}
+        />
+      )}
+      {/* Nothing behind the onboarding can be reached until the terms are accepted. */}
+      <div
+        className="size-full bg-background relative overflow-hidden flex flex-col"
+        {...(!termsAgreed ? ({ inert: '' } as Record<string, string>) : {})}
+      >
         {/* Scroll to top on screen change */}
         <ScrollToTop trigger={currentScreen} />
         
@@ -458,12 +475,11 @@ export default function App() {
               onNavigateToAbout={handleNavigateToAbout}
               technique={breathingTechnique}
               cvMode={colorBlindMode}
-              onEntryUnlocked={() => setEntryUnlocked(true)}
               cycleStart={breathingCycleStart}
               paused={breathingPaused}
               onTogglePaused={toggleBreathingPaused}
               onStartTutorial={handleStartTutorial}
-              entryUnlocked={entryUnlocked}
+              entryUnlocked={termsAgreed}
             />
           )}
 

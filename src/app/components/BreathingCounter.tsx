@@ -2,26 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { GripHorizontal, Minus, Square } from 'lucide-react';
 
-interface BreathingTechnique {
-  ih: number;
-  hi: number;
-  ex: number;
-  ho: number;
-}
-
-interface Preset extends BreathingTechnique {
-  lb: string;
-  desc: string;
-}
-
-const PRESETS: Preset[] = [
-  { ih: 5000, hi: 0, ex: 5000, ho: 0, lb: '5·5', desc: 'Resonance — HRV coherence' },
-  { ih: 4000, hi: 0, ex: 6000, ho: 0, lb: '4·6', desc: 'Calming — extended exhale' },
-  { ih: 4000, hi: 0, ex: 8000, ho: 0, lb: '4·8', desc: 'Deep calm — sleep onset' },
-  { ih: 3000, hi: 0, ex: 3000, ho: 0, lb: '3·3', desc: 'Energising — activation' },
-  { ih: 4000, hi: 4000, ex: 4000, ho: 4000, lb: 'Box', desc: 'Box — focus and reset' },
-  { ih: 4000, hi: 7000, ex: 8000, ho: 0, lb: '4-7-8', desc: '4-7-8 — anxiety and sleep' },
-];
+import { PRESETS, type BreathingTechnique } from '../../lib/breathingPresets';
 
 interface BreathingCounterProps {
   enabled: boolean;
