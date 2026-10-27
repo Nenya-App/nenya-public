@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { GripHorizontal, Minus, Square } from 'lucide-react';
+import { ChevronDown, GripHorizontal, Minus, Square, X } from 'lucide-react';
 
 import { PRESETS, type BreathingTechnique } from '../../lib/breathingPresets';
 
@@ -42,6 +42,9 @@ export function BreathingCounter({
 }: BreathingCounterProps) {
   const [count, setCount] = useState(1);
   const [phase, setPhase] = useState<'i' | 'h' | 'e'>('i');
+  // Fully collapsed: just the word "breathe", no numbers or pattern list.
+  // Plain view state, so it resets whenever the counter remounts.
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     if (!enabled || !show || paused) return;
@@ -87,7 +90,7 @@ export function BreathingCounter({
         borderRadius: '14px',
         backdropFilter: 'blur(10px)',
         boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-        width: '212px',
+        width: collapsed ? '132px' : '212px',
         overflow: 'hidden',
       }}
     >
@@ -103,7 +106,28 @@ export function BreathingCounter({
         }}
       >
         <GripHorizontal size={14} color="rgba(232,160,32,0.4)" />
-        {onMinimizedChange && (
+        {!collapsed && (
+          <button
+            onClick={() => setCollapsed(true)}
+            onPointerDown={(e) => e.stopPropagation()}
+            aria-label="Collapse breathing counter to just the word breathe"
+            title="Collapse"
+            style={{
+              position: 'absolute',
+              top: '2px',
+              left: '4px',
+              padding: '3px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              color: 'rgba(232,160,32,0.55)',
+            }}
+          >
+            <X size={13} />
+          </button>
+        )}
+        {!collapsed && onMinimizedChange && (
           <button
             onClick={() => onMinimizedChange(!minimized)}
             onPointerDown={(e) => e.stopPropagation()}
@@ -125,6 +149,33 @@ export function BreathingCounter({
           </button>
         )}
       </div>
+      {collapsed ? (
+        <button
+          onClick={() => setCollapsed(false)}
+          onPointerDown={(e) => e.stopPropagation()}
+          aria-label="Show breathing counter"
+          title="Show counter"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            width: '100%',
+            padding: '2px 12px 9px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '11px',
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: 'rgba(232,160,32,0.7)',
+            fontFamily: "'Manrope',sans-serif",
+          }}
+        >
+          breathe
+          <ChevronDown size={12} />
+        </button>
+      ) : (
       <div style={{ padding: '4px 16px 10px' }}>
         <div
           style={{
@@ -164,7 +215,8 @@ export function BreathingCounter({
           </div>
         </div>
       </div>
-      {!minimized && (
+      )}
+      {!collapsed && !minimized && (
         <>
           <div style={{ height: '1px', background: 'rgba(232,160,32,0.14)', margin: '0 16px' }} />
           <div style={{ padding: '6px 0 10px' }}>

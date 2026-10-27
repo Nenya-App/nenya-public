@@ -248,7 +248,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                     <li>It follows your rhythm and shows where you are in each breath.</li>
                     <li>Drag it anywhere on the screen.</li>
                     <li>Tap a pattern in its list to change your rhythm.</li>
-                    <li>Use the minus in its corner to tuck the list away. It comes back with the square.</li>
+                    <li>Use the minus to tuck the list away, or the x to fold it down to just the word Breathe. Tap the word to bring it back.</li>
                   </ul>
                   {nav({ back: 'rhythm', next: 'process' })}
                 </>
