@@ -188,8 +188,10 @@ export default function App() {
       document.head.appendChild(viewportMeta);
     }
     
-    // Set proper viewport configuration for mobile
-    viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover');
+    // No viewport-fit=cover: that opts the page into drawing under the notch
+    // and status bar, which some iOS browsers (Brave) then place the header
+    // beneath. Without it, browsers keep the layout inside the safe area.
+    viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
   }, []);
 
   // Apply text size changes to CSS variable
