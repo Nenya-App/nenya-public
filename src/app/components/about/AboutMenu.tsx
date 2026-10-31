@@ -103,6 +103,12 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       icon: MessageCircle,
     },
     {
+      id: 'partner-practice',
+      title: 'Partner Practice (Planned)',
+      description: 'Dyadic Cells: two-person practice we hope to build, with a scripted preview',
+      icon: Users,
+    },
+    {
       id: 'structure',
       title: 'Our Structure',
       description: 'Mission-locked for the public good',

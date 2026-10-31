@@ -102,7 +102,7 @@ The honest edges:
     tells the model to treat user text as content, never as commands. Phrase matching,
     so it is a speed bump, not a guarantee.
   - **Signed transcripts** ([`docs/coach-transcripts.md`](./docs/coach-transcripts.md)):
-    a finished conversation can be downloaded with a dated Ed25519 signature, and checked
+    a conversation can be downloaded, from the first exchange on, with a dated Ed25519 signature, and checked
     with `node scripts/verify-transcript.mjs`.
 
 The in-app "partner practice" (dyadic cells), Eagle Protocol, and PII-scrubbing

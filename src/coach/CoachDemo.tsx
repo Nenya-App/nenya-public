@@ -427,6 +427,17 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBr
 
               {flag && <FlagNotice flag={flag} flaggedMessage={flaggedText} />}
 
+              {stage === 'chat' && messages.length >= 2 && !sending && (
+                <details className="rounded-2xl border border-border bg-card/50 px-4 py-3 text-sm">
+                  <summary className="cursor-pointer text-muted-foreground">
+                    Keep a record, or report a problem
+                  </summary>
+                  <div className="pt-3">
+                    <TranscriptTools messages={toWire(messages)} session={session} context={context} ticket={ticket} />
+                  </div>
+                </details>
+              )}
+
               {stage === 'chat' && (
                 <form
                   onSubmit={(e) => {

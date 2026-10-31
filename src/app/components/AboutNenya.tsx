@@ -17,6 +17,7 @@ import PrivacyPromise from './about/PrivacyPromise';
 import Structure from './about/Structure';
 import SupportUs from './about/SupportUs';
 import TermsOfService from './about/TermsOfService';
+import PartnerPractice from './about/PartnerPractice';
 import PIIScrubbingDemo from './PIIScrubbingDemo';
 import { ErrorBoundary } from './ErrorBoundary';
 import { AppFooter } from './AppFooter';
@@ -25,6 +26,7 @@ interface AboutNenyaProps {
   onBack: () => void;
   onRestartDemo?: () => void;
   initialSection?: string;
+  onOpenPartnerPreview?: () => void;
 }
 
 type AboutSection = 
@@ -44,11 +46,12 @@ type AboutSection =
   | 'pii-scrubbing'
   | 'eagle-protocol'
   | 'venice-chat'
+  | 'partner-practice'
   | 'structure' 
   | 'support-us'
   | 'terms';
 
-export default function AboutNenya({ onBack, onRestartDemo, initialSection }: AboutNenyaProps) {
+export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOpenPartnerPreview }: AboutNenyaProps) {
   const [currentSection, setCurrentSection] = useState<AboutSection>(
     (initialSection as AboutSection) || 'menu'
   );
@@ -148,6 +151,9 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection }: Ab
             ← Back to Menu
           </button>
         </>
+      )}
+      {currentSection === 'partner-practice' && (
+        <PartnerPractice onBack={handleBackToMenu} onOpenPreview={onOpenPartnerPreview} />
       )}
       {currentSection === 'venice-chat' && (
         <VeniceChat onBack={handleBackToMenu} />

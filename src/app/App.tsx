@@ -616,6 +616,10 @@ export default function App() {
               onBack={handleBackFromAbout} 
               onRestartDemo={handleRestartDemo}
               initialSection={aboutSection}
+              onOpenPartnerPreview={() => {
+                setAboutSection('partner-practice');
+                handleNavigateToCell();
+              }}
             />
           )}
           </Suspense>

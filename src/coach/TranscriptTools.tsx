@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Download, Send } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
+import { Textarea } from '../app/components/ui/textarea';
 import { submitReport } from '../lib/reportSubmission';
 import {
   dayStamp,
@@ -35,6 +36,15 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
   const [signNote, setSignNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [share, setShare] = useState<Share>('closed');
+  const [note, setNote] = useState('');
+
+  // A signature covers exactly the messages that existed when it was made. If the
+  // conversation moves on, the old one no longer applies.
+  useEffect(() => {
+    setReceipt(null);
+    setSignNote('');
+    setShare('closed');
+  }, [messages.length]);
 
   const canSign = !!ticket;
 
@@ -86,7 +96,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     if (tooLong || share === 'sending') return;
     setShare('sending');
     try {
-      await submitReport({ type: 'coach-transcript', report: shareText });
+      await submitReport({ type: 'coach-transcript', report: shareText, comments: note.trim() });
       setShare('sent');
     } catch {
       setShare('error');
@@ -95,10 +105,10 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
 
   return (
     <section className="space-y-3 rounded-2xl border border-border bg-card p-5" aria-label="Keep a record">
-      <h2 className="text-lg">Keep a record</h2>
+      <h2 className="text-lg">Keep a record or report a problem</h2>
       <p className="text-sm text-muted-foreground">
         {canSign
-          ? 'Nenya can sign and date this conversation so no one can alter it afterward. Nothing is stored; you keep the file.'
+          ? 'Nenya can sign and date the conversation so far so no one can alter it afterward. Nothing is stored; you keep the file. You can also send the signed transcript to us, with a note, if something went wrong.'
           : 'This conversation ended before it could be signed. You can still keep a readable copy.'}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -115,7 +125,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
         {canSign && share === 'closed' && (
           <Button variant="outline" size="sm" onClick={openShare} disabled={busy} className="gap-2">
             <Send className="size-4" />
-            Send to Nenya
+            Report or send verified transcript
           </Button>
         )}
       </div>
@@ -128,6 +138,17 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
             contains nothing you want to keep private.
           </p>
           <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-2 text-xs">{shareText}</pre>
+          <label className="block space-y-1 text-xs text-muted-foreground">
+            <span>What would you like us to know? (optional, sent with the transcript)</span>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={1000}
+              rows={3}
+              className="resize-none text-sm"
+              placeholder="For example: what felt wrong, or what you would change."
+            />
+          </label>
           {tooLong && <p className="text-xs text-destructive">This is too long to send. Download it instead.</p>}
           <div className="flex items-center gap-3">
             <Button size="sm" onClick={sendToNenya} disabled={tooLong || share === 'sending'}>
