@@ -16,7 +16,7 @@ export interface LegalPart {
 }
 
 export const LEGAL_TITLE = 'Terms of Use & Privacy Policy';
-export const LEGAL_EFFECTIVE_DATE = 'October 30, 2026';
+export const LEGAL_EFFECTIVE_DATE = 'October 31, 2026';
 
 export const LEGAL_INTRO =
   'Welcome. Please read this before you begin. This document has two parts: Terms of Use, which cover how you may use Nenya, and a Privacy Policy, which covers what little information touches us at all. They sit together because Nenya’s privacy design is also its central promise.';
@@ -75,7 +75,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 7,
         heading: 'Reports and Feedback You Choose to Send',
         paragraphs: [
-          'The site has an optional form for sending us a report, feedback, or a message. Using it is entirely your choice. By submitting, you allow us to read, store, and use what you send to understand problems and improve Nenya, and to share it in anonymized or summarized form. Please do not include names, contact details, or other information that identifies you or anyone else. We will not use a submission to contact you unless you ask us to. To have a submission deleted, email us at the address in Section 22.',
+          'The site has an optional form for sending us a report, feedback, a message, or a coach-demo transcript. Using it is entirely your choice. By submitting, you allow us to read, store, and use what you send to understand problems and improve Nenya, and to share it in anonymized or summarized form. Please do not include names, contact details, or other information that identifies you or anyone else. We will not use a submission to contact you unless you ask us to. To have a submission deleted, email us at the address in Section 22.',
         ],
       },
       {
@@ -146,7 +146,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 16,
         heading: 'Information You Choose to Submit',
         paragraphs: [
-          'The site has an optional form for sending us a bug report, a reflection report you decide to share, or a general message, described in Section 7. Using Nenya never requires it.',
+          'The site has an optional form for sending us a bug report, a reflection report you decide to share, a general message, or a coach-demo transcript, described in Section 7. Using Nenya never requires it.',
         ],
         bullets: [
           'What you submit is the text of your report or message, plus an optional comment, delivered to us through Netlify Forms.',
@@ -200,7 +200,9 @@ export const LEGAL_PARTS: LegalPart[] = [
           'Your messages are sent through our server, hosted by Netlify, to Venice AI, which writes the replies. A conversation is limited to five exchanges, and each message to 500 characters.',
           'We do not store your messages or the replies, and we do not write them to our logs. They exist in your browser tab and disappear when you close it. Netlify, like any host, keeps ordinary connection logs.',
           'Venice AI handles what it receives under its own terms and privacy policy, which we do not control. We have chosen a model that Venice labels “Private.” Venice and Netlify may process data outside your country.',
-          'Please do not include names, contact details, or other identifying information. The demo checks your latest message for signs of crisis; if it finds any, it shows crisis resources instead of sending your message to the AI. That check is simple and can miss things.',
+          'Before your message is sent, the page replaces some common identifiers (such as email addresses, phone numbers, street addresses, and some names) with placeholders, and our server does the same again. This is not a guarantee, and most names will not be caught, so please still leave out names, contact details, and other identifying information.',
+          'The demo checks each message for signs of crisis. If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends, and the page shows crisis resources. If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources. These checks are simple phrase matching: they can miss things and can flag harmless words. If you think a notice was wrong, you can report it; a report is sent only if you press Send, and it includes your message only if you choose.',
+          'When a conversation finishes, you can download a transcript. If you ask for a signed copy, your page sends the conversation to our server one more time so it can confirm it matches what the server produced and add a dated signature. We do not store it, and the signed file stays with you. If you choose to send a transcript to us, you see exactly what will be sent first, and it reaches us the way other submissions do (Section 16).',
           'The demo is not therapy, cannot help in a crisis, and is not intended for people under 13 or under the minimum age in your country, matching Section 3.',
           'Legal basis (GDPR Art. 6(1)(a)): your consent, given when you choose to start the demo after reading the notice on its first screen.',
         ],

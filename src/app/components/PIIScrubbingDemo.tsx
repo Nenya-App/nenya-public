@@ -277,7 +277,7 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
                       <strong>What's happening:</strong> In the finished version, this automatic scrubbing would happen with every message you send, protecting your privacy while maintaining the emotional depth of your communication.
                     </p>
                     <p className="text-sm text-blue-900 dark:text-blue-100">
-                      That pipeline isn't live yet — please avoid typing real personal or identifying details into Nenya for now, or into any system, even one that claims to be secure.
+                      A basic version runs in the optional coach demo (nenya.biz/coach): it replaces common identifiers like email addresses and phone numbers, but most names slip through. Please still avoid typing real personal or identifying details into any system, even one that claims to be secure.
                     </p>
                   </div>
                 </div>
@@ -296,7 +296,7 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
             </div>
             <h2>The Privacy Design We're Building</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              This walkthrough isn't live yet — Nenya doesn't currently scrub messages before processing, because there's no live AI conversation pipeline to scrub them for. Please don't include real names, addresses, or other identifying details in anything you write, here or in any system, even one that claims to be secure.
+              This walkthrough is scripted. The free tool sends nothing to an AI, so there is nothing to scrub. A basic scrubber runs in the optional coach demo (nenya.biz/coach), and it catches common identifiers but not most names. Please don't include real names, addresses, or other identifying details in anything you write, here or in any system, even one that claims to be secure.
             </p>
             <div className="bg-muted/50 rounded-lg p-6 max-w-2xl mx-auto">
               <h4 className="mb-3">Planned Privacy Features (not yet active):</h4>

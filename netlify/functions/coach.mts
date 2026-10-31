@@ -8,9 +8,13 @@
 //   VENICE_API_KEY       secret   Venice API key
 //   COACH_TICKET_SECRET  secret   long random string for signing tickets
 //   COACH_ENABLED        plain    "true" to accept requests
+//   COACH_SIGNING_KEY    secret   optional, base64 Ed25519 private key (PKCS8 DER) for
+//                                 signing transcript receipts
 //   COACH_MODEL          plain    optional, overrides DEFAULT_MODEL
 //   COACH_CHARACTER_SLUG plain    optional, overrides DEFAULT_CHARACTER_SLUG
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, createPrivateKey, createPublicKey, sign as edSign, timingSafeEqual } from 'node:crypto';
+import { detectFlag } from '../../src/lib/safetyFlags.ts';
+import { scrubPII } from '../../src/lib/piiScrub.ts';
 
 const MAX_TURNS = 5;
 const MAX_USER_CHARS = 500;
@@ -33,20 +37,6 @@ interface Msg {
   role: Role;
   content: string;
 }
-
-const CRISIS_PATTERNS: RegExp[] = [
-  /\b(kill(ing)? myself|end(ing)? my (own )?life|take my (own )?life|suicid(e|al)|want(ed)? to die|wish i (was|were) dead|don'?t want to (live|be alive|be here)|no reason to (live|go on)|better off (dead|without me))\b/i,
-  /\b(hurt(ing)? myself|harm(ing)? myself|self[- ]?harm|cut(ting)? myself|overdos(e|ing))\b/i,
-  /\b(kill(ing)? (him|her|them|someone|somebody)|going to hurt (him|her|them|someone|somebody))\b/i,
-  /\b(is|are|was|keeps?) (hitting|beating|abusing|threatening) me\b/i,
-];
-
-const CRISIS_REPLY =
-  'I am not able to help with this safely, and I do not want you to be alone with it. ' +
-  'If you are in the US, you can call or text 988 at any time to reach the Suicide & Crisis Lifeline. ' +
-  'If you are in immediate danger, please call your local emergency number. ' +
-  'Outside the US, findahelpline.com lists crisis lines by country. ' +
-  'Please reach a person now. This demo will stop here.';
 
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), {
@@ -82,9 +72,10 @@ function verify(secret: string, ticket: unknown, completed: number, history: Msg
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-function parseMessages(raw: unknown): Msg[] | null {
-  if (!Array.isArray(raw) || raw.length < 1 || raw.length > MAX_TURNS * 2 - 1) return null;
-  if (raw.length % 2 === 0) return null; // must end on a user message
+function parseMessages(raw: unknown, endsWith: Role = 'user'): Msg[] | null {
+  const max = endsWith === 'user' ? MAX_TURNS * 2 - 1 : MAX_TURNS * 2;
+  if (!Array.isArray(raw) || raw.length < 1 || raw.length > max) return null;
+  if (endsWith === 'user' ? raw.length % 2 === 0 : raw.length % 2 === 1) return null;
   const out: Msg[] = [];
   for (let i = 0; i < raw.length; i++) {
     const m = raw[i] as { role?: unknown; content?: unknown };
@@ -98,13 +89,38 @@ function parseMessages(raw: unknown): Msg[] | null {
   return out;
 }
 
-function systemInstruction(turn: number): string {
+// ── Signed transcripts ─────────────────────────────────────────────────────
+// A receipt proves a transcript matches an exchange this server actually produced
+// (the ticket binds every reply), and dates it. Nothing is stored: the server
+// verifies, signs a hash and a timestamp, and returns it.
+function signingKey() {
+  const b64 = process.env.COACH_SIGNING_KEY;
+  if (!b64) return null;
+  try {
+    const key = createPrivateKey({ key: Buffer.from(b64, 'base64'), format: 'der', type: 'pkcs8' });
+    const spki = createPublicKey(key).export({ type: 'spki', format: 'der' }) as Buffer;
+    return { key, publicKey: spki.toString('base64'), keyId: sha256(spki.toString('base64')).slice(0, 16) };
+  } catch {
+    return null;
+  }
+}
+
+// Canonical form that gets hashed. Documented in docs/coach-transcripts.md.
+const canonicalTranscript = (messages: Msg[]): string =>
+  JSON.stringify({ v: 1, messages: messages.map((m) => ({ role: m.role, content: m.content })) });
+
+function systemInstruction(turn: number, softened: boolean): string {
   const parts = [
     `This is a short demonstration limited to ${MAX_TURNS} exchanges. This is exchange ${turn} of ${MAX_TURNS}.`,
     'Reply in two to four short sentences of plain language.',
     'Reflect what you hear, name the feeling or need underneath if you can, and offer at most one gentle question or one invitation to take a slow breath.',
     'Do not give advice or diagnoses. Do not invite the person to keep talking. Never claim to be a therapist.',
   ];
+  if (softened) {
+    parts.push(
+      'The latest message may signal distress. Respond briefly and with care. Acknowledge what the person said without probing or interpreting it, do not give advice, and gently encourage them to reach a person they trust or a crisis line (988 in the US). You are not able to help in a crisis.'
+    );
+  }
   if (turn === MAX_TURNS) {
     parts.push(
       'This is the final exchange. Close warmly, name one thing you heard, and invite one slow breath. Do not ask a question.'
@@ -118,7 +134,14 @@ function systemInstruction(turn: number): string {
 export default async (req: Request): Promise<Response> => {
   // Only the rate-limited public route is served; the default
   // /.netlify/functions/coach address would sidestep the limit.
-  if (new URL(req.url).pathname !== ROUTE) return json(404, { error: 'not found' });
+  const url = new URL(req.url);
+  if (url.pathname !== ROUTE) return json(404, { error: 'not found' });
+  if (req.method === 'GET' && url.searchParams.has('key')) {
+    const k = signingKey();
+    return k
+      ? json(200, { algorithm: 'Ed25519', keyId: k.keyId, publicKey: k.publicKey })
+      : json(404, { error: 'signing-off' });
+  }
   if (req.method !== 'POST') return json(405, { error: 'method' });
   if (process.env.COACH_ENABLED !== 'true') return json(503, { error: 'off' });
 
@@ -147,6 +170,20 @@ export default async (req: Request): Promise<Response> => {
     return json(400, { error: 'json' });
   }
 
+  if ((body as { action?: unknown }).action === 'receipt') {
+    const done = parseMessages(body.messages, 'assistant');
+    if (!done) return json(400, { error: 'messages' });
+    if (!verify(secret, body.ticket, done.length / 2, done)) return json(400, { error: 'ticket' });
+    const k = signingKey();
+    if (!k) return json(503, { error: 'signing-off' });
+    const hash = sha256(canonicalTranscript(done));
+    const issuedAt = new Date().toISOString();
+    const signature = edSign(null, Buffer.from(`nenya-coach-transcript-v1\n${hash}\n${issuedAt}`), k.key).toString('base64');
+    return json(200, {
+      receipt: { version: 1, algorithm: 'Ed25519', keyId: k.keyId, publicKey: k.publicKey, hash, issuedAt, signature },
+    });
+  }
+
   const messages = parseMessages(body.messages);
   if (!messages) return json(400, { error: 'messages' });
 
@@ -158,9 +195,10 @@ export default async (req: Request): Promise<Response> => {
     if (!verify(secret, body.ticket, turn - 1, history)) return json(400, { error: 'ticket' });
   }
 
-  const latest = messages[messages.length - 1].content;
-  if (CRISIS_PATTERNS.some((p) => p.test(latest))) {
-    return json(200, { reply: CRISIS_REPLY, done: true, crisis: true });
+  // Stop-tier flags never reach the AI: the page shows resources and the conversation ends.
+  const flag = detectFlag(messages[messages.length - 1].content);
+  if (flag?.tier === 'stop') {
+    return json(200, { done: true, flag });
   }
 
   const model = process.env.COACH_MODEL || DEFAULT_MODEL;
@@ -176,7 +214,11 @@ export default async (req: Request): Promise<Response> => {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model,
-        messages: [{ role: 'system', content: systemInstruction(turn) }, ...messages],
+        messages: [
+          { role: 'system', content: systemInstruction(turn, flag?.tier === 'soften') },
+          // Scrubbed again here in case the page was bypassed.
+          ...messages.map((m) => (m.role === 'user' ? { ...m, content: scrubPII(m.content).text } : m)),
+        ],
         temperature: 0.7,
         top_p: 0.9,
         repetition_penalty: 1.1,
@@ -208,7 +250,7 @@ export default async (req: Request): Promise<Response> => {
 
   const history = [...messages, { role: 'assistant' as const, content: reply }];
   const ticket = sign(secret, turn, Date.now(), history);
-  return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS });
+  return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}) });
 };
 
 // Literal values on purpose: Netlify reads this block by static analysis, so it

@@ -75,6 +75,18 @@ The honest edges:
   signed ticket that stops a client from forging or extending the history. The
   character's prompt lives on Venice, not in this repository.
 
+  The demo also includes, all as small shared code in `src/lib`:
+  - **Identifier scrubbing** ([`piiScrub.ts`](./src/lib/piiScrub.ts)): common
+    identifiers are replaced with placeholders on the visitor's device, and again on
+    the server. It is pattern matching and misses most names.
+  - **Safety flags** ([`safetyFlags.ts`](./src/lib/safetyFlags.ts)): a clear crisis
+    statement is never sent to the AI and ends the conversation with resources;
+    ambiguous distress is sent with an instruction to respond with care. Also phrase
+    matching, so it can miss things and flag harmless words.
+  - **Signed transcripts** ([`docs/coach-transcripts.md`](./docs/coach-transcripts.md)):
+    a finished conversation can be downloaded with a dated Ed25519 signature, and checked
+    with `node scripts/verify-transcript.mjs`.
+
 The in-app "partner practice", "session", Eagle Protocol, and PII-scrubbing
 screens are scripted demonstrations of planned features, not working
 protections. A fuller coach is planned as a separate product so the free tool
@@ -122,7 +134,8 @@ The project is set up for Netlify:
 - The `/coach` demo's function reads these environment variables (set them in the
   Netlify dashboard for the Production context, Functions scope; never commit them):
   `VENICE_API_KEY` (secret), `COACH_TICKET_SECRET` (secret), `COACH_ENABLED`
-  (`true` to accept requests). Optional: `COACH_MODEL`, `COACH_CHARACTER_SLUG`.
+  (`true` to accept requests). Optional: `COACH_SIGNING_KEY` (secret; enables signed
+  transcripts, see the docs), `COACH_MODEL`, `COACH_CHARACTER_SLUG`.
   Changes take effect on the next deploy.
 
 ## Project layout
@@ -130,6 +143,7 @@ The project is set up for Netlify:
 ```
 src/app/           React app: pages, About essays, gateway components
 src/coach/         The separate /coach demo page (built as its own entry)
+scripts/           verify-transcript.mjs: checks a signed transcript
 netlify/functions/ Server-side relay for the coach demo
 src/lib/           Audio and tonal systems, PDF generation, legal text, form submission
 public/            Static assets: fonts, icons, PDF assets, web manifest

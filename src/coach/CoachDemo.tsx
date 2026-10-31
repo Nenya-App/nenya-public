@@ -3,6 +3,10 @@ import { ArrowRight, Send } from 'lucide-react';
 import NenyaLogo from '../app/components/NenyaLogo';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
+import { detectFlag, type SafetyFlag } from '../lib/safetyFlags';
+import { scrubPII, describeScrub } from '../lib/piiScrub';
+import { FlagNotice } from './FlagNotice';
+import { TranscriptTools } from './TranscriptTools';
 
 const MAX_TURNS = 5;
 const MAX_CHARS = 500;
@@ -11,7 +15,11 @@ const ENDPOINT = '/api/coach';
 interface Msg {
   role: 'user' | 'assistant';
   content: string;
+  /** Page-only note, never sent anywhere. */
+  note?: string;
 }
+
+const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content }));
 
 type Stage = 'consent' | 'chat' | 'done';
 
@@ -24,7 +32,8 @@ export default function CoachDemo() {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const [crisis, setCrisis] = useState(false);
+  const [flag, setFlag] = useState<SafetyFlag | null>(null);
+  const [flaggedText, setFlaggedText] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -43,28 +52,55 @@ export default function CoachDemo() {
     setTicket(undefined);
     setDraft('');
     setError('');
-    setCrisis(false);
+    setFlag(null);
+    setFlaggedText('');
     setStage('chat');
   };
 
   const send = async () => {
     const text = draft.trim();
     if (!text || sending) return;
-    const next: Msg[] = [...messages, { role: 'user', content: text }];
+    // Identifiers are replaced here, on this device, before anything is sent.
+    const scrubbed = scrubPII(text);
+    const note = scrubbed.total
+      ? `Before sending, I replaced ${describeScrub(scrubbed.counts)} with placeholders. Names are not always caught, so please keep them out.`
+      : undefined;
+    const next: Msg[] = [...messages, { role: 'user', content: scrubbed.text, note }];
+
+    // A clear crisis statement never leaves this device: no request is made.
+    const local = detectFlag(text);
+    if (local?.tier === 'stop') {
+      setMessages(next);
+      setFlag(local);
+      setFlaggedText(scrubbed.text);
+      setDraft('');
+      setStage('done');
+      return;
+    }
+
     setSending(true);
     setError('');
     try {
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next, ticket }),
+        body: JSON.stringify({ messages: toWire(next), ticket }),
       });
       if (!res.ok) throw new Error(String(res.status));
-      const data = (await res.json()) as { reply: string; ticket?: string; done?: boolean; crisis?: boolean };
-      setMessages([...next, { role: 'assistant', content: data.reply }]);
+      const data = (await res.json()) as {
+        reply?: string;
+        ticket?: string;
+        done?: boolean;
+        flag?: SafetyFlag;
+      };
+      // The server also checks. If it stopped the message, there is no reply.
+      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply }] : next);
       setTicket(data.ticket);
       setDraft('');
-      if (data.crisis) setCrisis(true);
+      if (data.flag) {
+        setFlag(data.flag);
+        setFlaggedText(scrubbed.text);
+      }
       if (data.done) setStage('done');
     } catch {
       setError('That did not go through, and nothing was lost. You can try again, or go back to the breathing tool.');
@@ -133,7 +169,7 @@ export default function CoachDemo() {
                 Conversation with the Nenya coach
               </h1>
               <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>{stage === 'done' ? 'Conversation complete' : `Exchange ${turn} of ${MAX_TURNS}`}</span>
+                <span>{stage === 'done' ? (flag?.tier === 'stop' ? 'Conversation ended' : 'Conversation complete') : `Exchange ${turn} of ${MAX_TURNS}`}</span>
                 <span>Not therapy</span>
               </div>
 
@@ -151,12 +187,15 @@ export default function CoachDemo() {
                         {m.role === 'user' ? 'You' : 'Coach'}
                       </span>
                       {m.content}
+                      {m.note && <span className="mt-2 block text-xs italic text-muted-foreground">{m.note}</span>}
                     </div>
                   </div>
                 ))}
                 {sending && <p className="text-sm text-muted-foreground">Listening&hellip;</p>}
                 <div ref={endRef} />
               </div>
+
+              {flag && <FlagNotice flag={flag} flaggedMessage={flaggedText} />}
 
               {stage === 'chat' && (
                 <form
@@ -210,10 +249,12 @@ export default function CoachDemo() {
 
               {stage === 'done' && (
                 <section className="space-y-4 rounded-2xl border border-nenya-accent-warm/40 bg-card p-5">
-                  <h2 className="text-xl">{crisis ? 'Please reach a person now' : 'That is our five. Now, one minute to breathe.'}</h2>
+                  <h2 className="text-xl">
+                    {flag?.tier === 'stop' ? 'This conversation has ended' : 'That is our five. Now, one minute to breathe.'}
+                  </h2>
                   <p className="text-sm text-muted-foreground">
-                    {crisis
-                      ? 'The resources above are the right next step. Nenya is not able to help in a crisis.'
+                    {flag?.tier === 'stop'
+                      ? 'The resources above are the right next step. When you are ready, the breathing tool is here too.'
                       : 'The breathing tool is where Nenya begins. Follow the glow in, and out, for as long as you like.'}
                   </p>
                   <div className="flex flex-wrap items-center gap-4">
@@ -224,7 +265,7 @@ export default function CoachDemo() {
                       Open the breathing tool
                       <ArrowRight className="size-4" />
                     </a>
-                    {!crisis && (
+                    {flag?.tier !== 'stop' && (
                       <button
                         type="button"
                         onClick={reset}
@@ -235,6 +276,10 @@ export default function CoachDemo() {
                     )}
                   </div>
                 </section>
+              )}
+
+              {stage === 'done' && (
+                <TranscriptTools messages={toWire(messages)} ticket={flag?.tier === 'stop' ? undefined : ticket} />
               )}
             </>
           )}

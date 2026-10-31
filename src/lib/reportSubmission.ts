@@ -14,7 +14,7 @@
 // else. See textSanitize.ts.
 import { sanitizePlainText } from './textSanitize';
 
-type ReportSubmissionType = 'error-report' | 'sensory-reflection' | 'contact-message';
+type ReportSubmissionType = 'error-report' | 'sensory-reflection' | 'contact-message' | 'coach-transcript';
 
 const MAX_REPORT_LENGTH = 20000; // generous -- a full multi-gateway sensory report can be long
 const MAX_COMMENTS_LENGTH = 2000;
