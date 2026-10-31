@@ -29,4 +29,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src/app'),
     },
   },
+  build: {
+    rollupOptions: {
+      // Two pages: the free tool, and the separate /coach demo.
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        coach: path.resolve(__dirname, 'coach/index.html'),
+      },
+    },
+  },
 })

@@ -16,7 +16,7 @@ export interface LegalPart {
 }
 
 export const LEGAL_TITLE = 'Terms of Use & Privacy Policy';
-export const LEGAL_EFFECTIVE_DATE = 'October 26, 2026';
+export const LEGAL_EFFECTIVE_DATE = 'October 30, 2026';
 
 export const LEGAL_INTRO =
   'Welcome. Please read this before you begin. This document has two parts: Terms of Use, which cover how you may use Nenya, and a Privacy Policy, which covers what little information touches us at all. They sit together because Nenya’s privacy design is also its central promise.';
@@ -54,7 +54,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         heading: 'Your Privacy & Data',
         paragraphs: [
           'Nenya is designed around ephemerality. The reflections you create here are for your personal use, and the tool does not send your sensory choices or reflections to our servers. Any outputs, such as a sensory report, are generated on your device and belong to you.',
-          'Two things pass through infrastructure outside your device: our web host keeps standard connection logs, and if you choose to submit a report through the optional form, what you submit is sent to us. Part Two of this document explains both in full.',
+          'Three things pass through infrastructure outside your device: our web host keeps standard connection logs; if you choose to submit a report or message through the optional form, what you submit is sent to us; and if you choose to try the optional coach demo, what you type is sent through our server to an AI service. Part Two of this document explains each in full.',
         ],
       },
       {
@@ -75,7 +75,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 7,
         heading: 'Reports and Feedback You Choose to Send',
         paragraphs: [
-          'The site has an optional form for sending us a report, feedback, or a message. Using it is entirely your choice. By submitting, you allow us to read, store, and use what you send to understand problems and improve Nenya, and to share it in anonymized or summarized form. Please do not include names, contact details, or other information that identifies you or anyone else. We will not use a submission to contact you unless you ask us to. To have a submission deleted, email us at the address in Section 21.',
+          'The site has an optional form for sending us a report, feedback, or a message. Using it is entirely your choice. By submitting, you allow us to read, store, and use what you send to understand problems and improve Nenya, and to share it in anonymized or summarized form. Please do not include names, contact details, or other information that identifies you or anyone else. We will not use a submission to contact you unless you ask us to. To have a submission deleted, email us at the address in Section 22.',
         ],
       },
       {
@@ -131,7 +131,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 14,
         heading: 'The Short Version',
         paragraphs: [
-          'Nenya has no user accounts, no analytics, no advertising, and no tracking cookies. What you enter while using the reflection tool (colors, melodies, drawings, body-map placements, written reflections) stays in your browser and is not sent to us. It is gone when you close the tab. The exceptions are the ones you choose yourself: downloading a PDF report, which is created on your own device, and the optional submission form described in Section 16.',
+          'Nenya has no user accounts, no analytics, no advertising, and no tracking cookies. What you enter while using the reflection tool (colors, melodies, drawings, body-map placements, written reflections) stays in your browser and is not sent to us. It is gone when you close the tab. The exceptions are the ones you choose yourself: downloading a PDF report, which is created on your own device, the optional submission form described in Section 16, and the optional coach demo described in Section 21.',
         ],
       },
       {
@@ -161,7 +161,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         bullets: [
           'It does not create accounts, profiles, or persistent identifiers.',
           'It does not set cookies or use fingerprinting. It does not even remember your light or dark mode between visits.',
-          'It does not send your reflections to any server unless you use the form in Section 16.',
+          'It does not send what you enter in the reflection tool to any server. The only exceptions are the form in Section 16 and the optional coach demo in Section 21, both of which you start yourself.',
           'It does not sell, share, or monetize data.',
         ],
       },
@@ -192,6 +192,21 @@ export const LEGAL_PARTS: LegalPart[] = [
       },
       {
         number: 21,
+        heading: 'The Coach Demo',
+        paragraphs: [
+          'The coach demo at nenya.biz/coach is an optional, early prototype of a conversational coach. It is the one place on the site where what you type is sent to an AI service. If you choose to use it, this is what happens:',
+        ],
+        bullets: [
+          'Your messages are sent through our server, hosted by Netlify, to Venice AI, which writes the replies. A conversation is limited to five exchanges, and each message to 500 characters.',
+          'We do not store your messages or the replies, and we do not write them to our logs. They exist in your browser tab and disappear when you close it. Netlify, like any host, keeps ordinary connection logs.',
+          'Venice AI handles what it receives under its own terms and privacy policy, which we do not control. We have chosen a model that Venice labels “Private.” Venice and Netlify may process data outside your country.',
+          'Please do not include names, contact details, or other identifying information. The demo checks your latest message for signs of crisis; if it finds any, it shows crisis resources instead of sending your message to the AI. That check is simple and can miss things.',
+          'The demo is not therapy, cannot help in a crisis, and is not intended for people under 13 or under the minimum age in your country, matching Section 3.',
+          'Legal basis (GDPR Art. 6(1)(a)): your consent, given when you choose to start the demo after reading the notice on its first screen.',
+        ],
+      },
+      {
+        number: 22,
         heading: 'Changes and Contact',
         paragraphs: [
           'We may update this document. The effective date will change when we do, and you will be asked to agree to the current terms when you enter the site. Continued use after that means you accept the update. We collect no contact details from visitors, so we have no way to notify you directly of a change. Earlier versions are kept in our public repository at https://github.com/Nenya-App/nenya-public/tree/main/docs/legal.',

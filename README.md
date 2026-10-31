@@ -60,15 +60,25 @@ The honest edges:
 
 ## About the AI pieces
 
-**There is no AI in this repository or in the free tool.** The About section
-links out to a prototype conversation partner, a Nenya character hosted on
-[Venice AI](https://venice.ai). It runs on Venice's service and is not covered by
-Nenya's privacy and safety systems, and the page says so. The in-app "partner
-practice", "session", Eagle Protocol, and PII-scrubbing screens are scripted
-demonstrations of planned features, not working protections.
+**The free tool has no AI in it.** Two things live beside it:
 
-A fuller coach is planned as a separate product so the free tool never
-depends on it. Its design is not in this repository.
+- **A prototype conversation partner on Venice AI.** The About section links out
+  to a Nenya character hosted on [Venice AI](https://venice.ai). It runs on
+  Venice's service and is not covered by Nenya's privacy and safety systems, and
+  the page says so.
+- **The `/coach` demo.** An optional, separate page at `nenya.biz/coach` (not
+  linked from inside the tool's flow) offers a five-exchange conversation with
+  the same character. It goes through a small relay function, served at `/api/coach`, in
+  [`netlify/functions/coach.mts`](./netlify/functions/coach.mts), so the Venice API
+  key stays server-side. The function stores nothing and does not log message
+  text. Caps: five exchanges, 500 characters per message, short replies, and a
+  signed ticket that stops a client from forging or extending the history. The
+  character's prompt lives on Venice, not in this repository.
+
+The in-app "partner practice", "session", Eagle Protocol, and PII-scrubbing
+screens are scripted demonstrations of planned features, not working
+protections. A fuller coach is planned as a separate product so the free tool
+never depends on it.
 
 ## Running it locally
 
@@ -91,24 +101,36 @@ server works, for example `python3 -m http.server` run inside `dist/`.
 
 **Offline use.** Once installed and built, the breathing tool, all six gateways,
 the audio, and the PDF report work with no internet connection. These do not:
-sending a report or contact message (they need the hosted Netlify form), and the
-outbound links.
+sending a report or contact message (they need the hosted Netlify form), the
+`/coach` demo (it needs the relay function and Venice AI), and the outbound links.
+
+To try the demo locally you need the [Netlify CLI](https://docs.netlify.com/cli/get-started/)
+(`netlify dev`) and your own Venice key; plain `npm run dev` serves the page but not
+the function.
 
 ## Deploying
 
 The project is set up for Netlify:
 
 - [`netlify.toml`](./netlify.toml) holds the security headers (including the
-  Content Security Policy), cache rules, and rate limits.
+  Content Security Policy), cache rules, and the app's rate limit. The coach
+  function's own rate limit is set in its source file.
 - [`index.html`](./index.html) contains a hidden static copy of the
   `report-submission` form so Netlify registers it at build time. The in-app
   form posts to the same name (see [`src/lib/reportSubmission.ts`](./src/lib/reportSubmission.ts)).
   Where those submissions are emailed is set in the Netlify dashboard.
+- The `/coach` demo's function reads these environment variables (set them in the
+  Netlify dashboard for the Production context, Functions scope; never commit them):
+  `VENICE_API_KEY` (secret), `COACH_TICKET_SECRET` (secret), `COACH_ENABLED`
+  (`true` to accept requests). Optional: `COACH_MODEL`, `COACH_CHARACTER_SLUG`.
+  Changes take effect on the next deploy.
 
 ## Project layout
 
 ```
 src/app/           React app: pages, About essays, gateway components
+src/coach/         The separate /coach demo page (built as its own entry)
+netlify/functions/ Server-side relay for the coach demo
 src/lib/           Audio and tonal systems, PDF generation, legal text, form submission
 public/            Static assets: fonts, icons, PDF assets, web manifest
 docs/legal/        Archive of earlier versions of the Terms and Privacy Policy
