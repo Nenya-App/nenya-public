@@ -20,7 +20,7 @@ const TouchGatewayPage = lazy(() => import('./components/pages/TouchGatewayPage'
 const EssenceGatewayPage = lazy(() => import('./components/pages/EssenceGatewayPage'));
 const MovementGatewayPage = lazy(() => import('./components/pages/MovementGatewayPage'));
 const InsightGatewayPage = lazy(() => import('./components/pages/InsightGatewayPage'));
-const InterfaceColorSelection = lazy(() => import('./components/pages/InterfaceColorSelection'));
+const SessionKeyPicker = lazy(() => import('../coach/SessionKeyPicker'));
 const GatewayReviewPage = lazy(() => import('./components/pages/GatewayReviewPage'));
 const CoachDemo = lazy(() => import('../coach/CoachDemo'));
 const DyadicCellCreation = lazy(() => import('./components/DyadicCellCreation'));
@@ -569,7 +569,7 @@ export default function App() {
           )}
           
           {currentScreen === 'color-selection' && (
-            <InterfaceColorSelection
+            <SessionKeyPicker
               onComplete={handleColorSelectionComplete}
               onBack={() => navigateBack('gateway-review')}
             />

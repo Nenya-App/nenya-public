@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Send } from 'lucide-react';
+import { ArrowRight, Play, Send } from 'lucide-react';
 import NenyaLogo from '../app/components/NenyaLogo';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { getGradientMidpoint, getReadableTextColor } from '../app/components/ColorUtils';
 import { detectFlag, type SafetyFlag } from '../lib/safetyFlags';
 import { scrubPII, describeScrub } from '../lib/piiScrub';
+import { playSignature, signatureNotes } from '../lib/sessionSound';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
 import { FlagNotice } from './FlagNotice';
 import { TranscriptTools } from './TranscriptTools';
@@ -61,6 +62,10 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBr
   // The reflection is offered, not assumed. Scrubbed on this device before any use.
   const offered = reflectionSummary.trim() ? scrubPII(reflectionSummary.trim()).text : '';
   const offerable = !!offered && !looksLikeManipulation(offered);
+  const [signaturePlaying, setSignaturePlaying] = useState(false);
+  const stopSignature = useRef<(() => void) | null>(null);
+  const notes = signatureNotes(color1, color2);
+  useEffect(() => () => stopSignature.current?.(), []);
   const [shareReflection, setShareReflection] = useState(false);
   const [contextDropped, setContextDropped] = useState(false);
   const context = shareReflection && offerable ? offered : '';
@@ -300,6 +305,50 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBr
                   </details>
                 </div>
               )}
+
+              <div
+                className="flex items-center justify-between gap-4 rounded-2xl border bg-card p-4"
+                style={{ borderColor: `${color1}55` }}
+                aria-label="Your session signature"
+              >
+                <div>
+                  <p className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">Your signature</p>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {notes.first.map((n, i) => (
+                      <span
+                        key={`a${i}`}
+                        className="rounded-lg border px-2 py-1 font-mono text-[11px]"
+                        style={{ borderColor: `${color1}99`, backgroundColor: `${color1}22` }}
+                      >
+                        {n}
+                      </span>
+                    ))}
+                    <span className="mx-1 opacity-30">·</span>
+                    {notes.second.map((n, i) => (
+                      <span
+                        key={`b${i}`}
+                        className="rounded-lg border px-2 py-1 font-mono text-[11px]"
+                        style={{ borderColor: `${color2}99`, backgroundColor: `${color2}22` }}
+                      >
+                        {n}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={signaturePlaying}
+                  className="shrink-0 gap-2 rounded-full"
+                  onClick={() => {
+                    setSignaturePlaying(true);
+                    stopSignature.current = playSignature(color1, color2, () => setSignaturePlaying(false));
+                  }}
+                >
+                  <Play className={`size-3 ${signaturePlaying ? 'animate-pulse' : ''}`} />
+                  {signaturePlaying ? 'playing…' : 'hear it'}
+                </Button>
+              </div>
 
               <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
                 <li>

@@ -16,7 +16,7 @@ export interface LegalPart {
 }
 
 export const LEGAL_TITLE = 'Terms of Use & Privacy Policy';
-export const LEGAL_EFFECTIVE_DATE = 'November 2, 2026';
+export const LEGAL_EFFECTIVE_DATE = 'October 31, 2026';
 
 export const LEGAL_INTRO =
   'Welcome. Please read this before you begin. This document has two parts: Terms of Use, which cover how you may use Nenya, and a Privacy Policy, which covers what little information touches us at all. They sit together because Nenya’s privacy design is also its central promise.';

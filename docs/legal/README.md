@@ -12,6 +12,6 @@ The live Terms of Use & Privacy Policy is `src/lib/legalDocument.ts` (one source
 | Terms of Use & Privacy Policy (adds the optional coach demo) | 2026-10-30 to 2026-10-31 | `archive/terms-and-privacy-until-2026-10-31.md` |
 | Terms of Use & Privacy Policy (adds scrubbing, safety notices, signed transcripts to the demo) | 2026-10-31 to 2026-11-01 | `archive/terms-and-privacy-until-2026-11-01.md` |
 | Terms of Use & Privacy Policy (demo reachable inside the site; session colors; instruction screening) | 2026-11-01 to 2026-11-02 | `archive/terms-and-privacy-until-2026-11-02.md` |
-| Terms of Use & Privacy Policy (optional hand-off of a reflection summary to the demo) | from 2026-11-02 | `src/lib/legalDocument.ts` |
+| Terms of Use & Privacy Policy (optional hand-off of a reflection summary to the demo) | from 2026-10-31 (revised in place; the November dates above mark when earlier text was replaced) | `src/lib/legalDocument.ts` |
 
 When this document changes, copy the outgoing text into `archive/` (named with the date it stopped being in effect) before editing.
