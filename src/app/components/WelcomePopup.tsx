@@ -113,7 +113,7 @@ export default function WelcomePopup({ onNavigateToAbout, onDismiss, initiallyOp
                         <li>Reflect to gain clarity.</li>
                       </ol>
                       <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-                        Your journey here is private by design. Nothing you enter is saved or sent to us, and it’s gone when you close the tab.
+                        Your journey here is private by design. Nothing you enter is saved or sent to us unless you choose to send it (for example, in the optional coach demo), and it’s gone when you close the tab.
                       </p>
                       <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
                         When you are ready, close this card to begin.

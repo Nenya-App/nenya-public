@@ -112,7 +112,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-emerald-900 dark:text-emerald-100">On-Device Processing (The Goal)</h3>
                     <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
-                      We are engineering the system so your conversations with Nenya are processed directly on your own device. In this ideal state, your most private reflections never even touch our servers, making data extraction impossible.
+                      We are engineering toward a system where your conversations with Nenya are processed directly on your own device. In that ideal state, your most private reflections never even touch our servers, making data extraction impossible. We are not there yet: the core reflection tools run entirely in your browser, but the optional coach demo sends your messages through our server to Venice AI, an outside service, and has only basic privacy protections.
                     </p>
                   </div>
                 </div>
@@ -265,10 +265,10 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
           <section className="space-y-6">
             <div className="space-y-4">
               <h2 className="text-3xl bg-gradient-to-r from-nenya-accent-secondary via-nenya-accent-primary to-nenya-accent-metallic bg-clip-text text-transparent">
-                Advanced Privacy Features in Development
+                Privacy Features We Hope to Build
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                We are actively developing additional privacy and security features to further protect your safety and agency. These features represent our ongoing commitment to user sovereignty and protection against surveillance.
+                These are privacy and security features we hope to build to further protect your safety and agency. None of them exist yet. They represent our ongoing commitment to user sovereignty and protection against surveillance.
               </p>
             </div>
 
@@ -349,7 +349,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-rose-900 dark:text-rose-100">Encrypted Local Journals (Optional)</h3>
                     <p className="text-sm text-rose-800/80 dark:text-rose-200/80">
-                      For users who want to keep a record of their growth over time, we're developing optional encrypted local journaling. Your saved reflections would be encrypted on your device using a separate key, never touching our servers, and decryptable only by you.
+                      For users who want to keep a record of their growth over time, we hope to build optional encrypted local journaling. Your saved reflections would be encrypted on your device using a separate key, never touching our servers, and decryptable only by you.
                     </p>
                     <p className="text-xs text-rose-700/70 dark:text-rose-300/70 italic">
                       <strong>Use case:</strong> Long-term self-tracking without sacrificing privacy. Your journal stays on your device, in your control.

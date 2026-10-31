@@ -283,7 +283,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                     Countering Consumption Technology
                   </h3>
                   <p className="text-muted-foreground mb-4">
-                    Nenya is built for <strong>Reflection over Consumption</strong>. It operates on <strong>Safety First</strong>: ephemeral sessions, no data storage, zero-knowledge architecture.
+                    Nenya is built for <strong>Reflection over Consumption</strong>. It operates on <strong>Safety First</strong>: ephemeral sessions and no data storage by Nenya. A zero-knowledge, on-device architecture is the goal we're building toward.
                   </p>
                   <p className="text-sm text-muted-foreground">
                     This directly addresses the public's concern that technology is designed to consume their attention and data, providing the secure container necessary for vulnerability.

@@ -42,7 +42,7 @@ export default function DyadicCellCreation({ onCreateCell, onBack }: DyadicCellC
       <div className="max-w-2xl w-full text-center space-y-6 sm:space-y-8">
         <div className="space-y-4">
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            <h1 className="text-3xl sm:text-4xl">Create a Dyadic Cell</h1>
+            <h1 className="text-3xl sm:text-4xl">Create a Dyadic Cell (Preview)</h1>
             <Badge variant="secondary" className="text-sm px-2 py-1">
               <Sparkles className="size-3.5 mr-1" />
               Structured Integration
@@ -103,7 +103,7 @@ export default function DyadicCellCreation({ onCreateCell, onBack }: DyadicCellC
               <div className="space-y-2">
                 <h4 className="text-sm text-amber-900 dark:text-amber-100">For Professionals & Research</h4>
                 <p className="text-xs text-amber-900 dark:text-amber-100">
-                  Dyadic Cells are a <em>Structured Integration</em> being developed for potential use by therapists, coaches, and other professionals. <strong>This is currently a demonstration prototype and not a functional tool.</strong> It is not intended as a replacement for professional mental health services. If you need support, please consult a qualified mental health professional.
+                  Dyadic Cells (partner practice) are a <em>Structured Integration</em> we hope to build for use by therapists, coaches, and other professionals. <strong>They are planned and not built: this screen and the next are a scripted preview, no one else can join, and nothing is sent.</strong> It is not intended as a replacement for professional mental health services. If you need support, please consult a qualified mental health professional.
                 </p>
               </div>
             </div>

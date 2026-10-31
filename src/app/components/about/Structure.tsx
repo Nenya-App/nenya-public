@@ -202,7 +202,7 @@ export default function Structure({ onBack }: StructureProps) {
                   >
                     GNU Affero General Public License v3.0
                   </a>
-                  . Every privacy claim made on this site — that nothing is tracked, that nothing persists between
+                  . Every privacy claim made on this site — that nothing is tracked, that nothing is stored by Nenya between
                   sessions — is something you can verify yourself by reading the code, not just something you have
                   to take our word for.
                 </p>

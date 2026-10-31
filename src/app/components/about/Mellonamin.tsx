@@ -71,7 +71,7 @@ export default function Mellonamin() {
               </h4>
               <p className="text-sm text-muted-foreground">
                 You're not asked to be anyone here beyond the colors and choices you make in the moment. There's no
-                advertising profile being built on you — there's nothing to build one from.
+                advertising profile being built on you — there's nothing to build one from. (The optional coach demo and the contact form are the only places anything you type leaves your browser, and only if you choose to use them.)
               </p>
             </div>
 

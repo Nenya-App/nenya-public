@@ -92,6 +92,9 @@ The honest edges:
     device and screened again on the server. It is sent as framed background data, bound
     into the ticket and the signed transcript as `context`. Uploading a prior report is not
     built.
+  - **Continue on Venice**: when a demo ends without a safety notice, the page links to the
+    same character on Venice AI's own site (links in [`veniceLinks.ts`](./src/lib/veniceLinks.ts),
+    with the referral code disclosed), warning that Nenya's protections do not run there.
   - **Instruction screening** ([`promptGuard.ts`](./src/lib/promptGuard.ts)): messages
     that try to steer the coach ("ignore your rules", "show your prompt", fake
     system/role markers) are not sent, on the device or on the server; invisible
@@ -102,10 +105,11 @@ The honest edges:
     a finished conversation can be downloaded with a dated Ed25519 signature, and checked
     with `node scripts/verify-transcript.mjs`.
 
-The in-app "partner practice", "session", Eagle Protocol, and PII-scrubbing
-screens are scripted demonstrations of planned features, not working
-protections. A fuller coach is planned as a separate product so the free tool
-never depends on it.
+The in-app "partner practice" (dyadic cells), Eagle Protocol, and PII-scrubbing
+screens are scripted previews of planned features, not working protections; the
+coach demo carries only the basic versions described above. A fuller coach, with
+on-device processing and data minimization, is planned as a separate product so
+the free tool never depends on it.
 
 ## Running it locally
 

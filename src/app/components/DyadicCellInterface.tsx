@@ -162,8 +162,8 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
     switch (demoStep) {
       case 'intro':
         return {
-          title: "AI Translation Tutorial",
-          description: "In dyadic cells, you can choose whether to use AI assistance for both sending and receiving messages. This walkthrough demonstrates how AI translation works with NVC+ principles.",
+          title: "Preview: AI translation (planned)",
+          description: "Partner practice is a planned feature and is not built. This scripted walkthrough shows the idea: in a dyadic cell, each person would choose whether to use AI assistance for sending and receiving messages, guided by NVC+ principles. No real AI is involved here.",
           icon: <Sparkles className="size-6 text-primary" />,
           extraContent: null
         };
@@ -239,6 +239,9 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
   return (
     <>
       <div className="size-full flex flex-col bg-background scroll-container">
+        <div role="note" className="border-b border-amber-300 bg-amber-100 px-4 py-2 text-center text-xs text-amber-950 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-100">
+          <strong>Planned feature, not built.</strong> This is a scripted preview of partner practice. No one else can join, and nothing here is sent anywhere.
+        </div>
         {/* Header */}
         <div 
           className="border-b bg-background px-4 md:px-6 py-3 md:py-4"
@@ -518,7 +521,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
             <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
               <h4 className="text-xs mb-2 text-amber-900 dark:text-amber-100">Professional Use Only</h4>
               <p className="text-xs text-amber-900 dark:text-amber-100 leading-relaxed">
-                This is a demonstration prototype being developed for therapists and professionals. <strong>Not a replacement for professional help.</strong> If you need support, consult a qualified mental health professional.
+                Partner practice is planned for use by therapists and other professionals, and it is not built. What you see is a scripted mock-up. <strong>It is not a replacement for professional help.</strong> If you need support, consult a qualified mental health professional.
               </p>
             </div>
           </div>

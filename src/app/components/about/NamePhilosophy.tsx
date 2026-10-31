@@ -188,7 +188,7 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
               <div className="space-y-4">
                 <h3 className="text-xl md:text-2xl font-medium mb-4 text-foreground">Why Nenya Is Built This Way</h3>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
-                  Nothing persists between sessions. No profile accumulates. Nothing done here can be retained, packaged, or transmitted — because nothing is kept. This is not a policy that could be changed by a future team. It is the structural fact of the design.
+                  Nothing persists between sessions. No profile accumulates, and nothing you do in the reflection tools is kept or transmitted by us. The one exception is the optional coach demo, where what you type passes through our server to an outside AI service (Venice AI) and is not stored by Nenya. The aim is a design where even that cannot be retained, packaged, or sold, so that privacy is a structural fact rather than a policy a future team could change. The core tool works that way today; the coach demo does not yet.
                 </p>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
                   The Harp of Móru, which gives this project its foundational metaphor, was made with the ground's consent. The first question asked was not "what can I make from this?" but "may I?" The distinction is not between use and non-use. It is between <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">extraction</strong> and <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">invitation</strong>.

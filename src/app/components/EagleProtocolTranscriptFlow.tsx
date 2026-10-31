@@ -315,7 +315,7 @@ export default function EagleProtocolTranscriptFlow({
                 <span className="leading-tight">Demo Complete — This Is a Preview</span>
               </DialogTitle>
               <DialogDescription className="text-xs sm:text-sm">
-                This walked through what generating a cryptographically-signed transcript would look like. No real file, signature, or proof was created.
+                This walked through what generating a cryptographically-signed transcript would look like. No real file, signature, or proof was created here. (A simpler, real version, with a dated Ed25519 signature, exists in the optional coach demo.)
               </DialogDescription>
             </DialogHeader>
 

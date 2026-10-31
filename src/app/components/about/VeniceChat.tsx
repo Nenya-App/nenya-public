@@ -1,3 +1,4 @@
+import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../../../lib/veniceLinks';
 import { useTheme } from '../ThemeProvider';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -43,17 +44,17 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                   Important Limitations
                 </h2>
                 <p className="text-sm text-amber-800 dark:text-amber-200">
-                  This Venice AI chat is <strong>not fully integrated</strong> with Nenya's privacy and safety systems. Key differences from the planned full application:
+                  This page is about chatting with Nenya's character <strong>directly on Venice AI's own site</strong>, which is not integrated with Nenya's privacy and safety tools. (The coach demo built into Nenya at nenya.biz/coach does include basic versions of them.) Key differences from the full application we hope to build:
                 </p>
                 <ul className="text-sm text-amber-800 dark:text-amber-200 space-y-2 list-disc list-inside ml-2">
                   <li>
-                    <strong>No PII Scrubbing:</strong> The automatic removal of personally identifiable information is not active in this demo
+                    <strong>No PII Scrubbing:</strong> Nenya's scrubbing of personally identifiable information does not run on Venice's site
                   </li>
                   <li>
-                    <strong>No Eagle Protocol Integration:</strong> Mandatory safety checks and conversation resets are not implemented
+                    <strong>No Eagle Protocol Integration:</strong> Nenya's crisis check and conversation limits do not apply on Venice's site
                   </li>
                   <li>
-                    <strong>External Service:</strong> This uses Venice AI's encrypted chat service, not Nenya's local-first architecture
+                    <strong>External Service:</strong> This uses Venice AI's chat service, not Nenya. Local, on-device processing is a goal for Nenya, not something that exists yet
                   </li>
                   <li>
                     <strong>Data Handling:</strong> Different privacy policies apply - see Venice AI's terms of service
@@ -72,7 +73,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                   NVC+ Trained Conversation Partner
                 </h3>
                 <p className="text-sm text-purple-800 dark:text-purple-200">
-                  The AI has been trained with a custom system prompt incorporating Nonviolent Communication principles, Socratic questioning techniques, and the Pantheon of Needs framework.
+                  The character is set up with a custom prompt incorporating Nonviolent Communication principles, Socratic questioning techniques, and the Pantheon of Needs framework.
                 </p>
               </Card>
 
@@ -90,7 +91,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                   Encrypted & Private
                 </h3>
                 <p className="text-sm text-purple-800 dark:text-purple-200">
-                  Venice AI provides end-to-end encryption for conversations. However, this is still an external service and not part of Nenya's local-first, ephemeral data architecture.
+                  Venice AI describes its own privacy practices in its terms and privacy policy, which apply here and which Nenya does not control. This is an outside service, separate from Nenya.
                 </p>
               </Card>
             </div>
@@ -110,7 +111,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                       <strong>PII Scrubbing Not Active</strong>
                     </div>
                     <p>
-                      In the full Nenya application, every message is automatically scanned to remove names, addresses, phone numbers, and other personally identifiable information before processing. This protection is not available in the Venice demo.
+                      In the on-site coach demo, a basic scrubber replaces common identifiers (such as emails, phone numbers, and street addresses) before a message is sent, and it misses most names. A fuller version is planned. Neither runs when you chat on Venice's site.
                     </p>
                   </div>
                   <div>
@@ -119,7 +120,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                       <strong>Eagle Protocol Not Integrated</strong>
                     </div>
                     <p>
-                      The planned mandatory safety checks (air, water, food, shelter, rest) and automatic conversation resets are not present. If you're in distress, please use the emergency resources in the Safety section.
+                      The full Eagle Protocol, with mandatory safety checks (air, water, food, shelter, rest), human review, and careful resets, is planned and not built. The on-site coach demo has only a basic phrase-matching crisis check, and nothing like it runs on Venice's site. If you're in distress, please use the emergency resources in the Safety section.
                     </p>
                   </div>
                 </div>
@@ -135,7 +136,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                 <p className="text-sm text-purple-900 dark:text-purple-100">
                   In order to access the Nenya AI, you will need to create an account on{' '}
                   <a
-                    href="https://venice.ai/chat?ref=IHj-aO"
+                    href={VENICE_SIGNUP_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline hover:text-purple-700 dark:hover:text-purple-300 transition-colors inline-flex items-center gap-1"
@@ -143,8 +144,9 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                     Venice.ai
                     <ExternalLink className="size-3" />
                   </a>
-                  . You can browse and interact with public AI character personas without needing a paid subscription.
+                  . You can browse and interact with public AI character personas without needing a paid subscription, though free accounts are limited in how many messages they can send, and paid plans raise that limit. Check Venice for its current terms.
                 </p>
+                <p className="text-xs text-purple-800 dark:text-purple-200 italic">{REFERRAL_NOTE}</p>
               </div>
             </Card>
           </div>
@@ -158,7 +160,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                   By clicking below, you'll be taken to an external Venice AI chat window with a curated NVC+ system prompt. Remember to upload your sensory report if you have one.
                 </p>
                 <Button
-                  onClick={() => window.open('https://venice.ai/c/nenya-20?ref=IHj-aO', '_blank')}
+                  onClick={() => window.open(VENICE_CHARACTER_URL, '_blank', 'noopener,noreferrer')}
                   size="lg"
                   className="gap-2 bg-purple-700 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 text-white"
                 >
@@ -176,7 +178,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
           {/* Footer Note */}
           <div className="text-sm text-muted-foreground border-t border-border pt-6">
             <p>
-              <strong>Note:</strong> This demo represents an exploration of AI-assisted empathy practice. The full Nenya application will integrate AI capabilities with privacy-first architecture, automatic PII protection, and comprehensive safety protocols. All data will be processed locally and ephemerally.
+              <strong>Note:</strong> This represents an exploration of AI-assisted empathy practice. What we hope to build is an AI companion with a privacy-first architecture: on-device processing where possible, minimal data, strong PII protection, and comprehensive safety protocols. Today, the coach runs in the cloud through Venice AI and has only basic versions of those protections.
             </p>
           </div>
         </div>

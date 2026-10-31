@@ -87,19 +87,19 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
     {
       id: 'pii-scrubbing',
       title: 'PII Scrubbing Tutorial',
-      description: 'Interactive demo of automatic privacy protection',
+      description: 'A scripted walkthrough of our privacy design (a basic version runs in the coach demo)',
       icon: Shield,
     },
     {
       id: 'eagle-protocol',
       title: 'Eagle Protocol Demo',
-      description: 'Interactive demo of our crisis safety system',
+      description: 'A scripted preview of our crisis safety design (a basic check runs in the coach demo)',
       icon: Waves,
     },
     {
       id: 'venice-chat',
-      title: 'AI Chat Demo (Venice)',
-      description: 'External AI conversation partner (not fully integrated)',
+      title: 'Chat with Nenya\'s AI on Venice',
+      description: 'Using Nenya\'s AI character on Venice AI\'s own site (outside Nenya)',
       icon: MessageCircle,
     },
     {

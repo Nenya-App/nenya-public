@@ -109,7 +109,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
             Some feel emotions as <strong>sounds</strong> (musicians, auditory thinkers). Others experience them as <strong>textures</strong> or <strong>temperatures</strong> (highly sensitive, trauma survivors). Some sense them as <strong>atmospheric qualities</strong> or <strong>directional forces</strong>. And some process emotions primarily through <strong>pattern recognition</strong> and conceptual frameworks.
           </p>
           <p>
-            The Six Gateways framework recognizes this sensory diversity. Each gateway offers a different entry point to the same NVC+ reflection engine—meeting you where your neurology already lives, rather than forcing you to translate into a language that doesn't fit.
+            The Six Gateways framework recognizes this sensory diversity. Each gateway offers a different entry point to the same reflection practice, grounded in NVC+—meeting you where your neurology already lives, rather than forcing you to translate into a language that doesn't fit.
           </p>
           <p className="text-sm italic">
             <strong>Mirror, not Oracle:</strong> We don't tell you what your emotions mean. We offer sensory pathways to help you discover what's already there.
@@ -164,10 +164,10 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
         <h2 className="text-2xl mb-4">Development Status</h2>
         <div className="space-y-4 text-sm text-muted-foreground">
           <p>
-            <strong className="text-foreground">Prototype Interface:</strong> The <strong className="text-blue-400">Sight Gateway</strong> demonstrates the most complete interface flow, including color selection and pre-scripted dialogue examples. The NVC+ AI assistant is under separate development and not yet integrated.
+            <strong className="text-foreground">What exists today:</strong> All six gateways work as self-directed reflection. Each one collects your entries, which stay in your browser and can be turned into a downloadable report. When you finish, you can optionally continue to an early coach demo: a short, five-exchange conversation with an AI that runs on an outside service (Venice AI). It is a prototype, not therapy, and it is the only part of Nenya that sends what you type to an AI.
           </p>
           <p>
-            <strong className="text-foreground">In Development:</strong> The other five gateways are currently demonstrative—showing the interface vision and sensory mapping. All gateways will eventually connect to the NVC+ AI reflection engine once it's completed and integrated. We're building these iteratively based on user needs and feedback.
+            <strong className="text-foreground">What we hope to build:</strong> A fuller NVC+ reflection companion that works with what you enter in each gateway, running on your own device rather than in the cloud, with stronger safety and privacy protections than the demo has. None of that exists yet. We're building iteratively based on user needs and feedback.
           </p>
           <p className="text-xs italic">
             <strong className="text-nenya-gold-dark dark:text-nenya-silver">Accessibility Note:</strong> These gateways aren't just about preference—they're about <strong>access</strong>. For blind users, the Sight Gateway is useless. For Deaf users, Sound may be secondary. We're building true multi-modal access to emotional intelligence.

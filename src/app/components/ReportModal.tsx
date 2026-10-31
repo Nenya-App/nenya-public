@@ -66,7 +66,7 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
               <div className="space-y-1 sm:space-y-2">
                 <h4 className="text-xs sm:text-sm">What is this for?</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  This reporting system is primarily for generating user-submitted reports about the behavior of Nenya's AI responses. The same system is used in both solo practice sessions and Dyadic Cells.
+                  This form is for sending Nenya's team a report about the behavior of its AI, an error, or other feedback. The same form is planned for use in partner practice (Dyadic Cells), which is not built yet.
                 </p>
               </div>
             </div>

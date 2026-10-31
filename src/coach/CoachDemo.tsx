@@ -7,6 +7,7 @@ import { getGradientMidpoint, getReadableTextColor } from '../app/components/Col
 import { detectFlag, type SafetyFlag } from '../lib/safetyFlags';
 import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
+import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/veniceLinks';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
 import { FlagNotice } from './FlagNotice';
 import { TranscriptTools } from './TranscriptTools';
@@ -522,10 +523,54 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBr
                     )}
                     {onPartnerPractice && (
                       <button type="button" onClick={onPartnerPractice} className={linkClass}>
-                        Practice a hard conversation with another person (demo)
+                        See a preview of planned partner practice (not built)
                       </button>
                     )}
                   </div>
+                </section>
+              )}
+
+              {stage === 'done' && !flag && (
+                <section
+                  className="space-y-4 rounded-2xl border bg-card p-5"
+                  style={{ borderColor: `${color1}66` }}
+                  aria-label="Continue on Venice"
+                >
+                  <h2 className="text-lg">Want to keep talking?</h2>
+                  <p className="text-sm text-muted-foreground">
+                    The demo stops at {MAX_TURNS} exchanges. The same character is also available on Venice AI&rsquo;s own
+                    site, where you can continue for as long as your Venice account allows. Free Venice accounts can send a
+                    limited number of messages, and paid plans raise that limit.
+                  </p>
+                  <div className="rounded-lg border border-amber-500/60 p-3 text-sm">
+                    <p className="mb-1 font-medium">Before you go: it is not the same as this demo.</p>
+                    <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+                      <li>You leave Nenya. Venice AI&rsquo;s terms and privacy policy apply, not ours.</li>
+                      <li>
+                        Nenya&rsquo;s protections do not run there: no identifier scrubbing, no crisis check, no
+                        screening for attempts to steer the coach, and no five-exchange limit. Please leave out names and
+                        other identifying details yourself.
+                      </li>
+                      <li>Nothing from this conversation is carried over, and Nenya cannot sign what happens there.</li>
+                      <li>It is still not therapy. In the US, call or text 988 in a crisis.</li>
+                    </ul>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <a
+                      href={VENICE_CHARACTER_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm"
+                      style={gradientButton}
+                    >
+                      Continue on Venice AI
+                      <ArrowRight className="size-4" />
+                    </a>
+                    <a href={VENICE_SIGNUP_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>
+                      Need a Venice account? Sign up
+                    </a>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{REFERRAL_NOTE}</p>
                 </section>
               )}
 

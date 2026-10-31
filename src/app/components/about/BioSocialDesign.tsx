@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Leaf, Heart, TrendingDown, Users, Cpu, Cloud, Eye, Circle, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Leaf, Heart, TrendingDown, Users, Cpu, Cloud, Eye, Circle, ExternalLink, Gauge } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import NenyaLogo from '../NenyaLogo';
@@ -15,6 +15,41 @@ interface BioSocialDesignProps {
 }
 
 type SubSection = 'main' | 'hcd' | 'theory-u';
+
+type FootprintId = 'typical' | 'today' | 'goal';
+
+const FOOTPRINT_COLUMNS: { id: FootprintId; title: string; sub: string; tone: string; Icon: typeof Cloud }[] = [
+  { id: 'typical', title: 'Engagement-optimized cloud AI', sub: '(typical products)', tone: 'text-red-600 dark:text-red-400', Icon: Cloud },
+  { id: 'today', title: 'Nenya today', sub: '(cloud prototype, capped)', tone: 'text-amber-600 dark:text-amber-400', Icon: Gauge },
+  { id: 'goal', title: 'What we hope to build', sub: '(edge computing, minimal data)', tone: 'text-green-600 dark:text-green-400', Icon: Cpu },
+];
+
+const FOOTPRINT_ROWS: ({ feature: string } & Record<FootprintId, string>)[] = [
+  {
+    feature: 'Conversation length',
+    typical: 'Open-ended, built to maximize time spent and return visits.',
+    today: 'Capped at five short exchanges, then an invitation to breathe. Nothing is built to keep you talking.',
+    goal: 'Short and purposeful by design, with no engagement metrics.',
+  },
+  {
+    feature: 'Energy (per session)',
+    typical: 'High-end GPU (~400W peak) and high network energy for 5+ daily round trips.',
+    today: 'The core reflection tools use no AI and run in your browser. The optional coach runs on data-center GPUs through Venice AI, but each conversation is small: five short exchanges. We have not measured its footprint.',
+    goal: 'Mobile NPU (~35W peak) and offline inference. Estimated 90%+ power reduction per task, from the cited analysis; not yet measured for Nenya.',
+  },
+  {
+    feature: 'Water stress (macro)',
+    typical: 'Data-center cooling: 5 million gallons/day per facility. Exports water scarcity to host communities.',
+    today: 'The coach still draws on data-center cooling through Venice AI, though conversations are capped and short. Not measured.',
+    goal: 'Computation moved off cooling systems and onto your own device.',
+  },
+  {
+    feature: 'Data footprint',
+    typical: 'Persistent cloud data retention for harvesting. Passive energy debt and privacy risk.',
+    today: 'Nenya stores nothing and does not log messages; nothing stays in your browser after you close the tab. Coach messages pass through to Venice AI, whose own policies apply.',
+    goal: 'Data stays on your device or is ephemeral by design, and minimal data ever leaves it.',
+  },
+];
 
 export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
   const isMobile = useIsMobile();
@@ -305,151 +340,71 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
             {/* Introductory text */}
             <Card className="p-4 md:p-8 bg-gradient-to-br from-muted/50 via-muted/30 to-muted/50 backdrop-blur-sm border-nenya-gold/30">
               <p className="text-base md:text-xl text-foreground leading-relaxed text-center italic">
-                "The question is: Does the technology built to help us reconnect simply swap one form of consumption for another? Traditional centralized AI architectures—even those designed for wellness—are structurally tied to the very consumption cycle we aim to interrupt. Our design decision was to break that link."
+                "The question is: Does the technology built to help us reconnect simply swap one form of consumption for another? Traditional centralized AI architectures—even those designed for wellness—are structurally tied to the very consumption cycle we aim to interrupt. Our design aim is to break that link: today by keeping the coach small and capped, and in the future by moving computation to the edge."
               </p>
             </Card>
 
-            {/* Resource Comparison Table */}
+            {/* Resource Comparison */}
             <Card className="p-4 md:p-6 bg-muted/50 backdrop-blur-sm border-border overflow-hidden">
-              <h3 className="text-base md:text-lg text-nenya-gold-dark dark:text-nenya-gold mb-4 md:mb-6 text-center">
+              <h3 className="text-base md:text-lg text-nenya-gold-dark dark:text-nenya-gold mb-2 text-center">
                 Resource Consumption Comparison
               </h3>
-              
+              <p className="text-xs md:text-sm text-muted-foreground text-center mb-4 md:mb-6">
+                What typical AI products do, what Nenya does today, and what we hope to build. The right-hand column is a goal, not a feature.
+              </p>
+
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b-2 border-border">
                       <th className="text-left p-3 md:p-4 text-sm md:text-base text-foreground">Feature</th>
-                      <th className="text-left p-3 md:p-4 text-sm md:text-base text-red-600 dark:text-red-400">
-                        <div className="flex items-center gap-2">
-                          <Cloud className="size-4 md:size-5" />
-                          <span>Centralized Cloud<br /><span className="text-xs text-muted-foreground">(High Consumption)</span></span>
-                        </div>
-                      </th>
-                      <th className="text-left p-3 md:p-4 text-sm md:text-base text-green-600 dark:text-green-400">
-                        <div className="flex items-center gap-2">
-                          <Cpu className="size-4 md:size-5" />
-                          <span>Decentralized Edge AI<br /><span className="text-xs text-muted-foreground">(Low Consumption)</span></span>
-                        </div>
-                      </th>
+                      {FOOTPRINT_COLUMNS.map((c) => (
+                        <th key={c.id} className={`text-left p-3 md:p-4 text-sm md:text-base ${c.tone}`}>
+                          <div className="flex items-center gap-2">
+                            <c.Icon className="size-4 md:size-5" />
+                            <span>{c.title}<br /><span className="text-xs text-muted-foreground">{c.sub}</span></span>
+                          </div>
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-border">
-                      <td className="p-3 md:p-4 align-top">
-                        <strong className="text-sm md:text-base">Energy Consumption<br /><span className="text-xs text-muted-foreground">(Per Session)</span></strong>
-                      </td>
-                      <td className="p-3 md:p-4 bg-red-500/5 align-top">
-                        <p className="text-xs md:text-sm text-foreground">High-end GPU (~400W peak) and high network energy for 5+ daily round trips.</p>
-                      </td>
-                      <td className="p-3 md:p-4 bg-green-500/5 align-top">
-                        <p className="text-xs md:text-sm text-foreground">Mobile NPU (~35W peak) and Offline Inference.</p>
-                        <p className="text-xs md:text-sm text-green-600 dark:text-green-400 mt-2">
-                          <strong className="inline-block px-2 py-1 bg-green-500/20 rounded">90%+ power reduction per task</strong>
-                        </p>
-                      </td>
-                    </tr>
-                    <tr className="border-b border-border">
-                      <td className="p-3 md:p-4 align-top">
-                        <strong className="text-sm md:text-base">Water Stress<br /><span className="text-xs text-muted-foreground">(Macro)</span></strong>
-                      </td>
-                      <td className="p-3 md:p-4 bg-red-500/5 align-top">
-                        <p className="text-xs md:text-sm text-foreground">Data Center Cooling: 5 million gallons/day per facility. Exports water scarcity to host communities.</p>
-                      </td>
-                      <td className="p-3 md:p-4 bg-green-500/5 align-top">
-                        <p className="text-xs md:text-sm text-foreground">Computation moved off cooling systems. Mitigated Localized Resource Stress.</p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="p-3 md:p-4 align-top">
-                        <strong className="text-sm md:text-base">Data Footprint</strong>
-                      </td>
-                      <td className="p-3 md:p-4 bg-red-500/5 align-top">
-                        <p className="text-xs md:text-sm text-foreground">Persistent Cloud Data Retention for harvesting. Passive Energy Debt and privacy risk.</p>
-                      </td>
-                      <td className="p-3 md:p-4 bg-green-500/5 align-top">
-                        <p className="text-xs md:text-sm text-foreground">Data is Ephemeral (single session) or Local. Eliminates passive storage energy debt.</p>
-                      </td>
-                    </tr>
+                    {FOOTPRINT_ROWS.map((r) => (
+                      <tr key={r.feature} className="border-b border-border align-top">
+                        <td className="p-3 md:p-4"><strong className="text-sm md:text-base">{r.feature}</strong></td>
+                        {FOOTPRINT_COLUMNS.map((c) => (
+                          <td key={c.id} className="p-3 md:p-4 text-xs md:text-sm text-foreground">{r[c.id]}</td>
+                        ))}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
 
               {/* Mobile Card Layout */}
               <div className="md:hidden space-y-4">
-                {/* Energy Consumption */}
-                <div className="space-y-3">
-                  <h4 className="text-sm text-nenya-gold-dark dark:text-nenya-gold">Energy Consumption (Per Session)</h4>
-                  <div className="space-y-2">
-                    <div className="p-3 bg-red-500/5 rounded-lg border-l-4 border-red-500">
-                      <p className="text-xs text-red-600 dark:text-red-400 mb-1 flex items-center gap-1">
-                        <Cloud className="size-3" />
-                        <strong>Centralized Cloud</strong>
-                      </p>
-                      <p className="text-xs text-foreground">High-end GPU (~400W peak) and high network energy for 5+ daily round trips.</p>
-                    </div>
-                    <div className="p-3 bg-green-500/5 rounded-lg border-l-4 border-green-500">
-                      <p className="text-xs text-green-600 dark:text-green-400 mb-1 flex items-center gap-1">
-                        <Cpu className="size-3" />
-                        <strong>Decentralized Edge AI</strong>
-                      </p>
-                      <p className="text-xs text-foreground">Mobile NPU (~35W peak) and Offline Inference.</p>
-                      <p className="text-xs text-green-600 dark:text-green-400 mt-2">
-                        <strong className="inline-block px-2 py-1 bg-green-500/20 rounded">90%+ power reduction per task</strong>
-                      </p>
-                    </div>
+                {FOOTPRINT_ROWS.map((r) => (
+                  <div key={r.feature} className="space-y-2 border-b border-border pb-4 last:border-0">
+                    <h4 className="text-sm text-nenya-gold-dark dark:text-nenya-gold">{r.feature}</h4>
+                    {FOOTPRINT_COLUMNS.map((c) => (
+                      <div key={c.id}>
+                        <p className={`text-xs mb-1 flex items-center gap-1 ${c.tone}`}>
+                          <c.Icon className="size-3" />
+                          <strong>{c.title}</strong>
+                        </p>
+                        <p className="text-xs text-foreground">{r[c.id]}</p>
+                      </div>
+                    ))}
                   </div>
-                </div>
-
-                {/* Water Stress */}
-                <div className="space-y-3">
-                  <h4 className="text-sm text-nenya-gold-dark dark:text-nenya-gold">Water Stress (Macro)</h4>
-                  <div className="space-y-2">
-                    <div className="p-3 bg-red-500/5 rounded-lg border-l-4 border-red-500">
-                      <p className="text-xs text-red-600 dark:text-red-400 mb-1 flex items-center gap-1">
-                        <Cloud className="size-3" />
-                        <strong>Centralized Cloud</strong>
-                      </p>
-                      <p className="text-xs text-foreground">Data Center Cooling: 5 million gallons/day per facility. Exports water scarcity to host communities.</p>
-                    </div>
-                    <div className="p-3 bg-green-500/5 rounded-lg border-l-4 border-green-500">
-                      <p className="text-xs text-green-600 dark:text-green-400 mb-1 flex items-center gap-1">
-                        <Cpu className="size-3" />
-                        <strong>Decentralized Edge AI</strong>
-                      </p>
-                      <p className="text-xs text-foreground">Computation moved off cooling systems. Mitigated Localized Resource Stress.</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Data Footprint */}
-                <div className="space-y-3">
-                  <h4 className="text-sm text-nenya-gold-dark dark:text-nenya-gold">Data Footprint</h4>
-                  <div className="space-y-2">
-                    <div className="p-3 bg-red-500/5 rounded-lg border-l-4 border-red-500">
-                      <p className="text-xs text-red-600 dark:text-red-400 mb-1 flex items-center gap-1">
-                        <Cloud className="size-3" />
-                        <strong>Centralized Cloud</strong>
-                      </p>
-                      <p className="text-xs text-foreground">Persistent Cloud Data Retention for harvesting. Passive Energy Debt and privacy risk.</p>
-                    </div>
-                    <div className="p-3 bg-green-500/5 rounded-lg border-l-4 border-green-500">
-                      <p className="text-xs text-green-600 dark:text-green-400 mb-1 flex items-center gap-1">
-                        <Cpu className="size-3" />
-                        <strong>Decentralized Edge AI</strong>
-                      </p>
-                      <p className="text-xs text-foreground">Data is Ephemeral (single session) or Local. Eliminates passive storage energy debt.</p>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </Card>
 
             {/* Concluding Statement */}
             <Card className="p-4 md:p-8 bg-gradient-to-br from-nenya-accent-primary/10 via-nenya-accent-primary/5 to-nenya-accent-primary/10 backdrop-blur-sm border-nenya-accent-primary/30">
               <p className="text-sm md:text-lg text-foreground leading-relaxed text-center">
-                <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">Our commitment to Data Minimization for Privacy is not just a security feature—it is the most effective first-order Energy Efficiency Mechanism.</strong> By building on the Edge, we ensure our technology helps you heal without harming the planet.
+                <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">Our commitment to Data Minimization for Privacy is not just a security feature—it is the most effective first-order Energy Efficiency Mechanism.</strong> Today, that means a coach that is short, capped, and stores nothing. Our goal is to build on the Edge, so our technology helps you heal without harming the planet.
               </p>
               <p className="text-xs text-muted-foreground text-center mt-4 md:mt-6 italic">
                 Data sourced from <a 
@@ -503,7 +458,7 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
                   <div>
                     <h3 className="text-base md:text-lg text-nenya-gold-dark dark:text-nenya-gold mb-2">Sense-Making Through Socratic Questioning</h3>
                     <p className="text-xs md:text-sm text-muted-foreground">
-                      The AI doesn't tell you what to feel or what your needs are. Instead, it asks gentle, non-leading questions—a practice rooted in <em>Socratic methodology</em>. This mirrors the way trusted human facilitators create space for self-discovery. The goal is to help you <strong>make sense of your own experience</strong>, not to impose interpretations. This is why we call Nenya a "Mirror, not Oracle."
+                      The AI is designed so that it doesn't tell you what to feel or what your needs are. Instead, it aims to ask gentle, non-leading questions—a practice rooted in <em>Socratic methodology</em>. This mirrors the way trusted human facilitators create space for self-discovery. The goal is to help you <strong>make sense of your own experience</strong>, not to impose interpretations. This is why we call Nenya a "Mirror, not Oracle."
                     </p>
                   </div>
 

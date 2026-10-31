@@ -115,8 +115,8 @@ export default function EagleProtocolDemoSelector() {
               <h1 className="text-3xl">Eagle Protocol Demo</h1>
             </div>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Select a crisis scenario to see how Nenya's Eagle Protocol responds. 
-              The system uses <strong>Nienna's Compassion Palette</strong> (slate blue, rosy brown, and sky blue) 
+              This is a scripted preview of the Eagle Protocol we hope to build; none of it is live. Select a crisis scenario to see how it would respond. 
+              The design uses <strong>Nienna's Compassion Palette</strong> (slate blue, rosy brown, and sky blue) 
               to provide gentle, compassionate care while redirecting users to human crisis support.
             </p>
           </div>
@@ -127,12 +127,12 @@ export default function EagleProtocolDemoSelector() {
               <AlertCircle className="size-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="space-y-2 text-sm">
                 <p className="text-foreground">
-                  <strong>Our Sacred Duty:</strong> Nenya recognizes when a situation requires human intervention. 
-                  The Eagle Protocol immediately pauses the session, provides crisis resources, and terminates 
-                  without saving any data—unless you choose to generate a secure transcript.
+                  <strong>Our Sacred Duty:</strong> Nenya aims to recognize when a situation requires human intervention. 
+                  In the design, the Eagle Protocol immediately pauses the session, provides crisis resources, and terminates 
+                  without saving any data—unless you choose to generate a secure transcript. <strong>What exists today</strong> is much simpler: the optional coach demo (nenya.biz/coach) matches phrases that suggest crisis, stops the conversation, shows crisis resources, and offers signed transcripts. It can miss things, and the human review shown here is not built.
                 </p>
                 <p className="text-muted-foreground">
-                  This demonstrates the system's commitment to sovereignty—knowing when <em>not</em> to engage 
+                  This shows the intended commitment to sovereignty—knowing when <em>not</em> to engage 
                   and deferring to the human "oracles" of crisis support.
                 </p>
               </div>

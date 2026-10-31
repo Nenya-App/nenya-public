@@ -102,9 +102,9 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
             <div className="flex justify-center mb-6">
               <Shield className="size-16 text-primary" />
             </div>
-            <h2 className="text-center">Privacy-First Processing (Planned)</h2>
+            <h2 className="text-center">Privacy-First Processing (Walkthrough)</h2>
             <p className="text-muted-foreground text-center max-w-2xl mx-auto">
-              This is a preview of the privacy pipeline we're building for Nenya's AI conversations: before any message reaches the AI, it would automatically detect and remove personally identifiable information (PII). <strong className="text-foreground">This isn't connected to a live AI yet</strong> — it's a walkthrough of the design, not something active today.
+              This is a walkthrough of the privacy pipeline we're building for Nenya's AI conversations: before any message reaches the AI, it detects and removes personally identifiable information (PII). <strong className="text-foreground">The walkthrough itself is scripted and sends nothing.</strong> A simpler version of the same idea already runs in the optional coach demo (nenya.biz/coach), where it catches common identifiers but misses most names. The fuller pipeline shown here is still aspirational.
             </p>
             <p className="text-muted-foreground text-center max-w-2xl mx-auto">
               Let's walk through how it's designed to work, using an example.
@@ -177,7 +177,7 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
                       <strong>What's happening:</strong> Nenya's privacy system has identified 5 pieces of personally identifiable information highlighted in yellow.
                     </p>
                     <p className="text-sm text-blue-900 dark:text-blue-100">
-                      In the finished pipeline, these items would be replaced with generic placeholders before your message reaches the AI.
+                      In the coach demo, a basic version of this replaces common identifiers with generic placeholders before your message reaches the AI. The fuller version shown here is the design we're building toward.
                     </p>
                   </div>
                 </div>
@@ -229,7 +229,7 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
                   <AlertCircle className="size-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <div className="space-y-2">
                     <p className="text-sm text-blue-900 dark:text-blue-100">
-                      <strong>What's happening:</strong> This preview replaces each piece of PII with a generic placeholder to show the intended flow. In the finished design, your actual personal information would be discarded and never stored.
+                      <strong>What's happening:</strong> This preview replaces each piece of PII with a generic placeholder to show the intended flow. In the coach demo your page does this on your device before sending, for common identifiers only. Catching names and context is the part still being designed.
                     </p>
                     <p className="text-sm text-blue-900 dark:text-blue-100">
                       The emotional content—"I've been feeling really overwhelmed at work"—remains intact because that's what matters for the conversation.
@@ -259,10 +259,10 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
                 <Shield className="size-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                 <div className="space-y-2">
                   <p className="text-sm text-green-900 dark:text-green-100">
-                    <strong>Your privacy will be protected:</strong> In the planned application, the AI assistant would receive only the scrubbed version. Your personal information would never enter the conversation.
+                    <strong>The goal:</strong> the AI receives only the scrubbed version. In the coach demo that already happens for common identifiers. The full design, which also catches names and other context, is not built yet.
                   </p>
                   <p className="text-sm text-green-900 dark:text-green-100">
-                    The AI would still be able to understand and respond to your emotional needs: "feeling really overwhelmed at work."
+                    The AI can still understand and respond to your emotional needs: "feeling really overwhelmed at work."
                   </p>
                 </div>
               </div>
@@ -296,34 +296,34 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
             </div>
             <h2>The Privacy Design We're Building</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              This walkthrough is scripted. The free tool sends nothing to an AI, so there is nothing to scrub. A basic scrubber runs in the optional coach demo (nenya.biz/coach), and it catches common identifiers but not most names. Please don't include real names, addresses, or other identifying details in anything you write, here or in any system, even one that claims to be secure.
+              This walkthrough is scripted and sends nothing. The core tool never sends anything to an AI, so there is nothing to scrub. A basic scrubber runs in the optional coach demo (nenya.biz/coach), and it catches common identifiers but not most names. Please don't include real names, addresses, or other identifying details in anything you write, here or in any system, even one that claims to be secure.
             </p>
             <div className="bg-muted/50 rounded-lg p-6 max-w-2xl mx-auto">
-              <h4 className="mb-3">Planned Privacy Features (not yet active):</h4>
+              <h4 className="mb-3">What exists today, and what is still planned:</h4>
               <ul className="text-sm text-muted-foreground space-y-2 text-left">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span>Automatic PII detection and removal</span>
+                  <span><strong>Now, basic:</strong> detection and removal of common identifiers in the coach demo (most names are not caught). <strong>Planned:</strong> fuller detection.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span>Personal information is never stored or logged</span>
+                  <span><strong>Now:</strong> Nenya does not store or log coach messages. They pass through to Venice AI, whose own policies apply.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span>Emotional content remains fully intact</span>
+                  <span><strong>Now:</strong> emotional content is left intact; only identifiers are replaced.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span>Anonymous hex code identity (no usernames)</span>
+                  <span><strong>Now:</strong> a two-color session key instead of a username, as a temporary label. <strong>Planned:</strong> optional sign-in.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span>Eagle Protocol available for immediate safety needs</span>
+                  <span><strong>Now, basic:</strong> a phrase-matching crisis check in the coach demo. <strong>Planned:</strong> the full Eagle Protocol with human review.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span>Report system available to submit feedback on AI behavior</span>
+                  <span><strong>Now, basic:</strong> you can report a problem with a safety notice in the coach demo. <strong>Planned:</strong> a fuller report system.</span>
                 </li>
               </ul>
             </div>
