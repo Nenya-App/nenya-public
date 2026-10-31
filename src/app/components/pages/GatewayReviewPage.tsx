@@ -565,10 +565,14 @@ export default function GatewayReviewPage({
               onClick={onContinue}
               className="gap-2 px-12"
             >
-              Continue to Session
+              Talk it through with the coach
               <ArrowRight className="size-4" />
             </Button>
           </div>
+          <p className="mx-auto max-w-md pt-3 text-center text-xs text-muted-foreground">
+            Optional. A short, five-exchange conversation with an early prototype. Nothing you chose in the gateways is
+            sent anywhere.
+          </p>
         </div>
 
         <AppFooter />

@@ -66,9 +66,13 @@ The honest edges:
   to a Nenya character hosted on [Venice AI](https://venice.ai). It runs on
   Venice's service and is not covered by Nenya's privacy and safety systems, and
   the page says so.
-- **The `/coach` demo.** An optional, separate page at `nenya.biz/coach` (not
-  linked from inside the tool's flow) offers a five-exchange conversation with
-  the same character. It goes through a small relay function, served at `/api/coach`, in
+- **The coach demo.** An optional five-exchange conversation with the same
+  character. Inside the site it is the session screen, reached after the gateways
+  and reflection tools; it is also available on its own at `nenya.biz/coach`, where
+  the visitor first picks the same two interface colors. Those colors theme the
+  page and serve as a temporary session label (not an account, not stored); they
+  are bound into the ticket and into signed transcripts. It goes through a small
+  relay function, served at `/api/coach`, in
   [`netlify/functions/coach.mts`](./netlify/functions/coach.mts), so the Venice API
   key stays server-side. The function stores nothing and does not log message
   text. Caps: five exchanges, 500 characters per message, short replies, and a
@@ -83,6 +87,12 @@ The honest edges:
     statement is never sent to the AI and ends the conversation with resources;
     ambiguous distress is sent with an instruction to respond with care. Also phrase
     matching, so it can miss things and flag harmless words.
+  - **Instruction screening** ([`promptGuard.ts`](./src/lib/promptGuard.ts)): messages
+    that try to steer the coach ("ignore your rules", "show your prompt", fake
+    system/role markers) are not sent, on the device or on the server; invisible
+    characters and chat-template markers are stripped, and the system instruction
+    tells the model to treat user text as content, never as commands. Phrase matching,
+    so it is a speed bump, not a guarantee.
   - **Signed transcripts** ([`docs/coach-transcripts.md`](./docs/coach-transcripts.md)):
     a finished conversation can be downloaded with a dated Ed25519 signature, and checked
     with `node scripts/verify-transcript.mjs`.

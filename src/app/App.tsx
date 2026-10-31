@@ -22,7 +22,7 @@ const MovementGatewayPage = lazy(() => import('./components/pages/MovementGatewa
 const InsightGatewayPage = lazy(() => import('./components/pages/InsightGatewayPage'));
 const InterfaceColorSelection = lazy(() => import('./components/pages/InterfaceColorSelection'));
 const GatewayReviewPage = lazy(() => import('./components/pages/GatewayReviewPage'));
-const SessionInterface = lazy(() => import('./components/SessionInterface'));
+const CoachDemo = lazy(() => import('../coach/CoachDemo'));
 const DyadicCellCreation = lazy(() => import('./components/DyadicCellCreation'));
 const DyadicCellInterface = lazy(() => import('./components/DyadicCellInterface'));
 const AboutNenya = lazy(() => import('./components/AboutNenya'));
@@ -582,15 +582,11 @@ export default function App() {
           )}
 
           {currentScreen === 'session' && (
-            <SessionInterface
-              interfaceColors={interfaceColors}
-              gatewayData={gatewayData}
-              selectedGateways={selectedGateways}
-              onNavigateToCell={handleNavigateToCell}
-              onBackToHome={() => navigateBack('home')}
-              onNavigateToAbout={handleNavigateToAbout}
-              onUpdateGatewayData={setGatewayData}
-              onEditGateway={handleEditGateway}
+            <CoachDemo
+              colors={interfaceColors}
+              onBack={() => navigateBack('home')}
+              onBreathe={() => handleGlobalNavigation('welcome')}
+              onPartnerPractice={handleNavigateToCell}
             />
           )}
           

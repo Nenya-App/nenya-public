@@ -37,7 +37,7 @@ let signatureOk = false;
 try {
   signatureOk = verify(
     null,
-    Buffer.from(`nenya-coach-transcript-v1\n${receipt.hash}\n${receipt.issuedAt}`),
+    Buffer.from(`nenya-coach-transcript-v2\n${receipt.hash}\n${receipt.issuedAt}`),
     createPublicKey({ key: Buffer.from(receipt.publicKey, 'base64'), format: 'der', type: 'spki' }),
     Buffer.from(receipt.signature, 'base64')
   );
@@ -53,4 +53,5 @@ if (expectedKeyId && expectedKeyId !== keyId) fail(`signed by a different key ($
 console.log('VALID');
 console.log(`  Signed on: ${receipt.issuedAt}`);
 console.log(`  Key ID:    ${keyId}${expectedKeyId ? ' (matches the one you expected)' : ' (confirm this against the published key ID)'}`);
+console.log(`  Session:   ${transcript.session?.color1}.${transcript.session?.color2} (a temporary label, not an identity)`);
 console.log(`  Messages:  ${transcript.messages.length}`);

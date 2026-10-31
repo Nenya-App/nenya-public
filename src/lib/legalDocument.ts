@@ -16,7 +16,7 @@ export interface LegalPart {
 }
 
 export const LEGAL_TITLE = 'Terms of Use & Privacy Policy';
-export const LEGAL_EFFECTIVE_DATE = 'October 31, 2026';
+export const LEGAL_EFFECTIVE_DATE = 'November 1, 2026';
 
 export const LEGAL_INTRO =
   'Welcome. Please read this before you begin. This document has two parts: Terms of Use, which cover how you may use Nenya, and a Privacy Policy, which covers what little information touches us at all. They sit together because Nenya’s privacy design is also its central promise.';
@@ -194,15 +194,17 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 21,
         heading: 'The Coach Demo',
         paragraphs: [
-          'The coach demo at nenya.biz/coach is an optional, early prototype of a conversational coach. It is the one place on the site where what you type is sent to an AI service. If you choose to use it, this is what happens:',
+          'The coach demo is an optional, early prototype of a conversational coach. You can reach it at the end of the reflection tools or directly at nenya.biz/coach. It is the one place on the site where what you type is sent to an AI service. If you choose to use it, this is what happens:',
         ],
         bullets: [
           'Your messages are sent through our server, hosted by Netlify, to Venice AI, which writes the replies. A conversation is limited to five exchanges, and each message to 500 characters.',
           'We do not store your messages or the replies, and we do not write them to our logs. They exist in your browser tab and disappear when you close it. Netlify, like any host, keeps ordinary connection logs.',
           'Venice AI handles what it receives under its own terms and privacy policy, which we do not control. We have chosen a model that Venice labels “Private.” Venice and Netlify may process data outside your country.',
+          'The demo uses the two colors you pick as a temporary session label. They are not an account, we do not store them, and they appear on any transcript you download or send so that it names the session it came from.',
           'Before your message is sent, the page replaces some common identifiers (such as email addresses, phone numbers, street addresses, and some names) with placeholders, and our server does the same again. This is not a guarantee, and most names will not be caught, so please still leave out names, contact details, and other identifying information.',
           'The demo checks each message for signs of crisis. If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends, and the page shows crisis resources. If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources. These checks are simple phrase matching: they can miss things and can flag harmless words. If you think a notice was wrong, you can report it; a report is sent only if you press Send, and it includes your message only if you choose.',
           'When a conversation finishes, you can download a transcript. If you ask for a signed copy, your page sends the conversation to our server one more time so it can confirm it matches what the server produced and add a dated signature. We do not store it, and the signed file stays with you. If you choose to send a transcript to us, you see exactly what will be sent first, and it reaches us the way other submissions do (Section 16).',
+          'The demo also screens each message for attempts to give the coach instructions or change how it works, such as asking it to ignore its rules or reveal its setup. A message that looks like that is not sent, and you can reword it. This is simple phrase matching and is not a guarantee.',
           'The demo is not therapy, cannot help in a crisis, and is not intended for people under 13 or under the minimum age in your country, matching Section 3.',
           'Legal basis (GDPR Art. 6(1)(a)): your consent, given when you choose to start the demo after reading the notice on its first screen.',
         ],

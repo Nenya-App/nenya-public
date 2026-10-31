@@ -31,16 +31,22 @@ report (a Netlify Forms submission).
 
 ```json
 {
-  "transcript": { "v": 1, "messages": [{ "role": "user", "content": "…" }, { "role": "assistant", "content": "…" }] },
+  "transcript": {
+    "v": 2,
+    "session": { "color1": "#7A9B9E", "color2": "#DAC682" },
+    "messages": [{ "role": "user", "content": "…" }, { "role": "assistant", "content": "…" }]
+  },
   "receipt": {
-    "version": 1, "algorithm": "Ed25519", "keyId": "…", "publicKey": "…(base64 DER SPKI)",
+    "version": 2, "algorithm": "Ed25519", "keyId": "…", "publicKey": "…(base64 DER SPKI)",
     "hash": "…(SHA-256 hex)", "issuedAt": "2026-10-31T18:02:11.000Z", "signature": "…(base64)"
   }
 }
 ```
 
 - **hash** is SHA-256 of `JSON.stringify(transcript)`, exactly as written above (keys in that order).
-- **signature** is Ed25519 over the UTF-8 text `nenya-coach-transcript-v1\n<hash>\n<issuedAt>`.
+- **signature** is Ed25519 over the UTF-8 text `nenya-coach-transcript-v2\n<hash>\n<issuedAt>`.
+- **session** is the visitor's two chosen colors. They are a temporary label for the conversation, bound
+  into the signature. They are not an account or proof of identity, and two visitors can pick the same pair.
 - **keyId** is the first 16 hex characters of SHA-256 of the `publicKey` string.
 
 ## Verifying
