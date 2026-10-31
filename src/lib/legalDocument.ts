@@ -16,7 +16,7 @@ export interface LegalPart {
 }
 
 export const LEGAL_TITLE = 'Terms of Use & Privacy Policy';
-export const LEGAL_EFFECTIVE_DATE = 'November 1, 2026';
+export const LEGAL_EFFECTIVE_DATE = 'November 2, 2026';
 
 export const LEGAL_INTRO =
   'Welcome. Please read this before you begin. This document has two parts: Terms of Use, which cover how you may use Nenya, and a Privacy Policy, which covers what little information touches us at all. They sit together because Nenya’s privacy design is also its central promise.';
@@ -200,6 +200,7 @@ export const LEGAL_PARTS: LegalPart[] = [
           'Your messages are sent through our server, hosted by Netlify, to Venice AI, which writes the replies. A conversation is limited to five exchanges, and each message to 500 characters.',
           'We do not store your messages or the replies, and we do not write them to our logs. They exist in your browser tab and disappear when you close it. Netlify, like any host, keeps ordinary connection logs.',
           'Venice AI handles what it receives under its own terms and privacy policy, which we do not control. We have chosen a model that Venice labels “Private.” Venice and Netlify may process data outside your country.',
+          'If you reach the demo after finishing the gateways, it offers to share a short text summary of what you entered, so you need not repeat it. This is off unless you turn it on, you can see exactly what would be shared first, and drawings and images are never included. If you share it, the page replaces common identifiers as it does for messages, and the summary goes to Venice AI with your messages under the same terms. It is screened for attempts to give the coach instructions, and left out if it looks like one. Reaching the demo directly, or choosing not to share, sends nothing from the gateways.',
           'The demo uses the two colors you pick as a temporary session label. They are not an account, we do not store them, and they appear on any transcript you download or send so that it names the session it came from.',
           'Before your message is sent, the page replaces some common identifiers (such as email addresses, phone numbers, street addresses, and some names) with placeholders, and our server does the same again. This is not a guarantee, and most names will not be caught, so please still leave out names, contact details, and other identifying information.',
           'The demo checks each message for signs of crisis. If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends, and the page shows crisis resources. If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources. These checks are simple phrase matching: they can miss things and can flag harmless words. If you think a notice was wrong, you can report it; a report is sent only if you press Send, and it includes your message only if you choose.',

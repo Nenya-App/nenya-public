@@ -18,6 +18,8 @@ const MAX_SHARE_CHARS = 19000; // the report form's limit is 20,000
 interface TranscriptToolsProps {
   messages: TranscriptMsg[];
   session: SessionColors;
+  /** The reflection summary the visitor chose to share, if any. */
+  context?: string;
   /** Ticket from the last reply. Absent when the conversation ended on a safety flag. */
   ticket?: string;
 }
@@ -28,7 +30,7 @@ type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
 // our server once more (it was already there, turn by turn) so it can confirm it
 // is untouched and date it. Nothing is stored. Sharing with Nenya shows exactly
 // what would be sent first.
-export function TranscriptTools({ messages, session, ticket }: TranscriptToolsProps) {
+export function TranscriptTools({ messages, session, context = '', ticket }: TranscriptToolsProps) {
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [signNote, setSignNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -43,7 +45,7 @@ export function TranscriptTools({ messages, session, ticket }: TranscriptToolsPr
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'receipt', messages, session, ticket }),
+        body: JSON.stringify({ action: 'receipt', messages, session, ...(context ? { context } : {}), ticket }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { receipt: Receipt };
@@ -60,14 +62,14 @@ export function TranscriptTools({ messages, session, ticket }: TranscriptToolsPr
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    if (r) downloadText(`nenya-coach-transcript-${dayStamp(r.issuedAt)}.json`, 'application/json', signedJson(messages, session, r));
+    if (r) downloadText(`nenya-coach-transcript-${dayStamp(r.issuedAt)}.json`, 'application/json', signedJson(messages, session, r, context));
   };
 
   const downloadReadable = async () => {
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    downloadText(`nenya-coach-transcript-${dayStamp(r?.issuedAt)}.txt`, 'text/plain', readableTranscript(messages, session, r));
+    downloadText(`nenya-coach-transcript-${dayStamp(r?.issuedAt)}.txt`, 'text/plain', readableTranscript(messages, session, r, context));
   };
 
   const openShare = async () => {
@@ -77,7 +79,7 @@ export function TranscriptTools({ messages, session, ticket }: TranscriptToolsPr
     setShare('preview');
   };
 
-  const shareText = readableTranscript(messages, session, receipt);
+  const shareText = readableTranscript(messages, session, receipt, context);
   const tooLong = shareText.length > MAX_SHARE_CHARS;
 
   const sendToNenya = async () => {

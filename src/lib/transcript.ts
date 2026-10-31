@@ -27,10 +27,10 @@ const plain = (messages: TranscriptMsg[]): TranscriptMsg[] =>
   messages.map((m) => ({ role: m.role, content: m.content }));
 
 /** The verifiable file: the transcript exactly as hashed, plus its receipt. */
-export function signedJson(messages: TranscriptMsg[], session: SessionColors, receipt: Receipt): string {
+export function signedJson(messages: TranscriptMsg[], session: SessionColors, receipt: Receipt, context = ''): string {
   return JSON.stringify(
     {
-      transcript: { v: 2, session: { color1: session.color1.toUpperCase(), color2: session.color2.toUpperCase() }, messages: plain(messages) },
+      transcript: { v: 2, session: { color1: session.color1.toUpperCase(), color2: session.color2.toUpperCase() }, ...(context ? { context } : {}), messages: plain(messages) },
       receipt,
       verify: `Hash JSON.stringify(transcript) with SHA-256 and compare it to receipt.hash, then check the Ed25519 signature over "nenya-coach-transcript-v2\\n<hash>\\n<issuedAt>" with receipt.publicKey. Confirm the key matches Nenya's published key. Full steps: ${DOCS_URL}`,
     },
@@ -40,13 +40,14 @@ export function signedJson(messages: TranscriptMsg[], session: SessionColors, re
 }
 
 /** A readable copy. With a receipt it carries the signature block; without, it says so. */
-export function readableTranscript(messages: TranscriptMsg[], session: SessionColors, receipt: Receipt | null): string {
+export function readableTranscript(messages: TranscriptMsg[], session: SessionColors, receipt: Receipt | null, context = ''): string {
   const lines: string[] = [
     'NENYA COACH DEMO: TRANSCRIPT',
     'An early prototype. Not therapy. In a crisis in the US, call or text 988.',
     `Session colors (a temporary label, not an account): ${session.color1.toUpperCase()}.${session.color2.toUpperCase()}`,
     '',
   ];
+  if (context) lines.push('Reflection summary the visitor chose to share with the coach:', context, '');
   for (const m of messages) {
     lines.push(`${m.role === 'user' ? 'You' : 'Coach'}: ${m.content}`, '');
   }

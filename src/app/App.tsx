@@ -71,6 +71,8 @@ export default function App() {
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
   const [currentGatewayIndex, setCurrentGatewayIndex] = useState(0);
   const [gatewayData, setGatewayData] = useState<GatewayData[]>([]);
+  // Text summary of the finished reflection, offered (never sent automatically) to the coach.
+  const [reflectionSummary, setReflectionSummary] = useState('');
   // Shared across every gateway -- not owned by Sight or any one gateway's
   // data blob, so it persists regardless of which gateways are visited or
   // in what order.
@@ -256,6 +258,7 @@ export default function App() {
     setSelectedGateways(gateways);
     setCurrentGatewayIndex(0);
     setGatewayData([]);
+    setReflectionSummary('');
     navigateTo(gateways[0]);
   };
 
@@ -306,7 +309,8 @@ export default function App() {
   };
 
   // Handle continuing from gateway review
-  const handleContinueFromReview = () => {
+  const handleContinueFromReview = (summary: string) => {
+    setReflectionSummary(summary);
     // Check if we need color selection
     const sightData = gatewayData.find(g => g.gateway === 'sight');
     const hasValidSightColors = sightData && sightData.data.color1 && sightData.data.color2;
@@ -355,6 +359,7 @@ export default function App() {
     setSelectedGateways([]);
     setCurrentGatewayIndex(0);
     setGatewayData([]);
+    setReflectionSummary('');
     setInterfaceColors({ color1: '#7A9B9E', color2: '#DAC682' });
     setCellCode('');
   };
@@ -584,6 +589,7 @@ export default function App() {
           {currentScreen === 'session' && (
             <CoachDemo
               colors={interfaceColors}
+              reflectionSummary={reflectionSummary}
               onBack={() => navigateBack('home')}
               onBreathe={() => handleGlobalNavigation('welcome')}
               onPartnerPractice={handleNavigateToCell}

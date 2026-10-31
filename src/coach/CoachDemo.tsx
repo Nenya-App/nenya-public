@@ -35,13 +35,15 @@ interface CoachDemoProps {
   onBack?: () => void;
   /** Where "open the breathing tool" goes. Omit on the standalone page (it links to the site). */
   onBreathe?: () => void;
+  /** Text summary of the visitor's gateway reflection. Offered, never sent unless they opt in. */
+  reflectionSummary?: string;
   /** Optional link to the partner-practice demo. */
   onPartnerPractice?: () => void;
 }
 
 // Everything lives in this component's memory: nothing is written to browser
 // storage, and closing the tab ends the conversation.
-export default function CoachDemo({ colors, onBack, onBreathe, onPartnerPractice }: CoachDemoProps) {
+export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBreathe, onPartnerPractice }: CoachDemoProps) {
   const color1 = norm(colors.color1, '#7A9B9E');
   const color2 = norm(colors.color2, '#DAC682');
   const session = { color1, color2 };
@@ -56,6 +58,12 @@ export default function CoachDemo({ colors, onBack, onBreathe, onPartnerPractice
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [blocked, setBlocked] = useState(false);
+  // The reflection is offered, not assumed. Scrubbed on this device before any use.
+  const offered = reflectionSummary.trim() ? scrubPII(reflectionSummary.trim()).text : '';
+  const offerable = !!offered && !looksLikeManipulation(offered);
+  const [shareReflection, setShareReflection] = useState(false);
+  const [contextDropped, setContextDropped] = useState(false);
+  const context = shareReflection && offerable ? offered : '';
   const [flag, setFlag] = useState<SafetyFlag | null>(null);
   const [flaggedText, setFlaggedText] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
@@ -79,6 +87,7 @@ export default function CoachDemo({ colors, onBack, onBreathe, onPartnerPractice
     setBlocked(false);
     setFlag(null);
     setFlaggedText('');
+    setContextDropped(false);
     setStage('chat');
   };
 
@@ -117,7 +126,7 @@ export default function CoachDemo({ colors, onBack, onBreathe, onPartnerPractice
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: toWire(next), session, ticket }),
+        body: JSON.stringify({ messages: toWire(next), session, ...(context ? { context } : {}), ticket }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as {
@@ -128,6 +137,11 @@ export default function CoachDemo({ colors, onBack, onBreathe, onPartnerPractice
         blocked?: string;
       };
       // The server screens too. A blocked message is not part of the conversation.
+      if (data.blocked === 'context') {
+        setShareReflection(false);
+        setContextDropped(true);
+        return;
+      }
       if (data.blocked) {
         setBlocked(true);
         return;
@@ -257,6 +271,36 @@ export default function CoachDemo({ colors, onBack, onBreathe, onPartnerPractice
                 </ul>
               </div>
 
+              {offerable && (
+                <div className="space-y-3 rounded-2xl border bg-card p-5" style={{ borderColor: `${color2}66` }}>
+                  <h2 className="text-lg">Bring your reflection with you?</h2>
+                  <p className="text-sm text-muted-foreground">
+                    You just finished the gateways. If you like, the coach can see a short text summary of what you
+                    entered, so you do not have to explain it again. This is your choice, and it is off unless you turn
+                    it on. Drawings are never included.
+                  </p>
+                  <label className="flex items-start gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={shareReflection}
+                      onChange={(e) => setShareReflection(e.target.checked)}
+                      className="mt-1 size-4"
+                    />
+                    <span>Share this summary with the coach for this conversation</span>
+                  </label>
+                  <details className="text-sm text-muted-foreground">
+                    <summary className="cursor-pointer">See exactly what would be shared</summary>
+                    <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-3 text-xs">
+                      {offered}
+                    </pre>
+                    <p className="mt-2 text-xs">
+                      Common identifiers are replaced first, but names are not always caught. It goes to Venice AI the
+                      same way your messages do, and it is not stored by Nenya.
+                    </p>
+                  </details>
+                </div>
+              )}
+
               <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
                 <li>
                   Your two colors above name this session for now. They are a label, not an account, and they are not
@@ -377,6 +421,12 @@ export default function CoachDemo({ colors, onBack, onBreathe, onPartnerPractice
                       Send
                     </Button>
                   </div>
+                  {contextDropped && (
+                    <p role="status" className="text-sm text-muted-foreground">
+                      Part of your reflection read like an instruction to the coach, so it was left out. You can
+                      continue without it.
+                    </p>
+                  )}
                   {blocked && (
                     <p role="alert" className="rounded-lg border border-amber-500/60 p-3 text-sm">
                       {MANIPULATION_NOTICE}
@@ -431,7 +481,7 @@ export default function CoachDemo({ colors, onBack, onBreathe, onPartnerPractice
               )}
 
               {stage === 'done' && (
-                <TranscriptTools messages={toWire(messages)} session={session} ticket={stopped ? undefined : ticket} />
+                <TranscriptTools messages={toWire(messages)} session={session} context={context} ticket={stopped ? undefined : ticket} />
               )}
             </>
           )}

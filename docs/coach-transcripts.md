@@ -47,6 +47,8 @@ report (a Netlify Forms submission).
 - **signature** is Ed25519 over the UTF-8 text `nenya-coach-transcript-v2\n<hash>\n<issuedAt>`.
 - **session** is the visitor's two chosen colors. They are a temporary label for the conversation, bound
   into the signature. They are not an account or proof of identity, and two visitors can pick the same pair.
+- **context** appears (between `session` and `messages`) only when the visitor chose to share a summary of
+  their gateway reflection with the coach. It is part of what is hashed and signed. Absent otherwise.
 - **keyId** is the first 16 hex characters of SHA-256 of the `publicKey` string.
 
 ## Verifying

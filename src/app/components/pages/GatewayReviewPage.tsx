@@ -16,7 +16,8 @@ import { downloadNenyaPdfReport } from '../../../lib/nenyaPdfReport';
 interface GatewayReviewPageProps {
   gatewayData: GatewayData[];
   selectedGateways: Gateway[];
-  onContinue: () => void;
+  /** Receives a plain-text summary of the reflection, for the optional coach hand-off. */
+  onContinue: (reflectionSummary: string) => void;
   onEditGateway: (gateway: Gateway) => void;
   onBack: () => void;
   bodyMapData: BodyMapData;
@@ -324,6 +325,27 @@ export default function GatewayReviewPage({
     return report;
   };
   
+  // A compact, text-only version for the coach. Drawings and images are left out.
+  const buildCoachSummary = (): string => {
+    const lines: string[] = [];
+    gatewayData.forEach((gd) => {
+      const body = formatGatewayData(gd.gateway, gd.data).filter(
+        (l) => !/Drawing: captured/i.test(l) && l !== 'No data captured'
+      );
+      if (body.length === 0) return;
+      lines.push(`${gatewayTitles[gd.gateway]}:`, ...body);
+    });
+    if (bodyMapUsed) lines.push('Body map:', ...formatBodyMapLines(bodyMapData));
+    const out: string[] = [];
+    let n = 0;
+    for (const l of lines) {
+      if (n + l.length + 1 > 2400) break;
+      out.push(l);
+      n += l.length + 1;
+    }
+    return out.join('\n');
+  };
+
   const downloadReport = () => {
     const report = generateSensoryReport();
     const blob = new Blob([report], { type: 'text/plain' });
@@ -562,7 +584,7 @@ export default function GatewayReviewPage({
           <div className="flex justify-center pt-8">
             <Button
               size="lg"
-              onClick={onContinue}
+              onClick={() => onContinue(buildCoachSummary())}
               className="gap-2 px-12"
             >
               Talk it through with the coach
