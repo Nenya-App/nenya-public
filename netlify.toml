@@ -20,14 +20,14 @@
 # fetches many files, so groups sharing an IP (event Wi-Fi, schools, offices)
 # could trip it, and Netlify's own DDoS protection already runs first.
 
-# /coach is its own page (coach/index.html). The trailing-slash form is served
-# as a real file, so make the bare path land there instead of on the app's
-# catch-all below. Listed first because the first matching rule wins. This is a
-# plain redirect, not a rate-limit rule, so it doesn't use up a slot.
+# /coach is its own page (coach/index.html). Rewrite (not redirect) the path to
+# that file: a redirect to "/coach/" loops, because Netlify treats /coach and
+# /coach/ as the same rule path. Listed first because the first matching rule
+# wins. It is not a rate-limit rule, so it doesn't use up a slot.
 [[redirects]]
   from = "/coach"
-  to = "/coach/"
-  status = 301
+  to = "/coach/index.html"
+  status = 200
   force = true
 
 # Rule 1: app entry point. Caps how many fresh app loads a single IP can

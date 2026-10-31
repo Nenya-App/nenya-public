@@ -211,12 +211,14 @@ export default async (req: Request): Promise<Response> => {
   return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS });
 };
 
+// Literal values on purpose: Netlify reads this block by static analysis, so it
+// cannot follow constants. Keep `path` in step with ROUTE above.
 // ~40 requests a minute per visitor: a room of people sharing venue Wi-Fi can
 // each finish a turn, while a script is cut off. Netlify takes up to ~10 seconds
 // to start enforcing, and invalid rules do not fail the deploy, so check the
 // deploy log's post-processing step after changing this.
 export const config = {
-  path: ROUTE,
+  path: '/api/coach',
   rateLimit: {
     windowLimit: 40,
     windowSize: 60,
