@@ -32,6 +32,8 @@ interface AccessibilitySettingsProps {
   onTextSizeChange?: (size: number) => void;
   onCounterToggle?: (show: boolean) => void;
   onCvModeChange?: (mode: string) => void;
+  /** Theme and text size only, for pages without the breathing animations. */
+  compact?: boolean;
 }
 
 // Standalone settings content component
@@ -52,6 +54,7 @@ export function AccessibilitySettingsContent({
   onTextSizeChange,
   onCounterToggle,
   onCvModeChange,
+  compact = false,
 }: AccessibilitySettingsProps) {
   const { theme, setTheme } = useTheme();
 
@@ -110,6 +113,8 @@ export function AccessibilitySettingsContent({
         </div>
       </div>
 
+      {!compact && (
+      <>
       <Separator />
 
       {/* Animation Controls */}
@@ -172,6 +177,8 @@ export function AccessibilitySettingsContent({
         )}
       </div>
 
+      {onCounterToggle && (
+      <>
       {/* Breathing Counter Toggle */}
       <div className="flex items-center justify-between">
         <Label htmlFor="counter-toggle" className="cursor-pointer text-sm">
@@ -183,7 +190,11 @@ export function AccessibilitySettingsContent({
           onCheckedChange={(checked) => onCounterToggle && onCounterToggle(checked)}
         />
       </div>
+      </>
+      )}
 
+      {onCvModeChange && (
+      <>
       {/* Vision Mode Selector */}
       <div className="space-y-1.5">
         <p className="text-xs text-muted-foreground font-medium">Vision mode</p>
@@ -210,6 +221,8 @@ export function AccessibilitySettingsContent({
           ))}
         </div>
       </div>
+      </>
+      )}
 
       {/* Opacity Control */}
       {pendingBreathingEnabled && (
@@ -235,6 +248,9 @@ export function AccessibilitySettingsContent({
             />
           </div>
         </>
+      )}
+
+      </>
       )}
 
       {/* Text Size Control */}

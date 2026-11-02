@@ -9,6 +9,8 @@ import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/veniceLinks';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
+import { AppFooter } from '../app/components/AppFooter';
+import { SupportThisWork } from '../app/components/SupportThisWork';
 import { FlagNotice } from './FlagNotice';
 import { TranscriptTools } from './TranscriptTools';
 
@@ -621,6 +623,10 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBr
             </>
           )}
         </div>
+        <div id="support" className="mx-auto flex max-w-3xl scroll-mt-4 justify-center pt-20 pb-12">
+          <SupportThisWork />
+        </div>
+        <AppFooter className="-mx-4 -mb-6 md:-mx-6" />
       </main>
 
       <footer className="shrink-0 border-t border-border px-4 py-3 text-center text-xs text-muted-foreground">

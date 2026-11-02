@@ -40,6 +40,8 @@ interface GlobalNavigationProps {
   onEmergencyExit?: () => void;
   onBreathingPopoutToggle?: () => void;
   onTutorialReplay?: () => void;
+  /** Accessibility dialog shows theme and text size only. */
+  compactSettings?: boolean;
 }
 
 export function GlobalNavigation({
@@ -67,6 +69,7 @@ export function GlobalNavigation({
   onEmergencyExit,
   onBreathingPopoutToggle,
   onTutorialReplay,
+  compactSettings = false,
 }: GlobalNavigationProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accessibilityOpen, setAccessibilityOpen] = useState(false);
@@ -393,6 +396,7 @@ export function GlobalNavigation({
               onCounterToggle={onCounterToggle}
               cvMode={cvMode}
               onCvModeChange={onCvModeChange}
+              compact={compactSettings}
             />
           </DialogContent>
         </Dialog>

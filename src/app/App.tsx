@@ -56,7 +56,16 @@ export interface GatewayData {
 type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('welcome');
+  // The coach page's header links back here with ?about or ?about=<section>.
+  const [initialAbout] = useState<string | null>(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      return p.has('about') ? p.get('about') || '' : null;
+    } catch {
+      return null;
+    }
+  });
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : 'welcome');
   // Real navigation history instead of a single "previousScreen" value.
   // A single value can only ever answer "what screen came immediately
   // before this one" -- it breaks the moment a screen is reachable more
@@ -64,7 +73,7 @@ export default function App() {
   // forward step overwrites the one before it. A stack lets "back" from
   // gateway 3 correctly land on gateway 2, not jump all the way home.
   const [screenHistory, setScreenHistory] = useState<ScreenType[]>([]);
-  const [aboutSection, setAboutSection] = useState<string | undefined>();
+  const [aboutSection, setAboutSection] = useState<string | undefined>(initialAbout || undefined);
   const [termsAgreed, setTermsAgreed] = useState(false);
   
   // Gateway system state
