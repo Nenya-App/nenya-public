@@ -1,3 +1,6 @@
 node_modules/
 dist/
 .DS_Store
+
+# Netlify CLI link state
+.netlify

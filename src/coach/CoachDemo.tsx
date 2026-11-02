@@ -269,7 +269,7 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBr
                 </p>
                 <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                   <li>One situation at a time works better than everything at once.</li>
-                  <li>The coach reflects what you say and offers a question or a breath. It does not give advice.</li>
+                  <li>The coach reflects what you say, names feelings and needs, and may suggest a way to say it or a breath. It is not a therapist and does not diagnose.</li>
                   <li>
                     It only responds to what you share about yourself. Messages that try to give it instructions, or to
                     change how it works, are not sent.
@@ -404,12 +404,24 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBr
 
               <div className="space-y-4" role="log" aria-live="polite" aria-label="Conversation">
                 {messages.map((m, i) => (
-                  <div key={i} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+                  <div
+                    key={i}
+                    className={`coach-msg flex items-end gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {m.role === 'assistant' && (
+                      <span
+                        aria-hidden="true"
+                        className="mb-1 size-7 shrink-0 rounded-full shadow-sm"
+                        style={{ background: gradient }}
+                      />
+                    )}
                     <div
-                      className="max-w-[85%] whitespace-pre-wrap rounded-2xl border px-4 py-3 text-sm leading-relaxed"
+                      className={`max-w-[85%] whitespace-pre-wrap border px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                        m.role === 'user' ? 'rounded-2xl rounded-br-md' : 'rounded-2xl rounded-bl-md bg-card'
+                      }`}
                       style={
                         m.role === 'user'
-                          ? { backgroundColor: `${color1}1F`, borderColor: `${color1}66` }
+                          ? { backgroundColor: `${color1}26`, borderColor: `${color1}66` }
                           : { borderColor: `${color2}66` }
                       }
                     >
@@ -421,7 +433,25 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBr
                     </div>
                   </div>
                 ))}
-                {sending && <p className="text-sm text-muted-foreground">Listening&hellip;</p>}
+                {sending && (
+                  <div className="coach-msg flex items-end gap-2" role="status">
+                    <span aria-hidden="true" className="mb-1 size-7 shrink-0 rounded-full shadow-sm" style={{ background: gradient }} />
+                    <div
+                      className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border bg-card px-4 py-3.5 shadow-sm"
+                      style={{ borderColor: `${color2}66` }}
+                    >
+                      <span className="sr-only">The coach is thinking</span>
+                      {[color1, color1, color2].map((c, i) => (
+                        <span
+                          key={i}
+                          aria-hidden="true"
+                          className="coach-dot size-2 rounded-full"
+                          style={{ backgroundColor: c, animationDelay: `${i * 160}ms` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div ref={endRef} />
               </div>
 

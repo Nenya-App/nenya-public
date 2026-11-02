@@ -8,5 +8,6 @@
 
 ## Accuracy notes
 - Built today: guided breathing, six sensory reflection gateways, a downloadable local summary, an optional five-exchange AI coach demo (runs through Venice AI, an outside service).
-- Planned and not built: partner practice using nonviolent-communication-informed language, and more on-device processing.
+- Grounding: nonviolent communication (NVC), extended as NVC+, explained on the site. The tools use its ideas; Nenya is not a course in NVC.
+- Planned and not built: partner practice using NVC-informed language between two people, and more on-device processing.
 - Source code: https://github.com/Nenya-App/nenya-public
