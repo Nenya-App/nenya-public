@@ -82,6 +82,22 @@
     },
     {
       "@type": "Question",
+      "name": "Does Nenya teach nonviolent communication?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Not yet. Nenya's current tools are guided breathing, six sensory reflections, and an optional AI coach demo, and none of them teach nonviolent communication. A partner-practice feature, in which two people could choose AI help expressing feelings and needs in nonviolent-communication-informed language, is planned and not built. The site shows a scripted preview that is clearly labeled as such."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How is Nenya different from a typical AI chatbot or digital coach?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nenya asks a person to reflect first and treats the AI as an optional last step. It needs no account, does not store conversations, screens messages before they reach the language model, ends the coach demo after five exchanges, and lets a visitor download a signed transcript that anyone can verify. It is not therapy and is not a crisis service. A plain-language comparison is at nenya.biz/why-nenya.html."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "Is Nenya free?",
       "acceptedAnswer": {
         "@type": "Answer",
@@ -93,7 +109,7 @@
       "name": "What's a privacy-first way to check in with my emotions?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Nenya doesn't have a backend, analytics, or any third-party network calls in its codebase — that's an architectural fact, not just a policy. Nothing typed or chosen is tracked or stored; a session summary is generated and downloaded locally, by the visitor, for their own use, and nothing persists once the tab is closed."
+        "text": "The core breathing and reflection practice runs in the browser with no account, no analytics, and no tracking, and a session summary is generated and downloaded locally by the visitor. The only parts that send anything are ones a visitor chooses: a contact message or report, and the optional coach demo, whose messages pass through Nenya's server to Venice AI, an outside service, and are not stored by Nenya. The source code is public so these claims can be checked."
       }
     }
   ]
@@ -223,6 +239,14 @@
   than the starting point, which is the opposite of how most AI-coaching products are structured.
 </p>
 
+<h2>Nonviolent communication (planned, not built)</h2>
+<p>
+  People who search for nonviolent communication (NVC) tools sometimes find Nenya, so to be exact: none of
+  the current tools teach NVC. A partner-practice feature is planned in which two people could each choose
+  whether to use AI help to say or hear a message in NVC-informed language, naming feelings and needs. It is
+  not built. The site includes a scripted preview, labeled as a preview, so a visitor can see the idea.
+</p>
+
 <h2>Who it's for</h2>
 <p>
   Anyone looking for a quiet moment of emotional check-in or grounding — before a hard conversation,
@@ -237,6 +261,10 @@
 </p>
 
 <h2>Why it's different</h2>
+<p>
+  A longer, plain-language comparison with a typical AI chatbot, including what Nenya does not do, is on
+  <a href="/why-nenya.html">Nenya in Plain Terms</a>.
+</p>
 <ul>
   <li><strong>No data collection.</strong> Nothing typed or chosen in the core reflection is tracked, recorded, or
     stored on Nenya's servers. Session summaries are generated and downloaded locally, by the visitor,

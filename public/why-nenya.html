@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nenya in Plain Terms: Free Breathing and Reflection Tool, and How It Differs from AI Chatbots</title>
+<meta name="description" content="A plain-language comparison of Nenya, a free, no-account breathing and reflection tool with an optional AI coach demo, and typical AI chatbots: what is stored, who sees it, and what it cannot do." />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href="https://nenya.biz/why-nenya.html" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://nenya.biz/why-nenya.html" />
+<meta property="og:title" content="Nenya in Plain Terms" />
+<meta property="og:description" content="How a free, no-account breathing and reflection tool with an optional AI coach differs from a typical AI chatbot, including what it does not do." />
+<meta property="og:image" content="https://nenya.biz/og-image.jpg" />
+<style>
+body { margin: 0; }
+
+/* Layout: one calm reading column, a wider band for the comparison table. Written for a skeptical first-time reader. */
+:root {
+  --bg: #eef1f4;
+  --surface: #f8fafb;
+  --fg: #16212b;
+  --muted: #4d5b69;
+  --rule: #cdd5dd;
+  --accent: #2c5f82;
+  --accent-soft: #dbe7f0;
+  --warn: #8a4b12;
+  --warn-soft: #f3e6d6;
+  --display: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --body: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1822; --surface: #16222e; --fg: #e6ecf1; --muted: #a2b0bd; --rule: #2b3a48;
+    --accent: #8ec1e6; --accent-soft: #1d3345; --warn: #e3b27c; --warn-soft: #2f2418;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 400 18px/1.6 var(--body);
+  padding-block: 48px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(2rem, 6vw, 3rem); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 1.1rem; font-weight: 500; }
+p { margin: 0; }
+section { display: flex; flex-direction: column; gap: 18px; }
+.kicker { font: 600 0.78rem/1 var(--body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 1.25rem; color: var(--muted); }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.points { display: flex; flex-direction: column; gap: 22px; padding: 0; margin: 0; list-style: none; }
+.points li { display: flex; flex-direction: column; gap: 6px; padding-left: 18px; border-left: 3px solid var(--accent-soft); }
+.points .check { font-size: 0.95rem; color: var(--muted); }
+.points .check b { color: var(--fg); font-weight: 600; }
+.wide { max-width: 860px; margin: 0 auto; width: 100%; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.97rem; line-height: 1.45; }
+th, td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--rule); }
+th { font: 600 0.8rem/1.2 var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 600; width: 22%; }
+td:nth-child(3) { background: var(--accent-soft); }
+.limits { background: var(--warn-soft); border-radius: 6px; padding: 22px 22px 22px 24px; display: flex; flex-direction: column; gap: 14px; }
+.limits h2 { color: var(--warn); }
+.limits ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+.try { border-top: 1px solid var(--rule); padding-top: 32px; }
+.btn { align-self: flex-start; display: inline-block; background: var(--accent); color: var(--bg); font: 600 1rem/1 var(--body); padding: 14px 20px; border-radius: 4px; text-decoration: none; }
+.btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+.fine { font-size: 0.9rem; color: var(--muted); }
+footer { font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <header style="display:flex;flex-direction:column;gap:18px">
+    <span class="kicker">Nenya &middot; nenya.biz</span>
+    <h1>Why Nenya is built differently from a typical AI chatbot</h1>
+    <p class="lede">You probably do not need another AI tool. Nenya is a free tool for thinking through something that is on your mind. It is made for people who are wary of AI, wary of apps that ask about feelings, or both. This page says what it does, what it does not do, and how you can check.</p>
+  </header>
+
+  <section>
+    <h2>If you are skeptical, you are reading the situation correctly</h2>
+    <p>Most chatbots are built by companies that earn more when you use them more. That shapes the product. The assistant is friendly and always available, and it remembers you. Your conversations are usually stored under an account. The instructions that steer it are hidden. If it says something harmful or strange, all you have is a screenshot, and anyone can fake a screenshot.</p>
+    <p>None of that is a secret, and none of it is illegal. It is the normal business model. Nenya is set up to avoid it.</p>
+  </section>
+
+  <section>
+    <h2>What is different, and how to check each claim</h2>
+    <ul class="points">
+      <li>
+        <h3>You do the thinking first.</h3>
+        <p>Before any AI is involved, Nenya walks you through six short sensory prompts. They are meant to help you notice what is happening in your body and surroundings. The AI is optional, and it comes after that.</p>
+        <p class="check"><b>Check it:</b> open the site and go through the gateways. You can stop before the coach ever appears.</p>
+      </li>
+      <li>
+        <h3>No account, and we do not keep your conversation.</h3>
+        <p>There is no sign-up. You choose two colors, which become a temporary label for your session. It is not a login and it is not saved. When you close the page, the conversation is not stored on our side.</p>
+        <p class="check"><b>Check it:</b> the site code is public. The policy page explains what happens to the text you send.</p>
+      </li>
+      <li>
+        <h3>Your message is screened before it goes anywhere.</h3>
+        <p>On your device, and again on our server, the text is checked for attempts to hijack the coach and for personal details like names and numbers. Those details are removed before the text goes to the language model.</p>
+        <p class="check"><b>Check it:</b> the screening rules are in the public code. They are rules we wrote, and you can read them.</p>
+      </li>
+      <li>
+        <h3>The coach has a narrow job and a clear ending.</h3>
+        <p>It is told to reflect back what you share, keep answers short, avoid diagnosing, and avoid inventing a framework for your life. If a message looks like a crisis, the conversation stops and shows you where to find real help. It does not try to keep you talking. After the demo ends, it points you onward rather than inviting you to stay.</p>
+        <p class="check"><b>Check it:</b> the coach&rsquo;s instructions are part of the public code, not hidden.</p>
+      </li>
+      <li>
+        <h3>You can prove what was said.</h3>
+        <p>After your first exchange you can download a signed copy of the conversation. The signature lets anyone confirm the text was not edited afterward. That matters if you ever want to report a problem with the coach, show a professional, or just keep an honest record.</p>
+        <p class="check"><b>Check it:</b> a small verification script is included in the public code. It does not need our permission to run.</p>
+      </li>
+      <li>
+        <h3>You decide what the coach sees.</h3>
+        <p>If you came through the gateways, you may choose to share a short summary of your reflection with the coach. It is off by default. You see exactly what would be sent before it goes, and you can leave it out.</p>
+        <p class="check"><b>Check it:</b> the option is unchecked when you arrive, with a preview beside it.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="wide">
+    <h2>Side by side</h2>
+    <div class="tablewrap" role="region" aria-label="Comparison table" tabindex="0">
+      <table>
+        <thead><tr><th>Question</th><th>A typical AI chatbot</th><th>Nenya today</th></tr></thead>
+        <tbody>
+          <tr><td>What do I need to start?</td><td>An account, often an email or phone number.</td><td>Nothing. Pick two colors.</td></tr>
+          <tr><td>Is my conversation kept?</td><td>Usually stored, sometimes reviewed or used for training.</td><td>Not stored by us.</td></tr>
+          <tr><td>Who writes its instructions?</td><td>The company, kept private.</td><td>Public, and written to reflect, not to advise.</td></tr>
+          <tr><td>What does it want from me?</td><td>More use. Longer sessions, return visits.</td><td>A short conversation, then you go.</td></tr>
+          <tr><td>How is a crisis handled?</td><td>Varies. Often a generic refusal.</td><td>The conversation stops and points to real help.</td></tr>
+          <tr><td>Can I prove what it said?</td><td>A screenshot.</td><td>A signed transcript anyone can verify.</td></tr>
+          <tr><td>Who pays for it?</td><td>Subscriptions, ads, or investors expecting growth.</td><td>It is free. Referral credits help cover the demo, and that is disclosed.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="limits">
+    <h2>What it does not do</h2>
+    <ul>
+      <li><b>It is not therapy.</b> The coach is a thinking aid with a short script, not a clinician, and it cannot assess risk the way a person can.</li>
+      <li><b>The screening is imperfect.</b> It works by matching patterns. It will miss some things, and we do not claim otherwise.</li>
+      <li><b>Another company runs the language model.</b> Your text is passed to Venice, an outside provider, to produce the reply. Our promises cover what we do. Venice has its own policy, and you should read it. If you continue the conversation on Venice, our screening and our safety stops do not come with you.</li>
+      <li><b>Our host sees basic web traffic.</b> Like any website, the servers that deliver it see things such as your IP address. We do not use that to build a profile.</li>
+      <li><b>Some ideas are only plans.</b> Practicing with another person, and running more of the processing on your own device, are goals. They are not built, and the site labels them that way.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Who this is for</h2>
+    <p>People who want a low-stakes place to put a thought into words, without making an account or a commitment. People who tried a wellness app and felt watched. People who are curious about AI but want to see the seams.</p>
+    <p>It is not for someone in crisis. If that is you, please contact a local emergency service or a crisis line in your country.</p>
+  </section>
+
+  <section class="try">
+    <h2>If you want to test it, here is the smallest possible step</h2>
+    <p>Open the coach, pick two colors, and type one honest sentence. You will get a short reply. You can read what was sent, download the signed record, and close the tab. Nothing is waiting for you afterward.</p>
+    <a class="btn" href="/coach">Open the coach</a>
+    <p class="fine">Or start with the gateways at <a href="/">nenya.biz</a>.</p>
+  </section>
+
+  <footer>
+    Nenya is free, open source (AGPL-3.0), and fiscally sponsored by Fractured Atlas. Created by Est&euml;lle. See also <a href="/about-nenya.html">About Nenya</a>. The comparison above describes the chatbot industry in general terms and does not name any company.
+  </footer>
+</main>
+</body>
+</html>

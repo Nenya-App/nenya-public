@@ -1,0 +1,12 @@
+# Nenya
+
+> Nenya (nenya.biz) is a free, open-source (AGPL-3.0) browser tool for guided breathing and short sensory reflection, with an optional, early-prototype AI coach demo. No account is required. It is not therapy or a crisis service. Fiscally sponsored by Fractured Atlas.
+
+## Read these first
+- [About Nenya](https://nenya.biz/about-nenya.html): what it is, what each part does, and how it handles data.
+- [Nenya in plain terms](https://nenya.biz/why-nenya.html): how it differs from a typical AI chatbot, and what it does not do.
+
+## Accuracy notes
+- Built today: guided breathing, six sensory reflection gateways, a downloadable local summary, an optional five-exchange AI coach demo (runs through Venice AI, an outside service).
+- Planned and not built: partner practice using nonviolent-communication-informed language, and more on-device processing.
+- Source code: https://github.com/Nenya-App/nenya-public
