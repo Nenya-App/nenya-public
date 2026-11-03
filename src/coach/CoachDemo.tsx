@@ -11,6 +11,7 @@ import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/v
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
 import { AppFooter } from '../app/components/AppFooter';
 import { SupportThisWork } from '../app/components/SupportThisWork';
+import { ShareNenya } from '../app/components/ShareNenya';
 import { FlagNotice } from './FlagNotice';
 import { TranscriptTools } from './TranscriptTools';
 
@@ -31,6 +32,13 @@ interface Msg {
 const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content }));
 
 type Stage = 'consent' | 'chat' | 'done';
+
+// Written by the page, not the model: no API call, not part of the signed record, not counted
+// among the exchanges. They carry the turn mechanics so the model does not spend replies on them.
+const GREETING = `Hello. We have ${MAX_TURNS} exchanges together, so let's use them well. Tell me what happened, what you are feeling, and what you need, as much or as little as feels right.`;
+const CLOSING =
+  'That is our five. Thank you for letting me listen. Whatever came up deserves more time than this, so if it is still with you, a person you trust, a journal, or a professional can carry it further. For now, one slow breath, in and out, with the breathing tool below.';
+
 
 interface CoachDemoProps {
   /** The visitor's two colors: they theme the page and act as a temporary session label. */
@@ -182,6 +190,29 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
   } as const;
 
   const stopped = flag?.tier === 'stop';
+
+  // The coach's page-written lines look like its replies.
+  const pageBubble = (text: string) => (
+    <div className="coach-msg flex items-end gap-2 justify-start">
+      <span aria-hidden="true" className="mb-1 size-7 shrink-0 rounded-full shadow-sm" style={{ background: gradient }} />
+      <div
+        className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-bl-md border bg-card px-4 py-3 text-sm leading-relaxed shadow-sm"
+        style={{ borderColor: `${color2}66` }}
+      >
+        <span className="mb-1 block text-xs text-muted-foreground">Coach</span>
+        {text}
+      </div>
+    </div>
+  );
+  const userCount = messages.filter((m) => m.role === 'user').length;
+  const remainingNote =
+    stage !== 'chat' || sending || userCount === 0 || userCount >= MAX_TURNS
+      ? ''
+      : turn === MAX_TURNS
+        ? 'This is your last exchange.'
+        : turn === MAX_TURNS - 1
+          ? 'One more exchange after this one.'
+          : '';
   const linkClass = 'text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground';
 
   return (
@@ -411,6 +442,7 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
               </div>
 
               <div className="space-y-4" role="log" aria-live="polite" aria-label="Conversation">
+                {pageBubble(GREETING)}
                 {messages.map((m, i) => (
                   <div
                     key={i}
@@ -460,6 +492,12 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                     </div>
                   </div>
                 )}
+                {remainingNote && (
+                  <p role="status" className="text-center text-xs text-muted-foreground">
+                    {remainingNote}
+                  </p>
+                )}
+                {stage === 'done' && !flag && pageBubble(CLOSING)}
                 <div ref={endRef} />
               </div>
 
@@ -541,9 +579,7 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
 
               {stage === 'done' && (
                 <section className="space-y-4 rounded-2xl border bg-card p-5" style={{ borderColor: `${color2}80` }}>
-                  <h2 className="text-xl">
-                    {stopped ? 'This conversation has ended' : 'That is our five. Now, one minute to breathe.'}
-                  </h2>
+                  {stopped && <h2 className="text-xl">This conversation has ended</h2>}
                   <p className="text-sm text-muted-foreground">
                     {stopped
                       ? 'The resources above are the right next step. When you are ready, the breathing tool is here too.'
@@ -570,6 +606,7 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                         Start a new conversation
                       </button>
                     )}
+                    <ShareNenya />
                     {onPartnerPractice && (
                       <button type="button" onClick={onPartnerPractice} className={linkClass}>
                         See a preview of planned partner practice (not built)

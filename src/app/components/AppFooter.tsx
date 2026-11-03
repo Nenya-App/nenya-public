@@ -1,5 +1,6 @@
 import NenyaLogo from './NenyaLogo';
 import { EmergencyExitButton } from './EmergencyExit';
+import { ShareNenya } from './ShareNenya';
 
 interface AppFooterProps {
   onNavigateToAbout?: () => void;
@@ -48,6 +49,7 @@ export function AppFooter({ className = '' }: AppFooterProps) {
           >
             Contact: info@nenya.biz
           </a>
+          <ShareNenya />
           <a href="https://www.netlify.com" target="_blank" rel="noopener noreferrer" aria-label="Deploys by Netlify">
             <img src="/badges/netlify-badge.svg" alt="Deploys by Netlify" width="76" height="33" />
           </a>

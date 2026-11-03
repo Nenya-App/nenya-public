@@ -1,6 +1,7 @@
 import { ExternalLink, Heart } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+import { ShareNenya } from './ShareNenya';
 
 // The "Support This Work" section shown on the front page and on the coach page.
 // One copy, so the wording and the donation link cannot drift apart.
@@ -65,6 +66,10 @@ export function SupportThisWork() {
             <ExternalLink className="size-4" />
           </a>
         </Button>
+
+        <div className="flex justify-center">
+          <ShareNenya variant="button" />
+        </div>
 
         <p className="text-xs text-muted-foreground">
           Nenya is a sponsored project of{' '}
