@@ -151,6 +151,8 @@ function dropOffBrand(t: string): string {
   return out.length >= 20 ? out : t;
 }
 
+// Reserved for a future add-on that lets a visitor share a reflection. The current page never sends
+// `context`; the server keeps the screening, the ticket binding and this framing ready and tested.
 function contextInstruction(summary: string): string {
   return [
     'The person chose to share a short summary of a reflection they made on the site, in their own words, between the markers below.',

@@ -1,10 +1,11 @@
 import { Button } from '../ui/button';
-import { ArrowLeft, ArrowRight, Edit2, Eye, Music, Hand, Sparkles, Zap, Brain, Download, User, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Edit2, Eye, Music, Hand, Sparkles, Zap, Brain, Download, User, FileText, ExternalLink } from 'lucide-react';
 import NenyaLogo from '../NenyaLogo';
 import { Gateway, GatewayData } from '../../App';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { BodyMapData } from '../BodyMapAvatar';
 import { AppFooter } from '../AppFooter';
+import { REFERRAL_NOTE, VENICE_CHARACTER_URL } from '../../../lib/veniceLinks';
 import { SubmitSensoryReportForm } from '../SubmitSensoryReportForm';
 import { getNoteNames, TONAL_SYSTEM_LABELS, TonalSystem } from '../../../lib/audio';
 // jsPDF (and the report's fonts/logo) are only needed if the visitor clicks
@@ -15,8 +16,7 @@ import { downloadNenyaPdfReport } from '../../../lib/nenyaPdfReport';
 interface GatewayReviewPageProps {
   gatewayData: GatewayData[];
   selectedGateways: Gateway[];
-  /** Receives a plain-text summary of the reflection, for the optional coach hand-off. */
-  onContinue: (reflectionSummary: string) => void;
+  onContinue: () => void;
   onEditGateway: (gateway: Gateway) => void;
   onBack: () => void;
   bodyMapData: BodyMapData;
@@ -324,27 +324,6 @@ export default function GatewayReviewPage({
     return report;
   };
   
-  // A compact, text-only version for the coach. Drawings and images are left out.
-  const buildCoachSummary = (): string => {
-    const lines: string[] = [];
-    gatewayData.forEach((gd) => {
-      const body = formatGatewayData(gd.gateway, gd.data).filter(
-        (l) => !/Drawing: captured/i.test(l) && l !== 'No data captured'
-      );
-      if (body.length === 0) return;
-      lines.push(`${gatewayTitles[gd.gateway]}:`, ...body);
-    });
-    if (bodyMapUsed) lines.push('Body map:', ...formatBodyMapLines(bodyMapData));
-    const out: string[] = [];
-    let n = 0;
-    for (const l of lines) {
-      if (n + l.length + 1 > 2400) break;
-      out.push(l);
-      n += l.length + 1;
-    }
-    return out.join('\n');
-  };
-
   const downloadReport = () => {
     const report = generateSensoryReport();
     const blob = new Blob([report], { type: 'text/plain' });
@@ -421,7 +400,20 @@ export default function GatewayReviewPage({
                   <Download className="size-4" />
                   Download Text Report
                 </Button>
+                <Button variant="outline" asChild className="gap-2">
+                  <a href={VENICE_CHARACTER_URL} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="size-4" />
+                    Take it to Venice
+                  </a>
+                </Button>
               </div>
+              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                To go deeper with the same coach character, download a report above, then open it on Venice AI and attach
+                the file there. That is Venice AI&rsquo;s own service, not Nenya&rsquo;s: its terms and privacy policy
+                apply, and Nenya&rsquo;s checks (identifier scrubbing, safety notices, the five-exchange limit) do not run
+                there. Nothing is sent from this page. Please remove any names or details you would not want shared.{' '}
+                {REFERRAL_NOTE}
+              </p>
             </div>
 
             <SubmitSensoryReportForm report={generateSensoryReport()} />
@@ -583,7 +575,7 @@ export default function GatewayReviewPage({
           <div className="flex justify-center pt-8">
             <Button
               size="lg"
-              onClick={() => onContinue(buildCoachSummary())}
+              onClick={onContinue}
               className="gap-2 px-12"
             >
               Talk it through with the coach

@@ -710,22 +710,19 @@
             drop-shadow(0 0 30px var(--nenya-accent-primary));
   }
 
-  /* Clickable logo hint - works on hover and touch */
-  .nenya-logo-clickable {
+  /* The large logo does nothing on click; hovering only brightens its glow. */
+  .nenya-logo-hover {
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
     user-select: none;
   }
   
-  .nenya-logo-clickable:hover .nenya-logo-glow,
-  .nenya-logo-clickable:active .nenya-logo-glow {
+  .nenya-logo-hover:hover .nenya-logo-glow {
     filter: drop-shadow(0 0 12px var(--nenya-accent-warm)) 
             drop-shadow(0 0 24px var(--nenya-accent-metallic))
             drop-shadow(0 0 36px var(--nenya-accent-primary));
   }
   
-  .dark .nenya-logo-clickable:hover .nenya-logo-glow,
-  .dark .nenya-logo-clickable:active .nenya-logo-glow {
+  .dark .nenya-logo-hover:hover .nenya-logo-glow {
     filter: drop-shadow(0 0 16px var(--nenya-accent-warm)) 
             drop-shadow(0 0 32px var(--nenya-accent-metallic))
             drop-shadow(0 0 48px var(--nenya-accent-primary));

@@ -82,8 +82,6 @@ export default function App() {
   // Gateway system state
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
   const [gatewayData, setGatewayData] = useState<GatewayData[]>([]);
-  // Text summary of the finished reflection, offered (never sent automatically) to the coach.
-  const [reflectionSummary, setReflectionSummary] = useState('');
   // Shared across every gateway -- not owned by Sight or any one gateway's
   // data blob, so it persists regardless of which gateways are visited or
   // in what order.
@@ -114,28 +112,6 @@ export default function App() {
   useEffect(() => {
     setBreathingCycleStart(Date.now());
   }, [breathingTechnique]);
-
-  // Pause/play for the breathing pulse, orbit, and numeric counter together
-  // (triggered by clicking the large logo). On resume we shift the shared
-  // clock forward by however long playback was frozen, so every animation
-  // picks back up at the same phase it paused at instead of jumping ahead
-  // to "catch up" for the paused duration.
-  const [breathingPaused, setBreathingPaused] = useState(false);
-  const pausedAtRef = useRef<number | null>(null);
-  const toggleBreathingPaused = () => {
-    setBreathingPaused((wasPaused) => {
-      if (wasPaused) {
-        if (pausedAtRef.current != null) {
-          const pausedMs = Date.now() - pausedAtRef.current;
-          setBreathingCycleStart((s) => s + pausedMs);
-          pausedAtRef.current = null;
-        }
-        return false;
-      }
-      pausedAtRef.current = Date.now();
-      return true;
-    });
-  };
 
   // Breathing popout state
   const [breathingPopoutOpen, setBreathingPopoutOpen] = useState(false);
@@ -268,7 +244,6 @@ export default function App() {
   const handleGatewaysSelected = (gateways: Gateway[]) => {
     setSelectedGateways(gateways);
     setGatewayData([]);
-    setReflectionSummary('');
     navigateTo(gateways[0]);
   };
 
@@ -318,8 +293,7 @@ export default function App() {
   };
 
   // Handle continuing from gateway review
-  const handleContinueFromReview = (summary: string) => {
-    setReflectionSummary(summary);
+  const handleContinueFromReview = () => {
     // Check if we need color selection
     const sightData = gatewayData.find(g => g.gateway === 'sight');
     const hasValidSightColors = sightData && sightData.data.color1 && sightData.data.color2;
@@ -367,7 +341,6 @@ export default function App() {
     setAboutSection(undefined);
     setSelectedGateways([]);
     setGatewayData([]);
-    setReflectionSummary('');
     setInterfaceColors({ color1: '#7A9B9E', color2: '#DAC682' });
     setCellCode('');
   };
@@ -448,7 +421,6 @@ export default function App() {
             ho={breathingTechnique.ho || 0}
             onTechniqueChange={setBreathingTechnique}
             cycleStart={breathingCycleStart}
-            paused={breathingPaused}
             minimized={breathingCounterMinimized}
             onMinimizedChange={setBreathingCounterMinimized}
           />
@@ -478,8 +450,6 @@ export default function App() {
               technique={breathingTechnique}
               cvMode={colorBlindMode}
               cycleStart={breathingCycleStart}
-              paused={breathingPaused}
-              onTogglePaused={toggleBreathingPaused}
               onStartTutorial={handleStartTutorial}
               entryUnlocked={termsAgreed}
             />
@@ -584,7 +554,6 @@ export default function App() {
           {currentScreen === 'session' && (
             <CoachDemo
               colors={interfaceColors}
-              reflectionSummary={reflectionSummary}
               onBack={() => navigateBack('home')}
               onBreathe={() => handleGlobalNavigation('welcome')}
               onPartnerPractice={handleNavigateToCell}

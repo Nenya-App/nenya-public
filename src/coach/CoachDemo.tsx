@@ -78,15 +78,13 @@ interface CoachDemoProps {
   onActiveChange?: (active: boolean) => void;
   /** Where "open the breathing tool" goes. Omit on the standalone page (it links to the site). */
   onBreathe?: () => void;
-  /** Text summary of the visitor's gateway reflection. Offered, never sent unless they opt in. */
-  reflectionSummary?: string;
   /** Optional link to the partner-practice demo. */
   onPartnerPractice?: () => void;
 }
 
 // The conversation lives in this component's memory and closing the tab ends it. The only thing
 // written to browser storage is the finish time described above.
-export default function CoachDemo({ colors, reflectionSummary = '', onBack, onActiveChange, onBreathe, onPartnerPractice }: CoachDemoProps) {
+export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, onPartnerPractice }: CoachDemoProps) {
   const color1 = norm(colors.color1, '#7A9B9E');
   const color2 = norm(colors.color2, '#DAC682');
   const session = { color1, color2 };
@@ -105,16 +103,10 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
   const [blocked, setBlocked] = useState(false);
   // Today's free conversations are used up. Only known when a first message is sent.
   const [capped, setCapped] = useState(false);
-  // The reflection is offered, not assumed. Scrubbed on this device before any use.
-  const offered = reflectionSummary.trim() ? scrubPII(reflectionSummary.trim()).text : '';
-  const offerable = !!offered && !looksLikeManipulation(offered);
   const [signaturePlaying, setSignaturePlaying] = useState(false);
   const stopSignature = useRef<(() => void) | null>(null);
   const notes = signatureNotes(color1, color2);
   useEffect(() => () => stopSignature.current?.(), []);
-  const [shareReflection, setShareReflection] = useState(false);
-  const [contextDropped, setContextDropped] = useState(false);
-  const context = shareReflection && offerable ? offered : '';
   const [flag, setFlag] = useState<SafetyFlag | null>(null);
   const [flaggedText, setFlaggedText] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
@@ -170,7 +162,7 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: toWire(next), session, ...(context ? { context } : {}), ticket }),
+        body: JSON.stringify({ messages: toWire(next), session, ticket }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as {
@@ -181,11 +173,6 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
         blocked?: string;
       };
       // The server screens too. A blocked message is not part of the conversation.
-      if (data.blocked === 'context') {
-        setShareReflection(false);
-        setContextDropped(true);
-        return;
-      }
       if (data.blocked === 'cap') {
         setCapped(true);
         return;
@@ -434,36 +421,6 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                 </ul>
               </div>
 
-              {offerable && (
-                <div className="space-y-3 rounded-2xl border bg-card p-5" style={{ borderColor: `${color2}66` }}>
-                  <h2 className="text-lg">Bring your reflection with you?</h2>
-                  <p className="text-sm text-muted-foreground">
-                    You just finished the gateways. If you like, the coach can see a short text summary of what you
-                    entered, so you do not have to explain it again. This is your choice, and it is off unless you turn
-                    it on. Drawings are never included.
-                  </p>
-                  <label className="flex items-start gap-3 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={shareReflection}
-                      onChange={(e) => setShareReflection(e.target.checked)}
-                      className="mt-1 size-4"
-                    />
-                    <span>Share this summary with the coach for this conversation</span>
-                  </label>
-                  <details className="text-sm text-muted-foreground">
-                    <summary className="cursor-pointer">See exactly what would be shared</summary>
-                    <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-3 text-xs">
-                      {offered}
-                    </pre>
-                    <p className="mt-2 text-xs">
-                      Common identifiers are replaced first, but names are not always caught. It goes to Venice AI the
-                      same way your messages do, and it is not stored by Nenya.
-                    </p>
-                  </details>
-                </div>
-              )}
-
               <div
                 className="flex items-center justify-between gap-4 rounded-2xl border bg-card p-4"
                 style={{ borderColor: `${color1}55` }}
@@ -524,7 +481,8 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                 </li>
                 <li>
                   The free demo can only start a set number of conversations a day for everyone together. If today&rsquo;s
-                  are used up, the page will say so before anything you write is sent.
+                  are used up, the page will tell you when you send your first message, and that message is not passed
+                  on or kept.
                 </li>
                 <li>Please leave out names, addresses, and other identifying details.</li>
                 <li>
@@ -635,7 +593,7 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                     Keep a record, or report a problem
                   </summary>
                   <div className="pt-3">
-                    <TranscriptTools messages={toWire(messages)} session={session} context={context} ticket={ticket} />
+                    <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} />
                   </div>
                 </details>
               )}
@@ -645,8 +603,8 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                   <h2 className="text-xl">The free conversations for today are used up</h2>
                   <p className="text-sm text-muted-foreground">
                     This demo is free, and each reply costs real money, so Nenya can only offer a set number of
-                    conversations a day. Today&rsquo;s are taken, and nothing you wrote was sent or kept. It opens again
-                    tomorrow. Until then, the breathing tool is here, or you can continue with the same character on
+                    conversations a day. Today&rsquo;s are taken. Your message was not passed on to Venice AI and was
+                    not kept. It opens again tomorrow. Until then, the breathing tool is here, or you can continue with the same character on
                     Venice AI, with the differences explained below.
                   </p>
                   <div className="flex flex-wrap items-center gap-4">
@@ -701,12 +659,6 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                       Send
                     </Button>
                   </div>
-                  {contextDropped && (
-                    <p role="status" className="text-sm text-muted-foreground">
-                      Part of your reflection read like an instruction to the coach, so it was left out. You can
-                      continue without it.
-                    </p>
-                  )}
                   {blocked && (
                     <p role="alert" className="rounded-lg border border-amber-500/60 p-3 text-sm">
                       {MANIPULATION_NOTICE}
@@ -743,7 +695,7 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
               {stage === 'done' && !flag && venicePanel}
 
               {stage === 'done' && (
-                <TranscriptTools messages={toWire(messages)} session={session} context={context} ticket={stopped ? undefined : ticket} />
+                <TranscriptTools messages={toWire(messages)} session={session} ticket={stopped ? undefined : ticket} />
               )}
             </>
           )}

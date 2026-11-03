@@ -23,8 +23,6 @@ interface NenyaLogoProps {
   /** Shared clock anchor (ms epoch) used to phase-align the orbit's
    *  rotation on mount/resume, the same anchor the breathing pulse uses. */
   cycleStart?: number;
-  /** Freezes the orbit (rotation and per-orb shimmer) at its current frame. */
-  paused?: boolean;
 }
 
 const ORBIT_DURATION = 120; // seconds for one complete orbit
@@ -35,7 +33,6 @@ export default function NenyaLogo({
   showValarOrbit = false,
   showLogo = true,
   cycleStart,
-  paused = false,
 }: NenyaLogoProps) {
   const flatLogoSrc = size <= SMALL_LOGO_MAX_SIZE ? nenyaLogoSmall : nenyaLogo;
 
@@ -48,16 +45,15 @@ export default function NenyaLogo({
   const outerOrbitRadius = size / 2; // Half the logo size = outer edge of breathing animation
   const outerOrbSize = orbSize * 0.5; // Half the size of inner orbs
 
-  // Recomputed only on mount and on pause/resume, so a fresh mount or a
-  // resume-from-pause starts the rotation at the correct phase instead of
-  // snapping back to angle 0.
+  // Recomputed on mount, so a fresh mount starts the rotation at the correct
+  // phase instead of snapping back to angle 0.
   const [orbitDelay, setOrbitDelay] = useState(0);
   useEffect(() => {
     if (cycleStart == null) return;
     const elapsed = (Date.now() - cycleStart) / 1000;
     const phase = ((elapsed % ORBIT_DURATION) + ORBIT_DURATION) % ORBIT_DURATION;
     setOrbitDelay(-phase);
-  }, [cycleStart, paused]);
+  }, [cycleStart]);
   
   return (
     <div 
@@ -107,8 +103,7 @@ export default function NenyaLogo({
             // already-running infinite WAAPI loop.
             animation: `nenya-orbit-cw ${ORBIT_DURATION}s linear infinite`,
             animationDelay: `${orbitDelay}s`,
-            animationPlayState: paused ? 'paused' : 'running',
-          }}
+                      }}
         >
           {valarColors.map((valar, index) => {
             // Calculate position on circle
@@ -136,7 +131,7 @@ export default function NenyaLogo({
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
                 }}
-                animate={paused ? false : {
+                animate={{
                   background: [
                     `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
                     `radial-gradient(circle at 30% 30%, ${colors[1]}ff, ${colors[1]}ee 50%, ${colors[1]}99 80%, ${colors[1]}44)`,
@@ -194,8 +189,7 @@ export default function NenyaLogo({
             willChange: 'transform',
             animation: `nenya-orbit-ccw ${ORBIT_DURATION}s linear infinite`, // Opposite direction
             animationDelay: `${orbitDelay}s`,
-            animationPlayState: paused ? 'paused' : 'running',
-          }}
+                      }}
         >
           {valarColors.map((valar, index) => {
             // Calculate position on circle
@@ -223,7 +217,7 @@ export default function NenyaLogo({
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
                 }}
-                animate={paused ? false : {
+                animate={{
                   background: [
                     `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
                     `radial-gradient(circle at 30% 30%, ${colors[1]}ff, ${colors[1]}ee 50%, ${colors[1]}99 80%, ${colors[1]}44)`,
@@ -283,8 +277,7 @@ export default function NenyaLogo({
             top: '50%',
             transform: 'translate(-50%,-50%)',
             animation: showValarOrbit ? 'gem-shimmer 14s ease-in-out infinite' : undefined,
-            animationPlayState: paused ? 'paused' : 'running',
-            opacity: 1,
+                        opacity: 1,
             pointerEvents: 'none',
             display: 'block',
             userSelect: 'none',

@@ -90,11 +90,6 @@ The honest edges:
     statement is never sent to the AI and ends the conversation with resources;
     ambiguous distress is sent with an instruction to respond with care. Also phrase
     matching, so it can miss things and flag harmless words.
-  - **Reflection hand-off**: if the visitor arrives from the gateways, the session screen
-    offers (off by default, with a preview) a text summary of their entries, scrubbed on the
-    device and screened again on the server. It is sent as framed background data, bound
-    into the ticket and the signed transcript as `context`. Uploading a prior report is not
-    built.
   - **Continue on Venice**: when a demo ends without a safety notice, the page links to the
     same character on Venice AI's own site (links in [`veniceLinks.ts`](./src/lib/veniceLinks.ts),
     with the referral code disclosed), warning that Nenya's protections do not run there.

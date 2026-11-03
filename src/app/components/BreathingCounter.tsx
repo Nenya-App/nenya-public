@@ -16,9 +16,6 @@ interface BreathingCounterProps {
   /** Shared clock anchor (ms epoch) so this stays in phase with the
    *  breathing pulse animation instead of timing itself independently. */
   cycleStart?: number;
-  /** Freezes the count/phase at its current value. Expects the caller to
-   *  shift cycleStart forward by the paused duration on resume. */
-  paused?: boolean;
   /** Controlled: when true, only the drag handle and the counter itself
    *  show -- the technique picker below is hidden. Defaults to false
    *  (maximized) if omitted, since not every caller needs the collapse. */
@@ -36,7 +33,6 @@ export function BreathingCounter({
   onTechniqueChange,
   id,
   cycleStart,
-  paused = false,
   minimized = false,
   onMinimizedChange,
 }: BreathingCounterProps) {
@@ -47,7 +43,7 @@ export function BreathingCounter({
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    if (!enabled || !show || paused) return;
+    if (!enabled || !show) return;
     const start = cycleStart ?? Date.now();
     const interval = setInterval(() => {
       const cycle = IH + HI + EX + HO;
@@ -65,7 +61,7 @@ export function BreathingCounter({
       setPhase(ph);
     }, 80);
     return () => clearInterval(interval);
-  }, [enabled, show, IH, HI, EX, HO, cycleStart, paused]);
+  }, [enabled, show, IH, HI, EX, HO, cycleStart]);
 
   if (!enabled || !show) return null;
 

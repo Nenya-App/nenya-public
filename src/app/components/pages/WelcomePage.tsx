@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import NenyaLogo from '../NenyaLogo';
 import { ValarBreathingLogo, BreathingTechnique } from '../ValarBreathingLogo';
 import WelcomePopup from '../WelcomePopup';
-import { ArrowRight, ChevronDown, Play, Pause } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { AppFooter } from '../AppFooter';
 import { SupportThisWork } from '../SupportThisWork';
 import { ContactSection } from '../ContactSection';
@@ -18,8 +18,6 @@ interface WelcomePageProps {
   technique?: BreathingTechnique | null;
   cvMode?: string;
   cycleStart?: number;
-  paused?: boolean;
-  onTogglePaused?: () => void;
   onStartTutorial?: () => void;
   entryUnlocked?: boolean;
 }
@@ -34,8 +32,6 @@ export default function WelcomePage({
   technique = null,
   cvMode = '',
   cycleStart,
-  paused = false,
-  onTogglePaused,
   onStartTutorial,
   entryUnlocked = false,
 }: WelcomePageProps) {
@@ -86,20 +82,8 @@ export default function WelcomePage({
             leaving a large empty gap above it. The outer section's own
             justify-center now centers this + the text block as one unit. */}
         <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0.7s both' }} className={`flex items-center justify-center transition-all duration-500`}>
-          <div
-            id="tutorial-logo"
-            role="button"
-            aria-label={paused ? 'Resume breathing animation' : 'Pause breathing animation'}
-            tabIndex={0}
-            onClick={onTogglePaused}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onTogglePaused?.();
-              }
-            }}
-            className={`relative transition-all duration-500 nenya-logo-clickable cursor-pointer group`}
-          >
+          {/* Not interactive: hovering only brightens the glow. */}
+          <div id="tutorial-logo" className="relative transition-all duration-500 nenya-logo-hover">
             <ValarBreathingLogo
               enabled={breathingEnabled}
               opacity={breathingOpacity}
@@ -108,7 +92,6 @@ export default function WelcomePage({
               technique={technique}
               cvMode={cvMode}
               cycleStart={cycleStart}
-              paused={paused}
             >
               <div className="nenya-logo-glow">
                 <NenyaLogo
@@ -116,26 +99,10 @@ export default function WelcomePage({
                   showValarOrbit={orbitEnabled}
                   showLogo={logoVisible}
                   cycleStart={cycleStart}
-                  paused={paused}
                 />
               </div>
             </ValarBreathingLogo>
 
-            {/* Pause/play affordance - visible on hover, or always while paused.
-                z-30 so it renders above ValarBreathingLogo's content layer (z-10). */}
-            <div
-              className={`pointer-events-none absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-300 ${
-                paused ? 'opacity-100' : 'opacity-0 group-hover:opacity-70'
-              }`}
-            >
-              <div className="rounded-full bg-background/70 backdrop-blur-sm p-4">
-                {paused ? (
-                  <Play className="size-8 text-foreground fill-current" />
-                ) : (
-                  <Pause className="size-8 text-foreground fill-current" />
-                )}
-              </div>
-            </div>
           </div>
         </div>
 

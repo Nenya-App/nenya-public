@@ -149,10 +149,6 @@ interface ValarBreathingLogoProps {
    *  numeric breathing counter instead of timing itself from whenever this
    *  component happened to last mount. */
   cycleStart?: number;
-  /** Freezes the pulse at its current frame. Expects the caller to shift
-   *  cycleStart forward by the paused duration on resume, so playback
-   *  continues from the same phase instead of jumping ahead. */
-  paused?: boolean;
 }
 
 export function ValarBreathingLogo({
@@ -164,7 +160,6 @@ export function ValarBreathingLogo({
   technique = null,
   cvMode = '',
   cycleStart,
-  paused = false,
 }: ValarBreathingLogoProps) {
   // Build array of all 96 colors (16 Valar × 6 colors each) in order
   const allColors: string[] = [];
@@ -224,7 +219,7 @@ export function ValarBreathingLogo({
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    if (!enabled || paused || cycleStart == null) return;
+    if (!enabled || cycleStart == null) return;
     let timeoutId: ReturnType<typeof setTimeout>;
     const scheduleNext = () => {
       const elapsed = (Date.now() - cycleStart) / 1000;
@@ -238,7 +233,7 @@ export function ValarBreathingLogo({
     scheduleNext();
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, paused, cycleStart, cycleDuration, totalDuration, allColors.length, ringsEpochKey]);
+  }, [enabled, cycleStart, cycleDuration, totalDuration, allColors.length, ringsEpochKey]);
 
   const activeColor = allColors[activeIndex] ?? allColors[0];
 
@@ -291,7 +286,6 @@ export function ValarBreathingLogo({
               zIndex: 1,
               animation: `${ringAnimName} ${cycleDuration}s linear infinite`,
               animationDelay: `${ringDelay}s`,
-              animationPlayState: paused ? 'paused' : 'running',
               willChange: 'transform, opacity',
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
