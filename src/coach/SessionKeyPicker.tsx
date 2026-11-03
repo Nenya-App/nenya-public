@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Play, Shuffle } from 'lucide-react';
 import NenyaLogo from '../app/components/NenyaLogo';
 import { Button } from '../app/components/ui/button';
-import { isHex, playSignature, signatureNotes } from '../lib/sessionSound';
+import { isHex, playSignature, randomSessionKey, signatureNotes } from '../lib/sessionSound';
 
 export interface SessionKey {
   color1: string;
@@ -15,7 +15,6 @@ interface SessionKeyPickerProps {
 }
 
 const DEFAULT_1 = '#7A9B9E';
-const DEFAULT_2 = '#DAC682';
 
 const randomHex = () =>
   '#' +
@@ -27,11 +26,13 @@ const randomHex = () =>
 const withHash = (v: string) => (v.startsWith('#') ? v : '#' + v);
 
 // Used when someone opens the coach on its own, or finishes the gateways without
-// choosing a Sight color. Two colors plus the melody they make: a temporary
+// choosing a Sight color. It opens on a random pair. Two colors plus the melody they make: a temporary
 // session key. Nothing here is stored.
 export default function SessionKeyPicker({ onComplete, onBack }: SessionKeyPickerProps) {
-  const [c1, setC1] = useState(DEFAULT_1);
-  const [c2, setC2] = useState(DEFAULT_2);
+  // The colors shown on arrival are random on every load; the visitor can change them.
+  const [start] = useState(randomSessionKey);
+  const [c1, setC1] = useState(start.color1);
+  const [c2, setC2] = useState(start.color2);
   const [playing, setPlaying] = useState(false);
   const [played, setPlayed] = useState(false);
   const stop = useRef<(() => void) | null>(null);

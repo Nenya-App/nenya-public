@@ -6,6 +6,20 @@ const FREQS = [261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25, 783.99,
 const NAMES = ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5', 'A5'];
 const STEP_SECONDS = 0.39;
 
+/** Two random, mid-range colors: the temporary session key when none comes from the gateways. */
+export function randomSessionKey(): { color1: string; color2: string } {
+  const bytes = new Uint8Array(6);
+  try {
+    crypto.getRandomValues(bytes);
+  } catch {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  // Kept away from near-black and near-white so the page stays readable.
+  const hex = (b: Uint8Array) =>
+    '#' + Array.from(b, (v) => (60 + (v % 160)).toString(16).padStart(2, '0')).join('').toUpperCase();
+  return { color1: hex(bytes.slice(0, 3)), color2: hex(bytes.slice(3)) };
+}
+
 export const isHex = (c: string): boolean => /^#[0-9A-Fa-f]{6}$/.test(c);
 
 /** Three scale positions (0-9) for one color. */

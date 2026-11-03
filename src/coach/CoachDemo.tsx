@@ -37,6 +37,8 @@ interface CoachDemoProps {
   colors: { color1: string; color2: string };
   /** Where the header's back control goes. Omit on the standalone page (it links to the site). */
   onBack?: () => void;
+  /** Tells the page whether there is a conversation that leaving would lose. */
+  onActiveChange?: (active: boolean) => void;
   /** Where "open the breathing tool" goes. Omit on the standalone page (it links to the site). */
   onBreathe?: () => void;
   /** Text summary of the visitor's gateway reflection. Offered, never sent unless they opt in. */
@@ -47,7 +49,7 @@ interface CoachDemoProps {
 
 // Everything lives in this component's memory: nothing is written to browser
 // storage, and closing the tab ends the conversation.
-export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBreathe, onPartnerPractice }: CoachDemoProps) {
+export default function CoachDemo({ colors, reflectionSummary = '', onBack, onActiveChange, onBreathe, onPartnerPractice }: CoachDemoProps) {
   const color1 = norm(colors.color1, '#7A9B9E');
   const color2 = norm(colors.color2, '#DAC682');
   const session = { color1, color2 };
@@ -76,6 +78,10 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onBr
   const [flaggedText, setFlaggedText] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    onActiveChange?.(messages.length > 0);
+  }, [messages.length, onActiveChange]);
 
   const turn = Math.min(messages.filter((m) => m.role === 'user').length + (sending ? 0 : 1), MAX_TURNS);
 
