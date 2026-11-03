@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "indexnow": "node scripts/indexnow.mjs",
     "dev": "vite"
   },
   "dependencies": {
