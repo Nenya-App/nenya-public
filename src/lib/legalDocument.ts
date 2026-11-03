@@ -131,7 +131,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 14,
         heading: 'The Short Version',
         paragraphs: [
-          'Nenya has no user accounts, no analytics, no advertising, and no tracking cookies. What you enter while using the reflection tool (colors, melodies, drawings, body-map placements, written reflections) stays in your browser and is not sent to us. It is gone when you close the tab. The exceptions are the ones you choose yourself: downloading a PDF report, which is created on your own device, the optional submission form described in Section 16, and the optional coach demo described in Section 21.',
+          'Nenya has no user accounts, no analytics, no advertising, and no tracking cookies. What you enter while using the reflection tool (colors, melodies, drawings, body-map placements, written reflections) stays in your browser and is not sent to us. It is gone when you close the tab. By default, the only thing the site keeps on your device between visits is a single timestamp saved after you finish a coach conversation, described in Section 21. If you choose “Remember my settings on this device,” it also keeps your display settings and your agreement to these terms, described in Section 19. The exceptions to the rest are the ones you choose yourself: downloading a PDF report, which is created on your own device, the optional submission form described in Section 16, and the optional coach demo described in Section 21.',
         ],
       },
       {
@@ -160,7 +160,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         paragraphs: [],
         bullets: [
           'It does not create accounts, profiles, or persistent identifiers.',
-          'It does not set cookies or use fingerprinting. It does not even remember your light or dark mode between visits.',
+          'It does not set cookies or use fingerprinting. Unless you turn on “Remember my settings on this device,” it does not remember your light or dark mode or anything else between visits, apart from the timestamp saved after a coach conversation ends (Section 21).',
           'It does not send what you enter in the reflection tool to any server. The only exceptions are the form in Section 16 and the optional coach demo in Section 21, both of which you start yourself.',
           'It does not sell, share, or monetize data.',
         ],
@@ -174,9 +174,11 @@ export const LEGAL_PARTS: LegalPart[] = [
       },
       {
         number: 19,
-        heading: 'Cookies',
+        heading: 'Cookies and Saved Settings',
         paragraphs: [
-          'Nenya sets none. If you see a cookie from this domain that isn’t explained here, tell us at info@nenya.biz.',
+          'Nenya sets no cookies. If you see a cookie from this domain that isn’t explained here, tell us at info@nenya.biz.',
+          'Two kinds of things can be saved in your browser’s local storage. They are not cookies, they stay on your device, and they are never sent to us. First, the timestamp described in Section 21, saved automatically after a coach conversation ends. Second, only if you turn on “Remember my settings on this device” (in the settings menu, or with the box on the terms screen): your theme, text size, animation and breathing choices, and the date of the terms you agreed to, so you are not asked each visit. If the terms change, you will be asked again. Turning the switch off erases the second kind. “Forget everything this device remembers” in the settings menu erases both, and the Emergency Exit button erases everything before it leaves the page.',
+          'We never save what you write, draw, or answer, your session colors, or anything derived from them. Anyone who can use your device could see these saved items in its browser tools, so on a shared or watched device, leave the switch off and use Forget or Emergency Exit when you finish.',
         ],
       },
       {
@@ -205,6 +207,8 @@ export const LEGAL_PARTS: LegalPart[] = [
           'Before your message is sent, the page replaces some common identifiers (such as email addresses, phone numbers, street addresses, and some names) with placeholders, and our server does the same again. This is not a guarantee, and most names will not be caught, so please still leave out names, contact details, and other identifying information.',
           'The demo checks each message for signs of crisis. If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends, and the page shows crisis resources. If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources. These checks are simple phrase matching: they can miss things and can flag harmless words. If you think a notice was wrong, you can report it; a report is sent only if you press Send, and it includes your message only if you choose.',
           'After your first exchange, and when a conversation finishes, you can download a transcript. If you ask for a signed copy, your page sends the conversation so far to our server one more time so it can confirm it matches what the server produced and add a dated signature. We do not store it, and the signed file stays with you. If you choose to send a transcript to us, for example to report a problem, you see exactly what will be sent first and may add a short note of your own. It reaches us the way other submissions do (Section 16).',
+          'When a conversation ends without a safety notice, the page saves the current time in your browser’s local storage, and only the time. It lets the free demo rest for 12 hours before opening again, because each reply costs real money to produce. It is not an identifier, it is never sent to us, and we cannot read it. Clearing this site’s data in your browser removes it. Because it is only on your device, it does not stop anyone determined to use the demo again sooner, and it is not meant to.',
+          'To keep the free demo affordable, there is a limit on how many conversations it can start each day across all visitors. Our server keeps a single running number for this, such as “47 conversations today,” with no information about who started them. When the day’s number is reached, the page says so and nothing you wrote is sent. Conversations already under way are not cut off.',
           'The demo also screens each message for attempts to give the coach instructions or change how it works, such as asking it to ignore its rules or reveal its setup. A message that looks like that is not sent, and you can reword it. This is simple phrase matching and is not a guarantee.',
           'When the demo ends without a safety notice, the page offers a link to continue with the same character on Venice AI’s own site. That is a separate service: leaving Nenya, you are under Venice AI’s terms and privacy policy, and none of the checks described in this section (scrubbing, safety notices, screening, the five-exchange limit) run there. Nothing from the demo is carried over. The Venice links, including the sign-up link, carry Nenya’s referral code. Under Venice AI’s referral program, if you sign up for a paid Pro account through them, Nenya earns $10 in Venice credits and you receive a $10 welcome bonus. Those credits help pay for the coach demo. It costs you nothing extra, and you may go to venice.ai directly instead.',
           'The demo is not therapy, cannot help in a crisis, and is not intended for people under 13 or under the minimum age in your country, matching Section 3.',

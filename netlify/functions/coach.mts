@@ -20,6 +20,7 @@ import { createHash, createHmac, createPrivateKey, createPublicKey, sign as edSi
 import { detectFlag } from '../../src/lib/safetyFlags.ts';
 import { scrubPII } from '../../src/lib/piiScrub.ts';
 import { looksLikeManipulation, neutralize } from '../../src/lib/promptGuard.ts';
+import { claimConversationSlot, capFromEnv } from '../../src/lib/dailyCap.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
 
 const MAX_TURNS = 5;
@@ -209,6 +210,15 @@ async function notesFor(userTexts: string[], softened: boolean): Promise<string>
   return loadMethodNotes();
 }
 
+// A store that cannot be reached counts as open, as in claimConversationSlot.
+async function slotAvailable(): Promise<boolean> {
+  try {
+    return await claimConversationSlot(getStore('coach-private'), capFromEnv(process.env.COACH_DAILY_CAP));
+  } catch {
+    return true;
+  }
+}
+
 function systemInstruction(turn: number, softened: boolean, notes: string): string {
   const parts = [
     // Our wording wins over the character card on Venice, which is awkward to edit.
@@ -327,6 +337,10 @@ export default async (req: Request): Promise<Response> => {
     return json(200, { done: true, flag });
   }
 
+  // The daily limit on new conversations. Ones already under way are never cut off, and a message
+  // that stopped above does not use a slot because it never reaches the AI.
+  if (turn === 1 && !(await slotAvailable())) return json(200, { blocked: 'cap' });
+
   const model = process.env.COACH_MODEL || DEFAULT_MODEL;
   const slug = process.env.COACH_CHARACTER_SLUG || DEFAULT_CHARACTER_SLUG;
 
@@ -388,14 +402,15 @@ export default async (req: Request): Promise<Response> => {
 
 // Literal values on purpose: Netlify reads this block by static analysis, so it
 // cannot follow constants. Keep `path` in step with ROUTE above.
-// ~40 requests a minute per visitor: a room of people sharing venue Wi-Fi can
-// each finish a turn, while a script is cut off. Netlify takes up to ~10 seconds
+// ~15 requests a minute per visitor: a person sends a message every 20 seconds
+// at the fastest, and a small group on shared Wi-Fi can still each take a turn,
+// while a script is cut off. Netlify takes up to ~10 seconds
 // to start enforcing, and invalid rules do not fail the deploy, so check the
 // deploy log's post-processing step after changing this.
 export const config = {
   path: '/api/coach',
   rateLimit: {
-    windowLimit: 40,
+    windowLimit: 15,
     windowSize: 60,
     aggregateBy: ['ip', 'domain'],
   },

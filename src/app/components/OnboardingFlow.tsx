@@ -7,6 +7,7 @@ import { ScrollIndicator } from './ScrollIndicator';
 import { LegalDocumentBody } from './LegalDocumentBody';
 import { DownloadLegalPdfButton } from './DownloadLegalPdfButton';
 import { LEGAL_EFFECTIVE_DATE } from '../../lib/legalDocument';
+import { rememberTerms, setRemembering } from '../../lib/deviceMemory';
 import { PRESETS, sameTechnique, type BreathingTechnique } from '../../lib/breathingPresets';
 
 export type OnboardingStep = 'rhythm' | 'counter' | 'process' | 'terms';
@@ -92,8 +93,15 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
     };
   }, [step]);
 
+  // Off unless the visitor ticks it. Saves their settings and this agreement on this device only.
+  const [rememberHere, setRememberHere] = useState(false);
+
   const handleAgree = () => {
     if (isExiting) return;
+    if (rememberHere) {
+      setRemembering(true);
+      rememberTerms(LEGAL_EFFECTIVE_DATE);
+    }
     setIsExiting(true);
     setTimeout(onFinish, 700);
   };
@@ -294,8 +302,20 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                     <LegalDocumentBody compact />
                     <ScrollIndicator containerRef={scrollRef} hideThreshold={50} />
                   </div>
+                  <label className="flex shrink-0 items-start gap-2 border-t border-border bg-background/50 px-4 pt-3 text-xs text-muted-foreground sm:px-6">
+                    <input
+                      type="checkbox"
+                      checked={rememberHere}
+                      onChange={(e) => setRememberHere(e.target.checked)}
+                      className="mt-0.5 size-4 shrink-0"
+                    />
+                    <span>
+                      Remember my settings and this agreement on this device, so I am not asked each visit. Saved in this
+                      browser only and never sent to Nenya. I can turn it off any time in the settings menu.
+                    </span>
+                  </label>
                   <div
-                    className="grid shrink-0 grid-cols-2 gap-2 border-t border-border bg-background/50 px-4 py-3 sm:gap-3 sm:px-6"
+                    className="grid shrink-0 grid-cols-2 gap-2 bg-background/50 px-4 py-3 sm:gap-3 sm:px-6"
                     style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
                   >
                     <Button size="lg" onClick={handleAgree} className="min-h-[44px] text-xs sm:text-sm">

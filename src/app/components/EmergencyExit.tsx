@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowUpRight, X, Info } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { wipeDevice } from '../../lib/deviceMemory';
 
 interface EmergencyExitModalProps {
   isOpen: boolean;
@@ -68,6 +69,8 @@ function EmergencyExitModal({ isOpen, onClose, onInitiateEagleProtocol }: Emerge
     } catch (e) {
       console.error('Failed to clear session data', e);
     }
+    // Anything the site saved on this device goes too, so a shared or watched device shows no trace.
+    wipeDevice({ keepOwner: false });
 
     // Redirect immediately to Wikipedia - Rings of Power (Nenya) article
     // Using replace() instead of href to prevent back button navigation
@@ -282,6 +285,7 @@ export function EmergencyExitButton({
     } catch (e) {
       console.error('Failed to clear session data', e);
     }
+    wipeDevice({ keepOwner: false });
 
     // Redirect immediately to Wikipedia - Rings of Power (Nenya) article
     // Using replace() instead of href to prevent back button navigation

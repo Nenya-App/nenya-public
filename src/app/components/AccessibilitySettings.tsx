@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
 import { useTheme } from './ThemeProvider';
+import { DeviceMemoryControls } from './DeviceMemoryControls';
 
 const VISION_MODES: { value: string; label: string }[] = [
   { value: '', label: 'Standard' },
@@ -292,6 +293,8 @@ export function AccessibilitySettingsContent({
         </>
       )}
       
+      <DeviceMemoryControls />
+
       {/* Apply Changes Button */}
       {hasChanges && (
         <>

@@ -3,6 +3,7 @@ import { GlobalNavigation } from '../app/components/GlobalNavigation';
 import { BreathingPopout } from '../app/components/BreathingPopout';
 import SessionKeyPicker from './SessionKeyPicker';
 import CoachDemo from './CoachDemo';
+import { usePref } from '../lib/deviceMemory';
 
 // The standalone /coach address: the same header as the rest of the site, then
 // the session key (two colors and the melody they make), then the conversation.
@@ -10,14 +11,15 @@ import CoachDemo from './CoachDemo';
 // support section on this page.
 export default function CoachPage() {
   const [colors, setColors] = useState<{ color1: string; color2: string } | null>(null);
-  const [textSize, setTextSize] = useState(16);
+  // Display choices are kept only if the visitor turned on "Remember on this device".
+  const [textSize, setTextSize] = usePref('textSize', 16);
   // The logo opens the same breathing animation panel as the rest of the site.
   const [popoutOpen, setPopoutOpen] = useState(false);
-  const [breathingEnabled, setBreathingEnabled] = useState(true);
-  const [orbitEnabled, setOrbitEnabled] = useState(true);
-  const [logoVisible, setLogoVisible] = useState(true);
-  const [valarIndices, setValarIndices] = useState<number[]>([]);
-  const [opacity, setOpacity] = useState(1);
+  const [breathingEnabled, setBreathingEnabled] = usePref('breathingEnabled', true);
+  const [orbitEnabled, setOrbitEnabled] = usePref('orbitEnabled', true);
+  const [logoVisible, setLogoVisible] = usePref('logoVisible', true);
+  const [valarIndices, setValarIndices] = usePref('valarIndices', [] as number[]);
+  const [opacity, setOpacity] = usePref('breathingOpacity', 1);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--font-size', `${textSize}px`);

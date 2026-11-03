@@ -9,6 +9,7 @@ import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/veniceLinks';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
+import { OWNER_KEY, REST_KEY } from '../lib/deviceMemory';
 import { AppFooter } from '../app/components/AppFooter';
 import { SupportThisWork } from '../app/components/SupportThisWork';
 import { ShareNenya } from '../app/components/ShareNenya';
@@ -18,6 +19,34 @@ import { TranscriptTools } from './TranscriptTools';
 const MAX_TURNS = 5;
 const MAX_CHARS = 500;
 const ENDPOINT = '/api/coach';
+
+// The one thing this page keeps on the device: when a finished conversation ended, so the free demo
+// can rest for a while. A bare timestamp in local storage, never sent anywhere. Anyone can clear it,
+// so it is a courtesy, not a lock. Setting OWNER_KEY to '1' in your own browser skips it for testing.
+const REST_HOURS = 12;
+const HOUR_MS = 3600000;
+
+// When the rest ends (ms since epoch), or 0 if there is none.
+const readRestEnds = (): number => {
+  try {
+    if (localStorage.getItem(OWNER_KEY) === '1') return 0;
+    const finished = Number(localStorage.getItem(REST_KEY));
+    const now = Date.now();
+    if (!Number.isFinite(finished) || finished <= 0 || finished > now + 60000) return 0;
+    const ends = finished + REST_HOURS * HOUR_MS;
+    return ends > now ? ends : 0;
+  } catch {
+    return 0;
+  }
+};
+
+const markFinished = () => {
+  try {
+    if (localStorage.getItem(OWNER_KEY) !== '1') localStorage.setItem(REST_KEY, String(Date.now()));
+  } catch {
+    // Storage blocked: the demo simply does not rest.
+  }
+};
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const norm = (c: string | undefined, fallback: string) => (c && HEX.test(c) ? c.toUpperCase() : fallback);
@@ -55,8 +84,8 @@ interface CoachDemoProps {
   onPartnerPractice?: () => void;
 }
 
-// Everything lives in this component's memory: nothing is written to browser
-// storage, and closing the tab ends the conversation.
+// The conversation lives in this component's memory and closing the tab ends it. The only thing
+// written to browser storage is the finish time described above.
 export default function CoachDemo({ colors, reflectionSummary = '', onBack, onActiveChange, onBreathe, onPartnerPractice }: CoachDemoProps) {
   const color1 = norm(colors.color1, '#7A9B9E');
   const color2 = norm(colors.color2, '#DAC682');
@@ -66,12 +95,16 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
   const onGradient = getReadableTextColor(getGradientMidpoint(color1, color2));
 
   const [stage, setStage] = useState<Stage>('consent');
+  const [restEnds] = useState(readRestEnds);
+  const hoursLeft = Math.max(1, Math.ceil((restEnds - Date.now()) / HOUR_MS));
   const [messages, setMessages] = useState<Msg[]>([]);
   const [ticket, setTicket] = useState<string | undefined>();
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [blocked, setBlocked] = useState(false);
+  // Today's free conversations are used up. Only known when a first message is sent.
+  const [capped, setCapped] = useState(false);
   // The reflection is offered, not assumed. Scrubbed on this device before any use.
   const offered = reflectionSummary.trim() ? scrubPII(reflectionSummary.trim()).text : '';
   const offerable = !!offered && !looksLikeManipulation(offered);
@@ -101,17 +134,6 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
     headingRef.current?.focus({ preventScroll: true });
   }, [stage]);
 
-  const reset = () => {
-    setMessages([]);
-    setTicket(undefined);
-    setDraft('');
-    setError('');
-    setBlocked(false);
-    setFlag(null);
-    setFlaggedText('');
-    setContextDropped(false);
-    setStage('chat');
-  };
 
   const send = async () => {
     const text = draft.trim();
@@ -164,6 +186,10 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
         setContextDropped(true);
         return;
       }
+      if (data.blocked === 'cap') {
+        setCapped(true);
+        return;
+      }
       if (data.blocked) {
         setBlocked(true);
         return;
@@ -190,6 +216,9 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
   } as const;
 
   const stopped = flag?.tier === 'stop';
+  useEffect(() => {
+    if (stage === 'done' && !stopped) markFinished();
+  }, [stage, stopped]);
 
   // The coach's page-written lines look like its replies.
   const pageBubble = (text: string) => (
@@ -203,6 +232,67 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
         {text}
       </div>
     </div>
+  );
+
+  const breatheButton = (
+    onBreathe ? (
+      <Button onClick={onBreathe} className="gap-2" style={gradientButton}>
+        Open the breathing tool
+        <ArrowRight className="size-4" />
+      </Button>
+    ) : (
+      <a
+        href="/"
+        className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm"
+        style={gradientButton}
+      >
+        Open the breathing tool
+        <ArrowRight className="size-4" />
+      </a>
+    )
+  );
+  const venicePanel = (
+    <section
+      className="space-y-4 rounded-2xl border bg-card p-5"
+      style={{ borderColor: `${color1}66` }}
+      aria-label="Continue on Venice"
+    >
+      <h2 className="text-lg">Want to keep talking?</h2>
+      <p className="text-sm text-muted-foreground">
+        The demo stops at {MAX_TURNS} exchanges. The same character is also available on Venice AI&rsquo;s own
+        site, where you can continue for as long as your Venice account allows. Free Venice accounts can send a
+        limited number of messages, and paid plans raise that limit.
+      </p>
+      <div className="rounded-lg border border-amber-500/60 p-3 text-sm">
+        <p className="mb-1 font-medium">Before you go: it is not the same as this demo.</p>
+        <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+          <li>You leave Nenya. Venice AI&rsquo;s terms and privacy policy apply, not ours.</li>
+          <li>
+            Nenya&rsquo;s protections do not run there: no identifier scrubbing, no crisis check, no
+            screening for attempts to steer the coach, and no five-exchange limit. Please leave out names and
+            other identifying details yourself.
+          </li>
+          <li>Nothing from this conversation is carried over, and Nenya cannot sign what happens there.</li>
+          <li>It is still not therapy. In the US, call or text 988 in a crisis.</li>
+        </ul>
+      </div>
+      <div className="flex flex-wrap items-center gap-4">
+        <a
+          href={VENICE_CHARACTER_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm"
+          style={gradientButton}
+        >
+          Continue on Venice AI
+          <ArrowRight className="size-4" />
+        </a>
+        <a href={VENICE_SIGNUP_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>
+          Need a Venice account? Sign up
+        </a>
+      </div>
+      <p className="text-xs text-muted-foreground">{REFERRAL_NOTE}</p>
+    </section>
   );
   const userCount = messages.filter((m) => m.role === 'user').length;
   const remainingNote =
@@ -272,7 +362,34 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
 
       <main className="scroll-container flex-1 overflow-y-auto px-4 py-6 md:px-6">
         <div className="mx-auto w-full max-w-xl space-y-5">
-          {stage === 'consent' && (
+          {stage === 'consent' && restEnds > 0 && (
+            <section className="space-y-5" aria-labelledby="coach-title">
+              <h1 id="coach-title" ref={headingRef} tabIndex={-1} className="text-2xl outline-none md:text-3xl">
+                The coach is resting for now
+              </h1>
+              <p className="text-muted-foreground">
+                You finished a conversation recently. This demo is free, and every reply costs real money to produce, so
+                it reopens about {hoursLeft} {hoursLeft === 1 ? 'hour' : 'hours'} after a conversation ends. That is how
+                it stays free for everyone.
+              </p>
+              <p className="text-muted-foreground">
+                If you want to keep going, there are good places to do it that are not this page: the breathing tool
+                below, a person you trust, a journal, or a professional if it feels heavy. You can also continue with the
+                same character on Venice AI, with the differences explained there.
+              </p>
+              <div className="flex flex-wrap items-center gap-4">
+                {breatheButton}
+                <ShareNenya />
+              </div>
+              {venicePanel}
+              <p className="text-xs text-muted-foreground">
+                Your browser remembers only the time you finished, so the demo knows to rest. Nothing is sent to Nenya.
+                The &ldquo;Forget&rdquo; button in the settings menu, or clearing this site&rsquo;s data in your browser, removes it.
+              </p>
+            </section>
+          )}
+
+          {stage === 'consent' && restEnds === 0 && (
             <section className="space-y-5" aria-labelledby="coach-title">
               <h1 id="coach-title" ref={headingRef} tabIndex={-1} className="text-2xl outline-none md:text-3xl">
                 A short conversation with the Nenya coach
@@ -400,6 +517,14 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                   not store them, and they disappear when you close this tab. Venice AI&rsquo;s own policies apply to
                   what it receives.
                 </li>
+                <li>
+                  When a conversation ends, your browser saves the time, and only the time, so the free demo can rest
+                  for {REST_HOURS} hours before opening again. It is never sent to Nenya.
+                </li>
+                <li>
+                  The free demo can only start a set number of conversations a day for everyone together. If today&rsquo;s
+                  are used up, the page will say so before anything you write is sent.
+                </li>
                 <li>Please leave out names, addresses, and other identifying details.</li>
                 <li>
                   This is not therapy and it cannot help in a crisis. In the US, call or text 988. If you are in
@@ -514,7 +639,24 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                 </details>
               )}
 
-              {stage === 'chat' && (
+              {stage === 'chat' && capped && (
+                <section className="space-y-4 rounded-2xl border bg-card p-5" style={{ borderColor: `${color2}80` }}>
+                  <h2 className="text-xl">The free conversations for today are used up</h2>
+                  <p className="text-sm text-muted-foreground">
+                    This demo is free, and each reply costs real money, so Nenya can only offer a set number of
+                    conversations a day. Today&rsquo;s are taken, and nothing you wrote was sent or kept. It opens again
+                    tomorrow. Until then, the breathing tool is here, or you can continue with the same character on
+                    Venice AI, with the differences explained below.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    {breatheButton}
+                    <ShareNenya />
+                  </div>
+                </section>
+              )}
+              {stage === 'chat' && capped && venicePanel}
+
+              {stage === 'chat' && !capped && (
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -586,26 +728,7 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                       : 'The breathing tool is where Nenya begins. Follow the glow in, and out, for as long as you like.'}
                   </p>
                   <div className="flex flex-wrap items-center gap-4">
-                    {onBreathe ? (
-                      <Button onClick={onBreathe} className="gap-2" style={gradientButton}>
-                        Open the breathing tool
-                        <ArrowRight className="size-4" />
-                      </Button>
-                    ) : (
-                      <a
-                        href="/"
-                        className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm"
-                        style={gradientButton}
-                      >
-                        Open the breathing tool
-                        <ArrowRight className="size-4" />
-                      </a>
-                    )}
-                    {!stopped && (
-                      <button type="button" onClick={reset} className={linkClass}>
-                        Start a new conversation
-                      </button>
-                    )}
+                    {breatheButton}
                     <ShareNenya />
                     {onPartnerPractice && (
                       <button type="button" onClick={onPartnerPractice} className={linkClass}>
@@ -616,49 +739,7 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
                 </section>
               )}
 
-              {stage === 'done' && !flag && (
-                <section
-                  className="space-y-4 rounded-2xl border bg-card p-5"
-                  style={{ borderColor: `${color1}66` }}
-                  aria-label="Continue on Venice"
-                >
-                  <h2 className="text-lg">Want to keep talking?</h2>
-                  <p className="text-sm text-muted-foreground">
-                    The demo stops at {MAX_TURNS} exchanges. The same character is also available on Venice AI&rsquo;s own
-                    site, where you can continue for as long as your Venice account allows. Free Venice accounts can send a
-                    limited number of messages, and paid plans raise that limit.
-                  </p>
-                  <div className="rounded-lg border border-amber-500/60 p-3 text-sm">
-                    <p className="mb-1 font-medium">Before you go: it is not the same as this demo.</p>
-                    <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-                      <li>You leave Nenya. Venice AI&rsquo;s terms and privacy policy apply, not ours.</li>
-                      <li>
-                        Nenya&rsquo;s protections do not run there: no identifier scrubbing, no crisis check, no
-                        screening for attempts to steer the coach, and no five-exchange limit. Please leave out names and
-                        other identifying details yourself.
-                      </li>
-                      <li>Nothing from this conversation is carried over, and Nenya cannot sign what happens there.</li>
-                      <li>It is still not therapy. In the US, call or text 988 in a crisis.</li>
-                    </ul>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <a
-                      href={VENICE_CHARACTER_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm"
-                      style={gradientButton}
-                    >
-                      Continue on Venice AI
-                      <ArrowRight className="size-4" />
-                    </a>
-                    <a href={VENICE_SIGNUP_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>
-                      Need a Venice account? Sign up
-                    </a>
-                  </div>
-                  <p className="text-xs text-muted-foreground">{REFERRAL_NOTE}</p>
-                </section>
-              )}
+              {stage === 'done' && !flag && venicePanel}
 
               {stage === 'done' && (
                 <TranscriptTools messages={toWire(messages)} session={session} context={context} ticket={stopped ? undefined : ticket} />

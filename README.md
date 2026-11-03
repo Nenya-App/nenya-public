@@ -40,9 +40,12 @@ text is in the in-app **Terms of Use & Privacy Policy** (source:
 [`src/lib/legalDocument.ts`](./src/lib/legalDocument.ts)). In short:
 
 - No accounts, no analytics, no advertising, no cookies, no fingerprinting.
-- What you enter while using the tool stays in your browser's memory and is
-  gone when you close the tab. It is never sent to a server. Even your
-  light/dark choice is deliberately not remembered between visits.
+- What you enter while using the tool stays in your browser's memory and is gone when you close the tab. It is
+  never sent to a server (except the coach demo, if you choose it).
+- By default the only thing kept on your device between visits is one timestamp, saved after a coach
+  conversation ends so the free demo can rest for 12 hours. An opt-in "Remember my settings on this device"
+  switch also keeps display settings and the terms agreement. None of it is sent anywhere, and Emergency Exit
+  erases all of it. The full list is in [`docs/device-memory.md`](./docs/device-memory.md).
 - Fonts, images, and scripts are all served from the site itself, and the
   Content Security Policy in [`netlify.toml`](./netlify.toml) enforces that.
 

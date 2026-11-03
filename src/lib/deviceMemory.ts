@@ -1,0 +1,156 @@
+import { useEffect, useState, useSyncExternalStore } from 'react';
+
+// Everything Nenya may keep on a visitor's device lives behind this one file, so there is a single
+// place to read, a single list in the policy, and one function that erases it all.
+//
+// What is kept, and when:
+//   nenya.coach.rest   a timestamp, set automatically when a coach conversation ends (see CoachDemo).
+//   nenya.remember     '1' only if the visitor turned on "Remember on this device".
+//   nenya.prefs        display settings, written only while nenya.remember is on.
+//   nenya.terms        the terms date the visitor agreed to, written only while nenya.remember is on.
+//   nenya.coach.owner  '1' in the owner's own browser, to skip the coach rest while testing.
+// Never kept: anything a visitor writes, draws, picks as a session color, or answers in a gateway.
+// Nothing here is ever sent to a server, and there are no random identifiers.
+
+export const REST_KEY = 'nenya.coach.rest';
+export const OWNER_KEY = 'nenya.coach.owner';
+const REMEMBER_KEY = 'nenya.remember';
+const PREFS_KEY = 'nenya.prefs';
+const TERMS_KEY = 'nenya.terms';
+
+const read = (k: string): string | null => {
+  try {
+    return localStorage.getItem(k);
+  } catch {
+    return null;
+  }
+};
+const write = (k: string, v: string) => {
+  try {
+    localStorage.setItem(k, v);
+  } catch {
+    // Storage blocked: nothing is remembered.
+  }
+};
+const remove = (k: string) => {
+  try {
+    localStorage.removeItem(k);
+  } catch {
+    // Nothing to remove.
+  }
+};
+
+const listeners = new Set<() => void>();
+const emit = () => listeners.forEach((l) => l());
+const subscribe = (l: () => void) => {
+  listeners.add(l);
+  window.addEventListener('storage', l);
+  return () => {
+    listeners.delete(l);
+    window.removeEventListener('storage', l);
+  };
+};
+
+export const isRemembering = () => read(REMEMBER_KEY) === '1';
+
+/** Turning it off also erases what it saved. */
+export function setRemembering(on: boolean) {
+  if (on) {
+    write(REMEMBER_KEY, '1');
+  } else {
+    remove(REMEMBER_KEY);
+    remove(PREFS_KEY);
+    remove(TERMS_KEY);
+  }
+  emit();
+}
+
+export const useRemembering = () => useSyncExternalStore(subscribe, isRemembering, () => false);
+
+export interface Prefs {
+  theme?: 'dark' | 'light';
+  textSize?: number;
+  breathingEnabled?: boolean;
+  orbitEnabled?: boolean;
+  logoVisible?: boolean;
+  breathingOpacity?: number;
+  showBreathingCounter?: boolean;
+  colorBlindMode?: string;
+  valarIndices?: number[];
+  breathingTechnique?: { ih: number; hi: number; ex: number; ho: number };
+}
+
+const VISION = ['', 'deuteranopia', 'protanopia', 'tritanopia', 'achromatopsia'];
+const isBool = (v: unknown): v is boolean => typeof v === 'boolean';
+const ms = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 60000;
+
+// Anything that does not match is dropped, so a hand-edited or stale entry cannot break the page.
+const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
+  theme: (v) => v === 'dark' || v === 'light',
+  textSize: (v) => v === 14 || v === 16 || v === 18,
+  breathingEnabled: isBool,
+  orbitEnabled: isBool,
+  logoVisible: isBool,
+  breathingOpacity: (v) => typeof v === 'number' && v >= 0.1 && v <= 1,
+  showBreathingCounter: isBool,
+  colorBlindMode: (v) => typeof v === 'string' && VISION.includes(v),
+  valarIndices: (v) =>
+    Array.isArray(v) && v.length <= 32 && v.every((n) => Number.isInteger(n) && n >= 0 && n < 100),
+  breathingTechnique: (v) => {
+    const t = v as Record<string, unknown> | null;
+    return !!t && typeof t === 'object' && ms(t.ih) && ms(t.hi) && ms(t.ex) && ms(t.ho) && (t.ih as number) > 0 && (t.ex as number) > 0;
+  },
+};
+
+export function loadPrefs(): Prefs {
+  if (!isRemembering()) return {};
+  try {
+    const raw = JSON.parse(read(PREFS_KEY) ?? '{}');
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(VALID) as (keyof Prefs)[]) {
+      if (raw && k in raw && VALID[k](raw[k])) out[k] = raw[k];
+    }
+    return out as Prefs;
+  } catch {
+    return {};
+  }
+}
+
+function savePref<K extends keyof Prefs>(key: K, value: Prefs[K]) {
+  if (!isRemembering()) return;
+  write(PREFS_KEY, JSON.stringify({ ...loadPrefs(), [key]: value }));
+}
+
+/** Like useState, but the value is saved and restored while "Remember on this device" is on. */
+export function usePref<K extends keyof Prefs>(key: K, fallback: NonNullable<Prefs[K]>) {
+  const [value, setValue] = useState<NonNullable<Prefs[K]>>(() => (loadPrefs()[key] ?? fallback) as NonNullable<Prefs[K]>);
+  const remembering = useRemembering();
+  useEffect(() => {
+    if (remembering) savePref(key, value);
+  }, [remembering, key, value]);
+  return [value, setValue] as const;
+}
+
+/** Only if the visitor chose to be remembered, and only for the exact terms they agreed to. */
+export const termsAcceptedFor = (version: string) => isRemembering() && read(TERMS_KEY) === version;
+export const rememberTerms = (version: string) => {
+  if (isRemembering()) write(TERMS_KEY, version);
+};
+
+/**
+ * Erases everything Nenya saved on this device, including older keys from earlier versions.
+ * The owner's testing flag survives the visitor-facing "Forget" button but not the emergency exit.
+ */
+export function wipeDevice({ keepOwner }: { keepOwner: boolean }) {
+  try {
+    const mine: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.toLowerCase().startsWith('nenya') && !(keepOwner && k === OWNER_KEY)) mine.push(k);
+    }
+    mine.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // Nothing reachable to erase.
+  }
+  emit();
+}

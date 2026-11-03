@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ThemeProvider } from './components/ThemeProvider';
+import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
+import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
@@ -74,7 +76,8 @@ export default function App() {
   // gateway 3 correctly land on gateway 2, not jump all the way home.
   const [screenHistory, setScreenHistory] = useState<ScreenType[]>([]);
   const [aboutSection, setAboutSection] = useState<string | undefined>(initialAbout || undefined);
-  const [termsAgreed, setTermsAgreed] = useState(false);
+  // Agreement is asked every visit unless the visitor chose "Remember on this device" and the terms are unchanged.
+  const [termsAgreed, setTermsAgreed] = useState(() => termsAcceptedFor(LEGAL_EFFECTIVE_DATE));
   
   // Gateway system state
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
@@ -93,15 +96,16 @@ export default function App() {
   const [cellCode, setCellCode] = useState('');
   
   // Animation control state
-  const [breathingEnabled, setBreathingEnabled] = useState(true);
-  const [orbitEnabled, setOrbitEnabled] = useState(true);
-  const [logoVisible, setLogoVisible] = useState(true);
-  const [selectedValarIndices, setSelectedValarIndices] = useState<number[]>([]); // Empty array = all colors
-  const [breathingOpacity, setBreathingOpacity] = useState(1); // Default 100%
-  const [textSize, setTextSize] = useState(16); // Default text size
-  const [showBreathingCounter, setShowBreathingCounter] = useState(true);
-  const [colorBlindMode, setColorBlindMode] = useState('');
-  const [breathingTechnique, setBreathingTechnique] = useState<BreathingTechnique>({ ih: 5000, hi: 0, ex: 5000, ho: 0 });
+  // These display choices are kept on the device only if the visitor turned on "Remember on this device".
+  const [breathingEnabled, setBreathingEnabled] = usePref('breathingEnabled', true);
+  const [orbitEnabled, setOrbitEnabled] = usePref('orbitEnabled', true);
+  const [logoVisible, setLogoVisible] = usePref('logoVisible', true);
+  const [selectedValarIndices, setSelectedValarIndices] = usePref('valarIndices', [] as number[]); // Empty array = all colors
+  const [breathingOpacity, setBreathingOpacity] = usePref('breathingOpacity', 1); // Default 100%
+  const [textSize, setTextSize] = usePref('textSize', 16); // Default text size
+  const [showBreathingCounter, setShowBreathingCounter] = usePref('showBreathingCounter', true);
+  const [colorBlindMode, setColorBlindMode] = usePref('colorBlindMode', '');
+  const [breathingTechnique, setBreathingTechnique] = usePref('breathingTechnique', { ih: 5000, hi: 0, ex: 5000, ho: 0 } as BreathingTechnique);
 
   // Single shared clock anchor for the breathing pulse animation and the
   // numeric counter, so they read the same phase instead of each timing
@@ -141,7 +145,7 @@ export default function App() {
   // The first-visit onboarding (rhythm choice, counter tour, how it works,
   // then the terms) runs as an overlay on the welcome page. The breathing
   // counter appears once it reaches the counter step.
-  const [entryUnlocked, setEntryUnlocked] = useState(false);
+  const [entryUnlocked, setEntryUnlocked] = useState(termsAgreed);
   const [tutorialActive, setTutorialActive] = useState(false);
 
   // The tutorial no longer auto-launches -- the site keeps no memory of past
@@ -178,8 +182,8 @@ export default function App() {
   // Track emergency exit to disable beforeunload warning
   const isEmergencyExiting = useRef(false);
 
-  // Terms agreement is not persisted across sessions (ephemerality by design) —
-  // always clear any stored flag before checking, so the modal shows every load.
+  // The old terms flag is never read: agreement is remembered only through deviceMemory, and only on
+  // request. Clear the legacy key left by earlier versions so the modal logic has one source of truth.
   useEffect(() => {
     localStorage.removeItem('nenya_terms_agreed');
     if (localStorage.getItem('nenya_terms_agreed') === 'true') {
