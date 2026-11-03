@@ -76,7 +76,6 @@ export interface Prefs {
   breathingOpacity?: number;
   showBreathingCounter?: boolean;
   colorBlindMode?: string;
-  valarIndices?: number[];
   breathingTechnique?: { ih: number; hi: number; ex: number; ho: number };
 }
 
@@ -94,8 +93,6 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   breathingOpacity: (v) => typeof v === 'number' && v >= 0.1 && v <= 1,
   showBreathingCounter: isBool,
   colorBlindMode: (v) => typeof v === 'string' && VISION.includes(v),
-  valarIndices: (v) =>
-    Array.isArray(v) && v.length <= 32 && v.every((n) => Number.isInteger(n) && n >= 0 && n < 100),
   breathingTechnique: (v) => {
     const t = v as Record<string, unknown> | null;
     return !!t && typeof t === 'object' && ms(t.ih) && ms(t.hi) && ms(t.ex) && ms(t.ho) && (t.ih as number) > 0 && (t.ex as number) > 0;

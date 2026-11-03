@@ -120,7 +120,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
           <BloomOnScroll>
             <div className="bg-muted/50 dark:bg-muted/30 p-6 rounded-lg">
               <p className="text-sm text-center text-muted-foreground">
-                <strong className="text-foreground">Response Time:</strong> We aim to respond to all inquiries within 2-3 business days. For urgent matters related to the Eagle Protocol or safety concerns, please use the in-app emergency resources.
+                <strong className="text-foreground">Response Time:</strong> We aim to respond to all inquiries within 2-3 business days. For urgent safety matters, please use the in-app emergency resources.
               </p>
             </div>
           </BloomOnScroll>

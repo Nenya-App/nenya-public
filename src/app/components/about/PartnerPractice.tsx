@@ -69,7 +69,7 @@ export default function PartnerPractice({ onBack, onOpenPreview }: PartnerPracti
               stays viewable.
             </li>
             <li>
-              The Eagle Protocol would pause a cell if a message signals crisis, and either person could report a
+              A cell would pause if a message signals crisis, and either person could report a
               problem.
             </li>
             <li>

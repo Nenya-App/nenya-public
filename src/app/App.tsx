@@ -74,14 +74,13 @@ export default function App() {
   // than one step deep (which is most of the gateway flow), since each
   // forward step overwrites the one before it. A stack lets "back" from
   // gateway 3 correctly land on gateway 2, not jump all the way home.
-  const [screenHistory, setScreenHistory] = useState<ScreenType[]>([]);
+  const [, setScreenHistory] = useState<ScreenType[]>([]);
   const [aboutSection, setAboutSection] = useState<string | undefined>(initialAbout || undefined);
   // Agreement is asked every visit unless the visitor chose "Remember on this device" and the terms are unchanged.
   const [termsAgreed, setTermsAgreed] = useState(() => termsAcceptedFor(LEGAL_EFFECTIVE_DATE));
   
   // Gateway system state
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
-  const [currentGatewayIndex, setCurrentGatewayIndex] = useState(0);
   const [gatewayData, setGatewayData] = useState<GatewayData[]>([]);
   // Text summary of the finished reflection, offered (never sent automatically) to the coach.
   const [reflectionSummary, setReflectionSummary] = useState('');
@@ -100,7 +99,6 @@ export default function App() {
   const [breathingEnabled, setBreathingEnabled] = usePref('breathingEnabled', true);
   const [orbitEnabled, setOrbitEnabled] = usePref('orbitEnabled', true);
   const [logoVisible, setLogoVisible] = usePref('logoVisible', true);
-  const [selectedValarIndices, setSelectedValarIndices] = usePref('valarIndices', [] as number[]); // Empty array = all colors
   const [breathingOpacity, setBreathingOpacity] = usePref('breathingOpacity', 1); // Default 100%
   const [textSize, setTextSize] = usePref('textSize', 16); // Default text size
   const [showBreathingCounter, setShowBreathingCounter] = usePref('showBreathingCounter', true);
@@ -269,7 +267,6 @@ export default function App() {
   // Gateway selection from home
   const handleGatewaysSelected = (gateways: Gateway[]) => {
     setSelectedGateways(gateways);
-    setCurrentGatewayIndex(0);
     setGatewayData([]);
     setReflectionSummary('');
     navigateTo(gateways[0]);
@@ -310,7 +307,6 @@ export default function App() {
       // it resumes forward progress instead of jumping to review or home.
       const nextGateway = selectedGateways.find((g) => !newGatewayData.some((gd) => gd.gateway === g));
       if (nextGateway) {
-        setCurrentGatewayIndex(selectedGateways.indexOf(nextGateway));
         navigateTo(nextGateway);
       }
     }
@@ -370,7 +366,6 @@ export default function App() {
     setCurrentScreen('welcome');
     setAboutSection(undefined);
     setSelectedGateways([]);
-    setCurrentGatewayIndex(0);
     setGatewayData([]);
     setReflectionSummary('');
     setInterfaceColors({ color1: '#7A9B9E', color2: '#DAC682' });
@@ -414,16 +409,6 @@ export default function App() {
         
         {/* Global Navigation - visible on all screens */}
         <GlobalNavigation 
-          currentScreen={
-            currentScreen === 'welcome' ? 'intro' : 
-            currentScreen === 'home' ? 'intro' : 
-            currentScreen === 'session' ? 'chat' : 
-            currentScreen === 'sight' || currentScreen === 'sound' || currentScreen === 'touch' || 
-            currentScreen === 'essence' || currentScreen === 'movement' || currentScreen === 'insight' ||
-            currentScreen === 'color-selection' || currentScreen === 'gateway-review' ||
-            currentScreen === 'cell-creation' || currentScreen === 'cell-interface' ? 'intro' :
-            currentScreen
-          }
           onNavigate={(screen) => {
             if (screen === 'intro') handleGlobalNavigation('home');
             else if (screen === 'welcome') handleGlobalNavigation('welcome');
@@ -435,13 +420,11 @@ export default function App() {
           breathingEnabled={breathingEnabled}
           orbitEnabled={orbitEnabled}
           logoVisible={logoVisible}
-          selectedValarIndices={selectedValarIndices}
           breathingOpacity={breathingOpacity}
           textSize={textSize}
           onBreathingToggle={setBreathingEnabled}
           onOrbitToggle={setOrbitEnabled}
           onLogoVisibleToggle={setLogoVisible}
-          onValarSelect={setSelectedValarIndices}
           onOpacityChange={setBreathingOpacity}
           onTextSizeChange={setTextSize}
           showCounter={showBreathingCounter}
@@ -490,7 +473,6 @@ export default function App() {
               breathingEnabled={breathingEnabled}
               orbitEnabled={orbitEnabled}
               logoVisible={logoVisible}
-              selectedValarIndices={selectedValarIndices}
               breathingOpacity={breathingOpacity}
               onNavigateToAbout={handleNavigateToAbout}
               technique={breathingTechnique}
@@ -645,13 +627,11 @@ export default function App() {
           breathingEnabled={breathingEnabled}
           orbitEnabled={orbitEnabled}
           logoVisible={logoVisible}
-          selectedValarIndices={selectedValarIndices}
           breathingOpacity={breathingOpacity}
           textSize={textSize}
           onBreathingToggle={setBreathingEnabled}
           onOrbitToggle={setOrbitEnabled}
           onLogoVisibleToggle={setLogoVisible}
-          onValarSelect={setSelectedValarIndices}
           onOpacityChange={setBreathingOpacity}
           onTextSizeChange={setTextSize}
           showBreathingCounter={showBreathingCounter}

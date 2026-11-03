@@ -3,7 +3,6 @@ import { ArrowLeft, Eye, Palette, Heart, Music, Cloud, Box, Sprout, ExternalLink
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
-import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import { AppFooter } from '../AppFooter';
 

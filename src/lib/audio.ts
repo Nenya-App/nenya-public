@@ -35,8 +35,6 @@ for (let midi = FIRST_MIDI; midi <= LAST_MIDI; midi++) {
 }
 
 export const WESTERN_NOTE_NAMES = CHROMATIC_NOTES.map((n) => n.name);
-/** @deprecated use WESTERN_NOTE_NAMES -- kept as an alias for existing call sites */
-export const NOTE_NAMES = WESTERN_NOTE_NAMES;
 
 // Maqam Rast, the tonal system most commonly used to introduce Arabic
 // maqam theory (and the one whose "neutral third" is the clearest example

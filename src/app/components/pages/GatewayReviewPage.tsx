@@ -3,7 +3,6 @@ import { ArrowLeft, ArrowRight, Edit2, Eye, Music, Hand, Sparkles, Zap, Brain, D
 import NenyaLogo from '../NenyaLogo';
 import { Gateway, GatewayData } from '../../App';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Badge } from '../ui/badge';
 import { BodyMapData } from '../BodyMapAvatar';
 import { AppFooter } from '../AppFooter';
 import { SubmitSensoryReportForm } from '../SubmitSensoryReportForm';

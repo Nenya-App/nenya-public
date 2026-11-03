@@ -140,7 +140,6 @@ const CB_FILTERS: Record<string, string> = {
 interface ValarBreathingLogoProps {
   children: React.ReactNode;
   enabled?: boolean;
-  selectedValarIndices?: number[]; // empty array = all colors in sequence, array with indices = only those colors
   opacity?: number; // 0.1 to 1.0
   logoSize?: number; // Size of the logo to match breathing animation to
   cycleDuration?: number; // seconds for one complete breath cycle
@@ -159,7 +158,6 @@ interface ValarBreathingLogoProps {
 export function ValarBreathingLogo({
   children,
   enabled = true,
-  selectedValarIndices = [],
   opacity = 0.75,
   logoSize = 200,
   cycleDuration = 10,
@@ -185,7 +183,6 @@ export function ValarBreathingLogo({
   const t1 = technique ? technique.ih / totalMs : 0.5;
   const t2 = technique ? (technique.ih + (technique.hi || 0)) / totalMs : 0.5;
   const t3 = technique ? (technique.ih + (technique.hi || 0) + technique.ex) / totalMs : 1;
-  const times = [0, t1, t2, t3, 1];
 
   const cvFilter = cvMode && CB_FILTERS[cvMode] ? CB_FILTERS[cvMode] : undefined;
 
@@ -194,7 +191,7 @@ export function ValarBreathingLogo({
   // colors render, the technique's phase proportions). Opacity and
   // colorblind mode are deliberately excluded: they're plain style
   // changes and must not restart the pulse.
-  const ringsEpochKey = `valar-breathing-${enabled}-${selectedValarIndices.join(',')}-${
+  const ringsEpochKey = `valar-breathing-${enabled}-${
     technique ? `${technique.ih}_${technique.hi || 0}_${technique.ex}_${technique.ho || 0}` : cycleDuration
   }`;
 

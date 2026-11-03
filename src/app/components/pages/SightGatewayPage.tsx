@@ -4,7 +4,6 @@ import { ArrowLeft, Shuffle, User, Palette, ChevronRight, ArrowRight as ArrowRig
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { ValarColorPicker } from '../ValarColorPicker';
-import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
@@ -12,7 +11,6 @@ import { Slider } from '../ui/slider';
 import { UserColors } from '../../App';
 import { useTheme } from '../ThemeProvider';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
-import { TermInfo } from '../TermInfo';
 import { ScrollIndicator } from '../ScrollIndicator';
 import { AppFooter } from '../AppFooter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -133,7 +131,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   const [color2Qualities, setColor2Qualities] = useState<string[]>([]);
   const [color1Intensity, setColor1Intensity] = useState(50);
   const [color2Intensity, setColor2Intensity] = useState(50);
-  const [gradientDirection, setGradientDirection] = useState('to-right');
+  const [gradientDirection] = useState('to-right');
   const [showBodyMap, setShowBodyMap] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<'present' | 'potential' | null>(null);
   // bodyMapData/onUpdateBodyMap come from props -- shared App-level state
@@ -356,7 +354,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                             <Checkbox
                               id={`color1-${quality}`}
                               checked={color1Qualities.includes(quality)}
-                              onCheckedChange={(checked) => {
+                              onCheckedChange={() => {
                                 toggleQuality(1, quality);
                               }}
                               onClick={(e) => e.stopPropagation()}
@@ -457,7 +455,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                             <Checkbox
                               id={`color2-${quality}`}
                               checked={color2Qualities.includes(quality)}
-                              onCheckedChange={(checked) => {
+                              onCheckedChange={() => {
                                 toggleQuality(2, quality);
                               }}
                               onClick={(e) => e.stopPropagation()}
@@ -544,7 +542,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               setColor1(color);
             }}
             size="md"
-            otherColor={color2}
             onClose={() => setActiveColorPicker(null)}
           />
         </DialogContent>
@@ -565,7 +562,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               setColor2(color);
             }}
             size="md"
-            otherColor={color1}
             onClose={() => setActiveColorPicker(null)}
           />
         </DialogContent>

@@ -1,4 +1,4 @@
-import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Waves, Crown, Hexagon, User, MessageCircle, Mail, Wind } from 'lucide-react';
+import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Crown, User, MessageCircle, Mail, Wind } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import nenyaLogo from 'figma:asset/97ae39e7ed6444a186091920628ca9206a54a124.png';
@@ -89,12 +89,6 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       title: 'PII Scrubbing Tutorial',
       description: 'A scripted walkthrough of our privacy design (a basic version runs in the coach demo)',
       icon: Shield,
-    },
-    {
-      id: 'eagle-protocol',
-      title: 'Eagle Protocol Demo',
-      description: 'A scripted preview of our crisis safety design (a basic check runs in the coach demo)',
-      icon: Waves,
     },
     {
       id: 'venice-chat',

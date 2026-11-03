@@ -11,13 +11,11 @@ interface BreathingPopoutProps {
   breathingEnabled?: boolean;
   orbitEnabled?: boolean;
   logoVisible?: boolean;
-  selectedValarIndices?: number[];
   breathingOpacity?: number;
   textSize?: number;
   onBreathingToggle?: (enabled: boolean) => void;
   onOrbitToggle?: (enabled: boolean) => void;
   onLogoVisibleToggle?: (visible: boolean) => void;
-  onValarSelect?: (indices: number[]) => void;
   onOpacityChange?: (opacity: number) => void;
   onTextSizeChange?: (size: number) => void;
   showBreathingCounter?: boolean;
@@ -32,13 +30,11 @@ export function BreathingPopout({
   breathingEnabled = true,
   orbitEnabled = true,
   logoVisible = true,
-  selectedValarIndices = [],
   breathingOpacity = 1,
   textSize = 16,
   onBreathingToggle,
   onOrbitToggle,
   onLogoVisibleToggle,
-  onValarSelect,
   onOpacityChange,
   onTextSizeChange,
   showBreathingCounter = false,
@@ -94,7 +90,6 @@ export function BreathingPopout({
                 <div className="scale-75 md:scale-90">
                   <ValarBreathingLogo
                     enabled={breathingEnabled}
-                    selectedValarIndices={selectedValarIndices}
                     opacity={breathingOpacity}
                     logoSize={160}
                   >
@@ -110,18 +105,16 @@ export function BreathingPopout({
 
               {/* Right: Accessibility Controls */}
               <div className="p-4 md:max-h-[60vh] md:overflow-y-auto">
-                {onBreathingToggle && onOrbitToggle && onValarSelect && onOpacityChange && onTextSizeChange ? (
+                {onBreathingToggle && onOrbitToggle && onOpacityChange && onTextSizeChange ? (
                   <AccessibilitySettingsContent
                     breathingEnabled={breathingEnabled}
                     orbitEnabled={orbitEnabled}
                     logoVisible={logoVisible}
-                    selectedValarIndices={selectedValarIndices}
                     breathingOpacity={breathingOpacity}
                     textSize={textSize}
                     onBreathingToggle={onBreathingToggle}
                     onOrbitToggle={onOrbitToggle}
                     onLogoVisibleToggle={onLogoVisibleToggle}
-                    onValarSelect={onValarSelect}
                     onOpacityChange={onOpacityChange}
                     onTextSizeChange={onTextSizeChange}
                     showCounter={showBreathingCounter}

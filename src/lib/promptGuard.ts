@@ -46,12 +46,6 @@ const PATTERNS: RegExp[] = [
   /\bwrite (?:me )?(?:a |some )?(?:code|script|python|javascript|sql|malware|exploit)\b/,
 ];
 
-export interface GuardResult {
-  blocked: boolean;
-  /** Characters removed as a precaution even when nothing was blocked. */
-  stripped: boolean;
-}
-
 /** True if the text looks like an attempt to manipulate the coach. */
 export function looksLikeManipulation(text: string): boolean {
   const raw = text.normalize('NFKC').replace(INVISIBLE, '');
@@ -66,10 +60,6 @@ export function looksLikeManipulation(text: string): boolean {
 /** Removes invisible characters and role/template markers. Always safe to apply. */
 export function neutralize(text: string): string {
   return text.replace(INVISIBLE, '').replace(TEMPLATE_TOKENS, ' ').replace(/[ \t]{2,}/g, ' ').trim();
-}
-
-export function guard(text: string): GuardResult {
-  return { blocked: looksLikeManipulation(text), stripped: neutralize(text) !== text.trim() };
 }
 
 /** Shown on the page. Plain, not accusing, and ends nowhere: the visitor can rephrase. */

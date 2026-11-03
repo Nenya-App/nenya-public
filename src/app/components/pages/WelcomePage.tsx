@@ -3,8 +3,7 @@ import { Button } from '../ui/button';
 import NenyaLogo from '../NenyaLogo';
 import { ValarBreathingLogo, BreathingTechnique } from '../ValarBreathingLogo';
 import WelcomePopup from '../WelcomePopup';
-import { ArrowRight, ChevronDown, Heart, ExternalLink, Play, Pause } from 'lucide-react';
-import { Card } from '../ui/card';
+import { ArrowRight, ChevronDown, Play, Pause } from 'lucide-react';
 import { AppFooter } from '../AppFooter';
 import { SupportThisWork } from '../SupportThisWork';
 import { ContactSection } from '../ContactSection';
@@ -14,7 +13,6 @@ interface WelcomePageProps {
   breathingEnabled: boolean;
   orbitEnabled: boolean;
   logoVisible?: boolean;
-  selectedValarIndices: number[];
   breathingOpacity: number;
   onNavigateToAbout?: (section?: string) => void;
   technique?: BreathingTechnique | null;
@@ -31,7 +29,6 @@ export default function WelcomePage({
   breathingEnabled,
   orbitEnabled,
   logoVisible = true,
-  selectedValarIndices,
   breathingOpacity,
   onNavigateToAbout,
   technique = null,
@@ -80,7 +77,7 @@ export default function WelcomePage({
   return (
     <div ref={scrollContainerRef} className="size-full relative overflow-y-auto snap-y snap-proximity">
       {/* Welcome Popup */}
-      <WelcomePopup onNavigateToAbout={onNavigateToAbout} initiallyOpen={false} />
+      <WelcomePopup initiallyOpen={false} />
 
       {/* First Section: Full Viewport with Large Logo */}
       <div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">
@@ -105,7 +102,6 @@ export default function WelcomePage({
           >
             <ValarBreathingLogo
               enabled={breathingEnabled}
-              selectedValarIndices={selectedValarIndices}
               opacity={breathingOpacity}
               logoSize={logoSize}
               cycleDuration={technique ? (technique.ih + (technique.hi || 0) + technique.ex + (technique.ho || 0)) / 1000 : 10}

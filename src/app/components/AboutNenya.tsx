@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import EagleProtocolDemoSelector from './EagleProtocolDemoSelector';
 import VeniceChat from './about/VeniceChat';
 import AboutTheFounder from './about/AboutTheFounder';
 import AboutMenu from './about/AboutMenu';
@@ -44,7 +43,6 @@ type AboutSection =
   | 'nvc-method' 
   | 'privacy-promise'
   | 'pii-scrubbing'
-  | 'eagle-protocol'
   | 'venice-chat'
   | 'partner-practice'
   | 'structure' 
@@ -124,7 +122,7 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOp
           >
             ← Back to Menu
           </button>
-          <PantheonOfNeeds onExploreGateways={onRestartDemo} containerRef={pantheonScrollRef} />
+          <PantheonOfNeeds containerRef={pantheonScrollRef} />
 
           <AppFooter />
         </div>
@@ -140,17 +138,6 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOp
       )}
       {currentSection === 'pii-scrubbing' && (
         <PIIScrubbingDemo onBack={handleBackToMenu} />
-      )}
-      {currentSection === 'eagle-protocol' && (
-        <>
-          <EagleProtocolDemoSelector />
-          <button 
-            onClick={handleBackToMenu}
-            className="fixed top-4 left-4 z-[60] px-4 py-2 text-sm bg-background/95 backdrop-blur-md border rounded-lg text-muted-foreground hover:text-foreground transition-colors shadow-lg"
-          >
-            ← Back to Menu
-          </button>
-        </>
       )}
       {currentSection === 'partner-practice' && (
         <PartnerPractice onBack={handleBackToMenu} onOpenPreview={onOpenPartnerPreview} />

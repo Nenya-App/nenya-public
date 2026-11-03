@@ -1,23 +1,13 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { Hand, Check, MessageCircle, Flag, Waves, Bot, BotOff, Sparkles, ArrowRight, Info, Eye, EyeOff } from 'lucide-react';
+import { Check, MessageCircle, Flag, Bot, BotOff, Sparkles, ArrowRight, Info, Eye, EyeOff } from 'lucide-react';
 import { Card } from './ui/card';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import ReportModal from './ReportModal';
-import EagleProtocolModal from './EagleProtocolModal';
-import EagleProtocolTranscriptFlow from './EagleProtocolTranscriptFlow';
-import EagleProtocolDemo from './EagleProtocolDemo';
 import { ConversationControls } from './ConversationControls';
 import { getGradientMidpoint, getReadableTextColor } from './ColorUtils';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from './ui/dialog';
 import {
   Popover,
   PopoverContent,
@@ -57,9 +47,6 @@ type DemoStep =
 export default function DyadicCellInterface({ userColors, cellCode, onBack }: DyadicCellInterfaceProps) {
   const otherUserColors = { color1: '#FF6B6B', color2: '#4ECDC4' };
   const [showReport, setShowReport] = useState(false);
-  const [showEagleProtocol, setShowEagleProtocol] = useState(false);
-  const [showEagleTranscript, setShowEagleTranscript] = useState(false);
-  const [eagleDemoActive, setEagleDemoActive] = useState(false);
   
   // AI Translation Settings
   const [receiveTranslated, setReceiveTranslated] = useState(false);
@@ -91,10 +78,6 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
     }]);
   };
 
-  const getConversationText = () => {
-    return messages.map(m => `[${m.sender.toUpperCase()}]: ${m.text}`).join('\n\n');
-  };
-
   const toggleRawText = (messageId: string) => {
     setShowingRawText(prev => {
       const newSet = new Set(prev);
@@ -109,9 +92,6 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
 
   // Demo walkthrough progression
   const handleNextStep = () => {
-    const steps: DemoStep[] = ['intro', 'partner-raw-message', 'translation-option', 'translated-view', 'user-composing', 'user-ai-assist', 'complete'];
-    const currentIndex = steps.indexOf(demoStep);
-    
     if (demoStep === 'intro') {
       setDemoStep('partner-raw-message');
     } else if (demoStep === 'partner-raw-message') {
@@ -261,14 +241,6 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
                 title="Submit a Report"
               >
                 <Flag className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowEagleProtocol(true)}
-                title="Eagle Protocol (planned safety feature)"
-              >
-                <Waves className="size-4" />
               </Button>
               <div className="flex items-center gap-2 text-sm text-muted-foreground ml-2">
                 <MessageCircle className="size-4" />
@@ -492,7 +464,6 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
               <h3 className="text-sm">Conversation Controls</h3>
               <ConversationControls 
                 onClearConversation={handleClearConversation}
-                conversationText={getConversationText()}
                 conversationName={`dyadic-cell-${cellCode}`}
               />
             </div>
@@ -566,14 +537,6 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
       {/* Report Modal */}
       <ReportModal isOpen={showReport} onClose={() => setShowReport(false)} />
 
-      {/* Eagle Protocol Modal */}
-      <EagleProtocolModal isOpen={showEagleProtocol} onClose={() => setShowEagleProtocol(false)} />
-
-      {/* Eagle Protocol Transcript Flow */}
-      <EagleProtocolTranscriptFlow isOpen={showEagleTranscript} onClose={() => setShowEagleTranscript(false)} />
-
-      {/* Eagle Protocol Demo */}
-      <EagleProtocolDemo isActive={eagleDemoActive} onComplete={() => { setEagleDemoActive(false); onBack(); }} />
     </>
   );
 }

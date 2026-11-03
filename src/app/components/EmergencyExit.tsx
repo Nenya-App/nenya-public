@@ -2,14 +2,11 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, ArrowUpRight, X, Info } from 'lucide-react';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { wipeDevice } from '../../lib/deviceMemory';
 
 interface EmergencyExitModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onInitiateEagleProtocol?: () => void;
 }
 
 // Earthy emergency exit color - brown-orange-red
@@ -20,9 +17,7 @@ const EMERGENCY_YELLOW = '#FFDB58';
 const NIENNA_PRIMARY = '#6A5ACD'; // Slate Blue - Compassionate depth
 const NIENNA_WARM = '#BC8F8F'; // Rosy Brown - Gentle warmth
 
-function EmergencyExitModal({ isOpen, onClose, onInitiateEagleProtocol }: EmergencyExitModalProps) {
-  const [passcode, setPasscode] = useState('');
-  const [passcodeSaved, setPasscodeSaved] = useState(false);
+function EmergencyExitModal({ isOpen, onClose }: EmergencyExitModalProps) {
 
   // Handle Escape key and prevent body scroll when modal is open
   useEffect(() => {
@@ -47,21 +42,6 @@ function EmergencyExitModal({ isOpen, onClose, onInitiateEagleProtocol }: Emerge
   }, [isOpen, onClose]);
 
   const handleProceed = () => {
-    // Save passcode to sessionStorage if provided
-    if (passcode.trim()) {
-      try {
-        sessionStorage.setItem('nenya_emergency_restore_key', passcode);
-        setPasscodeSaved(true);
-      } catch (e) {
-        console.error('Failed to save passcode to sessionStorage', e);
-      }
-    }
-
-    // Initiate Eagle Protocol (cryptographic transcript preparation in background)
-    if (onInitiateEagleProtocol) {
-      onInitiateEagleProtocol();
-    }
-
     // Clear all visible history
     try {
       localStorage.removeItem('nenya_session_data');
@@ -107,7 +87,7 @@ function EmergencyExitModal({ isOpen, onClose, onInitiateEagleProtocol }: Emerge
                   <ArrowUpRight className="size-3 absolute -top-1 -right-1" style={{ color: '#FFDB58' }} />
                 </div>
                 <h2 className="text-base sm:text-lg" style={{ color: NIENNA_PRIMARY }}>
-                  Eagle Protocol: Emergency Exit
+                  Emergency Exit
                 </h2>
               </div>
               <button
@@ -134,12 +114,13 @@ function EmergencyExitModal({ isOpen, onClose, onInitiateEagleProtocol }: Emerge
             }}
           >
             <p className="text-foreground text-xs sm:text-sm">
-              <strong>Dual-Purpose Safety Feature:</strong>
+              <strong>What happens:</strong>
             </p>
-            <ul className="space-y-1 ml-3 sm:ml-4 list-disc text-xs">
-              <li><strong>Phase 1 (Immediate):</strong> Your session is purged and you are redirected instantly</li>
-              <li><strong>Phase 2 (Background):</strong> A cryptographically-signed transcript is prepared on-device for optional reporting when you return</li>
-            </ul>
+            <p className="text-xs leading-relaxed">
+              Your session is purged, anything Nenya saved on this device is erased, and you are redirected instantly.
+              Nothing is kept for you to come back to, so if you want a copy of a coach conversation, download it
+              before you leave.
+            </p>
           </div>
 
           <div 
@@ -157,9 +138,6 @@ function EmergencyExitModal({ isOpen, onClose, onInitiateEagleProtocol }: Emerge
             </p>
           </div>
 
-            <p>
-              <strong style={{ color: NIENNA_WARM }}>Optional:</strong> To access the prepared report later, enter your unique Passcode below. This saves an encrypted restoration key to local cache only.
-            </p>
           </div>
 
           {/* Emergency Contact Information */}
@@ -193,29 +171,6 @@ function EmergencyExitModal({ isOpen, onClose, onInitiateEagleProtocol }: Emerge
             </div>
           </div>
 
-          {/* Passcode input */}
-          <div className="space-y-2">
-            <Label htmlFor="emergency-passcode">
-              Session Passcode (Hex Code/Personal Key)
-            </Label>
-            <Input
-              id="emergency-passcode"
-              type="text"
-              value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
-              placeholder="Optional: Enter your hex code or personal key"
-              className="bg-input-background"
-            />
-            <p className="text-xs text-muted-foreground">
-              This is a demo text entry field for your personal restoration key
-            </p>
-            {passcodeSaved && (
-              <p className="text-xs" style={{ color: NIENNA_PRIMARY }}>
-                ✓ Passcode Secured
-              </p>
-            )}
-          </div>
-
           {/* Action buttons */}
           <div className="flex flex-col gap-3 pt-4">
             <Button
@@ -241,12 +196,6 @@ function EmergencyExitModal({ isOpen, onClose, onInitiateEagleProtocol }: Emerge
             </Button>
           </div>
 
-          {/* Additional context */}
-          <div className="pt-4 border-t border-border">
-            <p className="text-xs text-muted-foreground italic leading-relaxed">
-              <strong style={{ color: NIENNA_PRIMARY }}>The Eagle Protocol:</strong> Named after the Eagles of Manwë who serve as divine intervention ("deus ex machina") in Tolkien's mythology, this feature provides both immediate safety escape and verified accountability mechanisms. Part of Nenya's comprehensive interface disguise system.
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -258,14 +207,12 @@ function EmergencyExitModal({ isOpen, onClose, onInitiateEagleProtocol }: Emerge
 interface EmergencyExitButtonProps {
   variant?: 'header' | 'footer';
   className?: string;
-  onInitiateEagleProtocol?: () => void;
   onEmergencyExit?: () => void;
 }
 
 export function EmergencyExitButton({ 
   variant = 'header', 
   className = '',
-  onInitiateEagleProtocol,
   onEmergencyExit
 }: EmergencyExitButtonProps) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
@@ -335,7 +282,6 @@ export function EmergencyExitButton({
       <EmergencyExitModal 
         isOpen={infoModalOpen}
         onClose={() => setInfoModalOpen(false)}
-        onInitiateEagleProtocol={onInitiateEagleProtocol}
       />
     </div>
   );

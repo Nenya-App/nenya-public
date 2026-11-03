@@ -18,7 +18,6 @@ export default function CoachPage() {
   const [breathingEnabled, setBreathingEnabled] = usePref('breathingEnabled', true);
   const [orbitEnabled, setOrbitEnabled] = usePref('orbitEnabled', true);
   const [logoVisible, setLogoVisible] = usePref('logoVisible', true);
-  const [valarIndices, setValarIndices] = usePref('valarIndices', [] as number[]);
   const [opacity, setOpacity] = usePref('breathingOpacity', 1);
 
   useEffect(() => {
@@ -46,7 +45,6 @@ export default function CoachPage() {
   return (
     <div className="size-full flex flex-col bg-background">
       <GlobalNavigation
-        currentScreen="chat"
         onNavigate={(screen) => goToApp(screen === 'about' ? '' : undefined)}
         onNavigateToAbout={(section) => {
           const support = document.getElementById('support');
@@ -66,12 +64,10 @@ export default function CoachPage() {
         breathingEnabled={breathingEnabled}
         orbitEnabled={orbitEnabled}
         logoVisible={logoVisible}
-        selectedValarIndices={valarIndices}
         breathingOpacity={opacity}
         onBreathingToggle={setBreathingEnabled}
         onOrbitToggle={setOrbitEnabled}
         onLogoVisibleToggle={setLogoVisible}
-        onValarSelect={setValarIndices}
         onOpacityChange={setOpacity}
       />
       <div className="flex-1 min-h-0">
@@ -87,13 +83,11 @@ export default function CoachPage() {
         breathingEnabled={breathingEnabled}
         orbitEnabled={orbitEnabled}
         logoVisible={logoVisible}
-        selectedValarIndices={valarIndices}
         breathingOpacity={opacity}
         textSize={textSize}
         onBreathingToggle={setBreathingEnabled}
         onOrbitToggle={setOrbitEnabled}
         onLogoVisibleToggle={setLogoVisible}
-        onValarSelect={setValarIndices}
         onOpacityChange={setOpacity}
         onTextSizeChange={setTextSize}
       />

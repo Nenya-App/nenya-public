@@ -76,7 +76,7 @@ export function DrawingCanvas({
     if (!hasDrawing) setHasDrawing(true);
   };
 
-  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const handlePointerUp = () => {
     if (!isDrawing.current) return;
     isDrawing.current = false;
     lastPoint.current = null;

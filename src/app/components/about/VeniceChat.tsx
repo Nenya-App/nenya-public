@@ -1,5 +1,4 @@
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../../../lib/veniceLinks';
-import { useTheme } from '../ThemeProvider';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { MessageCircle, ExternalLink, AlertTriangle, Shield, Waves } from 'lucide-react';
@@ -10,8 +9,6 @@ interface VeniceChatProps {
 }
 
 export default function VeniceChat({ onBack }: VeniceChatProps) {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
 
   return (
     <div className="size-full overflow-y-auto scroll-container bg-background">
@@ -51,7 +48,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                     <strong>No PII Scrubbing:</strong> Nenya's scrubbing of personally identifiable information does not run on Venice's site
                   </li>
                   <li>
-                    <strong>No Eagle Protocol Integration:</strong> Nenya's crisis check and conversation limits do not apply on Venice's site
+                    <strong>No Nenya safety checks:</strong> Nenya's crisis check and conversation limits do not apply on Venice's site
                   </li>
                   <li>
                     <strong>External Service:</strong> This uses Venice AI's chat service, not Nenya. Local, on-device processing is a goal for Nenya, not something that exists yet
@@ -117,10 +114,10 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <Waves className="size-4" />
-                      <strong>Eagle Protocol Not Integrated</strong>
+                      <strong>Safety checks are not integrated</strong>
                     </div>
                     <p>
-                      The full Eagle Protocol, with mandatory safety checks (air, water, food, shelter, rest), human review, and careful resets, is planned and not built. The on-site coach demo has only a basic phrase-matching crisis check, and nothing like it runs on Venice's site. If you're in distress, please use the emergency resources in the Safety section.
+                      A fuller safety system, with human review and careful resets, is planned and not built. The on-site coach demo has only a basic phrase-matching crisis check, and nothing like it runs on Venice's site. If you're in distress, please use the emergency resources in the Safety section.
                     </p>
                   </div>
                 </div>

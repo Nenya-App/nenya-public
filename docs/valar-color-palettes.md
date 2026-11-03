@@ -1,3 +1,4 @@
+<!-- Matches the palettes in src/app/components/ValarBreathingLogo.tsx (checked: all 96 hexes). Update both together. -->
 ## Revised 6‑Color Palettes for the Sixteen Valar (Color Theory Based)
 
 Below are corrected palettes using traditional color associations for each Valar’s element or aspect. The **first color** is the Gravity Well (primary diagnostic). Hex codes are chosen for digital design (light mode friendly, with sufficient contrast for UI).

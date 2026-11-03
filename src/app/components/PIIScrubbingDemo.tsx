@@ -319,7 +319,7 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span><strong>Now, basic:</strong> a phrase-matching crisis check in the coach demo. <strong>Planned:</strong> the full Eagle Protocol with human review.</span>
+                  <span><strong>Now, basic:</strong> a phrase-matching crisis check in the coach demo. <strong>Planned:</strong> a fuller safety system with human review.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
@@ -364,10 +364,6 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
   const handleClearDemo = () => {
     setCurrentStep('intro');
     setShowExplanation(true);
-  };
-
-  const getConversationText = () => {
-    return `Original: ${originalInput}\n\nScrubbed: ${scrubbedOutput}`;
   };
 
   const getStepNumber = () => {
@@ -421,7 +417,6 @@ export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDem
           <div className="flex justify-center">
             <ConversationControls 
               onClearConversation={handleClearDemo}
-              conversationText={getConversationText()}
               conversationName="pii-scrubbing-demo"
             />
           </div>

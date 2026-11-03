@@ -20,7 +20,6 @@ interface AccessibilitySettingsProps {
   breathingEnabled: boolean;
   orbitEnabled: boolean;
   logoVisible?: boolean;
-  selectedValarIndices: number[];
   breathingOpacity: number;
   textSize?: number;
   showCounter?: boolean;
@@ -28,7 +27,6 @@ interface AccessibilitySettingsProps {
   onBreathingToggle: (enabled: boolean) => void;
   onOrbitToggle: (enabled: boolean) => void;
   onLogoVisibleToggle?: (visible: boolean) => void;
-  onValarSelect: (indices: number[]) => void;
   onOpacityChange: (opacity: number) => void;
   onTextSizeChange?: (size: number) => void;
   onCounterToggle?: (show: boolean) => void;
@@ -42,7 +40,6 @@ export function AccessibilitySettingsContent({
   breathingEnabled,
   orbitEnabled,
   logoVisible = true,
-  selectedValarIndices,
   breathingOpacity,
   textSize = 16,
   showCounter = false,
@@ -50,7 +47,6 @@ export function AccessibilitySettingsContent({
   onBreathingToggle,
   onOrbitToggle,
   onLogoVisibleToggle,
-  onValarSelect,
   onOpacityChange,
   onTextSizeChange,
   onCounterToggle,

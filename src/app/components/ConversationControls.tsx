@@ -11,13 +11,11 @@ import {
 
 interface ConversationControlsProps {
   onClearConversation?: () => void;
-  conversationText: string;
   conversationName?: string;
 }
 
 export function ConversationControls({ 
   onClearConversation, 
-  conversationText,
   conversationName = 'nenya-conversation'
 }: ConversationControlsProps) {
   const [showClearDialog, setShowClearDialog] = useState(false);
@@ -168,7 +166,7 @@ export function ConversationControls({
               <strong>For Dyadic Cells:</strong> If you need to report concerning behavior from another user, you can include their anonymous hex code and describe the issue. Reports are reviewed by human moderators while maintaining privacy through hex code anonymity.
             </p>
             <p className="text-muted-foreground">
-              <strong>For immediate safety needs:</strong> Use the Eagle Protocol instead.
+              <strong>For immediate safety needs:</strong> Use the Emergency Exit button, or call or text 988 in the US.
             </p>
           </div>
           <div className="flex gap-2 justify-end mt-4">

@@ -8,7 +8,6 @@ interface ValarColorPickerProps {
   onColorChange: (color: string) => void;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
-  otherColor?: string; // The other color selected (for gradient display)
   onClose?: () => void; // Callback to close the dialog/picker
 }
 
@@ -114,7 +113,7 @@ const VALAR_PALETTES: ValarPalette[] = [
   },
 ];
 
-export function ValarColorPicker({ selectedColor, onColorChange, className = '', size = 'md', otherColor, onClose }: ValarColorPickerProps) {
+export function ValarColorPicker({ selectedColor, onColorChange, className = '', size = 'md', onClose }: ValarColorPickerProps) {
   const [customColor, setCustomColor] = useState(selectedColor);
   // Start with all palettes expanded
   const [expandedPalettes, setExpandedPalettes] = useState<Set<string>>(

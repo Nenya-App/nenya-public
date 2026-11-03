@@ -209,6 +209,8 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
     }
   };
 
+  const linkClass = 'text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground';
+
   const gradientButton = {
     background: gradient,
     color: onGradient,
@@ -303,7 +305,6 @@ export default function CoachDemo({ colors, reflectionSummary = '', onBack, onAc
         : turn === MAX_TURNS - 1
           ? 'One more exchange after this one.'
           : '';
-  const linkClass = 'text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground';
 
   return (
     <div className="size-full flex flex-col bg-background text-foreground">

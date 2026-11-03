@@ -3,7 +3,6 @@ import { ArrowLeft, Heart, Eye, Lightbulb, MessageCircle, Network, Users, AlertT
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
-import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollIndicator } from '../ScrollIndicator';
 import { AppFooter } from '../AppFooter';

@@ -88,21 +88,13 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
           <div className="bg-muted/20 rounded-lg p-3 text-xs text-muted-foreground">
             <p className="mb-1 text-foreground text-xs sm:text-sm">Privacy Note:</p>
             <p className="leading-relaxed">
-              Submitting this form sends what you write below to Nenya's team by email — that's the only thing this does. There's no automated triage or guaranteed response time yet; a person reads it. For the highest-stakes accountability claims, the design calls for a separate <span className="text-foreground">Eagle Protocol Transcript</span> feature that would generate a cryptographically-signed, zero-knowledge proof — but that feature is still just a preview today. Whichever you use, please don't include real personal or identifying details, here or in any system, even one that claims to be secure.
+              Submitting this form sends what you write below to Nenya's team by email — that's the only thing this does. There's no automated triage or guaranteed response time yet; a person reads it. If you want a verifiable record of a coach conversation, the coach demo can give you a dated, signed copy of it to keep. Whichever you use, please don't include real personal or identifying details, here or in any system, even one that claims to be secure.
             </p>
           </div>
 
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-xs">
             <div className="flex items-start gap-2">
               <Shield className="size-4 text-primary mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-foreground mb-1 text-xs sm:text-sm">
-                  <strong>For Serious Concerns:</strong> Report AI Deviation (Verified Protocol Required)
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  For the most serious accountability claims (platform misconduct, partner behavior violations, safety concerns), the design calls for only <strong className="text-foreground">cryptographically-signed Eagle Protocol transcripts</strong> to hold legal and ethical weight as verifiable evidence — once that capability exists.
-                </p>
-              </div>
             </div>
           </div>
 

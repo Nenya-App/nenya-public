@@ -108,7 +108,7 @@ The honest edges:
     a conversation can be downloaded, from the first exchange on, with a dated Ed25519 signature, and checked
     with `node scripts/verify-transcript.mjs`.
 
-The in-app "partner practice" (dyadic cells), Eagle Protocol, and PII-scrubbing
+The in-app "partner practice" (dyadic cells) and PII-scrubbing
 screens are scripted previews of planned features, not working protections; the
 coach demo carries only the basic versions described above. A fuller coach, with
 on-device processing and data minimization, is planned as a separate product so

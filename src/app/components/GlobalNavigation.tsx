@@ -15,21 +15,17 @@ import {
 } from './ui/dialog';
 
 interface GlobalNavigationProps {
-  currentScreen: 'intro' | 'welcome' | 'chat' | 'cell-creation' | 'cell-interface' | 'about';
   onNavigate: (screen: 'intro' | 'welcome' | 'chat' | 'about') => void;
   onNavigateToAbout?: (section?: string) => void;
-  onLogoClick?: () => void;
   userHasColors?: boolean;
   breathingEnabled?: boolean;
   orbitEnabled?: boolean;
   logoVisible?: boolean;
-  selectedValarIndices?: number[];
   breathingOpacity?: number;
   textSize?: number;
   onBreathingToggle?: (enabled: boolean) => void;
   onOrbitToggle?: (enabled: boolean) => void;
   onLogoVisibleToggle?: (visible: boolean) => void;
-  onValarSelect?: (indices: number[]) => void;
   onOpacityChange?: (opacity: number) => void;
   onTextSizeChange?: (size: number) => void;
   showCounter?: boolean;
@@ -45,20 +41,16 @@ interface GlobalNavigationProps {
 }
 
 export function GlobalNavigation({
-  currentScreen,
   onNavigate,
   onNavigateToAbout,
-  onLogoClick,
   breathingEnabled = true,
   orbitEnabled = true,
   logoVisible = true,
-  selectedValarIndices = [],
   breathingOpacity = 1,
   textSize = 16,
   onBreathingToggle,
   onOrbitToggle,
   onLogoVisibleToggle,
-  onValarSelect,
   onOpacityChange,
   onTextSizeChange,
   showCounter = false,
@@ -207,7 +199,7 @@ export function GlobalNavigation({
                           <span>About</span>
                         </button>
                         
-                        {showAnimationControls && onBreathingToggle && onOrbitToggle && onValarSelect && onOpacityChange ? (
+                        {showAnimationControls && onBreathingToggle && onOrbitToggle && onOpacityChange ? (
                           <>
                             <div className="border-t border-border my-1" />
                             <button
@@ -348,7 +340,7 @@ export function GlobalNavigation({
                   </button>
                 ) : null}
 
-                {showAnimationControls && onBreathingToggle && onOrbitToggle && onValarSelect && onOpacityChange ? (
+                {showAnimationControls && onBreathingToggle && onOrbitToggle && onOpacityChange ? (
                   <>
                     <div className="border-t border-border my-2" />
                     <button
@@ -370,7 +362,7 @@ export function GlobalNavigation({
       </nav>
 
       {/* Accessibility Settings Dialog */}
-      {showAnimationControls && onBreathingToggle && onOrbitToggle && onValarSelect && onOpacityChange ? (
+      {showAnimationControls && onBreathingToggle && onOrbitToggle && onOpacityChange ? (
         <Dialog open={accessibilityOpen} onOpenChange={setAccessibilityOpen}>
           <DialogContent className="max-w-md max-h-[85dvh] overflow-y-auto">
             <DialogHeader>
@@ -383,12 +375,10 @@ export function GlobalNavigation({
               breathingEnabled={breathingEnabled}
               orbitEnabled={orbitEnabled}
               logoVisible={logoVisible}
-              selectedValarIndices={selectedValarIndices}
               breathingOpacity={breathingOpacity}
               onBreathingToggle={onBreathingToggle}
               onOrbitToggle={onOrbitToggle}
               onLogoVisibleToggle={onLogoVisibleToggle}
-              onValarSelect={onValarSelect}
               onOpacityChange={onOpacityChange}
               onTextSizeChange={onTextSizeChange}
               textSize={textSize}

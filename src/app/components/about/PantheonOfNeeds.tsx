@@ -5,7 +5,6 @@ import { valarColors } from '../ValarBreathingLogo';
 import { ScrollIndicator } from '../ScrollIndicator';
 
 interface PantheonOfNeedsProps {
-  onExploreGateways?: () => void;
   /** The ancestor scroll container that actually scrolls this page (this
    *  component doesn't own its own scroll wrapper -- its parent, AboutNenya,
    *  does). Passed through to ScrollIndicator so it detects and scrolls the
@@ -341,7 +340,7 @@ function ValaCard({ vala, isExpanded, onToggle }: {
   );
 }
 
-export default function PantheonOfNeeds({ onExploreGateways, containerRef }: PantheonOfNeedsProps) {
+export default function PantheonOfNeeds({ containerRef }: PantheonOfNeedsProps) {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
   const toggleCard = (id: string) => {
