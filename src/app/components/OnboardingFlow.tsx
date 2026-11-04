@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import NenyaLogo from './NenyaLogo';
@@ -174,7 +175,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
   return (
     <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
       {/* Backdrop: light enough to see the logo breathing behind, darker while the counter is spotlit */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: isExiting ? 0 : 1 }}
         transition={{ duration: 0.5 }}
@@ -199,7 +200,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
       )}
 
       <div className={`absolute inset-0 flex justify-center overflow-y-auto p-4 ${alignment}`}>
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20, scale: 0.97 }}
           animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? 20 : 0, scale: isExiting ? 0.97 : 1 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -208,7 +209,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
           }`}
         >
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={step}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -337,7 +338,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                   </div>
                 </>
               )}
-            </motion.div>
+            </m.div>
           </AnimatePresence>
 
           {/* Progress dots */}
@@ -351,7 +352,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
               />
             ))}
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
 
 interface WelcomePopupProps {
   onDismiss?: () => void;
@@ -30,7 +31,7 @@ export default function WelcomePopup({ onDismiss, initiallyOpen = true }: Welcom
       {/* Minimized Floating Icon - positioned under emergency exit button */}
       <AnimatePresence>
         {isMinimized && (
-          <motion.button
+          <m.button
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
@@ -41,7 +42,7 @@ export default function WelcomePopup({ onDismiss, initiallyOpen = true }: Welcom
             style={{ animation: 'glimmer-ring 2.5s ease-in-out infinite' }}
           >
             <Sparkles className="size-5 text-background-elevated" />
-          </motion.button>
+          </m.button>
         )}
       </AnimatePresence>
 
@@ -50,7 +51,7 @@ export default function WelcomePopup({ onDismiss, initiallyOpen = true }: Welcom
         {isOpen && (
           <>
             {/* Radial gradient backdrop - more transparent at edges, 96% max opacity at center */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -62,7 +63,7 @@ export default function WelcomePopup({ onDismiss, initiallyOpen = true }: Welcom
             />
 
             {/* Card container */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -131,7 +132,7 @@ export default function WelcomePopup({ onDismiss, initiallyOpen = true }: Welcom
                 </div>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>

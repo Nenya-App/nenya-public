@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
 
 interface ScrollIndicatorProps {
   /** The scrollable container element. If not provided, will use window scrolling */
@@ -101,7 +102,7 @@ export function ScrollIndicator({
   return (
     <AnimatePresence>
       {isVisible && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
@@ -112,7 +113,7 @@ export function ScrollIndicator({
             paddingBottom: 'env(safe-area-inset-bottom)',
           }}
         >
-          <motion.div
+          <m.div
             animate={{ y: [0, 8, 0] }}
             transition={{
               duration: 2,
@@ -139,8 +140,8 @@ export function ScrollIndicator({
               className="w-6 h-6 text-primary/60 drop-shadow-lg -mt-4"
               strokeWidth={2.5}
             />
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   );
