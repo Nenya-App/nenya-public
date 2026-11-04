@@ -56,6 +56,12 @@
     # Send origin on same-site requests only; nothing on cross-site navigation
     Referrer-Policy = "strict-origin-when-cross-origin"
 
+    # ── Window isolation ─────────────────────────────────────────────────────
+    # Keeps other sites' windows (for example, anything this page opens) from holding a
+    # reference to this one, and the reverse. The site opens no pop-ups or sign-in windows,
+    # and its outbound links use noopener, so nothing relies on a shared opener.
+    Cross-Origin-Opener-Policy = "same-origin"
+
     # ── Browser features ─────────────────────────────────────────────────────
     # Deny access to hardware and tracking APIs the site never needs
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=(), browsing-topics=()"

@@ -67,7 +67,7 @@ export default function NenyaLogo({
           swapped for the separated petals layer (brightened) under the gem overlay below. */}
       {showLogo && (
         <img
-          src={showValarOrbit ? '/assets/petals-sep.png' : flatLogoSrc}
+          src={showValarOrbit ? '/assets/petals-sep.webp' : flatLogoSrc}
           alt="Nenya Logo"
           width={showValarOrbit ? size * 0.765 : size * 0.85}
           height={showValarOrbit ? size * 0.765 : size * 0.85}
@@ -264,7 +264,7 @@ export default function NenyaLogo({
           With the orbit enabled this becomes the separated gem layer with a shimmer animation. */}
       {showLogo && (
         <img
-          src={showValarOrbit ? '/assets/gem-sep.png' : flatLogoSrc}
+          src={showValarOrbit ? '/assets/gem-sep.webp' : flatLogoSrc}
           alt=""
           width={showValarOrbit ? size * 0.765 : size * 0.85}
           height={showValarOrbit ? size * 0.765 : size * 0.85}

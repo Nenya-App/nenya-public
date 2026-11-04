@@ -60,7 +60,14 @@ node scripts/verify-transcript.mjs transcript.json <published-key-id>
 It prints `VALID` with the date, or says why the file is not valid. Passing the published key ID
 matters: otherwise anyone could sign a made-up transcript with their own key. The official key ID:
 
-> **Key ID: `[to be filled in after the signing key is created]`**
+> **Key ID: `579b407dc600fa7d`** (read from https://nenya.biz/api/coach?key and recorded 2026-11-04)
+
+Transcripts signed by a staging or preview site use a different key and will not verify against this ID. That is intended.
+When the key is rotated, add the new ID here and keep the old ones listed below.
+
+| Key ID | Status |
+|---|---|
+| `579b407dc600fa7d` | current |
 
 The running site also serves its public key at `/api/coach?key`, but check the key ID against this
 file, which lives in the repository's history.
