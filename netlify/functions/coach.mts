@@ -21,6 +21,7 @@ import { detectFlag } from '../../src/lib/safetyFlags.ts';
 import { scrubPII } from '../../src/lib/piiScrub.ts';
 import { looksLikeManipulation, neutralize } from '../../src/lib/promptGuard.ts';
 import { claimConversationSlot, capFromEnv } from '../../src/lib/dailyCap.ts';
+import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
 
 const MAX_TURNS = 5;
@@ -37,7 +38,10 @@ const DEFAULT_CHARACTER_SLUG = 'nenya-20';
 
 const ROUTE = '/api/coach';
 
-const ALLOWED_HOSTS = new Set(['nenya.biz', 'www.nenya.biz', 'localhost', '127.0.0.1']);
+// Production hosts live in src/lib/originHosts.ts; preview deploys add theirs through COACH_EXTRA_HOSTS.
+// The private Blobs store name can also be set per deploy context (COACH_STORE_NAME), so previews never
+// share the production store, notes, or daily counter.
+const privateStore = () => getStore(storeNameFrom(process.env.COACH_STORE_NAME));
 
 type Role = 'user' | 'assistant';
 interface Session {
@@ -178,7 +182,7 @@ async function loadMethodNotes(): Promise<string> {
   if (notesCache && Date.now() - notesCache.at < 5 * 60 * 1000) return notesCache.text;
   let text = '';
   try {
-    text = (await getStore('coach-private').get('method-notes', { type: 'text' })) ?? '';
+    text = (await privateStore().get('method-notes', { type: 'text' })) ?? '';
   } catch {
     text = '';
   }
@@ -195,7 +199,7 @@ async function loadModuleSet(): Promise<ModuleSet | null> {
   if (modulesCache && Date.now() - modulesCache.at < 5 * 60 * 1000) return modulesCache.set;
   let set: ModuleSet | null = null;
   try {
-    const raw = await getStore('coach-private').get('modules', { type: 'text' });
+    const raw = await privateStore().get('modules', { type: 'text' });
     const j = raw ? JSON.parse(raw) : null;
     if (j && typeof j.core === 'string' && j.modules && typeof j.modules === 'object') set = j as ModuleSet;
   } catch {
@@ -215,7 +219,7 @@ async function notesFor(userTexts: string[], softened: boolean): Promise<string>
 // A store that cannot be reached counts as open, as in claimConversationSlot.
 async function slotAvailable(): Promise<boolean> {
   try {
-    return await claimConversationSlot(getStore('coach-private'), capFromEnv(process.env.COACH_DAILY_CAP));
+    return await claimConversationSlot(privateStore(), capFromEnv(process.env.COACH_DAILY_CAP));
   } catch {
     return true;
   }
@@ -279,7 +283,7 @@ export default async (req: Request): Promise<Response> => {
   } catch {
     originHost = '';
   }
-  if (!ALLOWED_HOSTS.has(originHost)) return json(403, { error: 'origin' });
+  if (!hostAllowed(originHost, process.env.COACH_EXTRA_HOSTS)) return json(403, { error: 'origin' });
   if (!(req.headers.get('content-type') || '').includes('application/json')) return json(415, { error: 'type' });
 
   const text = await req.text();

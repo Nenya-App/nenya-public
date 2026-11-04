@@ -281,7 +281,8 @@ export default function NenyaLogo({
             pointerEvents: 'none',
             display: 'block',
             userSelect: 'none',
-            WebkitUserDrag: 'none',
+            // Vendor-prefixed and missing from the CSS typings, but still honored by WebKit and Blink.
+            ...({ WebkitUserDrag: 'none' } as React.CSSProperties),
           }}
         />
       )}
