@@ -399,7 +399,7 @@ export async function downloadNenyaPdfReport(
   // ---------------------------------------------------------------
   // Footer stamp + page numbers on every content page (cover excluded)
   // ---------------------------------------------------------------
-  const totalPages = doc.internal.getNumberOfPages();
+  const totalPages = doc.getNumberOfPages();
   for (let i = 2; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setDrawColor(...COLORS.gold);

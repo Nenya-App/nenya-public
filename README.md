@@ -137,6 +137,15 @@ To try the demo locally you need the [Netlify CLI](https://docs.netlify.com/cli/
 (`netlify dev`) and your own Venice key; plain `npm run dev` serves the page but not
 the function.
 
+## Checks
+
+```
+npm run check     # type-check, tests, and a production build (Node 22.18 or newer)
+```
+
+The same checks run on every pull request (`.github/workflows/ci.yml`). The tests need no network and no real keys.
+See [`docs/branches-and-previews.md`](./docs/branches-and-previews.md) for the branch and preview setup.
+
 ## Deploying
 
 The project is set up for Netlify:
