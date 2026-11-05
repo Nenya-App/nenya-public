@@ -23,6 +23,10 @@ ok('no code refers to a hand-placed /assets/ file', refs.length === 0, refs.join
 
 // Image weight: nothing shipped as an image should be needlessly large.
 const imageFiles = [...walk(join(root, 'src', 'assets')), ...walk(join(root, 'public')).filter((f) => !f.includes('/pdf-assets/'))].filter((f) => /\.(png|jpe?g|webp|gif|avif)$/i.test(f));
-const over = imageFiles.filter((f) => statSync(f).size > 160 * 1024).map((f) => f.replace(root, '') + ` (${Math.round(statSync(f).size / 1024)} KiB)`);
+// The gem's sprite sheet (48 frames in one image) is the one deliberate exception. It is imported only for its URL and
+// fetched when the orbit view mounts, never bundled into the page's JavaScript.
+const SPRITE = 'diamond-hex-sprite.webp';
+ok('the gem sprite sheet exists and stays under 1 MiB', imageFiles.some((f) => f.endsWith(SPRITE)) && statSync(join(root, 'src', 'assets', SPRITE)).size < 1024 * 1024);
+const over = imageFiles.filter((f) => !f.endsWith(SPRITE)).filter((f) => statSync(f).size > 160 * 1024).map((f) => f.replace(root, '') + ` (${Math.round(statSync(f).size / 1024)} KiB)`);
 ok('no site image is over 160 KiB', over.length === 0, over.join(', '));
 ok('site images are WebP, JPEG or PNG only where a PNG is genuinely needed', imageFiles.filter((f) => /\.png$/i.test(f) && statSync(f).size > 60 * 1024).length === 0, 'large PNGs: ' + imageFiles.filter((f) => /\.png$/i.test(f) && statSync(f).size > 60 * 1024).map((f) => f.replace(root, '')).join(', '));

@@ -114,6 +114,10 @@ export const valarColors = [
   },
 ];
 
+// All 96 colours (16 Valar x 6 colours each) in breath order. Shared with the gem, which tints to the
+// same colour as the ring.
+export const allColors: string[] = valarColors.flatMap((valar) => valar.vector);
+
 // Convert hex to rgba
 function hexToRgba(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -161,14 +165,6 @@ export function ValarBreathingLogo({
   cvMode = '',
   cycleStart,
 }: ValarBreathingLogoProps) {
-  // Build array of all 96 colors (16 Valar × 6 colors each) in order
-  const allColors: string[] = [];
-  valarColors.forEach((valar) => {
-    valar.vector.forEach((color) => {
-      allColors.push(color);
-    });
-  });
-
   // Total animation cycle = 96 colors × cycleDuration seconds each
   const totalDuration = allColors.length * cycleDuration;
 

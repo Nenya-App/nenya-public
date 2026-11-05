@@ -65,6 +65,20 @@ try {
   ok('first-visit panel: renders its dialog and the rhythm choice', typeof h === 'string' && h.includes('role="dialog"') && h.includes('onboarding-title'), h.error ?? '');
   ok('first-visit panel: no layer starts invisible', typeof h === 'string' && !/opacity:\s*0(?![.\d])/.test(h.replace(/<style>[\s\S]*?<\/style>/g, '')), 'found an inline opacity: 0');
   ok('first-visit panel: entrance is done with CSS classes', typeof h === 'string' && h.includes('onb-fade-in') && h.includes('onb-card-in') && h.includes('onb-step-in'));
+
+  // The logo: orbit view with the spectral gem and the baked glow. Effects do not run on the server, so this
+  // checks the structure; the drawing itself is checked by the breath-clock and glow-bake tests.
+  const { default: Logo } = await vite.ssrLoadModule('/src/app/components/NenyaLogo.tsx');
+  h = render(Logo, { size: 300, showValarOrbit: true, showLogo: true, glow: true, technique: { ih: 4000, hi: 7000, ex: 8000, ho: 0 }, cycleStart: 0 });
+  const canvases = typeof h === 'string' ? (h.match(/<canvas/g) ?? []).length : 0;
+  ok('logo (orbit view): renders the gem canvases and the two glow images', typeof h === 'string' && canvases === 4, h.error ?? `${canvases} canvases`);
+  ok('logo (orbit view): the overlay gem layer blends with overlay', typeof h === 'string' && h.includes('mix-blend-mode:overlay'));
+  ok('logo (orbit view): the outer orbs carry the box-shadow glow class', typeof h === 'string' && h.includes('nenya-orb-glow'));
+  ok('logo (orbit view): the logo isolates its blending', typeof h === 'string' && h.includes('isolation:isolate'));
+  h = render(Logo, { size: 32 });
+  ok('logo (header mark): a plain flat image, no canvases, no glow', typeof h === 'string' && !h.includes('<canvas') && h.includes('<img'), h.error ?? '');
+  h = render(Logo, { size: 300, showValarOrbit: true, showLogo: false, glow: true });
+  ok('logo (hidden): no gem and no glow when the logo is hidden', typeof h === 'string' && !h.includes('<canvas'), h.error ?? '');
 } finally {
   await vite.close();
 }

@@ -607,6 +607,8 @@ export default function App() {
           onCounterToggle={setShowBreathingCounter}
           cvMode={colorBlindMode}
           onCvModeChange={setColorBlindMode}
+          technique={breathingTechnique}
+          cycleStart={breathingCycleStart}
         />
       </div>
     </ThemeProvider>

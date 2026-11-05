@@ -99,6 +99,9 @@ export default function WelcomePage({
                   showValarOrbit={orbitEnabled}
                   showLogo={logoVisible}
                   cycleStart={cycleStart}
+                  technique={technique}
+                  breathingEnabled={breathingEnabled}
+                  glow
                 />
               </div>
             </ValarBreathingLogo>

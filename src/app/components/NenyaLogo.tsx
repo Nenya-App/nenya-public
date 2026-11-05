@@ -11,8 +11,9 @@ import nenyaLogoSmall from '../../assets/nenya-logo-small.webp';
 // The orbit view's two separated layers. Imported (not served from public/) so the build gives them
 // versioned filenames and they can be cached for a long time safely.
 import petalsLayer from '../../assets/petals-sep.webp';
-import gemLayer from '../../assets/gem-sep.webp';
-import { valarColors } from './ValarBreathingLogo';
+import { valarColors, type BreathingTechnique } from './ValarBreathingLogo';
+import SpectralGem from './SpectralGem';
+import LogoGlow from './LogoGlow';
 
 // Above this size, the full-resolution source is used instead -- 128px
 // covers up to ~40px CSS at 3x device pixel ratio (the largest "small"
@@ -27,6 +28,12 @@ interface NenyaLogoProps {
   /** Shared clock anchor (ms epoch) used to phase-align the orbit's
    *  rotation on mount/resume, the same anchor the breathing pulse uses. */
   cycleStart?: number;
+  /** The breathing technique in use. The gem's sparkle loop lasts three of its breaths. */
+  technique?: BreathingTechnique | null;
+  /** When false (breathing animation off) the gem is not tinted. */
+  breathingEnabled?: boolean;
+  /** Draw the gold glow around the logo. Only the large welcome and popout logos use it. */
+  glow?: boolean;
 }
 
 const ORBIT_DURATION = 120; // seconds for one complete orbit
@@ -37,17 +44,21 @@ export default function NenyaLogo({
   showValarOrbit = false,
   showLogo = true,
   cycleStart,
+  technique = null,
+  breathingEnabled = true,
+  glow = false,
 }: NenyaLogoProps) {
   const flatLogoSrc = size <= SMALL_LOGO_MAX_SIZE ? nenyaLogoSmall : nenyaLogo;
 
   // Inner orbit - tight orbit creates dense overlapping effect
   const orbitRadius = size * 0.0625; // 37.5px for 600px logo, 12.5px for 200px logo
-  const orbSize = Math.max(8.5, size * 0.102); // Reduced by 15% from previous size (0.12 * 0.85 = 0.102)
+  // The inner orbs sit inside the gem, so they are smaller than the outer ones.
+  const orbSize = Math.max(8.5, size * 0.085);
 
   // Outer orbit - at the edge of the breathing animation (logoSize / 2)
   // Breathing animation expands to 1.4x its base size (logoSize / 1.4), so at peak it reaches logoSize diameter
   const outerOrbitRadius = size / 2; // Half the logo size = outer edge of breathing animation
-  const outerOrbSize = orbSize * 0.5; // Half the size of inner orbs
+  const outerOrbSize = Math.max(8.5, size * 0.102) * 0.5; // Half the size the inner orbs used to have; unchanged
 
   // Recomputed on mount, so a fresh mount starts the rotation at the correct
   // phase instead of snapping back to angle 0.
@@ -65,8 +76,15 @@ export default function NenyaLogo({
       style={{ 
         width: size, 
         height: size,
+        // The gem's overlay layer blends with what is under it; keep that inside the logo.
+        isolation: 'isolate',
       }}
     >
+      {/* The glow, computed once as an image (see LogoGlow). */}
+      {glow && showLogo && (
+        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? petalsLayer : flatLogoSrc} />
+      )}
+
       {/* Logo image - base layer. When the Valar orbit is enabled the flat logo is
           swapped for the separated petals layer (brightened) under the gem overlay below. */}
       {showLogo && (
@@ -208,7 +226,7 @@ export default function NenyaLogo({
             return (
               <m.div
                 key={`outer-${valar.name}`}
-                className="absolute"
+                className={glow ? 'absolute nenya-orb-glow' : 'absolute'}
                 style={{
                   width: outerOrbSize,
                   height: outerOrbSize,
@@ -264,24 +282,31 @@ export default function NenyaLogo({
         </div>
       )}
 
-      {/* Opaque logo overlay - creates effect of light emanating from within.
-          With the orbit enabled this becomes the separated gem layer with a shimmer animation. */}
-      {showLogo && (
+      {/* Light emanating from within. With the orbit enabled this is the spectral gem; otherwise the
+          flat logo drawn again over the orbs. */}
+      {showLogo && showValarOrbit && (
+        <SpectralGem
+          size={size}
+          cycleStart={cycleStart}
+          technique={technique}
+          breathingEnabled={breathingEnabled}
+        />
+      )}
+      {showLogo && !showValarOrbit && (
         <img
-          src={showValarOrbit ? gemLayer : flatLogoSrc}
+          src={flatLogoSrc}
           alt=""
-          width={showValarOrbit ? size * 0.765 : size * 0.85}
-          height={showValarOrbit ? size * 0.765 : size * 0.85}
+          width={size * 0.85}
+          height={size * 0.85}
           className="absolute"
           style={{
-            width: showValarOrbit ? size * 0.765 : size * 0.85,
-            height: showValarOrbit ? size * 0.765 : size * 0.85,
+            width: size * 0.85,
+            height: size * 0.85,
             zIndex: 30,
             left: '50%',
             top: '50%',
             transform: 'translate(-50%,-50%)',
-            animation: showValarOrbit ? 'gem-shimmer 14s ease-in-out infinite' : undefined,
-                        opacity: 1,
+            opacity: 1,
             pointerEvents: 'none',
             display: 'block',
             userSelect: 'none',
