@@ -30,3 +30,15 @@ Upload (replace the path):
     netlify blobs:set coach-private modules --input path/to/modules.json
 
 Nothing about the conversation is sent anywhere to choose modules, and the selection is not logged.
+
+## Building the combined modules document
+The private drafts (a lens set and a richer set of coaching-move modules with the coach's own wording as examples) are turned into the single `modules` document with:
+
+    node scripts/build-module-set.mts --lens PATH/lens-draft.json --moves PATH/moves-draft.json --out PATH/combined.json
+
+The script (see `src/lib/moduleSet.ts`) refuses to write a set where a module has no trigger in `coachModules.ts`, a trigger has no text, or the worst case for one reply is over the 12,000-character cap. Keep the drafts and the output outside the repository.
+
+Which modules a reply gets: at most three, in this order of attention: one safety module, up to two lenses, then coaching moves, then one resource. A lens that applies holds back the moves that would pull against it (depleted reserves: no action-planning moves; deliberate harm: no perspective-taking toward the other party or skill-building). Soften-tier conversations still get the core only.
+
+Before uploading to a preview site, check which site the CLI is linked to (`netlify status`). The repository's CLI is linked to production.
+

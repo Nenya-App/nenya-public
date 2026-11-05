@@ -241,7 +241,7 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
   if (notes) parts.splice(1, 0, `Method notes you may reason with (background for you, not to be quoted):\n${notes}`);
   if (softened) {
     parts.push(
-      'The latest message may signal distress. Respond briefly and with care. Acknowledge what the person said without probing or interpreting it, do not give advice, and gently encourage them to reach a person they trust or a crisis line (988 in the US). You are not able to help in a crisis.'
+      'The latest message may signal distress. Respond briefly and with care. Acknowledge what the person said without probing or interpreting it, do not give advice, and gently encourage them to reach a person they trust or a crisis line (call or text 988 in the US or Canada, or findahelpline.com for other countries). You are not able to help in a crisis.'
     );
   }
   // A direct question is answered first, even on the first exchange. Care for a possible crisis still comes first.

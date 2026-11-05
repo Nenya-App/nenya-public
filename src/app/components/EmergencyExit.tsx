@@ -157,6 +157,14 @@ function EmergencyExitModal({ isOpen, onClose }: EmergencyExitModalProps) {
                 <div className="text-muted-foreground">Call or text 988 (US)</div>
               </div>
               <div>
+                <strong className="text-foreground">9-8-8 Suicide Crisis Helpline:</strong>
+                <div className="text-muted-foreground">Call or text 9-8-8 (Canada)</div>
+              </div>
+              <div>
+                <strong className="text-foreground">Kids Help Phone:</strong>
+                <div className="text-muted-foreground">Call 1-800-668-6868 or text CONNECT to 686868 (Canada)</div>
+              </div>
+              <div>
                 <strong className="text-foreground">Crisis Text Line:</strong>
                 <div className="text-muted-foreground">Text HOME to 741741 (US)</div>
               </div>
@@ -165,8 +173,8 @@ function EmergencyExitModal({ isOpen, onClose }: EmergencyExitModalProps) {
                 <div className="text-muted-foreground">Call 1-800-799-7233 (US)</div>
               </div>
               <div>
-                <strong className="text-foreground">International Association for Suicide Prevention:</strong>
-                <div className="text-muted-foreground">iasp.info/resources/Crisis_Centres</div>
+                <strong className="text-foreground">Other countries:</strong>
+                <div className="text-muted-foreground">findahelpline.com or iasp.info/resources/Crisis_Centres</div>
               </div>
             </div>
           </div>

@@ -90,13 +90,15 @@ export function resourcesFor(category: FlagCategory): Resource[] {
   const list: Resource[] = [
     { name: '988 Suicide & Crisis Lifeline (US)', detail: 'Call or text 988, any time', href: 'tel:988' },
     { name: 'Crisis Text Line (US)', detail: 'Text HOME to 741741', href: 'sms:741741' },
+    { name: '9-8-8 Suicide Crisis Helpline (Canada)', detail: 'Call or text 9-8-8, any time, in English or French', href: 'tel:988' },
+    { name: 'Kids Help Phone (Canada)', detail: 'Call 1-800-668-6868 or text CONNECT to 686868', href: 'tel:18006686868' },
   ];
   if (category === 'abuse') {
     list.push({ name: 'National Domestic Violence Hotline (US)', detail: 'Call 1-800-799-7233', href: 'tel:18007997233' });
   }
   list.push(
-    { name: 'Immediate danger', detail: 'Call your local emergency number (911 in the US)', href: 'tel:911' },
-    { name: 'Outside the US', detail: 'findahelpline.com or iasp.info/resources/Crisis_Centres' }
+    { name: 'Immediate danger', detail: 'Call your local emergency number (911 in the US and Canada)', href: 'tel:911' },
+    { name: 'Outside the US and Canada', detail: 'findahelpline.com or iasp.info/resources/Crisis_Centres' }
   );
   return list;
 }
