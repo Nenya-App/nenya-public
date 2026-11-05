@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { allColors } from './ValarBreathingLogo';
 import { breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
-import { GEM_CENTRE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite } from '../../lib/gemSprite';
+import { GEM_CENTRE, GEM_HEX_RADIUS, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite } from '../../lib/gemSprite';
 
 interface SpectralGemProps {
   /** The logo's size (the same `size` NenyaLogo takes). */
@@ -19,6 +19,18 @@ interface SpectralGemProps {
   /** When the breathing animation is off the stone is not tinted. */
   breathingEnabled?: boolean;
 }
+
+// The stone is rendered under white light, which reads as bright white, most of all at the edges. The tint multiplies
+// the whole stone by a warm tone that is mild in the middle and stronger toward the rim.
+const TONE_CENTER = [0.95, 0.93, 0.9];
+const TONE_EDGE = [0.78, 0.7, 0.58];
+const TONE_START = 0.26; // distance from the centre (as a fraction of the stone's frame) where the rim tone begins
+
+// A thin gold bezel drawn around the edge of the stone, the same thickness and colour as the petals' lines, sitting
+// half on the stone and half off it.
+const BEZEL_WIDTH = 0.03; // of the frame's side (the petals' line is about 2.8% of the same span)
+const BEZEL_COLOR = '#fddfb9';
+const BEZEL_HIGHLIGHT = 'rgba(255, 248, 232, 0.65)';
 
 const FRAME_INTERVAL_MS = 1000 / 30; // the sparkle moves ~1.6 frames a second; 30 draws a second is plenty smooth
 
@@ -38,6 +50,7 @@ export default function SpectralGem({
 }: SpectralGemProps) {
   const bodyRef = useRef<HTMLCanvasElement>(null);
   const lightRef = useRef<HTMLCanvasElement>(null);
+  const bezelRef = useRef<HTMLCanvasElement>(null);
   const mountTime = useRef(Date.now());
 
   const petalsSide = size * 0.765;
@@ -60,6 +73,35 @@ export default function SpectralGem({
     const px = Math.max(8, Math.round(gemSide * dpr));
     // Only resize when the size really changed: resizing clears a canvas, which shows as a flash.
     if (body.width !== px) body.width = body.height = light.width = light.height = px;
+    // The bezel is static: drawn once per size.
+    const bezel = bezelRef.current;
+    if (bezel && bezel.width !== px) {
+      bezel.width = bezel.height = px;
+      const z = bezel.getContext('2d');
+      if (z) {
+        const c = px / 2;
+        const R = GEM_HEX_RADIUS * px;
+        const hex = () => {
+          z.beginPath();
+          for (let k = 0; k < 6; k++) {
+            const a = -Math.PI / 2 + (k * Math.PI) / 3; // corners at the top and bottom
+            const x = c + R * Math.cos(a), y = c + R * Math.sin(a);
+            if (k === 0) z.moveTo(x, y); else z.lineTo(x, y);
+          }
+          z.closePath();
+        };
+        z.lineJoin = 'round';
+        z.lineCap = 'round';
+        z.strokeStyle = BEZEL_COLOR;
+        z.lineWidth = Math.max(1, BEZEL_WIDTH * px);
+        hex();
+        z.stroke();
+        z.strokeStyle = BEZEL_HIGHLIGHT;
+        z.lineWidth = Math.max(0.5, BEZEL_WIDTH * px * 0.35);
+        hex();
+        z.stroke();
+      }
+    }
     const bctx = body.getContext('2d');
     const lctx = light.getContext('2d');
     const off = document.createElement('canvas');
@@ -102,7 +144,11 @@ export default function SpectralGem({
       bctx.clearRect(0, 0, px, px);
       bctx.drawImage(off, 0, 0);
       bctx.globalCompositeOperation = 'multiply';
-      bctx.fillStyle = `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+      const tone = (t: number[]) => `rgb(${Math.round(r * t[0])},${Math.round(g * t[1])},${Math.round(b * t[2])})`;
+      const rim = bctx.createRadialGradient(px / 2, px / 2, px * TONE_START, px / 2, px / 2, px * GEM_HEX_RADIUS);
+      rim.addColorStop(0, tone(TONE_CENTER));
+      rim.addColorStop(1, tone(TONE_EDGE));
+      bctx.fillStyle = rim;
       bctx.fillRect(0, 0, px, px);
       bctx.globalCompositeOperation = 'destination-in'; // restore the stone's transparent outline
       bctx.drawImage(off, 0, 0);
@@ -186,6 +232,7 @@ export default function SpectralGem({
     <>
       <canvas ref={bodyRef} aria-hidden="true" style={{ ...place, zIndex: 30, opacity: (1 - clarity) * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
       <canvas ref={lightRef} aria-hidden="true" style={{ ...place, zIndex: 31, mixBlendMode: 'overlay', opacity: sparkle * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
+      <canvas ref={bezelRef} aria-hidden="true" style={{ ...place, zIndex: 32 }} />
     </>
   );
 }

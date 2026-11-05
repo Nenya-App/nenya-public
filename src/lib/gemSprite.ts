@@ -9,6 +9,9 @@ export const SPRITE_CELL = 288;
 export const GEM_HEX_FRACTION = 2 / 2.48;
 /** Gem canvas side as a fraction of the petals layer's side (the petals layer is size * 0.765). */
 export const GEM_TO_PETALS = 0.3402;
+/** Circumradius of the stone's hexagon (corners at the top and bottom) as a fraction of its frame's side. */
+export const GEM_HEX_RADIUS = 476 / 1024;
+
 /** Centre of the gem within the petals box, as measured from the old gem layer's alpha bounds. */
 export const GEM_CENTRE = { x: 0.5008, y: 0.4984 };
 

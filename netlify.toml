@@ -3,7 +3,9 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "20"
+  # Node 24 (Node 20 is end of life). This sets the build. The function runtime is a separate setting on an existing
+  # site: see docs/branches-and-previews.md ("Node 24").
+  NODE_VERSION = "24"
 
 # The /coach demo's relay function (see netlify/functions/coach.mts).
 [functions]

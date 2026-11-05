@@ -71,7 +71,7 @@ try {
   const { default: Logo } = await vite.ssrLoadModule('/src/app/components/NenyaLogo.tsx');
   h = render(Logo, { size: 300, showValarOrbit: true, showLogo: true, glow: true, technique: { ih: 4000, hi: 7000, ex: 8000, ho: 0 }, cycleStart: 0 });
   const canvases = typeof h === 'string' ? (h.match(/<canvas/g) ?? []).length : 0;
-  ok('logo (orbit view): renders the gem canvases and the two glow images', typeof h === 'string' && canvases === 4, h.error ?? `${canvases} canvases`);
+  ok('logo (orbit view): renders the gem canvases, the gold bezel and the two glow images', typeof h === 'string' && canvases === 5, h.error ?? `${canvases} canvases`);
   ok('logo (orbit view): the overlay gem layer blends with overlay', typeof h === 'string' && h.includes('mix-blend-mode:overlay'));
   ok('logo (orbit view): the outer orbs carry the box-shadow glow class', typeof h === 'string' && h.includes('nenya-orb-glow'));
   ok('logo (orbit view): the logo isolates its blending', typeof h === 'string' && h.includes('isolation:isolate'));

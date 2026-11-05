@@ -65,3 +65,11 @@ reply (see `src/lib/veniceE2ee.ts`). Nothing else changes. Notes:
 - Venice's own system prompt and the character card do not apply to these models. The coach's instruction is ours.
 - The unit tests use a pretend enclave. Only a live test on staging shows whether Venice accepts the requests.
   Check the function log for `coach: e2ee <code>` lines (a short code, never message text).
+
+## Node 24
+The build is pinned to Node 24 in `netlify.toml` (`NODE_VERSION`), and CI runs Node 24. Netlify's default for new sites is Node 24, but an existing site keeps its own function runtime until it is changed, so after the first deploy on the preview site:
+
+1. In the site's settings, check the Functions runtime version. If it is not Node 24, change it there, or set the environment variable `AWS_LAMBDA_JS_RUNTIME` (Netlify's docs name the accepted values; check them first).
+2. Open `/coach` on the preview and send one message, then look at the function log: a start-up error would show there.
+3. Only then merge to `main`, and repeat the runtime check on the production site.
+
