@@ -10,7 +10,8 @@
 //   COACH_ENABLED        plain    "true" to accept requests
 //   COACH_SIGNING_KEY    secret   optional, base64 Ed25519 private key (PKCS8 DER) for
 //                                 signing transcript receipts
-//   COACH_MODEL          plain    optional, overrides DEFAULT_MODEL
+//   COACH_MODEL          plain    optional, overrides DEFAULT_MODEL. An id starting "e2ee-" (Venice's encrypted
+//                                 models) is called through src/lib/veniceE2ee.ts instead of the plain request.
 //   COACH_CHARACTER_SLUG plain    optional, overrides DEFAULT_CHARACTER_SLUG
 //   COACH_METHOD_NOTES   plain    optional, short method notes (fallback when the blob below is absent)
 // Netlify Blobs: store "coach-private", key "method-notes" holds longer private method
@@ -23,6 +24,7 @@ import { looksLikeManipulation, neutralize } from '../../src/lib/promptGuard.ts'
 import { claimConversationSlot, capFromEnv } from '../../src/lib/dailyCap.ts';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
+import { E2eeError, e2eeChat, isE2eeModel } from '../../src/lib/veniceE2ee.ts';
 
 const MAX_TURNS = 5;
 const MAX_USER_CHARS = 500;
@@ -357,42 +359,60 @@ export default async (req: Request): Promise<Response> => {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), VENICE_TIMEOUT_MS);
-    const res = await fetch(VENICE_URL, {
-      method: 'POST',
-      signal: ctrl.signal,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: systemInstruction(turn, softened, notes) },
-          ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
-          // Scrubbed again here in case the page was bypassed.
-          ...messages.map((m) => (m.role === 'user' ? { ...m, content: neutralize(scrubPII(m.content).text) } : m)),
-        ],
-        temperature: 0.7,
-        top_p: 0.9,
-        repetition_penalty: 1.1,
-        max_completion_tokens: MAX_REPLY_TOKENS,
-        stream: false,
-        venice_parameters: {
-          character_slug: slug,
-          include_venice_system_prompt: process.env.COACH_INCLUDE_VENICE_PROMPT === 'true',
-          enable_web_search: 'off',
-          enable_web_scraping: false,
-          enable_web_citations: false,
-          strip_thinking_response: true,
-        },
-      }),
-    });
-    clearTimeout(timer);
-    if (!res.ok) {
-      console.error('coach: venice status', res.status); // status only, never content
-      return json(502, { error: 'upstream' });
+    const chatMessages = [
+      { role: 'system' as const, content: systemInstruction(turn, softened, notes) },
+      ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
+      // Scrubbed again here in case the page was bypassed.
+      ...messages.map((m) => (m.role === 'user' ? { ...m, content: neutralize(scrubPII(m.content).text) } : m)),
+    ];
+    const sampling = { temperature: 0.7, top_p: 0.9, repetition_penalty: 1.1, max_completion_tokens: MAX_REPLY_TOKENS };
+    let raw = '';
+    let finish: string | undefined;
+    if (isE2eeModel(model)) {
+      // Encrypted models: the prompt is encrypted before it reaches Venice (see src/lib/veniceE2ee.ts). Venice's
+      // own system prompt and the character card do not apply, which is fine because ours wins anyway.
+      try {
+        const out = await e2eeChat({ apiKey, model, messages: chatMessages, params: sampling, signal: ctrl.signal });
+        raw = out.content;
+        finish = out.finishReason;
+      } catch (e) {
+        clearTimeout(timer);
+        console.error('coach: e2ee', e instanceof E2eeError ? e.code : 'failed'); // a short code only, never content
+        return json(502, { error: 'upstream' });
+      }
+      clearTimeout(timer);
+    } else {
+      const res = await fetch(VENICE_URL, {
+        method: 'POST',
+        signal: ctrl.signal,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model,
+          messages: chatMessages,
+          ...sampling,
+          stream: false,
+          venice_parameters: {
+            character_slug: slug,
+            include_venice_system_prompt: process.env.COACH_INCLUDE_VENICE_PROMPT === 'true',
+            enable_web_search: 'off',
+            enable_web_scraping: false,
+            enable_web_citations: false,
+            strip_thinking_response: true,
+          },
+        }),
+      });
+      clearTimeout(timer);
+      if (!res.ok) {
+        console.error('coach: venice status', res.status); // status only, never content
+        return json(502, { error: 'upstream' });
+      }
+      const data = (await res.json()) as { choices?: { message?: { content?: string }; finish_reason?: string }[] };
+      raw = data.choices?.[0]?.message?.content ?? '';
+      finish = data.choices?.[0]?.finish_reason;
     }
-    const data = (await res.json()) as { choices?: { message?: { content?: string }; finish_reason?: string }[] };
-    reply = clean((data.choices?.[0]?.message?.content ?? '').replace(/<think>[\s\S]*?<\/think>/gi, ''));
+    reply = clean(raw.replace(/<think>[\s\S]*?<\/think>/gi, ''));
     // If the model hit the ceiling mid-sentence, end on the last whole sentence instead of mid-word.
-    if (data.choices?.[0]?.finish_reason === 'length') reply = trimToSentence(reply);
+    if (finish === 'length') reply = trimToSentence(reply);
     reply = dropOffBrand(reply);
   } catch {
     console.error('coach: venice request failed');
