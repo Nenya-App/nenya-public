@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
-import { allColors } from './ValarBreathingLogo';
-import { breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
+import { allColors, valarColors } from './ValarBreathingLogo';
+import { orbColour } from '../../lib/orbColours';
+import { breathFractions, breathLengthMs, gemClock, gemMultiplyColor, hueOnly, type BreathTiming } from '../../lib/breathClock';
 import { GEM_CENTRE, GEM_HEX_RADIUS, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite } from '../../lib/gemSprite';
 
 interface SpectralGemProps {
@@ -23,11 +24,18 @@ interface SpectralGemProps {
 // A double bezel around the edge of the stone: a gold line (the darker of the petals' two colours, and their
 // thickness) sitting half on the stone and half off it, with a thinner cream line (the lighter petal colour) just
 // outside it.
-const BEZEL_WIDTH = 0.03; // of the frame's side (the petals' line is about 2.8% of the same span)
+const BEZEL_WIDTH = 0.04; // (half of it sits behind the stone)
+// of the frame's side (the petals' line is about 2.8% of the same span)
 const BEZEL_COLOR = '#fcce96';
 const BEZEL_OUTER_WIDTH = 0.012;
 const BEZEL_OUTER_COLOR = '#fff9ee';
 const BEZEL_GAP = 0.004; // between the two lines
+
+// The stone's own colour: the colours of the 16 inner orbs, laid round it like a colour wheel that turns once every
+// two minutes (as the orbit does) and changes as the orbs' colours change. The stone is nearly opaque, so its colour
+// comes from this and not from the orbs showing through it.
+const FIELD_STRENGTH = 0.75; // 0 = no colour, 1 = the orbs' full hue
+const FIELD_TURN_S = 120;
 
 const FRAME_INTERVAL_MS = 1000 / 30; // the sparkle moves ~1.6 frames a second; 30 draws a second is plenty smooth
 
@@ -40,7 +48,7 @@ export default function SpectralGem({
   size,
   cycleStart,
   technique = null,
-  clarity = 0.72, // was 0.65: a little clearer, so more of the orbit's colour shows through the back
+  clarity = 0.12, // nearly opaque: the colour is made inside the stone, not seen through it
   sparkle = 0.8, // was 1
   tint = 0.2,
   breathingEnabled = true,
@@ -141,6 +149,20 @@ export default function SpectralGem({
       bctx.clearRect(0, 0, px, px);
       bctx.drawImage(off, 0, 0);
       bctx.globalCompositeOperation = 'multiply';
+      // The stone's inner colour: a wheel of the orbs' current colours.
+      if (typeof bctx.createConicGradient === 'function') {
+        const tSec = reduced ? 0 : (Date.now() - mountTime.current) / 1000;
+        const wheel = bctx.createConicGradient(reduced ? 0 : ((tSec / FIELD_TURN_S) % 1) * 2 * Math.PI, px / 2, px / 2);
+        const n = valarColors.length;
+        for (let i = 0; i <= n; i++) {
+          const j = i % n;
+          const h = hueOnly(orbColour(valarColors[j].vector, j, tSec));
+          const c = h.map((v) => Math.round(255 + (v - 255) * FIELD_STRENGTH));
+          wheel.addColorStop(i / n, `rgb(${c[0]},${c[1]},${c[2]})`);
+        }
+        bctx.fillStyle = wheel;
+        bctx.fillRect(0, 0, px, px);
+      }
       bctx.fillStyle = `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
       bctx.fillRect(0, 0, px, px);
       bctx.globalCompositeOperation = 'destination-in'; // restore the stone's transparent outline
@@ -225,7 +247,7 @@ export default function SpectralGem({
     <>
       <canvas ref={bodyRef} aria-hidden="true" style={{ ...place, zIndex: 30, opacity: (1 - clarity) * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
       <canvas ref={lightRef} aria-hidden="true" style={{ ...place, zIndex: 31, mixBlendMode: 'overlay', opacity: sparkle * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
-      <canvas ref={bezelRef} aria-hidden="true" style={{ ...place, zIndex: 32 }} />
+      <canvas ref={bezelRef} aria-hidden="true" style={{ ...place, zIndex: 29 }} />
     </>
   );
 }
