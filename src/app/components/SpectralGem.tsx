@@ -19,6 +19,10 @@ interface SpectralGemProps {
   tint?: number;
   /** When the breathing animation is off the stone is not tinted. */
   breathingEnabled?: boolean;
+  /** How the stone is shaded: contrast deepens its lines, lift brightens it, fieldAlpha is how much of the orbs' colour it takes. */
+  contrast?: number;
+  lift?: number;
+  fieldAlpha?: number;
 }
 
 // A double bezel around the edge of the stone, drawn behind it. It copies the petals' strokes: the same two colours
@@ -37,11 +41,13 @@ const BEZEL_CANVAS = 1.12; // the bezel canvas is this much larger than the ston
 // The stone's own colour: the colours of the 16 inner orbs laid round it like a colour wheel that turns once every
 // two minutes (as the orbit does) and changes as the orbs' colours change. It is applied with the "color" blend,
 // which takes the hue from the wheel and keeps the stone's own light and dark, so the facets keep their structure.
-const FIELD_ALPHA = 0.45; // 0 = no colour, 1 = full colour
+const FIELD_ALPHA = 0.9; // 0 = no colour, 1 = full colour
 const FIELD_TURN_S = 120;
 // Structure: the stone is multiplied by itself a little, which deepens its shadows and lines without darkening its
 // highlights, and the overlay layer on top is kept light.
-const CONTRAST = 0.6;
+const CONTRAST = 0.9;
+// Lift: a little screen with the original, which brightens lights and mid-tones again after the contrast step.
+const LIFT = 0.5;
 
 const FRAME_INTERVAL_MS = 1000 / 30; // the sparkle moves ~1.6 frames a second; 30 draws a second is plenty smooth
 
@@ -54,10 +60,13 @@ export default function SpectralGem({
   size,
   cycleStart,
   technique = null,
-  clarity = 0.2, // nearly opaque: the colour is made inside the stone, not seen through it
-  sparkle = 0.25, // the overlay layer washes an opaque stone toward white, so it is kept light
+  clarity = 0.5, // half clear
+  sparkle = 0.9, // the overlay layer's strength
   tint = 0.2,
   breathingEnabled = true,
+  contrast = CONTRAST,
+  lift = LIFT,
+  fieldAlpha = FIELD_ALPHA,
 }: SpectralGemProps) {
   const bodyRef = useRef<HTMLCanvasElement>(null);
   const lightRef = useRef<HTMLCanvasElement>(null);
@@ -163,7 +172,10 @@ export default function SpectralGem({
       bctx.drawImage(off, 0, 0);
       // Structure: multiply the stone by itself a little. Shadows and lines deepen, highlights stay.
       bctx.globalCompositeOperation = 'multiply';
-      bctx.globalAlpha = CONTRAST;
+      bctx.globalAlpha = contrast;
+      bctx.drawImage(off, 0, 0);
+      bctx.globalCompositeOperation = 'screen';
+      bctx.globalAlpha = lift;
       bctx.drawImage(off, 0, 0);
       // The stone's inner colour: a wheel of the orbs' current colours, applied as hue only ("color" blend), so the
       // stone keeps its own light and dark.
@@ -177,7 +189,7 @@ export default function SpectralGem({
           wheel.addColorStop(i / n, `rgb(${Math.round(col[0])},${Math.round(col[1])},${Math.round(col[2])})`);
         }
         bctx.globalCompositeOperation = 'color';
-        bctx.globalAlpha = FIELD_ALPHA;
+        bctx.globalAlpha = fieldAlpha;
         bctx.fillStyle = wheel;
         bctx.fillRect(0, 0, px, px);
       }
@@ -251,7 +263,7 @@ export default function SpectralGem({
       reduceQuery.removeEventListener?.('change', start);
     };
     // The clock anchor and timing shape are read inside the loop, so they restart it when they change.
-  }, [gemSide, anchor, breathMs, t1, t2, t3, tint, breathingEnabled]);
+  }, [gemSide, anchor, breathMs, t1, t2, t3, tint, breathingEnabled, contrast, lift, fieldAlpha]);
 
   const place: React.CSSProperties = {
     position: 'absolute',

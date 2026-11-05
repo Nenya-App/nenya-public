@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { breathCounter } from '../../lib/breathClock';
 import * as m from 'motion/react-m';
 import { ChevronDown, GripHorizontal, Minus, Square, X } from 'lucide-react';
 
@@ -46,17 +47,7 @@ export function BreathingCounter({
     if (!enabled || !show) return;
     const start = cycleStart ?? Date.now();
     const interval = setInterval(() => {
-      const cycle = IH + HI + EX + HO;
-      const d = (Date.now() - start) % cycle;
-      const ph: 'i' | 'h' | 'e' = d < IH ? 'i' : d < IH + HI ? 'h' : d < IH + HI + EX ? 'e' : 'h';
-      const cn =
-        ph === 'i'
-          ? Math.floor(d / 1000)
-          : ph === 'e'
-          ? Math.round(EX / 1000) - Math.floor((d - IH - HI) / 1000) - 1
-          : d < IH + HI
-          ? Math.floor((d - IH) / 1000)
-          : Math.floor((d - IH - HI - EX) / 1000);
+      const { count: cn, phase: ph } = breathCounter(Date.now() - start, { ih: IH, hi: HI, ex: EX, ho: HO });
       setCount(cn);
       setPhase(ph);
     }, 80);
@@ -65,7 +56,8 @@ export function BreathingCounter({
 
   if (!enabled || !show) return null;
 
-  const isEntryPulse = count === 1;
+  // The stronger pulse marks the very start of a breath (inhale, count 1), not every time the number 1 appears.
+  const isEntryPulse = count === 1 && phase === 'i';
   const pulseAnim = isEntryPulse ? 'bcd' : 'bcs';
   const phaseLabel = phase === 'i' ? 'inhale' : phase === 'e' ? 'exhale' : 'hold';
 

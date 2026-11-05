@@ -34,6 +34,8 @@ interface NenyaLogoProps {
   breathingEnabled?: boolean;
   /** Draw the gold glow around the logo. Only the large welcome and popout logos use it. */
   glow?: boolean;
+  /** Overrides for the gem's shading. Used by the design preview only. */
+  gemLook?: { clarity?: number; sparkle?: number; contrast?: number; lift?: number; fieldAlpha?: number };
 }
 
 const ORBIT_DURATION = 120; // seconds for one complete orbit
@@ -47,6 +49,7 @@ export default function NenyaLogo({
   technique = null,
   breathingEnabled = true,
   glow = false,
+  gemLook,
 }: NenyaLogoProps) {
   const flatLogoSrc = size <= SMALL_LOGO_MAX_SIZE ? nenyaLogoSmall : nenyaLogo;
 
@@ -335,6 +338,7 @@ export default function NenyaLogo({
           cycleStart={cycleStart}
           technique={technique}
           breathingEnabled={breathingEnabled}
+          {...gemLook}
         />
       )}
       {showLogo && !showValarOrbit && (

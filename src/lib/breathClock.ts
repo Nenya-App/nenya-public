@@ -108,3 +108,19 @@ export function gemMultiplyColor(
   const k = strength * (useEnvelope ? 0.35 + 0.65 * breathEnvelope(p, f) : 1);
   return hue.map((h) => 255 + (h - 255) * k) as [number, number, number];
 }
+
+export type BreathPhase = 'i' | 'h' | 'e';
+
+/**
+ * The number the breathing counter shows. Each phase counts from 1: inhale 1, 2, 3...; a hold 1, 2, 3...; exhale counts
+ * down to 1, so a 5-second inhale and exhale read 1 to 5 and then 5 to 1. `elapsedMs` is time since the shared cycle start.
+ */
+export function breathCounter(elapsedMs: number, t: BreathTiming): { count: number; phase: BreathPhase } {
+  const ih = t.ih, hi = t.hi || 0, ex = t.ex, ho = t.ho || 0;
+  const cycle = ih + hi + ex + ho;
+  const d = ((elapsedMs % cycle) + cycle) % cycle;
+  if (d < ih) return { count: Math.floor(d / 1000) + 1, phase: 'i' };
+  if (d < ih + hi) return { count: Math.floor((d - ih) / 1000) + 1, phase: 'h' };
+  if (d < ih + hi + ex) return { count: Math.max(1, Math.round(ex / 1000) - Math.floor((d - ih - hi) / 1000)), phase: 'e' };
+  return { count: Math.floor((d - ih - hi - ex) / 1000) + 1, phase: 'h' };
+}
