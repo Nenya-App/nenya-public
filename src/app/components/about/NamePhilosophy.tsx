@@ -7,8 +7,6 @@ import { useIsMobile } from '../useIsMobile';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollHint } from '../ScrollHint';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
-import comparisonImage from 'figma:asset/8b1166a7ff9c50323c4170d2aef3f1791b4907f9.webp';
 import { AppFooter } from '../AppFooter';
 
 interface NamePhilosophyProps {
@@ -134,26 +132,14 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
                   </div>
                 </div>
                 
-                {/* Visual Comparison - Mobile optimized */}
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 py-4 md:py-6 border-y border-border">
-                  <div className="w-full md:w-48 flex-shrink-0">
-                    <ImageWithFallback 
-                      src={comparisonImage} 
-                      alt="Visual contrast: Nenya (organic, prismatic) vs Palantír (mechanical, all-seeing)" 
-                      className="w-full rounded-lg border border-border"
-                    />
-                    <p className="text-xs text-muted-foreground text-center mt-2 italic">
-                      Two visions of power
-                    </p>
-                  </div>
-                  <div className="flex-1 text-xs md:text-sm text-muted-foreground leading-relaxed">
-                    <p className="mb-3">
-                      The visual language tells the story: Nenya (left) radiates with organic, prismatic life—warm colors, flowing forms, growth and interconnection. The Palantír (right) is cold geometry, mechanical precision, the unblinking eye that sees all.
-                    </p>
-                    <p>
-                      One invites you into a garden. The other places you under surveillance. <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">This is not a metaphor. This is architecture.</strong>
-                    </p>
-                  </div>
+                {/* Comparison */}
+                <div className="py-4 md:py-6 border-y border-border text-xs md:text-sm text-muted-foreground leading-relaxed">
+                  <p className="mb-3">
+                    The two visions differ in kind. Nenya is organic and prismatic: warm colors, flowing forms, growth and interconnection. The Palantír is cold geometry, mechanical precision, the unblinking eye that sees all.
+                  </p>
+                  <p>
+                    One invites you into a garden. The other places you under surveillance. <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">This is not a metaphor. This is architecture.</strong>
+                  </p>
                 </div>
 
                 <div className="pt-4 md:pt-6 border-t border-border">
