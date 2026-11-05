@@ -73,6 +73,7 @@ try {
   const canvases = typeof h === 'string' ? (h.match(/<canvas/g) ?? []).length : 0;
   ok('logo (orbit view): renders the gem canvases, the gold bezel and the two glow images', typeof h === 'string' && canvases === 5, h.error ?? `${canvases} canvases`);
   ok('logo (orbit view): the overlay gem layer blends with overlay', typeof h === 'string' && h.includes('mix-blend-mode:overlay'));
+  ok('logo (orbit view): the last inner orbs are cut away where the first ones overlap them', typeof h === 'string' && (h.match(/mask-image:radial-gradient/g) ?? []).length >= 8, `${(h.match(/mask-image:radial-gradient/g) ?? []).length} mask-image uses`);
   ok('logo (orbit view): the outer orbs carry the box-shadow glow class', typeof h === 'string' && h.includes('nenya-orb-glow'));
   ok('logo (orbit view): the logo isolates its blending', typeof h === 'string' && h.includes('isolation:isolate'));
   h = render(Logo, { size: 32 });
