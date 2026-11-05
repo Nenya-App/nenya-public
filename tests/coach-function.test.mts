@@ -4,6 +4,7 @@ import { ok } from './helpers.mts';
 process.env.COACH_ENABLED = 'true';
 process.env.VENICE_API_KEY = 'test-key';
 process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret';
+process.env.COACH_MODEL = 'deepseek-v3.2'; // this file tests the plain request path; tests/venice-e2ee.test.mts covers the default encrypted model
 delete process.env.COACH_SIGNING_KEY;
 delete process.env.COACH_EXTRA_HOSTS;
 let veniceCalls: any[] = [];

@@ -36,7 +36,9 @@ const TICKET_TTL_MS = 30 * 60 * 1000;
 const VENICE_TIMEOUT_MS = 20000;
 
 const VENICE_URL = 'https://api.venice.ai/api/v1/chat/completions';
-const DEFAULT_MODEL = 'deepseek-v3.2'; // Venice "Private" tier
+// Qwen 2.5 7B (about 7.6B parameters) in Venice's encrypted enclave: a small, non-frontier model whose prompts Venice
+// relays only as ciphertext (see src/lib/veniceE2ee.ts). Any other Venice model id can be set with COACH_MODEL.
+const DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p';
 const DEFAULT_CHARACTER_SLUG = 'nenya-20';
 
 const ROUTE = '/api/coach';

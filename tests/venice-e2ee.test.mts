@@ -55,7 +55,7 @@ let attestMode: 'ok' | 'unverified' | 'badnonce' | 'nokey' | 'debug' | 'nopfx' |
 let chatStatus = 200;
 let replyText = 'That sounds like a lot to carry. What feels heaviest right now?';
 let finishReason: string | null = 'stop';
-(globalThis as any).fetch = async (url: string, init: any = {}) => {
+const veniceStub = async (url: string, init: any = {}) => {
   const u = new URL(url);
   const headers = Object.fromEntries(Object.entries(init.headers ?? {}).map(([k, v]) => [k.toLowerCase(), String(v)]));
   if (u.pathname.endsWith('/tee/attestation')) {
@@ -81,6 +81,7 @@ let finishReason: string | null = 'stop';
   const enc = new TextEncoder();
   return new Response(new ReadableStream({ start(c) { c.enqueue(enc.encode(all.slice(0, mid))); c.enqueue(enc.encode(all.slice(mid))); c.close(); } }), { status: 200 });
 };
+(globalThis as any).fetch = veniceStub;
 const SESSION = { color1: '#7a9b9e', color2: '#DAC682' };
 const call = async (body: any) => {
   const r = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ session: SESSION, ...body }) }));
@@ -142,3 +143,10 @@ process.env.COACH_MODEL = 'deepseek-v3.2'; calls = [];
 (globalThis as any).fetch = async (url: string, init: any) => { calls.push({ url, headers: {}, body: JSON.parse(init.body), rawBody: init.body }); return new Response(JSON.stringify({ choices: [{ message: { content: 'I hear that.' } }] }), { status: 200 }); };
 const plain = await call({ messages: [{ role: 'user', content: 'hello there' }] });
 ok('other models still use the plain request with the Venice character', plain.status === 200 && calls.length === 1 && calls[0].body.venice_parameters.character_slug === 'nenya-20' && calls[0].body.stream === false && calls[0].body.messages.some((m: any) => /hello there/.test(m.content)));
+
+// The default model is the encrypted 7B Qwen: with COACH_MODEL unset, the function asks for its attestation and encrypts.
+delete process.env.COACH_MODEL;
+attestMode = 'ok'; calls = [];
+(globalThis as any).fetch = veniceStub;
+const dflt = await call({ messages: [{ role: 'user', content: 'hello there' }] });
+ok('with no COACH_MODEL set, the default is the encrypted Qwen 2.5 7B', dflt.status === 200 && calls.some((c) => /model=e2ee-qwen-2-5-7b-p/.test(c.url)) && calls.some((c) => c.body?.model === 'e2ee-qwen-2-5-7b-p'));
