@@ -15,6 +15,8 @@ import { SupportThisWork } from '../app/components/SupportThisWork';
 import { ShareNenya } from '../app/components/ShareNenya';
 import { FlagNotice } from './FlagNotice';
 import { TranscriptTools } from './TranscriptTools';
+import { FailureNotice } from './FailureNotice';
+import { describeFailure, type FailureInfo } from '../lib/coachErrors';
 
 const MAX_TURNS = 5;
 const MAX_CHARS = 500;
@@ -99,7 +101,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const [ticket, setTicket] = useState<string | undefined>();
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState('');
+  const [failure, setFailure] = useState<FailureInfo | null>(null);
   const [blocked, setBlocked] = useState(false);
   // Today's free conversations are used up. Only known when a first message is sent.
   const [capped, setCapped] = useState(false);
@@ -161,14 +163,24 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     }
 
     setSending(true);
-    setError('');
+    setFailure(null);
     try {
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: toWire(next), session, ticket }),
       });
-      if (!res.ok) throw new Error(String(res.status));
+      if (!res.ok) {
+        // Say what went wrong instead of a bare "failed". The server's answer carries a code, a reason and a reference.
+        let body: { error?: string; reason?: string; ref?: string } = {};
+        try {
+          body = await res.json();
+        } catch {
+          /* a plain-text answer, such as the platform's own rate limit */
+        }
+        setFailure({ ...describeFailure({ status: res.status, ...body }), at: new Date().toISOString() });
+        return;
+      }
       const data = (await res.json()) as {
         reply?: string;
         ticket?: string;
@@ -193,8 +205,9 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         setFlaggedText(scrubbed.text);
       }
       if (data.done) setStage('done');
-    } catch {
-      setError('That did not go through, and nothing was lost. You can try again, or go back to the breathing tool.');
+    } catch (e) {
+      // A fetch that never got an answer throws a TypeError; anything else is an answer that could not be read.
+      setFailure({ ...describeFailure(e instanceof TypeError ? { network: true } : { error: 'unreadable' }), at: new Date().toISOString() });
     } finally {
       setSending(false);
     }
@@ -376,7 +389,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               {venicePanel}
               <p className="text-xs text-muted-foreground">
                 Your browser remembers only the time you finished, so the demo knows to rest. Nothing is sent to Nenya.
-                The &ldquo;Forget&rdquo; button in the settings menu, or clearing this site&rsquo;s data in your browser, removes it.
+                The &ldquo;Forget me&rdquo; button in the settings menu or at the bottom of the page, or clearing this site&rsquo;s data in your browser, removes it.
               </p>
             </section>
           )}
@@ -668,11 +681,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       {MANIPULATION_NOTICE}
                     </p>
                   )}
-                  {error && (
-                    <p role="alert" className="text-sm text-destructive">
-                      {error}
-                    </p>
-                  )}
+                  {failure && <FailureNotice info={failure} turn={turn} />}
                 </form>
               )}
 

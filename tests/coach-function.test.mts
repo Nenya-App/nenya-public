@@ -70,6 +70,20 @@ r = await call({messages:[{role:'user',content:"I feel overwhelmed and tired"}]}
 ok('no flag for everyday text', r.status===200 && !r.json.flag && !/may signal distress/.test(veniceCalls[veniceCalls.length-1].body.messages[0].content));
 // upstream failure / think stripping
 veniceMode='fail'; r = await call({messages:[{role:'user',content:'hi'}]}); ok('upstream error -> 502 generic', r.status===502 && !JSON.stringify(r.json).includes('nope'));
+ok('upstream error: carries a reason and a short reference, and no message text', r.json.error==='upstream' && r.json.reason==='status-500' && /^[0-9a-f]{8}$/.test(r.json.ref) && !JSON.stringify(r.json).includes('hi"'));
+const origFetch=(globalThis as any).fetch;
+(globalThis as any).fetch = async () => { throw new TypeError('network down'); };
+r = await call({messages:[{role:'user',content:'hi'}]});
+ok('model unreachable: reason is "network"', r.status===502 && r.json.reason==='network' && /^[0-9a-f]{8}$/.test(r.json.ref));
+(globalThis as any).fetch = async (_u: string, init: any) => new Promise((_res, rej) => init.signal.addEventListener('abort', () => rej(new DOMException('aborted','AbortError'))));
+const realSetTimeout = globalThis.setTimeout;
+(globalThis as any).setTimeout = (fn: any, ms: number, ...a: any[]) => realSetTimeout(fn, ms >= 15000 ? 20 : ms, ...a);
+r = await call({messages:[{role:'user',content:'hi'}]});
+(globalThis as any).setTimeout = realSetTimeout;
+ok('model too slow: reason is "timeout"', r.status===502 && r.json.reason==='timeout' && /^[0-9a-f]{8}$/.test(r.json.ref), JSON.stringify(r.json));
+(globalThis as any).fetch = origFetch;
+r = await call({messages:[{role:'user',content:'hi'},{role:'assistant',content:'x'},{role:'user',content:'again'}],ticket:'123.abc'});
+ok('every error answer carries a reference', r.status===400 && r.json.error==='ticket' && /^[0-9a-f]{8}$/.test(r.json.ref));
 veniceMode='think'; r = await call({messages:[{role:'user',content:'hi'}]}); ok('think block stripped', r.json.reply==='I hear you.');
 // off switch
 process.env.COACH_ENABLED='false'; r = await call({messages:[{role:'user',content:'hi'}]}); ok('off switch -> 503', r.status===503);

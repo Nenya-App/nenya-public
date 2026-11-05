@@ -136,7 +136,7 @@ export const rememberTerms = (version: string) => {
 
 /**
  * Erases everything Nenya saved on this device, including older keys from earlier versions.
- * The owner's testing flag survives the visitor-facing "Forget" button but not the emergency exit.
+ * The owner's testing flag survives the visitor-facing "Forget me" button but not the emergency exit.
  */
 export function wipeDevice({ keepOwner }: { keepOwner: boolean }) {
   try {

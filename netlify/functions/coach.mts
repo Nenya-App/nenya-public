@@ -17,7 +17,7 @@
 // Netlify Blobs: store "coach-private", key "method-notes" holds longer private method
 // notes that are added to the system instruction. See docs/coach-method-notes.md.
 import { getStore } from '@netlify/blobs';
-import { createHash, createHmac, createPrivateKey, createPublicKey, sign as edSign, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes, sign as edSign, timingSafeEqual } from 'node:crypto';
 import { detectFlag } from '../../src/lib/safetyFlags.ts';
 import { scrubPII } from '../../src/lib/piiScrub.ts';
 import { looksLikeManipulation, neutralize } from '../../src/lib/promptGuard.ts';
@@ -57,6 +57,14 @@ interface Msg {
   role: Role;
   content: string;
 }
+
+// Every error answer carries a short reference and, where there is one, a reason code, and the same two go to the log.
+// They contain no message text. A person can quote the reference when reporting a failed turn, and it finds the log line.
+const fail = (status: number, error: string, reason?: string): Response => {
+  const ref = randomBytes(4).toString('hex');
+  console.error(`coach: ${error}${reason ? ':' + reason : ''} ref=${ref}`);
+  return json(status, { error, ...(reason ? { reason } : {}), ref });
+};
 
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), {
@@ -281,11 +289,11 @@ export default async (req: Request): Promise<Response> => {
       : json(404, { error: 'signing-off' });
   }
   if (req.method !== 'POST') return json(405, { error: 'method' });
-  if (process.env.COACH_ENABLED !== 'true') return json(503, { error: 'off' });
+  if (process.env.COACH_ENABLED !== 'true') return fail(503, 'off');
 
   const apiKey = process.env.VENICE_API_KEY;
   const secret = process.env.COACH_TICKET_SECRET;
-  if (!apiKey || !secret) return json(500, { error: 'config' });
+  if (!apiKey || !secret) return fail(500, 'config');
 
   // Browsers always send Origin on a cross-origin-capable POST. This is a courtesy
   // check against casual misuse, not a security boundary.
@@ -296,29 +304,29 @@ export default async (req: Request): Promise<Response> => {
   } catch {
     originHost = '';
   }
-  if (!hostAllowed(originHost, process.env.COACH_EXTRA_HOSTS)) return json(403, { error: 'origin' });
-  if (!(req.headers.get('content-type') || '').includes('application/json')) return json(415, { error: 'type' });
+  if (!hostAllowed(originHost, process.env.COACH_EXTRA_HOSTS)) return fail(403, 'origin');
+  if (!(req.headers.get('content-type') || '').includes('application/json')) return fail(415, 'type');
 
   const text = await req.text();
-  if (text.length > MAX_BODY_BYTES) return json(413, { error: 'size' });
+  if (text.length > MAX_BODY_BYTES) return fail(413, 'size');
   let body: { messages?: unknown; ticket?: unknown };
   try {
     body = JSON.parse(text);
   } catch {
-    return json(400, { error: 'json' });
+    return fail(400, 'json');
   }
 
   const session = parseSession((body as { session?: unknown }).session);
-  if (!session) return json(400, { error: 'session' });
+  if (!session) return fail(400, 'session');
   const context = parseContext((body as { context?: unknown }).context);
-  if (context === null) return json(400, { error: 'context' });
+  if (context === null) return fail(400, 'context');
 
   if ((body as { action?: unknown }).action === 'receipt') {
     const done = parseMessages(body.messages, 'assistant');
-    if (!done) return json(400, { error: 'messages' });
-    if (!verify(secret, body.ticket, done.length / 2, done, session, context)) return json(400, { error: 'ticket' });
+    if (!done) return fail(400, 'messages');
+    if (!verify(secret, body.ticket, done.length / 2, done, session, context)) return fail(400, 'ticket');
     const k = signingKey();
-    if (!k) return json(503, { error: 'signing-off' });
+    if (!k) return fail(503, 'signing-off');
     const hash = sha256(canonicalTranscript(done, session, context));
     const issuedAt = new Date().toISOString();
     const signature = edSign(null, Buffer.from(`nenya-coach-transcript-v2\n${hash}\n${issuedAt}`), k.key).toString('base64');
@@ -328,14 +336,14 @@ export default async (req: Request): Promise<Response> => {
   }
 
   const messages = parseMessages(body.messages);
-  if (!messages) return json(400, { error: 'messages' });
+  if (!messages) return fail(400, 'messages');
 
   const turn = (messages.length + 1) / 2; // this exchange's number, 1-based
-  if (turn > MAX_TURNS) return json(400, { error: 'turns' });
+  if (turn > MAX_TURNS) return fail(400, 'turns');
 
   if (turn > 1) {
     const history = messages.slice(0, -1);
-    if (!verify(secret, body.ticket, turn - 1, history, session, context)) return json(400, { error: 'ticket' });
+    if (!verify(secret, body.ticket, turn - 1, history, session, context)) return fail(400, 'ticket');
   }
 
   // Attempts to steer the coach never reach the AI. The conversation is not
@@ -367,9 +375,9 @@ export default async (req: Request): Promise<Response> => {
   const notes = await notesFor(messages.filter((m) => m.role === 'user').map((m) => m.content), softened);
 
   let reply = '';
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), VENICE_TIMEOUT_MS);
   try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), VENICE_TIMEOUT_MS);
     const chatMessages = [
       { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content)) },
       ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
@@ -388,8 +396,7 @@ export default async (req: Request): Promise<Response> => {
         finish = out.finishReason;
       } catch (e) {
         clearTimeout(timer);
-        console.error('coach: e2ee', e instanceof E2eeError ? e.code : 'failed'); // a short code only, never content
-        return json(502, { error: 'upstream' });
+        return fail(502, 'upstream', ctrl.signal.aborted ? 'timeout' : e instanceof E2eeError ? `e2ee-${e.code}` : 'e2ee-failed');
       }
       clearTimeout(timer);
     } else {
@@ -414,8 +421,7 @@ export default async (req: Request): Promise<Response> => {
       });
       clearTimeout(timer);
       if (!res.ok) {
-        console.error('coach: venice status', res.status); // status only, never content
-        return json(502, { error: 'upstream' });
+        return fail(502, 'upstream', `status-${res.status}`); // the status only, never content
       }
       const data = (await res.json()) as { choices?: { message?: { content?: string }; finish_reason?: string }[] };
       raw = data.choices?.[0]?.message?.content ?? '';
@@ -426,10 +432,10 @@ export default async (req: Request): Promise<Response> => {
     if (finish === 'length') reply = trimToSentence(reply);
     reply = dropOffBrand(reply);
   } catch {
-    console.error('coach: venice request failed');
-    return json(502, { error: 'upstream' });
+    clearTimeout(timer);
+    return fail(502, 'upstream', ctrl.signal.aborted ? 'timeout' : 'network');
   }
-  if (!reply) return json(502, { error: 'empty' });
+  if (!reply) return fail(502, 'empty', 'no-reply-text');
   if (reply.length > MAX_ASSISTANT_CHARS) reply = trimToSentence(reply.slice(0, MAX_ASSISTANT_CHARS));
 
   const history = [...messages, { role: 'assistant' as const, content: reply }];

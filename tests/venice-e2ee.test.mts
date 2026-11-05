@@ -131,6 +131,7 @@ for (const [mode, label] of [['unverified', 'an unverified attestation'], ['badn
   attestMode = mode; calls = [];
   const bad = await call({ messages: [{ role: 'user', content: 'private words here' }] });
   ok(`refused: ${label}`, bad.status === 502 && !bad.json.reply, `status ${bad.status}`);
+  ok(`refused: ${label} (names its reason)`, /^e2ee-/.test(bad.json.reason) && /^[0-9a-f]{8}$/.test(bad.json.ref), JSON.stringify(bad.json));
   ok(`refused: ${label} (no chat request was sent)`, !calls.some((c) => c.url.endsWith('/chat/completions')));
 }
 attestMode = 'ok'; chatStatus = 500; calls = [];

@@ -86,6 +86,26 @@ try {
   const ringCss = (props) => { const x = render(ValarBreathingLogo, { logoSize: 200, cycleStart: 0, ...props, children: null }); return typeof x === 'string' ? x : ''; };
   ok('breathing ring: its smallest size defaults to 0.25', /scale\(0\.25\)/.test(ringCss({})) && !/scale\(0\.1\)/.test(ringCss({})));
   ok('breathing ring: the smallest size can be set', /scale\(0\.4\)/.test(ringCss({ minScale: 0.4 })) && !/scale\(0\.25\)/.test(ringCss({ minScale: 0.4 })));
+
+  // Forget me: a short button with helper text in the settings window, and the same thing as a link in the footer.
+  const { DeviceMemoryControls, ForgetMeLink } = await vite.ssrLoadModule('/src/app/components/DeviceMemoryControls.tsx');
+  h = render(DeviceMemoryControls, {});
+  ok('settings: the erase button says "Forget me" with helper text under it', typeof h === 'string' && h.includes('>Forget me<') && h.includes('Erases what this device has saved') && !h.includes('Forget everything'), h.error ?? '');
+  h = render(ForgetMeLink, {});
+  ok('footer: there is a "Forget me" link too', typeof h === 'string' && h.includes('Forget me') && h.includes('<button'), h.error ?? '');
+  const { AppFooter } = await vite.ssrLoadModule('/src/app/components/AppFooter.tsx');
+  h = render(AppFooter, {});
+  ok('every page footer carries the Forget me link', typeof h === 'string' && h.includes('Forget me'), h.error ?? '');
+  const { AccessibilitySettingsContent } = await vite.ssrLoadModule('/src/app/components/AccessibilitySettings.tsx');
+  h = render(AccessibilitySettingsContent, { breathingEnabled: true, orbitEnabled: true, breathingOpacity: 1, onBreathingToggle: noop, onOrbitToggle: noop, onOpacityChange: noop, cvMode: 'deuteranopia', onCvModeChange: noop });
+  ok('vision modes: readable colours come from the theme, not a fixed pale amber', typeof h === 'string' && h.includes('Red-Green (D)') && h.includes('text-foreground') && !h.includes('rgba(232,160,32,0.45)'), h.error ?? '');
+  ok('vision modes: the chosen option is marked for screen readers', typeof h === 'string' && h.includes('aria-pressed="true"'), h.error ?? '');
+
+  // A failed turn: a plain sentence, the codes, and a report that sends only the codes.
+  const { FailureNotice } = await vite.ssrLoadModule('/src/coach/FailureNotice.tsx');
+  h = render(FailureNotice, { turn: 2, info: { message: "The coach's model took too long to answer.", code: 'upstream', reason: 'timeout', ref: 'aabbccdd', status: 502, at: '2026-11-05T22:14:09.000Z' } });
+  ok('failed turn: says what happened, with the codes and a report option', typeof h === 'string' && h.includes('took too long') && h.includes('ref aabbccdd') && h.includes('upstream') && h.includes('Report this failure') && h.includes('Nothing you wrote was lost'), h.error ?? '');
+  ok('failed turn: the report says it sends only the technical details', typeof h === 'string' && h.includes('does not send what you wrote'), h.error ?? '');
 } finally {
   await vite.close();
 }
