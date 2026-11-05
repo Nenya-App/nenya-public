@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { allColors } from './ValarBreathingLogo';
 import { breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
 import { GEM_CENTRE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite } from '../../lib/gemSprite';
@@ -11,6 +12,8 @@ interface SpectralGemProps {
   technique?: BreathTiming | null;
   /** 0 = frosted, 1 = fully clear. The stone's body is drawn at opacity 1 - clarity so the orbit shows through. */
   clarity?: number;
+  /** Strength of the overlay layer that restores facet contrast and sparkle. Lower lets more of the orbit's colour through. */
+  sparkle?: number;
   /** Maximum mix toward the breath colour (at peak inhale). */
   tint?: number;
   /** When the breathing animation is off the stone is not tinted. */
@@ -28,7 +31,8 @@ export default function SpectralGem({
   size,
   cycleStart,
   technique = null,
-  clarity = 0.65,
+  clarity = 0.72, // was 0.65: a little clearer, so more of the orbit's colour shows through the back
+  sparkle = 0.8, // was 1
   tint = 0.2,
   breathingEnabled = true,
 }: SpectralGemProps) {
@@ -39,9 +43,14 @@ export default function SpectralGem({
   const petalsSide = size * 0.765;
   const gemSide = petalsSide * GEM_TO_PETALS;
 
-  const breathMs = breathLengthMs(technique);
-  const fractions = breathFractions(technique);
-  const { t1, t2, t3 } = fractions;
+  // A change of breathing pace fades the gem out, restarts its clock on the new timing, and fades it back in,
+  // instead of snapping to the new tint and sparkle position in front of the person.
+  const shape = technique ? `${technique.ih}_${technique.hi || 0}_${technique.ex}_${technique.ho || 0}` : 'default';
+  const { applied, style: fadeStyle } = useFadeSwitch({ technique, cycleStart }, shape);
+  const breathMs = breathLengthMs(applied.technique);
+  const { t1, t2, t3 } = breathFractions(applied.technique);
+  const anchor = applied.cycleStart;
+  const spriteRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     const body = bodyRef.current;
@@ -49,7 +58,8 @@ export default function SpectralGem({
     if (!body || !light) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     const px = Math.max(8, Math.round(gemSide * dpr));
-    body.width = body.height = light.width = light.height = px;
+    // Only resize when the size really changed: resizing clears a canvas, which shows as a flash.
+    if (body.width !== px) body.width = body.height = light.width = light.height = px;
     const bctx = body.getContext('2d');
     const lctx = light.getContext('2d');
     const off = document.createElement('canvas');
@@ -59,7 +69,7 @@ export default function SpectralGem({
 
     const f = { t1, t2, t3 };
     const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let sprite: HTMLImageElement | null = null;
+    let sprite: HTMLImageElement | null = spriteRef.current;
     let raf = 0;
     let timer: ReturnType<typeof setInterval> | 0 = 0;
     let last = 0;
@@ -73,7 +83,7 @@ export default function SpectralGem({
 
     const draw = (reduced: boolean) => {
       if (!sprite) return;
-      const elapsed = Date.now() - (cycleStart ?? mountTime.current);
+      const elapsed = Date.now() - (anchor ?? mountTime.current);
       const c = gemClock(elapsed, breathMs);
       octx.clearRect(0, 0, px, px);
       octx.globalAlpha = 1;
@@ -118,6 +128,7 @@ export default function SpectralGem({
         draw(true);
         timer = setInterval(() => draw(true), 1000); // only the colour changes, once per breath
       } else if (visible && document.visibilityState !== 'hidden') {
+        draw(false); // draw at once, so a restart never leaves a blank frame
         raf = requestAnimationFrame(tick);
       }
     };
@@ -143,6 +154,7 @@ export default function SpectralGem({
     loadGemSprite()
       .then((img) => {
         sprite = img;
+        spriteRef.current = img;
         start();
       })
       .catch(() => {
@@ -157,7 +169,7 @@ export default function SpectralGem({
       reduceQuery.removeEventListener?.('change', start);
     };
     // The clock anchor and timing shape are read inside the loop, so they restart it when they change.
-  }, [gemSide, cycleStart, breathMs, t1, t2, t3, tint, breathingEnabled]);
+  }, [gemSide, anchor, breathMs, t1, t2, t3, tint, breathingEnabled]);
 
   const place: React.CSSProperties = {
     position: 'absolute',
@@ -172,8 +184,8 @@ export default function SpectralGem({
 
   return (
     <>
-      <canvas ref={bodyRef} aria-hidden="true" style={{ ...place, zIndex: 30, opacity: 1 - clarity }} />
-      <canvas ref={lightRef} aria-hidden="true" style={{ ...place, zIndex: 31, mixBlendMode: 'overlay' }} />
+      <canvas ref={bodyRef} aria-hidden="true" style={{ ...place, zIndex: 30, opacity: (1 - clarity) * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
+      <canvas ref={lightRef} aria-hidden="true" style={{ ...place, zIndex: 31, mixBlendMode: 'overlay', opacity: sparkle * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
     </>
   );
 }

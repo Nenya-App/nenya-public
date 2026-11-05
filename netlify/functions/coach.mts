@@ -10,7 +10,8 @@
 //   COACH_ENABLED        plain    "true" to accept requests
 //   COACH_SIGNING_KEY    secret   optional, base64 Ed25519 private key (PKCS8 DER) for
 //                                 signing transcript receipts
-//   COACH_MODEL          plain    optional, overrides DEFAULT_MODEL
+//   COACH_MODEL          plain    optional, overrides DEFAULT_MODEL. An id starting "e2ee-" (Venice's encrypted
+//                                 models) is called through src/lib/veniceE2ee.ts instead of the plain request.
 //   COACH_CHARACTER_SLUG plain    optional, overrides DEFAULT_CHARACTER_SLUG
 //   COACH_METHOD_NOTES   plain    optional, short method notes (fallback when the blob below is absent)
 // Netlify Blobs: store "coach-private", key "method-notes" holds longer private method
@@ -23,6 +24,8 @@ import { looksLikeManipulation, neutralize } from '../../src/lib/promptGuard.ts'
 import { claimConversationSlot, capFromEnv } from '../../src/lib/dailyCap.ts';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
+import { E2eeError, e2eeChat, isE2eeModel } from '../../src/lib/veniceE2ee.ts';
+import { detectDirectQuestion } from '../../src/lib/coachIntent.ts';
 
 const MAX_TURNS = 5;
 const MAX_USER_CHARS = 500;
@@ -33,7 +36,9 @@ const TICKET_TTL_MS = 30 * 60 * 1000;
 const VENICE_TIMEOUT_MS = 20000;
 
 const VENICE_URL = 'https://api.venice.ai/api/v1/chat/completions';
-const DEFAULT_MODEL = 'deepseek-v3.2'; // Venice "Private" tier
+// Qwen 2.5 7B (about 7.6B parameters) in Venice's encrypted enclave: a small, non-frontier model whose prompts Venice
+// relays only as ciphertext (see src/lib/veniceE2ee.ts). Any other Venice model id can be set with COACH_MODEL.
+const DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p';
 const DEFAULT_CHARACTER_SLUG = 'nenya-20';
 
 const ROUTE = '/api/coach';
@@ -225,7 +230,7 @@ async function slotAvailable(): Promise<boolean> {
   }
 }
 
-function systemInstruction(turn: number, softened: boolean, notes: string): string {
+function systemInstruction(turn: number, softened: boolean, notes: string, direct = false): string {
   const parts = [
     // Our wording wins over the character card on Venice, which is awkward to edit.
     'You are the Nenya coach: a warm, grounded coaching companion. You help a person understand what they are feeling and needing, and how to say it clearly. Reason with the methods you were given, including nonviolent communication (observations, feelings, needs, requests) and the ICARUS-VOLT listening lens. Use the person\'s own words. Keep the lens\'s labels and jargon out of the conversation unless the person asks what you are drawing on, and then explain it in plain words. You are an early prototype and a thinking aid. You are not a therapist, counselor, or clinician, and you do not diagnose any condition. Never claim to be a person or Nenya\'s founder, and do not describe your training or where your methods came from.',
@@ -238,15 +243,23 @@ function systemInstruction(turn: number, softened: boolean, notes: string): stri
   if (notes) parts.splice(1, 0, `Method notes you may reason with (background for you, not to be quoted):\n${notes}`);
   if (softened) {
     parts.push(
-      'The latest message may signal distress. Respond briefly and with care. Acknowledge what the person said without probing or interpreting it, do not give advice, and gently encourage them to reach a person they trust or a crisis line (988 in the US). You are not able to help in a crisis.'
+      'The latest message may signal distress. Respond briefly and with care. Acknowledge what the person said without probing or interpreting it, do not give advice, and gently encourage them to reach a person they trust or a crisis line (call or text 988 in the US or Canada, or findahelpline.com for other countries). You are not able to help in a crisis.'
     );
   }
-  if (turn === 1) {
+  // A direct question is answered first, even on the first exchange. Care for a possible crisis still comes first.
+  const answerFirst = direct && !softened;
+  if (answerFirst) {
+    parts.push(
+      'The person has asked a direct question or for options. Answer it first, in plain words, in your first two or three sentences: give one or two concrete things they can try today, or a short clear explanation. Do not open by asking about their body or feelings, and do not only reflect back. After you have answered, you may add one short, gentle question. This takes priority over the empathy-first and first-exchange guidance above.'
+    );
+  }
+  if (turn === 1 && !answerFirst) {
     parts.push('This is the first exchange: listen and reflect what you heard before anything else.');
   } else if (turn === MAX_TURNS) {
     parts.push(
       'This is the final exchange. Reflect one thing you heard in the person\'s own words and leave it settled. Do not ask a question, open a new topic, or give a farewell: the page closes the conversation after your reply.'
     );
+    if (answerFirst) parts.push('If the question has not been answered yet, answer it briefly instead; still do not ask a question.');
   } else if (turn === MAX_TURNS - 1) {
     parts.push(
       'One exchange remains after this one. If the person seems ready or has asked for help, offer one concrete thing (a way to say it, a request, or a slow breath); otherwise stay with empathy. Begin to settle toward a close.'
@@ -357,42 +370,60 @@ export default async (req: Request): Promise<Response> => {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), VENICE_TIMEOUT_MS);
-    const res = await fetch(VENICE_URL, {
-      method: 'POST',
-      signal: ctrl.signal,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: systemInstruction(turn, softened, notes) },
-          ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
-          // Scrubbed again here in case the page was bypassed.
-          ...messages.map((m) => (m.role === 'user' ? { ...m, content: neutralize(scrubPII(m.content).text) } : m)),
-        ],
-        temperature: 0.7,
-        top_p: 0.9,
-        repetition_penalty: 1.1,
-        max_completion_tokens: MAX_REPLY_TOKENS,
-        stream: false,
-        venice_parameters: {
-          character_slug: slug,
-          include_venice_system_prompt: process.env.COACH_INCLUDE_VENICE_PROMPT === 'true',
-          enable_web_search: 'off',
-          enable_web_scraping: false,
-          enable_web_citations: false,
-          strip_thinking_response: true,
-        },
-      }),
-    });
-    clearTimeout(timer);
-    if (!res.ok) {
-      console.error('coach: venice status', res.status); // status only, never content
-      return json(502, { error: 'upstream' });
+    const chatMessages = [
+      { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content)) },
+      ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
+      // Scrubbed again here in case the page was bypassed.
+      ...messages.map((m) => (m.role === 'user' ? { ...m, content: neutralize(scrubPII(m.content).text) } : m)),
+    ];
+    const sampling = { temperature: 0.7, top_p: 0.9, repetition_penalty: 1.1, max_completion_tokens: MAX_REPLY_TOKENS };
+    let raw = '';
+    let finish: string | undefined;
+    if (isE2eeModel(model)) {
+      // Encrypted models: the prompt is encrypted before it reaches Venice (see src/lib/veniceE2ee.ts). Venice's
+      // own system prompt and the character card do not apply, which is fine because ours wins anyway.
+      try {
+        const out = await e2eeChat({ apiKey, model, messages: chatMessages, params: sampling, signal: ctrl.signal });
+        raw = out.content;
+        finish = out.finishReason;
+      } catch (e) {
+        clearTimeout(timer);
+        console.error('coach: e2ee', e instanceof E2eeError ? e.code : 'failed'); // a short code only, never content
+        return json(502, { error: 'upstream' });
+      }
+      clearTimeout(timer);
+    } else {
+      const res = await fetch(VENICE_URL, {
+        method: 'POST',
+        signal: ctrl.signal,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model,
+          messages: chatMessages,
+          ...sampling,
+          stream: false,
+          venice_parameters: {
+            character_slug: slug,
+            include_venice_system_prompt: process.env.COACH_INCLUDE_VENICE_PROMPT === 'true',
+            enable_web_search: 'off',
+            enable_web_scraping: false,
+            enable_web_citations: false,
+            strip_thinking_response: true,
+          },
+        }),
+      });
+      clearTimeout(timer);
+      if (!res.ok) {
+        console.error('coach: venice status', res.status); // status only, never content
+        return json(502, { error: 'upstream' });
+      }
+      const data = (await res.json()) as { choices?: { message?: { content?: string }; finish_reason?: string }[] };
+      raw = data.choices?.[0]?.message?.content ?? '';
+      finish = data.choices?.[0]?.finish_reason;
     }
-    const data = (await res.json()) as { choices?: { message?: { content?: string }; finish_reason?: string }[] };
-    reply = clean((data.choices?.[0]?.message?.content ?? '').replace(/<think>[\s\S]*?<\/think>/gi, ''));
+    reply = clean(raw.replace(/<think>[\s\S]*?<\/think>/gi, ''));
     // If the model hit the ceiling mid-sentence, end on the last whole sentence instead of mid-word.
-    if (data.choices?.[0]?.finish_reason === 'length') reply = trimToSentence(reply);
+    if (finish === 'length') reply = trimToSentence(reply);
     reply = dropOffBrand(reply);
   } catch {
     console.error('coach: venice request failed');

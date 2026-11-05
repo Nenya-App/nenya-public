@@ -21,3 +21,23 @@ const walk = (d: string): string[] => readdirSync(d).flatMap((n) => { const p = 
 const files = walk(new URL('../src', import.meta.url).pathname).filter((f) => /\.tsx?$/.test(f));
 const offenders = files.filter((f) => /\bmotion\.(div|button|span|p|section|ul|li|img|svg|path)\b|import\s*\{[^}]*\bmotion\b[^}]*\}\s*from\s*'motion\/react'/.test(readFileSync(f, 'utf8')));
 ok('no file uses the full `motion` components (they would pull the whole engine into the main bundle)', offenders.length === 0, offenders.join(', '));
+
+// Opening the coach screen must not scroll the page to the bottom: the "follow the conversation" scroll may only run
+// once there are messages.
+{
+  const coach = readFileSync(new URL('../src/coach/CoachDemo.tsx', import.meta.url), 'utf8');
+  const i = coach.indexOf('scrollIntoView');
+  const before = coach.slice(Math.max(0, i - 400), i);
+  ok('coach screen: the auto-scroll waits for a first message', i > 0 && /if \(messages\.length === 0\) return;/.test(before));
+}
+
+// A change of breathing pace must fade, not snap: the ring and the gem go through the fade switch, and the orbit's
+// phase is set once at mount so it does not jump back to angle 0 when the pace changes.
+{
+  const ring = read('src/app/components/ValarBreathingLogo.tsx');
+  const gem = read('src/app/components/SpectralGem.tsx');
+  const logo = read('src/app/components/NenyaLogo.tsx');
+  ok('breathing ring and gem fade on a pace change', /useFadeSwitch\(/.test(ring) && /useFadeSwitch\(/.test(gem));
+  ok('the orbit phase is set once, not on every clock change', /orbitSet\.current/.test(logo));
+  ok('the gem does not resize (and so blank) its canvas on a restart', /if \(body\.width !== px\)/.test(gem));
+}

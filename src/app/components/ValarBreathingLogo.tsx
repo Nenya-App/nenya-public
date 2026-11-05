@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useFadeSwitch } from '../../lib/useFadeSwitch';
 
 // Valar Sigils: Dual Focus (Individual/Communal) with 6-Color Chromatic Vectors
 // Gravity Well (first color) is the primary diagnostic color
@@ -165,15 +166,21 @@ export function ValarBreathingLogo({
   cvMode = '',
   cycleStart,
 }: ValarBreathingLogoProps) {
+  // Changing the breathing pace fades the ring out, applies the new timing, and fades it back in, instead of
+  // snapping. Everything below runs on the applied (possibly still old) setup.
+  const shapeKey = technique ? `${technique.ih}_${technique.hi || 0}_${technique.ex}_${technique.ho || 0}` : String(cycleDuration);
+  const { applied, style: fadeStyle } = useFadeSwitch({ tech: technique, cycleDur: cycleDuration, start: cycleStart }, shapeKey);
+  const { tech, cycleDur, start } = applied;
+
   // Total animation cycle = 96 colors × cycleDuration seconds each
-  const totalDuration = allColors.length * cycleDuration;
+  const totalDuration = allColors.length * cycleDur;
 
   // Derive the breath's expand/hold/contract/hold shape from the technique's phase
   // fractions (ih/hi/ex/ho in ms); falls back to an even 4-phase split when none is set.
-  const totalMs = technique ? technique.ih + (technique.hi || 0) + technique.ex + (technique.ho || 0) : cycleDuration * 1000;
-  const t1 = technique ? technique.ih / totalMs : 0.5;
-  const t2 = technique ? (technique.ih + (technique.hi || 0)) / totalMs : 0.5;
-  const t3 = technique ? (technique.ih + (technique.hi || 0) + technique.ex) / totalMs : 1;
+  const totalMs = tech ? tech.ih + (tech.hi || 0) + tech.ex + (tech.ho || 0) : cycleDur * 1000;
+  const t1 = tech ? tech.ih / totalMs : 0.5;
+  const t2 = tech ? (tech.ih + (tech.hi || 0)) / totalMs : 0.5;
+  const t3 = tech ? (tech.ih + (tech.hi || 0) + tech.ex) / totalMs : 1;
 
   const cvFilter = cvMode && CB_FILTERS[cvMode] ? CB_FILTERS[cvMode] : undefined;
 
@@ -183,7 +190,7 @@ export function ValarBreathingLogo({
   // colorblind mode are deliberately excluded: they're plain style
   // changes and must not restart the pulse.
   const ringsEpochKey = `valar-breathing-${enabled}-${
-    technique ? `${technique.ih}_${technique.hi || 0}_${technique.ex}_${technique.ho || 0}` : cycleDuration
+    tech ? `${tech.ih}_${tech.hi || 0}_${tech.ex}_${tech.ho || 0}` : cycleDur
   }`;
 
   // Phase-alignment delay for the CSS animation, computed ONCE per epoch
@@ -196,12 +203,12 @@ export function ValarBreathingLogo({
   // kept knocking it out of sync with the counter rather than fixing it.
   const [ringDelay, setRingDelay] = useState(0);
   useEffect(() => {
-    if (cycleStart == null) return;
-    const elapsed = (Date.now() - cycleStart) / 1000;
-    const phaseIntoRing = ((elapsed % cycleDuration) + cycleDuration) % cycleDuration;
+    if (start == null) return;
+    const elapsed = (Date.now() - start) / 1000;
+    const phaseIntoRing = ((elapsed % cycleDur) + cycleDur) % cycleDur;
     setRingDelay(-phaseIntoRing);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cycleStart, cycleDuration, ringsEpochKey]);
+  }, [start, cycleDur, ringsEpochKey]);
 
   // Only one ring is ever visually active at a time -- the breath cycles
   // sequentially through all 96 colors, one fully faded out before the next
@@ -215,21 +222,21 @@ export function ValarBreathingLogo({
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    if (!enabled || cycleStart == null) return;
+    if (!enabled || start == null) return;
     let timeoutId: ReturnType<typeof setTimeout>;
     const scheduleNext = () => {
-      const elapsed = (Date.now() - cycleStart) / 1000;
+      const elapsed = (Date.now() - start) / 1000;
       const cyclePos = ((elapsed % totalDuration) + totalDuration) % totalDuration;
-      const idx = Math.floor(cyclePos / cycleDuration) % allColors.length;
-      const phaseIntoRing = cyclePos - idx * cycleDuration;
+      const idx = Math.floor(cyclePos / cycleDur) % allColors.length;
+      const phaseIntoRing = cyclePos - idx * cycleDur;
       setActiveIndex(idx);
-      const msUntilNext = (cycleDuration - phaseIntoRing) * 1000;
+      const msUntilNext = (cycleDur - phaseIntoRing) * 1000;
       timeoutId = setTimeout(scheduleNext, Math.max(msUntilNext, 16));
     };
     scheduleNext();
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, cycleStart, cycleDuration, totalDuration, allColors.length, ringsEpochKey]);
+  }, [enabled, start, cycleDur, totalDuration, allColors.length, ringsEpochKey]);
 
   const activeColor = allColors[activeIndex] ?? allColors[0];
 
@@ -264,6 +271,7 @@ export function ValarBreathingLogo({
             pulse's settings doesn't also tear down and restart the
             orbit/logo content below, which has nothing to do with the
             breathing timing and should keep running uninterrupted. */}
+        <div style={fadeStyle}>
         <div key={ringsEpochKey}>
         {enabled && (
           <>
@@ -280,7 +288,7 @@ export function ValarBreathingLogo({
               background: `radial-gradient(circle closest-side, transparent 0%, transparent 30%, ${hexToRgba(activeColor, opacity * 0.08)} 50%, ${hexToRgba(activeColor, opacity * 0.15)} 70%, ${hexToRgba(activeColor, opacity * 0.25)} 90%, ${hexToRgba(activeColor, opacity * 0.4)} 99%, transparent 100%)`,
               borderRadius: '50%',
               zIndex: 1,
-              animation: `${ringAnimName} ${cycleDuration}s linear infinite`,
+              animation: `${ringAnimName} ${cycleDur}s linear infinite`,
               animationDelay: `${ringDelay}s`,
               willChange: 'transform, opacity',
               backfaceVisibility: 'hidden',
@@ -289,6 +297,7 @@ export function ValarBreathingLogo({
           />
           </>
         )}
+        </div>
         </div>
 
         {/* Content (logo with orbs) - centered and above breathing.

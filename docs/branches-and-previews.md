@@ -51,3 +51,17 @@ Pull requests still get public, unlisted deploy previews on the main site. Layou
 
 ## Not covered by CI
 Layout, colors, animation and sound: look at the preview. Live Venice behavior and tone: try the preview with the coach enabled.
+
+## Trying an encrypted Venice model on a preview
+
+Set `COACH_MODEL` on the staging site only to a Venice id that starts with `e2ee-` (for example
+`e2ee-qwen-2-5-7b-p`). The coach function then encrypts the prompt before it reaches Venice and decrypts the
+reply (see `src/lib/veniceE2ee.ts`). Nothing else changes. Notes:
+
+- The encryption happens in the relay function, not in the visitor's browser, so the function still reads the
+  visitor's text in memory (it has to, to scrub, screen and sign). Venice's API layer sees ciphertext. Do not call
+  this end-to-end encryption from the visitor's device.
+- Earlier replies from the model are sent as plain text (Venice's guide encrypts only user and system messages).
+- Venice's own system prompt and the character card do not apply to these models. The coach's instruction is ours.
+- The unit tests use a pretend enclave. Only a live test on staging shows whether Venice accepts the requests.
+  Check the function log for `coach: e2ee <code>` lines (a short code, never message text).

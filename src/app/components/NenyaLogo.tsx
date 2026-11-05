@@ -1,5 +1,5 @@
 import * as m from 'motion/react-m';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import nenyaLogo from 'figma:asset/2d6974b805d90d34c0a281273e556b545b1c5632.webp';
 // The source asset is a 1024x1024 WebP (~69KB) -- appropriate for the large
 // welcome-screen breathing logo (rendered up to 400px), but most call sites
@@ -60,11 +60,14 @@ export default function NenyaLogo({
   const outerOrbitRadius = size / 2; // Half the logo size = outer edge of breathing animation
   const outerOrbSize = Math.max(8.5, size * 0.102) * 0.5; // Half the size the inner orbs used to have; unchanged
 
-  // Recomputed on mount, so a fresh mount starts the rotation at the correct
-  // phase instead of snapping back to angle 0.
+  // Set once, when the logo first mounts with a clock anchor, so a fresh mount starts the rotation at the
+  // correct phase. Deliberately NOT recomputed when the anchor changes later: that happens when the breathing
+  // pace changes, and recomputing would snap the orbits back to angle 0 in front of the person.
   const [orbitDelay, setOrbitDelay] = useState(0);
+  const orbitSet = useRef(false);
   useEffect(() => {
-    if (cycleStart == null) return;
+    if (cycleStart == null || orbitSet.current) return;
+    orbitSet.current = true;
     const elapsed = (Date.now() - cycleStart) / 1000;
     const phase = ((elapsed % ORBIT_DURATION) + ORBIT_DURATION) % ORBIT_DURATION;
     setOrbitDelay(-phase);

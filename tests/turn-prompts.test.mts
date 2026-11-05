@@ -4,6 +4,7 @@ import { ok } from './helpers.mts';
 process.env.COACH_ENABLED = 'true';
 process.env.VENICE_API_KEY = 'k';
 process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret';
+process.env.COACH_MODEL = 'deepseek-v3.2'; // these tests use the plain request path; the default encrypted model is covered in venice-e2ee.test.mts
 
 const sys: string[] = [];
 (globalThis as any).fetch = async (_u: string, init: any) => {
