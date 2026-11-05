@@ -8,7 +8,7 @@ export const SPRITE_CELL = 288;
 /** The hexagon spans this fraction of its frame's width. */
 export const GEM_HEX_FRACTION = 2 / 2.48;
 /** Gem canvas side as a fraction of the petals layer's side (the petals layer is size * 0.765). */
-export const GEM_TO_PETALS = 0.3402;
+export const GEM_TO_PETALS = 0.313; // was 0.3402: the stone is a little smaller, with its bezel
 /** Circumradius of the stone's hexagon (corners at the top and bottom) as a fraction of its frame's side. */
 export const GEM_HEX_RADIUS = 476 / 1024;
 

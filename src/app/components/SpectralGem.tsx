@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { allColors, valarColors } from './ValarBreathingLogo';
 import { orbColour } from '../../lib/orbColours';
-import { breathFractions, breathLengthMs, gemClock, gemMultiplyColor, hueOnly, type BreathTiming } from '../../lib/breathClock';
+import { breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
 import { GEM_CENTRE, GEM_HEX_RADIUS, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite } from '../../lib/gemSprite';
 
 interface SpectralGemProps {
@@ -21,21 +21,27 @@ interface SpectralGemProps {
   breathingEnabled?: boolean;
 }
 
-// A double bezel around the edge of the stone: a gold line (the darker of the petals' two colours, and their
-// thickness) sitting half on the stone and half off it, with a thinner cream line (the lighter petal colour) just
-// outside it.
-const BEZEL_WIDTH = 0.04; // (half of it sits behind the stone)
-// of the frame's side (the petals' line is about 2.8% of the same span)
-const BEZEL_COLOR = '#fcce96';
+// A double bezel around the edge of the stone, drawn behind it. It copies the petals' strokes: the same two colours
+// (a gold line, and a thinner cream line just outside it), the same thickness, the same slight transparency (the
+// petals are about 86% opaque, so what shows is a little darker than the plain colour) and the same soft edge.
+const BEZEL_WIDTH = 0.032; // of the stone's frame (the petals' line is about 2.8% of the same span)
+const BEZEL_COLOR = [252, 206, 150];
 const BEZEL_OUTER_WIDTH = 0.012;
-const BEZEL_OUTER_COLOR = '#fff9ee';
+const BEZEL_OUTER_COLOR = [255, 249, 238];
 const BEZEL_GAP = 0.004; // between the two lines
+const BEZEL_ALPHA = 0.86;
+const BEZEL_FEATHER = 0.012; // extra width of the soft edge, at a lower alpha
+const BEZEL_SHIFT = 0.15; // how far (as a fraction of its width) the gold line sits outside the stone's edge
+const BEZEL_CANVAS = 1.12; // the bezel canvas is this much larger than the stone's, so the outer line is not cut off
 
-// The stone's own colour: the colours of the 16 inner orbs, laid round it like a colour wheel that turns once every
-// two minutes (as the orbit does) and changes as the orbs' colours change. The stone is nearly opaque, so its colour
-// comes from this and not from the orbs showing through it.
-const FIELD_STRENGTH = 0.75; // 0 = no colour, 1 = the orbs' full hue
+// The stone's own colour: the colours of the 16 inner orbs laid round it like a colour wheel that turns once every
+// two minutes (as the orbit does) and changes as the orbs' colours change. It is applied with the "color" blend,
+// which takes the hue from the wheel and keeps the stone's own light and dark, so the facets keep their structure.
+const FIELD_ALPHA = 0.45; // 0 = no colour, 1 = full colour
 const FIELD_TURN_S = 120;
+// Structure: the stone is multiplied by itself a little, which deepens its shadows and lines without darkening its
+// highlights, and the overlay layer on top is kept light.
+const CONTRAST = 0.6;
 
 const FRAME_INTERVAL_MS = 1000 / 30; // the sparkle moves ~1.6 frames a second; 30 draws a second is plenty smooth
 
@@ -48,8 +54,8 @@ export default function SpectralGem({
   size,
   cycleStart,
   technique = null,
-  clarity = 0.12, // nearly opaque: the colour is made inside the stone, not seen through it
-  sparkle = 0.8, // was 1
+  clarity = 0.2, // nearly opaque: the colour is made inside the stone, not seen through it
+  sparkle = 0.25, // the overlay layer washes an opaque stone toward white, so it is kept light
   tint = 0.2,
   breathingEnabled = true,
 }: SpectralGemProps) {
@@ -78,14 +84,15 @@ export default function SpectralGem({
     const px = Math.max(8, Math.round(gemSide * dpr));
     // Only resize when the size really changed: resizing clears a canvas, which shows as a flash.
     if (body.width !== px) body.width = body.height = light.width = light.height = px;
-    // The bezel is static: drawn once per size.
+    // The bezel is static: drawn once per size, on a slightly larger canvas.
     const bezel = bezelRef.current;
-    if (bezel && bezel.width !== px) {
-      bezel.width = bezel.height = px;
+    const pxb = Math.round(px * BEZEL_CANVAS);
+    if (bezel && bezel.width !== pxb) {
+      bezel.width = bezel.height = pxb;
       const z = bezel.getContext('2d');
       if (z) {
-        const c = px / 2;
-        const R = GEM_HEX_RADIUS * px;
+        const c = pxb / 2;
+        const R = GEM_HEX_RADIUS * px + BEZEL_SHIFT * BEZEL_WIDTH * px;
         const hex = (radius: number) => {
           z.beginPath();
           for (let k = 0; k < 6; k++) {
@@ -97,14 +104,19 @@ export default function SpectralGem({
         };
         z.lineJoin = 'round';
         z.lineCap = 'round';
-        z.strokeStyle = BEZEL_COLOR;
-        z.lineWidth = Math.max(1, BEZEL_WIDTH * px);
-        hex(R);
-        z.stroke();
-        z.strokeStyle = BEZEL_OUTER_COLOR;
-        z.lineWidth = Math.max(0.75, BEZEL_OUTER_WIDTH * px);
-        hex(R + (BEZEL_WIDTH / 2 + BEZEL_GAP + BEZEL_OUTER_WIDTH / 2) * px);
-        z.stroke();
+        const rgba = (col: number[], a: number) => `rgba(${col[0]},${col[1]},${col[2]},${a})`;
+        const line = (radius: number, width: number, col: number[]) => {
+          z.strokeStyle = rgba(col, BEZEL_ALPHA * 0.4);
+          z.lineWidth = Math.max(1.5, (width + BEZEL_FEATHER) * px);
+          hex(radius);
+          z.stroke();
+          z.strokeStyle = rgba(col, BEZEL_ALPHA);
+          z.lineWidth = Math.max(1, width * px);
+          hex(radius);
+          z.stroke();
+        };
+        line(R, BEZEL_WIDTH, BEZEL_COLOR);
+        line(R + (BEZEL_WIDTH / 2 + BEZEL_GAP + BEZEL_OUTER_WIDTH / 2) * px, BEZEL_OUTER_WIDTH, BEZEL_OUTER_COLOR);
       }
     }
     const bctx = body.getContext('2d');
@@ -146,23 +158,32 @@ export default function SpectralGem({
       }
       const [r, g, b] = gemMultiplyColor(allColors, c.idx, c.p, f, breathingEnabled ? tint : 0, !reduced);
       bctx.globalCompositeOperation = 'source-over';
+      bctx.globalAlpha = 1;
       bctx.clearRect(0, 0, px, px);
       bctx.drawImage(off, 0, 0);
+      // Structure: multiply the stone by itself a little. Shadows and lines deepen, highlights stay.
       bctx.globalCompositeOperation = 'multiply';
-      // The stone's inner colour: a wheel of the orbs' current colours.
+      bctx.globalAlpha = CONTRAST;
+      bctx.drawImage(off, 0, 0);
+      // The stone's inner colour: a wheel of the orbs' current colours, applied as hue only ("color" blend), so the
+      // stone keeps its own light and dark.
       if (typeof bctx.createConicGradient === 'function') {
         const tSec = reduced ? 0 : (Date.now() - mountTime.current) / 1000;
         const wheel = bctx.createConicGradient(reduced ? 0 : ((tSec / FIELD_TURN_S) % 1) * 2 * Math.PI, px / 2, px / 2);
         const n = valarColors.length;
         for (let i = 0; i <= n; i++) {
           const j = i % n;
-          const h = hueOnly(orbColour(valarColors[j].vector, j, tSec));
-          const c = h.map((v) => Math.round(255 + (v - 255) * FIELD_STRENGTH));
-          wheel.addColorStop(i / n, `rgb(${c[0]},${c[1]},${c[2]})`);
+          const col = orbColour(valarColors[j].vector, j, tSec);
+          wheel.addColorStop(i / n, `rgb(${Math.round(col[0])},${Math.round(col[1])},${Math.round(col[2])})`);
         }
+        bctx.globalCompositeOperation = 'color';
+        bctx.globalAlpha = FIELD_ALPHA;
         bctx.fillStyle = wheel;
         bctx.fillRect(0, 0, px, px);
       }
+      // The breathing tint on top, as before.
+      bctx.globalCompositeOperation = 'multiply';
+      bctx.globalAlpha = 1;
       bctx.fillStyle = `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
       bctx.fillRect(0, 0, px, px);
       bctx.globalCompositeOperation = 'destination-in'; // restore the stone's transparent outline
@@ -247,7 +268,7 @@ export default function SpectralGem({
     <>
       <canvas ref={bodyRef} aria-hidden="true" style={{ ...place, zIndex: 30, opacity: (1 - clarity) * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
       <canvas ref={lightRef} aria-hidden="true" style={{ ...place, zIndex: 31, mixBlendMode: 'overlay', opacity: sparkle * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
-      <canvas ref={bezelRef} aria-hidden="true" style={{ ...place, zIndex: 29 }} />
+      <canvas ref={bezelRef} aria-hidden="true" style={{ ...place, width: gemSide * BEZEL_CANVAS, height: gemSide * BEZEL_CANVAS, zIndex: 29 }} />
     </>
   );
 }
