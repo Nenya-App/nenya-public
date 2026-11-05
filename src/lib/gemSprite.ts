@@ -1,0 +1,44 @@
+// The gem's sprite sheet: 48 frames of one pre-rendered diamond, each 288 x 288, laid out row-major in a
+// 7 x 7 grid on a 2016 x 2016 transparent image. Loaded once, only when something that needs it mounts
+// (the sheet is ~790 KB, so it must not load for pages that never show the orbit view).
+import spriteUrl from '../assets/diamond-hex-sprite.webp';
+
+export const SPRITE_COLS = 7;
+export const SPRITE_CELL = 288;
+/** The hexagon spans this fraction of its frame's width. */
+export const GEM_HEX_FRACTION = 2 / 2.48;
+/** Gem canvas side as a fraction of the petals layer's side (the petals layer is size * 0.765). */
+export const GEM_TO_PETALS = 0.3402;
+/** Centre of the gem within the petals box, as measured from the old gem layer's alpha bounds. */
+export const GEM_CENTRE = { x: 0.5008, y: 0.4984 };
+
+let loading: Promise<HTMLImageElement> | null = null;
+
+export function loadGemSprite(): Promise<HTMLImageElement> {
+  if (!loading) {
+    loading = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.decoding = 'async';
+      img.onload = () => resolve(img);
+      img.onerror = () => {
+        loading = null; // allow a retry on the next mount
+        reject(new Error('gem sprite failed to load'));
+      };
+      img.src = spriteUrl;
+    });
+  }
+  return loading;
+}
+
+export const frameOrigin = (i: number): [number, number] => [(i % SPRITE_COLS) * SPRITE_CELL, Math.floor(i / SPRITE_COLS) * SPRITE_CELL];
+
+/** Load an image by URL (same-origin, build-hashed assets). */
+export function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('image failed to load'));
+    img.src = src;
+  });
+}

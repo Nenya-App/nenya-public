@@ -399,14 +399,6 @@
     to { transform: rotate(-360deg); }
   }
 
-  @keyframes gem-shimmer {
-    0%, 100% { filter: brightness(1.4) hue-rotate(0deg) saturate(1); }
-    20% { filter: brightness(1.48) hue-rotate(18deg) saturate(1.25); }
-    40% { filter: brightness(1.36) hue-rotate(-8deg) saturate(1.12); }
-    60% { filter: brightness(1.46) hue-rotate(22deg) saturate(1.32); }
-    80% { filter: brightness(1.37) hue-rotate(-14deg) saturate(1.18); }
-  }
-
   @keyframes bcd {
     0% { transform: scale(0.88); opacity: 0; }
     18% { transform: scale(1.12); opacity: 1; }
@@ -696,38 +688,46 @@
     }
   }
   
-  /* Add subtle inner glow using warm accent colors */
-  .nenya-logo-glow {
-    filter: drop-shadow(0 0 8px var(--nenya-accent-warm)) 
-            drop-shadow(0 0 16px var(--nenya-accent-metallic))
-            drop-shadow(0 0 24px var(--nenya-accent-primary));
-    transition: filter 0.3s ease;
+  /* The logo's glow is no longer a CSS filter (Safari fails to draw a filter on a container with animated
+     or blended descendants). NenyaLogo draws it as two ready-made images, resting and hovered (see
+     LogoGlow.tsx), and the outer orbs carry a box-shadow. This class stays as a hover hook. */
+  .nenya-glow-rest,
+  .nenya-glow-hover {
+    transition: opacity 0.3s ease;
   }
-  
-  .dark .nenya-logo-glow {
-    filter: drop-shadow(0 0 10px var(--nenya-accent-warm)) 
-            drop-shadow(0 0 20px var(--nenya-accent-metallic))
-            drop-shadow(0 0 30px var(--nenya-accent-primary));
-  }
+  .nenya-glow-hover { opacity: 0; }
 
   /* The large logo does nothing on click; hovering only brightens its glow. */
   .nenya-logo-hover {
     -webkit-tap-highlight-color: transparent;
     user-select: none;
   }
-  
-  .nenya-logo-hover:hover .nenya-logo-glow {
-    filter: drop-shadow(0 0 12px var(--nenya-accent-warm)) 
-            drop-shadow(0 0 24px var(--nenya-accent-metallic))
-            drop-shadow(0 0 36px var(--nenya-accent-primary));
+  .nenya-logo-hover:hover .nenya-glow-rest { opacity: 0; }
+  .nenya-logo-hover:hover .nenya-glow-hover { opacity: 1; }
+
+  /* Outer orbs: box-shadow blur is twice a Gaussian sigma, so these are double the glow image's radii. */
+  .nenya-orb-glow {
+    box-shadow: 0 0 16px var(--nenya-accent-warm),
+                0 0 32px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
+                0 0 48px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
+    transition: box-shadow 0.3s ease;
   }
-  
-  .dark .nenya-logo-hover:hover .nenya-logo-glow {
-    filter: drop-shadow(0 0 16px var(--nenya-accent-warm)) 
-            drop-shadow(0 0 32px var(--nenya-accent-metallic))
-            drop-shadow(0 0 48px var(--nenya-accent-primary));
+  .dark .nenya-orb-glow {
+    box-shadow: 0 0 20px var(--nenya-accent-warm),
+                0 0 40px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
+                0 0 60px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
   }
-  
+  .nenya-logo-hover:hover .nenya-orb-glow {
+    box-shadow: 0 0 24px var(--nenya-accent-warm),
+                0 0 48px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
+                0 0 72px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
+  }
+  .dark .nenya-logo-hover:hover .nenya-orb-glow {
+    box-shadow: 0 0 32px var(--nenya-accent-warm),
+                0 0 64px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
+                0 0 96px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
+  }
+
   /* Performance optimizations for animations */
   @media (prefers-reduced-motion: reduce) {
     .nenya-tour-highlight,
