@@ -1,13 +1,17 @@
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { useEffect, useState } from 'react';
-import nenyaLogo from 'figma:asset/2d6974b805d90d34c0a281273e556b545b1c5632.png';
-// The source asset is a 1024x1024 PNG (~253KB) -- appropriate for the large
+import nenyaLogo from 'figma:asset/2d6974b805d90d34c0a281273e556b545b1c5632.webp';
+// The source asset is a 1024x1024 WebP (~69KB) -- appropriate for the large
 // welcome-screen breathing logo (rendered up to 400px), but most call sites
 // use this component as a small persistent header mark (28-40px), where a
 // 1024px source is over 25x more image data than the display size can ever
 // show. This pre-resized/re-encoded 128x128 WebP (~5KB) is swapped in below
 // for those small sizes instead.
 import nenyaLogoSmall from '../../assets/nenya-logo-small.webp';
+// The orbit view's two separated layers. Imported (not served from public/) so the build gives them
+// versioned filenames and they can be cached for a long time safely.
+import petalsLayer from '../../assets/petals-sep.webp';
+import gemLayer from '../../assets/gem-sep.webp';
 import { valarColors } from './ValarBreathingLogo';
 
 // Above this size, the full-resolution source is used instead -- 128px
@@ -67,7 +71,7 @@ export default function NenyaLogo({
           swapped for the separated petals layer (brightened) under the gem overlay below. */}
       {showLogo && (
         <img
-          src={showValarOrbit ? '/assets/petals-sep.png' : flatLogoSrc}
+          src={showValarOrbit ? petalsLayer : flatLogoSrc}
           alt="Nenya Logo"
           width={showValarOrbit ? size * 0.765 : size * 0.85}
           height={showValarOrbit ? size * 0.765 : size * 0.85}
@@ -116,7 +120,7 @@ export default function NenyaLogo({
             const colors = valar.vector;
             
             return (
-              <motion.div
+              <m.div
                 key={valar.name}
                 className="absolute"
                 style={{
@@ -202,7 +206,7 @@ export default function NenyaLogo({
             const colors = valar.vector;
             
             return (
-              <motion.div
+              <m.div
                 key={`outer-${valar.name}`}
                 className="absolute"
                 style={{
@@ -264,7 +268,7 @@ export default function NenyaLogo({
           With the orbit enabled this becomes the separated gem layer with a shimmer animation. */}
       {showLogo && (
         <img
-          src={showValarOrbit ? '/assets/gem-sep.png' : flatLogoSrc}
+          src={showValarOrbit ? gemLayer : flatLogoSrc}
           alt=""
           width={showValarOrbit ? size * 0.765 : size * 0.85}
           height={showValarOrbit ? size * 0.765 : size * 0.85}

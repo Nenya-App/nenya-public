@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from './ui/dialog';
 import { Button } from './ui/button';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 
 interface TermInfoProps {
   term: string;
@@ -353,7 +353,7 @@ function VisualDemo({ term, category }: { term: string; category: string }) {
     } else if (term === 'Pulsing') {
       return (
         <div className="flex justify-center items-center py-8">
-          <motion.div
+          <m.div
             className="w-24 h-24 rounded-full bg-primary"
             animate={{
               scale: [1, 1.3, 1],
@@ -370,7 +370,7 @@ function VisualDemo({ term, category }: { term: string; category: string }) {
     } else if (term === 'Flickering') {
       return (
         <div className="flex justify-center items-center py-8">
-          <motion.div
+          <m.div
             className="w-24 h-24 rounded-full bg-primary"
             animate={{
               opacity: [1, 0.3, 0.8, 0.4, 1, 0.6, 0.9, 0.5],
@@ -387,7 +387,7 @@ function VisualDemo({ term, category }: { term: string; category: string }) {
       return (
         <div className="flex justify-center items-center py-8">
           <div className="relative">
-            <motion.div
+            <m.div
               className="absolute inset-0 w-24 h-24 rounded-full bg-primary blur-xl"
               animate={{
                 scale: [1, 1.2, 1],
@@ -407,7 +407,7 @@ function VisualDemo({ term, category }: { term: string; category: string }) {
       return (
         <div className="flex justify-center items-center py-8">
           <div className="relative w-24 h-24 rounded-full bg-primary overflow-hidden">
-            <motion.div
+            <m.div
               className="absolute inset-0 w-full h-full"
               style={{
                 background: 'linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)',
@@ -429,7 +429,7 @@ function VisualDemo({ term, category }: { term: string; category: string }) {
         <div className="flex justify-center items-center py-8 overflow-hidden">
           <div className="relative w-24 h-24">
             {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-              <motion.div
+              <m.div
                 key={i}
                 className="absolute inset-0 border-2 border-primary rounded-full"
                 style={{ rotate: i * 45 }}
@@ -454,7 +454,7 @@ function VisualDemo({ term, category }: { term: string; category: string }) {
     } else if (term === 'Fading') {
       return (
         <div className="flex justify-center items-center py-8">
-          <motion.div
+          <m.div
             className="w-24 h-24 rounded-full bg-primary"
             animate={{
               opacity: [1, 0.2],
@@ -471,7 +471,7 @@ function VisualDemo({ term, category }: { term: string; category: string }) {
     } else if (term === 'Intensifying') {
       return (
         <div className="flex justify-center items-center py-8">
-          <motion.div
+          <m.div
             className="w-24 h-24 rounded-full bg-primary"
             animate={{
               opacity: [0.2, 1],

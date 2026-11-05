@@ -1,7 +1,13 @@
 
   import { createRoot } from "react-dom/client";
   import App from "./app/App.tsx";
+  import { MotionProvider, preloadMotion } from "./app/components/MotionProvider";
   import "./styles/index.css";
 
-  createRoot(document.getElementById("root")!).render(<App />);
+  preloadMotion();
+  createRoot(document.getElementById("root")!).render(
+    <MotionProvider>
+      <App />
+    </MotionProvider>
+  );
   

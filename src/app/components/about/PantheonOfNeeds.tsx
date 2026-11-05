@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { useState, RefObject } from 'react';
 import { ChevronDown, ChevronUp, User, Users } from 'lucide-react';
 import { valarColors } from '../ValarBreathingLogo';
@@ -258,7 +258,7 @@ function ValaCard({ vala, isExpanded, onToggle }: {
   const useWhiteText = shouldUseWhiteText(primaryColor);
 
   return (
-    <motion.div
+    <m.div
       className="border rounded-lg overflow-hidden bg-card dark:bg-card"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -336,7 +336,7 @@ function ValaCard({ vala, isExpanded, onToggle }: {
           </div>
         </div>
       )}
-    </motion.div>
+    </m.div>
   );
 }
 

@@ -1,7 +1,7 @@
 import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Crown, User, MessageCircle, Mail, Wind } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import nenyaLogo from 'figma:asset/97ae39e7ed6444a186091920628ca9206a54a124.png';
+import nenyaLogo from 'figma:asset/97ae39e7ed6444a186091920628ca9206a54a124.webp';
 import { AppFooter } from '../AppFooter';
 
 interface AboutMenuProps {

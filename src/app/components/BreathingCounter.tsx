@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { ChevronDown, GripHorizontal, Minus, Square, X } from 'lucide-react';
 
 import { PRESETS, type BreathingTechnique } from '../../lib/breathingPresets';
@@ -70,7 +70,7 @@ export function BreathingCounter({
   const phaseLabel = phase === 'i' ? 'inhale' : phase === 'e' ? 'exhale' : 'hold';
 
   return (
-    <motion.div
+    <m.div
       id={id}
       drag
       dragMomentum={false}
@@ -278,6 +278,6 @@ export function BreathingCounter({
           </div>
         </>
       )}
-    </motion.div>
+    </m.div>
   );
 }

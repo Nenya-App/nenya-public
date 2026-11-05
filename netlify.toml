@@ -56,6 +56,12 @@
     # Send origin on same-site requests only; nothing on cross-site navigation
     Referrer-Policy = "strict-origin-when-cross-origin"
 
+    # ── Window isolation ─────────────────────────────────────────────────────
+    # Keeps other sites' windows (for example, anything this page opens) from holding a
+    # reference to this one, and the reverse. The site opens no pop-ups or sign-in windows,
+    # and its outbound links use noopener, so nothing relies on a shared opener.
+    Cross-Origin-Opener-Policy = "same-origin"
+
     # ── Browser features ─────────────────────────────────────────────────────
     # Deny access to hardware and tracking APIs the site never needs
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=(), browsing-topics=()"
@@ -115,3 +121,39 @@
     # Violations log automatically once the Netlify CSP extension is enabled
     # (Logs & Metrics → Functions → __csp-violations).
     # For external monitoring, add: report-uri https://your-report-uri-endpoint
+
+# ── Caching ─────────────────────────────────────────────────────────────────
+# By default Netlify tells browsers to re-check every file on every visit. These rules let returning
+# visitors keep the files that never change under the same name, so a second visit loads almost
+# instantly. Pages themselves (index.html and the other .html files) are left alone on purpose, so a
+# new deploy shows up immediately.
+
+# Everything the build puts in /assets has a content hash in its name (a changed file gets a new name),
+# so it can be kept for a year. Nothing unhashed may live here: see tests/assets.test.mts.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Fonts keep fixed names. If a font file is ever replaced, give the new file a new name.
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Icons, badges and the files used only when a PDF report is made: rarely change, and keep their names,
+# so a week is long enough to help and short enough that a change is not stuck for long.
+[[headers]]
+  for = "/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/badges/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/pdf-assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

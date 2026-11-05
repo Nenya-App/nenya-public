@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
 import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 
@@ -151,7 +152,7 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
   return (
     <>
       {/* Backdrop */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -162,7 +163,7 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
       {/* Spotlight ring */}
       <AnimatePresence>
         {rect && (
-          <motion.div
+          <m.div
             key={stepIndex}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -186,7 +187,7 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
       </AnimatePresence>
 
       {/* Card */}
-      <motion.div
+      <m.div
         key={`card-${stepIndex}`}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -250,7 +251,7 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </>
   );
 }
