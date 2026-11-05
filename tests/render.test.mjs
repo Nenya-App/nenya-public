@@ -57,6 +57,14 @@ try {
     selectedGateways: ['sight'], bodyMapData: { placements: [], notes: {} }, onEditGateway: noop, onContinue: noop, onBack: noop,
   });
   ok('review page: renders with the Venice link and its disclosure', typeof h === 'string' && h.includes('Take it to Venice') && h.includes('venice.ai/c/nenya-20') && h.includes('referral code'), h.error ?? '');
+
+  // The first-visit panel gates the whole site, so it must be visible in the very first render: no layer may
+  // start at opacity 0 waiting for the animation engine to arrive.
+  const { default: Onboarding } = await vite.ssrLoadModule('/src/app/components/OnboardingFlow.tsx');
+  h = render(Onboarding, { technique: { ih: 5000, hi: 0, ex: 5000, ho: 0 }, onTechniqueChange: noop, onStepChange: noop, onFinish: noop });
+  ok('first-visit panel: renders its dialog and the rhythm choice', typeof h === 'string' && h.includes('role="dialog"') && h.includes('onboarding-title'), h.error ?? '');
+  ok('first-visit panel: no layer starts invisible', typeof h === 'string' && !/opacity:\s*0(?![.\d])/.test(h.replace(/<style>[\s\S]*?<\/style>/g, '')), 'found an inline opacity: 0');
+  ok('first-visit panel: entrance is done with CSS classes', typeof h === 'string' && h.includes('onb-fade-in') && h.includes('onb-card-in') && h.includes('onb-step-in'));
 } finally {
   await vite.close();
 }

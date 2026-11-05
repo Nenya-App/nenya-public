@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence } from 'motion/react';
-import * as m from 'motion/react-m';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import NenyaLogo from './NenyaLogo';
@@ -175,11 +173,9 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
   return (
     <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
       {/* Backdrop: light enough to see the logo breathing behind, darker while the counter is spotlit */}
-      <m.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isExiting ? 0 : 1 }}
-        transition={{ duration: 0.5 }}
-        className={`absolute inset-0 backdrop-blur-[2px] ${step === 'counter' ? 'bg-black/60' : 'bg-background/75'}`}
+      <div
+        className={`onb-fade-in absolute inset-0 backdrop-blur-[2px] ${step === 'counter' ? 'bg-black/60' : 'bg-background/75'}`}
+        style={{ opacity: isExiting ? 0 : 1, transition: 'opacity 0.5s linear' }}
       />
 
       {rect && (
@@ -200,23 +196,18 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
       )}
 
       <div className={`absolute inset-0 flex justify-center overflow-y-auto p-4 ${alignment}`}>
-        <m.div
-          initial={{ opacity: 0, y: 20, scale: 0.97 }}
-          animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? 20 : 0, scale: isExiting ? 0.97 : 1 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className={`relative my-auto flex w-full flex-col overflow-hidden rounded-2xl border border-nenya-accent-warm/30 bg-background/90 shadow-2xl backdrop-blur-xl ${
+        <div
+          className={`onb-card-in relative my-auto flex w-full flex-col overflow-hidden rounded-2xl border border-nenya-accent-warm/30 bg-background/90 shadow-2xl backdrop-blur-xl ${
             isTerms ? 'max-w-2xl max-h-[calc(100dvh-2rem)]' : 'max-w-lg'
           }`}
+          style={{
+            opacity: isExiting ? 0 : 1,
+            transform: isExiting ? 'translateY(20px) scale(0.97)' : 'none',
+            transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
+          }}
         >
-          <AnimatePresence mode="wait">
-            <m.div
-              key={step}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className={isTerms ? 'flex min-h-0 flex-1 flex-col' : 'space-y-4 p-5 sm:p-7'}
-            >
+          {/* A new key restarts the entrance, so each step fades in as it appears. */}
+          <div key={step} className={`onb-step-in ${isTerms ? 'flex min-h-0 flex-1 flex-col' : 'space-y-4 p-5 sm:p-7'}`}>
               {step === 'rhythm' && (
                 <>
                   <div className="flex items-center gap-4">
@@ -338,8 +329,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                   </div>
                 </>
               )}
-            </m.div>
-          </AnimatePresence>
+          </div>
 
           {/* Progress dots */}
           <div className="flex shrink-0 items-center justify-center gap-1.5 pb-3" aria-hidden="true">
@@ -352,7 +342,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
               />
             ))}
           </div>
-        </m.div>
+        </div>
       </div>
     </div>
   );
