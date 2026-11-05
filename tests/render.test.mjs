@@ -80,6 +80,12 @@ try {
   ok('logo (header mark): a plain flat image, no canvases, no glow', typeof h === 'string' && !h.includes('<canvas') && h.includes('<img'), h.error ?? '');
   h = render(Logo, { size: 300, showValarOrbit: true, showLogo: false, glow: true });
   ok('logo (hidden): no gem and no glow when the logo is hidden', typeof h === 'string' && !h.includes('<canvas'), h.error ?? '');
+
+  // The breathing ring's smallest size can be set; by default it is 0.25 of its full size.
+  const { ValarBreathingLogo } = await vite.ssrLoadModule('/src/app/components/ValarBreathingLogo.tsx');
+  const ringCss = (props) => { const x = render(ValarBreathingLogo, { logoSize: 200, cycleStart: 0, ...props, children: null }); return typeof x === 'string' ? x : ''; };
+  ok('breathing ring: its smallest size defaults to 0.25', /scale\(0\.25\)/.test(ringCss({})) && !/scale\(0\.1\)/.test(ringCss({})));
+  ok('breathing ring: the smallest size can be set', /scale\(0\.4\)/.test(ringCss({ minScale: 0.4 })) && !/scale\(0\.25\)/.test(ringCss({ minScale: 0.4 })));
 } finally {
   await vite.close();
 }
