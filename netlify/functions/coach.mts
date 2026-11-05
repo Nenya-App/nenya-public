@@ -25,6 +25,7 @@ import { claimConversationSlot, capFromEnv } from '../../src/lib/dailyCap.ts';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
 import { E2eeError, e2eeChat, isE2eeModel } from '../../src/lib/veniceE2ee.ts';
+import { detectDirectQuestion } from '../../src/lib/coachIntent.ts';
 
 const MAX_TURNS = 5;
 const MAX_USER_CHARS = 500;
@@ -227,7 +228,7 @@ async function slotAvailable(): Promise<boolean> {
   }
 }
 
-function systemInstruction(turn: number, softened: boolean, notes: string): string {
+function systemInstruction(turn: number, softened: boolean, notes: string, direct = false): string {
   const parts = [
     // Our wording wins over the character card on Venice, which is awkward to edit.
     'You are the Nenya coach: a warm, grounded coaching companion. You help a person understand what they are feeling and needing, and how to say it clearly. Reason with the methods you were given, including nonviolent communication (observations, feelings, needs, requests) and the ICARUS-VOLT listening lens. Use the person\'s own words. Keep the lens\'s labels and jargon out of the conversation unless the person asks what you are drawing on, and then explain it in plain words. You are an early prototype and a thinking aid. You are not a therapist, counselor, or clinician, and you do not diagnose any condition. Never claim to be a person or Nenya\'s founder, and do not describe your training or where your methods came from.',
@@ -243,12 +244,20 @@ function systemInstruction(turn: number, softened: boolean, notes: string): stri
       'The latest message may signal distress. Respond briefly and with care. Acknowledge what the person said without probing or interpreting it, do not give advice, and gently encourage them to reach a person they trust or a crisis line (988 in the US). You are not able to help in a crisis.'
     );
   }
-  if (turn === 1) {
+  // A direct question is answered first, even on the first exchange. Care for a possible crisis still comes first.
+  const answerFirst = direct && !softened;
+  if (answerFirst) {
+    parts.push(
+      'The person has asked a direct question or for options. Answer it first, in plain words, in your first two or three sentences: give one or two concrete things they can try today, or a short clear explanation. Do not open by asking about their body or feelings, and do not only reflect back. After you have answered, you may add one short, gentle question. This takes priority over the empathy-first and first-exchange guidance above.'
+    );
+  }
+  if (turn === 1 && !answerFirst) {
     parts.push('This is the first exchange: listen and reflect what you heard before anything else.');
   } else if (turn === MAX_TURNS) {
     parts.push(
       'This is the final exchange. Reflect one thing you heard in the person\'s own words and leave it settled. Do not ask a question, open a new topic, or give a farewell: the page closes the conversation after your reply.'
     );
+    if (answerFirst) parts.push('If the question has not been answered yet, answer it briefly instead; still do not ask a question.');
   } else if (turn === MAX_TURNS - 1) {
     parts.push(
       'One exchange remains after this one. If the person seems ready or has asked for help, offer one concrete thing (a way to say it, a request, or a slow breath); otherwise stay with empathy. Begin to settle toward a close.'
@@ -360,7 +369,7 @@ export default async (req: Request): Promise<Response> => {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), VENICE_TIMEOUT_MS);
     const chatMessages = [
-      { role: 'system' as const, content: systemInstruction(turn, softened, notes) },
+      { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content)) },
       ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
       // Scrubbed again here in case the page was bypassed.
       ...messages.map((m) => (m.role === 'user' ? { ...m, content: neutralize(scrubPII(m.content).text) } : m)),

@@ -119,6 +119,10 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const turn = Math.min(messages.filter((m) => m.role === 'user').length + (sending ? 0 : 1), MAX_TURNS);
 
   useEffect(() => {
+    // Follow the conversation only once there is one. Without this guard the page scrolled itself to the bottom
+    // the moment the coach screen opened (before any message), which is what people saw after choosing
+    // "Talk it through with the coach".
+    if (messages.length === 0) return;
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, sending]);
 
