@@ -91,6 +91,8 @@ try {
   const { DeviceMemoryControls, ForgetMeLink } = await vite.ssrLoadModule('/src/app/components/DeviceMemoryControls.tsx');
   h = render(DeviceMemoryControls, {});
   ok('settings: the erase button says "Forget me" with helper text under it', typeof h === 'string' && h.includes('>Forget me<') && h.includes('Erases what this device has saved') && !h.includes('Forget everything'), h.error ?? '');
+  ok('settings: the helper text says it returns you to the terms', typeof h === 'string' && /where the terms are shown again/.test(h.replace(/<!-- -->/g, '')), h.error ?? '');
+  ok('settings: no "Cleared" notice is left (the page reloads instead)', typeof h === 'string' && !h.includes('Your current choices stay'), '');
   h = render(ForgetMeLink, {});
   ok('footer: there is a "Forget me" link too', typeof h === 'string' && h.includes('Forget me') && h.includes('<button'), h.error ?? '');
   const { AppFooter } = await vite.ssrLoadModule('/src/app/components/AppFooter.tsx');

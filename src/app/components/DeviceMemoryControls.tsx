@@ -1,14 +1,12 @@
-import { useState } from 'react';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { Separator } from './ui/separator';
-import { setRemembering, useRemembering, wipeDevice } from '../../lib/deviceMemory';
+import { forgetMeAndRestart, setRemembering, useRemembering } from '../../lib/deviceMemory';
 
 // The one place a visitor decides whether this device remembers anything, and erases it.
 export function DeviceMemoryControls() {
   const remembering = useRemembering();
-  const [forgotten, setForgotten] = useState(false);
 
   return (
     <>
@@ -21,10 +19,7 @@ export function DeviceMemoryControls() {
           <Switch
             id="remember-toggle"
             checked={remembering}
-            onCheckedChange={(on) => {
-              setForgotten(false);
-              setRemembering(on);
-            }}
+            onCheckedChange={setRemembering}
           />
         </div>
         <p className="text-xs leading-relaxed text-muted-foreground">
@@ -36,22 +31,16 @@ export function DeviceMemoryControls() {
           variant="outline"
           size="sm"
           className="w-full"
-          onClick={() => {
-            wipeDevice({ keepOwner: true });
-            setForgotten(true);
-          }}
+          onClick={() => forgetMeAndRestart()}
         >
           Forget me
         </Button>
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Erases what this device has saved: your settings and your agreement to the terms. Nothing is sent to Nenya. There
-          is also a Forget me link at the bottom of every page.
+          Erases what this device has saved: your settings and your agreement to the terms. Because the agreement is gone, it
+          also takes you back to the start of the page, where the terms are shown again, and what you have entered in this visit
+          is cleared too, so save your PDF first if you want it. Nothing is sent to Nenya. There is also a Forget me link at the
+          bottom of every page.
         </p>
-        {forgotten && (
-          <p role="status" className="text-xs text-muted-foreground">
-            Cleared. Your current choices stay until you close this tab.
-          </p>
-        )}
       </div>
     </>
   );
@@ -59,22 +48,14 @@ export function DeviceMemoryControls() {
 
 // The same erase, as a small link for the page footer, so it does not depend on opening the settings window.
 export function ForgetMeLink() {
-  const [done, setDone] = useState(false);
   return (
-    <span className="inline-flex items-center gap-2">
-      <button
-        type="button"
-        className="underline underline-offset-2 transition-colors hover:text-foreground"
-        title="Erase what this device has saved: your settings and your agreement to the terms"
-        onClick={() => {
-          wipeDevice({ keepOwner: true });
-          setDone(true);
-          window.setTimeout(() => setDone(false), 5000);
-        }}
-      >
-        Forget me
-      </button>
-      <span role="status" aria-live="polite">{done ? 'Cleared.' : ''}</span>
-    </span>
+    <button
+      type="button"
+      className="underline underline-offset-2 transition-colors hover:text-foreground"
+      title="Erase what this device has saved (your settings and your agreement to the terms) and go back to the start, where the terms are shown again"
+      onClick={() => forgetMeAndRestart()}
+    >
+      Forget me
+    </button>
   );
 }

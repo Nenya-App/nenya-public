@@ -23,6 +23,19 @@ store['nenya.coach.rest']='123'; store['nenya.coach.owner']='1'; store['nenya_te
 dm.wipeDevice({keepOwner:true});
 ok('forget clears nenya keys but keeps owner + others', !store['nenya.coach.rest']&&!store['nenya.prefs']&&!store['nenya.remember']&&!store['nenya_terms_agreed']&&!store['nenya-theme']&&store['nenya.coach.owner']==='1'&&store['other.site']==='keep');
 dm.setRemembering(true); dm.wipeDevice({keepOwner:false}); ok('emergency wipe removes owner flag too',store['nenya.coach.owner']===undefined&&!dm.isRemembering());
+// Forget me: erase, then go back to the start so the terms are asked again
+store['nenya.coach.rest']='123'; store['nenya.coach.owner']='1'; store['nenya.terms']='V'; store['other.site']='keep'; dm.setRemembering(true);
+let wentWhenCleared: boolean | null = null; let goCalls = 0;
+dm.forgetMeAndRestart(() => { goCalls++; wentWhenCleared = !store['nenya.coach.rest'] && !store['nenya.terms'] && !store['nenya.remember']; });
+ok('forget me goes back to the start exactly once', goCalls === 1);
+ok('...only after the device has been cleared (so the terms and the coach rest are gone when the page loads)', wentWhenCleared === true);
+ok('...keeping the owner flag and other sites\' data', store['nenya.coach.owner'] === '1' && store['other.site'] === 'keep');
+ok('after forget me, the terms are not accepted and the coach rest is gone', !dm.termsAcceptedFor('V') && store['nenya.coach.rest'] === undefined);
+// the default way of going back loads the page's own path, with no #section or ?query
+let target = '';
+(globalThis as any).window = { addEventListener() {}, removeEventListener() {}, location: { pathname: '/coach', assign: (u: string) => { target = u; } } };
+dm.forgetMeAndRestart();
+ok('the default restart loads the current path only', target === '/coach');
 // turning off erases saved settings
 dm.setRemembering(true); store['nenya.prefs']='{"textSize":18}'; dm.rememberTerms('V'); dm.setRemembering(false);
 ok('turning off erases prefs + terms',store['nenya.prefs']===undefined&&store['nenya.terms']===undefined);
