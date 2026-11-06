@@ -1,9 +1,12 @@
 import { useEffect, useRef } from 'react';
+// The bezel is a vector drawing, made in the design bench: a double hexagon (gold, and a thinner cream one just
+// outside it) with a bevel. Its box is 1.12 times the stone's frame, so the outer line is not cut off.
+import bezelSvg from '../../assets/logo/bezel.svg';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { allColors, valarColors } from './ValarBreathingLogo';
 import { orbColour } from '../../lib/orbColours';
 import { breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
-import { GEM_CENTRE, GEM_HEX_RADIUS, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite } from '../../lib/gemSprite';
+import { GEM_CENTRE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite } from '../../lib/gemSprite';
 
 interface SpectralGemProps {
   /** The logo's size (the same `size` NenyaLogo takes). */
@@ -25,18 +28,7 @@ interface SpectralGemProps {
   fieldAlpha?: number;
 }
 
-// A double bezel around the edge of the stone, drawn behind it. It copies the petals' strokes: the same two colours
-// (a gold line, and a thinner cream line just outside it), the same thickness, the same slight transparency (the
-// petals are about 86% opaque, so what shows is a little darker than the plain colour) and the same soft edge.
-const BEZEL_WIDTH = 0.032; // of the stone's frame (the petals' line is about 2.8% of the same span)
-const BEZEL_COLOR = [252, 206, 150];
-const BEZEL_OUTER_WIDTH = 0.012;
-const BEZEL_OUTER_COLOR = [255, 249, 238];
-const BEZEL_GAP = 0.004; // between the two lines
-const BEZEL_ALPHA = 0.86;
-const BEZEL_FEATHER = 0.012; // extra width of the soft edge, at a lower alpha
-const BEZEL_SHIFT = 0.15; // how far (as a fraction of its width) the gold line sits outside the stone's edge
-const BEZEL_CANVAS = 1.12; // the bezel canvas is this much larger than the stone's, so the outer line is not cut off
+const BEZEL_CANVAS = 1.12; // the bezel image is this much larger than the stone's frame (the bezel.svg viewBox is the same ratio)
 
 // The stone's own colour: the colours of the 16 inner orbs laid round it like a colour wheel that turns once every
 // two minutes (as the orbit does) and changes as the orbs' colours change. It is applied with the "color" blend,
@@ -70,7 +62,6 @@ export default function SpectralGem({
 }: SpectralGemProps) {
   const bodyRef = useRef<HTMLCanvasElement>(null);
   const lightRef = useRef<HTMLCanvasElement>(null);
-  const bezelRef = useRef<HTMLCanvasElement>(null);
   const mountTime = useRef(Date.now());
 
   const petalsSide = size * 0.765;
@@ -93,41 +84,6 @@ export default function SpectralGem({
     const px = Math.max(8, Math.round(gemSide * dpr));
     // Only resize when the size really changed: resizing clears a canvas, which shows as a flash.
     if (body.width !== px) body.width = body.height = light.width = light.height = px;
-    // The bezel is static: drawn once per size, on a slightly larger canvas.
-    const bezel = bezelRef.current;
-    const pxb = Math.round(px * BEZEL_CANVAS);
-    if (bezel && bezel.width !== pxb) {
-      bezel.width = bezel.height = pxb;
-      const z = bezel.getContext('2d');
-      if (z) {
-        const c = pxb / 2;
-        const R = GEM_HEX_RADIUS * px + BEZEL_SHIFT * BEZEL_WIDTH * px;
-        const hex = (radius: number) => {
-          z.beginPath();
-          for (let k = 0; k < 6; k++) {
-            const a = -Math.PI / 2 + (k * Math.PI) / 3; // corners at the top and bottom
-            const x = c + radius * Math.cos(a), y = c + radius * Math.sin(a);
-            if (k === 0) z.moveTo(x, y); else z.lineTo(x, y);
-          }
-          z.closePath();
-        };
-        z.lineJoin = 'round';
-        z.lineCap = 'round';
-        const rgba = (col: number[], a: number) => `rgba(${col[0]},${col[1]},${col[2]},${a})`;
-        const line = (radius: number, width: number, col: number[]) => {
-          z.strokeStyle = rgba(col, BEZEL_ALPHA * 0.4);
-          z.lineWidth = Math.max(1.5, (width + BEZEL_FEATHER) * px);
-          hex(radius);
-          z.stroke();
-          z.strokeStyle = rgba(col, BEZEL_ALPHA);
-          z.lineWidth = Math.max(1, width * px);
-          hex(radius);
-          z.stroke();
-        };
-        line(R, BEZEL_WIDTH, BEZEL_COLOR);
-        line(R + (BEZEL_WIDTH / 2 + BEZEL_GAP + BEZEL_OUTER_WIDTH / 2) * px, BEZEL_OUTER_WIDTH, BEZEL_OUTER_COLOR);
-      }
-    }
     const bctx = body.getContext('2d');
     const lctx = light.getContext('2d');
     const off = document.createElement('canvas');
@@ -280,7 +236,7 @@ export default function SpectralGem({
     <>
       <canvas ref={bodyRef} aria-hidden="true" style={{ ...place, zIndex: 30, opacity: (1 - clarity) * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
       <canvas ref={lightRef} aria-hidden="true" style={{ ...place, zIndex: 31, mixBlendMode: 'overlay', opacity: sparkle * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
-      <canvas ref={bezelRef} aria-hidden="true" style={{ ...place, width: gemSide * BEZEL_CANVAS, height: gemSide * BEZEL_CANVAS, zIndex: 29 }} />
+      <img src={bezelSvg} alt="" aria-hidden="true" draggable={false} style={{ ...place, width: gemSide * BEZEL_CANVAS, height: gemSide * BEZEL_CANVAS, zIndex: 29 }} />
     </>
   );
 }

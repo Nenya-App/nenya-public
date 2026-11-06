@@ -705,27 +705,28 @@
   .nenya-logo-hover:hover .nenya-glow-rest { opacity: 0; }
   .nenya-logo-hover:hover .nenya-glow-hover { opacity: 1; }
 
-  /* Outer orbs: box-shadow blur is twice a Gaussian sigma, so these are double the glow image's radii. */
+  /* Outer orbs: box-shadow blur is twice a Gaussian sigma. The radii are those of the logo's glow image, doubled and then
+     widened by 1.45 (the width chosen in the design bench). */
   .nenya-orb-glow {
-    box-shadow: 0 0 16px var(--nenya-accent-warm),
-                0 0 32px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
-                0 0 48px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
+    box-shadow: 0 0 23px var(--nenya-accent-warm),
+                0 0 46px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
+                0 0 70px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
     transition: box-shadow 0.3s ease;
   }
   .dark .nenya-orb-glow {
-    box-shadow: 0 0 20px var(--nenya-accent-warm),
-                0 0 40px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
-                0 0 60px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
+    box-shadow: 0 0 29px var(--nenya-accent-warm),
+                0 0 58px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
+                0 0 87px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
   }
   .nenya-logo-hover:hover .nenya-orb-glow {
-    box-shadow: 0 0 24px var(--nenya-accent-warm),
-                0 0 48px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
-                0 0 72px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
+    box-shadow: 0 0 35px var(--nenya-accent-warm),
+                0 0 70px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
+                0 0 104px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
   }
   .dark .nenya-logo-hover:hover .nenya-orb-glow {
-    box-shadow: 0 0 32px var(--nenya-accent-warm),
-                0 0 64px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
-                0 0 96px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
+    box-shadow: 0 0 46px var(--nenya-accent-warm),
+                0 0 93px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
+                0 0 139px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
   }
 
   /* Performance optimizations for animations */
