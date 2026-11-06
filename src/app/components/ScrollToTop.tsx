@@ -4,7 +4,8 @@ interface ScrollToTopProps {
   trigger: string | number;
 }
 
-function resetScroll() {
+/** Puts the page (or every scroll container on it) back at the top, at once. */
+export function resetScroll() {
   const scrollableElements = document.querySelectorAll('.scroll-container');
 
   if (scrollableElements.length > 0) {

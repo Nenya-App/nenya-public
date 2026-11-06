@@ -16,6 +16,7 @@ import { ShareNenya } from '../app/components/ShareNenya';
 import { FlagNotice } from './FlagNotice';
 import { TranscriptTools } from './TranscriptTools';
 import { FailureNotice } from './FailureNotice';
+import { resetScroll } from '../app/components/ScrollToTop';
 import { describeFailure, type FailureInfo } from '../lib/coachErrors';
 
 const MAX_TURNS = 5;
@@ -130,6 +131,21 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
   useEffect(() => {
     headingRef.current?.focus({ preventScroll: true });
+  }, [stage]);
+
+  // The consent screen is long and its "I understand, start" button sits at the bottom. When the conversation replaces it the
+  // page keeps its scroll position, which is now the bottom of the conversation. Go back to the top, so the greeting is what
+  // the person sees. (Not on first load: the app already resets the scroll when it opens this screen.)
+  const firstStage = useRef(true);
+  useEffect(() => {
+    if (firstStage.current) {
+      firstStage.current = false;
+      return;
+    }
+    if (stage !== 'chat') return;
+    resetScroll();
+    const later = setTimeout(resetScroll, 120); // again once the new content has laid out
+    return () => clearTimeout(later);
   }, [stage]);
 
 
