@@ -37,9 +37,9 @@ const MAX_REPLY_TOKENS = 600; // headroom; brevity comes from the instruction, t
 const MAX_BODY_BYTES = 16000;
 const TICKET_TTL_MS = 30 * 60 * 1000;
 const VENICE_TIMEOUT_MS = 20000;
-// A second attempt is made only if the first came back quickly, and it gets a shorter limit, so the two together stay inside the platform's.
-const REPEAT_RETRY_WITHIN_MS = 9000;
-const REPEAT_RETRY_TIMEOUT_MS = 10000;
+// A second attempt is made only if there is time left in the same 20-second budget a single attempt always had (at least this
+// much), and it gets whatever remains, so the two together never run longer than one attempt could have.
+const REPEAT_RETRY_MIN_REMAINING_MS = 8000;
 const REPEAT_NOTE =
   'Your previous attempt repeated words you had already given earlier in this conversation. Do not repeat them. Respond to what the person has just said, in new words.';
 
@@ -469,8 +469,9 @@ export default async (req: Request): Promise<Response> => {
   // A small model sometimes answers a follow-up with the same words it gave the turn before. If so, ask once more for a
   // different answer. If that second attempt fails, the first reply is kept: better than an error.
   const earlier = messages.filter((m) => m.role === 'assistant').map((m) => m.content);
-  if (earlier.length && repeatsEarlier(reply, earlier) && Date.now() - startedAt < REPEAT_RETRY_WITHIN_MS) {
-    const again = await generate(REPEAT_NOTE, REPEAT_RETRY_TIMEOUT_MS);
+  const remaining = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
+  if (earlier.length && repeatsEarlier(reply, earlier) && remaining >= REPEAT_RETRY_MIN_REMAINING_MS) {
+    const again = await generate(REPEAT_NOTE, remaining);
     if (!('failure' in again) && again.reply) reply = again.reply;
   }
   if (reply.length > MAX_ASSISTANT_CHARS) reply = trimToSentence(reply.slice(0, MAX_ASSISTANT_CHARS));
