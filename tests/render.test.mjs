@@ -4,6 +4,7 @@
 import { createServer } from 'vite';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { ok } from './helpers.mts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -65,6 +66,35 @@ try {
   ok('first-visit panel: renders its dialog and the rhythm choice', typeof h === 'string' && h.includes('role="dialog"') && h.includes('onboarding-title'), h.error ?? '');
   ok('first-visit panel: no layer starts invisible', typeof h === 'string' && !/opacity:\s*0(?![.\d])/.test(h.replace(/<style>[\s\S]*?<\/style>/g, '')), 'found an inline opacity: 0');
   ok('first-visit panel: entrance is done with CSS classes', typeof h === 'string' && h.includes('onb-fade-in') && h.includes('onb-card-in') && h.includes('onb-step-in'));
+  ok('first-visit panel: Box breathing is one of the four main choices, and there is no skip link', typeof h === 'string' && h.includes('>Box<') && h.includes('>5·5<') && h.includes('>4·6<') && h.includes('>3·3<') && !h.includes('>4·8<') && !h.includes('Skip to terms'), h.error ?? '');
+  ok('first-visit panel: says that not choosing is fine', typeof h === 'string' && h.includes('Not choosing is fine'), h.error ?? '');
+  {
+    const src = readFileSync(new URL('../src/app/components/OnboardingFlow.tsx', import.meta.url), 'utf8');
+    ok('first-visit panel: goes straight from the rhythm to the terms', /STEPS: OnboardingStep\[\] = \['rhythm', 'terms'\]/.test(src) && !/'counter'|'process'/.test(src));
+  }
+  // The loading screen, the tour offer and the tour.
+  const { LoadingVeil } = await vite.ssrLoadModule('/src/app/components/LoadingVeil.tsx');
+  h = render(LoadingVeil, { ready: false, onDone: noop });
+  ok('loading screen: shows a status message over the page, with no inline opacity of 0 at first', typeof h === 'string' && h.includes('role="status"') && h.includes('Preparing your space') && !/opacity:\s*0(?![.\d])/.test(h.replace(/<style>[\s\S]*?<\/style>/g, '')), h.error ?? '');
+  const { preloadLogoAssets } = await vite.ssrLoadModule('/src/lib/preload.ts');
+  ok('loading screen: the wait for the logo files always ends (no browser here, so every load fails)', (await Promise.race([preloadLogoAssets(50).then(() => 'done'), new Promise((r) => setTimeout(() => r('hung'), 2000))])) === 'done');
+  const { TourOffer } = await vite.ssrLoadModule('/src/app/components/TourOffer.tsx');
+  h = render(TourOffer, { onAccept: noop, onDecline: noop });
+  ok('tour offer: asks, with both a yes and a skip', typeof h === 'string' && h.includes('role="dialog"') && h.includes('Would you like a quick tour?') && h.includes('Show me around') && h.includes('Skip for now'), h.error ?? '');
+  const { TUTORIAL_STEPS } = await vite.ssrLoadModule('/src/app/components/WelcomeTutorial.tsx');
+  ok('tour: the logo, the counter, the header controls, the menu and accessibility, then the sensory reflection',
+    TUTORIAL_STEPS.map((x) => x.id).join() === 'logo,counter,tools,accessibility,reflection');
+  ok('tour: every step points at something that exists on the page', TUTORIAL_STEPS.every((x) => x.targetIds.every((id) => {
+    const nav = readFileSync(new URL('../src/app/components/GlobalNavigation.tsx', import.meta.url), 'utf8');
+    const page = readFileSync(new URL('../src/app/components/pages/WelcomePage.tsx', import.meta.url), 'utf8');
+    const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+    return [nav, page, app].some((t) => t.includes(`id="${id}"`));
+  })));
+  {
+    const src = readFileSync(new URL('../src/app/components/WelcomeTutorial.tsx', import.meta.url), 'utf8');
+    ok('tour: the highlighted part is left sharp (no blur) and the card is centred across the page', !/backdrop-blur/.test(src.split('{/* Card */}')[0]) && /cardLeft = Math\.max\(margin, \(viewportW/.test(src));
+    ok('tour: the last step returns to the logo', /Back to the logo/.test(src) && /toTop\(\)/.test(src));
+  }
 
   // The logo: orbit view with the spectral gem and the baked glow. Effects do not run on the server, so this
   // checks the structure; the drawing itself is checked by the breath-clock and glow-bake tests.

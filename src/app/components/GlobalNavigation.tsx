@@ -126,7 +126,7 @@ export function GlobalNavigation({
             </div>
 
             {/* Right side controls */}
-            <div className="flex items-center gap-3">
+            <div id="tutorial-header-tools-desktop" className="flex items-center gap-3">
               {/* Replay Tutorial */}
               {showAnimationControls && onTutorialReplay ? (
                 <Button
@@ -254,7 +254,7 @@ export function GlobalNavigation({
           </div>
 
           {/* Mobile Menu Controls */}
-          <div className="flex items-center gap-0.5 min-[400px]:gap-1.5">
+          <div id="tutorial-header-tools-mobile" className="flex items-center gap-0.5 min-[400px]:gap-1.5">
             {/* Add to Home Screen */}
             <AddToHomeScreen variant="icon" />
 

@@ -4,38 +4,56 @@ import * as m from 'motion/react-m';
 import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 
+export type TutorialStepId = 'logo' | 'counter' | 'tools' | 'accessibility' | 'reflection';
+
 interface TutorialStep {
+  id: TutorialStepId;
   targetIds: string[];
   title: string;
   body: string;
 }
 
-const STEPS: TutorialStep[] = [
+// The order: the logo and the counter, then the controls along the top (ending on the menu, where the accessibility
+// settings are), then the sensory reflection. Closing the tour, by finishing or skipping, returns to the logo.
+export const TUTORIAL_STEPS: TutorialStep[] = [
   {
+    id: 'logo',
     targetIds: ['tutorial-logo'],
-    title: 'Your Breathing Companion',
-    body: "This logo gently pulses to a slow rhythm — about six breaths a minute by default. Follow it: breathe in as it brightens, breathe out as it softens.",
+    title: 'Your breathing companion',
+    body: 'This logo breathes slowly with you. Breathe in as it brightens and out as it softens. The ring of colours around it turns once every two minutes, and the gem at its centre takes on the colour of your breath.',
   },
   {
+    id: 'counter',
     targetIds: ['tutorial-breathing-counter'],
-    title: 'Track Your Breath',
-    body: 'This counter shows exactly where you are in each cycle. Drag it anywhere on screen, and tap a pattern below to change your breathing pace.',
+    title: 'Your breath counter',
+    body: 'It follows your rhythm and counts each breath. Drag it anywhere on the screen. Tap a pattern in its list to change your rhythm. The minus tucks the list away, and the x folds it down to just the word Breathe.',
   },
   {
-    targetIds: ['tutorial-cta'],
-    title: 'When You’re Ready',
-    body: 'This button leads into the six sensory gateways — Sight, Sound, Touch, Essence, Movement, and Insight — for a guided check-in with how you’re actually feeling.',
+    id: 'tools',
+    targetIds: ['tutorial-header-tools-desktop', 'tutorial-header-tools-mobile'],
+    title: 'Along the top',
+    body: 'Switch between light and dark, or add Nenya to your home screen. Emergency Exit is always in the corner: it leaves the site at once and erases what this device has saved. On larger screens you will also find Support Us and this tour’s help button.',
   },
   {
+    id: 'accessibility',
     targetIds: ['tutorial-menu-desktop', 'tutorial-menu-mobile'],
-    title: 'Settings & More',
-    body: 'Open this menu anytime to adjust accessibility settings, replay this tutorial, or return home.',
+    title: 'Menu and accessibility',
+    body: 'The menu takes you home or to About, and opens Accessibility Settings: turn the motion, the orbit and the counter off, change the logo’s opacity and the text size, and choose a colour-vision mode. The small logo in the corner opens the breathing and display controls too.',
+  },
+  {
+    id: 'reflection',
+    targetIds: ['tutorial-cta'],
+    title: 'The sensory reflection',
+    body: 'This button begins the reflection. You choose which of the six gateways to explore (Sight, Sound, Touch, Essence, Movement and Insight), and at the end you can save a private report made in your own browser.',
   },
 ];
+const STEPS = TUTORIAL_STEPS;
 
 interface WelcomeTutorialProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Called as each step is shown (and with null when the tour ends), so the page can set things up for it. */
+  onStepChange?: (id: TutorialStepId | null) => void;
 }
 
 function isVisible(el: HTMLElement): boolean {
@@ -54,7 +72,7 @@ function resolveTarget(ids: string[]): HTMLElement | null {
   return null;
 }
 
-export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
+export function WelcomeTutorial({ isOpen, onClose, onStepChange }: WelcomeTutorialProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -63,6 +81,24 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
   useEffect(() => {
     if (!isOpen) return;
     setStepIndex(0);
+  }, [isOpen]);
+
+  // Tell the page which step is showing; it opens the counter's list for the counter step and tucks it away otherwise.
+  useEffect(() => {
+    if (!isOpen) return;
+    onStepChange?.(STEPS[stepIndex].id);
+    return () => onStepChange?.(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, stepIndex]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   useEffect(() => {
@@ -87,11 +123,13 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
     update();
     const t1 = setTimeout(update, 350);
     const t2 = setTimeout(update, 700);
+    const t3 = setTimeout(update, 1200);
     window.addEventListener('resize', update);
     window.addEventListener('scroll', update, true);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
+      clearTimeout(t3);
       window.removeEventListener('resize', update);
       window.removeEventListener('scroll', update, true);
     };
@@ -135,40 +173,35 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
   let cardLeft: number;
   const margin = 16;
 
+  // The card is always centred across the page. Vertically it sits below the spotlighted part if there is room, else
+  // above it, else at the bottom of the screen; with nothing to point at it is centred.
+  cardLeft = Math.max(margin, (viewportW - Math.min(cardWidth, viewportW - margin * 2)) / 2);
   if (rect) {
     const spaceBelow = viewportH - rect.bottom;
     const spaceAbove = rect.top;
-    const placeBelow = spaceBelow >= cardHeight + margin * 2 || spaceBelow >= spaceAbove;
-    cardTop = placeBelow ? rect.bottom + margin : rect.top - margin - cardHeight;
-    // Clamp fully inside the viewport regardless of target size/position.
+    if (spaceBelow >= cardHeight + margin * 2) cardTop = rect.bottom + pad + margin;
+    else if (spaceAbove >= cardHeight + margin * 2) cardTop = rect.top - pad - margin - cardHeight;
+    else cardTop = viewportH - cardHeight - margin;
     cardTop = Math.max(margin, Math.min(cardTop, viewportH - cardHeight - margin));
-    cardLeft = rect.left + rect.width / 2 - cardWidth / 2;
-    cardLeft = Math.max(margin, Math.min(cardLeft, viewportW - cardWidth - margin));
   } else {
     cardTop = viewportH / 2 - cardHeight / 2;
-    cardLeft = viewportW / 2 - cardWidth / 2;
   }
 
   return (
     <>
-      {/* Backdrop */}
-      <m.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[95] bg-black/55"
-        onClick={handleClose}
-      />
+      {/* Click catcher. With nothing to point at the whole page is dimmed; otherwise the spotlight below dims everything
+          but the highlighted part, so that part stays sharp and bright (no blur is ever applied here). */}
+      <div className={`fixed inset-0 z-[95] ${rect ? '' : 'bg-black/55'}`} onClick={handleClose} />
 
-      {/* Spotlight ring */}
       <AnimatePresence>
         {rect && (
           <m.div
-            key={stepIndex}
+            key="spotlight"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
+            aria-hidden="true"
             style={{
               position: 'fixed',
               top: rect.top - pad,
@@ -177,7 +210,7 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
               height: rect.height + pad * 2,
               borderRadius: 14,
               border: '2px solid rgba(232,160,32,0.9)',
-              boxShadow: '0 0 0 6px rgba(232,160,32,0.18), 0 0 24px rgba(232,160,32,0.35)',
+              boxShadow: '0 0 0 9999px rgba(0,0,0,0.58), 0 0 0 6px rgba(232,160,32,0.18), 0 0 24px rgba(232,160,32,0.35)',
               pointerEvents: 'none',
               zIndex: 96,
               transition: 'top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease',
@@ -202,6 +235,8 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
           zIndex: 97,
         }}
         className="pointer-events-auto"
+        role="dialog"
+        aria-label={`Tour: ${step.title}`}
       >
         <div ref={cardRef} className="relative rounded-2xl border border-nenya-accent-warm/30 bg-background/95 backdrop-blur-xl shadow-2xl p-5 space-y-4">
           <button
@@ -245,7 +280,7 @@ export function WelcomeTutorial({ isOpen, onClose }: WelcomeTutorialProps) {
                 onClick={() => (isLast ? handleClose() : setStepIndex((i) => i + 1))}
                 className="gap-1 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-background-elevated"
               >
-                {isLast ? 'Done' : 'Next'}
+                {isLast ? 'Back to the logo' : 'Next'}
                 {!isLast && <ArrowRight className="size-3.5" />}
               </Button>
             </div>
