@@ -36,4 +36,7 @@ for (let i = 0; i < 5; i++) {
 }
 ok('exchange 1 asks for listening first', /first exchange: listen/.test(sys[0]) && !/first exchange: listen/.test(sys[1]));
 ok('exchange 4 mentions one remaining', /One exchange remains/.test(sys[3]) && !/One exchange remains/.test(sys[2]));
-ok('exchange 5 is told the page closes the conversation', /final exchange\. Reflect/.test(sys[4]) && /page closes the conversation/.test(sys[4]));
+ok('exchange 5 is told it is the last message and that the page adds its closing', /final exchange, and the person will not be able to reply/.test(sys[4]) && /page adds its own closing note/.test(sys[4]));
+ok('exchange 5 is told to ask no question and invite nothing', /Do not ask any question, and do not invite the person to share, reply, or tell you more/.test(sys[4]));
+ok('exchange 5 drops the "ask a question" and "next step" lines that the earlier exchanges have', !/Ask at most one question/.test(sys[4]) && !/Offer a concrete next step/.test(sys[4]) && /Ask at most one question/.test(sys[2]));
+ok('exchange 4 invites the person\'s last word without counting', /invites their last word/.test(sys[3]) && /Do not mention how many exchanges are left/.test(sys[3]) && !/invites their last word/.test(sys[2]) && !/invites their last word/.test(sys[4]));

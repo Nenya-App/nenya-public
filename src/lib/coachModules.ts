@@ -72,8 +72,8 @@ export const MODULE_GROUPS: Record<string, ModuleGroup> = Object.fromEntries(TRI
 
 const fold = (s: string): string => s.normalize('NFKC').toLowerCase().replace(/[‘’]/g, "'");
 
-/** Ids of the modules that fit this conversation, in order of attention (safety, lenses, moves, resources). */
-export function selectModules(userTexts: string[], max = 3): string[] {
+/** Ids of the modules that fit this conversation, in order of attention (safety, lenses, moves, resources). `exclude` leaves whole groups out. */
+export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup[] = []): string[] {
   // Safety and lens modules look at everything the person has said (what is blocking them stays true). The coaching moves and
   // resources look only at the latest message: what they ask for or react to now. Without this, a "how do I say..." from
   // two turns ago kept the "give them words" module on, and the coach offered the same words again.
@@ -89,7 +89,7 @@ export function selectModules(userTexts: string[], max = 3): string[] {
   const out: string[] = [];
   const used: Record<string, number> = { safety: 0, lens: 0, move: 0, resource: 0 };
   for (const [id, group] of TRIGGERS) {
-    if (!hit.has(id) || used[group] >= CAPS[group]) continue;
+    if (!hit.has(id) || exclude.includes(group) || used[group] >= CAPS[group]) continue;
     out.push(id);
     used[group]++;
     if (out.length >= max) break;
@@ -98,11 +98,11 @@ export function selectModules(userTexts: string[], max = 3): string[] {
 }
 
 /** Core plus the chosen modules, within a character budget. */
-export function buildNotes(set: ModuleSet, userTexts: string[], opts: { skipModules?: boolean; maxChars?: number } = {}): string {
+export function buildNotes(set: ModuleSet, userTexts: string[], opts: { skipModules?: boolean; maxChars?: number; exclude?: ModuleGroup[] } = {}): string {
   const maxChars = opts.maxChars ?? 9000;
   const parts = [set.core.trim()];
   if (!opts.skipModules) {
-    for (const id of selectModules(userTexts)) {
+    for (const id of selectModules(userTexts, 3, opts.exclude)) {
       const body = set.modules[id]?.trim();
       if (body && parts.join('\n\n').length + body.length + 2 <= maxChars) parts.push(body);
     }
