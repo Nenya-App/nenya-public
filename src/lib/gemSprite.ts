@@ -15,6 +15,14 @@ export const GEM_HEX_RADIUS = 476 / 1024;
 /** Centre of the gem within the petals box, as measured from the old gem layer's alpha bounds. */
 export const GEM_CENTRE = { x: 0.5008, y: 0.4984 };
 
+// Resolves once the gem has drawn its first frame on screen (see SpectralGem). The loading screen waits for it, so the
+// gem is already there when the screen fades away.
+let resolveFirstDraw: () => void = () => {};
+export const gemFirstDraw: Promise<void> = new Promise<void>((resolve) => {
+  resolveFirstDraw = resolve;
+});
+export const markGemDrawn = (): void => resolveFirstDraw();
+
 let loading: Promise<HTMLImageElement> | null = null;
 
 export function loadGemSprite(): Promise<HTMLImageElement> {

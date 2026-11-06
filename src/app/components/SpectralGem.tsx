@@ -6,7 +6,7 @@ import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { allColors, valarColors } from './ValarBreathingLogo';
 import { orbColour } from '../../lib/orbColours';
 import { breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
-import { GEM_CENTRE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite } from '../../lib/gemSprite';
+import { GEM_CENTRE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite, markGemDrawn } from '../../lib/gemSprite';
 
 interface SpectralGemProps {
   /** The logo's size (the same `size` NenyaLogo takes). */
@@ -159,6 +159,7 @@ export default function SpectralGem({
       bctx.globalCompositeOperation = 'source-over';
       lctx.clearRect(0, 0, px, px);
       lctx.drawImage(body, 0, 0);
+      markGemDrawn();
     };
 
     const tick = (now: number) => {

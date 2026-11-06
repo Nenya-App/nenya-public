@@ -124,7 +124,9 @@ export default function App() {
   const [assetsReady, setAssetsReady] = useState(false);
   const [veilGone, setVeilGone] = useState(false);
   useEffect(() => {
-    preloadLogoAssets().then(() => setAssetsReady(true));
+    // On the welcome screen with the gem showing, also wait for the gem's first frame to be drawn.
+    preloadLogoAssets(undefined, currentScreen === 'welcome' && orbitEnabled && logoVisible).then(() => setAssetsReady(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // The first-visit panel (rhythm choice, then the terms) is an overlay on the welcome page. The breathing counter

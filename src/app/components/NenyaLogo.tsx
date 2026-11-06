@@ -23,7 +23,7 @@ const SMALL_LOGO_MAX_SIZE = 48;
 // low and high (the orbs pulse between them).
 const INNER_ORB_FRACTION = 0.069;
 const OUTER_ORB_FRACTION = 0.106;
-const INNER_ORB_OPACITY = [0.83, 1, 0.83];
+const INNER_ORB_OPACITY = [0.66, 0.8, 0.66]; // peaks at 80%
 const OUTER_ORB_OPACITY = [0.64, 0.87, 0.64];
 const ORB_FORM = 0.3; // shading toward the lower right edge
 const ORB_SHINE = 0.2; // the glass highlight, upper left

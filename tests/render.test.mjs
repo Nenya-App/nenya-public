@@ -78,6 +78,14 @@ try {
   ok('loading screen: shows a status message over the page, with no inline opacity of 0 at first', typeof h === 'string' && h.includes('role="status"') && h.includes('Preparing your space') && !/opacity:\s*0(?![.\d])/.test(h.replace(/<style>[\s\S]*?<\/style>/g, '')), h.error ?? '');
   const { preloadLogoAssets } = await vite.ssrLoadModule('/src/lib/preload.ts');
   ok('loading screen: the wait for the logo files always ends (no browser here, so every load fails)', (await Promise.race([preloadLogoAssets(50).then(() => 'done'), new Promise((r) => setTimeout(() => r('hung'), 2000))])) === 'done');
+  ok('loading screen: waiting for the gem to draw also ends at the limit if it never does', (await Promise.race([preloadLogoAssets(50, true).then(() => 'done'), new Promise((r) => setTimeout(() => r('hung'), 2000))])) === 'done');
+  {
+    const logoSrc = readFileSync(new URL('../src/app/components/NenyaLogo.tsx', import.meta.url), 'utf8');
+    const gemSrc = readFileSync(new URL('../src/app/components/SpectralGem.tsx', import.meta.url), 'utf8');
+    const mainSrc = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
+    ok('inner orbs peak at 80% opacity', /INNER_ORB_OPACITY = \[0\.66, 0\.8, 0\.66\]/.test(logoSrc));
+    ok('the gem reports its first drawn frame, and the downloads start before the page is drawn', /markGemDrawn\(\)/.test(gemSrc) && /startLogoDownloads\(\)/.test(mainSrc));
+  }
   const { TourOffer } = await vite.ssrLoadModule('/src/app/components/TourOffer.tsx');
   h = render(TourOffer, { onAccept: noop, onDecline: noop });
   ok('tour offer: asks, with both a yes and a skip', typeof h === 'string' && h.includes('role="dialog"') && h.includes('Would you like a quick tour?') && h.includes('Show me around') && h.includes('Skip for now'), h.error ?? '');
