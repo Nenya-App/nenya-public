@@ -142,6 +142,9 @@ const CB_FILTERS: Record<string, string> = {
   achromatopsia: 'grayscale(1) contrast(2.5) brightness(1.1)',
 };
 
+/** The smallest the breathing ring gets. */
+export const DEFAULT_MIN_SCALE = 0.25; // was 0.1: stops just outside the gem and the inner orbs, so the breath travels less and looks slower
+
 interface ValarBreathingLogoProps {
   children: React.ReactNode;
   enabled?: boolean;
@@ -154,6 +157,8 @@ interface ValarBreathingLogoProps {
    *  numeric breathing counter instead of timing itself from whenever this
    *  component happened to last mount. */
   cycleStart?: number;
+  /** How small the ring gets at the bottom of the breath, as a fraction of its full size (0.1 reaches almost to the centre; the default stops just outside the gem). */
+  minScale?: number;
 }
 
 export function ValarBreathingLogo({
@@ -165,6 +170,7 @@ export function ValarBreathingLogo({
   technique = null,
   cvMode = '',
   cycleStart,
+  minScale = DEFAULT_MIN_SCALE,
 }: ValarBreathingLogoProps) {
   // Changing the breathing pace fades the ring out, applies the new timing, and fades it back in, instead of
   // snapping. Everything below runs on the applied (possibly still old) setup.
@@ -189,7 +195,7 @@ export function ValarBreathingLogo({
   // colors render, the technique's phase proportions). Opacity and
   // colorblind mode are deliberately excluded: they're plain style
   // changes and must not restart the pulse.
-  const ringsEpochKey = `valar-breathing-${enabled}-${
+  const ringsEpochKey = `valar-breathing-${enabled}-${minScale}-${
     tech ? `${tech.ih}_${tech.hi || 0}_${tech.ex}_${tech.ho || 0}` : cycleDur
   }`;
 
@@ -247,11 +253,11 @@ export function ValarBreathingLogo({
   // fractions, so it's generated per epoch rather than declared statically.
   const ringAnimName = `nenya-ring-${ringsEpochKey.replace(/[^a-zA-Z0-9]/g, '_')}`;
   const ringKeyframesCss = `@keyframes ${ringAnimName} {
-    0% { transform: scale(0.1); opacity: 0; }
+    0% { transform: scale(${minScale}); opacity: 0; }
     ${t1 * 100}% { transform: scale(1); opacity: ${opacity * 0.6}; }
     ${t2 * 100}% { transform: scale(1); opacity: ${opacity * 0.6}; }
-    ${t3 * 100}% { transform: scale(0.1); opacity: 0; }
-    100% { transform: scale(0.1); opacity: 0; }
+    ${t3 * 100}% { transform: scale(${minScale}); opacity: 0; }
+    100% { transform: scale(${minScale}); opacity: 0; }
   }`;
 
   return (

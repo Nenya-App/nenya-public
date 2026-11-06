@@ -199,19 +199,17 @@ export function AccessibilitySettingsContent({
           {VISION_MODES.map((mode) => (
             <button
               key={mode.value || 'standard'}
+              type="button"
+              aria-pressed={cvMode === mode.value}
               onClick={() => onCvModeChange && onCvModeChange(mode.value)}
-              style={{
-                fontFamily: "'Manrope',sans-serif",
-                fontSize: '10px',
-                padding: '4px 6px',
-                borderRadius: '4px',
-                border: '1px solid ' + (cvMode === mode.value ? 'rgba(232,160,32,0.7)' : 'rgba(232,160,32,0.2)'),
-                background: cvMode === mode.value ? 'rgba(232,160,32,0.15)' : 'transparent',
-                color: cvMode === mode.value ? 'rgba(232,160,32,0.9)' : 'rgba(232,160,32,0.45)',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                touchAction: 'manipulation',
-              }}
+              // Colours come from the theme so the label stays readable in light and dark: plain text colour, with the
+              // chosen option marked by an amber border and tint (dark amber text on light, light amber on dark).
+              className={`cursor-pointer whitespace-nowrap rounded border px-2 py-1 text-[11px] font-medium [touch-action:manipulation] ${
+                cvMode === mode.value
+                  ? 'border-[#9a5f00] bg-[rgba(232,160,32,0.18)] text-[#5c3800] dark:border-[rgba(232,160,32,0.8)] dark:text-[#F3C56B]'
+                  : 'border-foreground/30 text-foreground hover:border-foreground/60'
+              }`}
+              style={{ fontFamily: "'Manrope',sans-serif" }}
             >
               {mode.label}
             </button>

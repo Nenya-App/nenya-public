@@ -41,3 +41,11 @@ ok('no file uses the full `motion` components (they would pull the whole engine 
   ok('the orbit phase is set once, not on every clock change', /orbitSet\.current/.test(logo));
   ok('the gem does not resize (and so blank) its canvas on a restart', /if \(body\.width !== px\)/.test(gem));
 }
+
+// Starting the conversation must not leave the page scrolled to the bottom: the consent screen's start button is at its
+// bottom, so entering the chat has to put the page back at the top.
+{
+  const coach = readFileSync(new URL('../src/coach/CoachDemo.tsx', import.meta.url), 'utf8');
+  ok('coach screen: entering the chat resets the scroll to the top', /import \{ resetScroll \}/.test(coach) && /if \(stage !== 'chat'\) return;\s*resetScroll\(\);/.test(coach));
+}
+

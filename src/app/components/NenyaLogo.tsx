@@ -34,6 +34,8 @@ interface NenyaLogoProps {
   breathingEnabled?: boolean;
   /** Draw the gold glow around the logo. Only the large welcome and popout logos use it. */
   glow?: boolean;
+  /** Overrides for the gem's shading. Used by the design preview only. */
+  gemLook?: { clarity?: number; sparkle?: number; contrast?: number; lift?: number; fieldAlpha?: number };
 }
 
 const ORBIT_DURATION = 120; // seconds for one complete orbit
@@ -47,6 +49,7 @@ export default function NenyaLogo({
   technique = null,
   breathingEnabled = true,
   glow = false,
+  gemLook,
 }: NenyaLogoProps) {
   const flatLogoSrc = size <= SMALL_LOGO_MAX_SIZE ? nenyaLogoSmall : nenyaLogo;
 
@@ -140,15 +143,24 @@ export default function NenyaLogo({
             const colorCycleDuration = 30; // seconds to cycle through all 6 colors
             const colors = valar.vector;
             
-            return (
+            // Each orb is partly hidden by the ones after it, all the way round. Drawing order gives that for most of
+            // the ring, but the last few orbs would otherwise sit whole on top of the first few. So they are cut away
+            // wherever one of the first orbs overlaps them, which puts those first orbs on top at the seam.
+            const total = valarColors.length;
+            const SEAM_REACH = 4; // an orb overlaps about this many neighbours (their centres are closer than a diameter)
+            const wrapped = index >= total - SEAM_REACH;
+            const pad = orbSize * 0.2; // room for the orb's pulse (it grows by 5%) inside the cut-out wrapper
+            const left = orbitRadius - orbSize / 2 + x;
+            const top = orbitRadius - orbSize / 2 + y;
+            const orb = (
               <m.div
                 key={valar.name}
                 className="absolute"
                 style={{
                   width: orbSize,
                   height: orbSize,
-                  left: orbitRadius - orbSize / 2 + x,
-                  top: orbitRadius - orbSize / 2 + y,
+                  left: wrapped ? pad : orbitRadius - orbSize / 2 + x,
+                  top: wrapped ? pad : orbitRadius - orbSize / 2 + y,
                   borderRadius: '50%',
                   willChange: 'background, opacity, transform',
                   opacity: 0.64,
@@ -194,6 +206,39 @@ export default function NenyaLogo({
                   }
                 }}
               />
+            );
+            if (!wrapped) return orb;
+            const rr = orbSize / 2;
+            const holes = Array.from({ length: index + SEAM_REACH - total + 1 }, (_, k) => k);
+            const mask = holes
+              .map((j) => {
+                const aj = (j / total) * 2 * Math.PI;
+                const cx = Math.cos(aj) * orbitRadius - x + orbSize / 2 + pad;
+                const cy = Math.sin(aj) * orbitRadius - y + orbSize / 2 + pad;
+                return `radial-gradient(circle at ${cx}px ${cy}px, transparent ${rr * 0.9}px, #000 ${rr}px)`;
+              })
+              .join(', ');
+            return (
+              <div
+                key={`seam-${valar.name}`}
+                className="absolute"
+                style={
+                  {
+                    left: left - pad,
+                    top: top - pad,
+                    width: orbSize + pad * 2,
+                    height: orbSize + pad * 2,
+                    maskImage: mask,
+                    WebkitMaskImage: mask,
+                    maskComposite: 'intersect',
+                    WebkitMaskComposite: 'source-in',
+                    maskRepeat: 'no-repeat',
+                    WebkitMaskRepeat: 'no-repeat',
+                  } as React.CSSProperties
+                }
+              >
+                {orb}
+              </div>
             );
           })}
         </div>
@@ -293,6 +338,7 @@ export default function NenyaLogo({
           cycleStart={cycleStart}
           technique={technique}
           breathingEnabled={breathingEnabled}
+          {...gemLook}
         />
       )}
       {showLogo && !showValarOrbit && (

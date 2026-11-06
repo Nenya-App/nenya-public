@@ -1,6 +1,6 @@
 // The breath clock drives the ring, the counter and the gem, so they must agree. These check the maths the gem
 // relies on: the sparkle loop is exactly three breaths, and the tint never jumps at a breath boundary.
-import { breathLengthMs, breathFractions, breathEnvelope, gemClock, gemMultiplyColor, hueOnly, GEM_FRAMES } from '../src/lib/breathClock.ts';
+import { breathLengthMs, breathFractions, breathEnvelope, breathCounter, gemClock, gemMultiplyColor, hueOnly, GEM_FRAMES } from '../src/lib/breathClock.ts';
 import { ok } from './helpers.mts';
 
 const even = { ih: 5000, hi: 0, ex: 5000, ho: 0 };
@@ -50,3 +50,13 @@ ok('reduced motion holds the tint at full strength', gemMultiplyColor(colors, 2,
 const dark = hueOnly([0x1e, 0x1e, 0x2a]);
 ok('a dark colour keeps its hue but is scaled to full brightness', Math.max(...dark) === 255 && dark[0] === dark[1] && dark[2] === 255);
 ok('black does not produce NaN', hueOnly([0, 0, 0]).every((v) => v === 255));
+
+// The breathing counter starts each phase at 1 (it used to start at 0).
+const at = (ms: number, tt = even) => JSON.stringify(breathCounter(ms, tt));
+ok('the counter starts at 1, not 0', at(0) === '{"count":1,"phase":"i"}');
+ok('a 5-second inhale counts 1 to 5', at(999) === '{"count":1,"phase":"i"}' && at(1000) === '{"count":2,"phase":"i"}' && at(4999) === '{"count":5,"phase":"i"}');
+ok('the exhale counts down from 5 to 1', at(5000) === '{"count":5,"phase":"e"}' && at(6000) === '{"count":4,"phase":"e"}' && at(9999) === '{"count":1,"phase":"e"}');
+ok('then it starts again at 1', at(10000) === '{"count":1,"phase":"i"}' && at(10000 + 3200) === '{"count":4,"phase":"i"}');
+ok('holds count from 1 as well', at(4000, box) === '{"count":1,"phase":"h"}' && at(7999, box) === '{"count":4,"phase":"h"}' && at(12000, box) === '{"count":1,"phase":"h"}' && at(15999, box) === '{"count":4,"phase":"h"}');
+ok('the counter never shows 0', Array.from({ length: 1900 }, (_, i) => i * 10).every((ms) => breathCounter(ms, s478).count >= 1));
+ok('a negative elapsed time wraps instead of breaking', breathCounter(-1, even).count >= 1);

@@ -2,9 +2,11 @@
 // API, and only the model's attested enclave (a TEE) can read it. Venice's servers relay ciphertext.
 //
 // Protocol, from Venice's TEE & E2EE guide: secp256k1 ECDH, HKDF-SHA256 (info "ecdsa_encryption"), AES-256-GCM.
-// Every `user` and `system` message is encrypted; `assistant` messages are NOT (the guide says only user and
-// system need it), so earlier replies from the model travel as plain text. The response arrives as encrypted
-// chunks that this module decrypts.
+// Every `user` and `system` message is encrypted, as the guide says. The guide says `assistant` messages (the model's
+// earlier replies in a conversation) need no encryption, but sent as plain text they made every second turn fail live with
+// "E2EE decryption failed" (the first turn, which has none, worked). So they are encrypted too, by default, which also
+// keeps the coach's earlier replies from Venice's API layer. `encryptAssistant: false` restores the documented behaviour.
+// The response arrives as encrypted chunks that this module decrypts.
 //
 // What this does and does not protect: the encryption happens in the Netlify relay function, not in the
 // visitor's browser, because the function has to read the message to scrub it, screen it and sign the transcript.
@@ -28,9 +30,32 @@ export const isE2eeModel = (model: string): boolean => model.startsWith('e2ee-')
 export type E2eeCode = 'attestation' | 'nonce' | 'key' | 'status' | 'format' | 'decrypt' | 'size';
 export class E2eeError extends Error {
   code: E2eeCode;
-  constructor(code: E2eeCode) {
+  /** The HTTP status Venice answered with, when it answered. */
+  status?: number;
+  /** A short, cleaned snippet of Venice's own error text. It goes in the server log only, never to the visitor. */
+  detail?: string;
+  constructor(code: E2eeCode, extra: { status?: number; detail?: string } = {}) {
     super('e2ee ' + code);
     this.code = code;
+    this.status = extra.status;
+    this.detail = extra.detail;
+  }
+}
+
+/** A short single-line version of an error body: Venice's error message if it has one, cleaned and cut. */
+async function errorDetail(res: Response): Promise<string | undefined> {
+  try {
+    const text = (await res.text()).slice(0, 400);
+    let msg: unknown = text;
+    try {
+      const j = JSON.parse(text);
+      msg = typeof j.error === 'string' ? j.error : j.error?.message ?? j.message ?? text;
+    } catch {
+      /* not JSON: use the text as it is */
+    }
+    return String(msg).replace(/[\u0000-\u001f]+/g, ' ').trim().slice(0, 160) || undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -81,6 +106,8 @@ export interface E2eeChatOptions {
   apiKey: string;
   model: string;
   messages: ChatMessage[];
+  /** Encrypt earlier `assistant` messages too (default true). */
+  encryptAssistant?: boolean;
   /** Extra body fields (temperature and so on). `model`, `messages` and `stream` are set here. */
   params?: Record<string, unknown>;
   signal?: AbortSignal;
@@ -95,7 +122,7 @@ async function attest(o: Required<Pick<E2eeChatOptions, 'apiKey' | 'model' | 'ba
     headers: { Authorization: `Bearer ${o.apiKey}` },
     signal: o.signal,
   });
-  if (!res.ok) throw new E2eeError('attestation');
+  if (!res.ok) throw new E2eeError('attestation', { status: res.status, detail: await errorDetail(res) });
   const a = (await res.json()) as Record<string, unknown>;
   if (a.verified !== true) throw new E2eeError('attestation');
   if (a.nonce !== nonce) throw new E2eeError('nonce');
@@ -118,7 +145,8 @@ export async function e2eeChat(opts: E2eeChatOptions): Promise<{ content: string
   const client = createECDH('secp256k1');
   client.generateKeys();
 
-  const messages = opts.messages.map((m) => (m.role === 'assistant' ? m : { ...m, content: encryptTo(modelKey, m.content) }));
+  const encryptAssistant = opts.encryptAssistant !== false;
+  const messages = opts.messages.map((m) => (m.role === 'assistant' && !encryptAssistant ? m : { ...m, content: encryptTo(modelKey, m.content) }));
   const res = await fetchImpl(`${baseUrl}/chat/completions`, {
     method: 'POST',
     signal: opts.signal,
@@ -131,7 +159,7 @@ export async function e2eeChat(opts: E2eeChatOptions): Promise<{ content: string
     },
     body: JSON.stringify({ ...opts.params, model: opts.model, messages, stream: true }),
   });
-  if (!res.ok || !res.body) throw new E2eeError('status');
+  if (!res.ok || !res.body) throw new E2eeError('status', { status: res.status, detail: res.ok ? 'no response body' : await errorDetail(res) });
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();

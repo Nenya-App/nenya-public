@@ -11,8 +11,8 @@ a server, no random identifiers, and never anything a visitor writes, draws, ans
 | `nenya.terms` | The date of the terms the visitor agreed to | Only while `nenya.remember` is on; ignored if the terms date changes |
 | `nenya.coach.owner` | `1` in the owner's own browser, to skip the rest while testing | Set by hand, see `docs/coach-testing.md` |
 
-**Erasing it.** Turning the switch off removes `nenya.remember`, `nenya.prefs` and `nenya.terms`. "Forget everything this device
-remembers" (settings menu) removes every key starting with `nenya` except the owner flag. Emergency Exit removes all of them,
+**Erasing it.** Turning the switch off removes `nenya.remember`, `nenya.prefs` and `nenya.terms`. "Forget me" (a button in the settings menu, and a link at the bottom of every page)
+removes every key starting with `nenya` except the owner flag. Emergency Exit removes all of them,
 including the owner flag, before leaving the page.
 
 **Adding something new.** Put it in `deviceMemory.ts` (add it to the `Prefs` validator if it is a display setting), list it here
