@@ -43,7 +43,7 @@ const TRIGGERS: Array<[id: string, group: ModuleGroup, patterns: RegExp[]]> = [
   ['empathize_before_asking', 'move', [/\b(?:(?:he|she|they)(?:'ll| will| would) (?:say|object|push back|get defensive)|(?:he|she|they) (?:might|may|could) (?:say|object|push back|get defensive)|(?:he|she|they)(?:'s| is| are) going to (?:say|object|push back|get defensive)|defensive|push back|pushback)\b/]],
   ['say_the_real_feeling', 'move', [/\b(pretend\w*|acting (?:like|as if)|act (?:like|as if)|fake (?:it|being)|say(?:ing)? it's fine|go(?:ing)? along|play(?:ing)? along|put on a (?:brave )?face)\b/]],
   ['read_a_silence', 'move', [/\b(goes? (?:quiet|silent)|went (?:quiet|silent)|silent treatment|stops? (?:talking|responding|answering)|shuts? down|won't (?:talk|answer|respond)|doesn't (?:respond|answer|reply)|ghost\w*)\b/]],
-  ['reaction_as_information', 'move', [/\b(what if (?:he|she|they) (?:says?|reacts?|gets?|doesn't|won't)|how (?:will|would|might) (?:he|she|they) (?:react|respond|take)|afraid (?:he|she|they)(?:'ll| will)|worried (?:about )?(?:how|what) (?:he|she|they))\b/]],
+  ['reaction_as_information', 'move', [/\b(what if (?:he|she|they) (?:says?|reacts?|gets?|doesn't|won't)|how (?:will|would|might) (?:he|she|they) (?:react|respond|take)|afraid (?:he|she|they)(?:'ll| will)|worried (?:about )?(?:how|what) (?:he|she|they)|(?:worried|afraid|scared|nervous|anxious) (?:that )?(?:it|this|that|he|she|they) (?:might|may|will|would|could|'ll)|(?:might|may|will|would|could) (?:just )?make (?:her|him|them) (?:more )?(?:upset|angry|mad|defensive|worse))\b/]],
   ['closure_check', 'move', [/\b(?:says? it(?:'s| is) (?:fine|ok|okay)|said it(?:'s| was| is) (?:fine|ok|okay)|says? (?:they're|he's|she's|they are|he is|she is) (?:fine|ok|okay)|moved on|closure|won't (?:discuss|talk about) it|leave(?:s)? it at|let it go)\b/]],
   ['power_difference', 'move', [/\b(my (?:daughter|son|child|kid|kids|employee|employees|staff|student|students|team|direct reports?)|i'm (?:her|his|their) (?:boss|manager|parent|mother|father|teacher)|i (?:manage|supervise|lead)|power (?:imbalance|difference|dynamic)|younger than me)\b/]],
   ['offer_to_play_the_other', 'move', [/\b(rehears\w+|practice (?:what|how|the conversation|saying)|role[- ]?play|before i (?:talk|speak|tell|meet)|i'm (?:about|going) to (?:talk|tell|confront|speak)|i have to (?:talk|tell|go back))\b/]],
@@ -74,9 +74,16 @@ const fold = (s: string): string => s.normalize('NFKC').toLowerCase().replace(/[
 
 /** Ids of the modules that fit this conversation, in order of attention (safety, lenses, moves, resources). */
 export function selectModules(userTexts: string[], max = 3): string[] {
-  const text = fold(userTexts.join('\n'));
+  // Safety and lens modules look at everything the person has said (what is blocking them stays true). The coaching moves and
+  // resources look only at the latest message: what they ask for or react to now. Without this, a "how do I say..." from
+  // two turns ago kept the "give them words" module on, and the coach offered the same words again.
+  const whole = fold(userTexts.join('\n'));
+  const latest = fold(userTexts[userTexts.length - 1] ?? '');
   const hit = new Set<string>();
-  for (const [id, , patterns] of TRIGGERS) if (patterns.some((p) => p.test(text))) hit.add(id);
+  for (const [id, group, patterns] of TRIGGERS) {
+    const text = group === 'safety' || group === 'lens' ? whole : latest;
+    if (patterns.some((p) => p.test(text))) hit.add(id);
+  }
   // Leave out moves that pull against a lens that applies.
   for (const lens of Object.keys(SUPPRESS)) if (hit.has(lens)) SUPPRESS[lens].forEach((id) => hit.delete(id));
   const out: string[] = [];
