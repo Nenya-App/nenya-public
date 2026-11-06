@@ -175,9 +175,11 @@ const canonicalTranscript = (messages: Msg[], session: Session, context: string)
 // methods, but may not present itself as a clinical or diagnostic tool. Drops
 // any sentence that does. Falls back to the original if nothing is left.
 function dropOffBrand(t: string): string {
-  const sentences = t.match(/[^.!?…\n]+(?:[.!?…]+["'\u201D\u2019)]*|\n|$)/g) ?? [t];
+  // Line breaks are kept as pieces of their own: before, a blank line after a full stop was skipped, which joined two paragraphs
+  // with no space ("...solution.Take a slow breath").
+  const sentences = t.match(/\n+|[^.!?…\n]+(?:[.!?…]+["'\u201D\u2019)]*|(?=\n)|$)/g) ?? [t];
   const kept = sentences.filter((x) => !/\bdiagnostic (?:partner|tool|assistant|system)\b|\bI (?:can |will |am able to )?diagnose\b|\bI am (?:a|your) (?:therapist|counselor|clinician|doctor)\b/i.test(x));
-  const out = kept.join('').replace(/[ \t]+\n/g, '\n').trim();
+  const out = kept.join('').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
   return out.length >= 20 ? out : t;
 }
 
