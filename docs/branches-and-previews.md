@@ -61,7 +61,8 @@ reply (see `src/lib/veniceE2ee.ts`). Nothing else changes. Notes:
 - The encryption happens in the relay function, not in the visitor's browser, so the function still reads the
   visitor's text in memory (it has to, to scrub, screen and sign). Venice's API layer sees ciphertext. Do not call
   this end-to-end encryption from the visitor's device.
-- Earlier replies from the model are sent as plain text (Venice's guide encrypts only user and system messages).
+- The coach's earlier replies are encrypted too. Venice's guide says only user and system messages need it, but sent as plain
+  text they made every second turn fail with "E2EE decryption failed". `COACH_E2EE_PLAIN_HISTORY=true` goes back to plain text.
 - Venice's own system prompt and the character card do not apply to these models. The coach's instruction is ours.
 - The unit tests use a pretend enclave. Only a live test on staging shows whether Venice accepts the requests.
   Check the function log for `coach: e2ee <code>` lines (a short code, never message text).

@@ -2,9 +2,11 @@
 // API, and only the model's attested enclave (a TEE) can read it. Venice's servers relay ciphertext.
 //
 // Protocol, from Venice's TEE & E2EE guide: secp256k1 ECDH, HKDF-SHA256 (info "ecdsa_encryption"), AES-256-GCM.
-// Every `user` and `system` message is encrypted; `assistant` messages are NOT (the guide says only user and
-// system need it), so earlier replies from the model travel as plain text. The response arrives as encrypted
-// chunks that this module decrypts.
+// Every `user` and `system` message is encrypted, as the guide says. The guide says `assistant` messages (the model's
+// earlier replies in a conversation) need no encryption, but sent as plain text they made every second turn fail live with
+// "E2EE decryption failed" (the first turn, which has none, worked). So they are encrypted too, by default, which also
+// keeps the coach's earlier replies from Venice's API layer. `encryptAssistant: false` restores the documented behaviour.
+// The response arrives as encrypted chunks that this module decrypts.
 //
 // What this does and does not protect: the encryption happens in the Netlify relay function, not in the
 // visitor's browser, because the function has to read the message to scrub it, screen it and sign the transcript.
@@ -104,6 +106,8 @@ export interface E2eeChatOptions {
   apiKey: string;
   model: string;
   messages: ChatMessage[];
+  /** Encrypt earlier `assistant` messages too (default true). */
+  encryptAssistant?: boolean;
   /** Extra body fields (temperature and so on). `model`, `messages` and `stream` are set here. */
   params?: Record<string, unknown>;
   signal?: AbortSignal;
@@ -141,7 +145,8 @@ export async function e2eeChat(opts: E2eeChatOptions): Promise<{ content: string
   const client = createECDH('secp256k1');
   client.generateKeys();
 
-  const messages = opts.messages.map((m) => (m.role === 'assistant' ? m : { ...m, content: encryptTo(modelKey, m.content) }));
+  const encryptAssistant = opts.encryptAssistant !== false;
+  const messages = opts.messages.map((m) => (m.role === 'assistant' && !encryptAssistant ? m : { ...m, content: encryptTo(modelKey, m.content) }));
   const res = await fetchImpl(`${baseUrl}/chat/completions`, {
     method: 'POST',
     signal: opts.signal,

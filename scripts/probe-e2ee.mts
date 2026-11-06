@@ -16,6 +16,20 @@ const model = args.find((a) => !a.startsWith('--')) ?? 'e2ee-qwen-2-5-7b-p';
 const params = minimal ? { max_completion_tokens: 80 } : { temperature: 0.7, top_p: 0.9, repetition_penalty: 1.1, max_completion_tokens: 80 };
 
 console.log(`model: ${model}${minimal ? ' (minimal settings)' : ''}`);
+
+// What the attestation says (all of it is public: keys, addresses and provider names; nothing secret is printed).
+try {
+  const { randomBytes } = await import('node:crypto');
+  const nonce = randomBytes(32).toString('hex');
+  const r = await fetch(`https://api.venice.ai/api/v1/tee/attestation?model=${encodeURIComponent(model)}&nonce=${nonce}`, { headers: { Authorization: `Bearer ${apiKey}` } });
+  const a = (await r.json()) as Record<string, unknown>;
+  const short = (v: unknown) => (typeof v === 'string' ? `${v.slice(0, 14)}… (${v.length} chars)` : JSON.stringify(v)?.slice(0, 60));
+  console.log(`attestation: HTTP ${r.status}`);
+  for (const [k, v] of Object.entries(a)) if (!/quote|payload|evidence|cert/i.test(k)) console.log(`  ${k}: ${short(v)}`);
+  console.log('  (fields left out because they are large:', Object.keys(a).filter((k) => /quote|payload|evidence|cert/i.test(k)).join(', ') || 'none', ')');
+} catch (e) {
+  console.log('attestation: could not be read:', (e as Error).message);
+}
 try {
   const out = await e2eeChat({
     apiKey,

@@ -13,6 +13,8 @@
 //   COACH_MODEL          plain    optional, overrides DEFAULT_MODEL. An id starting "e2ee-" (Venice's encrypted
 //                                 models) is called through src/lib/veniceE2ee.ts instead of the plain request.
 //   COACH_CHARACTER_SLUG plain    optional, overrides DEFAULT_CHARACTER_SLUG
+//   COACH_E2EE_PLAIN_HISTORY plain optional, "true" sends earlier coach replies unencrypted on the encrypted route
+//   COACH_E2EE_MINIMAL   plain    optional, "true" sends fewer sampling settings on the encrypted route (a diagnostic)
 //   COACH_METHOD_NOTES   plain    optional, short method notes (fallback when the blob below is absent)
 // Netlify Blobs: store "coach-private", key "method-notes" holds longer private method
 // notes that are added to the system instruction. See docs/coach-method-notes.md.
@@ -392,7 +394,11 @@ export default async (req: Request): Promise<Response> => {
       // Encrypted models: the prompt is encrypted before it reaches Venice (see src/lib/veniceE2ee.ts). Venice's
       // own system prompt and the character card do not apply, which is fine because ours wins anyway.
       try {
-        const out = await e2eeChat({ apiKey, model, messages: chatMessages, params: sampling, signal: ctrl.signal });
+        // COACH_E2EE_MINIMAL=true sends only the token ceiling and temperature on this route, to test whether Venice rejects the
+        // other sampling settings (top_p, repetition_penalty).
+        const encParams = process.env.COACH_E2EE_MINIMAL === 'true' ? { temperature: sampling.temperature, max_completion_tokens: sampling.max_completion_tokens } : sampling;
+        // COACH_E2EE_PLAIN_HISTORY=true sends the coach's earlier replies unencrypted, as Venice's guide describes.
+        const out = await e2eeChat({ apiKey, model, messages: chatMessages, params: encParams, signal: ctrl.signal, encryptAssistant: process.env.COACH_E2EE_PLAIN_HISTORY !== 'true' });
         raw = out.content;
         finish = out.finishReason;
       } catch (e) {

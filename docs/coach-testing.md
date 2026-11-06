@@ -46,3 +46,9 @@ what they wrote or what the coach said.
 - **Ref** is a short random id. The same id is in the function log as `coach: <code>:<reason> ref=<id>`, so searching the
   log for it finds the failure. Logs hold codes only, never message text. Netlify may not keep function logs for long,
   so look soon after a report arrives.
+
+### If the encrypted route fails with `e2ee-status-400`
+That means Venice refused the encrypted request itself (not a rate limit: that would be 429). Venice's own message is in the
+function log on the same line as the `ref`, as `detail="..."`. If it complains about a setting, set `COACH_E2EE_MINIMAL=true`
+on the preview site to send only the token ceiling and temperature, and try again.
+

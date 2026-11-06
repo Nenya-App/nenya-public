@@ -53,6 +53,7 @@ ok('only ids that start with e2ee- take the encrypted path', isE2eeModel('e2ee-q
 let calls: { url: string; headers: Record<string, string>; body: any; rawBody: string }[] = [];
 let attestMode: 'ok' | 'unverified' | 'badnonce' | 'nokey' | 'debug' | 'nopfx' | 'down' = 'ok';
 let chatStatus = 200;
+let strictEnclave = false; // when true, any message that is not ciphertext is refused, as Venice did live on second turns
 let replyText = 'That sounds like a lot to carry. What feels heaviest right now?';
 let finishReason: string | null = 'stop';
 const veniceStub = async (url: string, init: any = {}) => {
@@ -71,6 +72,7 @@ const veniceStub = async (url: string, init: any = {}) => {
   const body = JSON.parse(rawBody);
   calls.push({ url, headers, body, rawBody });
   if (chatStatus !== 200) return new Response('no', { status: chatStatus });
+  if (strictEnclave && body.messages.some((m: any) => !looksEncrypted(m.content))) return new Response(JSON.stringify({ error: 'E2EE decryption failed' }), { status: 400 });
   // The reply comes back as encrypted chunks, split into pieces, with the stream cut at awkward places.
   const clientPub = headers['x-venice-tee-client-pub-key'];
   const pieces = replyText.match(/.{1,18}/g)!;
@@ -104,13 +106,24 @@ ok('the person\'s words arrive scrubbed of the email address, and intact otherwi
 ok('none of the person\'s words appear in plain text in the request body', !/Work has been heavy|forgetting to eat|jo@example/.test(chat.rawBody) && !/exchange 1 of 5|Nenya coach/.test(chat.rawBody));
 ok('the API key is only in the header, never the body', !chat.rawBody.includes('test-key-e2ee'));
 
-// second turn: the earlier assistant reply travels as plain text (Venice\'s documented behaviour), the new user turn is encrypted
+// second turn: the earlier coach reply is encrypted too (sent as plain text, Venice refused it live: "E2EE decryption failed")
 calls = [];
 const hist = [{ role: 'user', content: FIRST }, { role: 'assistant', content: r.json.reply }, { role: 'user', content: 'I just feel tired.' }];
 const r2 = await call({ messages: hist, ticket: r.json.ticket });
 const chat2 = calls.find((c) => c.url.endsWith('/chat/completions'))!;
 ok('second turn works', r2.status === 200 && r2.json.turn === 2, JSON.stringify(r2.json).slice(0, 100));
-ok('assistant history is sent as it is; every user message is encrypted', chat2.body.messages.filter((m: any) => m.role === 'assistant').every((m: any) => m.content === r.json.reply) && chat2.body.messages.filter((m: any) => m.role === 'user').every((m: any) => looksEncrypted(m.content)));
+ok('on the second turn every message, the coach\'s earlier reply included, is encrypted', chat2.body.messages.length >= 4 && chat2.body.messages.every((m: any) => looksEncrypted(m.content)));
+ok('the enclave can read the earlier reply back', chat2.body.messages.filter((m: any) => m.role === 'assistant').every((m: any) => enclaveReads(m.content) === r.json.reply));
+ok('the earlier reply does not appear in plain text in the request', !chat2.rawBody.includes(r.json.reply.slice(0, 20)));
+
+// An enclave that refuses any plain-text message (as Venice did live) accepts the default, and refuses the documented-only behaviour.
+strictEnclave = true; calls = [];
+let strictOk = await call({ messages: hist, ticket: r.json.ticket });
+ok('a strict enclave accepts the second turn with encrypted history', strictOk.status === 200 && !!strictOk.json.reply, JSON.stringify(strictOk.json).slice(0, 100));
+process.env.COACH_E2EE_PLAIN_HISTORY = 'true';
+strictOk = await call({ messages: hist, ticket: r.json.ticket });
+ok('with COACH_E2EE_PLAIN_HISTORY=true the same strict enclave refuses it (the live failure)', strictOk.status === 502 && strictOk.json.reason === 'e2ee-status-400', JSON.stringify(strictOk.json));
+delete process.env.COACH_E2EE_PLAIN_HISTORY; strictEnclave = false;
 ok('the daily counter and ticket still work for encrypted models', typeof r2.json.ticket === 'string' && r2.json.done === false);
 
 // length handling and the reply cleanup still apply
@@ -141,6 +154,16 @@ ok('refused: the chat request failing names the HTTP status in its reason', bad.
 chatStatus = 429; bad = await call({ messages: [{ role: 'user', content: 'hi' }] });
 ok('refused: a rate-limited chat request says so', bad.json.reason === 'e2ee-status-429');
 chatStatus = 200;
+
+// COACH_E2EE_MINIMAL sends only the token ceiling and temperature on the encrypted route.
+process.env.COACH_MODEL = 'e2ee-qwen-2-5-7b-p'; process.env.COACH_E2EE_MINIMAL = 'true'; calls = [];
+await call({ messages: [{ role: 'user', content: 'hello there' }] });
+const minimalBody = calls.find((c) => c.url.endsWith('/chat/completions'))!.body;
+ok('minimal mode: no top_p or repetition_penalty is sent', minimalBody.top_p === undefined && minimalBody.repetition_penalty === undefined && typeof minimalBody.temperature === 'number' && typeof minimalBody.max_completion_tokens === 'number', JSON.stringify(Object.keys(minimalBody)));
+delete process.env.COACH_E2EE_MINIMAL; calls = [];
+await call({ messages: [{ role: 'user', content: 'hello there' }] });
+const fullBody = calls.find((c) => c.url.endsWith('/chat/completions'))!.body;
+ok('normal mode: the full sampling settings are sent', fullBody.top_p === 0.9 && fullBody.repetition_penalty === 1.1);
 
 // the plain path is untouched
 process.env.COACH_MODEL = 'deepseek-v3.2'; calls = [];
