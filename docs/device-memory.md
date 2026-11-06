@@ -11,7 +11,7 @@ a server, no random identifiers, and never anything a visitor writes, draws, ans
 | `nenya.terms` | The date of the terms the visitor agreed to | Only while `nenya.remember` is on; ignored if the terms date changes |
 | `nenya.coach.owner` | `1` in the owner's own browser, to skip the rest while testing | Set by hand, see `docs/coach-testing.md` |
 
-**Erasing it.** Turning the switch off removes `nenya.remember`, `nenya.prefs` and `nenya.terms`. "Forget me" (a button in the settings menu, and a link at the bottom of every page)
+**Erasing it.** Turning the switch off removes `nenya.remember`, `nenya.prefs` and `nenya.terms`. "Forget me" (a button in the settings menu, and a link at the bottom of every page), after an "Are you sure?" step (Cancel is the first and default button, and Escape cancels),
 removes every key starting with `nenya` except the owner flag, then **reloads the current page at its own path** (`forgetMeAndRestart` in `deviceMemory.ts`). The
 agreement to the terms is one of the things erased, so the page asks for it again, the coach's rest is gone, and nothing entered in that visit survives. Emergency Exit removes all of them,
 including the owner flag, before leaving the page.

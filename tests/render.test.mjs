@@ -95,6 +95,14 @@ try {
   ok('settings: no "Cleared" notice is left (the page reloads instead)', typeof h === 'string' && !h.includes('Your current choices stay'), '');
   h = render(ForgetMeLink, {});
   ok('footer: there is a "Forget me" link too', typeof h === 'string' && h.includes('Forget me') && h.includes('<button'), h.error ?? '');
+  // The "Are you sure?" step: the question appears before anything is erased, Cancel comes first, and neither trigger erases on its own.
+  const { ForgetMeConfirmPanel } = await vite.ssrLoadModule('/src/app/components/DeviceMemoryControls.tsx');
+  h = render(ForgetMeConfirmPanel, { onCancel: noop, onConfirm: noop });
+  ok('forget me: the question says "Are you sure?" and offers Cancel and Yes', typeof h === 'string' && h.includes('Are you sure?') && h.includes('>Cancel<') && h.includes('Yes, forget me'), h.error ?? '');
+  ok('forget me: Cancel comes before the confirming button (a stray Enter does nothing)', typeof h === 'string' && h.indexOf('>Cancel<') < h.indexOf('Yes, forget me'), '');
+  ok('forget me: the panel is a labelled group', typeof h === 'string' && h.includes('role="group"') && h.includes('aria-label="Confirm Forget me"'), '');
+  ok('forget me: the settings button shows only the trigger until it is pressed', !render(DeviceMemoryControls, {}).includes('Are you sure?'), '');
+  ok('forget me: the footer link shows only the trigger until it is pressed', !render(ForgetMeLink, {}).includes('Are you sure?'), '');
   const { AppFooter } = await vite.ssrLoadModule('/src/app/components/AppFooter.tsx');
   h = render(AppFooter, {});
   ok('every page footer carries the Forget me link', typeof h === 'string' && h.includes('Forget me'), h.error ?? '');
