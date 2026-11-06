@@ -28,9 +28,32 @@ export const isE2eeModel = (model: string): boolean => model.startsWith('e2ee-')
 export type E2eeCode = 'attestation' | 'nonce' | 'key' | 'status' | 'format' | 'decrypt' | 'size';
 export class E2eeError extends Error {
   code: E2eeCode;
-  constructor(code: E2eeCode) {
+  /** The HTTP status Venice answered with, when it answered. */
+  status?: number;
+  /** A short, cleaned snippet of Venice's own error text. It goes in the server log only, never to the visitor. */
+  detail?: string;
+  constructor(code: E2eeCode, extra: { status?: number; detail?: string } = {}) {
     super('e2ee ' + code);
     this.code = code;
+    this.status = extra.status;
+    this.detail = extra.detail;
+  }
+}
+
+/** A short single-line version of an error body: Venice's error message if it has one, cleaned and cut. */
+async function errorDetail(res: Response): Promise<string | undefined> {
+  try {
+    const text = (await res.text()).slice(0, 400);
+    let msg: unknown = text;
+    try {
+      const j = JSON.parse(text);
+      msg = typeof j.error === 'string' ? j.error : j.error?.message ?? j.message ?? text;
+    } catch {
+      /* not JSON: use the text as it is */
+    }
+    return String(msg).replace(/[\u0000-\u001f]+/g, ' ').trim().slice(0, 160) || undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -95,7 +118,7 @@ async function attest(o: Required<Pick<E2eeChatOptions, 'apiKey' | 'model' | 'ba
     headers: { Authorization: `Bearer ${o.apiKey}` },
     signal: o.signal,
   });
-  if (!res.ok) throw new E2eeError('attestation');
+  if (!res.ok) throw new E2eeError('attestation', { status: res.status, detail: await errorDetail(res) });
   const a = (await res.json()) as Record<string, unknown>;
   if (a.verified !== true) throw new E2eeError('attestation');
   if (a.nonce !== nonce) throw new E2eeError('nonce');
@@ -131,7 +154,7 @@ export async function e2eeChat(opts: E2eeChatOptions): Promise<{ content: string
     },
     body: JSON.stringify({ ...opts.params, model: opts.model, messages, stream: true }),
   });
-  if (!res.ok || !res.body) throw new E2eeError('status');
+  if (!res.ok || !res.body) throw new E2eeError('status', { status: res.status, detail: res.ok ? 'no response body' : await errorDetail(res) });
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();

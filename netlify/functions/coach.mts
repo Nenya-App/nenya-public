@@ -60,9 +60,10 @@ interface Msg {
 
 // Every error answer carries a short reference and, where there is one, a reason code, and the same two go to the log.
 // They contain no message text. A person can quote the reference when reporting a failed turn, and it finds the log line.
-const fail = (status: number, error: string, reason?: string): Response => {
+const fail = (status: number, error: string, reason?: string, logDetail?: string): Response => {
   const ref = randomBytes(4).toString('hex');
-  console.error(`coach: ${error}${reason ? ':' + reason : ''} ref=${ref}`);
+  // `logDetail` (for example Venice's own error text for an encrypted request, whose contents are ciphertext) is for the log only.
+  console.error(`coach: ${error}${reason ? ':' + reason : ''} ref=${ref}${logDetail ? ' detail=' + JSON.stringify(logDetail) : ''}`);
   return json(status, { error, ...(reason ? { reason } : {}), ref });
 };
 
@@ -396,7 +397,12 @@ export default async (req: Request): Promise<Response> => {
         finish = out.finishReason;
       } catch (e) {
         clearTimeout(timer);
-        return fail(502, 'upstream', ctrl.signal.aborted ? 'timeout' : e instanceof E2eeError ? `e2ee-${e.code}` : 'e2ee-failed');
+        return fail(
+          502,
+          'upstream',
+          ctrl.signal.aborted ? 'timeout' : e instanceof E2eeError ? `e2ee-${e.code}${e.status ? '-' + e.status : ''}` : 'e2ee-failed',
+          e instanceof E2eeError ? e.detail : undefined
+        );
       }
       clearTimeout(timer);
     } else {

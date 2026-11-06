@@ -137,6 +137,9 @@ for (const [mode, label] of [['unverified', 'an unverified attestation'], ['badn
 attestMode = 'ok'; chatStatus = 500; calls = [];
 let bad = await call({ messages: [{ role: 'user', content: 'hi' }] });
 ok('refused: the chat request failing', bad.status === 502);
+ok('refused: the chat request failing names the HTTP status in its reason', bad.json.reason === 'e2ee-status-500', JSON.stringify(bad.json));
+chatStatus = 429; bad = await call({ messages: [{ role: 'user', content: 'hi' }] });
+ok('refused: a rate-limited chat request says so', bad.json.reason === 'e2ee-status-429');
 chatStatus = 200;
 
 // the plain path is untouched
