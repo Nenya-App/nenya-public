@@ -10,7 +10,7 @@
 <meta property="og:url" content="https://nenya.biz/about-nenya.html" />
 <meta property="og:locale" content="en_US" />
 <meta property="og:title" content="Nenya — A Tolkien-Inspired Tool for Emotional Reflection" />
-<meta property="og:description" content="A free digital sanctuary for reflection, emotional regulation, and ethical self-inquiry, named for Galadriel's ring. No advertising. No data collection. No subscription required." />
+<meta property="og:description" content="A free digital sanctuary for reflection, emotional regulation, and ethical self-inquiry, named for Galadriel's ring. No accounts. No advertising. No subscription required." />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -101,7 +101,7 @@
       "name": "Is Nenya free?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, entirely. No account, no subscription, no advertising, no data collection. It's fiscally sponsored by Fractured Atlas, a 501(c)(3) public arts charity, rather than run as a commercial product."
+        "text": "Yes, entirely. No account, no subscription, no advertising. It's fiscally sponsored by Fractured Atlas, a 501(c)(3) public arts charity, rather than run as a commercial product."
       }
     },
     {
@@ -109,7 +109,7 @@
       "name": "What's a privacy-first way to check in with my emotions?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The core breathing and reflection practice runs in the browser with no account, no analytics, and no tracking, and a session summary is generated and downloaded locally by the visitor. The only parts that send anything are ones a visitor chooses: a contact message or report, and the optional coach demo, whose messages pass through Nenya's server to Venice AI, an outside service, and are not stored by Nenya. The source code is public so these claims can be checked."
+        "text": "The core breathing and reflection practice runs in the browser with no account and no tracking cookies, and a session summary is generated and downloaded locally by the visitor. What a visitor enters in the reflection never reaches Nenya. The site's host counts visits as anonymous totals (page requests and unique visitors counted by connection address within a day), with nothing stored on the visitor's device. The only parts that send anything else are ones a visitor chooses: a contact message or report, and the optional coach demo, whose messages pass through Nenya's server to Venice AI, an outside service, and are not stored by Nenya. The source code is public so these claims can be checked."
       }
     }
   ]
@@ -267,11 +267,13 @@
   <a href="/why-nenya.html">Nenya in Plain Terms</a>.
 </p>
 <ul>
-  <li><strong>No data collection.</strong> Nothing typed or chosen in the core reflection is tracked, recorded, or
+  <li><strong>Nothing you enter is collected.</strong> Nothing typed or chosen in the core reflection is tracked, recorded, or
     stored on Nenya's servers. Session summaries are generated and downloaded locally, by the visitor,
     for their own use. The only exceptions are things a visitor chooses to send: a contact message or report
-    (delivered to Nenya by email) and the optional coach demo, whose messages pass through Nenya's server to
-    Venice AI and are not stored by Nenya.</li>
+    (sent to Nenya through Netlify Forms) and the optional coach demo, whose messages pass through Nenya's server to
+    Venice AI and are not stored by Nenya. Like any website, Nenya's host keeps standard connection logs, and it
+    gives Nenya anonymous visit totals (page requests, unique visitors counted by connection address within a day,
+    approximate country), with no cookies and nothing stored on the visitor's device.</li>
   <li><strong>No advertising, no subscription.</strong> The core tool is free and stays free — there are
     no paywalls or premium tiers.</li>
   <li><strong>No accounts required.</strong> Nothing to sign up for.</li>
@@ -281,7 +283,7 @@
     and grants no board seats or approval rights to funders.</li>
   <li><strong>Open source.</strong> The full source code is published under the AGPL-3.0 license at
     <a href="https://github.com/Nenya-App/nenya-public" target="_blank" rel="noopener noreferrer">github.com/Nenya-App/nenya-public</a>
-    — the "no data collection" claim above is independently verifiable, not just stated.</li>
+    — what the code does with what you enter is independently verifiable, not just stated.</li>
 </ul>
 
 <h2>Grounding and framing</h2>
@@ -338,14 +340,16 @@ body and across gateways in one session — treating an emotional state as a sma
 rather than a single labeled data point.</p>
 
 <p><strong>Is Nenya free?</strong><br />
-Yes, entirely. No account, no subscription, no advertising, no data collection. It's fiscally sponsored
+Yes, entirely. No account, no subscription, no advertising. It's fiscally sponsored
 by Fractured Atlas, a 501(c)(3) public arts charity, rather than run as a commercial product.</p>
 
 <p><strong>What's a privacy-first way to check in with my emotions?</strong><br />
-Nenya doesn't have a backend, analytics, or any third-party network calls in its codebase — that's an
-architectural fact, not just a policy. Nothing typed or chosen is tracked or stored; a session summary is
-generated and downloaded locally, by the visitor, for their own use, and nothing persists once the tab is
-closed.</p>
+The core reflection has no backend and loads nothing from other sites: what is typed or chosen is never
+sent anywhere, which is an architectural fact, not just a policy. Only the optional coach demo goes through a
+small relay function. Nothing typed or chosen is tracked or stored; a session summary is generated and
+downloaded locally, by the visitor, for their own use, and nothing persists once the tab is closed unless the
+visitor chooses to remember their settings on their device. The site's host keeps standard connection logs and
+provides anonymous visit totals, with no cookies and nothing stored on the visitor's device.</p>
 
 <div class="cta">
   <p>

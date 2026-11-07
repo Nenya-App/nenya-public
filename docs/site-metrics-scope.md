@@ -3,7 +3,9 @@
 Status: scoping only, nothing built. Written 2026-11-06. Goal: have *some* numbers about use, soon, without identifying anyone.
 
 ## The problem
-There is no usage data at all, and the public wording (README, Privacy page, marketing `brand/claims.md`) says "no analytics". Counting anything means that wording changes first. See "Wording" below; it ships together with the counting, never ahead of it.
+Netlify's built-in visit statistics (Web Analytics, from server logs, no cookies, unique visitors counted by address within a day) are on and are described in the Terms and Privacy Policy effective 2026-11-07. That covers page views and visitors only. It does not show what happens inside the coach (messages, refusals, finished conversations), which is what this scope adds, using our own counters. Real User Monitoring stays off: it needs a script from another site and a looser security policy.
+
+The wording for our own counters is a further Terms revision: it ships together with the counting, never ahead of it. See "Wording" below.
 
 ## Principles
 - **Counts, not people.** A day's total for each named event. No visitor ID, no cookie, no stored IP, no user agent, no referrer, no timestamps finer than the day.
@@ -54,14 +56,14 @@ Deliberately **not** counted by default: Emergency Exit use, anything typed, dra
 
 ## Options to explore tomorrow before choosing
 The plan above is "our own counters on Netlify Blobs". Before committing, look at whether a ready-made tool would let us say the same things truthfully, judged by: no cookies or identifiers, no third party receiving visitor data, cost, licence compatible with AGPL-3.0, and effort.
-- **Netlify Analytics** (server-side, no code in the page): pricing and what it shows to be checked; it is paid as far as I know.
+- **Netlify Web Analytics** (server-side, no code in the page): already on; keep it, and see whether anything else is needed beyond it.
 - **GoatCounter, Plausible, Umami**: open-source analytics; their current licences, hosting costs and whether they set cookies should be checked rather than assumed.
 - **Our own counters** (the baseline): free, fully ours, but we build and maintain it and it gives only totals.
 
 The coach counts in section A are not replaceable by any of these, because the coach's own function is where they are made.
 
 ## Wording (before anything is counted)
-- README: replace "no analytics" with an accurate line (suggested: "Nenya keeps plain daily totals, such as how many times each page is opened and how many coach messages are sent. They are not tied to you.").
+- README: the 2026-11-07 revision already describes the host's visit totals; add a line for our own daily totals (suggested: "Nenya also keeps plain daily totals, such as how many coach messages are sent. They are not tied to you.").
 - Terms and Privacy: new effective date, archive copy in `docs/legal/archive/`; say what is counted, that it is not tied to a person, that the browser's Global Privacy Control signal is respected for browser counts, and that the coach function counts messages and refusals (no text).
 - `PrivacyPromise.tsx` card "No Tracking, No Profiles, No Ads": check it still holds as written ("no profiles" stays true; "no tracking" needs the sentence above next to it).
 - Marketing repo `brand/claims.md` and `brand/banned.txt`: revise with the Terms (a change in that repo, asked first).

@@ -16,7 +16,7 @@ export interface LegalPart {
 }
 
 export const LEGAL_TITLE = 'Terms of Use & Privacy Policy';
-export const LEGAL_EFFECTIVE_DATE = 'November 3, 2026';
+export const LEGAL_EFFECTIVE_DATE = 'November 7, 2026';
 
 export const LEGAL_INTRO =
   'Welcome. Please read this before you begin. This document has two parts: Terms of Use, which cover how you may use Nenya, and a Privacy Policy, which covers what little information touches us at all. They sit together because Nenya’s privacy design is also its central promise.';
@@ -54,7 +54,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         heading: 'Your Privacy & Data',
         paragraphs: [
           'Nenya is designed around ephemerality. The reflections you create here are for your personal use, and the tool does not send your sensory choices or reflections to our servers. Any outputs, such as a sensory report, are generated on your device and belong to you.',
-          'Three things pass through infrastructure outside your device: our web host keeps standard connection logs; if you choose to submit a report or message through the optional form, what you submit is sent to us; and if you choose to try the optional coach demo, what you type is sent through our server to an AI service. Part Two of this document explains each in full. A small amount of information can also stay on your device between visits, and Section 19 explains what, and how to erase it.',
+          'Three things pass through infrastructure outside your device: our web host keeps standard connection logs and produces anonymous visit statistics from them; if you choose to submit a report or message through the optional form, what you submit is sent to us; and if you choose to try the optional coach demo, what you type is sent through our server to an AI service. Part Two of this document explains each in full. A small amount of information can also stay on your device between visits, and Section 19 explains what, and how to erase it.',
         ],
       },
       {
@@ -131,15 +131,16 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 14,
         heading: 'The Short Version',
         paragraphs: [
-          'Nenya has no user accounts, no analytics, no advertising, and no tracking cookies. What you enter while using the reflection tool (colors, melodies, drawings, body-map placements, written reflections) stays in your browser and is not sent to us. It is gone when you close the tab. By default, the only thing the site keeps on your device between visits is a single timestamp saved after you finish a coach conversation, described in Section 21. If you choose “Remember my settings on this device,” it also keeps your display settings and your agreement to these terms, described in Section 19. The exceptions to the rest are the ones you choose yourself: downloading a PDF report, which is created on your own device, the optional submission form described in Section 16, and the optional coach demo described in Section 21.',
+          'Nenya has no user accounts, no advertising, and no tracking cookies, and it does not follow you around the internet. Our web host counts visits in aggregate, as plain totals, to show us how much the site is used (Section 15). What you enter while using the reflection tool (colors, melodies, drawings, body-map placements, written reflections) stays in your browser and is not sent to us. It is gone when you close the tab. By default, the only thing the site keeps on your device between visits is a single timestamp saved after you finish a coach conversation, described in Section 21. If you choose “Remember my settings on this device,” it also keeps your display settings and your agreement to these terms, described in Section 19. The exceptions to the rest are the ones you choose yourself: downloading a PDF report, which is created on your own device, the optional submission form described in Section 16, and the optional coach demo described in Section 21.',
         ],
       },
       {
         number: 15,
-        heading: 'Information Collected Automatically by Our Host',
+        heading: 'Information Collected Automatically by Our Host, and Visit Statistics',
         paragraphs: [
-          'Nenya is hosted by Netlify. Like any web host, Netlify logs connection details for each request, typically your IP address, browser type, the page requested, and the time. This happens at the hosting layer for security and reliability. Nenya’s own code does not collect, store, or read it, and we don’t run any analytics service on top of it. Netlify’s handling is described in its privacy policy at netlify.com/privacy.',
-          'Legal basis (GDPR Art. 6(1)(f)): our legitimate interest in operating and securing the site.',
+          'Nenya is hosted by Netlify. Like any web host, Netlify logs connection details for each request, typically your IP address, browser type, the page requested, and the time. This happens at the hosting layer for security and reliability. Nenya’s own code does not collect, store, or read it. Netlify’s handling is described in its privacy policy at netlify.com/privacy.',
+          'We have switched on Netlify’s built-in visit statistics (Netlify calls it Web Analytics). Netlify builds them from the same server logs, so nothing extra runs in your browser, no cookie is set, and nothing is stored on your device. They show us totals such as how many times each page was requested, how many unique visitors came (counted from connection addresses within a day, not by anything saved on your device), where visitors came from, and approximate location by country. We use the dashboard to see how much Nenya is used and which parts are used, so that we can look after it and decide what to improve. We see totals, not a list of individual visitors, and we do not link the statistics to anything you enter on the site, because that never reaches us. Netlify keeps these records under its own retention practices.',
+          'Legal basis (GDPR Art. 6(1)(f)): our legitimate interest in operating and securing the site and understanding how much it is used.',
         ],
       },
       {
@@ -159,7 +160,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         heading: 'What the Site Does Not Do',
         paragraphs: [],
         bullets: [
-          'It does not create accounts, profiles, or persistent identifiers.',
+          'It does not create accounts, profiles, or persistent identifiers. The visit statistics in Section 15 count unique visitors by connection address within a day; nothing is saved on your device for that.',
           'It does not set cookies or use fingerprinting. Unless you turn on “Remember my settings on this device,” it does not remember your light or dark mode or anything else between visits, apart from the timestamp saved after a coach conversation ends (Section 21).',
           'It does not send what you enter in the reflection tool to any server. The only exceptions are the form in Section 16 and the optional coach demo in Section 21, both of which you start yourself.',
           'It does not sell, share, or monetize data.',
@@ -186,9 +187,9 @@ export const LEGAL_PARTS: LegalPart[] = [
         heading: 'Your Rights, Children, and Transfers',
         paragraphs: [
           'Children: Nenya does not knowingly collect personal information from anyone, including children. The optional form is not intended for people under 13, or under the minimum age in your country, matching Section 3.',
-          'Your rights: for almost all visitors there is nothing on file to access, correct, or delete. If you have sent us something through the form, you can ask what we hold, ask us to correct or delete it, or object to how it is used. If you are in the EU/EEA or UK, you can also complain to your local data protection authority. To exercise any of these, email info@nenya.biz.',
+          'Your rights: apart from the connection logs and visit statistics that Netlify keeps (Section 15), there is for almost all visitors nothing on file to access, correct, or delete. If you have sent us something through the form, you can ask what we hold, ask us to correct or delete it, or object to how it is used. If you are in the EU/EEA or UK, you can also complain to your local data protection authority. To exercise any of these, email info@nenya.biz. You can object to the visit statistics by emailing us; because they are counted at the host and are not tied to any account, we can switch them off for everyone but cannot remove one person from them.',
           'Retention: there is no automatic deletion schedule for submissions yet. Email us and we will delete a submission from our inbox and ask Netlify to remove its stored copy. Legal basis for submissions (GDPR Art. 6(1)(a)): your consent, given by submitting the form.',
-          'International transfers: Netlify may process the connection data in Section 15 in the United States. For data from the EU, UK, or Switzerland, Netlify states that it relies on the EU-U.S. Data Privacy Framework (and its UK and Swiss extensions) and on the European Commission’s Standard Contractual Clauses. See netlify.com/privacy.',
+          'International transfers: Netlify may process the connection data and visit statistics in Section 15 in the United States. For data from the EU, UK, or Switzerland, Netlify states that it relies on the EU-U.S. Data Privacy Framework (and its UK and Swiss extensions) and on the European Commission’s Standard Contractual Clauses. See netlify.com/privacy.',
           'Open source: Nenya’s code is public under the AGPL-3.0 license at https://github.com/Nenya-App/nenya-public, so you can check for yourself how it handles data.',
         ],
       },

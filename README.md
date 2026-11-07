@@ -39,7 +39,8 @@ Nenya is built so that there is almost nothing to disclose. The full legal
 text is in the in-app **Terms of Use & Privacy Policy** (source:
 [`src/lib/legalDocument.ts`](./src/lib/legalDocument.ts)). In short:
 
-- No accounts, no analytics, no advertising, no cookies, no fingerprinting.
+- No accounts, no advertising, no cookies, no fingerprinting. The web host (Netlify) turns its server logs into
+  anonymous visit totals; nothing for that runs in your browser or is stored on your device.
 - What you enter while using the tool stays in your browser's memory and is gone when you close the tab. It is
   never sent to a server (except the coach demo, if you choose it).
 - By default the only thing kept on your device between visits is one timestamp, saved after a coach
@@ -77,8 +78,8 @@ The honest edges:
   are bound into the ticket and into signed transcripts. It goes through a small
   relay function, served at `/api/coach`, in
   [`netlify/functions/coach.mts`](./netlify/functions/coach.mts), so the Venice API
-  key stays server-side. The function stores nothing and does not log message
-  text. Caps: five exchanges, 500 characters per message, short replies, and a
+  key stays server-side. The function stores no messages and does not log message
+  text; the only thing it keeps is one anonymous daily count of conversations started. Caps: five exchanges, 500 characters per message, short replies, and a
   signed ticket that stops a client from forging or extending the history. The
   character's prompt lives on Venice, not in this repository.
 

@@ -202,9 +202,9 @@ export default function Structure({ onBack }: StructureProps) {
                   >
                     GNU Affero General Public License v3.0
                   </a>
-                  . Every privacy claim made on this site — that nothing is tracked, that nothing is stored by Nenya between
+                  . Every claim about what the site’s code does — that nothing you enter is tracked, and that nothing is stored by Nenya between
                   sessions — is something you can verify yourself by reading the code, not just something you have
-                  to take our word for.
+                  to take our word for. The web host’s connection logs and visit totals sit outside the code; Section 15 of the terms describes them.
                 </p>
                 <p className="text-muted-foreground text-xs md:text-sm">
                   The Nenya name and logo are reserved separately from the code license — see the repository's{' '}
