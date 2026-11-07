@@ -40,7 +40,9 @@ export default async (req: Request): Promise<Response> => {
     } catch {
       /* not shown */
     }
-    return json(200, { generatedAt: new Date().toISOString(), days, events: ALL_EVENTS, counts, todayTurns });
+    // Receipt counts are kept per signing key, so the keys that appear are added to the list.
+    const extra = [...new Set(Object.values(counts).flatMap((c) => Object.keys(c)))].filter((e) => !ALL_EVENTS.includes(e)).sort();
+    return json(200, { generatedAt: new Date().toISOString(), days, events: [...ALL_EVENTS, ...extra], counts, todayTurns });
   } catch {
     return json(502, { error: 'store' });
   }

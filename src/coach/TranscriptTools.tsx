@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Download, Send } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
@@ -10,6 +10,7 @@ import {
   signedJson,
   type Receipt,
   type SessionColors,
+  type SignedTranscript,
   type TranscriptMsg,
 } from '../lib/transcript';
 
@@ -33,6 +34,8 @@ type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
 // what would be sent first.
 export function TranscriptTools({ messages, session, context = '', ticket }: TranscriptToolsProps) {
   const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [signed, setSigned] = useState<SignedTranscript | null>(null);
+  const signedRef = useRef<SignedTranscript | null>(null); // the latest, for handlers that run before a re-render
   const [signNote, setSignNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [share, setShare] = useState<Share>('closed');
@@ -42,6 +45,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
   // conversation moves on, the old one no longer applies.
   useEffect(() => {
     setReceipt(null);
+    setSigned(null);
     setSignNote('');
     setShare('closed');
   }, [messages.length]);
@@ -58,8 +62,10 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
         body: JSON.stringify({ action: 'receipt', messages, session, ...(context ? { context } : {}), ticket }),
       });
       if (!res.ok) throw new Error(String(res.status));
-      const data = (await res.json()) as { receipt: Receipt };
+      const data = (await res.json()) as { receipt: Receipt; transcript: SignedTranscript };
       setReceipt(data.receipt);
+      setSigned(data.transcript);
+      signedRef.current = data.transcript;
       setSignNote('');
       return data.receipt;
     } catch {
@@ -72,14 +78,14 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    if (r) downloadText(`nenya-coach-transcript-${dayStamp(r.issuedAt)}.json`, 'application/json', signedJson(messages, session, r, context));
+    if (r && signedRef.current) downloadText(`nenya-coach-transcript-${dayStamp(r.issuedAt)}.json`, 'application/json', signedJson(signedRef.current, r));
   };
 
   const downloadReadable = async () => {
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    downloadText(`nenya-coach-transcript-${dayStamp(r?.issuedAt)}.txt`, 'text/plain', readableTranscript(messages, session, r, context));
+    downloadText(`nenya-coach-transcript-${dayStamp(r?.issuedAt)}.txt`, 'text/plain', readableTranscript(messages, session, r, context, signedRef.current?.meta));
   };
 
   const openShare = async () => {
@@ -89,7 +95,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     setShare('preview');
   };
 
-  const shareText = readableTranscript(messages, session, receipt, context);
+  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta);
   const tooLong = shareText.length > MAX_SHARE_CHARS;
 
   const sendToNenya = async () => {

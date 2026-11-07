@@ -11,6 +11,8 @@ export const FIXED_EVENTS = [
   'coach.turn.answered', // the message went to the model and a reply came back
   'coach.conversation.started', // a first exchange was accepted
   'coach.conversation.finished', // the last exchange (the fifth) was answered
+  'coach.report.verified', // a signed transcript sent to us passed the signature check
+  'coach.report.rejected', // one did not (a code, never the content)
 ] as const;
 
 /** The screens a page view can be counted for (the app's own screen ids; the About pages count together as 'about'). */
@@ -27,6 +29,7 @@ const under = (name: string, prefix: string, allowed: readonly string[]): boolea
 
 export function isKnownEvent(name: string): boolean {
   if ((FIXED_EVENTS as readonly string[]).includes(name) || (BROWSER_FIXED_EVENTS as readonly string[]).includes(name)) return true;
+  if (/^coach\.receipt\.issued\.[0-9a-f]{16}$/.test(name)) return true; // one per signing key
   return under(name, 'coach.turn.blocked.', BLOCK_REASONS) || under(name, 'page.view.', SCREENS) || under(name, 'onboarding.rhythm.', RHYTHM_NAMES);
 }
 

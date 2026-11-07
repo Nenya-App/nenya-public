@@ -37,7 +37,7 @@ let signatureOk = false;
 try {
   signatureOk = verify(
     null,
-    Buffer.from(`nenya-coach-transcript-v2\n${receipt.hash}\n${receipt.issuedAt}`),
+    Buffer.from(`nenya-coach-transcript-v${transcript.v === 3 ? 3 : 2}\n${receipt.hash}\n${receipt.issuedAt}`),
     createPublicKey({ key: Buffer.from(receipt.publicKey, 'base64'), format: 'der', type: 'spki' }),
     Buffer.from(receipt.signature, 'base64')
   );
@@ -55,3 +55,7 @@ console.log(`  Signed on: ${receipt.issuedAt}`);
 console.log(`  Key ID:    ${keyId}${expectedKeyId ? ' (matches the one you expected)' : ' (confirm this against the published key ID)'}`);
 console.log(`  Session:   ${transcript.session?.color1}.${transcript.session?.color2} (a temporary label, not an identity)`);
 console.log(`  Messages:  ${transcript.messages.length}`);
+if (transcript.meta) {
+  console.log(`  Complete:  ${transcript.meta.closed ? 'yes' : 'no'} (${transcript.meta.exchanges} exchange${transcript.meta.exchanges === 1 ? '' : 's'})`);
+  console.log(`  Produced by: build ${transcript.meta.build}, model ${transcript.meta.model}, instructions ${transcript.meta.instructions}`);
+}

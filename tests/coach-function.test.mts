@@ -112,12 +112,14 @@ let rc = await call({action:'receipt',messages:c,ticket:a2.json.ticket}); ok('no
 process.env.COACH_SIGNING_KEY = privateKey.export({type:'pkcs8',format:'der'}).toString('base64');
 rc = await call({action:'receipt',messages:c,ticket:a2.json.ticket}); ok('receipt issued', rc.status===200 && !!rc.json.receipt?.signature);
 const R = rc.json.receipt;
-const canon = JSON.stringify({v:2,session:{color1:'#7A9B9E',color2:'#DAC682'},messages:c.map(m=>({role:m.role,content:m.content}))});
-ok('hash matches canonical transcript', R.hash===createHash('sha256').update(canon).digest('hex'));
-const good = edVerify(null, Buffer.from(`nenya-coach-transcript-v2\n${R.hash}\n${R.issuedAt}`), createPublicKey({key:Buffer.from(R.publicKey,'base64'),format:'der',type:'spki'}), Buffer.from(R.signature,'base64'));
+const TR = rc.json.transcript;
+ok('the receipt comes with the transcript it signed (version 3, with signed facts)', TR.v===3 && TR.meta.exchanges===2 && TR.meta.closed===false && /^[0-9a-f]{16}$/.test(TR.meta.instructions) && typeof TR.meta.build==='string' && TR.meta.model==='deepseek-v3.2');
+ok('hash matches the transcript the server returned', R.hash===createHash('sha256').update(JSON.stringify(TR)).digest('hex') && R.version===3);
+ok('the transcript holds the conversation as sent, in order', JSON.stringify(TR.messages)===JSON.stringify(c.map(m=>({role:m.role,content:m.content}))) && TR.session.color1==='#7A9B9E');
+const good = edVerify(null, Buffer.from(`nenya-coach-transcript-v3\n${R.hash}\n${R.issuedAt}`), createPublicKey({key:Buffer.from(R.publicKey,'base64'),format:'der',type:'spki'}), Buffer.from(R.signature,'base64'));
 ok('signature verifies with the public key', good);
 ok('issuedAt is a recent ISO date', Math.abs(Date.now()-Date.parse(R.issuedAt))<5000);
-const bad2 = edVerify(null, Buffer.from(`nenya-coach-transcript-v2\n${R.hash}\n2020-01-01T00:00:00.000Z`), createPublicKey({key:Buffer.from(R.publicKey,'base64'),format:'der',type:'spki'}), Buffer.from(R.signature,'base64'));
+const bad2 = edVerify(null, Buffer.from(`nenya-coach-transcript-v3\n${R.hash}\n2020-01-01T00:00:00.000Z`), createPublicKey({key:Buffer.from(R.publicKey,'base64'),format:'der',type:'spki'}), Buffer.from(R.signature,'base64'));
 ok('changed date breaks the signature', bad2===false);
 k = await callAny('GET', null); ok('public key route works', k.status===200 && k.json.publicKey===R.publicKey && k.json.keyId===R.keyId);
 let tam=c.map(m=>({...m})); tam[1].content='Totally different reply'; rc = await call({action:'receipt',messages:tam,ticket:a2.json.ticket}); ok('edited reply: no receipt', rc.status===400);

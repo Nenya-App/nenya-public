@@ -33,6 +33,7 @@ import { looksLikeManipulation, neutralize } from '../../src/lib/promptGuard.ts'
 import { countTurn, capFromEnv, type CounterStore } from '../../src/lib/dailyCap.ts';
 import { addCount } from '../../src/lib/counters.ts';
 import { tokenMatches } from '../../src/lib/ownerAuth.ts';
+import { recordReceipt } from '../../src/lib/receiptLog.ts';
 import { addConnectionTurn, allowanceReached, connectionCode, turnsFromEnv } from '../../src/lib/connectionLimit.ts';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
@@ -187,9 +188,37 @@ function signingKey() {
   }
 }
 
-// Canonical form that gets hashed. Documented in docs/coach-transcripts.md.
-const canonicalTranscript = (messages: Msg[], session: Session, context: string): string =>
-  JSON.stringify({ v: 2, session, ...(context ? { context } : {}), messages: messages.map((m) => ({ role: m.role, content: m.content })) });
+// What the receipt says about how the conversation was produced, signed along with it. None of it identifies a person.
+interface TranscriptMeta {
+  closed: boolean; // the conversation reached its final exchange
+  exchanges: number;
+  build: string; // the site version (the deploy's commit, when Netlify provides it)
+  model: string;
+  instructions: string; // a short fingerprint of the instruction text, not the text
+}
+
+// The transcript exactly as it is hashed and signed (version 3). Documented in docs/coach-transcripts.md. The key order
+// matters, because the hash is of JSON.stringify of this object, and the page writes the object out unchanged.
+const buildTranscript = (messages: Msg[], session: Session, context: string, meta: TranscriptMeta) => ({
+  v: 3,
+  session,
+  meta,
+  ...(context ? { context } : {}),
+  messages: messages.map((m) => ({ role: m.role, content: m.content })),
+});
+
+let fingerprint: string | null = null;
+/** A fingerprint of every fixed instruction the coach is given (all turns and variants), not of the private method notes. */
+function instructionsFingerprint(): string {
+  if (fingerprint) return fingerprint;
+  const parts: string[] = [REPEAT_NOTE, CLOSE_NOTE];
+  for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false), systemInstruction(t, true, '', false), systemInstruction(t, false, '', true));
+  fingerprint = sha256(parts.join('\n--\n')).slice(0, 16);
+  return fingerprint;
+}
+export const __instructionsFingerprint = (): string => instructionsFingerprint();
+
+const buildId = (): string => (process.env.COACH_BUILD || process.env.COMMIT_REF || process.env.DEPLOY_ID || 'unknown').slice(0, 12);
 
 // Backstop for the character card's own vocabulary: the coach may name its
 // methods, but may not present itself as a clinical or diagnostic tool. Drops
@@ -388,11 +417,25 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     if (verify(secret, body.ticket, done.length / 2, done, session, context) === null) return fail(400, 'ticket');
     const k = signingKey();
     if (!k) return fail(503, 'signing-off');
-    const hash = sha256(canonicalTranscript(done, session, context));
+    const exchanges = done.length / 2;
+    const meta: TranscriptMeta = {
+      closed: exchanges >= MAX_TURNS,
+      exchanges,
+      build: buildId(),
+      model: process.env.COACH_MODEL || DEFAULT_MODEL,
+      instructions: instructionsFingerprint(),
+    };
+    const transcript = buildTranscript(done, session, context, meta);
+    const hash = sha256(JSON.stringify(transcript));
     const issuedAt = new Date().toISOString();
-    const signature = edSign(null, Buffer.from(`nenya-coach-transcript-v2\n${hash}\n${issuedAt}`), k.key).toString('base64');
+    const signature = edSign(null, Buffer.from(`nenya-coach-transcript-v3\n${hash}\n${issuedAt}`), k.key).toString('base64');
+    // A plain daily count (by signing key) and, for 30 days, the receipt's hash. Neither holds any of the conversation.
+    tally(`coach.receipt.issued.${k.keyId}`);
+    const st = store();
+    if (st) track(recordReceipt(st, hash));
     return json(200, {
-      receipt: { version: 2, algorithm: 'Ed25519', keyId: k.keyId, publicKey: k.publicKey, hash, issuedAt, signature },
+      transcript,
+      receipt: { version: 3, algorithm: 'Ed25519', keyId: k.keyId, publicKey: k.publicKey, hash, issuedAt, signature },
     });
   }
 

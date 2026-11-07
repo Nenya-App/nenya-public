@@ -26,11 +26,11 @@ const a1 = await post({ messages: m });
 m.push({ role: 'assistant', content: a1.reply }, { role: 'user', content: 'second' });
 const a2 = await post({ messages: m, ticket: a1.ticket });
 m.push({ role: 'assistant', content: a2.reply });
-const { receipt } = await post({ action: 'receipt', messages: m, ticket: a2.ticket });
+const { receipt, transcript: signedTranscript } = await post({ action: 'receipt', messages: m, ticket: a2.ticket });
 ok('the function issued a receipt', !!receipt?.signature);
 
 const dir = mkdtempSync(join(tmpdir(), 'nenya-verify-'));
-const transcript = { v: 2, session: S, messages: m.map((x) => ({ role: x.role, content: x.content })) };
+const transcript = signedTranscript;
 const write = (name: string, data: any) => { const p = join(dir, name); writeFileSync(p, JSON.stringify(data)); return p; };
 const run = (file: string, keyId?: string) => spawnSync(process.execPath, ['scripts/verify-transcript.mjs', file, ...(keyId ? [keyId] : [])], { encoding: 'utf8' });
 

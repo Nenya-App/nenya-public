@@ -15,10 +15,13 @@ const LABELS: Record<string, string> = {
   'tour.accepted': 'Tour accepted',
   'tour.declined': 'Tour declined',
   'tour.completed': 'Tour completed',
+  'coach.report.verified': 'Transcript reports accepted',
+  'coach.report.rejected': 'Transcript reports refused',
 };
 
 export const label = (e: string): string => {
   if (LABELS[e]) return LABELS[e];
+  if (e.startsWith('coach.receipt.issued.')) return `Receipts issued (key ${e.slice('coach.receipt.issued.'.length, 'coach.receipt.issued.'.length + 6)}…)`;
   if (e.startsWith('coach.turn.blocked.')) return `Blocked: ${e.slice('coach.turn.blocked.'.length)}`;
   if (e.startsWith('onboarding.rhythm.')) return `Rhythm: ${e.slice('onboarding.rhythm.'.length)}`;
   if (e.startsWith('page.view.')) return e.slice('page.view.'.length);
