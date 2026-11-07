@@ -97,3 +97,10 @@ Counter: add-one, day rollover, two-day separation, collision retry, store failu
 - **Emergency Exit use is never counted.**
 - **Reading the numbers:** a private admin page behind the owner sign-in (last 30 days as a table).
 - Still open: own counters versus a ready-made tool (to look at when building); whether to add the page-view beacon at all once we know whether Netlify's statistics can be exported.
+
+## Built (2026-11-07): browser counts
+- **`/api/count`** (`netlify/functions/count.mts`): accepts `{ "events": [...] }` (at most four names, at most 1000 bytes), keeps only names on the fixed list in `src/lib/counters.ts`, and adds one to each day's total. It answers 204. It reads the page's own address (for the courtesy origin check) and nothing else: not the visitor's address, browser, referrer or cookies, and it sets no cookie. Netlify's rate limit (60 a minute) sits in front. A store that is down never produces an error for the visitor.
+- **The page** (`src/lib/usageCounts.ts`, wired in `App.tsx`): counting starts only after the terms are agreed (now or, for someone who chose to remember it, from the start of the visit); it never sends when the browser's Global Privacy Control signal is on; a failed send is ignored. First count: `onboarding.terms.accepted`, with the rhythm that was chosen (`onboarding.rhythm.<name>`), recorded at agreement because nothing before it is counted. Then `page.view.<screen>` each time a screen is shown, `tour.accepted`, `tour.declined`, `tour.completed` (the last step's close).
+- **Not counted, by design:** anything entered, Emergency Exit, and the About pages individually (they count together as `page.view.about`).
+- **Still to build:** the admin read page.
+

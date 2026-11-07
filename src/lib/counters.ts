@@ -13,10 +13,21 @@ export const FIXED_EVENTS = [
   'coach.conversation.finished', // the last exchange (the fifth) was answered
 ] as const;
 
+/** The screens a page view can be counted for (the app's own screen ids; the About pages count together as 'about'). */
+export const SCREENS = ['welcome', 'home', 'sight', 'sound', 'touch', 'essence', 'movement', 'insight', 'color-selection', 'gateway-review', 'session', 'cell-creation', 'cell-interface', 'about'] as const;
+
+/** The breathing rhythms of the opening flow, by a plain name. */
+export const RHYTHM_NAMES = ['steady', 'calming', 'lively', 'deep-calm', 'box', '478'] as const;
+
+/** Counted from the browser, and only after the visitor has agreed to the terms (see src/lib/usageCounts.ts). */
+export const BROWSER_FIXED_EVENTS = ['onboarding.terms.accepted', 'tour.accepted', 'tour.declined', 'tour.completed'] as const;
+
+const under = (name: string, prefix: string, allowed: readonly string[]): boolean =>
+  name.startsWith(prefix) && allowed.includes(name.slice(prefix.length));
+
 export function isKnownEvent(name: string): boolean {
-  if ((FIXED_EVENTS as readonly string[]).includes(name)) return true;
-  const prefix = 'coach.turn.blocked.';
-  return name.startsWith(prefix) && (BLOCK_REASONS as readonly string[]).includes(name.slice(prefix.length));
+  if ((FIXED_EVENTS as readonly string[]).includes(name) || (BROWSER_FIXED_EVENTS as readonly string[]).includes(name)) return true;
+  return under(name, 'coach.turn.blocked.', BLOCK_REASONS) || under(name, 'page.view.', SCREENS) || under(name, 'onboarding.rhythm.', RHYTHM_NAMES);
 }
 
 export const eventKey = (day: string, event: string): string => `m/${day}/${event}`;

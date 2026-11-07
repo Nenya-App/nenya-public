@@ -10,6 +10,8 @@ import { WelcomeTutorial, type TutorialStepId } from './components/WelcomeTutori
 import { TourOffer } from './components/TourOffer';
 import { LoadingVeil } from './components/LoadingVeil';
 import { preloadLogoAssets } from '../lib/preload';
+import { enableUsageCounts, countEvents, countEvent, countPageView } from '../lib/usageCounts';
+import { PRESETS, sameTechnique } from '../lib/breathingPresets';
 import { BreathingTechnique } from './components/ValarBreathingLogo';
 import OnboardingFlow from './components/OnboardingFlow';
 import WelcomePage from './components/pages/WelcomePage';
@@ -148,11 +150,27 @@ export default function App() {
     setTutorialActive(true);
   };
 
+  // A returning visitor who chose to remember their agreement has already agreed: counting may begin at once. A screen
+  // is counted when it is shown (when it changes), and only after agreement.
+  useEffect(() => {
+    if (!termsAgreed) return;
+    enableUsageCounts();
+    countPageView(currentScreen);
+  }, [currentScreen, termsAgreed]);
+
+  const lastTutorialStep = useRef<TutorialStepId | null>(null);
   const handleTutorialStep = (id: TutorialStepId | null) => {
+    if (id) lastTutorialStep.current = id;
     setBreathingCounterMinimized(id !== 'counter');
   };
 
+  // Counting begins only once the terms are agreed. Agreeing is the first thing counted, with the rhythm that was
+  // chosen (nothing before this point is counted, so the rhythm is recorded here, not when it was picked).
   const handleOnboardingFinish = () => {
+    enableUsageCounts();
+    const rhythm = PRESETS.find((p) => sameTechnique(breathingTechnique, p));
+    const rhythmName = rhythm ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
+    countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : [])]);
     setBreathingCounterMinimized(true);
     setEntryUnlocked(true);
     setTermsAgreed(true);
@@ -379,10 +397,15 @@ export default function App() {
       {tourOffered && (
         <TourOffer
           onAccept={() => {
+            countEvent('tour.accepted');
+            lastTutorialStep.current = null;
             setTourOffered(false);
             handleStartTutorial();
           }}
-          onDecline={() => setTourOffered(false)}
+          onDecline={() => {
+            countEvent('tour.declined');
+            setTourOffered(false);
+          }}
         />
       )}
       {/* Nothing behind the onboarding can be reached until the terms are accepted. */}
@@ -447,6 +470,8 @@ export default function App() {
             isOpen={tutorialActive}
             onStepChange={handleTutorialStep}
             onClose={() => {
+              if (lastTutorialStep.current === 'reflection') countEvent('tour.completed');
+              lastTutorialStep.current = null;
               setTutorialActive(false);
               setBreathingCounterMinimized(true);
             }}
