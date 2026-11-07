@@ -52,3 +52,20 @@ That means Venice refused the encrypted request itself (not a rate limit: that w
 function log on the same line as the `ref`, as `detail="..."`. If it complains about a setting, set `COACH_E2EE_MINIMAL=true`
 on the preview site to send only the token ceiling and temperature, and try again.
 
+
+## The final reply: it has to read as an ending
+
+The last exchange (`MAX_TURNS`) is followed by the page's own closing note ("That is our five..."), and the person cannot answer. So the last reply must not ask a question or invite a reply. Three things work together, all in `netlify/functions/coach.mts` and `src/lib/coachClosing.ts`, and all keyed on `MAX_TURNS`, so a longer conversation later needs no other change:
+
+1. **Instructions.** On the last exchange the prompt says the person cannot reply, that the page adds its own closing, and gives a shape (what they said, one thing that is theirs to keep, one calm statement). The lines that tell the coach to ask a question or offer a next step are left out of that prompt, and the coaching-move modules are not added (they are how the coach opens a new thread; safety, lens and resource modules still apply). On the exchange before the last, the coach is told to invite the person's last word, without counting.
+2. **Retry.** If the last reply still has a question mark or an invitation ("let me know", "feel free to", ...), it is tried once more with a firmer note, inside what is left of the same 20-second budget.
+3. **Strip.** If it still asks, the sentences that ask or invite are dropped; if little is left, a short settling line is added (`CLOSE_FALLBACK`). The care note for a possibly distressed message still takes priority over all of this.
+
+To measure how well the instructions work without the safety net (the number to watch when you change the wording), run it in your own terminal with your own key. It plays six invented conversations to the fifth exchange and counts final replies that still ask:
+
+```bash
+VENICE_API_KEY=... node scripts/eval-final-turn.mts --guard-off
+VENICE_API_KEY=... node scripts/eval-final-turn.mts          # what a visitor would see
+```
+
+`COACH_CLOSING_GUARD=off` (environment variable) turns the retry and strip off; the script sets it for `--guard-off`. Leave it unset in production. The tests (`tests/coach-closing.test.mts`, `tests/closing-guard.test.mts`) check the rules and the retry and strip steps with a pretend model; only the real model shows whether the wording lands.

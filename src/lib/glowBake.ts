@@ -18,6 +18,13 @@ export const GLOW_RADII = {
   darkHover: [16, 32, 48],
 } as const;
 
+/**
+ * How the logo's glow is drawn now, set in the design bench against the radii above: the radii are multiplied by
+ * GLOW_SPREAD (a tighter halo around the vector petals) and the glow's opacity by GLOW_STRENGTH.
+ */
+export const GLOW_SPREAD = 0.75;
+export const GLOW_STRENGTH = 0.74;
+
 export type GlowState = keyof typeof GLOW_RADII;
 
 /** The largest radius, so callers can leave room around the logo for the glow. */
@@ -81,7 +88,7 @@ export function gaussianBlur(src: Float32Array, w: number, h: number, sigma: num
 
 /**
  * Bake the glow around `alpha` (0..1 per pixel, w by h). `radii` are CSS lengths and `scale` is device
- * pixels per CSS px. Returns straight (non-premultiplied) RGBA bytes of the glow only, with no content in it.
+ * pixels per CSS px. `strength` scales the glow's opacity (colour is unchanged). Returns straight (non-premultiplied) RGBA bytes of the glow only, with no content in it.
  */
 export function bakeGlow(
   alpha: Float32Array,
@@ -90,6 +97,7 @@ export function bakeGlow(
   radii: readonly number[],
   scale: number,
   colors: [number, number, number][] = GLOW_COLORS,
+  strength = 1,
 ): Uint8ClampedArray<ArrayBuffer> {
   const n = w * h;
   const A = alpha.slice();
@@ -113,7 +121,7 @@ export function bakeGlow(
     out[p * 4] = Math.round((G[p * 3] / ga) * 255);
     out[p * 4 + 1] = Math.round((G[p * 3 + 1] / ga) * 255);
     out[p * 4 + 2] = Math.round((G[p * 3 + 2] / ga) * 255);
-    out[p * 4 + 3] = Math.round(ga * 255);
+    out[p * 4 + 3] = Math.round(ga * 255 * strength);
   }
   return out;
 }

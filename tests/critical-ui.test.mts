@@ -6,7 +6,9 @@ import { ok } from './helpers.mts';
 
 const read = (p: string) => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
 const CRITICAL = [
-  'src/app/components/OnboardingFlow.tsx', // the first-visit panel: rhythm, tour, terms
+  'src/app/components/OnboardingFlow.tsx', // the first-visit panel: rhythm, terms
+  'src/app/components/LoadingVeil.tsx', // the loading screen in front of the first screen
+  'src/app/components/TourOffer.tsx', // the offer of a tour, right after the terms
   'src/app/components/EmergencyExit.tsx', // the emergency exit
   'src/app/components/AppFooter.tsx',
   'src/app/components/ErrorBoundary.tsx',

@@ -135,6 +135,17 @@ export const rememberTerms = (version: string) => {
 };
 
 /**
+ * "Forget me": erase what this device saved, then go back to the start of the current page. Their agreement to the terms is part
+ * of what was erased, so carrying on without it would be using the site outside the terms: the start of the page asks again.
+ * (The page also shows its first screen with nothing left over: whatever was entered in this visit is not kept either.) The
+ * address loses its #section and ?query, which could otherwise point at something behind the terms. `go` is replaceable for tests.
+ */
+export function forgetMeAndRestart(go: () => void = () => window.location.assign(window.location.pathname)) {
+  wipeDevice({ keepOwner: true });
+  go();
+}
+
+/**
  * Erases everything Nenya saved on this device, including older keys from earlier versions.
  * The owner's testing flag survives the visitor-facing "Forget me" button but not the emergency exit.
  */

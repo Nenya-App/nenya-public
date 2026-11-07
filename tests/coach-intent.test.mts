@@ -90,4 +90,4 @@ for (let i = 1; i <= 5; i++) {
   rr = await call({ messages: msgs, ticket: t });
   msgs.push({ role: 'assistant', content: rr.json.reply }); t = rr.json.ticket;
 }
-ok('final exchange: answers the question and still asks none', /final exchange/.test(sys()) && /answer it briefly instead; still do not ask a question/.test(sys()));
+ok('final exchange: answers the question, then closes, and is not offered the gentle-question line', /final exchange/.test(sys()) && /answer it briefly in your first sentence or two, then close/.test(sys()) && !/you may add one short, gentle question/.test(sys()));

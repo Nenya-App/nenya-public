@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { ArrowRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import NenyaLogo from './NenyaLogo';
 import { ScrollIndicator } from './ScrollIndicator';
@@ -9,11 +9,11 @@ import { LEGAL_EFFECTIVE_DATE } from '../../lib/legalDocument';
 import { rememberTerms, setRemembering } from '../../lib/deviceMemory';
 import { PRESETS, sameTechnique, type BreathingTechnique } from '../../lib/breathingPresets';
 
-export type OnboardingStep = 'rhythm' | 'counter' | 'process' | 'terms';
-const STEPS: OnboardingStep[] = ['rhythm', 'counter', 'process', 'terms'];
+export type OnboardingStep = 'rhythm' | 'terms';
+const STEPS: OnboardingStep[] = ['rhythm', 'terms'];
 
-// Friendly names for the picker. The first three are the gentlest, hold-free
-// rhythms; the rest sit behind "More options".
+// Friendly names for the picker. The first four are the ones most people want (three hold-free, and Box); the rest
+// sit behind "More options".
 const RHYTHM_INFO: Record<string, { name: string; blurb: string }> = {
   '5·5': { name: 'Steady', blurb: 'Even breaths, about six a minute. A good place to begin.' },
   '4·6': { name: 'Calming', blurb: 'A longer exhale, to help you settle.' },
@@ -22,8 +22,8 @@ const RHYTHM_INFO: Record<string, { name: string; blurb: string }> = {
   Box: { name: 'Box', blurb: 'In, hold, out, hold, all the same length. For focus and reset.' },
   '4-7-8': { name: '4-7-8', blurb: 'A long hold between breaths. Skip it if holding your breath is uncomfortable.' },
 };
-const MAIN_LABELS = ['5·5', '4·6', '3·3'];
-const MORE_LABELS = ['4·8', 'Box', '4-7-8'];
+const MAIN_LABELS = ['5·5', '4·6', '3·3', 'Box'];
+const MORE_LABELS = ['4·8', '4-7-8'];
 const presetByLabel = (lb: string) => PRESETS.find((p) => p.lb === lb)!;
 
 interface OnboardingFlowProps {
@@ -58,7 +58,6 @@ function RhythmOrb({ t }: { t: BreathingTechnique }) {
 export default function OnboardingFlow({ technique, onTechniqueChange, onStepChange, onFinish }: OnboardingFlowProps) {
   const [step, setStep] = useState<OnboardingStep>('rhythm');
   const [showMore, setShowMore] = useState(false);
-  const [rect, setRect] = useState<DOMRect | null>(null);
   const [isExiting, setIsExiting] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -71,25 +70,6 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
     const t = setTimeout(() => headingRef.current?.focus({ preventScroll: true }), 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step]);
-
-  // Spotlight the live breathing counter on its step.
-  useEffect(() => {
-    if (step !== 'counter') {
-      setRect(null);
-      return;
-    }
-    const find = () => {
-      const el = document.getElementById('tutorial-breathing-counter');
-      setRect(el ? el.getBoundingClientRect() : null);
-    };
-    find();
-    const timers = [120, 400, 900].map((ms) => setTimeout(find, ms));
-    window.addEventListener('resize', find);
-    return () => {
-      timers.forEach(clearTimeout);
-      window.removeEventListener('resize', find);
-    };
   }, [step]);
 
   // Off unless the visitor ticks it. Saves their settings and this agreement on this device only.
@@ -106,8 +86,6 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
   };
 
   const isTerms = step === 'terms';
-  const alignment =
-    step === 'counter' ? 'items-end md:items-center md:pr-[250px]' : 'items-center';
 
   const renderRhythmRow = (lb: string) => {
     const preset = presetByLabel(lb);
@@ -142,60 +120,29 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
     );
   };
 
-  const nav = (opts: { back?: OnboardingStep; next: OnboardingStep; nextLabel?: string }) => (
-    <div className="flex items-center justify-between gap-2 pt-1">
-      <button
-        type="button"
+  // Nothing to choose is also a choice: the rhythm already selected (Steady unless changed) is what is used.
+  const nav = (
+    <div className="flex justify-end pt-1">
+      <Button
+        size="sm"
         onClick={() => goTo('terms')}
-        className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+        className="gap-1 bg-nenya-accent-warm text-background-elevated hover:bg-nenya-accent-secondary"
       >
-        Skip to terms
-      </button>
-      <div className="flex items-center gap-2">
-        {opts.back && (
-          <Button variant="outline" size="sm" onClick={() => goTo(opts.back!)} className="gap-1">
-            <ArrowLeft className="size-3.5" />
-            Back
-          </Button>
-        )}
-        <Button
-          size="sm"
-          onClick={() => goTo(opts.next)}
-          className="gap-1 bg-nenya-accent-warm text-background-elevated hover:bg-nenya-accent-secondary"
-        >
-          {opts.nextLabel ?? 'Continue'}
-          <ArrowRight className="size-3.5" />
-        </Button>
-      </div>
+        Read the terms
+        <ArrowRight className="size-3.5" />
+      </Button>
     </div>
   );
 
   return (
     <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
-      {/* Backdrop: light enough to see the logo breathing behind, darker while the counter is spotlit */}
+      {/* Backdrop: light enough to see the logo breathing behind */}
       <div
-        className={`onb-fade-in absolute inset-0 backdrop-blur-[2px] ${step === 'counter' ? 'bg-black/60' : 'bg-background/75'}`}
+        className="onb-fade-in absolute inset-0 bg-background/75 backdrop-blur-[2px]"
         style={{ opacity: isExiting ? 0 : 1, transition: 'opacity 0.5s linear' }}
       />
 
-      {rect && (
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'fixed',
-            top: rect.top - 8,
-            left: rect.left - 8,
-            width: rect.width + 16,
-            height: rect.height + 16,
-            borderRadius: 18,
-            border: '2px solid rgba(232,160,32,0.9)',
-            boxShadow: '0 0 0 6px rgba(232,160,32,0.18), 0 0 24px rgba(232,160,32,0.35)',
-            pointerEvents: 'none',
-          }}
-        />
-      )}
-
-      <div className={`absolute inset-0 flex justify-center overflow-y-auto p-4 ${alignment}`}>
+      <div className="absolute inset-0 flex items-center justify-center overflow-y-auto p-4">
         <div
           className={`onb-card-in relative my-auto flex w-full flex-col overflow-hidden rounded-2xl border border-nenya-accent-warm/30 bg-background/90 shadow-2xl backdrop-blur-xl ${
             isTerms ? 'max-w-2xl max-h-[calc(100dvh-2rem)]' : 'max-w-lg'
@@ -221,7 +168,9 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm">Choose a rhythm. The glow follows it, and you can change it any time.</p>
+                  <p className="text-sm">
+                    Choose a rhythm. The glow follows it, and you can change it any time. Not choosing is fine: Steady is already selected.
+                  </p>
                   <div role="radiogroup" aria-label="Breathing rhythm" className="space-y-2">
                     {MAIN_LABELS.map(renderRhythmRow)}
                     {showMore && MORE_LABELS.map(renderRhythmRow)}
@@ -235,41 +184,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                     {showMore ? 'Fewer options' : 'More options'}
                     {showMore ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
                   </button>
-                  {nav({ next: 'counter' })}
-                </>
-              )}
-
-              {step === 'counter' && (
-                <>
-                  <h2 id="onboarding-title" ref={headingRef} tabIndex={-1} className="text-xl sm:text-2xl outline-none">
-                    Your breath counter
-                  </h2>
-                  <ul className="list-disc space-y-1.5 pl-5 text-sm text-muted-foreground">
-                    <li>It follows your rhythm and shows where you are in each breath.</li>
-                    <li>Drag it anywhere on the screen.</li>
-                    <li>Tap a pattern in its list to change your rhythm.</li>
-                    <li>Use the minus to tuck the list away, or the x to fold it down to just the word Breathe. Tap the word to bring it back.</li>
-                  </ul>
-                  {nav({ back: 'rhythm', next: 'process' })}
-                </>
-              )}
-
-              {step === 'process' && (
-                <>
-                  <h2 id="onboarding-title" ref={headingRef} tabIndex={-1} className="text-xl sm:text-2xl outline-none">
-                    Three simple steps
-                  </h2>
-                  <ol className="list-decimal space-y-1.5 pl-5 text-sm text-muted-foreground">
-                    <li>Breathe to find your center.</li>
-                    <li>Sense your inner state through color, sound, and sensation.</li>
-                    <li>Reflect to gain clarity.</li>
-                  </ol>
-                  <p className="text-sm text-muted-foreground">
-                    Your journey here is private by design. Nothing you enter is saved or sent to us, and it’s gone
-                    when you close the tab.
-                  </p>
-                  <p className="text-sm">One last thing before you enter.</p>
-                  {nav({ back: 'counter', next: 'terms', nextLabel: 'Read the terms' })}
+                  {nav}
                 </>
               )}
 

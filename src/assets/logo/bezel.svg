@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-134.0892 -134.0892 268.1784 268.1784" width="268" height="268"><defs><linearGradient id="bGold" gradientUnits="userSpaceOnUse" x1="-150.51" y1="-392.10" x2="150.51" y2="392.10">
+    <stop offset="0" stop-color="#b8803f" /><stop offset="0.20" stop-color="#fcce96" /><stop offset="0.56" stop-color="#fff0cf" />
+    <stop offset="0.92" stop-color="#fcce96" /><stop offset="1" stop-color="#b8803f" /></linearGradient><linearGradient id="bCream" gradientUnits="userSpaceOnUse" x1="-150.51" y1="-392.10" x2="150.51" y2="392.10">
+    <stop offset="0" stop-color="#4d4d4d" /><stop offset="0.20" stop-color="#fff9ee" /><stop offset="0.56" stop-color="#ffffff" />
+    <stop offset="0.92" stop-color="#fff9ee" /><stop offset="1" stop-color="#4d4d4d" /></linearGradient><filter id="fBez" filterUnits="userSpaceOnUse" x="-820" y="-820" width="1640" height="1640" color-interpolation-filters="sRGB">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="0.60" result="h" />
+    <feSpecularLighting in="h" surfaceScale="2.30" specularConstant="0.70" specularExponent="20" lighting-color="#ffffff" result="sp"><feDistantLight azimuth="141" elevation="15" /></feSpecularLighting>
+    <feComposite in="sp" in2="SourceAlpha" operator="in" result="spIn" />
+    <feDiffuseLighting in="h" surfaceScale="2.30" diffuseConstant="1" lighting-color="#ffffff" result="df"><feDistantLight azimuth="141" elevation="15" /></feDiffuseLighting>
+    <feBlend in="SourceGraphic" in2="df" mode="multiply" result="mul" />
+    <feComposite in="SourceGraphic" in2="mul" operator="arithmetic" k1="0" k2="0.75" k3="0.25" k4="0" result="shaded" />
+    <feComposite in="shaded" in2="spIn" operator="arithmetic" k1="0" k2="1" k3="1.00" k4="0" result="lit" />
+    <feComposite in="lit" in2="SourceAlpha" operator="in" />
+  </filter></defs><g opacity="1"><path d="M0.00 -111.39L96.47 -55.69L96.47 55.69L0.00 111.39L-96.47 55.69L-96.47 -55.69Z" fill="none" stroke="url(#bGold)" stroke-opacity="0.4" stroke-width="10.78" stroke-linejoin="round" /><g filter="url(#fBez)"><path d="M0.00 -111.39L96.47 -55.69L96.47 55.69L0.00 111.39L-96.47 55.69L-96.47 -55.69Z" fill="none" stroke="url(#bGold)" stroke-width="9.58" stroke-linejoin="round" /></g></g><g opacity="1"><path d="M0.00 -119.05L103.10 -59.53L103.10 59.53L0.00 119.05L-103.10 59.53L-103.10 -59.53Z" fill="none" stroke="url(#bCream)" stroke-opacity="0.4" stroke-width="4.55" stroke-linejoin="round" /><g filter="url(#fBez)"><path d="M0.00 -119.05L103.10 -59.53L103.10 59.53L0.00 119.05L-103.10 59.53L-103.10 -59.53Z" fill="none" stroke="url(#bCream)" stroke-width="3.35" stroke-linejoin="round" /></g></g></svg>

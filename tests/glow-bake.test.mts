@@ -2,7 +2,7 @@
 // maths must behave like the CSS drop-shadow chain it replaces.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { gaussianBlur, bakeGlow, GLOW_RADII, GLOW_COLORS } from '../src/lib/glowBake.ts';
+import { gaussianBlur, bakeGlow, GLOW_RADII, GLOW_COLORS, GLOW_SPREAD, GLOW_STRENGTH } from '../src/lib/glowBake.ts';
 import { ok } from './helpers.mts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -51,4 +51,8 @@ const css = readFileSync(root + 'src/styles/globals.css', 'utf8');
 ok('the logo glow is no longer a CSS filter', !/\.nenya-logo-glow[^{]*\{[^}]*filter/.test(css) && !css.includes('gem-shimmer'));
 ok('radii match the old CSS (light 8/16/24, dark 10/20/30, hovers 12/24/36 and 16/32/48)',
   GLOW_RADII.light.join() === '8,16,24' && GLOW_RADII.dark.join() === '10,20,30' && GLOW_RADII.lightHover.join() === '12,24,36' && GLOW_RADII.darkHover.join() === '16,32,48');
-ok('outer orbs get a box-shadow glow with doubled radii', css.includes('.nenya-orb-glow') && /0 0 20px[\s\S]*0 0 40px[\s\S]*0 0 60px/.test(css));
+ok('outer orbs get a box-shadow glow with doubled radii, widened by 1.45', css.includes('.nenya-orb-glow') && /0 0 29px[\s\S]*0 0 58px[\s\S]*0 0 87px/.test(css));
+ok('the glow is tightened and softened for the vector petals (bench settings)', GLOW_SPREAD === 0.75 && GLOW_STRENGTH === 0.74);
+const full = bakeGlow(content, N, N, GLOW_RADII.dark, 1)[(128 * N + 128 + 30) * 4 + 3];
+const soft = bakeGlow(content, N, N, GLOW_RADII.dark, 1, undefined, 0.5)[(128 * N + 128 + 30) * 4 + 3];
+ok('strength scales the glow opacity and nothing else', soft > 0 && Math.abs(soft - full / 2) <= 1, `${soft} vs ${full}`);

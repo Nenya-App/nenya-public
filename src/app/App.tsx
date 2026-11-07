@@ -6,9 +6,12 @@ import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
 import { BreathingCounter } from './components/BreathingCounter';
-import { WelcomeTutorial } from './components/WelcomeTutorial';
+import { WelcomeTutorial, type TutorialStepId } from './components/WelcomeTutorial';
+import { TourOffer } from './components/TourOffer';
+import { LoadingVeil } from './components/LoadingVeil';
+import { preloadLogoAssets } from '../lib/preload';
 import { BreathingTechnique } from './components/ValarBreathingLogo';
-import OnboardingFlow, { type OnboardingStep } from './components/OnboardingFlow';
+import OnboardingFlow from './components/OnboardingFlow';
 import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
 
@@ -116,41 +119,45 @@ export default function App() {
   // Breathing popout state
   const [breathingPopoutOpen, setBreathingPopoutOpen] = useState(false);
 
-  // The first-visit onboarding (rhythm choice, counter tour, how it works,
-  // then the terms) runs as an overlay on the welcome page. The breathing
-  // counter appears once it reaches the counter step.
+  // The logo's files (the gem sprite, the petals and bezel, the flat logo) are loaded before the first screen is
+  // shown, behind a short loading screen, so the logo does not pop in piece by piece.
+  const [assetsReady, setAssetsReady] = useState(false);
+  const [veilGone, setVeilGone] = useState(false);
+  useEffect(() => {
+    // On the welcome screen with the gem showing, also wait for the gem's first frame to be drawn.
+    preloadLogoAssets(undefined, currentScreen === 'welcome' && orbitEnabled && logoVisible).then(() => setAssetsReady(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // The first-visit panel (rhythm choice, then the terms) is an overlay on the welcome page. The breathing counter
+  // appears once the terms are accepted (or at once for a visitor whose agreement was remembered), and a short tour
+  // is offered right after that.
   const [entryUnlocked, setEntryUnlocked] = useState(termsAgreed);
   const [tutorialActive, setTutorialActive] = useState(false);
+  const [tourOffered, setTourOffered] = useState(false);
 
-  // The tutorial no longer auto-launches -- the site keeps no memory of past
-  // visits, so an automatic tour had no way to know it had already been
-  // seen and interrupted every single visit. It's opt-in now, started from
-  // the welcome page's own quiet link or replayed from the menu.
+  // The tour is never started on its own for a returning visitor (the site keeps no memory of past visits unless
+  // asked): it is offered once after the terms are accepted, and can be started from the welcome page's quiet link
+  // or replayed from the header.
   //
-  // The breathing counter starts minimized and only maximizes (showing the
-  // technique picker) while the tutorial is actively running, collapsing
-  // back the moment it ends -- whether by finishing, skipping, or the "x"
-  // close, all of which funnel through WelcomeTutorial's single onClose.
-  // Outside of a tutorial run, this is just the counter's normal controlled
-  // minimize/maximize state, toggled from its own corner button.
+  // The breathing counter starts minimized. The tour opens its pattern list for the counter step only, and the
+  // counter folds back the moment the tour moves on or ends, whether by finishing, skipping or the "x".
   const [breathingCounterMinimized, setBreathingCounterMinimized] = useState(true);
 
   const handleStartTutorial = () => {
-    setBreathingCounterMinimized(false);
     setTutorialActive(true);
   };
 
-  const handleOnboardingStep = (step: OnboardingStep) => {
-    if (step === 'rhythm') return;
-    setEntryUnlocked(true);
-    // Keep the pattern list open for the counter step so its features show,
-    // and tuck it away again once the visitor moves on to the terms.
-    setBreathingCounterMinimized(step !== 'counter');
+  const handleTutorialStep = (id: TutorialStepId | null) => {
+    setBreathingCounterMinimized(id !== 'counter');
   };
 
   const handleOnboardingFinish = () => {
     setBreathingCounterMinimized(true);
+    setEntryUnlocked(true);
     setTermsAgreed(true);
+    // Only on the welcome screen: that is where the tour points.
+    if (currentScreen === 'welcome') setTourOffered(true);
   };
 
   // Track emergency exit to disable beforeunload warning
@@ -361,18 +368,27 @@ export default function App() {
 
   return (
     <ThemeProvider defaultTheme="dark">
-      {!termsAgreed && (
+      {!veilGone && <LoadingVeil ready={assetsReady} onDone={() => setVeilGone(true)} />}
+      {!termsAgreed && veilGone && (
         <OnboardingFlow
           technique={breathingTechnique}
           onTechniqueChange={setBreathingTechnique}
-          onStepChange={handleOnboardingStep}
           onFinish={handleOnboardingFinish}
+        />
+      )}
+      {tourOffered && (
+        <TourOffer
+          onAccept={() => {
+            setTourOffered(false);
+            handleStartTutorial();
+          }}
+          onDecline={() => setTourOffered(false)}
         />
       )}
       {/* Nothing behind the onboarding can be reached until the terms are accepted. */}
       <div
         className="size-full bg-background relative overflow-hidden flex flex-col"
-        {...(!termsAgreed ? ({ inert: '' } as Record<string, string>) : {})}
+        {...(!termsAgreed || tourOffered ? ({ inert: '' } as Record<string, string>) : {})}
       >
         {/* Scroll to top on screen change */}
         <ScrollToTop trigger={currentScreen} />
@@ -429,6 +445,7 @@ export default function App() {
         {currentScreen === 'welcome' && (
           <WelcomeTutorial
             isOpen={tutorialActive}
+            onStepChange={handleTutorialStep}
             onClose={() => {
               setTutorialActive(false);
               setBreathingCounterMinimized(true);

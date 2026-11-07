@@ -4,6 +4,7 @@
 import { createServer } from 'vite';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { ok } from './helpers.mts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -65,13 +66,51 @@ try {
   ok('first-visit panel: renders its dialog and the rhythm choice', typeof h === 'string' && h.includes('role="dialog"') && h.includes('onboarding-title'), h.error ?? '');
   ok('first-visit panel: no layer starts invisible', typeof h === 'string' && !/opacity:\s*0(?![.\d])/.test(h.replace(/<style>[\s\S]*?<\/style>/g, '')), 'found an inline opacity: 0');
   ok('first-visit panel: entrance is done with CSS classes', typeof h === 'string' && h.includes('onb-fade-in') && h.includes('onb-card-in') && h.includes('onb-step-in'));
+  ok('first-visit panel: Box breathing is one of the four main choices, and there is no skip link', typeof h === 'string' && h.includes('>Box<') && h.includes('>5·5<') && h.includes('>4·6<') && h.includes('>3·3<') && !h.includes('>4·8<') && !h.includes('Skip to terms'), h.error ?? '');
+  ok('first-visit panel: says that not choosing is fine', typeof h === 'string' && h.includes('Not choosing is fine'), h.error ?? '');
+  {
+    const src = readFileSync(new URL('../src/app/components/OnboardingFlow.tsx', import.meta.url), 'utf8');
+    ok('first-visit panel: goes straight from the rhythm to the terms', /STEPS: OnboardingStep\[\] = \['rhythm', 'terms'\]/.test(src) && !/'counter'|'process'/.test(src));
+  }
+  // The loading screen, the tour offer and the tour.
+  const { LoadingVeil } = await vite.ssrLoadModule('/src/app/components/LoadingVeil.tsx');
+  h = render(LoadingVeil, { ready: false, onDone: noop });
+  ok('loading screen: shows a status message over the page, with no inline opacity of 0 at first', typeof h === 'string' && h.includes('role="status"') && h.includes('Preparing your space') && !/opacity:\s*0(?![.\d])/.test(h.replace(/<style>[\s\S]*?<\/style>/g, '')), h.error ?? '');
+  const { preloadLogoAssets } = await vite.ssrLoadModule('/src/lib/preload.ts');
+  ok('loading screen: the wait for the logo files always ends (no browser here, so every load fails)', (await Promise.race([preloadLogoAssets(50).then(() => 'done'), new Promise((r) => setTimeout(() => r('hung'), 2000))])) === 'done');
+  ok('loading screen: waiting for the gem to draw also ends at the limit if it never does', (await Promise.race([preloadLogoAssets(50, true).then(() => 'done'), new Promise((r) => setTimeout(() => r('hung'), 2000))])) === 'done');
+  {
+    const logoSrc = readFileSync(new URL('../src/app/components/NenyaLogo.tsx', import.meta.url), 'utf8');
+    const gemSrc = readFileSync(new URL('../src/app/components/SpectralGem.tsx', import.meta.url), 'utf8');
+    const mainSrc = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
+    ok('inner orbs peak at 80% opacity', /INNER_ORB_OPACITY = \[0\.66, 0\.8, 0\.66\]/.test(logoSrc));
+    ok('the gem reports its first drawn frame, and the downloads start before the page is drawn', /markGemDrawn\(\)/.test(gemSrc) && /startLogoDownloads\(\)/.test(mainSrc));
+  }
+  const { TourOffer } = await vite.ssrLoadModule('/src/app/components/TourOffer.tsx');
+  h = render(TourOffer, { onAccept: noop, onDecline: noop });
+  ok('tour offer: asks, with both a yes and a skip', typeof h === 'string' && h.includes('role="dialog"') && h.includes('Would you like a quick tour?') && h.includes('Show me around') && h.includes('Skip for now'), h.error ?? '');
+  const { TUTORIAL_STEPS } = await vite.ssrLoadModule('/src/app/components/WelcomeTutorial.tsx');
+  ok('tour: the logo, the counter, the header controls, the menu and accessibility, then the sensory reflection',
+    TUTORIAL_STEPS.map((x) => x.id).join() === 'logo,counter,tools,accessibility,reflection');
+  ok('tour: every step points at something that exists on the page', TUTORIAL_STEPS.every((x) => x.targetIds.every((id) => {
+    const nav = readFileSync(new URL('../src/app/components/GlobalNavigation.tsx', import.meta.url), 'utf8');
+    const page = readFileSync(new URL('../src/app/components/pages/WelcomePage.tsx', import.meta.url), 'utf8');
+    const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+    return [nav, page, app].some((t) => t.includes(`id="${id}"`));
+  })));
+  {
+    const src = readFileSync(new URL('../src/app/components/WelcomeTutorial.tsx', import.meta.url), 'utf8');
+    ok('tour: the highlighted part is left sharp (no blur) and the card is centred across the page', !/backdrop-blur/.test(src.split('{/* Card */}')[0]) && /cardLeft = Math\.max\(margin, \(viewportW/.test(src));
+    ok('tour: the highlight waits for the scroll to settle before it is drawn', /setSettled\(false\)/.test(src) && /rect && settled/.test(src) && /stable >= 6/.test(src));
+    ok('tour: the last step returns to the logo', /Back to the logo/.test(src) && /toTop\(\)/.test(src));
+  }
 
   // The logo: orbit view with the spectral gem and the baked glow. Effects do not run on the server, so this
   // checks the structure; the drawing itself is checked by the breath-clock and glow-bake tests.
   const { default: Logo } = await vite.ssrLoadModule('/src/app/components/NenyaLogo.tsx');
   h = render(Logo, { size: 300, showValarOrbit: true, showLogo: true, glow: true, technique: { ih: 4000, hi: 7000, ex: 8000, ho: 0 }, cycleStart: 0 });
   const canvases = typeof h === 'string' ? (h.match(/<canvas/g) ?? []).length : 0;
-  ok('logo (orbit view): renders the gem canvases, the gold bezel and the two glow images', typeof h === 'string' && canvases === 5, h.error ?? `${canvases} canvases`);
+  ok('logo (orbit view): renders the gem canvases, the vector bezel image and the two glow images', typeof h === 'string' && canvases === 4 && /<img[^>]*src="[^"]*(bezel|svg)/.test(h), h.error ?? `${canvases} canvases`);
   ok('logo (orbit view): the overlay gem layer blends with overlay', typeof h === 'string' && h.includes('mix-blend-mode:overlay'));
   ok('logo (orbit view): the last inner orbs are cut away where the first ones overlap them', typeof h === 'string' && (h.match(/mask-image:radial-gradient/g) ?? []).length >= 8, `${(h.match(/mask-image:radial-gradient/g) ?? []).length} mask-image uses`);
   ok('logo (orbit view): the outer orbs carry the box-shadow glow class', typeof h === 'string' && h.includes('nenya-orb-glow'));
@@ -91,8 +130,18 @@ try {
   const { DeviceMemoryControls, ForgetMeLink } = await vite.ssrLoadModule('/src/app/components/DeviceMemoryControls.tsx');
   h = render(DeviceMemoryControls, {});
   ok('settings: the erase button says "Forget me" with helper text under it', typeof h === 'string' && h.includes('>Forget me<') && h.includes('Erases what this device has saved') && !h.includes('Forget everything'), h.error ?? '');
+  ok('settings: the helper text says it returns you to the terms', typeof h === 'string' && /where the terms are shown again/.test(h.replace(/<!-- -->/g, '')), h.error ?? '');
+  ok('settings: no "Cleared" notice is left (the page reloads instead)', typeof h === 'string' && !h.includes('Your current choices stay'), '');
   h = render(ForgetMeLink, {});
   ok('footer: there is a "Forget me" link too', typeof h === 'string' && h.includes('Forget me') && h.includes('<button'), h.error ?? '');
+  // The "Are you sure?" step: the question appears before anything is erased, Cancel comes first, and neither trigger erases on its own.
+  const { ForgetMeConfirmPanel } = await vite.ssrLoadModule('/src/app/components/DeviceMemoryControls.tsx');
+  h = render(ForgetMeConfirmPanel, { onCancel: noop, onConfirm: noop });
+  ok('forget me: the question says "Are you sure?" and offers Cancel and Yes', typeof h === 'string' && h.includes('Are you sure?') && h.includes('>Cancel<') && h.includes('Yes, forget me'), h.error ?? '');
+  ok('forget me: Cancel comes before the confirming button (a stray Enter does nothing)', typeof h === 'string' && h.indexOf('>Cancel<') < h.indexOf('Yes, forget me'), '');
+  ok('forget me: the panel is a labelled group', typeof h === 'string' && h.includes('role="group"') && h.includes('aria-label="Confirm Forget me"'), '');
+  ok('forget me: the settings button shows only the trigger until it is pressed', !render(DeviceMemoryControls, {}).includes('Are you sure?'), '');
+  ok('forget me: the footer link shows only the trigger until it is pressed', !render(ForgetMeLink, {}).includes('Are you sure?'), '');
   const { AppFooter } = await vite.ssrLoadModule('/src/app/components/AppFooter.tsx');
   h = render(AppFooter, {});
   ok('every page footer carries the Forget me link', typeof h === 'string' && h.includes('Forget me'), h.error ?? '');

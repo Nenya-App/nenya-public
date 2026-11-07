@@ -7,9 +7,18 @@ process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret';
 process.env.COACH_MODEL = 'deepseek-v3.2'; // these tests use the plain request path; the default encrypted model is covered in venice-e2ee.test.mts
 
 const sys: string[] = [];
+// A different reply each time: the function asks again when a reply repeats an earlier one, which would add extra calls here.
+const replies = [
+  'I hear that. It sounds like a lot to carry right now.',
+  'Thank you for telling me more. Work seems to be pressing on you from several sides.',
+  'That would wear anyone down. What would a little relief look like this week?',
+  'Something about being stretched thin comes through clearly in what you describe.',
+  'You named what matters to you, and that counts for something right now.',
+];
+let call = 0;
 (globalThis as any).fetch = async (_u: string, init: any) => {
   sys.push(JSON.parse(init.body).messages[0].content);
-  return new Response(JSON.stringify({ choices: [{ message: { content: 'I hear that. It sounds like a lot to carry right now.' } }] }), { status: 200 });
+  return new Response(JSON.stringify({ choices: [{ message: { content: replies[call++ % replies.length] } }] }), { status: 200 });
 };
 const S = { color1: '#7a9b9e', color2: '#DAC682' };
 let msgs: any[] = [];
@@ -27,4 +36,7 @@ for (let i = 0; i < 5; i++) {
 }
 ok('exchange 1 asks for listening first', /first exchange: listen/.test(sys[0]) && !/first exchange: listen/.test(sys[1]));
 ok('exchange 4 mentions one remaining', /One exchange remains/.test(sys[3]) && !/One exchange remains/.test(sys[2]));
-ok('exchange 5 is told the page closes the conversation', /final exchange\. Reflect/.test(sys[4]) && /page closes the conversation/.test(sys[4]));
+ok('exchange 5 is told it is the last message and that the page adds its closing', /final exchange, and the person will not be able to reply/.test(sys[4]) && /page adds its own closing note/.test(sys[4]));
+ok('exchange 5 is told to ask no question and invite nothing', /Do not ask any question, and do not invite the person to share, reply, or tell you more/.test(sys[4]));
+ok('exchange 5 drops the "ask a question" and "next step" lines that the earlier exchanges have', !/Ask at most one question/.test(sys[4]) && !/Offer a concrete next step/.test(sys[4]) && /Ask at most one question/.test(sys[2]));
+ok('exchange 4 invites the person\'s last word without counting', /invites their last word/.test(sys[3]) && /Do not mention how many exchanges are left/.test(sys[3]) && !/invites their last word/.test(sys[2]) && !/invites their last word/.test(sys[4]));

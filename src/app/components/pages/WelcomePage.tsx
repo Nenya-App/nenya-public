@@ -81,7 +81,7 @@ export default function WelcomePage({
             below to the bottom of the viewport on shorter/wider screens,
             leaving a large empty gap above it. The outer section's own
             justify-center now centers this + the text block as one unit. */}
-        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0.7s both' }} className={`flex items-center justify-center transition-all duration-500`}>
+        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`flex items-center justify-center transition-all duration-500`}>
           {/* Not interactive: hovering only brightens the glow. */}
           <div id="tutorial-logo" className="relative transition-all duration-500 nenya-logo-hover">
             <ValarBreathingLogo
@@ -110,7 +110,7 @@ export default function WelcomePage({
         </div>
 
         {/* Breathing Text with Scroll Indicator */}
-        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0.7s both' }} className={`pb-8 -mt-2 sm:-mt-4 space-y-3 transition-opacity duration-500`}>
+        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`pb-8 -mt-2 sm:-mt-4 space-y-3 transition-opacity duration-500`}>
           <p className="text-xl md:text-2xl text-center text-muted-foreground">
             Give Yourself a Moment to Breathe
           </p>

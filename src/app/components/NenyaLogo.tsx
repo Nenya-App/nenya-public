@@ -1,16 +1,14 @@
 import * as m from 'motion/react-m';
 import { useEffect, useRef, useState } from 'react';
-import nenyaLogo from 'figma:asset/2d6974b805d90d34c0a281273e556b545b1c5632.webp';
-// The source asset is a 1024x1024 WebP (~69KB) -- appropriate for the large
-// welcome-screen breathing logo (rendered up to 400px), but most call sites
-// use this component as a small persistent header mark (28-40px), where a
-// 1024px source is over 25x more image data than the display size can ever
-// show. This pre-resized/re-encoded 128x128 WebP (~5KB) is swapped in below
-// for those small sizes instead.
+// The flat logo (petals, bezel and gem, no orbs) is a 768 px WebP rendered from the vector drawings, and most call
+// sites use this component as a small persistent header mark (28-40px), where that is over 25 times more image
+// data than the display can show. A pre-resized 128 px WebP is swapped in below for those small sizes instead.
+import nenyaLogo from '../../assets/nenya-logo.webp';
 import nenyaLogoSmall from '../../assets/nenya-logo-small.webp';
-// The orbit view's two separated layers. Imported (not served from public/) so the build gives them
-// versioned filenames and they can be cached for a long time safely.
-import petalsLayer from '../../assets/petals-sep.webp';
+// The orbit view's petals: a vector drawing (two interlaced gold and cream flowers with a bevel and a true over-under
+// weave), drawn as an image so the build gives it a versioned filename that can be cached for a long time.
+// Its 765-unit box is the logo's size * 0.765, with the outer ring's diameter as 1000 units.
+import petalsLayer from '../../assets/logo/petals.svg';
 import { valarColors, type BreathingTechnique } from './ValarBreathingLogo';
 import SpectralGem from './SpectralGem';
 import LogoGlow from './LogoGlow';
@@ -19,6 +17,55 @@ import LogoGlow from './LogoGlow';
 // covers up to ~40px CSS at 3x device pixel ratio (the largest "small"
 // usage in the app today) with headroom to spare.
 const SMALL_LOGO_MAX_SIZE = 48;
+
+// The orbs are glass spheres: a colour that changes over time (animated below) with four fixed layers over it,
+// all taken from the design bench. Sizes are fractions of the logo's size; opacities are the animation's
+// low and high (the orbs pulse between them).
+const INNER_ORB_FRACTION = 0.069;
+const OUTER_ORB_FRACTION = 0.106;
+const INNER_ORB_OPACITY = [0.66, 0.8, 0.66]; // peaks at 80%
+const OUTER_ORB_OPACITY = [0.64, 0.87, 0.64];
+const ORB_FORM = 0.3; // shading toward the lower right edge
+const ORB_SHINE = 0.2; // the glass highlight, upper left
+const ORB_RIM_LIGHT = 0.69; // a bright rim on the upper left edge
+const ORB_RIM_DARK = 0.06; // a faint darkening of the whole edge
+
+/** The fixed layers over an orb's changing colour. `d` is the orb's diameter in px. */
+function OrbSurface({ d }: { d: number }) {
+  const R = d / 2;
+  const fill: React.CSSProperties = { position: 'absolute', inset: 0, borderRadius: '50%', pointerEvents: 'none' };
+  const ring = 'radial-gradient(circle closest-side, transparent 86.5%, #000 87%, #000 99%, transparent 99.5%)';
+  return (
+    <>
+      <span aria-hidden="true" style={{ ...fill, background: `radial-gradient(circle ${0.85 * d}px at 30% 30%, rgba(26,15,8,0) ${0.35 * 0.85 * d}px, rgba(26,15,8,${ORB_FORM}) ${0.85 * d}px)` }} />
+      <span aria-hidden="true" style={{ ...fill, background: `radial-gradient(circle closest-side, rgba(0,0,0,0) 60%, rgba(0,0,0,${ORB_RIM_DARK}) 100%)` }} />
+      <span
+        aria-hidden="true"
+        style={
+          {
+            ...fill,
+            background: `linear-gradient(135deg, rgba(255,255,255,${ORB_RIM_LIGHT}) 0%, rgba(255,255,255,0) 45%)`,
+            maskImage: ring,
+            WebkitMaskImage: ring,
+          } as React.CSSProperties
+        }
+      />
+      <span
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          left: R - 0.3 * R - 0.42 * R,
+          top: R - 0.34 * R - 0.26 * R,
+          width: 0.84 * R,
+          height: 0.52 * R,
+          transform: 'rotate(-38deg)',
+          pointerEvents: 'none',
+          background: `radial-gradient(ellipse closest-side, rgba(255,255,255,${ORB_SHINE}), rgba(255,255,255,0))`,
+        }}
+      />
+    </>
+  );
+}
 
 interface NenyaLogoProps {
   size?: number;
@@ -56,12 +103,12 @@ export default function NenyaLogo({
   // Inner orbit - tight orbit creates dense overlapping effect
   const orbitRadius = size * 0.0625; // 37.5px for 600px logo, 12.5px for 200px logo
   // The inner orbs sit inside the gem, so they are smaller than the outer ones.
-  const orbSize = Math.max(8.5, size * 0.085);
+  const orbSize = Math.max(8.5, size * INNER_ORB_FRACTION);
 
   // Outer orbit - at the edge of the breathing animation (logoSize / 2)
   // Breathing animation expands to 1.4x its base size (logoSize / 1.4), so at peak it reaches logoSize diameter
   const outerOrbitRadius = size / 2; // Half the logo size = outer edge of breathing animation
-  const outerOrbSize = Math.max(8.5, size * 0.102) * 0.5; // Half the size the inner orbs used to have; unchanged
+  const outerOrbSize = Math.max(8.5, size * OUTER_ORB_FRACTION) * 0.5;
 
   // Set once, when the logo first mounts with a clock anchor, so a fresh mount starts the rotation at the
   // correct phase. Deliberately NOT recomputed when the anchor changes later: that happens when the breathing
@@ -92,7 +139,7 @@ export default function NenyaLogo({
       )}
 
       {/* Logo image - base layer. When the Valar orbit is enabled the flat logo is
-          swapped for the separated petals layer (brightened) under the gem overlay below. */}
+          swapped for the vector petals under the gem overlay below. */}
       {showLogo && (
         <img
           src={showValarOrbit ? petalsLayer : flatLogoSrc}
@@ -107,7 +154,6 @@ export default function NenyaLogo({
             left: '50%',
             top: '50%',
             transform: 'translate(-50%,-50%)',
-            filter: showValarOrbit ? 'brightness(1.4)' : undefined,
           }}
         />
       )}
@@ -163,7 +209,7 @@ export default function NenyaLogo({
                   top: wrapped ? pad : orbitRadius - orbSize / 2 + y,
                   borderRadius: '50%',
                   willChange: 'background, opacity, transform',
-                  opacity: 0.64,
+                  opacity: INNER_ORB_OPACITY[0],
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
@@ -178,7 +224,7 @@ export default function NenyaLogo({
                     `radial-gradient(circle at 30% 30%, ${colors[5]}ff, ${colors[5]}ee 50%, ${colors[5]}99 80%, ${colors[5]}44)`,
                     `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
                   ],
-                  opacity: [0.584, 0.8, 0.584],
+                  opacity: INNER_ORB_OPACITY,
                   scale: [0.95, 1.05, 0.95],
                   rotate: -360,
                 }}
@@ -205,7 +251,9 @@ export default function NenyaLogo({
                     ease: "linear"
                   }
                 }}
-              />
+              >
+                <OrbSurface d={orbSize} />
+              </m.div>
             );
             if (!wrapped) return orb;
             const rr = orbSize / 2;
@@ -282,7 +330,7 @@ export default function NenyaLogo({
                   top: outerOrbitRadius - outerOrbSize / 2 + y,
                   borderRadius: '50%',
                   willChange: 'background, opacity, transform',
-                  opacity: 0.8,
+                  opacity: OUTER_ORB_OPACITY[0],
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
@@ -297,7 +345,7 @@ export default function NenyaLogo({
                     `radial-gradient(circle at 30% 30%, ${colors[5]}ff, ${colors[5]}ee 50%, ${colors[5]}99 80%, ${colors[5]}44)`,
                     `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
                   ],
-                  opacity: [0.73, 1.0, 0.73],
+                  opacity: OUTER_ORB_OPACITY,
                   scale: [0.95, 1.05, 0.95],
                   rotate: 360,
                 }}
@@ -324,7 +372,9 @@ export default function NenyaLogo({
                     ease: "linear"
                   }
                 }}
-              />
+              >
+                <OrbSurface d={outerOrbSize} />
+              </m.div>
             );
           })}
         </div>
