@@ -75,6 +75,9 @@ function resolveTarget(ids: string[]): HTMLElement | null {
 export function WelcomeTutorial({ isOpen, onClose, onStepChange }: WelcomeTutorialProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  // False while the page is still scrolling to the step's target: no highlight is drawn and the card stays put.
+  const [settled, setSettled] = useState(true);
+  const lastCard = useRef<{ top: number; left: number } | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [cardHeight, setCardHeight] = useState(240);
 
@@ -107,6 +110,7 @@ export function WelcomeTutorial({ isOpen, onClose, onStepChange }: WelcomeTutori
     const el = resolveTarget(step.targetIds);
     if (!el) {
       setRect(null);
+      setSettled(true);
       return;
     }
 
@@ -119,17 +123,32 @@ export function WelcomeTutorial({ isOpen, onClose, onStepChange }: WelcomeTutori
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    // Hold the highlight back until the page has stopped moving: the smooth scroll above takes a moment, and a
+    // highlight that follows a still-moving target jumps around. Settled means the target's position has not
+    // changed for about a tenth of a second (or 1.5 s have passed).
+    setSettled(false);
     const update = () => setRect(el.getBoundingClientRect());
-    update();
-    const t1 = setTimeout(update, 350);
-    const t2 = setTimeout(update, 700);
-    const t3 = setTimeout(update, 1200);
+    let raf = 0;
+    let stable = 0;
+    let last = '';
+    const started = Date.now();
+    const poll = () => {
+      const r = el.getBoundingClientRect();
+      const key = `${Math.round(r.top)}|${Math.round(r.left)}|${Math.round(r.width)}|${Math.round(r.height)}`;
+      stable = key === last ? stable + 1 : 0;
+      last = key;
+      if (stable >= 6 || Date.now() - started > 1500) {
+        setRect(r);
+        setSettled(true);
+        return;
+      }
+      raf = requestAnimationFrame(poll);
+    };
+    raf = requestAnimationFrame(poll);
     window.addEventListener('resize', update);
     window.addEventListener('scroll', update, true);
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
+      cancelAnimationFrame(raf);
       window.removeEventListener('resize', update);
       window.removeEventListener('scroll', update, true);
     };
@@ -176,7 +195,10 @@ export function WelcomeTutorial({ isOpen, onClose, onStepChange }: WelcomeTutori
   // The card is always centred across the page. Vertically it sits below the spotlighted part if there is room, else
   // above it, else at the bottom of the screen; with nothing to point at it is centred.
   cardLeft = Math.max(margin, (viewportW - Math.min(cardWidth, viewportW - margin * 2)) / 2);
-  if (rect) {
+  if (!settled && lastCard.current) {
+    cardTop = lastCard.current.top;
+    cardLeft = lastCard.current.left;
+  } else if (rect) {
     const spaceBelow = viewportH - rect.bottom;
     const spaceAbove = rect.top;
     if (spaceBelow >= cardHeight + margin * 2) cardTop = rect.bottom + pad + margin;
@@ -186,15 +208,16 @@ export function WelcomeTutorial({ isOpen, onClose, onStepChange }: WelcomeTutori
   } else {
     cardTop = viewportH / 2 - cardHeight / 2;
   }
+  if (settled) lastCard.current = { top: cardTop, left: cardLeft };
 
   return (
     <>
       {/* Click catcher. With nothing to point at the whole page is dimmed; otherwise the spotlight below dims everything
           but the highlighted part, so that part stays sharp and bright (no blur is ever applied here). */}
-      <div className={`fixed inset-0 z-[95] ${rect ? '' : 'bg-black/55'}`} onClick={handleClose} />
+      <div className={`fixed inset-0 z-[95] ${rect && settled ? '' : 'bg-black/55'}`} onClick={handleClose} />
 
       <AnimatePresence>
-        {rect && (
+        {rect && settled && (
           <m.div
             key="spotlight"
             initial={{ opacity: 0 }}

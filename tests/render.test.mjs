@@ -101,6 +101,7 @@ try {
   {
     const src = readFileSync(new URL('../src/app/components/WelcomeTutorial.tsx', import.meta.url), 'utf8');
     ok('tour: the highlighted part is left sharp (no blur) and the card is centred across the page', !/backdrop-blur/.test(src.split('{/* Card */}')[0]) && /cardLeft = Math\.max\(margin, \(viewportW/.test(src));
+    ok('tour: the highlight waits for the scroll to settle before it is drawn', /setSettled\(false\)/.test(src) && /rect && settled/.test(src) && /stable >= 6/.test(src));
     ok('tour: the last step returns to the logo', /Back to the logo/.test(src) && /toTop\(\)/.test(src));
   }
 
