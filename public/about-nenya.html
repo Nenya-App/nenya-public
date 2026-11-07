@@ -109,7 +109,7 @@
       "name": "What's a privacy-first way to check in with my emotions?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The core breathing and reflection practice runs in the browser with no account and no tracking cookies, and a session summary is generated and downloaded locally by the visitor. What a visitor enters in the reflection never reaches Nenya. The site's host counts visits as anonymous totals (page requests and unique visitors counted by connection address within a day), with nothing stored on the visitor's device. The only parts that send anything else are ones a visitor chooses: a contact message or report, and the optional coach demo, whose messages pass through Nenya's server to Venice AI, an outside service, and are not stored by Nenya. The source code is public so these claims can be checked."
+        "text": "The core breathing and reflection practice runs in the browser with no account and no tracking cookies, and a session summary is generated and downloaded locally by the visitor. What a visitor enters in the reflection never reaches Nenya. The site's host counts visits as anonymous totals (page requests and unique visitors counted by connection address within a day), with nothing stored on the visitor's device. Nenya also keeps its own plain daily totals of use. The only parts that send anything else are ones a visitor chooses: a contact message or report, and the optional coach demo, whose messages pass through Nenya's server to Venice AI, an outside service, and are not stored by Nenya. The source code is public so these claims can be checked."
       }
     }
   ]
@@ -273,7 +273,10 @@
     (sent to Nenya through Netlify Forms) and the optional coach demo, whose messages pass through Nenya's server to
     Venice AI and are not stored by Nenya. Like any website, Nenya's host keeps standard connection logs, and it
     gives Nenya anonymous visit totals (page requests, unique visitors counted by connection address within a day,
-    approximate country), with no cookies and nothing stored on the visitor's device.</li>
+    approximate country), with no cookies and nothing stored on the visitor's device. Nenya also keeps its own plain
+    daily totals of use (screens opened, rhythm chosen, tour answers, and coach messages and conversations), with no
+    information about who produced them, and the coach demo limits each connection with a one-way daily code that is
+    deleted within two days.</li>
   <li><strong>No advertising, no subscription.</strong> The core tool is free and stays free — there are
     no paywalls or premium tiers.</li>
   <li><strong>No accounts required.</strong> Nothing to sign up for.</li>
@@ -349,7 +352,8 @@ sent anywhere, which is an architectural fact, not just a policy. Only the optio
 small relay function. Nothing typed or chosen is tracked or stored; a session summary is generated and
 downloaded locally, by the visitor, for their own use, and nothing persists once the tab is closed unless the
 visitor chooses to remember their settings on their device. The site's host keeps standard connection logs and
-provides anonymous visit totals, with no cookies and nothing stored on the visitor's device.</p>
+provides anonymous visit totals, with no cookies and nothing stored on the visitor's device. Nenya also keeps its own
+plain daily totals of use, with no information about who produced them.</p>
 
 <div class="cta">
   <p>

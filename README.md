@@ -40,7 +40,9 @@ text is in the in-app **Terms of Use & Privacy Policy** (source:
 [`src/lib/legalDocument.ts`](./src/lib/legalDocument.ts)). In short:
 
 - No account required, no advertising, no cookies, no fingerprinting. The web host (Netlify) turns its server logs into
-  anonymous visit totals; nothing for that runs in your browser or is stored on your device.
+  anonymous visit totals; nothing for that runs in your browser or is stored on your device. Nenya also keeps plain
+  daily totals of its own (screens opened, rhythm chosen, tour answers, coach counts), only after you agree to the terms
+  and never if your browser sends the Global Privacy Control signal.
 - What you enter while using the tool stays in your browser's memory and is gone when you close the tab. It is
   never sent to a server (except the coach demo, if you choose it).
 - By default the only thing kept on your device between visits is one timestamp, saved after a coach
