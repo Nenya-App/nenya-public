@@ -9,7 +9,7 @@ import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/veniceLinks';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
-import { OWNER_KEY, REST_KEY } from '../lib/deviceMemory';
+import { OWNER_KEY, OWNER_TOKEN_KEY, REST_KEY } from '../lib/deviceMemory';
 import { AppFooter } from '../app/components/AppFooter';
 import { SupportThisWork } from '../app/components/SupportThisWork';
 import { ShareNenya } from '../app/components/ShareNenya';
@@ -28,6 +28,17 @@ const ENDPOINT = '/api/coach';
 // so it is a courtesy, not a lock. Setting OWNER_KEY to '1' in your own browser skips it for testing.
 const REST_HOURS = 6;
 const HOUR_MS = 3600000;
+
+// The owner's secret token, if the owner has put one in this browser, goes with each message so the function can lift
+// the per-connection limit for testing. Nobody else has one, and it is never shown or stored anywhere but here.
+const ownerHeader = (): Record<string, string> => {
+  try {
+    const t = localStorage.getItem(OWNER_TOKEN_KEY);
+    return t ? { 'x-nenya-owner': t } : {};
+  } catch {
+    return {};
+  }
+};
 
 // When the rest ends (ms since epoch), or 0 if there is none.
 const readRestEnds = (): number => {
@@ -105,7 +116,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const [failure, setFailure] = useState<FailureInfo | null>(null);
   const [blocked, setBlocked] = useState(false);
   // Today's free conversations are used up. Only known when a first message is sent.
-  const [capped, setCapped] = useState(false);
+  const [capped, setCapped] = useState<false | 'cap' | 'ip'>(false);
   const [signaturePlaying, setSignaturePlaying] = useState(false);
   const stopSignature = useRef<(() => void) | null>(null);
   const notes = signatureNotes(color1, color2);
@@ -183,7 +194,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     try {
       const res = await fetch(ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...ownerHeader() },
         body: JSON.stringify({ messages: toWire(next), session, ticket }),
       });
       if (!res.ok) {
@@ -205,8 +216,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         blocked?: string;
       };
       // The server screens too. A blocked message is not part of the conversation.
-      if (data.blocked === 'cap') {
-        setCapped(true);
+      if (data.blocked === 'cap' || data.blocked === 'ip') {
+        setCapped(data.blocked);
         return;
       }
       if (data.blocked) {
@@ -633,11 +644,14 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
               {stage === 'chat' && capped && (
                 <section className="space-y-4 rounded-2xl border bg-card p-5" style={{ borderColor: `${color2}80` }}>
-                  <h2 className="text-xl">The free conversations for today are used up</h2>
+                  <h2 className="text-xl">
+                    {capped === 'ip' ? 'This connection has used its free conversations for today' : 'The free conversations for today are used up'}
+                  </h2>
                   <p className="text-sm text-muted-foreground">
-                    This demo is free, and each reply costs real money, so Nenya can only offer a set number of
-                    conversations a day. Today&rsquo;s are taken. Your message was not passed on to Venice AI and was
-                    not kept. It opens again tomorrow. Until then, the breathing tool is here, or you can continue with the same character on
+                    {capped === 'ip'
+                      ? 'Shared networks count together. '
+                      : 'This demo is free, and each reply costs real money, so Nenya can only offer a set number of conversations a day. Today\u2019s are taken. '}
+                    Your message was not passed on to Venice AI and was not kept. It opens again tomorrow. Until then, the breathing tool is here, or you can continue with the same character on
                     Venice AI, with the differences explained below.
                   </p>
                   <div className="flex flex-wrap items-center gap-4">

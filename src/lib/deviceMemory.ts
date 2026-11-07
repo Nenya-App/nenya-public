@@ -9,11 +9,14 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 //   nenya.prefs        display settings, written only while nenya.remember is on.
 //   nenya.terms        the terms date the visitor agreed to, written only while nenya.remember is on.
 //   nenya.coach.owner  '1' in the owner's own browser, to skip the coach rest while testing.
+//   nenya.coach.ownerToken  the owner's secret, to skip the per-connection limit while testing.
 // Never kept: anything a visitor writes, draws, picks as a session color, or answers in a gateway.
 // Nothing here is ever sent to a server, and there are no random identifiers.
 
 export const REST_KEY = 'nenya.coach.rest';
 export const OWNER_KEY = 'nenya.coach.owner';
+/** The owner's secret token, kept in the owner's own browser only and sent to the coach as a header (see coach.mts). */
+export const OWNER_TOKEN_KEY = 'nenya.coach.ownerToken';
 const REMEMBER_KEY = 'nenya.remember';
 const PREFS_KEY = 'nenya.prefs';
 const TERMS_KEY = 'nenya.terms';
@@ -154,7 +157,7 @@ export function wipeDevice({ keepOwner }: { keepOwner: boolean }) {
     const mine: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.toLowerCase().startsWith('nenya') && !(keepOwner && k === OWNER_KEY)) mine.push(k);
+      if (k && k.toLowerCase().startsWith('nenya') && !(keepOwner && (k === OWNER_KEY || k === OWNER_TOKEN_KEY))) mine.push(k);
     }
     mine.forEach((k) => localStorage.removeItem(k));
   } catch {

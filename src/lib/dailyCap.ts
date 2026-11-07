@@ -1,6 +1,7 @@
-// A single anonymous counter: how many conversations were started today. It holds no
-// visitor data at all, only "<date>:<count>", and is the brake on the Venice bill.
-// Only a conversation's first exchange is counted, so ones already under way finish.
+// A single anonymous counter: how many coach turns were used today, across all visitors. It holds no
+// visitor data at all, only "<date>:<count>", and is the brake on the Venice bill. The cost follows turns,
+// so turns are what is counted. Only a conversation's first exchange can be refused; ones already under way
+// finish, and their turns are still counted.
 
 /** The slice of a Netlify Blobs store this needs, so it can be tested with a fake. */
 export interface CounterStore {
@@ -8,7 +9,8 @@ export interface CounterStore {
   set(key: string, value: string, opts: { onlyIfNew: true } | { onlyIfMatch: string }): Promise<{ modified: boolean }>;
 }
 
-export const DEFAULT_DAILY_CAP = 100;
+/** 500 turns a day: the same ceiling as 100 full conversations of five exchanges. */
+export const DEFAULT_DAILY_CAP = 500;
 const KEY = 'daily-count';
 const ATTEMPTS = 8;
 
@@ -23,28 +25,29 @@ export const capFromEnv = (raw: string | undefined): number => {
 };
 
 /**
- * Takes one slot if any are left today. Returns false only when the cap is reached.
- * Conditional writes keep two simultaneous requests from taking the same slot, and a burst that
- * keeps colliding is refused. If the store itself fails, the visitor is let through, because an
- * outage here should not lock people out of a breathing tool.
+ * Counts one turn. With `enforce` (a conversation's first exchange), returns false when the day's cap has been
+ * reached and counts nothing; without it (a conversation under way), the turn is always allowed and counted.
+ * Conditional writes keep two simultaneous requests from taking the same count, and a burst that keeps colliding
+ * is refused when enforcing. If the store itself fails, the visitor is let through, because an outage here should
+ * not lock people out of a breathing tool.
  */
-export async function claimConversationSlot(store: CounterStore, cap: number, now = new Date()): Promise<boolean> {
+export async function countTurn(store: CounterStore, cap: number, enforce: boolean, now = new Date()): Promise<boolean> {
   const day = capDay(now);
   try {
     for (let i = 0; i < ATTEMPTS; i++) {
       const cur = await store.getWithMetadata(KEY, { type: 'text' });
       const [d, c] = (cur?.data ?? '').split(':');
       const count = d === day ? Number(c) || 0 : 0;
-      if (count >= cap) return false;
+      if (enforce && count >= cap) return false;
       const value = `${day}:${count + 1}`;
       const res = cur?.etag
         ? await store.set(KEY, value, { onlyIfMatch: cur.etag })
         : await store.set(KEY, value, { onlyIfNew: true });
       if (res.modified) return true;
     }
-    // Still losing the race after several tries means a burst of simultaneous starts, which is
-    // the pattern the cap exists for. Refuse; a real visitor can try again in a moment.
-    return false;
+    // Still losing the race after several tries means a burst of simultaneous starts, which is the pattern the cap
+    // exists for. Refuse a new conversation; a turn already under way is allowed (and left uncounted).
+    return !enforce;
   } catch {
     return true;
   }

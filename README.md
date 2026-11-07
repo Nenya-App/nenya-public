@@ -79,7 +79,7 @@ The honest edges:
   relay function, served at `/api/coach`, in
   [`netlify/functions/coach.mts`](./netlify/functions/coach.mts), so the Venice API
   key stays server-side. The function stores no messages and does not log message
-  text; the only thing it keeps is one anonymous daily count of conversations started. Caps: five exchanges, 500 characters per message, short replies, and a
+  text; what it keeps is plain anonymous daily totals, one running count of the day's turns, and, for the per-connection limit, a count of turns under a one-way daily code that is deleted within two days. Caps: five exchanges, 500 characters per message, short replies, and a
   signed ticket that stops a client from forging or extending the history. The
   character's prompt lives on Venice, not in this repository.
 
