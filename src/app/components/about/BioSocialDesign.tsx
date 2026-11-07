@@ -46,7 +46,7 @@ const FOOTPRINT_ROWS: ({ feature: string } & Record<FootprintId, string>)[] = [
   {
     feature: 'Data footprint',
     typical: 'Persistent cloud data retention for harvesting. Passive energy debt and privacy risk.',
-    today: 'Nenya stores nothing and does not log messages; nothing stays in your browser after you close the tab. Coach messages pass through to Venice AI, whose own policies apply.',
+    today: 'What you enter stays on your device and is gone when you close the tab, unless you choose to remember your settings. Nenya stores no messages and logs none. Its web host keeps standard connection logs and gives us anonymous visit totals. Coach messages pass through to Venice AI, whose own policies apply.',
     goal: 'Data stays on your device or is ephemeral by design, and minimal data ever leaves it.',
   },
 ];
@@ -404,7 +404,7 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
             {/* Concluding Statement */}
             <Card className="p-4 md:p-8 bg-gradient-to-br from-nenya-accent-primary/10 via-nenya-accent-primary/5 to-nenya-accent-primary/10 backdrop-blur-sm border-nenya-accent-primary/30">
               <p className="text-sm md:text-lg text-foreground leading-relaxed text-center">
-                <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">Our commitment to Data Minimization for Privacy is not just a security feature—it is the most effective first-order Energy Efficiency Mechanism.</strong> Today, that means a coach that is short, capped, and stores nothing. Our goal is to build on the Edge, so our technology helps you heal without harming the planet.
+                <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">Our commitment to Data Minimization for Privacy is not just a security feature—it is the most effective first-order Energy Efficiency Mechanism.</strong> Today, that means a coach that is short, capped, and keeps none of your messages. Our goal is to build on the Edge, so our technology helps you heal without harming the planet.
               </p>
               <p className="text-xs text-muted-foreground text-center mt-4 md:mt-6 italic">
                 Data sourced from <a 

@@ -139,7 +139,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-amber-900 dark:text-amber-100">No Tracking, No Profiles, No Ads</h3>
                     <p className="text-sm text-amber-800/80 dark:text-amber-200/80">
-                      We do not track you across the internet. We do not build a profile of you. We do not host advertisements. Our success is measured by your growth in emotional literacy, not by your engagement metrics.
+                      We do not track you across the internet. We do not build a profile of you. We do not host advertisements. Our web host counts visits as anonymous totals, with no cookies and nothing stored on your device (Section 15 of the terms). Our success is measured by your growth in emotional literacy, not by your engagement metrics.
                     </p>
                   </div>
                 </div>
