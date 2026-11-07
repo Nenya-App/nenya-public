@@ -160,7 +160,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         heading: 'What the Site Does Not Do',
         paragraphs: [],
         bullets: [
-          'It does not require or offer visitor accounts, and it does not create profiles or persistent identifiers for visitors. A sign-in exists only for the people who run Nenya, through Netlify Identity; it is not open to visitors, nothing you do on the site uses it, and the only personal information it holds is those administrators’ email addresses. The visit statistics in Section 15 count unique visitors by connection address within a day; nothing is saved on your device for that.',
+          'It does not require or offer visitor accounts, and it does not create profiles or persistent identifiers for visitors. The visit statistics in Section 15 count unique visitors by connection address within a day; nothing is saved on your device for that.',
           'It does not set cookies or use fingerprinting. Unless you turn on “Remember my settings on this device,” it does not remember your light or dark mode or anything else between visits, apart from the timestamp saved after a coach conversation ends (Section 21).',
           'It does not send what you enter in the reflection tool to any server. The only exceptions are the form in Section 16 and the optional coach demo in Section 21, both of which you start yourself.',
           'It does not sell, share, or monetize data.',
