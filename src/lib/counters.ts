@@ -67,3 +67,47 @@ export async function readCounts(store: CounterStore, day: string, events: strin
   }
   return out;
 }
+
+/** Every event name there is, for the admin view. */
+export const ALL_EVENTS: string[] = [
+  ...FIXED_EVENTS,
+  ...BLOCK_REASONS.map((r) => `coach.turn.blocked.${r}`),
+  ...BROWSER_FIXED_EVENTS,
+  ...RHYTHM_NAMES.map((r) => `onboarding.rhythm.${r}`),
+  ...SCREENS.map((sc) => `page.view.${sc}`),
+];
+
+/** The last `n` Minnesota days, newest first, each as YYYY-MM-DD. */
+export function recentDays(n: number, now = new Date()): string[] {
+  const out: string[] = [];
+  for (let i = 0; out.length < n && i < n + 4; i++) {
+    const d = capDay(new Date(now.getTime() - i * 86400000));
+    if (!out.includes(d)) out.push(d);
+  }
+  return out;
+}
+
+/** The slice of a Blobs store the admin view needs. */
+export interface RangeStore extends CounterStore {
+  list(opts: { prefix: string }): Promise<{ blobs: { key: string }[] }>;
+}
+
+/** Totals for the given days: day -> event -> count. Days and events with no record are simply absent. */
+export async function readRange(store: RangeStore, days: string[]): Promise<Record<string, Record<string, number>>> {
+  const wanted = new Set(days);
+  const out: Record<string, Record<string, number>> = {};
+  const { blobs } = await store.list({ prefix: 'm/' });
+  const keys = blobs.map((b) => b.key).filter((k) => wanted.has(k.split('/')[1]));
+  for (let i = 0; i < keys.length; i += 20) {
+    await Promise.all(
+      keys.slice(i, i + 20).map(async (k) => {
+        const [, d, e] = k.split('/');
+        if (!d || !e || !isKnownEvent(e)) return;
+        const cur = await store.getWithMetadata(k, { type: 'text' });
+        (out[d] ??= {})[e] = Number(cur?.data) || 0;
+      })
+    );
+  }
+  return out;
+}
+

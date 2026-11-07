@@ -155,6 +155,12 @@ try {
   h = render(FailureNotice, { turn: 2, info: { message: "The coach's model took too long to answer.", code: 'upstream', reason: 'timeout', ref: 'aabbccdd', status: 502, at: '2026-11-05T22:14:09.000Z' } });
   ok('failed turn: says what happened, with the codes and a report option', typeof h === 'string' && h.includes('took too long') && h.includes('ref aabbccdd') && h.includes('upstream') && h.includes('Report this failure') && h.includes('Nothing you wrote was lost'), h.error ?? '');
   ok('failed turn: the report says it sends only the technical details', typeof h === 'string' && h.includes('does not send what you wrote'), h.error ?? '');
+
+  // The owner's private page: a sign-in field and nothing else until a token is given.
+  const { default: AdminPage } = await vite.ssrLoadModule('/src/admin/AdminPage.tsx');
+  h = render(AdminPage, {});
+  ok('admin page: shows the title, a password field for the token, and no totals yet', typeof h === 'string' && h.includes('Nenya numbers') && h.includes('type="password"') && !h.includes('<table'), h.error ?? '');
+  ok('admin page: says the totals hold no information about who produced them', typeof h === 'string' && h.includes('hold no information about who produced them'), h.error ?? '');
 } finally {
   await vite.close();
 }

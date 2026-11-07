@@ -32,6 +32,7 @@ import { scrubPII } from '../../src/lib/piiScrub.ts';
 import { looksLikeManipulation, neutralize } from '../../src/lib/promptGuard.ts';
 import { countTurn, capFromEnv, type CounterStore } from '../../src/lib/dailyCap.ts';
 import { addCount } from '../../src/lib/counters.ts';
+import { tokenMatches } from '../../src/lib/ownerAuth.ts';
 import { addConnectionTurn, allowanceReached, connectionCode, turnsFromEnv } from '../../src/lib/connectionLimit.ts';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
@@ -266,12 +267,7 @@ async function notesFor(userTexts: string[], softened: boolean, exclude: ModuleG
 // The site owner's token (COACH_OWNER_TOKEN_HASH holds the SHA-256 of it, so the secret itself is never in the
 // environment) lifts the per-connection allowance only, never the site-wide cap or the per-minute limit.
 function isOwner(req: Request): boolean {
-  const hash = process.env.COACH_OWNER_TOKEN_HASH;
-  const token = req.headers.get('x-nenya-owner');
-  if (!hash || !token) return false;
-  const a = Buffer.from(sha256(token));
-  const b = Buffer.from(hash.trim().toLowerCase());
-  return a.length === b.length && timingSafeEqual(a, b);
+  return tokenMatches(req.headers.get('x-nenya-owner'), process.env.COACH_OWNER_TOKEN_HASH);
 }
 
 function systemInstruction(turn: number, softened: boolean, notes: string, direct = false): string {

@@ -31,10 +31,11 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      // Two pages: the free tool, and the separate /coach demo.
+      // Three pages: the free tool, the separate /coach demo, and the owner's private /admin page (not linked anywhere).
       input: {
         main: path.resolve(__dirname, 'index.html'),
         coach: path.resolve(__dirname, 'coach/index.html'),
+        admin: path.resolve(__dirname, 'admin/index.html'),
       },
     },
   },

@@ -45,6 +45,11 @@ chat or code.
 **Plain daily totals** are kept as `m/<day>/<event>` (numbers only): messages sent, answered, blocked by reason,
 conversations started and finished. See `docs/site-metrics-scope.md`.
 
+**Reading the totals.** Open `/admin/` on the site (it is not linked anywhere), paste the owner token, and the last 30
+days appear as tables. Page views, the rhythm chosen, terms accepted and the tour answers are counted from the browser
+(only after the terms are agreed, and not when the browser's Global Privacy Control signal is on); the coach counts come from
+the function. To count nothing while you test, turn on Global Privacy Control in your browser.
+
 Read the day's turn count with:
 
 ```bash
