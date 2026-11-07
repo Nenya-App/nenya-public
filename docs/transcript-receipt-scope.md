@@ -66,3 +66,15 @@ Replace the direct form post with a small function (`/api/report`) for transcrip
 ## Decisions made (2026-11-07)
 - **Receipt log: count plus receipt hash.** A daily total of receipts issued by signing key, and a short daily list of receipt hashes kept for **30 days** and then deleted (to drop duplicate reports and answer "did we issue this one?"). Needs its own wording in the Terms (the revision that ships with the counts); the hash reveals nothing readable about the transcript.
 - **Verified reports use a separate form with a `checked` field** that only the function can produce; direct posts to the old report form are no longer how transcripts arrive.
+
+## Receipt fields to add (decided 2026-11-07)
+The signed content gains a small `meta` block, so these facts are covered by the signature and cannot be changed afterward. The transcript becomes version 3: `{ "v": 3, "session": …, "meta": { … }, "messages": […] }` (keys in that order, as the hash is of `JSON.stringify(transcript)`); the verifier and `scripts/verify-transcript.mjs` keep accepting version 2.
+- **`closed`** (true or false): the conversation reached its final exchange. A partial transcript is therefore labelled partial, and a closed one cannot be cut down without breaking the signature.
+- **`exchanges`**: how many exchanges the transcript holds (taken from the verified ticket, not from the page).
+- **`build`**: the site version that produced the replies (the deploy's commit). To check when building: how to get the version into the function at build time (Netlify's `COMMIT_REF` is a build variable; it may need to be written into a small generated file or set as a constant at build, rather than read at run time).
+- **`model`**: the model the replies came from.
+- **`instructions`**: a short fingerprint (the first 16 hex characters of a SHA-256) of the instruction text and method notes the coach used, so a reported reply can be tied to the exact configuration. It is a hash, not the text.
+- **Deliberately left off:** any IP address, hashed or not (it would stay in every transcript we are sent and outlive the two-day deletion promise), and a per-conversation random ID (skipped for now; the receipt hash list already recognizes duplicates).
+- **Nothing here identifies a person.** The Terms say so in Section 21.
+- **Tests:** `meta` is covered by the hash (changing `closed` or `build` breaks verification); `closed` is true only for a final exchange and `exchanges` matches the ticket, not the page; version 2 files still verify; the instruction fingerprint changes when the instruction text changes and is stable otherwise.
+
