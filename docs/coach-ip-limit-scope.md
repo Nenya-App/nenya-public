@@ -1,6 +1,6 @@
 # Scope: a per-connection allowance for the coach demo
 
-Status: scoping only, nothing built. Written 2026-11-06.
+Status: scoping only, nothing built. Written 2026-11-06. **Revised 2026-11-06 after decisions** (turn-counted allowance, 6-hour browser rest, owner key; see "Decisions made" at the end). Related: `docs/site-metrics-scope.md`, `docs/transcript-receipt-scope.md`.
 
 ## The problem
 The coach demo is free and every reply costs money. Two things limit it today:
@@ -15,15 +15,19 @@ The cap protects the bill. Nothing stops one person from using up the whole day'
 - **Our own store works.** The function can read the visitor's IP (`context.ip` in Netlify's function context). Netlify Blobs, already used for the daily counter, can hold a small record per connection. Blobs have no expiry (we delete on read and clean up), updates can take up to 60 seconds to show unless the store uses strong consistency, and there is no atomic increment (conditional writes, as in `dailyCap.ts`).
 
 ## Proposed design
-**An allowance, not a lock-out timer.** Each connection may start **N conversations per day** (suggested default 2, `COACH_IP_DAILY`), on the same Minnesota-time day boundary as the daily cap. A household, a classroom or a mobile carrier sharing one address then has room for more than one person, which a 12-hour lock after a single conversation would not give them.
+**An allowance of turns, not a lock-out timer.** Each connection gets **10 turns per calendar day** (`COACH_IP_TURNS`, default 10), which is **two full conversations** at the demo's 5 exchanges each, on the same Minnesota-time day boundary as the daily cap. Turns are counted, not finished conversations, because a conversation abandoned after two turns has still used two turns and cost money. A household, a classroom or a mobile carrier sharing one address has room for more than one person, which a long lock after a single conversation would not give them.
 
-**What is stored.** One record per connection per day: `day + keyed hash of the IP -> count`.
+**Why turns:** someone who starts and abandons short conversations all day is stopped by the turn total, while someone who has two full conversations uses exactly their allowance. A *new conversation* is refused once the day's turns reach the allowance; a conversation already under way is never cut off, so the total can overshoot by at most 4 turns. (Cutting a conversation off mid-way would also skip the coach's closing-turn behaviour.)
+
+**What is stored.** One record per connection per day: `day + keyed hash of the IP -> turns used`.
 - The hash is HMAC-SHA256 of the IP with a secret held only in an environment variable (`COACH_IP_SECRET`), with the day mixed in, so the same person produces a different value each day and the value cannot be turned back into an address by anyone without the secret.
 - IPv6 addresses are cut to their /64 first, since one device can hold many addresses inside it.
 - The record is a count and nothing else: no timestamp beyond the day, no message text, no session colors, nothing about the conversation.
 - Yesterday's records are deleted the first time a conversation starts on a new day, and a record is never read after its day has passed.
 
-**When it is checked.** Only at the first exchange, after the crisis-stop and manipulation checks (a message that never reaches the AI uses nothing), in this order: read the connection's count; claim a daily-cap slot; then add one to the connection's count. A blocked connection therefore never uses a daily-cap slot, and a conversation the daily cap refuses is not counted against the connection. Conversations already under way are never cut off.
+**When it is checked.** After the crisis-stop and manipulation checks (a message that never reaches the AI uses nothing). At a conversation's **first exchange**, in this order: read the connection's turns; if they have reached the allowance, refuse; claim a daily-cap slot; then add one turn. At **every later exchange**, just add one turn (no refusal). A blocked connection never uses a daily-cap slot, and a conversation the daily cap refuses is not counted against the connection. Turns are added only for messages that actually go to the model.
+
+The site-wide daily cap (100 conversations started, `COACH_DAILY_CAP`) counts conversations, not turns. Because the bill follows turns, consider counting turns there too (see `site-metrics-scope.md`, open decisions).
 
 **What the visitor sees.** The function answers `{ blocked: 'ip' }`. The page shows the same "resting" screen with its alternatives (the breathing tool, a person, a journal, a professional, the Venice link), worded so that it does not blame the visitor: "This connection has used its free conversations for today. Shared networks count together." No countdown, because the day boundary is not their clock.
 
@@ -41,10 +45,15 @@ The cap protects the bill. Nothing stops one person from using up the whole day'
 - The marketing repo's `brand/claims.md` and `brand/banned.txt` rely on "no analytics" and "stores nothing" wording; revisit them with the Terms.
 
 ## Fairness and risk
-- Shared addresses (schools, offices, libraries, carriers) can use up the allowance for everyone behind them. The default of 2 and the non-blaming message limit the harm; raise `COACH_IP_DAILY` if real use shows it. Blocked starts should be counted in aggregate only (no IP), in the log as a code, so the allowance can be tuned from real numbers.
+- Shared addresses (schools, offices, libraries, carriers) can use up the allowance for everyone behind them. The default of 2 and the non-blaming message limit the harm; raise `COACH_IP_TURNS` if real use shows it. Blocked starts should be counted in aggregate only (no IP), in the log as a code, so the allowance can be tuned from real numbers.
 - The hash secret must be generated and set by you in the Netlify environment, never pasted into chat or code, and rotated if it is ever exposed (rotating it only resets today's counts).
 
 ## Owner access (the first credentialed user)
+**Decision (2026-11-06): build the token (option 1 below), designed as the first "admin key"**, a prototype for any later profile idea. The same key would open the admin-only views (the metrics page in `site-metrics-scope.md`, a possible list of verified reports) and skip the connection allowance and the browser rest, never the site-wide cap or the per-minute limit.
+- **Design so it can grow:** the function resolves a token to a *role* (today only `admin`), by comparing against a hashed value in the environment, so more keys with other roles can be added later without changing the checks.
+- **It stays a key, not an account:** no password database, sign-in page, session or stored profile. That keeps the Terms' "no accounts" statement true. If real user profiles are ever wanted, that is a separate, deliberate privacy decision: it would change what the site stores and what the Terms and README say, and should be scoped on its own.
+- **Handling:** the token is generated and set by you in Netlify, pasted into the admin page by you, kept in that browser's storage, sent in a request header and never in a link. I never see or handle it.
+
 Today's "owner mode" is a browser flag. It skips only the 12-hour rest, in that browser, and nothing on the server knows about it.
 
 **How to use it now.** In your own browser, on the site you are testing, open the developer console (Safari: Develop menu > Show JavaScript Console; Chrome: Cmd+Option+J) and run:
@@ -68,12 +77,15 @@ Key hashing (same IP and day gives the same key, different day or IP gives a dif
 
 ## Rollout
 1. Update the README, Terms (new date, archive copy) and the "Forget me" helper text first.
-2. Ship to a preview with `COACH_IP_DAILY` high; test the limit with it set to 1.
-3. Set `COACH_IP_SECRET` (and `COACH_OWNER_TOKEN` if chosen) in Netlify yourself.
-4. Production at 2; watch the aggregate blocked count for a week.
+2. Ship to a preview with `COACH_IP_TURNS` high; test the limit with it set to 1.
+3. Set `COACH_IP_SECRET` and `COACH_OWNER_TOKEN` (stored as a hash) in Netlify yourself.
+4. Production at 10; watch the aggregate blocked count for a week.
 
-## Decisions for you
-- Allowance size (2? 3?), and calendar day versus a rolling 24 hours (calendar is simpler and matches the daily cap).
-- Keep, shorten or drop the 12-hour browser rest once the allowance exists.
-- Which owner method (token, address list, or none).
+## Decisions made (2026-11-06)
+- **Allowance:** 2 conversations' worth, counted as **10 turns per calendar day** per connection (see above).
+- **Browser rest:** shortened from 12 hours to **6 hours**. It still starts only when a conversation finishes (an abandoned conversation does not start it); the server-side turn allowance is what covers abandoned ones. This is a change to the constant and its wording in the coach page and `docs/device-memory.md`, and the owner flag still skips it.
+- **Owner access:** the token, built as the first admin key (see above).
+
+## Still to decide
 - The wording of the blocked screen.
+- Whether the site-wide daily cap becomes a turn cap, and the number.
