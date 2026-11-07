@@ -62,6 +62,13 @@ The plan above is "our own counters on Netlify Blobs". Before committing, look a
 
 The coach counts in section A are not replaceable by any of these, because the coach's own function is where they are made.
 
+## Keeping totals past Netlify's 30 days
+Netlify keeps its visit statistics for about 30 days, so without a copy there is no running history. Options, to settle tomorrow:
+- **Record the totals by hand** once a month (pages, unique visitors, top pages, countries) in a private sheet, outside the public repo. Costs five minutes; works today. Whether the dashboard offers a file export, or Netlify has an API for these statistics, is **not checked** and should be looked up first.
+- **Our own daily counters** (this scope) never expire, so for anything we count ourselves we keep a running total for free. Browser page-view counts would partly duplicate what Netlify already gives us, so they are worth adding mainly if Netlify's data cannot be exported. Distinct visitors cannot be replicated without a per-visitor record, so that one figure would still depend on Netlify or on the by-product of the connection allowance.
+- **A scheduled function that copies Netlify's numbers into our own store**, only if an API exists for them.
+Suggested for now: start the monthly manual record, and decide on the page-view beacon once we know whether an export exists.
+
 ## Wording (before anything is counted)
 - README: the 2026-11-07 revision already describes the host's visit totals; add a line for our own daily totals (suggested: "Nenya also keeps plain daily totals, such as how many coach messages are sent. They are not tied to you.").
 - Terms and Privacy: new effective date, archive copy in `docs/legal/archive/`; say what is counted, that it is not tied to a person, that the browser's Global Privacy Control signal is respected for browser counts, and that the coach function counts messages and refusals (no text).

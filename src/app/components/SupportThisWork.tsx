@@ -13,7 +13,7 @@ export function SupportThisWork() {
           Support This Work
         </h2>
         <p className="text-xl text-muted-foreground leading-relaxed">
-          Nenya is free to use and privately run — no advertising, no accounts,
+          Nenya is free to use and privately run — no advertising, no account required,
           no subscription required. It stays that way because people choose to support it.
         </p>
       </div>

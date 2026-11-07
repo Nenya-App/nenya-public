@@ -67,7 +67,7 @@ export default function Mellonamin() {
             <div className="bg-gradient-to-br from-background-secondary to-background p-5 rounded-lg border border-nenya-accent-primary/20">
               <h4 className="text-foreground mb-2 flex items-center gap-2">
                 <Eye className="size-4" />
-                No accounts, no profile
+                No account needed, no profile
               </h4>
               <p className="text-sm text-muted-foreground">
                 You're not asked to be anyone here beyond the colors and choices you make in the moment. There's no

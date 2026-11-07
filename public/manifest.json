@@ -1,7 +1,7 @@
 {
   "name": "Nenya — Take a Moment to Breathe",
   "short_name": "Nenya",
-  "description": "A free, private digital sanctuary for reflection, emotional regulation, and ethical self-inquiry. No accounts, no tracking cookies. What you enter stays on your device.",
+  "description": "A free, private digital sanctuary for reflection, emotional regulation, and ethical self-inquiry. No account required, no tracking cookies. What you enter stays on your device.",
   "start_url": "/",
   "id": "/",
   "display": "standalone",

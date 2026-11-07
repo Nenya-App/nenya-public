@@ -39,7 +39,7 @@ Nenya is built so that there is almost nothing to disclose. The full legal
 text is in the in-app **Terms of Use & Privacy Policy** (source:
 [`src/lib/legalDocument.ts`](./src/lib/legalDocument.ts)). In short:
 
-- No accounts, no advertising, no cookies, no fingerprinting. The web host (Netlify) turns its server logs into
+- No account required, no advertising, no cookies, no fingerprinting. The web host (Netlify) turns its server logs into
   anonymous visit totals; nothing for that runs in your browser or is stored on your device.
 - What you enter while using the tool stays in your browser's memory and is gone when you close the tab. It is
   never sent to a server (except the coach demo, if you choose it).
