@@ -129,3 +129,6 @@ Build order for the next session: 2, then 3, with the audit findings fed back as
 - Where exactly the hidden-until-focused toggle sits in the page order, and whether the same pattern should also offer "Skip to main content".
 - Whether the marketing repo should reference `docs/brand/alt-text.md` by link or by a copied file (a change in that repo, to be asked about first).
 - Who the first blind testers could be.
+
+## Decision (2026-11-07)
+- **The breathing-tones setting is erased by "Forget me"** like the other saved settings (and by Emergency Exit). A returning screen-reader user switches it on again; the switch stays easy to find (first in the tab order, hidden until focused). This replaces the earlier open question.

@@ -90,3 +90,10 @@ Counter: add-one, day rollover, two-day separation, collision retry, store failu
 - Admin page or local command?
 - Own counters, or a ready-made tool after tomorrow's look?
 - Should the site-wide daily cap also count turns instead of conversations started (suggested: yes, since the bill follows turns), and at what number?
+
+## Decisions made (2026-11-07)
+- **Site-wide daily cap counts turns**, 500 a day (the same ceiling as 100 full conversations at five exchanges). The per-connection allowance already counts turns.
+- **Browser counts start only after the visitor accepts the terms.** No "terms shown" count; the first count is the acceptance itself (`onboarding.terms.accepted`).
+- **Emergency Exit use is never counted.**
+- **Reading the numbers:** a private admin page behind the owner sign-in (last 30 days as a table).
+- Still open: own counters versus a ready-made tool (to look at when building); whether to add the page-view beacon at all once we know whether Netlify's statistics can be exported.

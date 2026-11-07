@@ -62,3 +62,7 @@ Replace the direct form post with a small function (`/api/report`) for transcrip
 - `checked` field and separate form: agreed?
 - Where the verifier lives (`/verify`, or inside the About pages) and what to call it.
 - Whether to keep accepting readable-text-only reports for non-transcript problems (suggested: yes, unchanged).
+
+## Decisions made (2026-11-07)
+- **Receipt log: count plus receipt hash.** A daily total of receipts issued by signing key, and a short daily list of receipt hashes kept for **30 days** and then deleted (to drop duplicate reports and answer "did we issue this one?"). Needs its own wording in the Terms (the revision that ships with the counts); the hash reveals nothing readable about the transcript.
+- **Verified reports use a separate form with a `checked` field** that only the function can produce; direct posts to the old report form are no longer how transcripts arrive.

@@ -89,3 +89,8 @@ Key hashing (same IP and day gives the same key, different day or IP gives a dif
 ## Still to decide
 - The wording of the blocked screen.
 - Whether the site-wide daily cap becomes a turn cap, and the number.
+
+## More decisions (2026-11-07)
+- **Blocked screen wording:** "This connection has used its free conversations for today. Shared networks count together." (plain, no blame, no countdown), above the usual alternatives.
+- **Site-wide daily cap** becomes a turn cap, 500 a day (see `site-metrics-scope.md`).
+- **Cleanup of old records:** records are keyed by day and removed by a small scheduled cleanup (and opportunistically when a conversation starts), so none outlives about two days; the Terms wording should say "deleted within two days".
