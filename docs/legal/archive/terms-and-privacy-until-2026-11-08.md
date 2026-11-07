@@ -1,6 +1,6 @@
 # Terms of Use & Privacy Policy: archived version
 
-**Status:** superseded on November 8, 2026 (adds Nenya’s own daily totals, the coach demo’s per-connection daily limit and its one-way daily code, a six-hour rest, and a turn-based site-wide limit)
+**Status:** superseded on November 8, 2026 (adds Nenya’s own daily totals, the coach demo’s per-connection daily limit and its one-way daily code, receipt codes and signed-only transcript reports, a six-hour rest, and a turn-based site-wide limit)
 **Effective:** November 7, 2026
 **Source:** `src/lib/legalDocument.ts` as of commit 2e0ddd3, the commit before the November 8, 2026 revision.
 
