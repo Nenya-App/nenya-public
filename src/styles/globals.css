@@ -729,6 +729,26 @@
                 0 0 139px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
   }
 
+  /* A fixed 15% grain over each outer orb's halo, to break up banding in the box-shadow gradients. The tile (--nenya-grain)
+     is made once in JavaScript (grain.ts); without it this layer is empty. It reaches as far as the halo does in each state
+     (the largest blur: 70px, dark 87px, hovered 104px, dark hovered 139px) and fades out the way the halo does. */
+  .nenya-orb-glow::after {
+    content: '';
+    position: absolute;
+    inset: -70px;
+    border-radius: 50%;
+    pointer-events: none;
+    background-image: var(--nenya-grain, none);
+    background-size: 128px 128px;
+    opacity: 0.15;
+    -webkit-mask-image: radial-gradient(closest-side, #000 0%, rgba(0, 0, 0, 0.55) 35%, rgba(0, 0, 0, 0.18) 65%, transparent 100%);
+    mask-image: radial-gradient(closest-side, #000 0%, rgba(0, 0, 0, 0.55) 35%, rgba(0, 0, 0, 0.18) 65%, transparent 100%);
+    transition: inset 0.3s ease;
+  }
+  .dark .nenya-orb-glow::after { inset: -87px; }
+  .nenya-logo-hover:hover .nenya-orb-glow::after { inset: -104px; }
+  .dark .nenya-logo-hover:hover .nenya-orb-glow::after { inset: -139px; }
+
   /* Performance optimizations for animations */
   @media (prefers-reduced-motion: reduce) {
     .nenya-tour-highlight,

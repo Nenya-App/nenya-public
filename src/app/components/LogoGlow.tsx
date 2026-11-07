@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from './ThemeProvider';
-import { GLOW_COLORS, GLOW_RADII, GLOW_SPREAD, GLOW_STRENGTH, MAX_GLOW_RADIUS, bakeGlow } from '../../lib/glowBake';
+import { GLOW_COLORS, GLOW_GRAIN, GLOW_RADII, GLOW_SPREAD, GLOW_STRENGTH, MAX_GLOW_RADIUS, bakeGlow } from '../../lib/glowBake';
 import { GEM_CENTRE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite, loadImage } from '../../lib/gemSprite';
 
 interface LogoGlowProps {
@@ -71,7 +71,7 @@ export default function LogoGlow({ size, orbit, maskSrc }: LogoGlowProps) {
 
       const put = (canvas: HTMLCanvasElement, radii: readonly number[]) => {
         canvas.width = canvas.height = W;
-        const bytes = bakeGlow(alpha, W, W, radii.map((r) => r * GLOW_SPREAD), scale, GLOW_COLORS, GLOW_STRENGTH);
+        const bytes = bakeGlow(alpha, W, W, radii.map((r) => r * GLOW_SPREAD), scale, GLOW_COLORS, GLOW_STRENGTH, GLOW_GRAIN);
         canvas.getContext('2d')?.putImageData(new ImageData(bytes, W, W), 0, 0);
       };
       put(rest, GLOW_RADII[theme === 'dark' ? 'dark' : 'light']);

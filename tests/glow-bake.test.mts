@@ -56,3 +56,36 @@ ok('the glow is tightened and softened for the vector petals (bench settings)', 
 const full = bakeGlow(content, N, N, GLOW_RADII.dark, 1)[(128 * N + 128 + 30) * 4 + 3];
 const soft = bakeGlow(content, N, N, GLOW_RADII.dark, 1, undefined, 0.5)[(128 * N + 128 + 30) * 4 + 3];
 ok('strength scales the glow opacity and nothing else', soft > 0 && Math.abs(soft - full / 2) <= 1, `${soft} vs ${full}`);
+
+// Grain: a fixed, seeded noise that breaks up banding; off unless asked for.
+import { GLOW_GRAIN } from '../src/lib/glowBake.ts';
+ok('the logo glow carries a 15% grain', GLOW_GRAIN === 0.15);
+const plain = bakeGlow(content, N, N, GLOW_RADII.dark, 1, undefined, GLOW_STRENGTH);
+const g1 = bakeGlow(content, N, N, GLOW_RADII.dark, 1, undefined, GLOW_STRENGTH, GLOW_GRAIN);
+const g2 = bakeGlow(content, N, N, GLOW_RADII.dark, 1, undefined, GLOW_STRENGTH, GLOW_GRAIN);
+ok('grain is static: the same bake twice is identical', g1.every((v, i) => v === g2[i]));
+ok('no grain by default: the plain bake is unchanged by this feature', plain.some((v, i) => v !== g1[i]));
+let sumP = 0, sumG = 0, cnt = 0, maxRel = 0, moved = 0, seen = 0;
+for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+  const i = (y * N + x) * 4 + 3;
+  if (plain[i] > 40) {
+    sumP += plain[i]; sumG += g1[i]; cnt++; seen++;
+    if (g1[i] !== plain[i]) moved++;
+    maxRel = Math.max(maxRel, Math.abs(g1[i] - plain[i]) / plain[i]);
+  }
+}
+ok('grain does not brighten or dim the glow on average (within 1%)', Math.abs(sumG - sumP) / sumP < 0.01, `${(sumG / cnt).toFixed(2)} vs ${(sumP / cnt).toFixed(2)}`);
+ok('grain moves most pixels but never more than 15% plus rounding', moved / seen > 0.7 && maxRel <= 0.15 + 1.5 / 40, `moved ${(moved / seen).toFixed(2)}, worst ${(maxRel * 100).toFixed(1)}%`);
+let strayInside = 0, strayEmpty = 0;
+for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+  const i = (y * N + x) * 4 + 3;
+  if (content[y * N + x] === 1 && g1[i] !== 0) strayInside++;
+  if (plain[i] === 0 && plain[i - 3] === 0 && g1[i] > 1) strayEmpty++;
+}
+ok('grain adds nothing inside the content', strayInside === 0, String(strayInside));
+ok('grain does not spill far past the glow (at most a step of rounding noise)', strayEmpty === 0, String(strayEmpty));
+ok('grain breaks up flat steps: the faint tail has more distinct opacity values', new Set(Array.from(g1).filter((_, i) => i % 4 === 3 && g1[i] > 0 && g1[i] < 12)).size >= new Set(Array.from(plain).filter((_, i) => i % 4 === 3 && plain[i] > 0 && plain[i] < 12)).size);
+
+// Orb halos: the CSS carries the same grain through one repeating tile, in the same four states as the halo.
+ok('the orb halo has a grain layer at 15%, using the shared tile', /\.nenya-orb-glow::after\s*\{[^}]*opacity:\s*0\.15[^}]*\}/.test(css) && css.includes('var(--nenya-grain'));
+ok('the grain layer reaches as far as the halo in all four states', /\.nenya-orb-glow::after\s*\{[^}]*inset:\s*-70px/.test(css) && ['-87px', '-104px', '-139px'].every((v) => new RegExp(`nenya-orb-glow::after \\{ inset: ${v}; \\}`).test(css)));

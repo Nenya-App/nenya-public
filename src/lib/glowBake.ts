@@ -4,6 +4,8 @@
 // earlier shadows included, and drawn underneath. A CSS blur length is a Gaussian sigma of that length
 // (px), the same rule drop-shadow uses.
 
+import { GRAIN_AMOUNT, mulberry32 } from './grain.ts';
+
 export const GLOW_COLORS: [number, number, number][] = [
   [0xdd, 0xb8, 0x8c], // --nenya-accent-warm
   [0xe8, 0xc4, 0xa8], // --nenya-accent-metallic
@@ -24,6 +26,9 @@ export const GLOW_RADII = {
  */
 export const GLOW_SPREAD = 0.75;
 export const GLOW_STRENGTH = 0.74;
+
+/** The glow image carries a fixed 15% grain (see grain.ts) so its gradients do not band. */
+export const GLOW_GRAIN = GRAIN_AMOUNT;
 
 export type GlowState = keyof typeof GLOW_RADII;
 
@@ -88,7 +93,9 @@ export function gaussianBlur(src: Float32Array, w: number, h: number, sigma: num
 
 /**
  * Bake the glow around `alpha` (0..1 per pixel, w by h). `radii` are CSS lengths and `scale` is device
- * pixels per CSS px. `strength` scales the glow's opacity (colour is unchanged). Returns straight (non-premultiplied) RGBA bytes of the glow only, with no content in it.
+ * pixels per CSS px. `strength` scales the glow's opacity (colour is unchanged). `grain` (0 to 1, default none) adds a fixed,
+ * seeded noise to the glow's opacity: each pixel's opacity is varied by up to that fraction of itself, plus half a step of
+ * rounding noise, which is what breaks up banding in the faint outer tail. Pixels with no glow stay empty. Returns straight (non-premultiplied) RGBA bytes of the glow only, with no content in it.
  */
 export function bakeGlow(
   alpha: Float32Array,
@@ -98,6 +105,7 @@ export function bakeGlow(
   scale: number,
   colors: [number, number, number][] = GLOW_COLORS,
   strength = 1,
+  grain = 0,
 ): Uint8ClampedArray<ArrayBuffer> {
   const n = w * h;
   const A = alpha.slice();
@@ -115,13 +123,16 @@ export function bakeGlow(
     }
   });
   const out = new Uint8ClampedArray(n * 4);
+  const rand = grain > 0 ? mulberry32(0x6e656e79) : null;
   for (let p = 0; p < n; p++) {
     const ga = Math.min(1, Math.max(0, A[p] - alpha[p]));
     if (ga <= 1e-4) continue;
     out[p * 4] = Math.round((G[p * 3] / ga) * 255);
     out[p * 4 + 1] = Math.round((G[p * 3 + 1] / ga) * 255);
     out[p * 4 + 2] = Math.round((G[p * 3 + 2] / ga) * 255);
-    out[p * 4 + 3] = Math.round(ga * 255 * strength);
+    let a = ga * 255 * strength;
+    if (rand) a = a * (1 + grain * (rand() * 2 - 1)) + (rand() - 0.5);
+    out[p * 4 + 3] = Math.round(a);
   }
   return out;
 }
