@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Download, Send } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
-import { submitReport } from '../lib/reportSubmission';
 import {
   dayStamp,
   downloadText,
@@ -98,11 +97,18 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
   const shareText = readableTranscript(messages, session, receipt, context, signed?.meta);
   const tooLong = shareText.length > MAX_SHARE_CHARS;
 
+  // Only a signed transcript can be sent. The function checks the signature first, then forwards the readable text (rebuilt
+  // from the signed transcript, so it is exactly the text shown above) with the signed file.
   const sendToNenya = async () => {
-    if (tooLong || share === 'sending') return;
+    if (tooLong || share === 'sending' || !receipt || !signedRef.current) return;
     setShare('sending');
     try {
-      await submitReport({ type: 'coach-transcript', report: shareText, comments: note.trim() });
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signed: { transcript: signedRef.current, receipt }, note: note.trim() }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
       setShare('sent');
     } catch {
       setShare('error');
@@ -140,7 +146,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
       {(share === 'preview' || share === 'sending' || share === 'error') && (
         <div className="space-y-3 rounded-lg border border-border p-3">
           <p className="text-xs text-muted-foreground">
-            This is exactly what Nenya would receive. It goes to us the same way a report does. Please check it
+            This is exactly what Nenya would receive, together with the signed file so that we can check it was not changed. Please check it
             contains nothing you want to keep private.
           </p>
           <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-2 text-xs">{shareText}</pre>
