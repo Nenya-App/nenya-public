@@ -161,6 +161,11 @@ try {
   h = render(AdminPage, {});
   ok('admin page: shows the title, a password field for the token, and no totals yet', typeof h === 'string' && h.includes('Nenya numbers') && h.includes('type="password"') && !h.includes('<table'), h.error ?? '');
   ok('admin page: says the totals hold no information about who produced them', typeof h === 'string' && h.includes('hold no information about who produced them'), h.error ?? '');
+
+  // The public verifier page: a way to choose a file or paste one, and a plain promise that nothing is uploaded.
+  const { default: VerifyPage } = await vite.ssrLoadModule('/src/verify/VerifyPage.tsx');
+  h = render(VerifyPage, {});
+  ok('verify page: offers a file and a paste box, and says nothing is uploaded', typeof h === 'string' && h.includes('Check a Nenya transcript') && h.includes('type="file"') && h.includes('Nothing is') && h.includes('uploaded'), h.error ?? '');
 } finally {
   await vite.close();
 }

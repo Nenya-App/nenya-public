@@ -80,7 +80,7 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
       `Key ID: ${receipt.keyId}`,
       `Public key: ${receipt.publicKey}`,
       '',
-      'This readable copy is for reading. To verify it, use the signed .json file and the steps at:',
+      'This readable copy carries the signed file at its end. To check that it is untouched, drop it on https://nenya.biz/verify/ (nothing is uploaded), or use the signed .json file and the steps at:',
       DOCS_URL
     );
   } else {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Download, Send } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
+import { readableWithBlock } from '../lib/verifyTranscript';
 import {
   dayStamp,
   downloadText,
@@ -84,7 +85,10 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    downloadText(`nenya-coach-transcript-${dayStamp(r?.issuedAt)}.txt`, 'text/plain', readableTranscript(messages, session, r, context, signedRef.current?.meta));
+    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta);
+    // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
+    const text = r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
+    downloadText(`nenya-coach-transcript-${dayStamp(r?.issuedAt)}.txt`, 'text/plain', text);
   };
 
   const openShare = async () => {

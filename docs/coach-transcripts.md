@@ -10,6 +10,7 @@ page explains what the signature does and does not prove, and how to verify one.
   matches the last ticket. A reply cannot be edited, and a conversation cannot be cut or reordered,
   without the receipt failing.
 - The conversation was signed on the date and time in the receipt (the server's clock).
+- Whether the conversation was complete (`closed`, `exchanges`) and which version of the coach wrote the replies (`build`, `model`, `instructions`, a fingerprint of the instruction text) are inside the signature too (version 3, below). A partial transcript therefore says it is partial, and it cannot be cut down from a complete one without breaking the signature.
 
 ## What it does not prove
 
@@ -21,9 +22,16 @@ page explains what the signature does and does not prove, and how to verify one.
 ## Privacy
 
 Signing sends the conversation to the server once more so it can check the ticket and sign a hash.
-Nothing is stored and message text is not logged. The signed file stays with the visitor. If a visitor
-chooses "Send to Nenya", they are shown exactly what will be sent first, and it arrives like any other
-report (a Netlify Forms submission).
+The conversation is not stored and message text is not logged. What is kept: a plain daily count of
+receipts issued, by signing key, and, for 30 days, each receipt's hash (a fingerprint that cannot be
+turned back into the conversation) so duplicates can be recognized. The signed file stays with the visitor.
+
+If a visitor chooses "Send to Nenya", they are shown exactly what will be sent first. Only a signed
+transcript can be sent: the report function (`/api/report`) checks the signature and that the key is
+Nenya's before anything is forwarded, and an unsigned or altered transcript is refused. A genuine one is
+rebuilt as readable text from the signed transcript itself and reaches us through a separate Netlify form
+with the signed file attached, the key id, whether the receipt is in the 30-day log, and a `checked` value
+only the function can produce. The function sees the transcript on its way through and does not keep it.
 
 ## The signed file
 
@@ -32,26 +40,42 @@ report (a Netlify Forms submission).
 ```json
 {
   "transcript": {
-    "v": 2,
+    "v": 3,
     "session": { "color1": "#7A9B9E", "color2": "#DAC682" },
+    "meta": { "closed": true, "exchanges": 5, "build": "…", "model": "…", "instructions": "…(16 hex)" },
     "messages": [{ "role": "user", "content": "…" }, { "role": "assistant", "content": "…" }]
   },
   "receipt": {
-    "version": 2, "algorithm": "Ed25519", "keyId": "…", "publicKey": "…(base64 DER SPKI)",
+    "version": 3, "algorithm": "Ed25519", "keyId": "…", "publicKey": "…(base64 DER SPKI)",
     "hash": "…(SHA-256 hex)", "issuedAt": "2026-10-31T18:02:11.000Z", "signature": "…(base64)"
   }
 }
 ```
 
 - **hash** is SHA-256 of `JSON.stringify(transcript)`, exactly as written above (keys in that order).
-- **signature** is Ed25519 over the UTF-8 text `nenya-coach-transcript-v2\n<hash>\n<issuedAt>`.
+- **signature** is Ed25519 over the UTF-8 text `nenya-coach-transcript-v3\n<hash>\n<issuedAt>` (`v2` for the older version 2 files, which have no `meta` block and verify the same way).
 - **session** is the visitor's two chosen colors. They are a temporary label for the conversation, bound
   into the signature. They are not an account or proof of identity, and two visitors can pick the same pair.
 - **context** appears (between `session` and `messages`) only if a future version lets a visitor share a
   summary of their reflection with the coach. The current demo never sends one, so it is absent. If present, it is part of what is hashed and signed.
+- **meta** (version 3): `closed` is true when the conversation reached its final exchange; `exchanges` is how many
+  it holds; `build` is the site version that produced it (`unknown` if the host does not provide one); `model` is the
+  model that wrote the replies; `instructions` is the first 16 hex characters of a SHA-256 over every fixed instruction
+  the coach is given (not the private method notes). None of it identifies a person.
 - **keyId** is the first 16 hex characters of SHA-256 of the `publicKey` string.
 
+The readable `.txt` copy carries the same signed file at its end, in a marked block (`-----BEGIN NENYA SIGNED
+TRANSCRIPT-----`), so the text above it can be checked against the signed transcript: if the readable text is edited,
+the check says so.
+
 ## Verifying
+
+**In a browser:** open https://nenya.biz/verify/ and choose the `.json` file or the readable `.txt` copy (or paste it). The
+check happens on your device; nothing is uploaded. It reports whether the file is genuine and unedited, the date,
+the key id, the signed facts, and whether that key is one of Nenya's published keys (below). A file signed by a
+different key, such as a test site's, still checks as intact but is flagged.
+
+**From a terminal:**
 
 ```bash
 node scripts/verify-transcript.mjs transcript.json <published-key-id>
