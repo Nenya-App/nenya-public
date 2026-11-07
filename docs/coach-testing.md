@@ -2,8 +2,8 @@
 
 Two things limit repeat use of the coach demo. Neither needs a server-side bypass.
 
-**The 12-hour rest.** After a conversation ends, the page saves the finish time in the browser's
-local storage (`nenya.coach.rest`) and shows a "resting" screen until 12 hours pass. It is a courtesy
+**The 6-hour rest.** After a conversation ends, the page saves the finish time in the browser's
+local storage (`nenya.coach.rest`) and shows a "resting" screen until 6 hours pass. It is a courtesy
 that any visitor can clear, not a lock. To skip it in your own browser, run this once in the console
 on nenya.biz (it stays until you remove it):
 
@@ -21,12 +21,36 @@ need a secret in the request, which is something to attack. A person testing by 
 every 20 seconds at most, so 15 a minute is not in the way. If you ever script tests against production,
 slow them down, or run them against `netlify dev`, which does not enforce rate limits.
 
-**The daily cap** (100 new conversations a day, across all visitors) is a single anonymous counter in the
-`coach-private` Blobs store (`daily-count`, holding only a date and a number). The day turns over at midnight
-Minnesota time. Only a conversation's first exchange uses a slot. Set `COACH_DAILY_CAP` in Netlify's
+**The daily cap** (500 turns a day, across all visitors: the same ceiling as 100 full conversations of five
+exchanges) is a single anonymous counter in the `coach-private` Blobs store (`daily-count`, holding only a date
+and a number). The day turns over at midnight Minnesota time. Only a conversation's first exchange can be refused;
+a conversation under way is never cut off, but its turns are still counted. Set `COACH_DAILY_CAP` in Netlify's
 environment variables to change the number, for example to raise it temporarily while you test. When the cap
 is reached, the page tells the visitor and nothing they wrote is sent. If Blobs cannot be reached, the demo
-stays open, so an outage never locks people out. Read the count with:
+stays open, so an outage never locks people out.
+
+**The per-connection limit** (10 turns a day, two full conversations) needs the secret `COACH_IP_SECRET`; without
+it the limit is off, which is also the case on previews that do not set it. `COACH_IP_TURNS` changes the number
+(set it to 1 to test the refusal). A connection is stood for by a one-way daily code (HMAC of the day and the
+address, IPv6 cut to its /64), kept in the store as `c/<day>/<code>` with a count of turns, and carried in the
+conversation's signed ticket so every turn counts against the connection that started it, even if the address
+changes. A scheduled function (`coach-cleanup`, daily at 08:00 UTC) deletes records from before today.
+
+**Owner token.** Put the SHA-256 (hex) of a long random token in `COACH_OWNER_TOKEN_HASH`. In your own browser,
+set `nenya.coach.ownerToken` (in the developer console, `localStorage.setItem('nenya.coach.ownerToken', '<token>')`)
+and the page sends it as `x-nenya-owner`; the function then skips the per-connection limit and records nothing
+for you. It never lifts the site-wide cap. Generate the token and its hash yourself, and never paste them into
+chat or code.
+
+**Plain daily totals** are kept as `m/<day>/<event>` (numbers only): messages sent, answered, blocked by reason,
+conversations started and finished. See `docs/site-metrics-scope.md`.
+
+**Reading the totals.** Open `/admin/` on the site (it is not linked anywhere), paste the owner token, and the last 30
+days appear as tables. Page views, the rhythm chosen, terms accepted and the tour answers are counted from the browser
+(only after the terms are agreed, and not when the browser's Global Privacy Control signal is on); the coach counts come from
+the function. To count nothing while you test, turn on Global Privacy Control in your browser.
+
+Read the day's turn count with:
 
 ```bash
 npx netlify-cli blobs:get coach-private daily-count

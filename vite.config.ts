@@ -31,10 +31,13 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      // Two pages: the free tool, and the separate /coach demo.
+      // Four pages: the free tool, the separate /coach demo, the owner's private /admin page (not linked anywhere), and /verify,
+      // where anyone can check a signed transcript in their own browser.
       input: {
         main: path.resolve(__dirname, 'index.html'),
         coach: path.resolve(__dirname, 'coach/index.html'),
+        admin: path.resolve(__dirname, 'admin/index.html'),
+        verify: path.resolve(__dirname, 'verify/index.html'),
       },
     },
   },

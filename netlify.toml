@@ -124,6 +124,13 @@
     # (Logs & Metrics → Functions → __csp-violations).
     # For external monitoring, add: report-uri https://your-report-uri-endpoint
 
+# ── The owner's private page ────────────────────────────────────────────────
+# Not linked from anywhere, and kept out of search results as well as by the page's own robots tag.
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
 # ── Caching ─────────────────────────────────────────────────────────────────
 # By default Netlify tells browsers to re-check every file on every visit. These rules let returning
 # visitors keep the files that never change under the same name, so a second visit loads almost

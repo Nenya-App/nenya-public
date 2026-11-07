@@ -11,8 +11,25 @@ export interface SessionColors {
   color2: string;
 }
 
+export interface TranscriptMeta {
+  closed: boolean;
+  exchanges: number;
+  build: string;
+  model: string;
+  instructions: string;
+}
+
+/** The transcript object exactly as the server hashed and signed it (version 3 has `meta`; older files, version 2, do not). */
+export interface SignedTranscript {
+  v: number;
+  session: SessionColors;
+  meta?: TranscriptMeta;
+  context?: string;
+  messages: TranscriptMsg[];
+}
+
 export interface Receipt {
-  version: 2;
+  version: number;
   algorithm: 'Ed25519';
   keyId: string;
   publicKey: string;
@@ -23,16 +40,13 @@ export interface Receipt {
 
 export const DOCS_URL = 'https://github.com/Nenya-App/nenya-public/blob/main/docs/coach-transcripts.md';
 
-const plain = (messages: TranscriptMsg[]): TranscriptMsg[] =>
-  messages.map((m) => ({ role: m.role, content: m.content }));
-
-/** The verifiable file: the transcript exactly as hashed, plus its receipt. */
-export function signedJson(messages: TranscriptMsg[], session: SessionColors, receipt: Receipt, context = ''): string {
+/** The verifiable file: the transcript exactly as the server hashed it, plus its receipt. */
+export function signedJson(transcript: SignedTranscript, receipt: Receipt): string {
   return JSON.stringify(
     {
-      transcript: { v: 2, session: { color1: session.color1.toUpperCase(), color2: session.color2.toUpperCase() }, ...(context ? { context } : {}), messages: plain(messages) },
+      transcript,
       receipt,
-      verify: `Hash JSON.stringify(transcript) with SHA-256 and compare it to receipt.hash, then check the Ed25519 signature over "nenya-coach-transcript-v2\\n<hash>\\n<issuedAt>" with receipt.publicKey. Confirm the key matches Nenya's published key. Full steps: ${DOCS_URL}`,
+      verify: `Hash JSON.stringify(transcript) with SHA-256 and compare it to receipt.hash, then check the Ed25519 signature over "nenya-coach-transcript-v${transcript.v}\\n<hash>\\n<issuedAt>" with receipt.publicKey. Confirm the key matches Nenya's published key. Full steps: ${DOCS_URL}`,
     },
     null,
     2
@@ -40,7 +54,7 @@ export function signedJson(messages: TranscriptMsg[], session: SessionColors, re
 }
 
 /** A readable copy. With a receipt it carries the signature block; without, it says so. */
-export function readableTranscript(messages: TranscriptMsg[], session: SessionColors, receipt: Receipt | null, context = ''): string {
+export function readableTranscript(messages: TranscriptMsg[], session: SessionColors, receipt: Receipt | null, context = '', meta?: TranscriptMeta): string {
   const lines: string[] = [
     'NENYA COACH DEMO: TRANSCRIPT',
     'An early prototype. Not therapy. In a crisis in the US, call or text 988.',
@@ -53,6 +67,12 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
   }
   lines.push('— — —');
   if (receipt) {
+    if (meta) {
+      lines.push(
+        meta.closed ? `Conversation complete: yes (${meta.exchanges} exchanges)` : `Conversation complete: no, stopped after ${meta.exchanges} exchange${meta.exchanges === 1 ? '' : 's'}`,
+        `Version that wrote the replies: build ${meta.build}, model ${meta.model}, instructions ${meta.instructions}`
+      );
+    }
     lines.push(
       `Signed by Nenya on: ${receipt.issuedAt}`,
       `Transcript hash (SHA-256): ${receipt.hash}`,
@@ -60,7 +80,7 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
       `Key ID: ${receipt.keyId}`,
       `Public key: ${receipt.publicKey}`,
       '',
-      'This readable copy is for reading. To verify it, use the signed .json file and the steps at:',
+      'This readable copy carries the signed file at its end. To check that it is untouched, drop it on https://nenya.biz/verify/ (nothing is uploaded), or use the signed .json file and the steps at:',
       DOCS_URL
     );
   } else {

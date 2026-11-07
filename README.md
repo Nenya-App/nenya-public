@@ -40,11 +40,13 @@ text is in the in-app **Terms of Use & Privacy Policy** (source:
 [`src/lib/legalDocument.ts`](./src/lib/legalDocument.ts)). In short:
 
 - No account required, no advertising, no cookies, no fingerprinting. The web host (Netlify) turns its server logs into
-  anonymous visit totals; nothing for that runs in your browser or is stored on your device.
+  anonymous visit totals; nothing for that runs in your browser or is stored on your device. Nenya also keeps plain
+  daily totals of its own (screens opened, rhythm chosen, tour answers, coach counts), only after you agree to the terms
+  and never if your browser sends the Global Privacy Control signal.
 - What you enter while using the tool stays in your browser's memory and is gone when you close the tab. It is
   never sent to a server (except the coach demo, if you choose it).
 - By default the only thing kept on your device between visits is one timestamp, saved after a coach
-  conversation ends so the free demo can rest for 12 hours. An opt-in "Remember my settings on this device"
+  conversation ends so the free demo can rest for 6 hours. An opt-in "Remember my settings on this device"
   switch also keeps display settings and the terms agreement. None of it is sent anywhere, and Emergency Exit
   erases all of it. The full list is in [`docs/device-memory.md`](./docs/device-memory.md).
 - Fonts, images, and scripts are all served from the site itself, and the
@@ -79,7 +81,7 @@ The honest edges:
   relay function, served at `/api/coach`, in
   [`netlify/functions/coach.mts`](./netlify/functions/coach.mts), so the Venice API
   key stays server-side. The function stores no messages and does not log message
-  text; the only thing it keeps is one anonymous daily count of conversations started. Caps: five exchanges, 500 characters per message, short replies, and a
+  text; what it keeps is plain anonymous daily totals, one running count of the day's turns, and, for the per-connection limit, a count of turns under a one-way daily code that is deleted within two days. Caps: five exchanges, 500 characters per message, short replies, and a
   signed ticket that stops a client from forging or extending the history. The
   character's prompt lives on Venice, not in this repository.
 

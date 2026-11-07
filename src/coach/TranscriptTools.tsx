@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Download, Send } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
-import { submitReport } from '../lib/reportSubmission';
+import { readableWithBlock } from '../lib/verifyTranscript';
 import {
   dayStamp,
   downloadText,
@@ -10,6 +10,7 @@ import {
   signedJson,
   type Receipt,
   type SessionColors,
+  type SignedTranscript,
   type TranscriptMsg,
 } from '../lib/transcript';
 
@@ -33,6 +34,8 @@ type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
 // what would be sent first.
 export function TranscriptTools({ messages, session, context = '', ticket }: TranscriptToolsProps) {
   const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [signed, setSigned] = useState<SignedTranscript | null>(null);
+  const signedRef = useRef<SignedTranscript | null>(null); // the latest, for handlers that run before a re-render
   const [signNote, setSignNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [share, setShare] = useState<Share>('closed');
@@ -42,6 +45,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
   // conversation moves on, the old one no longer applies.
   useEffect(() => {
     setReceipt(null);
+    setSigned(null);
     setSignNote('');
     setShare('closed');
   }, [messages.length]);
@@ -58,8 +62,10 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
         body: JSON.stringify({ action: 'receipt', messages, session, ...(context ? { context } : {}), ticket }),
       });
       if (!res.ok) throw new Error(String(res.status));
-      const data = (await res.json()) as { receipt: Receipt };
+      const data = (await res.json()) as { receipt: Receipt; transcript: SignedTranscript };
       setReceipt(data.receipt);
+      setSigned(data.transcript);
+      signedRef.current = data.transcript;
       setSignNote('');
       return data.receipt;
     } catch {
@@ -72,14 +78,17 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    if (r) downloadText(`nenya-coach-transcript-${dayStamp(r.issuedAt)}.json`, 'application/json', signedJson(messages, session, r, context));
+    if (r && signedRef.current) downloadText(`nenya-coach-transcript-${dayStamp(r.issuedAt)}.json`, 'application/json', signedJson(signedRef.current, r));
   };
 
   const downloadReadable = async () => {
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    downloadText(`nenya-coach-transcript-${dayStamp(r?.issuedAt)}.txt`, 'text/plain', readableTranscript(messages, session, r, context));
+    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta);
+    // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
+    const text = r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
+    downloadText(`nenya-coach-transcript-${dayStamp(r?.issuedAt)}.txt`, 'text/plain', text);
   };
 
   const openShare = async () => {
@@ -89,14 +98,21 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     setShare('preview');
   };
 
-  const shareText = readableTranscript(messages, session, receipt, context);
+  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta);
   const tooLong = shareText.length > MAX_SHARE_CHARS;
 
+  // Only a signed transcript can be sent. The function checks the signature first, then forwards the readable text (rebuilt
+  // from the signed transcript, so it is exactly the text shown above) with the signed file.
   const sendToNenya = async () => {
-    if (tooLong || share === 'sending') return;
+    if (tooLong || share === 'sending' || !receipt || !signedRef.current) return;
     setShare('sending');
     try {
-      await submitReport({ type: 'coach-transcript', report: shareText, comments: note.trim() });
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signed: { transcript: signedRef.current, receipt }, note: note.trim() }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
       setShare('sent');
     } catch {
       setShare('error');
@@ -134,7 +150,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
       {(share === 'preview' || share === 'sending' || share === 'error') && (
         <div className="space-y-3 rounded-lg border border-border p-3">
           <p className="text-xs text-muted-foreground">
-            This is exactly what Nenya would receive. It goes to us the same way a report does. Please check it
+            This is exactly what Nenya would receive, together with the signed file so that we can check it was not changed. Please check it
             contains nothing you want to keep private.
           </p>
           <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-2 text-xs">{shareText}</pre>

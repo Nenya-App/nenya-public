@@ -5,7 +5,8 @@ a server, no random identifiers, and never anything a visitor writes, draws, ans
 
 | Key | What | When it is written |
 |---|---|---|
-| `nenya.coach.rest` | Time a coach conversation ended | Automatically, when one ends (not after a crisis stop). Drives the 12-hour rest |
+| `nenya.coach.ownerToken` | The owner's secret token (only in the owner's own browser) | Never automatic; set from the console. Sent to the coach as a header to lift the per-connection limit while testing. Kept by Forget me, erased by Emergency Exit |
+| `nenya.coach.rest` | Time a coach conversation ended | Automatically, when one ends (not after a crisis stop). Drives the 6-hour rest |
 | `nenya.remember` | `1` | Only when the visitor turns on "Remember my settings on this device" |
 | `nenya.prefs` | Theme, text size, animation and breathing choices (validated allow-list) | Only while `nenya.remember` is on |
 | `nenya.terms` | The date of the terms the visitor agreed to | Only while `nenya.remember` is on; ignored if the terms date changes |

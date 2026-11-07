@@ -39,11 +39,11 @@ try {
 
   store['nenya.coach.rest'] = String(Date.now() - 3600000);
   h = render(CoachDemo, { colors });
-  ok('coach: inside the 12-hour rest it shows the resting screen with Venice and sharing', typeof h === 'string' && h.includes('resting') && h.includes('Share Nenya') && h.includes('venice.ai/c/nenya-20'), h.error ?? '');
+  ok('coach: inside the 6-hour rest it shows the resting screen with Venice and sharing', typeof h === 'string' && h.includes('resting') && h.includes('Share Nenya') && h.includes('venice.ai/c/nenya-20'), h.error ?? '');
 
-  store['nenya.coach.rest'] = String(Date.now() - 13 * 3600000);
+  store['nenya.coach.rest'] = String(Date.now() - 7 * 3600000);
   h = render(CoachDemo, { colors });
-  ok('coach: after 12 hours it opens again', typeof h === 'string' && h.includes('A short conversation'), h.error ?? '');
+  ok('coach: after 6 hours it opens again', typeof h === 'string' && h.includes('A short conversation'), h.error ?? '');
 
   store['nenya.coach.rest'] = String(Date.now() - 3600000);
   store['nenya.coach.owner'] = '1';
@@ -155,6 +155,17 @@ try {
   h = render(FailureNotice, { turn: 2, info: { message: "The coach's model took too long to answer.", code: 'upstream', reason: 'timeout', ref: 'aabbccdd', status: 502, at: '2026-11-05T22:14:09.000Z' } });
   ok('failed turn: says what happened, with the codes and a report option', typeof h === 'string' && h.includes('took too long') && h.includes('ref aabbccdd') && h.includes('upstream') && h.includes('Report this failure') && h.includes('Nothing you wrote was lost'), h.error ?? '');
   ok('failed turn: the report says it sends only the technical details', typeof h === 'string' && h.includes('does not send what you wrote'), h.error ?? '');
+
+  // The owner's private page: a sign-in field and nothing else until a token is given.
+  const { default: AdminPage } = await vite.ssrLoadModule('/src/admin/AdminPage.tsx');
+  h = render(AdminPage, {});
+  ok('admin page: shows the title, a password field for the token, and no totals yet', typeof h === 'string' && h.includes('Nenya numbers') && h.includes('type="password"') && !h.includes('<table'), h.error ?? '');
+  ok('admin page: says the totals hold no information about who produced them', typeof h === 'string' && h.includes('hold no information about who produced them'), h.error ?? '');
+
+  // The public verifier page: a way to choose a file or paste one, and a plain promise that nothing is uploaded.
+  const { default: VerifyPage } = await vite.ssrLoadModule('/src/verify/VerifyPage.tsx');
+  h = render(VerifyPage, {});
+  ok('verify page: offers a file and a paste box, and says nothing is uploaded', typeof h === 'string' && h.includes('Check a Nenya transcript') && h.includes('type="file"') && h.includes('Nothing is') && h.includes('uploaded'), h.error ?? '');
 } finally {
   await vite.close();
 }

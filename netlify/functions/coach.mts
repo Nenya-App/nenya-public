@@ -1,13 +1,20 @@
 // Demo relay for the Nenya coach: the browser talks only to this function, and
 // this function talks to Venice AI, so the Venice key never reaches a browser.
 //
-// Stateless by design: nothing is stored, message text is never logged, and the
-// turn count is carried by a signed ticket instead of a database.
+// Message text is never stored or logged, and the conversation's turn count is carried by a signed ticket instead
+// of a database. The only things kept (in the private store) are plain daily totals (src/lib/counters.ts), one
+// running count of the day's turns (src/lib/dailyCap.ts) and, per connection, a count of turns under a one-way daily
+// code (src/lib/connectionLimit.ts). See docs/site-metrics-scope.md and docs/coach-ip-limit-scope.md.
 //
 // Environment (Netlify, production, Functions scope):
 //   VENICE_API_KEY       secret   Venice API key
 //   COACH_TICKET_SECRET  secret   long random string for signing tickets
 //   COACH_ENABLED        plain    "true" to accept requests
+//   COACH_IP_SECRET      secret   long random string for the per-connection daily code; without it that limit is off
+//   COACH_IP_TURNS       plain    optional, turns a connection may use a day (default 10, two full conversations)
+//   COACH_DAILY_CAP      plain    optional, turns the whole site may use a day (default 500)
+//   COACH_OWNER_TOKEN_HASH secret optional, SHA-256 (hex) of the owner's token; the header x-nenya-owner with the token
+//                                 lifts only the per-connection limit (never the site-wide cap)
 //   COACH_SIGNING_KEY    secret   optional, base64 Ed25519 private key (PKCS8 DER) for
 //                                 signing transcript receipts
 //   COACH_MODEL          plain    optional, overrides DEFAULT_MODEL. An id starting "e2ee-" (Venice's encrypted
@@ -23,7 +30,11 @@ import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes,
 import { detectFlag } from '../../src/lib/safetyFlags.ts';
 import { scrubPII } from '../../src/lib/piiScrub.ts';
 import { looksLikeManipulation, neutralize } from '../../src/lib/promptGuard.ts';
-import { claimConversationSlot, capFromEnv } from '../../src/lib/dailyCap.ts';
+import { countTurn, capFromEnv, type CounterStore } from '../../src/lib/dailyCap.ts';
+import { addCount } from '../../src/lib/counters.ts';
+import { tokenMatches } from '../../src/lib/ownerAuth.ts';
+import { recordReceipt } from '../../src/lib/receiptLog.ts';
+import { addConnectionTurn, allowanceReached, connectionCode, turnsFromEnv } from '../../src/lib/connectionLimit.ts';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
 import { E2eeError, e2eeChat, isE2eeModel } from '../../src/lib/veniceE2ee.ts';
@@ -58,7 +69,12 @@ const ROUTE = '/api/coach';
 // Production hosts live in src/lib/originHosts.ts; preview deploys add theirs through COACH_EXTRA_HOSTS.
 // The private Blobs store name can also be set per deploy context (COACH_STORE_NAME), so previews never
 // share the production store, notes, or daily counter.
-const privateStore = () => getStore(storeNameFrom(process.env.COACH_STORE_NAME));
+// Tests give the function a fake store; in production this is always the Netlify store.
+let storeOverride: ReturnType<typeof getStore> | null = null;
+export const __useStoreForTests = (s: unknown): void => {
+  storeOverride = s as ReturnType<typeof getStore> | null;
+};
+const privateStore = () => storeOverride ?? getStore(storeNameFrom(process.env.COACH_STORE_NAME));
 
 type Role = 'user' | 'assistant';
 interface Session {
@@ -114,24 +130,29 @@ function parseContext(raw: unknown): string | null {
 const boundBody = (session: Session, history: Msg[], context: string) =>
   JSON.stringify(context ? { session, context, history } : { session, history });
 
-function sign(secret: string, completed: number, issuedAt: number, history: Msg[], session: Session, context: string): string {
+// A ticket is `issuedAt.code.mac`. `code` is the one-way daily code of the connection that started the conversation
+// (or "-" when there is none), so that all of a conversation's turns count against that connection even if the address
+// changes partway through. The mac covers the code, so the page cannot change it.
+const CODE_FORM = /^(-|[0-9a-f]{32})$/;
+function sign(secret: string, completed: number, issuedAt: number, history: Msg[], session: Session, context: string, code = '-'): string {
   const mac = createHmac('sha256', secret)
-    .update(`${completed}|${issuedAt}|${sha256(boundBody(session, history, context))}`)
+    .update(`${completed}|${issuedAt}|${code}|${sha256(boundBody(session, history, context))}`)
     .digest('base64url');
-  return `${issuedAt}.${mac}`;
+  return `${issuedAt}.${code}.${mac}`;
 }
 
-function verify(secret: string, ticket: unknown, completed: number, history: Msg[], session: Session, context: string): boolean {
-  if (typeof ticket !== 'string') return false;
-  const [issuedRaw, mac] = ticket.split('.');
+/** The connection code carried by a valid ticket ("-" for none), or null when the ticket is not valid. */
+function verify(secret: string, ticket: unknown, completed: number, history: Msg[], session: Session, context: string): string | null {
+  if (typeof ticket !== 'string') return null;
+  const [issuedRaw, code, mac] = ticket.split('.');
   const issuedAt = Number(issuedRaw);
-  if (!Number.isFinite(issuedAt) || !mac) return false;
+  if (!Number.isFinite(issuedAt) || !code || !CODE_FORM.test(code) || !mac) return null;
   const age = Date.now() - issuedAt;
-  if (age < -60000 || age > TICKET_TTL_MS) return false;
-  const expected = sign(secret, completed, issuedAt, history, session, context);
+  if (age < -60000 || age > TICKET_TTL_MS) return null;
+  const expected = sign(secret, completed, issuedAt, history, session, context, code);
   const a = Buffer.from(expected);
   const b = Buffer.from(ticket);
-  return a.length === b.length && timingSafeEqual(a, b);
+  return a.length === b.length && timingSafeEqual(a, b) ? code : null;
 }
 
 function parseMessages(raw: unknown, endsWith: Role = 'user'): Msg[] | null {
@@ -167,9 +188,37 @@ function signingKey() {
   }
 }
 
-// Canonical form that gets hashed. Documented in docs/coach-transcripts.md.
-const canonicalTranscript = (messages: Msg[], session: Session, context: string): string =>
-  JSON.stringify({ v: 2, session, ...(context ? { context } : {}), messages: messages.map((m) => ({ role: m.role, content: m.content })) });
+// What the receipt says about how the conversation was produced, signed along with it. None of it identifies a person.
+interface TranscriptMeta {
+  closed: boolean; // the conversation reached its final exchange
+  exchanges: number;
+  build: string; // the site version (the deploy's commit, when Netlify provides it)
+  model: string;
+  instructions: string; // a short fingerprint of the instruction text, not the text
+}
+
+// The transcript exactly as it is hashed and signed (version 3). Documented in docs/coach-transcripts.md. The key order
+// matters, because the hash is of JSON.stringify of this object, and the page writes the object out unchanged.
+const buildTranscript = (messages: Msg[], session: Session, context: string, meta: TranscriptMeta) => ({
+  v: 3,
+  session,
+  meta,
+  ...(context ? { context } : {}),
+  messages: messages.map((m) => ({ role: m.role, content: m.content })),
+});
+
+let fingerprint: string | null = null;
+/** A fingerprint of every fixed instruction the coach is given (all turns and variants), not of the private method notes. */
+function instructionsFingerprint(): string {
+  if (fingerprint) return fingerprint;
+  const parts: string[] = [REPEAT_NOTE, CLOSE_NOTE];
+  for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false), systemInstruction(t, true, '', false), systemInstruction(t, false, '', true));
+  fingerprint = sha256(parts.join('\n--\n')).slice(0, 16);
+  return fingerprint;
+}
+export const __instructionsFingerprint = (): string => instructionsFingerprint();
+
+const buildId = (): string => (process.env.COACH_BUILD || process.env.COMMIT_REF || process.env.DEPLOY_ID || 'unknown').slice(0, 12);
 
 // Backstop for the character card's own vocabulary: the coach may name its
 // methods, but may not present itself as a clinical or diagnostic tool. Drops
@@ -244,13 +293,10 @@ async function notesFor(userTexts: string[], softened: boolean, exclude: ModuleG
   return loadMethodNotes();
 }
 
-// A store that cannot be reached counts as open, as in claimConversationSlot.
-async function slotAvailable(): Promise<boolean> {
-  try {
-    return await claimConversationSlot(privateStore(), capFromEnv(process.env.COACH_DAILY_CAP));
-  } catch {
-    return true;
-  }
+// The site owner's token (COACH_OWNER_TOKEN_HASH holds the SHA-256 of it, so the secret itself is never in the
+// environment) lifts the per-connection allowance only, never the site-wide cap or the per-minute limit.
+function isOwner(req: Request): boolean {
+  return tokenMatches(req.headers.get('x-nenya-owner'), process.env.COACH_OWNER_TOKEN_HASH);
 }
 
 function systemInstruction(turn: number, softened: boolean, notes: string, direct = false): string {
@@ -297,7 +343,31 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
   return parts.join(' ');
 }
 
-export default async (req: Request): Promise<Response> => {
+export default async (req: Request, netlify?: { ip?: string }): Promise<Response> => {
+  // Counts are written alongside the work, and all awaited before the function returns, so none is lost.
+  const pending: Promise<unknown>[] = [];
+  const track = (p: Promise<unknown>): void => void pending.push(p.catch(() => undefined));
+  try {
+    return await handle(req, netlify, track);
+  } finally {
+    await Promise.allSettled(pending);
+  }
+};
+
+async function handle(req: Request, netlify: { ip?: string } | undefined, track: (p: Promise<unknown>) => void): Promise<Response> {
+  // A store that cannot be reached means no limits and no counts, never a locked-out visitor.
+  const store = (): CounterStore | null => {
+    try {
+      return privateStore() as unknown as CounterStore;
+    } catch {
+      return null;
+    }
+  };
+  const tally = (event: string): void => {
+    const st = store();
+    if (st) track(addCount(st, event));
+  };
+
   // Only the rate-limited public route is served; the default
   // /.netlify/functions/coach address would sidestep the limit.
   const url = new URL(req.url);
@@ -344,14 +414,28 @@ export default async (req: Request): Promise<Response> => {
   if ((body as { action?: unknown }).action === 'receipt') {
     const done = parseMessages(body.messages, 'assistant');
     if (!done) return fail(400, 'messages');
-    if (!verify(secret, body.ticket, done.length / 2, done, session, context)) return fail(400, 'ticket');
+    if (verify(secret, body.ticket, done.length / 2, done, session, context) === null) return fail(400, 'ticket');
     const k = signingKey();
     if (!k) return fail(503, 'signing-off');
-    const hash = sha256(canonicalTranscript(done, session, context));
+    const exchanges = done.length / 2;
+    const meta: TranscriptMeta = {
+      closed: exchanges >= MAX_TURNS,
+      exchanges,
+      build: buildId(),
+      model: process.env.COACH_MODEL || DEFAULT_MODEL,
+      instructions: instructionsFingerprint(),
+    };
+    const transcript = buildTranscript(done, session, context, meta);
+    const hash = sha256(JSON.stringify(transcript));
     const issuedAt = new Date().toISOString();
-    const signature = edSign(null, Buffer.from(`nenya-coach-transcript-v2\n${hash}\n${issuedAt}`), k.key).toString('base64');
+    const signature = edSign(null, Buffer.from(`nenya-coach-transcript-v3\n${hash}\n${issuedAt}`), k.key).toString('base64');
+    // A plain daily count (by signing key) and, for 30 days, the receipt's hash. Neither holds any of the conversation.
+    tally(`coach.receipt.issued.${k.keyId}`);
+    const st = store();
+    if (st) track(recordReceipt(st, hash));
     return json(200, {
-      receipt: { version: 2, algorithm: 'Ed25519', keyId: k.keyId, publicKey: k.publicKey, hash, issuedAt, signature },
+      transcript,
+      receipt: { version: 3, algorithm: 'Ed25519', keyId: k.keyId, publicKey: k.publicKey, hash, issuedAt, signature },
     });
   }
 
@@ -361,32 +445,61 @@ export default async (req: Request): Promise<Response> => {
   const turn = (messages.length + 1) / 2; // this exchange's number, 1-based
   if (turn > MAX_TURNS) return fail(400, 'turns');
 
+  // The connection code a later turn is counted against comes from its ticket, not from the address it arrives from.
+  let startCode = '-';
   if (turn > 1) {
     const history = messages.slice(0, -1);
-    if (!verify(secret, body.ticket, turn - 1, history, session, context)) return fail(400, 'ticket');
+    const carried = verify(secret, body.ticket, turn - 1, history, session, context);
+    if (carried === null) return fail(400, 'ticket');
+    startCode = carried;
   }
+  tally('coach.turn.sent');
 
   // Attempts to steer the coach never reach the AI. The conversation is not
   // advanced: no ticket, no turn used, and the visitor can rephrase.
   if (messages.some((m) => m.role === 'user' && looksLikeManipulation(m.content))) {
+    tally('coach.turn.blocked.manipulation');
     return json(200, { blocked: 'manipulation' });
   }
 
   // A shared reflection is screened like a message. If it reads like instructions,
   // the page drops it and the visitor continues without it.
   if (context && looksLikeManipulation(context)) {
+    tally('coach.turn.blocked.context');
     return json(200, { blocked: 'context' });
   }
 
   // Stop-tier flags never reach the AI: the page shows resources and the conversation ends.
   const flag = detectFlag(messages[messages.length - 1].content);
   if (flag?.tier === 'stop') {
+    tally('coach.turn.blocked.crisis');
     return json(200, { done: true, flag });
   }
 
-  // The daily limit on new conversations. Ones already under way are never cut off, and a message
-  // that stopped above does not use a slot because it never reaches the AI.
-  if (turn === 1 && !(await slotAvailable())) return json(200, { blocked: 'cap' });
+  // The limits. Only a conversation's first exchange can be refused; one already under way is never cut off, but its turns
+  // are still counted. A message that stopped above uses nothing, because it never reaches the AI.
+  const st = store();
+  let code = startCode;
+  if (st) {
+    if (turn === 1) {
+      const c = isOwner(req) ? null : connectionCode(process.env.COACH_IP_SECRET, netlify?.ip);
+      if (c) {
+        if (await allowanceReached(st, c, turnsFromEnv(process.env.COACH_IP_TURNS))) {
+          tally('coach.turn.blocked.ip');
+          return json(200, { blocked: 'ip' });
+        }
+        code = c;
+      }
+      if (!(await countTurn(st, capFromEnv(process.env.COACH_DAILY_CAP), true))) {
+        tally('coach.turn.blocked.cap');
+        return json(200, { blocked: 'cap' });
+      }
+      tally('coach.conversation.started');
+    } else {
+      track(countTurn(st, capFromEnv(process.env.COACH_DAILY_CAP), false));
+    }
+    if (code !== '-') track(addConnectionTurn(st, code));
+  }
 
   const model = process.env.COACH_MODEL || DEFAULT_MODEL;
   const slug = process.env.COACH_CHARACTER_SLUG || DEFAULT_CHARACTER_SLUG;
@@ -498,10 +611,12 @@ export default async (req: Request): Promise<Response> => {
   }
   if (reply.length > MAX_ASSISTANT_CHARS) reply = trimToSentence(reply.slice(0, MAX_ASSISTANT_CHARS));
 
+  tally('coach.turn.answered');
+  if (turn >= MAX_TURNS) tally('coach.conversation.finished');
   const history = [...messages, { role: 'assistant' as const, content: reply }];
-  const ticket = sign(secret, turn, Date.now(), history, session, context);
+  const ticket = sign(secret, turn, Date.now(), history, session, context, code);
   return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}) });
-};
+}
 
 // Literal values on purpose: Netlify reads this block by static analysis, so it
 // cannot follow constants. Keep `path` in step with ROUTE above.

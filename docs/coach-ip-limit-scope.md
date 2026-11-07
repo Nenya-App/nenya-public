@@ -4,7 +4,7 @@ Status: scoping only, nothing built. Written 2026-11-06. **Revised 2026-11-06 af
 
 ## The problem
 The coach demo is free and every reply costs money. Two things limit it today:
-- the **12-hour rest**, kept in the visitor's own browser (`nenya.coach.rest`). Anyone can clear it, and "Forget me" now clears it for every visitor, so it is a courtesy, not a lock;
+- the **6-hour rest**, kept in the visitor's own browser (`nenya.coach.rest`). Anyone can clear it, and "Forget me" now clears it for every visitor, so it is a courtesy, not a lock;
 - a **daily cap of 100 new conversations** across all visitors (`src/lib/dailyCap.ts`), plus Netlify's **15 requests a minute per IP** (`rateLimit` in `netlify/functions/coach.mts`).
 
 The cap protects the bill. Nothing stops one person from using up the whole day's cap, because nothing on the server knows that two conversations came from the same place.
@@ -36,7 +36,7 @@ The site-wide daily cap (100 conversations started, `COACH_DAILY_CAP`) counts co
 **What it does not do.** It does not stop someone who changes network (a VPN, or switching to mobile data) from starting more conversations; the daily cap still bounds the bill. It is a brake on casual looping, not a security control.
 
 ## "Forget me"
-"Forget me" erases what is on the device. It cannot erase this record, which is on the server and is not on the device. The button's helper text and the Terms must say so: "Forget me" resets this device; it does not reset a daily limit that is counted for your connection. The browser rest remains as a courtesy; once the allowance exists, the 12-hour rest could be shortened or removed (decide later).
+"Forget me" erases what is on the device. It cannot erase this record, which is on the server and is not on the device. The button's helper text and the Terms must say so: "Forget me" resets this device; it does not reset a daily limit that is counted for your connection. The browser rest remains as a courtesy; once the allowance exists, the 6-hour rest could be shortened or removed (decide later).
 
 ## Privacy and wording changes this requires (do these before building)
 - The README says the relay "stores nothing" and "does not log message text". True of messages; it would no longer be true that the function stores nothing. New wording: it stores two daily counts (all conversations, and a keyed hash of each connection) and deletes them by the next day.
@@ -54,7 +54,7 @@ The site-wide daily cap (100 conversations started, `COACH_DAILY_CAP`) counts co
 - **It stays a key, not an account:** no password database, sign-in page, session or stored profile. That keeps the Terms' "no accounts" statement true. If real user profiles are ever wanted, that is a separate, deliberate privacy decision: it would change what the site stores and what the Terms and README say, and should be scoped on its own.
 - **Handling:** the token is generated and set by you in Netlify, pasted into the admin page by you, kept in that browser's storage, sent in a request header and never in a link. I never see or handle it.
 
-Today's "owner mode" is a browser flag. It skips only the 12-hour rest, in that browser, and nothing on the server knows about it.
+Today's "owner mode" is a browser flag. It skips only the 6-hour rest, in that browser, and nothing on the server knows about it.
 
 **How to use it now.** In your own browser, on the site you are testing, open the developer console (Safari: Develop menu > Show JavaScript Console; Chrome: Cmd+Option+J) and run:
 
@@ -89,3 +89,18 @@ Key hashing (same IP and day gives the same key, different day or IP gives a dif
 ## Still to decide
 - The wording of the blocked screen.
 - Whether the site-wide daily cap becomes a turn cap, and the number.
+
+## More decisions (2026-11-07)
+- **Blocked screen wording:** "This connection has used its free conversations for today. Shared networks count together." (plain, no blame, no countdown), above the usual alternatives.
+- **Site-wide daily cap** becomes a turn cap, 500 a day (see `site-metrics-scope.md`).
+- **Cleanup of old records:** records are keyed by day and removed by a small scheduled cleanup (and opportunistically when a conversation starts), so none outlives about two days; the Terms wording should say "deleted within two days".
+
+## Address changes mid-conversation (decided 2026-11-07)
+A conversation's turns are **counted against the connection that started it**, not against whichever address sends a later message:
+- At the first exchange, the function makes the one-way daily code for the connection (as above) and puts it **inside the signed ticket** that already carries the conversation's state (the ticket is authenticated, so the page cannot change it).
+- Every later exchange adds its turn to that code from the ticket, whatever the current address is. A VPN switched on, or Wi-Fi changing to mobile data, no longer splits the count or touches the new address's record.
+- The conversation itself never depended on the address (the ticket binds history and session colors only), so nothing breaks when the address changes.
+- **Not prevented:** starting a *new* conversation from a new address gets a fresh count. That limit is inherent to any per-address rule; the site-wide cap still bounds the bill.
+- The code sits in the ticket the page holds, so the Terms say so (Section 21). It is one-way and cannot be turned back into an address without the key.
+- **Tests:** a conversation whose later messages come from different addresses adds all its turns to the starting code; a tampered code in the ticket is refused; the new address's record is untouched.
+

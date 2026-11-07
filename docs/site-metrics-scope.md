@@ -90,3 +90,18 @@ Counter: add-one, day rollover, two-day separation, collision retry, store failu
 - Admin page or local command?
 - Own counters, or a ready-made tool after tomorrow's look?
 - Should the site-wide daily cap also count turns instead of conversations started (suggested: yes, since the bill follows turns), and at what number?
+
+## Decisions made (2026-11-07)
+- **Site-wide daily cap counts turns**, 500 a day (the same ceiling as 100 full conversations at five exchanges). The per-connection allowance already counts turns.
+- **Browser counts start only after the visitor accepts the terms.** No "terms shown" count; the first count is the acceptance itself (`onboarding.terms.accepted`).
+- **Emergency Exit use is never counted.**
+- **Reading the numbers:** a private admin page behind the owner sign-in (last 30 days as a table).
+- Still open: own counters versus a ready-made tool (to look at when building); whether to add the page-view beacon at all once we know whether Netlify's statistics can be exported.
+
+## Built (2026-11-07): browser counts
+- **`/api/count`** (`netlify/functions/count.mts`): accepts `{ "events": [...] }` (at most four names, at most 1000 bytes), keeps only names on the fixed list in `src/lib/counters.ts`, and adds one to each day's total. It answers 204. It reads the page's own address (for the courtesy origin check) and nothing else: not the visitor's address, browser, referrer or cookies, and it sets no cookie. Netlify's rate limit (60 a minute) sits in front. A store that is down never produces an error for the visitor.
+- **The page** (`src/lib/usageCounts.ts`, wired in `App.tsx`): counting starts only after the terms are agreed (now or, for someone who chose to remember it, from the start of the visit); it never sends when the browser's Global Privacy Control signal is on; a failed send is ignored. First count: `onboarding.terms.accepted`, with the rhythm that was chosen (`onboarding.rhythm.<name>`), recorded at agreement because nothing before it is counted. Then `page.view.<screen>` each time a screen is shown, `tour.accepted`, `tour.declined`, `tour.completed` (the last step's close).
+- **Not counted, by design:** anything entered, Emergency Exit, and the About pages individually (they count together as `page.view.about`).
+- **Admin read page (built the same day):** `/admin/` (an unlinked page, `noindex` by its own tag and by a header for `/admin/*`, left out of the sitemap, robots.txt and llms.txt) and `GET /api/stats?days=N` (1 to 60; default 30). The page has a password field for the owner's token (the same token as the coach bypass, so a browser that already has `nenya.coach.ownerToken` set signs in at once) and shows the totals as tables: events by day with a total, grouped as coach demo, opening and tour, and screens shown. `/api/stats` answers only to that token (header `x-nenya-owner`, checked against `COACH_OWNER_TOKEN_HASH`) with a bare 401 otherwise; it returns numbers by event and day, plus today's site-wide coach turn count. It never reads the connection records.
+- **Sign-in with Netlify Identity is not part of this page yet.** The planned admin sign-in (widget, role check) is a separate, to-be-tested step; until then the token is the only way in. The endpoint's check is one function (`src/lib/ownerAuth.ts`), so a role check can be added beside it.
+
