@@ -39,11 +39,11 @@ try {
 
   store['nenya.coach.rest'] = String(Date.now() - 3600000);
   h = render(CoachDemo, { colors });
-  ok('coach: inside the 12-hour rest it shows the resting screen with Venice and sharing', typeof h === 'string' && h.includes('resting') && h.includes('Share Nenya') && h.includes('venice.ai/c/nenya-20'), h.error ?? '');
+  ok('coach: inside the 6-hour rest it shows the resting screen with Venice and sharing', typeof h === 'string' && h.includes('resting') && h.includes('Share Nenya') && h.includes('venice.ai/c/nenya-20'), h.error ?? '');
 
-  store['nenya.coach.rest'] = String(Date.now() - 13 * 3600000);
+  store['nenya.coach.rest'] = String(Date.now() - 7 * 3600000);
   h = render(CoachDemo, { colors });
-  ok('coach: after 12 hours it opens again', typeof h === 'string' && h.includes('A short conversation'), h.error ?? '');
+  ok('coach: after 6 hours it opens again', typeof h === 'string' && h.includes('A short conversation'), h.error ?? '');
 
   store['nenya.coach.rest'] = String(Date.now() - 3600000);
   store['nenya.coach.owner'] = '1';

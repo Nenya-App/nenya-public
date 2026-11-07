@@ -26,7 +26,7 @@ const ENDPOINT = '/api/coach';
 // The one thing this page keeps on the device: when a finished conversation ended, so the free demo
 // can rest for a while. A bare timestamp in local storage, never sent anywhere. Anyone can clear it,
 // so it is a courtesy, not a lock. Setting OWNER_KEY to '1' in your own browser skips it for testing.
-const REST_HOURS = 12;
+const REST_HOURS = 6;
 const HOUR_MS = 3600000;
 
 // When the rest ends (ms since epoch), or 0 if there is none.

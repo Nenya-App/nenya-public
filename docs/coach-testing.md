@@ -2,8 +2,8 @@
 
 Two things limit repeat use of the coach demo. Neither needs a server-side bypass.
 
-**The 12-hour rest.** After a conversation ends, the page saves the finish time in the browser's
-local storage (`nenya.coach.rest`) and shows a "resting" screen until 12 hours pass. It is a courtesy
+**The 6-hour rest.** After a conversation ends, the page saves the finish time in the browser's
+local storage (`nenya.coach.rest`) and shows a "resting" screen until 6 hours pass. It is a courtesy
 that any visitor can clear, not a lock. To skip it in your own browser, run this once in the console
 on nenya.biz (it stays until you remove it):
 

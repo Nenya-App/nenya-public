@@ -5,7 +5,7 @@ a server, no random identifiers, and never anything a visitor writes, draws, ans
 
 | Key | What | When it is written |
 |---|---|---|
-| `nenya.coach.rest` | Time a coach conversation ended | Automatically, when one ends (not after a crisis stop). Drives the 12-hour rest |
+| `nenya.coach.rest` | Time a coach conversation ended | Automatically, when one ends (not after a crisis stop). Drives the 6-hour rest |
 | `nenya.remember` | `1` | Only when the visitor turns on "Remember my settings on this device" |
 | `nenya.prefs` | Theme, text size, animation and breathing choices (validated allow-list) | Only while `nenya.remember` is on |
 | `nenya.terms` | The date of the terms the visitor agreed to | Only while `nenya.remember` is on; ignored if the terms date changes |
