@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { OWNER_TOKEN_KEY } from '../lib/deviceMemory';
+import { downloadText } from '../lib/transcript';
+import { GROUPS, label } from './labels';
+import { csvFilename, totalsCsv } from './exportCsv';
 
 // The owner's page for reading the usage totals (see docs/site-metrics-scope.md). It holds nothing but the owner's own
 // token (in this browser only) and a table of plain daily totals fetched from /api/stats. It is not linked from anywhere.
@@ -11,31 +14,6 @@ interface Stats {
   counts: Record<string, Record<string, number>>;
   todayTurns?: number;
 }
-
-const GROUPS: { title: string; match: (e: string) => boolean }[] = [
-  { title: 'Coach demo', match: (e) => e.startsWith('coach.') },
-  { title: 'Opening and tour', match: (e) => e.startsWith('onboarding.') || e.startsWith('tour.') },
-  { title: 'Screens shown', match: (e) => e.startsWith('page.view.') },
-];
-
-const LABELS: Record<string, string> = {
-  'coach.turn.sent': 'Messages sent',
-  'coach.turn.answered': 'Messages answered',
-  'coach.conversation.started': 'Conversations started',
-  'coach.conversation.finished': 'Conversations finished',
-  'onboarding.terms.accepted': 'Terms accepted',
-  'tour.accepted': 'Tour accepted',
-  'tour.declined': 'Tour declined',
-  'tour.completed': 'Tour completed',
-};
-
-const label = (e: string): string => {
-  if (LABELS[e]) return LABELS[e];
-  if (e.startsWith('coach.turn.blocked.')) return `Blocked: ${e.slice('coach.turn.blocked.'.length)}`;
-  if (e.startsWith('onboarding.rhythm.')) return `Rhythm: ${e.slice('onboarding.rhythm.'.length)}`;
-  if (e.startsWith('page.view.')) return e.slice('page.view.'.length);
-  return e;
-};
 
 const readToken = (): string => {
   try {
@@ -118,6 +96,7 @@ export default function AdminPage() {
     (stats?.events ?? []).filter((e) => group.match(e) && (showEmpty || (totals[e] ?? 0) > 0));
 
   return (
+    <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
     <main className="mx-auto max-w-6xl space-y-8 px-4 py-10 text-foreground">
       <header className="space-y-2">
         <h1 className="text-3xl">Nenya numbers</h1>
@@ -177,6 +156,13 @@ export default function AdminPage() {
               <input type="checkbox" checked={showEmpty} onChange={(e) => setShowEmpty(e.target.checked)} />
               Show events with no count
             </label>
+            <button
+              type="button"
+              onClick={() => downloadText(csvFilename(stats.days), 'text/csv', totalsCsv(stats))}
+              className="rounded-md border border-border px-4 py-2 text-sm text-foreground hover:bg-accent"
+            >
+              Download as a spreadsheet (.csv)
+            </button>
           </div>
 
           {GROUPS.map((g) => {
@@ -224,5 +210,6 @@ export default function AdminPage() {
         </section>
       )}
     </main>
+    </div>
   );
 }
