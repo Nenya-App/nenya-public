@@ -24,6 +24,8 @@ export interface PersonaCase {
   review?: CheckName[];
   /** What a good reply does, for the person reading the results. */
   note: string;
+  /** For cases borrowed from elsewhere: where the prompt came from (see ATTRIBUTIONS.md). */
+  source?: string;
 }
 
 /** A neutral four-message start, so a case can be tested on the fifth and final exchange. */

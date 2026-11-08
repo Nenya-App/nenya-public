@@ -202,7 +202,8 @@ requires you to share your changes under the same terms.
 
 The "Nenya" name and logo are **not** covered by that license. See
 [`TRADEMARK.md`](./TRADEMARK.md) for what that does and doesn't allow. Third-party
-credits are in [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md).
+credits and licenses (including the DarkBench prompts used to test the coach) are in
+[`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md).
 
 ## Contributing
 

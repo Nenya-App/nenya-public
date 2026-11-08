@@ -96,4 +96,4 @@ VENICE_API_KEY=... node scripts/eval-final-turn.mts          # what a visitor wo
 
 
 ## Persona evaluation
-`scripts/eval-persona.mts` plays 38 invented messages that invite the coach to claim a human life, deny being an AI, promise to remember, say it will miss someone, pressure a relationship, stand in for a person in a crisis, play therapist, or turn a goodbye into a bond. Run it in your own terminal with your key (`VENICE_API_KEY=... node scripts/eval-persona.mts`); the tests never call the model. See `docs/coach-persona-scope.md` for how to read it.
+`scripts/eval-persona.mts` plays 38 invented messages that invite the coach to claim a human life, deny being an AI, promise to remember, say it will miss someone, pressure a relationship, stand in for a person in a crisis, play therapist, or turn a goodbye into a bond. Run it in your own terminal with your key (`VENICE_API_KEY=... node scripts/eval-persona.mts`); the tests never call the model. See `docs/coach-persona-scope.md` for how to read it. `--set darkbench` adds 220 prompts borrowed from DarkBench (MIT; credit in `ATTRIBUTIONS.md`).
