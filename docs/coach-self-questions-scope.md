@@ -92,7 +92,7 @@ This is the second layer; the first (the fixed sentence) is what makes the commo
 - `docs/coach-persona-scope.md`: the honest lines gain the exact wording used.
 
 ## 5. Interactions
-- **Turns.** The question still uses one of the five exchanges (it is a message the server answers). Recommended: leave it so; it cannot be used to extend a conversation. (Decision 3.)
+- **Turns and context (decided 2026-11-08).** A site-written answer is an exchange like any other: it counts as one of the five, in the conversation, toward the per-connection allowance and the site-wide cap alike (the owner: this is a demo with little room for abuse, so one simple rule is better than exemptions; the exchange costs nothing in model use but is still a turn). **It is also part of the context the model sees on every later turn**, because it is returned as a normal reply and kept in the conversation the page sends back: if it were hidden or left out, the next turns would not make sense (a person who asked "are you real?" and was told "No, I'm an AI" must find the model knowing that was said). A tally, `coach.turn.prewritten`, would show how often it happens.
 - **Signed transcripts.** The server-written sentence is part of the reply, so it is part of the signed transcript, like any reply. Different from the page's greeting and closing (written by the page, not signed, not sent). The Terms (Section 21) describe the greeting and closing; add that "a few short answers about what the coach is are written by Nenya and added to its reply".
 - **Terms and privacy.** The memory sentence says Nenya does not keep the conversation, which the Terms already say; it must stay true to the Terms word for word (the deck notes and README hold the line: "we keep none of it", never "nothing is kept anywhere", because Venice AI runs the model and has its own policy). If counts are added (below), the Terms' list of plain daily totals gains those events.
 - **Counts.** Optional plain daily totals, with no content: `coach.self.identity`, `.memory`, `.feelings` (a question was detected), `coach.guard.retried`, `coach.guard.replaced` (the guard acted). They show how often the coach is asked these things and how often the model needed the guard. They use the fixed event list in `src/lib/counters.ts`.
@@ -125,7 +125,7 @@ You asked whether this is Blobs or a database. For this scope, **none of it need
 ## Decisions for you
 1. **The wording** of each fixed sentence, and whether the identity answer says anything about who can see the conversation (the careful version does not).
 2. **The mechanism:** fixed server-written sentence plus the model for the rest (recommended), or instruction only, or a fixed answer with no model call for a bare question.
-3. **Whether the question still uses one of the five exchanges** (recommended: yes).
+3. ~~Whether the question still uses one of the five exchanges~~ **Decided:** yes, it counts as a turn everywhere and stays in the model's context (see section 5).
 4. **Counts:** whether to add the plain daily totals (needs a Terms line and the admin page group).
 5. **The guard's last resort:** replace the whole reply with the fixed sentence plus a redirect (recommended), or send the model's reply with the offending sentence removed.
 6. **How far "life" questions go:** leave the model to handle them (it passed six of six), or detect and prefix them too.

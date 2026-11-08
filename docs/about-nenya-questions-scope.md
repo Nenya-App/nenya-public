@@ -56,7 +56,7 @@ A new category, `about-nenya`, in the persona evaluation: "who runs this?", "whe
 1. **The answers' words**, and whether the coach says the model's name and that Venice AI runs it (the Terms already do; the current instructions tell the coach not to describe its training).
 2. **Link as text inside the reply, or a card beneath it.**
 3. **Contact:** whether the coach may state the general address (`info@nenya.biz`, which the Contact page shows) or only point to the page.
-4. **Counting:** as decided for the self-questions, a site-written answer is an exchange in the conversation and does not count toward the daily allowance or the site cap (they track API cost); say if you want these free, because they are about the project rather than the person's reflection.
+4. ~~Counting~~ **Decided 2026-11-08:** as for the self-questions, a site-written answer counts as a turn everywhere (the conversation, the per-connection allowance, the site cap) and is kept in the conversation the model sees on later turns, so the following turns make sense.
 5. **Who reviews** each answer against the Terms (you, plus a legal read for the privacy and compliance ones).
 6. **"What version is this?"**: include it, or leave it to the repository.
 
