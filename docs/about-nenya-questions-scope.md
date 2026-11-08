@@ -53,12 +53,18 @@ A new category, `about-nenya`, in the persona evaluation: "who runs this?", "whe
 6. Terms and README wording if anything described changes.
 
 ## Decisions for you
-1. **The answers' words**, and whether the coach says the model's name and that Venice AI runs it (the Terms already do; the current instructions tell the coach not to describe its training).
-2. **Link as text inside the reply, or a card beneath it.**
+1. **The answers' words** (still to write; I can draft them from the pages). **Decided 2026-11-08:** "what model are you?" gets a **pre-written answer, and the model is kept away from it**: it is never left to the coach to say what it runs on (the same holds for hosting and the rest of the infrastructure kinds: the site answers, the model does not).
+2. ~~Link or card~~ **Decided 2026-11-08: a small card beneath the reply** for now. The linking comes when the About section is rebuilt as real pages with their own addresses (see "The About pages as real pages" below).
 3. **Contact:** whether the coach may state the general address (`info@nenya.biz`, which the Contact page shows) or only point to the page.
 4. ~~Counting~~ **Decided 2026-11-08:** as for the self-questions, a site-written answer counts as a turn everywhere (the conversation, the per-connection allowance, the site cap) and is kept in the conversation the model sees on later turns, so the following turns make sense.
 5. **Who reviews** each answer against the Terms (you, plus a legal read for the privacy and compliance ones).
-6. **"What version is this?"**: include it, or leave it to the repository.
+6. ~~"What version is this?"~~ **Decided 2026-11-08:** it is a "refer to GitHub" answer. The pre-written answer reads the version from the site itself (the build label written at build time, see `docs/versioning.md`) and presents **both**: the label the visitor is using and the link to the repository's releases.
+
+## The About pages as real pages (decided direction, 2026-11-08)
+Today the About sections live inside the app and are reached at `/?about=<id>`. The owner wants each section to be a **real page with its own address** (`nenya.biz/<section>`, the way `nenya.biz/coach` already works). The things after the slash are called **routes** (or URL paths; a page that has its own route is a static page, and the last part is sometimes called a slug). Why: more traffic into the static pages, the host's analytics (and our own plain daily counts) can see hits on each one, a card or a reply can link straight to the right page, and each page can have its own title and description for search.
+- **How, in this stack** (to decide when it is built): either (a) a real page per section built with the others (like `coach/index.html`), each prerendered so it reads without scripts; or (b) one rule that sends `/about/<section>` to the app, which opens that section from the path. (a) is better for search and for readers without scripts; (b) is smaller. The existing `/?about=<id>` links must keep working (redirected to the new addresses).
+- **Counts:** our own plain daily totals can name the route (`page.view.about.<id>`), as they already name screens; the host's analytics will see the page loads without anything from us.
+- **The About content needs a revamp and a pass for accuracy** before it is moved: several pages describe things that are planned rather than built, and the coach's answers must match them. That review is on the to-do list for after today's coach work, and it comes before the linking.
 
 ## Not verified
 - The exact wording of each About page and the Terms: the table gives the shape, and the facts in the answers must be re-read against the pages when they are written.

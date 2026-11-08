@@ -122,6 +122,10 @@ You asked whether this is Blobs or a database. For this scope, **none of it need
 5. Re-run the evaluation and compare with the baseline.
 6. Held-out phrasings; counts if you want them.
 
+## Decisions made (2026-11-08)
+- A site-written answer is a turn everywhere and stays in the model's context (section 5).
+- The model type, and the project's infrastructure, are answered by pre-written text kept away from the model (see `docs/about-nenya-questions-scope.md`); the replies appear with a small card beneath.
+
 ## Decisions for you
 1. **The wording** of each fixed sentence, and whether the identity answer says anything about who can see the conversation (the careful version does not).
 2. **The mechanism:** fixed server-written sentence plus the model for the rest (recommended), or instruction only, or a fixed answer with no model call for a bare question.
