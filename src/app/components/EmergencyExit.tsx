@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, ArrowUpRight, X, Info } from 'lucide-react';
 import { Button } from './ui/button';
-import { wipeDevice } from '../../lib/deviceMemory';
+import { leaveNow } from '../../lib/emergencyExit';
 
 interface EmergencyExitModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onLeaving?: () => void;
 }
 
 // Earthy emergency exit color - brown-orange-red
@@ -17,7 +18,7 @@ const EMERGENCY_YELLOW = '#FFDB58';
 const NIENNA_PRIMARY = '#6A5ACD'; // Slate Blue - Compassionate depth
 const NIENNA_WARM = '#BC8F8F'; // Rosy Brown - Gentle warmth
 
-function EmergencyExitModal({ isOpen, onClose }: EmergencyExitModalProps) {
+function EmergencyExitModal({ isOpen, onClose, onLeaving }: EmergencyExitModalProps) {
 
   // Handle Escape key and prevent body scroll when modal is open
   useEffect(() => {
@@ -41,21 +42,7 @@ function EmergencyExitModal({ isOpen, onClose }: EmergencyExitModalProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleProceed = () => {
-    // Clear all visible history
-    try {
-      localStorage.removeItem('nenya_session_data');
-      sessionStorage.clear();
-    } catch (e) {
-      console.error('Failed to clear session data', e);
-    }
-    // Anything the site saved on this device goes too, so a shared or watched device shows no trace.
-    wipeDevice({ keepOwner: false });
-
-    // Redirect immediately to Wikipedia - Rings of Power (Nenya) article
-    // Using replace() instead of href to prevent back button navigation
-    window.location.replace('https://en.wikipedia.org/wiki/Rings_of_Power#Nenya');
-  };
+  const handleProceed = () => leaveNow(onLeaving);
 
   if (!isOpen) return null;
 
@@ -227,25 +214,7 @@ export function EmergencyExitButton({
 
   const isHeader = variant === 'header';
 
-  const handleEmergencyExit = () => {
-    // Notify parent that emergency exit is happening (to disable beforeunload warning)
-    if (onEmergencyExit) {
-      onEmergencyExit();
-    }
-    
-    // Clear all visible history
-    try {
-      localStorage.removeItem('nenya_session_data');
-      sessionStorage.clear();
-    } catch (e) {
-      console.error('Failed to clear session data', e);
-    }
-    wipeDevice({ keepOwner: false });
-
-    // Redirect immediately to Wikipedia - Rings of Power (Nenya) article
-    // Using replace() instead of href to prevent back button navigation
-    window.location.replace('https://en.wikipedia.org/wiki/Rings_of_Power#Nenya');
-  };
+  const handleEmergencyExit = () => leaveNow(onEmergencyExit);
 
   return (
     <div className="flex items-center gap-1.5">
@@ -290,7 +259,25 @@ export function EmergencyExitButton({
       <EmergencyExitModal 
         isOpen={infoModalOpen}
         onClose={() => setInfoModalOpen(false)}
+        onLeaving={onEmergencyExit}
       />
+    </div>
+  );
+}
+
+// A copy of the Exit button pinned to the top corner, above every overlay. The header's own button is out of reach while
+// the loading screen, the first-visit panel (rhythm choice and terms), the tour offer or the tour is up, so the page
+// shows this one in those moments. It comes first in the page so that keyboard and screen-reader users meet it first.
+export function EmergencyExitDock({ show, onEmergencyExit }: { show: boolean; onEmergencyExit?: () => void }) {
+  if (!show) return null;
+  return (
+    <div
+      className="fixed right-2 z-[300]"
+      style={{ top: 'calc(0.5rem + env(safe-area-inset-top))' }}
+      role="region"
+      aria-label="Emergency exit"
+    >
+      <EmergencyExitButton variant="header" onEmergencyExit={onEmergencyExit} />
     </div>
   );
 }

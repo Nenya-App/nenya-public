@@ -103,4 +103,15 @@ export function downloadText(filename: string, mime: string, text: string): void
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export const dayStamp = (iso?: string): string => (iso ? iso.slice(0, 10) : new Date().toISOString().slice(0, 10));
+/**
+ * The download's file name: the first 8 characters of the transcript's hash (so two files from the same day can be told
+ * apart, and a file can be matched to its report) and the time it was signed, down to the second. Letters and digits only.
+ * An unsigned copy says so and carries the time it was made.
+ */
+export function transcriptFilename(receipt: { hash?: string; issuedAt?: string } | null | undefined, extension: 'json' | 'txt', now: Date = new Date()): string {
+  const stamp = (iso: string) => iso.replace(/\.\d+Z$/, 'Z').replace(/[-:]/g, '');
+  const parsed = receipt?.issuedAt && !Number.isNaN(Date.parse(receipt.issuedAt)) ? receipt.issuedAt : now.toISOString();
+  const code = (receipt?.hash ?? '').toLowerCase().replace(/[^0-9a-f]/g, '').slice(0, 8);
+  return `nenya-coach-transcript-${code && receipt?.issuedAt ? code : 'unsigned'}-${stamp(parsed)}.${extension}`;
+}
+

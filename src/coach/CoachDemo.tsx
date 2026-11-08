@@ -18,6 +18,8 @@ import { TranscriptTools } from './TranscriptTools';
 import { FailureNotice } from './FailureNotice';
 import { resetScroll } from '../app/components/ScrollToTop';
 import { describeFailure, type FailureInfo } from '../lib/coachErrors';
+import { DEFAULT_TIMEOUT, quietState, type TimeoutChoice } from '../lib/chatTimeout';
+import { QuietNotice, QuietTimeoutPicker } from './QuietTimeout';
 
 const MAX_TURNS = 5;
 const MAX_CHARS = 500;
@@ -118,6 +120,17 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   // Today's free conversations are used up. Only known when a first message is sent.
   const [capped, setCapped] = useState<false | 'cap' | 'ip'>(false);
   const [signaturePlaying, setSignaturePlaying] = useState(false);
+  // The quiet timeout (see src/lib/chatTimeout.ts): chosen before starting, changeable in the chat, kept only in memory.
+  const [timeoutChoice, setTimeoutChoice] = useState<TimeoutChoice>(DEFAULT_TIMEOUT);
+  const [activeAt, setActiveAt] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
+  const [timedOut, setTimedOut] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
+  const touch = () => {
+    const t = Date.now();
+    setActiveAt(t);
+    setNow(t);
+  };
   const stopSignature = useRef<(() => void) | null>(null);
   const notes = signatureNotes(color1, color2);
   useEffect(() => () => stopSignature.current?.(), []);
@@ -129,6 +142,21 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   useEffect(() => {
     onActiveChange?.(messages.length > 0);
   }, [messages.length, onActiveChange]);
+
+  // Quiet time only counts while the page is waiting on the person: it pauses while a reply is on its way.
+  const quiet = quietState(timeoutChoice, sending ? 0 : now - activeAt);
+  useEffect(() => {
+    if (stage !== 'chat' || timedOut || capped) return;
+    const id = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(id);
+  }, [stage, timedOut, capped]);
+  useEffect(() => {
+    if (stage === 'chat') touch(); // the clock starts when the conversation opens
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
+  useEffect(() => {
+    if (stage === 'chat' && quiet.kind === 'closed') setTimedOut(true);
+  }, [stage, quiet.kind]);
 
   const turn = Math.min(messages.filter((m) => m.role === 'user').length + (sending ? 0 : 1), MAX_TURNS);
 
@@ -189,6 +217,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       return;
     }
 
+    touch();
     setSending(true);
     setFailure(null);
     try {
@@ -226,6 +255,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       }
       setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply }] : next);
       setTicket(data.ticket);
+      touch();
       setDraft('');
       if (data.flag) {
         setFlag(data.flag);
@@ -535,6 +565,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 </li>
                 <li>The full Terms of Use and Privacy Policy are in the About menu on nenya.biz.</li>
               </ul>
+              <QuietTimeoutPicker id="coach-quiet-start" value={timeoutChoice} onChange={setTimeoutChoice} />
               <div className="flex flex-wrap items-center gap-3">
                 <Button size="lg" onClick={() => setStage('chat')} className="gap-2" style={gradientButton}>
                   I understand, start
@@ -568,6 +599,9 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 </span>
                 <span>Not therapy</span>
               </div>
+              {stage === 'chat' && !timedOut && (
+                <QuietTimeoutPicker id="coach-quiet-chat" compact value={timeoutChoice} onChange={(v) => { setTimeoutChoice(v); touch(); }} />
+              )}
 
               <div className="space-y-4" role="log" aria-live="polite" aria-label="Conversation">
                 {pageBubble(GREETING)}
@@ -631,8 +665,16 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
               {flag && <FlagNotice flag={flag} flaggedMessage={flaggedText} />}
 
+              {stage === 'chat' && !timedOut && !capped && (
+                <QuietNotice state={quiet} choice={timeoutChoice} onKeepOpen={touch} onSave={() => setCopyOpen(true)} />
+              )}
+
               {stage === 'chat' && messages.length >= 2 && !sending && (
-                <details className="rounded-2xl border border-border bg-card/50 px-4 py-3 text-sm">
+                <details
+                  className="rounded-2xl border border-border bg-card/50 px-4 py-3 text-sm"
+                  open={copyOpen}
+                  onToggle={(e) => setCopyOpen((e.currentTarget as HTMLDetailsElement).open)}
+                >
                   <summary className="cursor-pointer text-muted-foreground">
                     Keep a record, or report a problem
                   </summary>
@@ -662,7 +704,26 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               )}
               {stage === 'chat' && capped && venicePanel}
 
-              {stage === 'chat' && !capped && (
+              {stage === 'chat' && !capped && timedOut && (
+                <section className="space-y-3 rounded-2xl border bg-card p-5 text-sm" style={{ borderColor: `${color2}80` }} role="status">
+                  <h2 className="text-xl">This conversation closed after a quiet while</h2>
+                  <p className="text-muted-foreground">
+                    You can still save a copy above for a few more minutes; after that the coach can no longer sign it. Nothing was kept on
+                    our side. To talk again, start a new conversation.
+                  </p>
+                  {onBack ? (
+                    <button type="button" onClick={onBack} className={linkClass}>
+                      Clear this and leave
+                    </button>
+                  ) : (
+                    <a href="/" className={linkClass}>
+                      Back to Nenya
+                    </a>
+                  )}
+                </section>
+              )}
+
+              {stage === 'chat' && !capped && !timedOut && (
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -678,6 +739,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     value={draft}
                     onChange={(e) => {
                       setDraft(e.target.value);
+                      touch();
                       if (blocked) setBlocked(false);
                     }}
                     onKeyDown={(e) => {

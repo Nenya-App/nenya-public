@@ -9,6 +9,7 @@ import { BreathingCounter } from './components/BreathingCounter';
 import { WelcomeTutorial, type TutorialStepId } from './components/WelcomeTutorial';
 import { TourOffer } from './components/TourOffer';
 import { LoadingVeil } from './components/LoadingVeil';
+import { EmergencyExitDock } from './components/EmergencyExit';
 import { preloadLogoAssets } from '../lib/preload';
 import { enableUsageCounts, countEvents, countEvent, countPageView } from '../lib/usageCounts';
 import { PRESETS, sameTechnique } from '../lib/breathingPresets';
@@ -386,6 +387,11 @@ export default function App() {
 
   return (
     <ThemeProvider defaultTheme="dark">
+      {/* First in the page, above every overlay: the header's Exit is out of reach behind the loading screen, the first-visit panel and the tour. */}
+      <EmergencyExitDock
+        show={!veilGone || !termsAgreed || tourOffered || tutorialActive}
+        onEmergencyExit={() => { isEmergencyExiting.current = true; }}
+      />
       {!veilGone && <LoadingVeil ready={assetsReady} onDone={() => setVeilGone(true)} />}
       {!termsAgreed && veilGone && (
         <OnboardingFlow

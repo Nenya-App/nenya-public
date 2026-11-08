@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EmergencyExitDock } from '../app/components/EmergencyExit';
 import { PUBLISHED_KEY_IDS, extractSigned, readableMatches, verifySigned, type SignedFile, type VerifyOutcome } from '../lib/verifyTranscript';
 
 // A page for checking a signed Nenya coach-demo transcript (the .json file, or the readable .txt copy that carries it).
@@ -43,6 +44,7 @@ export default function VerifyPage() {
   const o = shown?.outcome;
   return (
     <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
+      <EmergencyExitDock show />
       <main className="mx-auto max-w-2xl space-y-8 px-4 py-10 text-foreground">
         <header className="space-y-2">
           <h1 className="text-3xl">Check a Nenya transcript</h1>
