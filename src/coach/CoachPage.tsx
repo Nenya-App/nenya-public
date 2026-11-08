@@ -4,6 +4,7 @@ import { BreathingPopout } from '../app/components/BreathingPopout';
 import { EmergencyExitDock } from '../app/components/EmergencyExit';
 import SessionKeyPicker from './SessionKeyPicker';
 import CoachDemo from './CoachDemo';
+import OwnerPanel from './OwnerPanel';
 import { usePref } from '../lib/deviceMemory';
 
 // The standalone /coach address: the same header as the rest of the site, then
@@ -80,6 +81,7 @@ export default function CoachPage() {
           <CoachDemo colors={colors} onBack={() => setColors(null)} />
         )}
       </div>
+      <OwnerPanel />
       <BreathingPopout
         isOpen={popoutOpen}
         onClose={() => setPopoutOpen(false)}
