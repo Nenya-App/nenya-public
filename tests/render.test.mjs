@@ -163,6 +163,13 @@ try {
   ok('admin page: starts by checking who is signed in, and keeps the token as a fallback', typeof h === 'string' && h.includes('Checking') && h.includes('Use the owner token instead'), h.error ?? '');
   ok('admin page: says the totals hold no information about who produced them', typeof h === 'string' && h.includes('hold no information about who produced them'), h.error ?? '');
 
+  // The logo is decorative by default and says what it is only when asked.
+  const { default: NenyaLogo } = await vite.ssrLoadModule('/src/app/components/NenyaLogo.tsx');
+  h = render(NenyaLogo, { size: 200 });
+  ok('logo: decorative (empty alt) by default, never the old "Nenya Logo"', typeof h === 'string' && /alt=""/.test(h) && !h.includes('Nenya Logo'), h.error ?? '');
+  h = render(NenyaLogo, { size: 200, alt: 'A described logo' });
+  ok('logo: a passed description is the one image a screen reader meets', typeof h === 'string' && h.includes('alt="A described logo"') && (h.match(/alt="A described logo"/g) ?? []).length === 1, h.error ?? '');
+
   // Hearing the signature melody is optional on both coach start screens: the way forward is never disabled by it.
   const { default: SessionKeyPicker } = await vite.ssrLoadModule('/src/coach/SessionKeyPicker.tsx');
   h = render(SessionKeyPicker, { onComplete() {}, onBack() {} });

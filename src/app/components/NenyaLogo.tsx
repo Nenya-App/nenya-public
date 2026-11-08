@@ -81,6 +81,12 @@ interface NenyaLogoProps {
   breathingEnabled?: boolean;
   /** Draw the gold glow around the logo. Only the large welcome and popout logos use it. */
   glow?: boolean;
+  /**
+   * What a screen reader says about the logo. Empty (the default) means decorative: the logo sits beside the word
+   * "Nenya" or inside a control that already has a name, so reading it again would be noise. The large logo on the
+   * welcome page and the page that explains the name pass a description (see src/lib/altText.ts).
+   */
+  alt?: string;
   /** Overrides for the gem's shading. Used by the design preview only. */
   gemLook?: { clarity?: number; sparkle?: number; contrast?: number; lift?: number; fieldAlpha?: number };
 }
@@ -96,6 +102,7 @@ export default function NenyaLogo({
   technique = null,
   breathingEnabled = true,
   glow = false,
+  alt = '',
   gemLook,
 }: NenyaLogoProps) {
   const flatLogoSrc = size <= SMALL_LOGO_MAX_SIZE ? nenyaLogoSmall : nenyaLogo;
@@ -143,7 +150,7 @@ export default function NenyaLogo({
       {showLogo && (
         <img
           src={showValarOrbit ? petalsLayer : flatLogoSrc}
-          alt="Nenya Logo"
+          alt={alt}
           width={showValarOrbit ? size * 0.765 : size * 0.85}
           height={showValarOrbit ? size * 0.765 : size * 0.85}
           className="absolute"

@@ -8,6 +8,7 @@ import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollHint } from '../ScrollHint';
 import { AppFooter } from '../AppFooter';
+import { LOGO_ALT_LONG } from '../../../lib/altText';
 
 interface NamePhilosophyProps {
   onBack: () => void;
@@ -50,7 +51,7 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
           {/* Header */}
           <BloomInstant className="text-center space-y-3 md:space-y-6">
             <div className="flex justify-center mb-3 md:mb-6">
-              <NenyaLogo size={isMobile ? 70 : 120} />
+              <NenyaLogo size={isMobile ? 70 : 120} alt={LOGO_ALT_LONG} />
             </div>
             
             <h1 className="text-2xl md:text-4xl lg:text-5xl bg-gradient-to-r from-foreground via-nenya-gold to-foreground bg-clip-text text-transparent px-4">

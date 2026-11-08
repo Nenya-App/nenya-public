@@ -12,6 +12,7 @@ import { getNoteNames, TONAL_SYSTEM_LABELS, TonalSystem } from '../../../lib/aud
 // "Download PDF Report" -- loaded on demand inside downloadNenyaPdfReport()
 // instead of shipped with every page.
 import { downloadNenyaPdfReport } from '../../../lib/nenyaPdfReport';
+import { BODY_MAP_ALT, DRAWING_ALT_PRESENT, DRAWING_ALT_WISH } from '../../../lib/altText';
 
 interface GatewayReviewPageProps {
   gatewayData: GatewayData[];
@@ -492,7 +493,7 @@ export default function GatewayReviewPage({
                               <p className="text-xs text-muted-foreground">Present</p>
                               <img
                                 src={currentDrawing}
-                                alt="Drawing for the present state"
+                                alt={DRAWING_ALT_PRESENT}
                                 className="w-full rounded border border-border bg-muted/20"
                               />
                             </div>
@@ -502,7 +503,7 @@ export default function GatewayReviewPage({
                               <p className="text-xs text-muted-foreground">Wish</p>
                               <img
                                 src={potentialDrawing}
-                                alt="Drawing for the wish state"
+                                alt={DRAWING_ALT_WISH}
                                 className="w-full rounded border border-border bg-muted/20"
                               />
                             </div>
@@ -554,7 +555,7 @@ export default function GatewayReviewPage({
                   <div className="bg-muted/30 rounded-lg p-4 flex justify-center">
                     <img
                       src={bodyMapData.imageDataUrl}
-                      alt="Body emotion map"
+                      alt={BODY_MAP_ALT}
                       className="max-w-full h-auto rounded"
                       style={{ maxHeight: '300px' }}
                     />

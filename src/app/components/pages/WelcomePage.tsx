@@ -7,6 +7,7 @@ import { ArrowRight, ChevronDown } from 'lucide-react';
 import { AppFooter } from '../AppFooter';
 import { SupportThisWork } from '../SupportThisWork';
 import { ContactSection } from '../ContactSection';
+import { LOGO_ALT_NO_ORBS, LOGO_ALT_SHORT } from '../../../lib/altText';
 
 interface WelcomePageProps {
   onContinue: () => void;
@@ -102,6 +103,7 @@ export default function WelcomePage({
                   technique={technique}
                   breathingEnabled={breathingEnabled}
                   glow
+                  alt={orbitEnabled ? LOGO_ALT_SHORT : LOGO_ALT_NO_ORBS}
                 />
               </div>
             </ValarBreathingLogo>
