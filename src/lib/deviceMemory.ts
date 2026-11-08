@@ -78,6 +78,8 @@ export interface Prefs {
   logoVisible?: boolean;
   breathingOpacity?: number;
   showBreathingCounter?: boolean;
+  /** Breathing tones: a note for each count of the breath. Off unless the visitor switches it on. */
+  breathingTones?: boolean;
   colorBlindMode?: string;
   breathingTechnique?: { ih: number; hi: number; ex: number; ho: number };
 }
@@ -95,6 +97,7 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   logoVisible: isBool,
   breathingOpacity: (v) => typeof v === 'number' && v >= 0.1 && v <= 1,
   showBreathingCounter: isBool,
+  breathingTones: isBool,
   colorBlindMode: (v) => typeof v === 'string' && VISION.includes(v),
   breathingTechnique: (v) => {
     const t = v as Record<string, unknown> | null;
@@ -130,6 +133,35 @@ export function usePref<K extends keyof Prefs>(key: K, fallback: NonNullable<Pre
   }, [remembering, key, value]);
   return [value, setValue] as const;
 }
+
+// Breathing tones are one setting shared by three switches (near the top of the page, in the accessibility panel and on
+// the breathing counter), so it lives here rather than in one component's state. Off until switched on; saved only while
+// "Remember on this device" is on, and erased by "Forget me" and Emergency Exit like every other saved setting.
+let tonesOn: boolean | null = null;
+const tonesListeners = new Set<() => void>();
+const getTones = (): boolean => (tonesOn ??= loadPrefs().breathingTones === true);
+export const getBreathingTones = getTones;
+export function setBreathingTones(on: boolean): void {
+  tonesOn = on;
+  savePref('breathingTones', on);
+  tonesListeners.forEach((l) => l());
+}
+const subscribeTones = (l: () => void) => {
+  tonesListeners.add(l);
+  return () => tonesListeners.delete(l);
+};
+export function useBreathingTones(): boolean {
+  const on = useSyncExternalStore(subscribeTones, getTones, () => false);
+  const remembering = useRemembering();
+  useEffect(() => {
+    if (remembering) savePref('breathingTones', on);
+  }, [remembering, on]);
+  return on;
+}
+/** For tests: forget the in-memory value so the next read starts from storage again. */
+export const __resetBreathingTonesForTests = (): void => {
+  tonesOn = null;
+};
 
 /** Only if the visitor chose to be remembered, and only for the exact terms they agreed to. */
 export const termsAcceptedFor = (version: string) => isRemembering() && read(TERMS_KEY) === version;

@@ -170,6 +170,17 @@ try {
   h = render(NenyaLogo, { size: 200, alt: 'A described logo' });
   ok('logo: a passed description is the one image a screen reader meets', typeof h === 'string' && h.includes('alt="A described logo"') && (h.match(/alt="A described logo"/g) ?? []).length === 1, h.error ?? '');
 
+  // Breathing tones: the same switch in three places, off by default, each with a name and a state.
+  const { BreathTonesSwitch, TonesAnnouncer } = await vite.ssrLoadModule('/src/app/components/BreathTonesSwitch.tsx');
+  for (const variant of ['skip', 'panel', 'counter']) {
+    h = render(BreathTonesSwitch, { variant });
+    ok(`breathing tones switch (${variant}): a named switch, off by default`, typeof h === 'string' && /role="switch"|data-slot="switch"/.test(h) && /aria-checked="false"|data-state="unchecked"/.test(h) && (/Breathing tones/.test(h)), h.error ?? '');
+  }
+  h = render(BreathTonesSwitch, { variant: 'skip' });
+  ok('breathing tones switch (skip): hidden until focused, and says what pressing does', typeof h === 'string' && h.includes('sr-only focus:not-sr-only') && h.includes('off. Press to turn on.'), h.error ?? '');
+  h = render(TonesAnnouncer, {});
+  ok('breathing tones announcer: a polite live region, empty until something changes', typeof h === 'string' && h.includes('aria-live="polite"') && h.includes('role="status"'), h.error ?? '');
+
   // Hearing the signature melody is optional on both coach start screens: the way forward is never disabled by it.
   const { default: SessionKeyPicker } = await vite.ssrLoadModule('/src/coach/SessionKeyPicker.tsx');
   h = render(SessionKeyPicker, { onComplete() {}, onBack() {} });

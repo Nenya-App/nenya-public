@@ -10,6 +10,7 @@ import { WelcomeTutorial, type TutorialStepId } from './components/WelcomeTutori
 import { TourOffer } from './components/TourOffer';
 import { LoadingVeil } from './components/LoadingVeil';
 import { EmergencyExitDock } from './components/EmergencyExit';
+import { BreathTonesPlayer, BreathTonesSwitch, TonesAnnouncer } from './components/BreathTonesSwitch';
 import { preloadLogoAssets } from '../lib/preload';
 import { enableUsageCounts, countEvents, countEvent, countPageView } from '../lib/usageCounts';
 import { PRESETS, sameTechnique } from '../lib/breathingPresets';
@@ -392,6 +393,7 @@ export default function App() {
         show={!veilGone || !termsAgreed || tourOffered || tutorialActive}
         onEmergencyExit={() => { isEmergencyExiting.current = true; }}
       />
+      <TonesAnnouncer />
       {!veilGone && <LoadingVeil ready={assetsReady} onDone={() => setVeilGone(true)} />}
       {!termsAgreed && veilGone && (
         <OnboardingFlow
@@ -419,6 +421,13 @@ export default function App() {
         className="size-full bg-background relative overflow-hidden flex flex-col"
         {...(!termsAgreed || tourOffered ? ({ inert: '' } as Record<string, string>) : {})}
       >
+        {/* Breathing tones: first in the reading and tab order, hidden until it has keyboard focus. */}
+        <BreathTonesSwitch variant="skip" />
+        <BreathTonesPlayer
+          active={currentScreen === 'welcome' && entryUnlocked && breathingEnabled && showBreathingCounter}
+          timing={breathingTechnique}
+          cycleStart={breathingCycleStart}
+        />
         {/* Scroll to top on screen change */}
         <ScrollToTop trigger={currentScreen} />
         

@@ -4,6 +4,7 @@ import * as m from 'motion/react-m';
 import { ChevronDown, GripHorizontal, Minus, Square, X } from 'lucide-react';
 
 import { PRESETS, type BreathingTechnique } from '../../lib/breathingPresets';
+import { BreathTonesSwitch } from './BreathTonesSwitch';
 
 interface BreathingCounterProps {
   enabled: boolean;
@@ -115,6 +116,7 @@ export function BreathingCounter({
             <X size={13} />
           </button>
         )}
+        {!collapsed && <BreathTonesSwitch variant="counter" />}
         {!collapsed && onMinimizedChange && (
           <button
             onClick={() => onMinimizedChange(!minimized)}
@@ -165,6 +167,10 @@ export function BreathingCounter({
         </button>
       ) : (
       <div style={{ padding: '4px 16px 10px' }}>
+        {/* The number and word change every second, so they are hidden from screen readers (which would otherwise meet a
+            different number each time they looked); the breathing tones and the controls are what they use instead. */}
+        <span className="sr-only">Breathing counter. Use the breathing tones switch to follow the breath by sound.</span>
+        <div aria-hidden="true">
         <div
           style={{
             fontSize: '11px',
@@ -201,6 +207,7 @@ export function BreathingCounter({
           >
             {phaseLabel}
           </div>
+        </div>
         </div>
       </div>
       )}

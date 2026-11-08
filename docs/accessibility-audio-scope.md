@@ -1,6 +1,13 @@
 # Scope: audio cues and screen-reader support for blind and low-vision visitors
 
-Status: scoping only, nothing built. Written 2026-11-06.
+Status (2026-11-08): **alt text built; breathing tones built** (tones, the three-place switch, the polite announcement, the hidden ticking counter). Not built: spoken phases, haptics, the screen-reader audit, the human voice recordings (scoped at the end of this file). Written 2026-11-06.
+
+**What was built for tones, and what differs from the design below:**
+- `src/lib/breathTones.ts` (the notes, the shared-clock schedule, the player), `src/app/components/BreathTonesSwitch.tsx` (the switch in its three places, the announcer, the player), the setting in `src/lib/deviceMemory.ts` (`breathingTones`, shared by the three switches).
+- Notes come from the session sound's pentatonic scale (D4 up to E5). Counts are one-second beats, so one note per second of each phase; a long phase shares notes between neighbours.
+- Tones play only on the welcome screen while the counter is showing (minimized is fine; hiding the counter, or turning the breathing animation off, silences them), and stop when the tab is hidden.
+- Not decided by ear yet: the pitch range, the sound's character and the loudness (`GAIN_*` in `breathTones.ts`). Tune with real listeners.
+- The skip switch is first in the page's order once the terms are accepted (before that the whole page behind the first-visit panel is inert); during the loading screen and first-visit panel, only Emergency Exit is reachable.
 
 ## The problem
 The breathing counter is visual: a number and a word that change every second, and a glowing logo that follows the rhythm. A blind visitor gets none of it. More broadly, the site has a base of screen-reader markup (labels, live regions, hidden decoration) but it has never been checked with a screen reader, and several newer pieces (opening flow, tour, coach chat, body map) have never been tested that way at all.
@@ -132,3 +139,54 @@ Build order for the next session: 2, then 3, with the audit findings fed back as
 
 ## Decision (2026-11-07)
 - **The breathing-tones setting is erased by "Forget me"** like the other saved settings (and by Emergency Exit). A returning screen-reader user switches it on again; the switch stays easy to find (first in the tab order, hidden until focused). This replaces the earlier open question.
+
+
+## Scope: human voice recordings for the paced breathing options
+Written 2026-11-08. Nothing is built, and voice is not active on the site today. This is the plan for adding a recorded human voice that guides the paced rhythms, as a choice alongside the tones.
+
+### What it is for
+The tones carry the pace but not the words. A recorded voice says "in", "hold", "out" and counts, so a person can follow the breath with their eyes closed, or without learning what rising and falling notes mean. It is for accessibility and ease of use (blind and low-vision visitors, people who find counting hard under stress), not for making the site feel alive. Same stance as the coach: a real human voice, no face or avatar, no pretending to be a person who is present.
+
+### What would be recorded
+The breath counter counts one-second beats (`breathCounter` in `src/lib/breathClock.ts`), and every rhythm, including a custom one, is built from whole seconds. That means one small set of clips covers every rhythm if the voice **counts** instead of narrating a fixed script:
+- **Counts:** the numbers one to twelve (twelve covers the longest phase in any preset, and a custom rhythm up to the clock's limit).
+- **Phase words:** "in", "hold", "out" (and "rest" for an empty pause), each short enough to fit before the next beat.
+- **Cues:** a start line ("Let's begin"), an end line ("Well done"), and nothing else. No coaching, no promises, no advice.
+- Roughly 20 clips of well under a second each, in one voice (to start). Recording the numbers once means nothing needs time-stretching for a particular preset; clips are placed on the beat.
+- Possible later: a second voice, and other languages (each language is its own recording set; the site is English-only now).
+
+### How it would play
+- On the same audio clock as the tones (`src/lib/breathTones.ts`), scheduled ahead, so it cannot drift from the counter or the ring.
+- A fourth choice in the breathing-sound setting: **Tones, Voice, Both, or Off** (Off stays the default). Sound still starts only after the visitor switches it on, so audio is unlocked by the click, as for the tones.
+- **Inhale and exhale counts follow the counter:** the exhale counts down, as the counter does ("five, four, three..."). The phase word comes on the first beat of a phase ("in, two, three, four"), which is a design choice to test by ear: a leading word then numbers, or numbers only after the first.
+- A custom or unusual pace falls back to the tones, never to a different voice or a synthesized one (a robot voice reading numbers would break the promise of a human voice).
+- Files are small compressed audio, cached by the browser and loaded only when voice is first chosen, so a visitor who never picks it downloads nothing extra. They must work offline once cached if the site becomes installable.
+
+### The people and the rights (settle before recording)
+- **Who:** a voice artist or a volunteer whose voice suits calm guidance. Their consent and a written agreement come first; see "Decisions".
+- **A written release** covering: the recordings may be used in Nenya (the site, the app, marketing); the rights granted (a license for the site, how long, whether they can be withdrawn); credit; payment; **no use of the voice to train or clone a synthetic voice**, now or later, and a clear statement that nothing derived from the recordings (no text-to-speech model, no voice conversion) will be made. Put the "no cloning" clause in writing even though no one plans it.
+- **Where the audio files live and under what license.** The code is AGPL. Audio of a person's voice should not be swept into that license by accident. Options: keep the files in the public repo under a license that allows the site to use them but not reuse the voice (for example, all rights reserved with a stated permission for Nenya), or keep them outside the repo and fetch them at build, which brings back the open-core questions (see the private open-core note). Decide before the first file is committed, because history is permanent. Ask Fractured Atlas and a lawyer, as with the earlier license questions.
+- **Terms and privacy:** nothing changes if the files are static and nothing about their use is counted or sent. If we ever counted how often voice is chosen, that is a new count and a Terms change.
+
+### Quality and safety
+- **Trauma-informed delivery:** a steady, unhurried, neutral tone; no whispering, no commands ("you must"), no "relax" (which can make people tense). Test with a few people from the audience before committing to a voice.
+- **Volume and consistency:** every clip leveled to the same loudness; no clicks at the start or end; enough room between beats.
+- **Volume control:** a volume setting for voice and tones together; both silenced instantly when turned off, on Emergency Exit, and when the tab is hidden.
+- **Screen readers and speech:** a recorded voice is audio, not text, so VoiceOver and NVDA will talk over it when focus moves. State this honestly in the help text (a person using a screen reader may prefer the tones, or a headset for the voice).
+- **Deaf and hard-of-hearing visitors:** the counter's visible number and word remain the primary signal; the voice and the tones are additions, not replacements. A caption for the start and end lines is the same as the line itself, shown on screen.
+
+### Build size
+Small once the recordings exist: the clip files, a loader, one more option in the sound setting, scheduling on the existing clock, and tests (clips placed on the same beats as the tones for every preset, the fallback for a custom pace, nothing loaded until chosen, off by default, silenced instantly). The recording, the agreement and the license decision are the real work.
+
+### Decisions for the owner
+1. Whose voice (volunteer, paid artist, or you), and who negotiates the agreement.
+2. The license for the audio files, and where they live (in the repo, or outside it).
+3. Counting style: leading phase word then numbers, or numbers only.
+4. One voice to start, or two to choose between.
+5. Whether voice replaces the tones for people who pick it, or plays together by default when both are chosen (both is a separate choice above).
+6. When to ask blind and low-vision testers (the paid testing you are still scoping) to listen to a sample before recording the whole set.
+
+### Not verified
+- That one-second beats are the clock's unit for every custom pace the site allows (true for the presets and the counter's code; a custom pace editor would need checking).
+- How long each clip can be and still fit a one-second beat without crowding the next; a test recording will show.
+- How the AGPL, a voice license and Fractured Atlas's terms fit together: a question for a lawyer, not settled by this note.

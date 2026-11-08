@@ -30,3 +30,7 @@ The Exit button is pinned above every overlay (loading screen, first-visit rhyth
 ## The coach's quiet timeout
 
 The person picks 10, 15 or 20 minutes of quiet, or "Leave open", before starting, and can change it in the chat. It lives only in the page's memory (nothing stored or sent). Warnings come with five minutes and one minute left, and say a copy can be saved first; closing does not count as a finished conversation (no rest is set). The choices stop at 20 minutes because the server's ticket lasts 30 minutes, so a signed copy can still be made just after closing. "Leave open" never closes the page's conversation but reminds the person at 20 minutes that the coach can only continue one that had a message in the last 30. See `src/lib/chatTimeout.ts`.
+
+
+## Breathing tones
+`breathingTones` is one more saved display setting (off by default; saved only while "Remember on this device" is on; erased by "Forget me" and Emergency Exit). It is shared by three switches, so it lives in `src/lib/deviceMemory.ts`. Nothing about it is counted or sent.

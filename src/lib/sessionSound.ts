@@ -2,7 +2,7 @@
 // a note from a pentatonic scale, so two colors give a six-note signature. It is
 // derived entirely from the colors, never stored, and played only when asked.
 
-const FREQS = [261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25, 783.99, 880];
+export const FREQS = [261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25, 783.99, 880];
 const NAMES = ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5', 'A5'];
 const STEP_SECONDS = 0.39;
 

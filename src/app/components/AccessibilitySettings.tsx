@@ -7,6 +7,7 @@ import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
 import { useTheme } from './ThemeProvider';
 import { DeviceMemoryControls } from './DeviceMemoryControls';
+import { BreathTonesSwitch } from './BreathTonesSwitch';
 
 const VISION_MODES: { value: string; label: string }[] = [
   { value: '', label: 'Standard' },
@@ -173,6 +174,9 @@ export function AccessibilitySettingsContent({
           </div>
         )}
       </div>
+
+      {/* Breathing tones: the same switch that is near the top of the page and on the counter */}
+      {!compact && <BreathTonesSwitch variant="panel" />}
 
       {onCounterToggle && (
       <>
