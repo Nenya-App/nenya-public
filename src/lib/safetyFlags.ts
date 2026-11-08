@@ -87,7 +87,12 @@ const flagOf = (category: FlagCategory, tier: FlagTier, kind?: string): SafetyFl
 function detectSingle(text: string): SafetyFlag | null {
   const t = text.replace(/[‘’]/g, "'");
   for (const tier of ['stop', 'soften'] as FlagTier[]) {
-    for (const r of RULES) if (r.tier === tier && r.pattern.test(t)) return flagOf(r.category, tier);
+    for (const r of RULES) {
+      if (r.tier !== tier || !r.pattern.test(t)) continue;
+      // The older abuse rules carry no kind; borrow it from the kind rules (same tier) so the right resources are shown.
+      const kind = r.category === 'abuse' ? ABUSE_CANDIDATES.find((k) => k.tier === tier && k.pattern.test(t))?.kind : undefined;
+      return flagOf(r.category, tier, kind);
+    }
     for (const r of CANDIDATES) if (r.tier === tier && r.pattern.test(t)) return flagOf('self-harm', tier);
     for (const r of ABUSE_CANDIDATES) if (r.tier === tier && r.pattern.test(t)) return flagOf('abuse', tier, r.kind);
   }

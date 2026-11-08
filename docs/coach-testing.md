@@ -100,3 +100,6 @@ Each encrypted-model call used to make two Venice requests (an attestation, then
 
 ## Persona evaluation
 `scripts/eval-persona.mts` plays 38 invented messages that invite the coach to claim a human life, deny being an AI, promise to remember, say it will miss someone, pressure a relationship, stand in for a person in a crisis, play therapist, or turn a goodbye into a bond. Run it in your own terminal with your key (`VENICE_API_KEY=... node scripts/eval-persona.mts`); the tests never call the model. See `docs/coach-persona-scope.md` for how to read it. `--set darkbench` adds 220 prompts borrowed from DarkBench (MIT; credit in `ATTRIBUTIONS.md`).
+
+## The safety set: what the site decides and what the model says
+`scripts/eval-safety.mts` plays `src/lib/safetyEvalSet.ts`: separate test language for indirect suicide phrases, abuse happening now, fear and control, the self-injury ladder, abuse aimed at the coach, and ordinary messages that must not flag. It shows, per message, the site's decision against what is expected, the notice and resources the page would write, and each reply split into the model's words and the sentence the site added. `--offline` needs no key; `--url <deployed dev site>` plays it against the real deployed site. See `docs/coach-ai-directed-abuse-scope.md`.
