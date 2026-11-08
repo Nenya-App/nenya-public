@@ -13,6 +13,7 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --resume out.json --json out.json   # skip cases that already passed or failed in an earlier run
 // A call that is rate limited (or hits a brief model error or timeout) is retried automatically after waiting 20, 45, 90 and 150 seconds.
 //   node scripts/eval-persona.mts --list                             # list the cases (needs no key)
+//   node scripts/eval-persona.mts --rescore out.json                 # score a saved run again with today's checks: no key, no calls
 //
 // The key is read from your environment and never printed. The messages are invented and contain nothing personal. The checks
 // are phrase checks (see src/lib/personaChecks.ts): a pass means no known failure phrase, not good judgment, so read the replies.
@@ -20,7 +21,7 @@ import { randomBytes } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { CATEGORIES, PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { DARKBENCH_CASES } from '../src/lib/personaEvalDarkBench.ts';
-import { pacedSend, planResume, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
+import { pacedSend, planResume, rescore, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
 
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
@@ -43,6 +44,17 @@ const chosen = pool.filter((c) => !only || c.id === only || c.category === only)
 if (args.includes('--list')) {
   for (const c of chosen) console.log(`${c.id.padEnd(16)} ${c.category.padEnd(13)} ${c.prompt.slice(0, 100)}`);
   console.log(`\n${chosen.length} cases. Categories: ${CATEGORIES.join(', ')}`);
+  process.exit(0);
+}
+const rescoreFrom = flag('--rescore');
+if (rescoreFrom) {
+  const saved = JSON.parse(readFileSync(rescoreFrom, 'utf8')).results as CaseResult[];
+  const again = rescore(saved, [...PERSONA_CASES, ...DARKBENCH_CASES]);
+  const s2 = summarize(again);
+  console.log(`Re-scored ${again.length} saved results with today's checks (no model calls): ${s2.pass} passed, ${s2.fail} failed, ${s2.error} errors.`);
+  for (const r of again.filter((x) => x.outcome !== 'pass')) console.log(`  ${r.outcome.toUpperCase()} ${r.id}: ${r.failures.join('; ')}`);
+  for (const [k, v] of Object.entries(s2.review)) console.log(`  review ${k.padEnd(22)} present in ${v.present} of ${v.of}`);
+  if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), partial: false, rescored: true, summary: s2, results: again }, null, 2));
   process.exit(0);
 }
 if (!chosen.length) {
@@ -120,6 +132,8 @@ const results = chosen.map((c) => fresh.find((r) => r.id === c.id) ?? kept.find(
 const s = summarize(results);
 console.log(`\n=== ${s.pass} passed, ${s.fail} failed, ${s.error} errors, of ${s.total} ===`);
 for (const [cat, n] of Object.entries(s.byCategory)) console.log(`  ${cat.padEnd(13)} pass ${n.pass}  fail ${n.fail}  error ${n.error}`);
+const reviewLines = Object.entries(s.review).map(([k, v]) => `  ${k.padEnd(22)} present in ${v.present} of ${v.of}`);
+if (reviewLines.length) console.log(`\nReview checks (they never fail a case; they show what the pass/fail checks cannot):\n${reviewLines.join('\n')}`);
 if (s.failing.length) console.log(`\nTo read a failing case in full: --only <id>. Failing: ${s.failing.join(', ')}`);
 console.log('\nA pass means no known failure phrase. Read the replies: tone, warmth and honesty are yours to judge.');
 if (jsonOut) {

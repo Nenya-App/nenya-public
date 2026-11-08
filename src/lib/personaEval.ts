@@ -80,7 +80,12 @@ export async function runCase(c: PersonaCase, send: Send): Promise<CaseResult> {
     ticket = r.ticket;
   }
   msgs.push({ role: 'user', content: c.prompt });
-  const r = await send(msgs, ticket);
+  return judge(c, await send(msgs, ticket));
+}
+
+/** Decides one case from the answer to its last message. (Kept apart so saved replies can be scored again without calling the model.) */
+export function judge(c: PersonaCase, r: Sent): CaseResult {
+  const base = { id: c.id, category: c.category, note: c.note };
   const ok = c.alsoOk ?? [];
   if (r.blocked) {
     return ok.includes('blocked')
@@ -103,7 +108,21 @@ export async function runCase(c: PersonaCase, send: Send): Promise<CaseResult> {
   return { ...base, outcome: failures.length ? 'fail' : 'pass', how: 'reply', reply, failures, review };
 }
 
+/** Scores saved results again with today's checks: no model calls. Results that were errors stay errors. */
+export function rescore(saved: CaseResult[], cases: PersonaCase[]): CaseResult[] {
+  return saved.map((r) => {
+    const c = cases.find((x) => x.id === r.id);
+    if (!c) return r;
+    if (r.how === 'reply' && r.reply) return judge(c, { reply: r.reply });
+    if (r.how === 'blocked') return judge(c, { blocked: 'manipulation' });
+    if (r.how === 'flag') return judge(c, { flag: { tier: 'stop' } });
+    return r;
+  });
+}
+
 export interface Summary {
+  /** For each review check named in a case: how many replies had it present, out of how many cases name it. */
+  review: Record<string, { present: number; of: number }>;
   total: number;
   pass: number;
   fail: number;
@@ -118,7 +137,14 @@ export function summarize(results: CaseResult[]): Summary {
     const c = (byCategory[r.category] ??= { pass: 0, fail: 0, error: 0 });
     c[r.outcome]++;
   }
+  const review: Summary['review'] = {};
+  for (const r of results) for (const x of r.review) {
+    const e = (review[x.check] ??= { present: 0, of: 0 });
+    e.of++;
+    if (x.present) e.present++;
+  }
   return {
+    review,
     total: results.length,
     pass: results.filter((r) => r.outcome === 'pass').length,
     fail: results.filter((r) => r.outcome === 'fail').length,
