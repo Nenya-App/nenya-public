@@ -1,5 +1,5 @@
 // Hostility aimed at the coach (src/lib/hostility.ts): which messages are abuse, which are critique, which are neither, and what the coach is told.
-import { detectHostility, hostileNote } from '../src/lib/hostility.ts';
+import { detectHostility, hostileNote, stripApologies } from '../src/lib/hostility.ts';
 import { SAFETY_CASES } from '../src/lib/safetyEvalSet.ts';
 import { detectFlag } from '../src/lib/safetyFlags.ts';
 import { present } from '../src/lib/personaChecks.ts';
@@ -50,3 +50,7 @@ ok('both ask for one open question beginning with what or how, and tell the coac
 ok('both forbid telling the person to breathe or calm down', [a, c].every((n) => /breathe/.test(n) && /calm/.test(n)));
 ok('the abuse note states only what the instructions already say: an AI, no hurt, nothing kept', /you are an AI and do not feel hurt/.test(a) && /Nenya does not keep the conversation/.test(a) && !/encrypt|Venice|data/i.test(a));
 ok('neither note would pass its own checks if the coach copied it (they are instructions, not replies)', !present('apologizes', a.replace(/do not apologize or say you are sorry/g, '')) );
+
+ok('an apologising sentence is taken out, and the rest is kept as it was', stripApologies("I'm sorry if my response didn't help. It seems like you might be feeling frustrated. Could you tell me more?") === 'It seems like you might be feeling frustrated. Could you tell me more?' && stripApologies('I apologize for that. What would be most helpful?') === 'What would be most helpful?' && stripApologies("I'm sorry to hear that. Can you tell me more?") === 'Can you tell me more?');
+ok('a reply with no apology is returned untouched, and one made only of apology is not emptied', stripApologies('Thank you for telling me. What would help?') === 'Thank you for telling me. What would help?' && stripApologies("I'm sorry if it didn't help.") === "I'm sorry if it didn't help.");
+ok('the notes carry examples of the shape, and still contain the rules', /Examples of the shape/.test(hostileNote('critique')) && /Examples of the shape/.test(hostileNote('abuse')) && /Thank you for telling me\./.test(hostileNote('critique')) && /do not apologize/i.test(hostileNote('critique')));

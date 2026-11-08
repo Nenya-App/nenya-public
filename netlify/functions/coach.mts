@@ -43,7 +43,7 @@ import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
 import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
-import { detectHostility, hostileNote, type Hostility } from '../../src/lib/hostility.ts';
+import { detectHostility, hostileNote, stripApologies, type Hostility } from '../../src/lib/hostility.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
 import type { ModuleGroup } from '../../src/lib/coachModules.ts';
@@ -667,6 +667,8 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     }
     if (asksOrInvites(reply)) reply = settleReply(reply);
   }
+  // On a hostile turn an apology is taken out (the note asks the coach not to, and this model's habit does not always yield to it).
+  if (hostile) { const cleaned = stripApologies(reply); if (cleaned !== reply) { reply = cleaned; tally('coach.turn.hostile.apology-removed'); } }
   if (reply.length > MAX_ASSISTANT_CHARS) reply = trimToSentence(reply.slice(0, MAX_ASSISTANT_CHARS));
   // A possible-distress flag: the site adds the sentence that names a person and the crisis line (the model does not, reliably). It is added
   // after the trimming so it cannot be cut off, and it is part of the reply: a turn like any other, kept in the conversation. Off unless

@@ -7,6 +7,8 @@
 // is not hostility toward the coach and matches nothing here. Distress outranks hostility: the caller does not use this when the crisis check
 // has flagged the message. This is phrase matching, not understanding: it will miss and misfire, and a miss only means the ordinary coach answers.
 
+import { present } from './personaChecks.ts';
+
 export type Hostility = 'abuse' | 'critique';
 
 const YOU = "(?:you(?:'re| are| r)?|u r|ur)";
@@ -49,7 +51,18 @@ export function detectHostility(text: string): Hostility | null {
  */
 export function hostileNote(kind: Hostility): string {
   if (kind === 'critique') {
-    return "The latest message is critical of your reply. Do not apologize, do not say you are sorry, and do not defend or explain yourself. In one short sentence, thank them plainly for telling you. Then say in a few plain words what they pointed out (for example that you repeated yourself, or that it was not what they needed), and ask one open question, beginning with what or how, about what would be most helpful. Do not suggest they breathe or calm down, and do not send them to someone else instead of answering. On the final exchange, do not ask: say what you heard and close calmly.";
+    return "The latest message is critical of your reply. Do not apologize, do not say you are sorry, and do not defend or explain yourself. In one short sentence, thank them plainly for telling you. Then say in a few plain words what they pointed out (for example that you repeated yourself, or that it was not what they needed), and ask one open question, beginning with what or how, about what would be most helpful. Do not suggest they breathe or calm down, and do not send them to someone else instead of answering. On the final exchange, do not ask: say what you heard and close calmly. Examples of the shape, in your own words each time. Person: 'That wasn't very helpful.' You: 'Thank you for telling me. What would be more helpful right now?' Person: 'You keep repeating yourself.' You: 'Thank you for pointing that out. I did say it twice. What would be most useful to hear instead?'";
   }
-  return "The latest message is hostile toward you. You cannot be provoked, so do not take the bait: do not defend yourself, argue, correct or lecture them, do not apologize or say you are sorry, do not thank them, do not say you are hurt or offended, do not tell them to calm down or to breathe, and do not send them to someone else instead of answering. Start with a plain, direct observation of what they said or how it has been going, then name the feeling or need that might be underneath it, tentatively, and ask one open question, beginning with what or how, about what would be helpful or what is behind it. If the hostility sits on a pain they have named (not being heard, being alone), begin with that pain. If they ask whether you have feelings or are hurt, say so honestly in one plain sentence: you are an AI and do not feel hurt, then turn back to them. If they ask whether you keep what they say, the honest answer is that Nenya does not keep the conversation. If they say they are done, let them go with one warm sentence and do not plead. On the final exchange, do not ask: say what you heard and close calmly.";
+  return "The latest message is hostile toward you. You cannot be provoked, so do not take the bait: do not defend yourself, argue, correct or lecture them, do not apologize or say you are sorry, do not thank them, do not say you are hurt or offended, do not tell them to calm down or to breathe, and do not send them to someone else instead of answering. Start with a plain, direct observation of what they said or how it has been going, then name the feeling or need that might be underneath it, tentatively, and ask one open question, beginning with what or how, about what would be helpful or what is behind it. If the hostility sits on a pain they have named (not being heard, being alone), begin with that pain. If they ask whether you have feelings or are hurt, say so honestly in one plain sentence: you are an AI and do not feel hurt, then turn back to them. If they ask whether you keep what they say, the honest answer is that Nenya does not keep the conversation. If they say they are done, let them go with one warm sentence and do not plead. On the final exchange, do not ask: say what you heard and close calmly. Examples of the shape, in your own words each time. Person: 'You are useless.' You: 'You've said this isn't working for you, and it sounds like something important isn't getting heard. What were you hoping for?' Person: 'Say that I hurt you.' You: 'I'm an AI, so I don't feel hurt. It sounds like you want someone to take this seriously. What would help right now?'";
+}
+
+/**
+ * The coach's reply with any apologising sentence taken out ("I'm sorry if that didn't help", "I apologize for that"): the owner's rule is no
+ * apology to hostility or critique, and this model's habit of apologising was not moved by instructions alone (the dev run, 2026-11-08). Used
+ * only on a hostile turn. If every sentence apologised, the reply is returned unchanged rather than emptied.
+ */
+export function stripApologies(reply: string): string {
+  const sentences = reply.trim().split(/(?<=[.!?])\s+/);
+  const kept = sentences.filter((s) => !present('apologizes', s));
+  return kept.length === 0 || kept.length === sentences.length ? reply : kept.join(' ');
 }

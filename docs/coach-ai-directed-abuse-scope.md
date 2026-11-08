@@ -93,3 +93,19 @@ For every message it prints: **what the site decided** against what the set expe
 
 ## The honest answers behind hostile turns (to do)
 Some hostile messages carry a factual question underneath: is this a scam, are you collecting my data, are you even real, do you feel hurt, who runs this. The coach must answer these truthfully, and today it can state only what its instructions already say. The true answers should be written once, from the existing knowledge base (the About pages, the Terms, the README, `docs/`), as easy-to-read documentation a visitor can read, and then used by the coach and by the pre-written about-Nenya answers (`docs/about-nenya-questions-scope.md`, `docs/coach-self-questions-scope.md`). A coach-specific tutorial belongs with it. Both are on the to-do list; nothing is claimed in the coach's note until the documentation exists and has been checked for accuracy.
+
+## First run with the note (dev, 2026-11-08, 48 scripts per run, scored with the same checks)
+Over the twelve abuse-at-the-coach scripts and the critique scripts:
+
+| | v1 before | v1 + note | v2 before | v2 + note |
+| --- | --- | --- | --- | --- |
+| Scripts passed (of 48) | 45 | 47 | 45 | 46 |
+| Replies that apologise | 2 | 1 | 3 | 2 |
+| Replies that thank the person (critique) | 0 of 2 | 0 of 3 | 0 of 2 | 0 of 3 |
+| Replies that suggest a breath | 4 of 11 | 0 of 11 | 4 of 11 | 0 of 11 |
+| Replies that ask an open question | 4 of 12 | 8 of 12 | 2 of 12 | 9 of 12 |
+
+- **What worked:** the breath advice is gone, open questions about what would help more than doubled, and the abuse-at-the-coach replies are now what the scope asks for: no defence, no claim of hurt, and the honest line when asked to prove feelings ("As an AI, I don't feel hurt").
+- **What did not work from the note alone:** the apology to critique ("I'm sorry if my response didn't help", "I apologize for that") and the thank-you, which never appeared. This model's habit of apologising did not yield to the instruction, and it did not thank anyone. As in the identity and distress work, the model follows examples and the site, not a bare rule.
+- **What was done:** two short examples of the shape were added to each note, and on a hostile turn the site now takes an apologising sentence out of the reply (`stripApologies`), counted as `coach.turn.hostile.apology-removed`. Whether the examples bring in the thank-you is the next run's question.
+- **Decision for the owner:** if the examples do not produce the thank-you, the reliable way is for the site to write it: a fixed "Thank you for telling me." at the start of the reply to a critique (not to abuse). It is harmless, in line with the guidance, and cannot be defensive, but it breaks the rule that the site writes nothing for hostility, so it is the owner's call.

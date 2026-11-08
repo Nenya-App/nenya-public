@@ -6,9 +6,10 @@ process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
 process.env.COACH_MODEL = 'deepseek-v3.2';
 delete process.env.COACH_IP_SECRET; delete process.env.COACH_SIGNING_KEY; delete process.env.COACH_DISTRESS_TEXT; delete process.env.COACH_INSTRUCTIONS;
 let lastSystem = '';
+let modelSays = 'What would help most?';
 (globalThis as any).fetch = async (_u: string, init: any) => {
   try { lastSystem = JSON.parse(init.body).messages[0].content; } catch { /* not a chat body */ }
-  return new Response(JSON.stringify({ choices: [{ message: { content: 'What would help most?' } }] }), { status: 200 });
+  return new Response(JSON.stringify({ choices: [{ message: { content: modelSays } }] }), { status: 200 });
 };
 const { default: handler, __instructionsFingerprint } = await import('../netlify/functions/coach.mts');
 import { ok } from './helpers.mts';
@@ -33,3 +34,9 @@ ok('a direct question inside hostility is not answered-first: the hostile note g
 r = await system('Can you help me write a message to my sister?');
 ok('an ordinary direct question still gets the answer-first instruction', /The person has asked a direct question/.test(r.system) && !ABUSE_MARK.test(r.system));
 ok('the signed instructions fingerprint covers the hostile notes (it is 16 hex characters)', /^[0-9a-f]{16}$/.test(__instructionsFingerprint()));
+
+modelSays = "I'm sorry if my response didn't help. What would be more helpful right now?";
+r = await system("That wasn't very helpful.");
+ok('on a hostile turn an apology in the model\'s reply is taken out', r.j.reply === 'What would be more helpful right now?');
+r = await system('I feel stuck about a decision at work.');
+ok('on an ordinary turn the reply is left exactly as the model wrote it', r.j.reply === modelSays);
