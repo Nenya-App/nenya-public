@@ -7,6 +7,7 @@ import { ARRANGEMENTS } from '../../lib/breathArrangements';
 import {
   announceTones,
   getAnnouncement,
+  isTonePlayerRunning,
   playPreview,
   startTonePlayer,
   subscribeAnnouncement,
@@ -128,9 +129,15 @@ export function BreathToneStyle() {
           onChange={(e) => {
             const next = e.target.value as BreathingSound;
             setBreathingSound(next);
-            // Choosing is a click, so the browser lets this taste play even if the tones are still off.
-            playPreview(next);
-            announceTones(`Tone style: ${ARRANGEMENTS.find((a) => a.id === next)?.label ?? next}`);
+            // While the tones are playing, the new style begins with the next breath (so nothing cuts in midway). When they are
+            // not playing, choosing is a click, so a short taste plays even if the tones are still off.
+            const label = ARRANGEMENTS.find((a) => a.id === next)?.label ?? next;
+            if (isTonePlayerRunning()) {
+              announceTones(`Tone style: ${label}, starting with the next breath`);
+            } else {
+              playPreview(next);
+              announceTones(`Tone style: ${label}`);
+            }
           }}
           className="rounded-md border border-border bg-background px-2 py-1 text-sm text-foreground"
         >
@@ -143,7 +150,7 @@ export function BreathToneStyle() {
       </div>
       <p id="tones-style-desc" className="text-xs text-muted-foreground">
         {current.description}
-        {on ? '' : ' (Choosing a style plays a short taste, even with the tones off.)'}
+        {on ? ' A new style begins with the next breath.' : ' (Choosing a style plays a short taste, even with the tones off.)'}
       </p>
     </div>
   );

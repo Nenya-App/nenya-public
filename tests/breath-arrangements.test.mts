@@ -96,8 +96,8 @@ ok('"Forget me" erases it, back to harp', !('nenya.prefs' in store) && dm.getBre
 const sw = src('src/app/components/BreathTonesSwitch.tsx');
 const eng = src('src/lib/breathTones.ts');
 ok('the panel offers the style, labelled, with a plain description of the one chosen', /<BreathToneStyle \/>/.test(src('src/app/components/AccessibilitySettings.tsx')) && /htmlFor="tones-style"/.test(sw) && /id="tones-style-desc"/.test(sw));
-ok('choosing a style plays a short taste of it and says so politely', /playPreview\(next\)/.test(sw) && /Tone style: /.test(sw));
+ok('choosing a style plays a short taste of it (only when the tones are not already playing) and says so politely', /playPreview\(next\)/.test(sw) && /isTonePlayerRunning\(\)/.test(sw) && /Tone style: /.test(sw) && /starting with the next breath/.test(sw));
 ok('switching the tones on plays a taste of the chosen style', /playPreview\(getBreathingSound\(\)\)/.test(sw));
-ok('the player is given the chosen style and picks up a change without restarting', /arrangement/.test(sw) && /sig = `\$\{arrangement\}/.test(eng));
+ok('the player is given the chosen style and reads it on every tick', /arrangement/.test(sw) && /createPlanner\(\)/.test(eng) && /plan\(now, state\(\)\)/.test(eng));
 ok('the drone starts only for a style that has one, and fades out when the tones stop', /wantsDrone/.test(eng) && /drone\?\.\(\)/.test(eng));
 ok('sound is created only from a click, never at load', /ctx \?\?= new Ctor\(\)/.test(eng) && !/^new AudioContext/m.test(eng));

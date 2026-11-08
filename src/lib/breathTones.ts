@@ -238,44 +238,93 @@ const LOOKAHEAD_MS = 700;
 const TICK_MS = 150;
 
 /**
- * Plays the tones for a running breath. `state` is read on every tick, so a change of rhythm (which restarts the cycle) or of
- * style is picked up at once. Sounds are scheduled on the audio clock a little ahead, so they do not drift. Returns a stop function.
+ * Decides, tick by tick, which sounds to schedule. Pure (no audio, no clock of its own), so it can be tested by playing a
+ * breath through it.
+ *  - A new rhythm restarts the breath (the counter and the ring restart with it), so the tones restart at once.
+ *  - A new style does not cut in mid-breath: the style that is playing finishes its breath (and its notes are left to ring
+ *    out), and the new style begins on the first note of the next breath after anything already scheduled.
+ */
+export function createPlanner(lookaheadMs = LOOKAHEAD_MS) {
+  let sig = '';
+  let scheduledTo = 0;
+  let active: Arrangement = 'harp';
+  let pending: { arrangement: Arrangement; at: number } | null = null;
+  return (now: number, st: { timing: BreathTiming; cycleStart: number; arrangement: Arrangement }) => {
+    const { timing, cycleStart } = st;
+    const cycle = timing.ih + (timing.hi || 0) + timing.ex + (timing.ho || 0);
+    const rhythmSig = `${timing.ih}.${timing.hi || 0}.${timing.ex}.${timing.ho || 0}.${cycleStart}`;
+    let restart = false;
+    if (rhythmSig !== sig) {
+      restart = sig !== '';
+      sig = rhythmSig;
+      scheduledTo = now;
+      active = st.arrangement;
+      pending = null;
+    } else if (st.arrangement !== active) {
+      // The first start of a breath at or after everything already scheduled (so nothing is cut off or doubled).
+      const at = pending?.at ?? (cycle > 0 ? cycleStart + Math.ceil((scheduledTo - cycleStart) / cycle) * cycle : scheduledTo);
+      pending = { arrangement: st.arrangement, at };
+    } else {
+      pending = null;
+    }
+    const to = now + lookaheadMs;
+    let from = Math.max(scheduledTo, now - 50);
+    const events: (ToneEvent & { at: number })[] = [];
+    while (from < to) {
+      const cap = pending ? Math.min(to, pending.at) : to;
+      events.push(...eventsBetween(timing, cycleStart, from, cap, active));
+      from = cap;
+      if (pending && from >= pending.at) {
+        active = pending.arrangement;
+        pending = null;
+      } else {
+        break;
+      }
+    }
+    scheduledTo = to;
+    return { events, restart, active, pendingAt: pending?.at ?? null };
+  };
+}
+
+let running = false;
+/** True while the tones are playing a breath. Choosing a style then waits for the next breath instead of playing a taste over it. */
+export const isTonePlayerRunning = (): boolean => running;
+
+/**
+ * Plays the tones for a running breath. `state` is read on every tick. Sounds are scheduled on the audio clock a little
+ * ahead, so they do not drift. Returns a stop function.
  */
 export function startTonePlayer(state: () => { timing: BreathTiming; cycleStart: number; arrangement: Arrangement }): () => void {
   const c = unlockAudio();
   if (!c) return () => {};
   const live = new Set<Stop>();
-  let scheduledTo = Date.now();
-  let last = '';
+  const plan = createPlanner();
   let drone: Stop | null = null;
   const tick = () => {
     const now = Date.now();
-    const { timing, cycleStart, arrangement } = state();
-    const sig = `${arrangement}.${timing.ih}.${timing.hi || 0}.${timing.ex}.${timing.ho || 0}.${cycleStart}`;
-    if (sig !== last) {
-      // A new rhythm or style: forget what was planned and let what is ringing fade.
-      if (last) live.forEach((stop) => stop());
+    const r = plan(now, state());
+    if (r.restart) {
+      // A new rhythm: what was ringing fades, and the breath starts again.
+      live.forEach((stop) => stop());
       live.clear();
-      last = sig;
-      scheduledTo = now;
     }
-    const wantsDrone = ARRANGEMENTS.find((a) => a.id === arrangement)?.drone === true;
+    const wantsDrone = ARRANGEMENTS.find((a) => a.id === r.active)?.drone === true;
     if (wantsDrone && !drone) drone = startDrone(c);
     if (!wantsDrone && drone) {
       drone();
       drone = null;
     }
-    const to = now + LOOKAHEAD_MS;
-    for (const e of eventsBetween(timing, cycleStart, Math.max(scheduledTo, now - 50), to, arrangement)) {
+    for (const e of r.events) {
       const stop = playEvent(c, c.currentTime + Math.max(0, e.at - now) / 1000, e);
       live.add(stop);
       setTimeout(() => live.delete(stop), e.at - now + e.dur * 1000 + 300);
     }
-    scheduledTo = to;
   };
+  running = true;
   tick();
   const id = setInterval(tick, TICK_MS);
   return () => {
+    running = false;
     clearInterval(id);
     live.forEach((stop) => stop());
     live.clear();
