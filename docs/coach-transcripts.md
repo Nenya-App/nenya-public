@@ -35,7 +35,7 @@ only the function can produce. The function sees the transcript on its way throu
 
 ## The signed file
 
-`nenya-coach-transcript-YYYY-MM-DD.json`:
+`nenya-coach-transcript-<first 8 characters of the hash>-<YYYYMMDDTHHMMSSZ>.json` (the readable copy ends `.txt`; an unsigned copy has `unsigned` in place of the hash code):
 
 ```json
 {

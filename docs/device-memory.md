@@ -19,3 +19,14 @@ including the owner flag, before leaving the page.
 
 **Adding something new.** Put it in `deviceMemory.ts` (add it to the `Prefs` validator if it is a display setting), list it here
 and in policy Section 19, and keep it out of anything derived from what a visitor wrote.
+
+
+## Emergency Exit and the Back button
+
+Emergency Exit erases everything above, then *replaces* the current page with a neutral one (no new history entry). Earlier Nenya pages in the same tab would still be in the Back list, so the exit also leaves one note, `nenya.exited`, in that tab's **session storage** (this tab only; gone when the tab closes). Any Nenya page reached by Back or Forward, or restored from the browser's page cache, finds the note and leaves again before drawing anything. A page opened any other way (typed address, link, reload) is a fresh visit and clears the note. Nothing is written to the device's permanent storage. A browser will always let a person go back to whatever page they were on *before* Nenya; that cannot be, and should not be, blocked. See `src/lib/emergencyExit.ts`.
+
+The Exit button is pinned above every overlay (loading screen, first-visit rhythm and terms panel, tour offer, tour) and is first in the page, so keyboard and screen-reader users meet it first.
+
+## The coach's quiet timeout
+
+The person picks 10, 15 or 20 minutes of quiet, or "Leave open", before starting, and can change it in the chat. It lives only in the page's memory (nothing stored or sent). Warnings come with five minutes and one minute left, and say a copy can be saved first; closing does not count as a finished conversation (no rest is set). The choices stop at 20 minutes because the server's ticket lasts 30 minutes, so a signed copy can still be made just after closing. "Leave open" never closes the page's conversation but reminds the person at 20 minutes that the coach can only continue one that had a message in the last 30. See `src/lib/chatTimeout.ts`.

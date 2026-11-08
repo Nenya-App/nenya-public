@@ -3,8 +3,9 @@ import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import statsHandler, { __useStoreForTests } from '../netlify/functions/stats.mts';
+import statsHandler, { __useStoreForTests, __useUserForTests } from '../netlify/functions/stats.mts';
 import { tokenMatches } from '../src/lib/ownerAuth.ts';
+import { hasOwnerRole, OWNER_ROLE } from '../src/lib/ownerAccess.ts';
 import { recentDays, readRange, ALL_EVENTS, isKnownEvent, eventKey } from '../src/lib/counters.ts';
 import { capDay } from '../src/lib/dailyCap.ts';
 import { ok } from './helpers.mts';
@@ -56,6 +57,7 @@ const get = async (path = '/api/stats', headers: Record<string, string> = {}, me
   const r = await statsHandler(new Request(`https://nenya.biz${path}`, { method, headers }));
   return { status: r.status, text: await r.text(), headers: r.headers };
 };
+__useUserForTests(async () => null);
 let r = await get('/api/stats');
 ok('no token: a bare 401', r.status === 401 && !r.text.includes('coach'));
 r = await get('/api/stats', { 'x-nenya-owner': 'wrong' });
@@ -71,6 +73,24 @@ r = await get('/api/stats?days=0', { 'x-nenya-owner': TOKEN }); ok('days are at 
 r = await get('/api/stats?days=abc', { 'x-nenya-owner': TOKEN }); ok('a bad days value falls back to 30', JSON.parse(r.text).days.length === 30);
 r = await get('/api/stats', { 'x-nenya-owner': TOKEN }, 'POST'); ok('only GET is served', r.status === 405);
 r = await get('/.netlify/functions/stats', { 'x-nenya-owner': TOKEN }); ok('only the public route is served', r.status === 404);
+// ---- signing in as the owner account (Netlify Identity, role "Owner")
+ok('the role is called Owner', OWNER_ROLE === 'Owner');
+ok('only a role list containing exactly Owner counts', hasOwnerRole({ roles: ['Owner'] }) && hasOwnerRole({ roles: ['x', 'Owner'] }) && !hasOwnerRole({ roles: ['owner'] }) && !hasOwnerRole({ roles: ['admin'] }) && !hasOwnerRole({ roles: [] }) && !hasOwnerRole({}) && !hasOwnerRole(null) && !hasOwnerRole({ roles: 'Owner' }));
+__useUserForTests(async () => ({ roles: ['Owner'] }));
+r = await get('/api/stats?days=7'); ok('a signed-in Owner reads the totals with no token', r.status === 200 && JSON.parse(r.text).counts[today]['coach.turn.sent'] === 12);
+__useUserForTests(async () => ({ roles: ['editor'] }));
+r = await get('/api/stats'); ok('a signed-in user without the Owner role gets the same bare 401', r.status === 401 && r.text === JSON.stringify({ error: 'no' }));
+__useUserForTests(async () => ({}));
+r = await get('/api/stats'); ok('a signed-in user with no roles is refused', r.status === 401);
+__useUserForTests(async () => { throw new Error('identity down'); });
+r = await get('/api/stats'); ok('if the sign-in check fails, the answer is a plain 401', r.status === 401);
+r = await get('/api/stats', { 'x-nenya-owner': TOKEN }); ok('the token still works when the sign-in check fails', r.status === 200);
+__useUserForTests(async () => ({ roles: ['Owner'] }));
+delete process.env.COACH_OWNER_TOKEN_HASH;
+r = await get('/api/stats'); ok('the Owner role works with no token hash configured', r.status === 200);
+process.env.COACH_OWNER_TOKEN_HASH = createHash('sha256').update(TOKEN).digest('hex');
+__useUserForTests(async () => null);
+
 delete process.env.COACH_OWNER_TOKEN_HASH;
 r = await get('/api/stats', { 'x-nenya-owner': TOKEN }); ok('with no hash configured, even the token is refused', r.status === 401);
 process.env.COACH_OWNER_TOKEN_HASH = createHash('sha256').update(TOKEN).digest('hex');

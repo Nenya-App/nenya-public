@@ -160,6 +160,7 @@ try {
   const { default: AdminPage } = await vite.ssrLoadModule('/src/admin/AdminPage.tsx');
   h = render(AdminPage, {});
   ok('admin page: shows the title, a password field for the token, and no totals yet', typeof h === 'string' && h.includes('Nenya numbers') && h.includes('type="password"') && !h.includes('<table'), h.error ?? '');
+  ok('admin page: starts by checking who is signed in, and keeps the token as a fallback', typeof h === 'string' && h.includes('Checking') && h.includes('Use the owner token instead'), h.error ?? '');
   ok('admin page: says the totals hold no information about who produced them', typeof h === 'string' && h.includes('hold no information about who produced them'), h.error ?? '');
 
   // The public verifier page: a way to choose a file or paste one, and a plain promise that nothing is uploaded.

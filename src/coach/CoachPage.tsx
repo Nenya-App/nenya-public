@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { GlobalNavigation } from '../app/components/GlobalNavigation';
 import { BreathingPopout } from '../app/components/BreathingPopout';
+import { EmergencyExitDock } from '../app/components/EmergencyExit';
 import SessionKeyPicker from './SessionKeyPicker';
 import CoachDemo from './CoachDemo';
 import { usePref } from '../lib/deviceMemory';
@@ -44,6 +45,8 @@ export default function CoachPage() {
 
   return (
     <div className="size-full flex flex-col bg-background">
+      {/* The header's Exit is covered while the breathing panel is open. */}
+      <EmergencyExitDock show={popoutOpen} onEmergencyExit={() => { exiting.current = true; }} />
       <GlobalNavigation
         onNavigate={(screen) => goToApp(screen === 'about' ? '' : undefined)}
         onNavigateToAbout={(section) => {

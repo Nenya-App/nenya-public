@@ -167,14 +167,14 @@ export default function SessionKeyPicker({ onComplete, onBack }: SessionKeyPicke
               <p className="text-xs text-muted-foreground" role="status">
                 {played
                   ? '✓ Your signature is set.'
-                  : 'Listen once before continuing. Your colors make this melody, and it is how this session is named.'}
+                  : 'Listening is optional. Your colors make this melody, and it is how this session is named.'}
               </p>
             </section>
           )}
 
           <div className="flex justify-end pt-2">
-            <Button size="lg" disabled={!valid || !played} onClick={() => onComplete({ color1: c1, color2: c2 })} className="px-8">
-              {played ? 'Continue' : 'Hear your sound first'}
+            <Button size="lg" disabled={!valid} onClick={() => onComplete({ color1: c1, color2: c2 })} className="px-8">
+              Continue
             </Button>
           </div>
         </div>

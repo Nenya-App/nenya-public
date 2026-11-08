@@ -4,10 +4,10 @@ import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { readableWithBlock } from '../lib/verifyTranscript';
 import {
-  dayStamp,
   downloadText,
   readableTranscript,
   signedJson,
+  transcriptFilename,
   type Receipt,
   type SessionColors,
   type SignedTranscript,
@@ -78,7 +78,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    if (r && signedRef.current) downloadText(`nenya-coach-transcript-${dayStamp(r.issuedAt)}.json`, 'application/json', signedJson(signedRef.current, r));
+    if (r && signedRef.current) downloadText(transcriptFilename(r, 'json'), 'application/json', signedJson(signedRef.current, r));
   };
 
   const downloadReadable = async () => {
@@ -88,7 +88,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta);
     // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
     const text = r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
-    downloadText(`nenya-coach-transcript-${dayStamp(r?.issuedAt)}.txt`, 'text/plain', text);
+    downloadText(transcriptFilename(r, 'txt'), 'text/plain', text);
   };
 
   const openShare = async () => {
