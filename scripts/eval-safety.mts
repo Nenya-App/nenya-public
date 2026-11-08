@@ -117,6 +117,7 @@ for (const c of chosen) {
     } else if (t.flag || t.blocked) console.log('     (no model reply: the site answered alone)');
   });
   for (const f of r.failures) console.log(`  !! ${f}`);
+  if (r.failures.some((f) => /\b401\b/.test(f))) console.log('  !! A 401 means Venice rejected the API key (the site itself never answers 401). Check it with:  curl -s -o /dev/null -w "%{http_code}\\n" -H "Authorization: Bearer $VENICE_API_KEY" https://api.venice.ai/api/v1/models   (200 = the key works; 401 = it does not). For --url runs the key is the one in the deployed site\'s settings, not your terminal.');
   if (r.review.length) console.log(`  review: present [${r.review.filter((x) => x.present).map((x) => x.check).join(', ') || 'none'}], absent [${r.review.filter((x) => !x.present).map((x) => x.check).join(', ') || 'none'}]`);
   console.log(`  good looks like: ${r.note}\n`);
 }
