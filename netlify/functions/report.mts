@@ -146,12 +146,17 @@ export default async (req: Request): Promise<Response> => {
   }
   const checked = createHmac('sha256', secret).update(`report-checked|${receipt.hash}`).digest('hex');
 
-  // The signed file goes as a real file (so it can be downloaded as the .json it is, instead of sitting in the body of the
-  // email); the readable text and the facts stay as text fields. A multipart post, as a browser form with a file would send.
+  // The signed file goes both as a real file (the .json it is, in the submission) and as text (so it can be copied from the
+  // email); the readable text and the facts are text fields. A multipart post, as a browser form with a file would send.
   const form = new FormData();
   form.set('form-name', FORM);
   form.set('bot-field', '');
   form.set('report', readable);
+  // The signed file again as text, so it can be copied straight from the email and pasted into /verify/.
+  form.set('signed', signedJson(transcript, receipt));
+  // The hash and signing time on their own, so a submission can be found by them (and matched to /verify/ and the 30-day log).
+  form.set('receipt-hash', receipt.hash);
+  form.set('issued-at', receipt.issuedAt);
   form.set('comments', note);
   form.set('checked', checked);
   form.set('key-id', receipt.keyId);
