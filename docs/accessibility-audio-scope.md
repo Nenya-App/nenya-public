@@ -18,7 +18,19 @@ The breathing counter is visual: a number and a word that change every second, a
 - **Alt text for every image**, with one written set shared with the marketing repo (see "Alt text").
 - **Holds are repeated quiet notes**, not silence and not a single sustained tone. One quiet note per count, so a hold is audibly different from a stopped tool and the count stays audible.
 
-## Cue design
+## Tone styles (built 2026-11-08, for choosing by ear)
+The first version (a plain scale of short sine notes) was not pleasant to listen to. A breath is already a musical phrase (the inhale rises and ends open, the exhale falls and lands on the home note, holds are sustained, a count is a beat and a breath a bar), so there are now four styles to compare, chosen under "Tone style" in the accessibility panel. Choosing one plays a short taste of it. All are in D, on the pentatonic scale, and go through a gentle compressor with a short soft reverb; none is final.
+
+| Style | What is heard |
+| --- | --- |
+| **Harp** (default) | A plucked note a count, an open arpeggio (D4, F#4, A4, D5, F#5 and neighbours) that rings for a couple of seconds and overlaps. Rises on the inhale from the home note, lands on the home note on the exhale. A very soft low drone (D and A) under it. Holds repeat D5 (after the inhale) and D4 (after the exhale), quietly. |
+| **Bowls** | A singing bowl on the home note to open the inhale, a lower bowl (A3, the fifth of the key) to open the exhale, a soft two-voice swell in over the inhale and out over the exhale, and a very soft wooden tick for each count (quieter in holds). The sparsest. |
+| **Chord** | A voice joins for each count of the inhale (up to six), the full chord is held through a hold, and a voice leaves for each count of the exhale, top first, ending on the root, which lingers quietly through any hold-out. A very soft tick marks every count. |
+| **Scale** | The first version, kept so the others can be compared with it. |
+
+To decide by listening: which style, whether the drone stays, the loudness of ticks and holds, the reverb amount, the range (the harp reaches F#5, which may be bright), and whether to keep one style or offer a choice. When one is chosen, the others and the comparison selector can be deleted. The code is in `src/lib/breathArrangements.ts` (the notes, pure and tested) and `src/lib/breathTones.ts` (the sound).
+
+## Cue design (the original design, for the plain scale)
 The counter already runs on a shared clock (`breathCounter(Date.now() - start)`) and reports a phase (inhale, hold, exhale) and a count. Audio is scheduled from that same clock so sight and sound stay together.
 
 | Phase | What is heard |

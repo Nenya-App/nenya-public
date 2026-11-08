@@ -71,7 +71,7 @@ ok('near the top of the page, hidden until it has keyboard focus (the skip-link 
 ok('in the accessibility panel', /<BreathTonesSwitch variant="panel"/.test(src('src/app/components/AccessibilitySettings.tsx')));
 ok('on the breathing counter', /<BreathTonesSwitch variant="counter"/.test(src('src/app/components/BreathingCounter.tsx')));
 ok('all three go through the one function that sets the shared setting', (sw.match(/setTones\(/g) ?? []).length >= 3 && !/useState/.test(sw));
-ok('switching on unlocks audio, plays one sample note and says so politely; switching off says so', /unlockAudio\(\);\s*playSample\(\)/.test(sw) && /Breathing tones on/.test(sw) && /Breathing tones off/.test(sw) && /aria-live="polite"/.test(sw));
+ok('switching on unlocks audio, plays one sample note and says so politely; switching off says so', /unlockAudio\(\);\s*playPreview\(/.test(sw) && /Breathing tones on/.test(sw) && /Breathing tones off/.test(sw) && /aria-live="polite"/.test(sw));
 ok('the announcement never moves focus', !/\.focus\(/.test(sw) && !/\.focus\(/.test(src('src/lib/breathTones.ts')));
 ok('there is no sound at import time: audio is created only from a click (unlockAudio), never at load', !/new (webkit)?AudioContext\(\)?;?\s*$/m.test(src('src/lib/breathTones.ts').split('export function unlockAudio')[0]) && /ctx \?\?= new Ctor\(\)/.test(src('src/lib/breathTones.ts')));
 ok('the tones play only on the welcome screen with the counter showing, with the setting on, and stop when the tab is hidden', /active=\{currentScreen === 'welcome' && entryUnlocked && breathingEnabled && showBreathingCounter\}/.test(src('src/app/App.tsx')) && /visibilitychange/.test(sw) && /if \(!on \|\| !active\) return/.test(sw));

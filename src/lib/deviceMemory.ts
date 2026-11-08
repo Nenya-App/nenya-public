@@ -80,6 +80,8 @@ export interface Prefs {
   showBreathingCounter?: boolean;
   /** Breathing tones: a note for each count of the breath. Off unless the visitor switches it on. */
   breathingTones?: boolean;
+  /** Which style the breathing tones are played in: harp, bowls, chord or scale. */
+  breathingSound?: string;
   colorBlindMode?: string;
   breathingTechnique?: { ih: number; hi: number; ex: number; ho: number };
 }
@@ -98,6 +100,7 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   breathingOpacity: (v) => typeof v === 'number' && v >= 0.1 && v <= 1,
   showBreathingCounter: isBool,
   breathingTones: isBool,
+  breathingSound: (v) => v === 'harp' || v === 'bowls' || v === 'chord' || v === 'scale',
   colorBlindMode: (v) => typeof v === 'string' && VISION.includes(v),
   breathingTechnique: (v) => {
     const t = v as Record<string, unknown> | null;
@@ -158,9 +161,36 @@ export function useBreathingTones(): boolean {
   }, [remembering, on]);
   return on;
 }
-/** For tests: forget the in-memory value so the next read starts from storage again. */
+
+// The style the tones are played in: the same kind of shared setting (the choice is made in the accessibility panel,
+// the sound is played from the page).
+export type BreathingSound = 'harp' | 'bowls' | 'chord' | 'scale';
+let soundStyle: BreathingSound | null = null;
+const soundListeners = new Set<() => void>();
+const getSound = (): BreathingSound => (soundStyle ??= (loadPrefs().breathingSound as BreathingSound | undefined) ?? 'harp');
+export const getBreathingSound = getSound;
+export function setBreathingSound(s: BreathingSound): void {
+  soundStyle = s;
+  savePref('breathingSound', s);
+  soundListeners.forEach((l) => l());
+}
+const subscribeSound = (l: () => void) => {
+  soundListeners.add(l);
+  return () => soundListeners.delete(l);
+};
+export function useBreathingSound(): BreathingSound {
+  const style = useSyncExternalStore(subscribeSound, getSound, () => 'harp' as BreathingSound);
+  const remembering = useRemembering();
+  useEffect(() => {
+    if (remembering) savePref('breathingSound', style);
+  }, [remembering, style]);
+  return style;
+}
+
+/** For tests: forget the in-memory values so the next read starts from storage again. */
 export const __resetBreathingTonesForTests = (): void => {
   tonesOn = null;
+  soundStyle = null;
 };
 
 /** Only if the visitor chose to be remembered, and only for the exact terms they agreed to. */

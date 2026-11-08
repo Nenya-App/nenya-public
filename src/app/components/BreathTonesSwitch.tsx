@@ -2,11 +2,12 @@ import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
-import { setBreathingTones, useBreathingTones } from '../../lib/deviceMemory';
+import { getBreathingSound, setBreathingSound, setBreathingTones, useBreathingSound, useBreathingTones, type BreathingSound } from '../../lib/deviceMemory';
+import { ARRANGEMENTS } from '../../lib/breathArrangements';
 import {
   announceTones,
   getAnnouncement,
-  playSample,
+  playPreview,
   startTonePlayer,
   subscribeAnnouncement,
   unlockAudio,
@@ -23,7 +24,7 @@ export const TONES_DESCRIPTION =
 export function setTones(on: boolean): void {
   if (on) {
     unlockAudio();
-    playSample();
+    playPreview(getBreathingSound());
   }
   setBreathingTones(on);
   announceTones(on ? 'Breathing tones on' : 'Breathing tones off');
@@ -109,6 +110,45 @@ export function BreathTonesSwitch({ variant }: { variant: 'skip' | 'panel' | 'co
   );
 }
 
+/** Which style the tones are played in. Choosing one plays a short taste of it, and says so politely. */
+export function BreathToneStyle() {
+  const style = useBreathingSound();
+  const on = useBreathingTones();
+  const current = ARRANGEMENTS.find((a) => a.id === style) ?? ARRANGEMENTS[0];
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-3">
+        <Label htmlFor="tones-style" className="text-sm">
+          Tone style
+        </Label>
+        <select
+          id="tones-style"
+          value={style}
+          aria-describedby="tones-style-desc"
+          onChange={(e) => {
+            const next = e.target.value as BreathingSound;
+            setBreathingSound(next);
+            // Choosing is a click, so the browser lets this taste play even if the tones are still off.
+            playPreview(next);
+            announceTones(`Tone style: ${ARRANGEMENTS.find((a) => a.id === next)?.label ?? next}`);
+          }}
+          className="rounded-md border border-border bg-background px-2 py-1 text-sm text-foreground"
+        >
+          {ARRANGEMENTS.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <p id="tones-style-desc" className="text-xs text-muted-foreground">
+        {current.description}
+        {on ? '' : ' (Choosing a style plays a short taste, even with the tones off.)'}
+      </p>
+    </div>
+  );
+}
+
 /** The polite live region that says "Breathing tones on" or "off". Never moves focus. */
 export function TonesAnnouncer() {
   const message = useSyncExternalStore(subscribeAnnouncement, getAnnouncement, () => '');
@@ -122,9 +162,10 @@ export function TonesAnnouncer() {
 /** Plays the tones while `active`. Stops when the tab is hidden, the setting is off, or the breathing stops. */
 export function BreathTonesPlayer({ active, timing, cycleStart }: { active: boolean; timing: BreathTiming; cycleStart: number }) {
   const on = useBreathingTones();
-  // Read by the player on every tick, so a new rhythm is picked up without restarting it.
-  const stateRef = useRef({ timing, cycleStart });
-  stateRef.current = { timing, cycleStart };
+  const arrangement = useBreathingSound();
+  // Read by the player on every tick, so a new rhythm or style is picked up without restarting it.
+  const stateRef = useRef({ timing, cycleStart, arrangement });
+  stateRef.current = { timing, cycleStart, arrangement };
   useEffect(() => {
     if (!on || !active) return;
     let stop: (() => void) | null = null;

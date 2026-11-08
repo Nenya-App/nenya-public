@@ -1,66 +1,34 @@
-// Breathing tones: one note for each count of the breath, so the breath can be followed by ear (see
+// Breathing tones: a sound for each count of the breath, so the breath can be followed by ear (see
 // docs/accessibility-audio-scope.md). Off until a visitor switches it on; nothing here makes a sound at import time.
-//
-// What is heard, on the same clock as the counter and the ring (the shared cycle start):
-//   inhale        one note per count, rising
-//   hold after in one quiet note per count, repeating the top note
-//   exhale        one note per count, falling
-//   hold after ex one quiet note per count, repeating the bottom note
-// The first note of each inhale is a little firmer, as the counter's first pulse is stronger. The notes come from the
-// pentatonic scale already used for the session sound, so every step is consonant and nothing sounds like an alarm.
-import { FREQS } from './sessionSound.ts';
+// The notes themselves, for each tone style, are laid out in breathArrangements.ts (pure, tested); this file plays them.
+import { arrangementEvents, ARRANGEMENTS, type Arrangement, type ToneEvent, type Timbre } from './breathArrangements.ts';
 import type { BreathTiming } from './breathClock.ts';
 
-/** The range the notes move through: from D4 up to E5 (indexes into the session sound's scale). */
-export const LOW_INDEX = 1;
-export const HIGH_INDEX = 7;
-export const LOW_FREQ = FREQS[LOW_INDEX];
-export const HIGH_FREQ = FREQS[HIGH_INDEX];
+export {
+  GAIN_FIRM,
+  GAIN_HOLD,
+  GAIN_MOVING,
+  HIGH_FREQ,
+  LOW_FREQ,
+  pitchFor,
+  type Arrangement,
+  type ToneEvent,
+} from './breathArrangements.ts';
 
-/** Loudness (0 to 1 of the master level): moving notes, the firm first note of a breath, and the quiet hold notes. */
-export const GAIN_MOVING = 0.12;
-export const GAIN_FIRM = 0.17;
-export const GAIN_HOLD = 0.05;
-
-export interface ToneEvent {
-  /** Milliseconds from the start of the breath. */
-  t: number;
-  freq: number;
-  gain: number;
-  kind: 'inhale' | 'hold-in' | 'exhale' | 'hold-out';
-}
-
-/** The pitch for step `j` (from 0) of `n` steps across the range, rising or falling. A phase of one count sits at its end of the range. */
-export function pitchFor(j: number, n: number, direction: 'up' | 'down'): number {
-  const span = HIGH_INDEX - LOW_INDEX;
-  const frac = n <= 1 ? 1 : Math.min(1, Math.max(0, j / (n - 1)));
-  const idx = direction === 'up' ? LOW_INDEX + Math.round(frac * span) : HIGH_INDEX - Math.round(frac * span);
-  // A one-count exhale is a single falling step to the bottom, a one-count inhale a single rising step to the top.
-  return FREQS[n <= 1 ? (direction === 'up' ? HIGH_INDEX : LOW_INDEX) : idx];
-}
-
-const counts = (ms: number): number => (ms > 0 ? Math.max(1, Math.round(ms / 1000)) : 0);
-
-/** Every note in one breath, in order, with its time from the start of the breath. */
-export function breathEvents(t: BreathTiming): ToneEvent[] {
-  const ih = t.ih, hi = t.hi || 0, ex = t.ex, ho = t.ho || 0;
-  const out: ToneEvent[] = [];
-  const phase = (start: number, len: number, kind: ToneEvent['kind'], pitch: (j: number, n: number) => number, gain: (j: number) => number) => {
-    const n = counts(len);
-    for (let j = 0; j < n; j++) out.push({ t: start + (j * len) / n, freq: pitch(j, n), gain: gain(j), kind });
-  };
-  phase(0, ih, 'inhale', (j, n) => pitchFor(j, n, 'up'), (j) => (j === 0 ? GAIN_FIRM : GAIN_MOVING));
-  phase(ih, hi, 'hold-in', () => HIGH_FREQ, () => GAIN_HOLD);
-  phase(ih + hi, ex, 'exhale', (j, n) => pitchFor(j, n, 'down'), () => GAIN_MOVING);
-  phase(ih + hi + ex, ho, 'hold-out', () => LOW_FREQ, () => GAIN_HOLD);
-  return out;
-}
+/** The first version (a plain scale), kept as the default for these two helpers so older callers and tests keep working. */
+export const breathEvents = (t: BreathTiming, arrangement: Arrangement = 'scale'): ToneEvent[] => arrangementEvents(arrangement, t);
 
 /** The notes that start in [fromMs, toMs) of the real clock (ms epoch), for a breath cycle that began at `cycleStart`. */
-export function eventsBetween(t: BreathTiming, cycleStart: number, fromMs: number, toMs: number): (ToneEvent & { at: number })[] {
+export function eventsBetween(
+  t: BreathTiming,
+  cycleStart: number,
+  fromMs: number,
+  toMs: number,
+  arrangement: Arrangement = 'scale',
+): (ToneEvent & { at: number })[] {
   const cycle = t.ih + (t.hi || 0) + t.ex + (t.ho || 0);
   if (!(cycle > 0) || !(toMs > fromMs)) return [];
-  const one = breathEvents(t);
+  const one = arrangementEvents(arrangement, t);
   const out: (ToneEvent & { at: number })[] = [];
   for (let k = Math.floor((fromMs - cycleStart) / cycle) - 1; cycleStart + k * cycle < toMs; k++) {
     for (const e of one) {
@@ -94,63 +62,214 @@ export function unlockAudio(): Ctx | null {
   }
 }
 
-/** One soft note: a sine with a short attack and a gentle fade, so there are no clicks. Returns a function that stops it early. */
-export function playNote(c: Ctx, when: number, freq: number, gain: number): () => void {
-  const osc = c.createOscillator();
-  const g = c.createGain();
-  osc.type = 'sine';
-  osc.frequency.value = freq;
-  g.gain.setValueAtTime(0, when);
-  g.gain.linearRampToValueAtTime(gain, when + 0.02);
-  g.gain.exponentialRampToValueAtTime(0.0008, when + 0.55);
-  osc.connect(g);
-  g.connect(c.destination);
-  osc.start(when);
-  osc.stop(when + 0.6);
+// A small shared mixing desk: everything goes to a gentle compressor (so overlapping notes cannot clip), with a short,
+// soft reverb added to the rung and swelling sounds so they sit in a room instead of ticking dryly.
+interface Bus {
+  dry: GainNode;
+  send: GainNode;
+}
+const buses = new WeakMap<Ctx, Bus>();
+function busFor(c: Ctx): Bus {
+  const found = buses.get(c);
+  if (found) return found;
+  const master = c.createGain();
+  master.gain.value = 0.9;
+  const comp = c.createDynamicsCompressor();
+  comp.threshold.value = -20;
+  comp.ratio.value = 3;
+  master.connect(comp);
+  comp.connect(c.destination);
+  // A generated room: two seconds of noise that fades away.
+  const seconds = 2.2;
+  const len = Math.floor(c.sampleRate * seconds);
+  const impulse = c.createBuffer(2, len, c.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = impulse.getChannelData(ch);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  }
+  const conv = c.createConvolver();
+  conv.buffer = impulse;
+  const wet = c.createGain();
+  wet.gain.value = 0.32;
+  conv.connect(wet);
+  wet.connect(master);
+  const dry = c.createGain();
+  dry.connect(master);
+  const send = c.createGain();
+  send.connect(conv);
+  const bus = { dry, send };
+  buses.set(c, bus);
+  return bus;
+}
+
+type Stop = () => void;
+
+/** Plays one sound of the given style at an audio-clock time. Returns a function that fades it out at once. */
+export function playEvent(c: Ctx, when: number, e: Pick<ToneEvent, 'freq' | 'gain' | 'timbre' | 'dur' | 'attack' | 'release'>): Stop {
+  const bus = busFor(c);
+  const env = c.createGain();
+  const oscs: OscillatorNode[] = [];
+  const osc = (type: OscillatorType, freq: number, level: number, dest: AudioNode): void => {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.value = level;
+    o.connect(g);
+    g.connect(dest);
+    oscs.push(o);
+  };
+  const end = when + e.dur;
+  const reverb = (amount: number) => {
+    const s = c.createGain();
+    s.gain.value = amount;
+    env.connect(s);
+    s.connect(bus.send);
+  };
+  const T: Timbre = e.timbre;
+  if (T === 'harp') {
+    // A plucked string: a quick attack, a triangle with a faint octave, softened above 2.4 kHz, a long fade.
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 2400;
+    lp.connect(env);
+    osc('triangle', e.freq, 1, lp);
+    osc('sine', e.freq * 2, 0.22, lp);
+    env.gain.setValueAtTime(0, when);
+    env.gain.linearRampToValueAtTime(e.gain, when + 0.006);
+    env.gain.exponentialRampToValueAtTime(0.0008, end);
+    reverb(0.9);
+  } else if (T === 'bowl') {
+    // A singing bowl: a few inharmonic partials, a pair slightly apart so it shimmers, a soft strike, a very long fade.
+    const ratios = [1, 2.76, 5.4, 8.9];
+    const levels = [1, 0.32, 0.14, 0.05];
+    ratios.forEach((r, i) => osc('sine', e.freq * r, levels[i] * 0.7, env));
+    osc('sine', e.freq * 1.004, 0.55, env);
+    env.gain.setValueAtTime(0, when);
+    env.gain.linearRampToValueAtTime(e.gain, when + 0.03);
+    env.gain.exponentialRampToValueAtTime(0.0008, end);
+    env.connect(bus.dry);
+    reverb(1);
+  } else if (T === 'pad') {
+    // A soft sustained voice: two slightly detuned triangles through a low-pass, swelling in and fading out.
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 1100;
+    lp.connect(env);
+    osc('triangle', e.freq * Math.pow(2, -5 / 1200), 0.6, lp);
+    osc('triangle', e.freq * Math.pow(2, 5 / 1200), 0.6, lp);
+    const attack = Math.min(e.attack ?? 0.4, e.dur * 0.8);
+    const release = Math.min(e.release ?? 0.8, e.dur * 0.8);
+    env.gain.setValueAtTime(0, when);
+    env.gain.linearRampToValueAtTime(e.gain, when + attack);
+    env.gain.setValueAtTime(e.gain, Math.max(when + attack, end - release));
+    env.gain.linearRampToValueAtTime(0, end);
+    reverb(0.6);
+  } else if (T === 'tick') {
+    // A soft wooden tick: a very short triangle blip.
+    osc('triangle', e.freq, 1, env);
+    env.gain.setValueAtTime(0, when);
+    env.gain.linearRampToValueAtTime(e.gain, when + 0.004);
+    env.gain.exponentialRampToValueAtTime(0.0008, when + 0.07);
+  } else {
+    // The plain scale note: a sine with a short attack and a gentle fade.
+    osc('sine', e.freq, 1, env);
+    env.gain.setValueAtTime(0, when);
+    env.gain.linearRampToValueAtTime(e.gain, when + 0.02);
+    env.gain.exponentialRampToValueAtTime(0.0008, when + 0.55);
+  }
+  if (T !== 'bowl') env.connect(bus.dry);
+  for (const o of oscs) {
+    o.start(when);
+    o.stop(end + 0.1);
+  }
   return () => {
     try {
-      g.gain.cancelScheduledValues(c.currentTime);
-      g.gain.setTargetAtTime(0, c.currentTime, 0.02);
-      osc.stop(c.currentTime + 0.1);
+      env.gain.cancelScheduledValues(c.currentTime);
+      env.gain.setTargetAtTime(0, c.currentTime, 0.03);
+      for (const o of oscs) o.stop(c.currentTime + 0.2);
     } catch {
       /* already stopped */
     }
   };
 }
 
-/** The one short note that plays when the tones are switched on, so the visitor knows it worked. */
-export function playSample(): void {
-  const c = unlockAudio();
-  if (c) playNote(c, c.currentTime + 0.02, FREQS[4], GAIN_FIRM);
+/** The very quiet low drone under the harp: the home note and its fifth. Returns a function that fades it out. */
+function startDrone(c: Ctx): Stop {
+  const bus = busFor(c);
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, c.currentTime);
+  g.gain.linearRampToValueAtTime(0.022, c.currentTime + 2.5);
+  const lp = c.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 500;
+  lp.connect(g);
+  g.connect(bus.dry);
+  const oscs = [146.83, 220].map((f) => {
+    const o = c.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = f;
+    o.connect(lp);
+    o.start();
+    return o;
+  });
+  return () => {
+    try {
+      g.gain.cancelScheduledValues(c.currentTime);
+      g.gain.setTargetAtTime(0, c.currentTime, 0.4);
+      for (const o of oscs) o.stop(c.currentTime + 2);
+    } catch {
+      /* already stopped */
+    }
+  };
 }
+
+/** A short taste of a style: the first three counts of a 5-5 breath. Plays when a style is chosen and when the tones are switched on. */
+export function playPreview(arrangement: Arrangement): void {
+  const c = unlockAudio();
+  if (!c) return;
+  const events = arrangementEvents(arrangement, { ih: 5000, hi: 0, ex: 5000, ho: 0 }).filter((e) => e.t < 3000);
+  for (const e of events) playEvent(c, c.currentTime + 0.03 + e.t / 1000, { ...e, dur: Math.min(e.dur, 3.5) });
+}
+/** The sample that plays when the tones are switched on. */
+export const playSample = playPreview;
 
 const LOOKAHEAD_MS = 700;
 const TICK_MS = 150;
 
 /**
- * Plays the tones for a running breath. `state` is read on every tick, so a change of rhythm (which restarts the cycle) is
- * picked up at once. Notes are scheduled on the audio clock a little ahead, so they do not drift. Returns a stop function.
+ * Plays the tones for a running breath. `state` is read on every tick, so a change of rhythm (which restarts the cycle) or of
+ * style is picked up at once. Sounds are scheduled on the audio clock a little ahead, so they do not drift. Returns a stop function.
  */
-export function startTonePlayer(state: () => { timing: BreathTiming; cycleStart: number }): () => void {
+export function startTonePlayer(state: () => { timing: BreathTiming; cycleStart: number; arrangement: Arrangement }): () => void {
   const c = unlockAudio();
   if (!c) return () => {};
-  const live = new Set<() => void>();
+  const live = new Set<Stop>();
   let scheduledTo = Date.now();
   let last = '';
+  let drone: Stop | null = null;
   const tick = () => {
     const now = Date.now();
-    const { timing, cycleStart } = state();
-    const sig = `${timing.ih}.${timing.hi || 0}.${timing.ex}.${timing.ho || 0}.${cycleStart}`;
+    const { timing, cycleStart, arrangement } = state();
+    const sig = `${arrangement}.${timing.ih}.${timing.hi || 0}.${timing.ex}.${timing.ho || 0}.${cycleStart}`;
     if (sig !== last) {
+      // A new rhythm or style: forget what was planned and let what is ringing fade.
+      if (last) live.forEach((stop) => stop());
+      live.clear();
       last = sig;
-      scheduledTo = now; // a new rhythm: forget what was planned
+      scheduledTo = now;
+    }
+    const wantsDrone = ARRANGEMENTS.find((a) => a.id === arrangement)?.drone === true;
+    if (wantsDrone && !drone) drone = startDrone(c);
+    if (!wantsDrone && drone) {
+      drone();
+      drone = null;
     }
     const to = now + LOOKAHEAD_MS;
-    for (const e of eventsBetween(timing, cycleStart, Math.max(scheduledTo, now - 50), to)) {
-      const when = c.currentTime + Math.max(0, e.at - now) / 1000;
-      const stop = playNote(c, when, e.freq, e.gain);
+    for (const e of eventsBetween(timing, cycleStart, Math.max(scheduledTo, now - 50), to, arrangement)) {
+      const stop = playEvent(c, c.currentTime + Math.max(0, e.at - now) / 1000, e);
       live.add(stop);
-      setTimeout(() => live.delete(stop), (e.at - now) + 800);
+      setTimeout(() => live.delete(stop), e.at - now + e.dur * 1000 + 300);
     }
     scheduledTo = to;
   };
@@ -160,6 +279,8 @@ export function startTonePlayer(state: () => { timing: BreathTiming; cycleStart:
     clearInterval(id);
     live.forEach((stop) => stop());
     live.clear();
+    drone?.();
+    drone = null;
   };
 }
 
