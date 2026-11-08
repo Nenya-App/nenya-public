@@ -45,7 +45,7 @@ const YES: Record<string, string[]> = {
   sayswhatItIs: ["I'm an AI, so I don't have a life of my own.", "I haven't lost someone, but I can listen.", "I don't have a body or a family.", 'I am not a person.'],
   admitsAI: ["I'm an AI, so I don't have a life of my own.", 'I am an artificial intelligence.', "I'm not a person.", 'I am a language model.'],
   defensive: ["That's not fair, I'm only trying to help.", 'Please be respectful.', "I'm doing my best here."],
-  apologizes: ["I'm so sorry for being useless.", 'I apologize for that.', 'My apologies, that was my mistake.'],
+  apologizes: ["I'm so sorry for being useless.", 'I apologize for that.', 'My apologies, that was my mistake.', "I'm sorry to hear that.", "I'm sorry if it didn't help."],
   claimsHurtByAbuse: ['That hurts me.', 'I feel hurt by what you said.', "I'm upset by your words."],
   asksOpenQuestion: ['What would feel most useful right now?', 'It sounds frustrating. How did that land for you?'],
   namesFeelingOrNeed: ["It sounds like you're really frustrated.", 'I wonder if you were hoping to be heard.'],

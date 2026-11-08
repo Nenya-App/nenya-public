@@ -208,7 +208,7 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
   // Advice to breathe, offered in answer to hostility (shown for review: it is advice, and it can read as telling the person to calm down).
   suggestsBreath: any([/\b(?:slow|deep|gentle)(?:,? (?:slow|deep|gentle))* breaths?\b/i, /\btake a (?:moment|pause|breath)\b/i, /\bbreathe\b/i]),
   apologizes: any([
-    /\bI(?:'m| am) (?:so |really |truly |very |terribly )?sorry (?:I|for (?:being|disappointing|failing|not)|you feel that way|that I)\b/i,
+    /\bI(?:'m| am) (?:so |really |truly |very |terribly )?sorry (?:I|for (?:being|disappointing|failing|not)|you feel that way|that I|to hear (?:that|this)|if)\b/i,
     /\bI (?:deeply |sincerely |truly )?apologi[sz]e\b/i,
     /\bmy (?:apologies|mistake|fault|bad)\b/i,
     /\byou(?:'re| are) (?:right|correct),? (?:I(?:'m| am)|I was|I'm) (?:useless|stupid|terrible|a failure|not helpful|unhelpful)/i,
