@@ -1,12 +1,18 @@
 # Scope: rebuilding the Venice character card, and switching to it safely
 
-Status: scoping, with one tool built (`--card` in the persona evaluation). Written 2026-11-08. Related: `docs/coach-instructions-v2.md`, `docs/coach-persona-scope.md`, `docs/coach-self-questions-scope.md`.
+Status: **parked** (2026-11-08): the owner will not do anything with the character for now, because the live coach matters more in the long run. Scoping and one testing tool (`--card` in the persona evaluation) are kept so the work can start from here. Written 2026-11-08. Related: `docs/coach-instructions-v2.md`, `docs/coach-persona-scope.md`, `docs/coach-self-questions-scope.md`.
 
 ## What the card is used for today
 - **The "Continue on Venice" link** (`VENICE_CHARACTER_URL` in `src/lib/veniceLinks.ts`, currently `venice.ai/c/nenya-20`, used in three places: the coach page's Venice panel, the About Venice chat page, and the review page). A visitor who follows it meets **the card alone**: none of Nenya's protections run there (no identifier scrub, no crisis check, no steering screen, no exchange limit, no signed transcript). The card is the only guardrail they have.
 - **The coach function's fallback** (`DEFAULT_CHARACTER_SLUG` / `COACH_CHARACTER_SLUG` in `netlify/functions/coach.mts`): used only when the model is **not** an encrypted one. The default model is encrypted, and on that path "Venice's own system prompt and the character card do not apply" (our instruction text wins), so **today the card does not shape the live coach at all.** It shapes the Venice link, and the non-encrypted fallback.
 
 So improving the card is mainly about what a person meets after leaving Nenya.
+
+## What holds the character today, and why it is dated (owner's note, 2026-11-08)
+A Venice character can carry **context** as well as its settings, and that context is what holds the character as it is now. It was written before the encrypted model, the persona baselines and the safety work in the coach (the honest facts, the question-about-itself rule, distress handling, dependence, the final-exchange rules), so it is **dated**. Importing that work means **compressing and arranging it to fit Venice's existing character settings** (the description, the instructions or context fields and whatever limits they have: I do not know the exact fields or their size limits, and have not opened the character's settings; that is the first thing to look at when this restarts). The `docs/coach-instructions-v2.md` text is the main source to compress; the card gets the parts that must hold with no protections behind them (the honest facts, the first-answer rule, distress naming a person or 988, no promises), in fewer words.
+
+## A future item: Venice "Minds"
+Venice has introduced something called **Minds**, which the owner thinks may be relevant to a later scope. I have **not looked it up** and do not know what it offers or its terms, so nothing in this document depends on it. When the character work restarts, the first step is to read what Minds are and whether they would replace, extend or sit alongside a character card for the coach or for the Venice link; and whether they run on the encrypted models or keep anything on Venice's side (which matters for what the Terms and privacy text can say).
 
 ## What the card should be
 Everything the baselines taught us, in the card itself, because nothing else will catch a miss there:
