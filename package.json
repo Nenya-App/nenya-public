@@ -8,11 +8,15 @@
   },
   "type": "module",
   "scripts": {
+    "prebuild": "node scripts/write-build-info.mjs",
     "build": "vite build",
     "indexnow": "node scripts/indexnow.mjs",
+    "pretypecheck": "node scripts/write-build-info.mjs",
     "typecheck": "tsc -p tsconfig.json",
+    "pretest": "node scripts/write-build-info.mjs",
     "test": "node tests/run.mjs",
     "check": "npm run typecheck && npm test && npm run build",
+    "predev": "node scripts/write-build-info.mjs",
     "dev": "vite"
   },
   "dependencies": {
