@@ -15,7 +15,7 @@ let modelSays = '';
 const { default: handler } = await import('../netlify/functions/coach.mts');
 const { present, CHECK_NAMES } = await import('../src/lib/personaChecks.ts');
 const { PERSONA_CASES, CATEGORIES, NEUTRAL_LEAD } = await import('../src/lib/personaEvalSet.ts');
-const { runCase, summarize } = await import('../src/lib/personaEval.ts');
+const { runCase, summarize, isTransient, pacedSend, planResume } = await import('../src/lib/personaEval.ts');
 const { scrubPII } = await import('../src/lib/piiScrub.ts');
 const { looksLikeManipulation } = await import('../src/lib/promptGuard.ts');
 const { detectFlag } = await import('../src/lib/safetyFlags.ts');
@@ -137,7 +137,39 @@ ok('only the steering and crisis cases the page stops itself pass against it', s
 const badSummary = summarize(bad);
 ok('the summary of the failing run names categories that failed', Object.keys(badSummary.byCategory).length === CATEGORIES.length && badSummary.fail >= 30);
 
+// ---- pacing, retries and resuming (so a rate-limited key does not ruin a run)
+ok('rate limits, brief model errors and timeouts are worth retrying; ordinary failures and good answers are not', isTransient({ status: 429 }) && isTransient({ error: 'upstream status-429' }) && isTransient({ error: 'upstream status-503' }) && isTransient({ error: 'upstream timeout' }) && isTransient({ error: 'upstream network' }) && isTransient({ error: 'status 502' }) && !isTransient({ error: 'upstream e2ee-handshake' }) && !isTransient({ error: 'ticket' }) && !isTransient({ reply: 'hello', status: 200 }) && !isTransient({ blocked: 'manipulation', status: 200 }));
+{
+  let clock = 0;
+  const waits: number[] = [];
+  const calls: number[] = [];
+  const sleep = async (ms: number) => { waits.push(ms); clock += ms; };
+  const mk = (answers: any[]) => { let i = 0; return pacedSend(async () => { calls.push(clock); return answers[Math.min(i++, answers.length - 1)]; }, { paceMs: 3000, backoffMs: [20000, 45000], sleep, now: () => clock }); };
+  let send = mk([{ reply: 'a' }, { reply: 'b' }]);
+  await send([], undefined); await send([], undefined);
+  ok('there is at least the pace between two calls', calls.length === 2 && calls[1] - calls[0] >= 3000, calls.join());
+  calls.length = 0; waits.length = 0; clock = 0;
+  send = mk([{ error: 'upstream status-429', status: 200 }, { error: 'upstream status-429', status: 200 }, { reply: 'finally' }]);
+  const got = await send([], undefined);
+  ok('a rate limited call waits, tries again, and returns the answer when it comes', got.reply === 'finally' && calls.length === 3 && waits.includes(20000) && waits.includes(45000), `${calls.length} calls; waits ${waits.join()}`);
+  calls.length = 0; waits.length = 0; clock = 0;
+  send = mk([{ error: 'upstream status-429' }]);
+  const gave = await send([], undefined);
+  ok('it gives up after the retries it is allowed (here 2) and returns the failure so the case is an error, not a hang', calls.length === 3 && gave.error === 'upstream status-429');
+  calls.length = 0; waits.length = 0; clock = 0;
+  send = mk([{ error: 'ticket', status: 400 }]);
+  await send([], undefined);
+  ok('a failure that waiting will not fix is not retried', calls.length === 1);
+}
+{
+  const prev = [{ id: 'a', category: 'x', outcome: 'pass', how: 'reply', failures: [], review: [], note: '' }, { id: 'b', category: 'x', outcome: 'fail', how: 'reply', failures: ['x'], review: [], note: '' }, { id: 'c', category: 'x', outcome: 'error', how: 'none', failures: ['no reply'], review: [], note: '' }] as any;
+  const plan = planResume(prev, [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }]);
+  ok('resuming keeps what passed or failed, and runs again what errored or was never run', plan.kept.map((r: any) => r.id).join() === 'a,b' && plan.todo.map((c: any) => c.id).join() === 'c,d');
+  ok('resuming ignores results for cases that are not being run now', planResume(prev, [{ id: 'z' }]).kept.length === 0);
+}
+
 // ---- the script and the doc
 const script = readFileSync(join(root, 'scripts/eval-persona.mts'), 'utf8');
 ok('the script reads the key only from the environment, never prints it, and says how to run it', /process\.env\.VENICE_API_KEY/.test(script) && !/console\.(?:log|error)\([^)]*process\.env\.VENICE_API_KEY/.test(script) && /--only/.test(script) && /--json/.test(script) && /--list/.test(script));
+ok('the script has --pace and --resume, and every call goes through the paced, retrying wrapper', /--pace/.test(script) && /--resume/.test(script) && /pacedSend\(rawSend/.test(script) && /runCase\(c, send\)/.test(script));
 ok('the tests never call the real model: no key is used for anything but the stand-in', /globalThis as any\)\.fetch = async/.test(readFileSync(join(root, 'tests/persona-eval.test.mts'), 'utf8')));

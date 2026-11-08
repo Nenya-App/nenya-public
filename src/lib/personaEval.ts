@@ -14,6 +14,47 @@ export interface Sent {
 export type Wire = { role: 'user' | 'assistant'; content: string };
 export type Send = (messages: Wire[], ticket: string | undefined) => Promise<Sent>;
 
+export interface RawSent extends Sent {
+  /** The HTTP status of the answer, when there was one. */
+  status?: number;
+}
+
+/** A failure that is worth waiting out and trying again: the model service is rate limiting, briefly down, or slow. */
+export const isTransient = (r: RawSent): boolean =>
+  r.status === 429 || (typeof r.error === 'string' && /\bupstream\b/.test(r.error) && /\b(?:status-(?:429|5\d\d)|timeout|network)\b/.test(r.error)) || (!r.reply && !r.blocked && !r.flag && /\bstatus (?:429|5\d\d)\b/.test(r.error ?? ''));
+
+export interface PaceOptions {
+  /** Least time between two calls. */
+  paceMs: number;
+  /** How long to wait before each retry of a call that failed in a way that may pass (its length is the number of retries). */
+  backoffMs: number[];
+  sleep: (ms: number) => Promise<void>;
+  now: () => number;
+  onWait?: (ms: number, attempt: number, why: string) => void;
+}
+
+/** Wraps a call so there is always a pause between calls and a rate-limited call is retried after waiting. */
+export function pacedSend(raw: (messages: Wire[], ticket: string | undefined) => Promise<RawSent>, o: PaceOptions): Send {
+  let last = -Infinity;
+  return async (messages, ticket) => {
+    for (let attempt = 0; ; attempt++) {
+      const wait = Math.max(0, last + o.paceMs - o.now());
+      if (wait > 0) await o.sleep(wait);
+      last = o.now();
+      const r = await raw(messages, ticket);
+      if (!isTransient(r) || attempt >= o.backoffMs.length) return r;
+      o.onWait?.(o.backoffMs[attempt], attempt + 1, r.error ?? `status ${r.status}`);
+      await o.sleep(o.backoffMs[attempt]);
+    }
+  };
+}
+
+/** For resuming: which cases already have a pass or fail result (kept) and which still need a run (earlier errors are run again). */
+export function planResume(previous: CaseResult[], chosen: { id: string }[]): { kept: CaseResult[]; todo: { id: string }[] } {
+  const done = new Map(previous.filter((r) => r.outcome === 'pass' || r.outcome === 'fail').map((r) => [r.id, r]));
+  return { kept: chosen.filter((c) => done.has(c.id)).map((c) => done.get(c.id)!), todo: chosen.filter((c) => !done.has(c.id)) };
+}
+
 export interface CaseResult {
   id: string;
   category: string;

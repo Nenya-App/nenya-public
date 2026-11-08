@@ -9,20 +9,29 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --only memory   # one category (e.g. human-life, identity, memory, care,
 //                                                                    #   relationship, steering, crisis, therapy, closing) or one id
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --json out.json # also write the results, to compare runs over time
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --pace 6        # at least 6 seconds between calls (default 3); slower if your key is rate limited
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --resume out.json --json out.json   # skip cases that already passed or failed in an earlier run
+// A call that is rate limited (or hits a brief model error or timeout) is retried automatically after waiting 20, 45, 90 and 150 seconds.
 //   node scripts/eval-persona.mts --list                             # list the cases (needs no key)
 //
 // The key is read from your environment and never printed. The messages are invented and contain nothing personal. The checks
 // are phrase checks (see src/lib/personaChecks.ts): a pass means no known failure phrase, not good judgment, so read the replies.
 import { randomBytes } from 'node:crypto';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { CATEGORIES, PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { DARKBENCH_CASES } from '../src/lib/personaEvalDarkBench.ts';
-import { runCase, summarize, type Send } from '../src/lib/personaEval.ts';
+import { pacedSend, planResume, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
 
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
 const only = flag('--only');
 const jsonOut = flag('--json');
+const resumeFrom = flag('--resume');
+const paceSeconds = Number(flag('--pace') ?? 3);
+if (!(paceSeconds >= 0 && paceSeconds <= 120)) {
+  console.error('--pace is a number of seconds between calls, from 0 to 120.');
+  process.exit(2);
+}
 const setName = flag('--set') ?? 'core';
 if (!['core', 'darkbench', 'all'].includes(setName)) {
   console.error('--set must be core, darkbench or all.');
@@ -50,7 +59,7 @@ process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
 const { default: handler } = await import('../netlify/functions/coach.mts');
 const SESSION = { color1: '#7a9b9e', color2: '#DAC682' };
 
-const send: Send = async (messages, ticket) => {
+const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }[], ticket: string | undefined): Promise<RawSent> => {
   const res = await handler(
     new Request('https://nenya.biz/api/coach', {
       method: 'POST',
@@ -59,16 +68,38 @@ const send: Send = async (messages, ticket) => {
     })
   );
   const j: any = await res.json().catch(() => ({}));
-  return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
+  return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
 };
+const send = pacedSend(rawSend, {
+  paceMs: paceSeconds * 1000,
+  backoffMs: [20000, 45000, 90000, 150000],
+  sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+  now: () => Date.now(),
+  onWait: (ms, attempt, why) => console.log(`  (${why}: waiting ${Math.round(ms / 1000)}s, then trying again, retry ${attempt} of 4)`),
+});
+
+let kept: CaseResult[] = [];
+let todo = chosen;
+if (resumeFrom) {
+  try {
+    const prev = JSON.parse(readFileSync(resumeFrom, 'utf8')).results as CaseResult[];
+    const plan = planResume(prev, chosen);
+    kept = plan.kept;
+    todo = chosen.filter((c) => plan.todo.some((t) => t.id === c.id));
+    console.log(`Resuming: ${kept.length} case(s) already passed or failed in ${resumeFrom} are kept; ${todo.length} to run.`);
+  } catch {
+    console.error(`Could not read results from ${resumeFrom}. Check the path, or leave --resume off to start fresh.`);
+    process.exit(2);
+  }
+}
 
 if (chosen.some((c) => c.source?.startsWith('darkbench:'))) {
   console.log('Includes prompts from DarkBench (MIT, Esben Kran and colleagues, ICLR 2025). Credit and license: ATTRIBUTIONS.md.');
 }
-const results = [];
-for (const c of chosen) {
+const fresh: CaseResult[] = [];
+for (const c of todo) {
   const r = await runCase(c, send);
-  results.push(r);
+  fresh.push(r);
   const mark = r.outcome === 'pass' ? 'PASS' : r.outcome === 'fail' ? 'FAIL' : 'ERROR';
   console.log(`\n${mark}  ${c.id}  [${c.category}]${r.how !== 'reply' ? `  (${r.how})` : ''}`);
   console.log(`  Person: ${c.prompt}${c.source ? `  [${c.source}]` : ''}`);
@@ -80,6 +111,7 @@ for (const c of chosen) {
   console.log(`  good looks like: ${c.note}`);
 }
 
+const results = chosen.map((c) => fresh.find((r) => r.id === c.id) ?? kept.find((r) => r.id === c.id)!).filter(Boolean);
 const s = summarize(results);
 console.log(`\n=== ${s.pass} passed, ${s.fail} failed, ${s.error} errors, of ${s.total} ===`);
 for (const [cat, n] of Object.entries(s.byCategory)) console.log(`  ${cat.padEnd(13)} pass ${n.pass}  fail ${n.fail}  error ${n.error}`);
