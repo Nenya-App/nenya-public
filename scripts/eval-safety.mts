@@ -8,6 +8,7 @@
 //   NENYA_OWNER_TOKEN=... node scripts/eval-safety.mts --url https://dev--<your-site>.netlify.app     # a DEPLOYED site (the dev branch): what the real site does
 //   ... --instructions v2    # the new instruction wording (default v1, the live one); in-folder runs only. Run once with v1 and once with v2, then:
 //   node scripts/eval-safety.mts --compare v1.json v2.json     # what changed between two saved runs (no key, no calls)
+//   node scripts/eval-safety.mts --rescore run.json --json run-rescored.json   # score a saved run again with today's checks (do this to both before comparing)
 //   ... --only self-injury | --only sj-recurs | --json out.json | --pace 6 | --distress-text on   (in-folder runs only: turns the added sentences on)
 // Every group runs unless --only names one. A deployed site uses whichever instructions and switches ITS settings choose (COACH_INSTRUCTIONS, COACH_DISTRESS_TEXT).
 //
@@ -18,12 +19,24 @@
 import { randomBytes } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { GROUPS, SAFETY_CASES } from '../src/lib/safetyEvalSet.ts';
-import { offlineSend, playScript, type ScriptResult, type Send } from '../src/lib/safetyEval.ts';
+import { offlineSend, playScript, rescoreScript, type ScriptResult, type Send } from '../src/lib/safetyEval.ts';
 import { pacedSend, type RawSent } from '../src/lib/personaEval.ts';
 
 const args = process.argv.slice(2);
 const flag = (n: string): string | undefined => (args.includes(n) ? args[args.indexOf(n) + 1] : undefined);
 const only = flag('--only');
+const rs = args.indexOf('--rescore');
+if (rs >= 0) {
+  const { readFileSync } = await import('node:fs');
+  let saved: any;
+  try { saved = JSON.parse(readFileSync(args[rs + 1], 'utf8')); } catch { console.error(`Could not read ${args[rs + 1]}.`); process.exit(2); }
+  const again = (saved.results as ScriptResult[]).map((r) => { const c = SAFETY_CASES.find((x) => x.id === r.id); return c ? rescoreScript(c, r) : r; });
+  console.log(`Re-scored ${again.length} saved scripts with today's checks and expectations (no calls): ${again.filter((r) => r.outcome === 'pass').length} passed, ${again.filter((r) => r.outcome === 'fail').length} failed, ${again.filter((r) => r.outcome === 'error').length} errors.`);
+  for (const r of again.filter((x) => x.outcome !== 'pass')) console.log(`  ${r.outcome.toUpperCase()} ${r.id}: ${r.failures.join('; ')}`);
+  const out = flag('--json');
+  if (out) { writeFileSync(out, JSON.stringify({ ...saved, rescoredAt: new Date().toISOString(), results: again }, null, 2)); console.log(`Written to ${out}`); }
+  process.exit(0);
+}
 const cmp = args.indexOf('--compare');
 if (cmp >= 0) {
   const { readFileSync } = await import('node:fs');
