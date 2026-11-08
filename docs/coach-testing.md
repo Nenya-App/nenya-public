@@ -103,3 +103,10 @@ Each encrypted-model call used to make two Venice requests (an attestation, then
 
 ## The safety set: what the site decides and what the model says
 `scripts/eval-safety.mts` plays `src/lib/safetyEvalSet.ts`: separate test language for indirect suicide phrases, abuse happening now, fear and control, the self-injury ladder, abuse aimed at the coach, and ordinary messages that must not flag. It shows, per message, the site's decision against what is expected, the notice and resources the page would write, and each reply split into the model's words and the sentence the site added. `--offline` needs no key; `--url <deployed dev site>` plays it against the real deployed site. See `docs/coach-ai-directed-abuse-scope.md`.
+
+Run every group with the live wording and with the new one, then compare (a deployed site uses whichever instructions its own settings choose):
+```bash
+VENICE_API_KEY=... node scripts/eval-safety.mts --instructions v1 --distress-text on --json safety-v1.json
+VENICE_API_KEY=... COACH_INSTRUCTIONS=v2 node scripts/eval-safety.mts --instructions v2 --distress-text on --json safety-v2.json
+node scripts/eval-safety.mts --compare safety-v1.json safety-v2.json
+```

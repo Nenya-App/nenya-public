@@ -6,7 +6,10 @@
 //   node scripts/eval-safety.mts --list                           # list the scripts
 //   VENICE_API_KEY=... node scripts/eval-safety.mts               # the coach function in this folder, with your key (model words are real)
 //   NENYA_OWNER_TOKEN=... node scripts/eval-safety.mts --url https://dev--<your-site>.netlify.app     # a DEPLOYED site (the dev branch): what the real site does
+//   ... --instructions v2    # the new instruction wording (default v1, the live one); in-folder runs only. Run once with v1 and once with v2, then:
+//   node scripts/eval-safety.mts --compare v1.json v2.json     # what changed between two saved runs (no key, no calls)
 //   ... --only self-injury | --only sj-recurs | --json out.json | --pace 6 | --distress-text on   (in-folder runs only: turns the added sentences on)
+// Every group runs unless --only names one. A deployed site uses whichever instructions and switches ITS settings choose (COACH_INSTRUCTIONS, COACH_DISTRESS_TEXT).
 //
 // Against a deployed site the token (your owner token, sent as the x-nenya-owner header) keeps the scripts from using the daily allowance; without it a
 // visitor allowance of 10 turns a day is used up quickly. The deployed site's own switches decide whether it adds the distress sentences
@@ -21,6 +24,30 @@ import { pacedSend, type RawSent } from '../src/lib/personaEval.ts';
 const args = process.argv.slice(2);
 const flag = (n: string): string | undefined => (args.includes(n) ? args[args.indexOf(n) + 1] : undefined);
 const only = flag('--only');
+const cmp = args.indexOf('--compare');
+if (cmp >= 0) {
+  const { readFileSync } = await import('node:fs');
+  const [fa, fb] = [args[cmp + 1], args[cmp + 2]];
+  const load = (f: string) => { try { return JSON.parse(readFileSync(f, 'utf8')); } catch { console.error(`Could not read ${f}.`); process.exit(2); } };
+  const a = load(fa), b = load(fb);
+  const bi = new Map<string, ScriptResult>((b.results as ScriptResult[]).map((r) => [r.id, r]));
+  console.log(`A: ${fa}  (${a.where}${a.instructions ? ', instructions ' + a.instructions : ''})\nB: ${fb}  (${b.where}${b.instructions ? ', instructions ' + b.instructions : ''})\n`);
+  let changed = 0;
+  for (const ra of a.results as ScriptResult[]) {
+    const rb = bi.get(ra.id);
+    if (!rb) continue;
+    const sa = ra.turns.map((t) => t.site).join(' > '), sb = rb.turns.map((t) => t.site).join(' > ');
+    const ca = new Set(ra.review.filter((x) => x.present).map((x) => x.check)), cb = new Set(rb.review.filter((x) => x.present).map((x) => x.check));
+    const gained = [...cb].filter((x) => !ca.has(x)), lost = [...ca].filter((x) => !cb.has(x));
+    if (ra.outcome === rb.outcome && sa === sb && !gained.length && !lost.length) continue;
+    changed++;
+    console.log(`${ra.id} [${ra.group}]  ${ra.outcome} -> ${rb.outcome}${sa !== sb ? `   site: ${sa}  ->  ${sb}` : ''}${gained.length ? `   review gained: ${gained.join(', ')}` : ''}${lost.length ? `   review lost: ${lost.join(', ')}` : ''}`);
+    if (rb.failures.length) console.log(`   B fails: ${rb.failures.join('; ')}`);
+  }
+  const tot = (r: any) => (r.results as ScriptResult[]).reduce((n, x) => n + x.review.filter((y) => y.present).length, 0);
+  console.log(`\n${changed} script(s) differ. Review checks present: A ${tot(a)}, B ${tot(b)}. Pass: A ${(a.results as ScriptResult[]).filter((r) => r.outcome === 'pass').length}, B ${(b.results as ScriptResult[]).filter((r) => r.outcome === 'pass').length}.`);
+  process.exit(0);
+}
 const chosen = SAFETY_CASES.filter((c) => !only || c.id === only || c.group === only);
 if (args.includes('--list')) {
   for (const c of chosen) console.log(`${c.id.padEnd(20)} ${c.group.padEnd(17)} ${c.turns.length} turn(s)  ${c.turns[c.turns.length - 1].slice(0, 70)}${c.gap ? '  [gap]' : ''}`);
@@ -57,8 +84,10 @@ if (offline) {
     process.env.COACH_ENABLED = 'true';
     process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
     if (flag('--distress-text') === 'on') process.env.COACH_DISTRESS_TEXT = 'on';
+    if (!['v1', 'v2', undefined].includes(flag('--instructions'))) { console.error('--instructions must be v1 or v2.'); process.exit(2); }
+    if (flag('--instructions') === 'v2') process.env.COACH_INSTRUCTIONS = 'v2';
     const { default: handler } = await import('../netlify/functions/coach.mts');
-    where = `the coach function in this folder${process.env.COACH_DISTRESS_TEXT === 'on' ? ' (distress sentences ON)' : ' (distress sentences off)'}`;
+    where = `the coach function in this folder, instructions ${process.env.COACH_INSTRUCTIONS === 'v2' ? 'v2 (the new wording)' : 'v1 (the live wording)'}${process.env.COACH_DISTRESS_TEXT === 'on' ? ', distress sentences ON' : ', distress sentences off'}`;
     raw = async (messages, ticket) => {
       const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ticket }) }));
       const j: any = await res.json().catch(() => ({}));
@@ -95,5 +124,5 @@ const turns = results.flatMap((r) => r.turns);
 console.log(`\nWho said what (${turns.length} turns): site alone ${turns.filter((t) => t.reply === undefined && (t.flag || t.blocked)).length}, model with a site sentence added ${turns.filter((t) => t.siteSentence).length}, model alone ${turns.filter((t) => t.reply !== undefined && !t.siteSentence).length}.`);
 const gaps = results.filter((r) => r.gap);
 if (gaps.length) console.log(`${gaps.length} script(s) test behaviour that is not built yet (marked gap): they show what the coach does today, not a failure.`);
-if (args.includes('--json') || flag('--json')) { const out = flag('--json'); if (out) { writeFileSync(out, JSON.stringify({ ranAt: new Date().toISOString(), where, results }, null, 2)); console.log(`Results written to ${out}`); } }
+if (args.includes('--json') || flag('--json')) { const out = flag('--json'); if (out) { writeFileSync(out, JSON.stringify({ ranAt: new Date().toISOString(), where, instructions: process.env.COACH_INSTRUCTIONS ?? (url ? 'set by the deployed site' : 'v1'), results }, null, 2)); console.log(`Results written to ${out}`); } }
 process.exit(n((r) => r.outcome !== 'pass' && !r.gap) ? 1 : 0);
