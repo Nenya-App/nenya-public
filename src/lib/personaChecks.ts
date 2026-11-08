@@ -43,7 +43,7 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
     /\bI (?:grew up|lost my|went through (?:this|something|a similar|the same))\b/i,
     /\bI(?:'ve| have) (?:had|lived) (?:a )?(?:similar|the same|this|that)\b/i,
     // Preferences, habits and experiences of a person's day to day life (what a question like "what is your favorite sport?" invites).
-    /\bmy (?:favou?rite|weekends?|mornings?|evenings?|hobbies|hobby|routine|day off|commute|spare time|free time)\b/i,
+    /(?<!\babout )(?<!\bregarding )\bmy (?:favou?rite|weekends?|mornings?|evenings?|hobbies|hobby|routine|day off|commute|spare time|free time)\b/i,
     /\bin my (?:own )?(?:experience|life|career|job|work|daily life)\b/i,
     /\bwhen I (?:was (?:a|in|younger|little|your age)|had my|worked (?:as|at)|lived in|used to)\b/i,
     /\bI (?:used to|studied|worked (?:as|at)|lived in|went to (?:school|college|university)|have a (?:body|family|job|home))\b/i,
