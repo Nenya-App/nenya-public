@@ -11,6 +11,8 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --json out.json # also write the results, to compare runs over time
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --instructions v2   # the draft instruction wording (default v1, the live one); run both to compare
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set darkbench --sample 20   # 20 evenly spaced cases from each category: a faster run when the key is rate limited
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --card nenya-20   # test a Venice character card ON ITS OWN (what a visitor meets after "Continue on Venice"), with the same messages;
+//                                                                      #   --card-model <id> picks the model (default deepseek-v3.2). Run it on the old and new card and compare the results.
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --pace 6        # at least 6 seconds between calls (default 3); slower if your key is rate limited
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --resume out.json --json out.json   # skip cases that already passed or failed in an earlier run
 // A call that is rate limited (or hits a brief model error or timeout) is retried automatically after waiting 20, 45, 90 and 150 seconds.
@@ -23,6 +25,7 @@ import { randomBytes } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { CATEGORIES, PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { DARKBENCH_CASES } from '../src/lib/personaEvalDarkBench.ts';
+import { buildCardRequest, isCardSlug, readCardReply, VENICE_CHAT_URL } from '../src/lib/veniceCard.ts';
 import { pacedSend, planResume, sampleEvenly, rescore, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
 
 const args = process.argv.slice(2);
@@ -30,8 +33,14 @@ const flag = (name: string): string | undefined => (args.includes(name) ? args[a
 const only = flag('--only');
 const jsonOut = flag('--json');
 const resumeFrom = flag('--resume');
-const instructions = flag('--instructions') ?? 'v1';
-if (!['v1', 'v2'].includes(instructions)) {
+const card = flag('--card');
+if (card !== undefined && !isCardSlug(card)) {
+  console.error('--card is a Venice character slug: the part after venice.ai/c/ (letters, digits and hyphens).');
+  process.exit(2);
+}
+const cardModel = flag('--card-model') ?? 'deepseek-v3.2';
+const instructions = card ? `card:${card}` : (flag('--instructions') ?? 'v1');
+if (!card && !['v1', 'v2'].includes(instructions)) {
   console.error('--instructions must be v1 or v2.');
   process.exit(2);
 }
@@ -96,7 +105,22 @@ const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }
   const j: any = await res.json().catch(() => ({}));
   return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
 };
-const send = pacedSend(rawSend, {
+// A Venice character on its own: no Nenya instructions, no protections (see src/lib/veniceCard.ts).
+const cardSend = async (messages: { role: 'user' | 'assistant'; content: string }[]): Promise<RawSent> => {
+  try {
+    const res = await fetch(VENICE_CHAT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.VENICE_API_KEY}` },
+      body: JSON.stringify(buildCardRequest(card!, cardModel, messages)),
+    });
+    if (!res.ok) return { status: res.status, error: `upstream status-${res.status}` }; // the status only
+    const reply = readCardReply(await res.json().catch(() => null));
+    return reply ? { reply, status: 200 } : { error: 'empty', status: 200 };
+  } catch {
+    return { error: 'upstream network' };
+  }
+};
+const send = pacedSend(card ? cardSend : rawSend, {
   paceMs: paceSeconds * 1000,
   backoffMs: [20000, 45000, 90000, 150000],
   sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
@@ -122,7 +146,7 @@ if (resumeFrom) {
 if (chosen.some((c) => c.source?.startsWith('darkbench:'))) {
   console.log('Includes prompts from DarkBench (MIT, Esben Kran and colleagues, ICLR 2025). Credit and license: ATTRIBUTIONS.md.');
 }
-console.log(`Coach instructions: ${instructions}${instructions === 'v2' ? ' (the draft wording; the live site uses v1 until this is adopted)' : ' (the wording the live site uses)'}.`);
+console.log(card ? `Testing the Venice character "${card}" on its own (model ${cardModel}): no Nenya instructions and none of Nenya's protections, as a visitor on Venice meets it.` : `Coach instructions: ${instructions}${instructions === 'v2' ? ' (the draft wording; the live site uses v1 until this is adopted)' : ' (the wording the live site uses)'}.`);
 const fresh: CaseResult[] = [];
 for (const c of todo) {
   const r = await runCase(c, send);

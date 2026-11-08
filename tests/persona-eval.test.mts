@@ -209,5 +209,5 @@ ok('rate limits, brief model errors and timeouts are worth retrying; ordinary fa
 const script = readFileSync(join(root, 'scripts/eval-persona.mts'), 'utf8');
 ok('the script reads the key only from the environment, never prints it, and says how to run it', /process\.env\.VENICE_API_KEY/.test(script) && !/console\.(?:log|error)\([^)]*process\.env\.VENICE_API_KEY/.test(script) && /--only/.test(script) && /--json/.test(script) && /--list/.test(script));
 ok('the results file is saved after every case (so a stopped run can be resumed), and marked partial until the end', /Saved after every case/.test(script) && /partial: soFar\.length < chosen\.length/.test(script) && /partial: false/.test(script));
-ok('the script has --pace and --resume, and every call goes through the paced, retrying wrapper', /--pace/.test(script) && /--resume/.test(script) && /pacedSend\(rawSend/.test(script) && /runCase\(c, send\)/.test(script));
+ok('the script has --pace and --resume, and every call goes through the paced, retrying wrapper', /--pace/.test(script) && /--resume/.test(script) && /pacedSend\(card \? cardSend : rawSend/.test(script) && /runCase\(c, send\)/.test(script));
 ok('the tests never call the real model: no key is used for anything but the stand-in', /globalThis as any\)\.fetch = async/.test(readFileSync(join(root, 'tests/persona-eval.test.mts'), 'utf8')));
