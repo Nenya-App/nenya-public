@@ -163,6 +163,16 @@ try {
   ok('admin page: starts by checking who is signed in, and keeps the token as a fallback', typeof h === 'string' && h.includes('Checking') && h.includes('Use the owner token instead'), h.error ?? '');
   ok('admin page: says the totals hold no information about who produced them', typeof h === 'string' && h.includes('hold no information about who produced them'), h.error ?? '');
 
+  // Hearing the signature melody is optional on both coach start screens: the way forward is never disabled by it.
+  const { default: SessionKeyPicker } = await vite.ssrLoadModule('/src/coach/SessionKeyPicker.tsx');
+  h = render(SessionKeyPicker, { onComplete() {}, onBack() {} });
+  const continueBtn = typeof h === 'string' ? (h.match(/<button[^>]*>(?:(?!<\/button>)[\s\S])*Continue<\/button>/) ?? [''])[0] : '';
+  ok('session key page: Continue is enabled without playing the sound, and says listening is optional', typeof h === 'string' && continueBtn !== '' && !/\sdisabled=""/.test(continueBtn) && h.includes('Listening is optional') && !h.includes('Hear your sound first'), h.error ?? '');
+  h = render(CoachDemo, { colors });
+  const startAt = typeof h === 'string' ? h.indexOf('I understand, start') : -1;
+  const startBtn = startAt > 0 ? h.slice(h.lastIndexOf('<button', startAt), startAt) : '';
+  ok('coach start screen: "I understand, start" is enabled without playing the sound', typeof h === 'string' && startBtn !== '' && !/\sdisabled=""/.test(startBtn), h.error ?? '');
+
   // The public verifier page: a way to choose a file or paste one, and a plain promise that nothing is uploaded.
   const { default: VerifyPage } = await vite.ssrLoadModule('/src/verify/VerifyPage.tsx');
   h = render(VerifyPage, {});
