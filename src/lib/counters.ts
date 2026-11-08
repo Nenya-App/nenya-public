@@ -9,6 +9,7 @@ export const BLOCK_REASONS = ['manipulation', 'context', 'crisis', 'cap', 'ip'] 
 export const FIXED_EVENTS = [
   'coach.turn.sent', // a well-formed message reached the function
   'coach.turn.answered', // the message went to the model and a reply came back
+  'coach.turn.distress-text', // a reply to a possible-distress message had the site's pointer to a person and a crisis line added
   'coach.conversation.started', // a first exchange was accepted
   'coach.conversation.finished', // the last exchange (the fifth) was answered
   'coach.report.verified', // a signed transcript sent to us passed the signature check

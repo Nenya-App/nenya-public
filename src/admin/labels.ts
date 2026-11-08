@@ -9,6 +9,7 @@ export const GROUPS: { title: string; match: (e: string) => boolean }[] = [
 const LABELS: Record<string, string> = {
   'coach.turn.sent': 'Messages sent',
   'coach.turn.answered': 'Messages answered',
+  'coach.turn.distress-text': 'Replies with the crisis pointer added',
   'coach.conversation.started': 'Conversations started',
   'coach.conversation.finished': 'Conversations finished',
   'onboarding.terms.accepted': 'Terms accepted',
