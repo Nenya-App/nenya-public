@@ -181,6 +181,23 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               </AlertDescription>
             </Alert>
 
+            {/* Credit for the structure of Nenya's feelings-and-needs categories (see ATTRIBUTIONS.md). CNVC shares its inventory
+                freely and asks to be credited in this form. */}
+            <p id="cnvc-credit" className="text-xs leading-relaxed text-muted-foreground">
+              <strong className="text-foreground">Credit.</strong> The categories of feelings and needs that Nenya works with were informed by
+              the structure of the{' '}
+              <a
+                href="https://www.cnvc.org/store/feelings-and-needs-inventory"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-4 hover:text-nenya-gold-dark"
+              >
+                Feelings and Needs Inventory
+              </a>
+              , which CNVC shares freely as a starting point. We are expanding and refining the categories, with other languages in mind. The Center for
+              Nonviolent Communication © 2023, www.CNVC.org, cnvc@cnvc.org.
+            </p>
+
             {/* Resource Links - Foundational Thinkers */}
             <Card className="p-6 bg-muted/30 border-nenya-gold/20">
               <div className="space-y-4">

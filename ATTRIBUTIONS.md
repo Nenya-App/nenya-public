@@ -36,3 +36,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## The Center for Nonviolent Communication: Feelings and Needs Inventory
+
+The structure of the feelings and needs categories that Nenya's coach and its reflection work with was informed by CNVC's **Feelings and Needs Inventory** (4 pages, © 2023): its groupings of feelings when needs are satisfied and when they are not, and of needs (physical wellbeing, honesty, connection, play, peace, autonomy, meaning). We are extending and refining those categories, and intend to offer them in other languages.
+
+- The document: <https://www.cnvc.org/store/feelings-and-needs-inventory> (CNVC asks that people share the link to this page).
+- CNVC's permission, on the last page of the document: "you are free to share or copy this document; we request CNVC is credited as follows": The Center for Nonviolent Communication © 2023, www.CNVC.org, cnvc@cnvc.org. The same page says the lists "are neither exhaustive nor definitive" and are "meant as a starting point".
+- Where the credit appears: the About NVC page on the site (`#cnvc-credit`), and in the sources of any module that builds on the categories.
+- What this is not: Nenya is independent and is not affiliated with or endorsed by CNVC (the About NVC page says so). The permission quoted covers sharing and copying the document; our categories are an adaptation, so we have asked, or will ask, CNVC for a note confirming that extending and translating the categories is welcome.
+

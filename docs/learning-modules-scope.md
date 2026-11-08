@@ -8,7 +8,8 @@ Short, plain educational modules that **a visitor can read**, on the things the 
 ## What is already decided
 - Modules are meant to be **public educational documents**, shown to users and also part of the basis for the coach's replies (your decision of 2026-11-05).
 - The coach's private method notes stay private (Blobs). This scope is about the public side.
-- Publication of anything derived from the private conversation data follows the earlier hold: modules are **authored from open and original material**, not from that data.
+- **What the modules may draw on (decided 2026-11-08):** the categories and patterns learned from the coach's private working material may be used, including in public modules; **the raw transcripts are never included anywhere** (not in the repository, the modules, the site or any output), and nothing is quoted from them. Modules are written fresh, in our own words, from what was learned. The people whose work informed us are credited where the owner decides, in the owner's wording.
+- **The structure of the categories** follows CNVC's Feelings and Needs Inventory, credited on the About NVC page and in `ATTRIBUTIONS.md` with the exact credit line CNVC asks for and a link to the document. The goal is to **expand and refine** those categories, and eventually to offer them in other languages (see section 8).
 
 ## 1. Where the content can come from
 | Source | What it means | Notes |
@@ -19,7 +20,7 @@ Short, plain educational modules that **a visitor can read**, on the things the 
 
 ## 2. What I found (searched 2026-11-08; nothing here was verified beyond what the pages said)
 - **NVC Academy** (the courses are paid). I found **no API and no partner-content or licensing program**. Its site says it works with NVC organizations around the world and links its own Online Services Terms and Conditions (nvctraining.com/nvcacademy/legal.html), which I could not read. So: there is nothing to "pull" from, and copying or scraping paywalled courses would be against the point of paywalls and almost certainly their terms. The way to find out is to **ask them**: whether they would allow a short credited excerpt, a link from the site, or something fuller. A written yes is the only basis for using their content.
-- **CNVC's feelings and needs inventory** (the widely used list). CNVC's own store page offers the 4-page inventory as a free gift and asks that people share the link to the page. Copies of two versions say it may be copied and shared if CNVC is credited (the 2005 version and the 2023 version word it differently). I saw CNVC's page and reposts, not a formal license text. **Asking CNVC for written permission** (the address in the document's credit line) is the safe route before building the list into the site and giving it to a model, and it is a polite thing to do anyway.
+- **CNVC's Feelings and Needs Inventory** (the widely used list; the 2023 PDF is the one the coach's categories followed). I read the document itself: its last page says "you are free to share or copy this document; we request CNVC is credited as follows" (The Center for Nonviolent Communication © 2023, www.CNVC.org, cnvc@cnvc.org), and that the lists "are neither exhaustive nor definitive" and are "meant as a starting point". CNVC's store page offers it as a free gift and asks people to share the link to that page (the download itself is behind a form, so there is no direct PDF link to give). So the credit is clear and is now in place (About NVC page, `ATTRIBUTIONS.md`). The permission as written covers sharing and copying the document; **extending and translating the categories is an adaptation**, and it would be good manners and good safety to write to CNVC (cnvc@cnvc.org) for a short note that this is welcome. I can draft it; you send it.
 - **Other open material.** I found a Quebec guide, "Emotional Literacy and Needs" (Fondation Jasmin Roy), whose license I could not see, and ELSA Support materials said to be under a Creative Commons license of an unknown variant. I found **no openly licensed NVC-style course** with listening practice. So the openly licensed shelf is thin, and most modules will have to be written by us.
 - **Not found:** a ready-made, openly licensed, trauma-informed module set on this topic. That absence is part of why writing our own is worth doing.
 
@@ -61,10 +62,20 @@ One file per module in the repository (for example `content/modules/feelings-and
 ## 7. A pilot
 Five modules, written by us, in this order (the ones the coach already needs most): **feelings and needs words**, **what happened versus the story about it**, **making a request**, **calming the body when flooded** (links to the breathing tool), **loneliness and reaching for people** (the one that most helps with the "be my friend" questions). Ask CNVC about the inventory in parallel; ask NVC Academy whether a credited link or excerpt is possible; keep the rest ours.
 
+## 8. Expanding the categories, and other languages
+The goal is to grow the categories beyond the inventory and to offer them in other languages, including ones the English-centric models do not serve well. What that asks for:
+- **A language-neutral taxonomy.** Each category (a feeling group, a need group, a pattern the coach detects) has an `id` that does not change; each language supplies its own label, its words, its examples and its triggers. English is one language file, not the model of the others.
+- **Written for each language, not only translated.** Feeling and need words do not map one to one (some languages have words English lacks and the reverse). Each language's set is reviewed by native speakers with some experience of the subject, who may add, merge or drop categories. A machine translation is a first draft at most.
+- **Detection per language.** The patterns for the coach's detection (identity and memory questions, crisis phrases, the module triggers) are written per language, tested with that language's own positives and false positives, and reviewed by a native speaker. The crisis phrase list in particular must never be machine translated alone.
+- **Resources per country.** Crisis lines and local resources are per country, not per language.
+- **The model.** The coach's model has to handle the language well; the current model choice and its safety behavior are measured in English only. Each new language needs its own persona and crisis evaluation set (the existing sets are the pattern for it) before it is offered, and an honest note on the page if the support is thinner.
+- **The words around it.** The Terms, the consent text, the greeting and closing, the fixed honest sentences and the counts' labels all need translation and, for the Terms, a legal check; a translated page that says less than the English one is a problem.
+- **Order:** the English taxonomy first, written down as the language-neutral list of ids with notes; then one pilot language with a volunteer reviewer; then more as reviewers appear.
+
 ## Decisions for you
 1. **The shape:** authored by us with permissioned and openly licensed material added as it is cleared (recommended), or something fuller.
 2. **A license for our own modules** (for example Creative Commons BY or BY-SA), and who is credited.
-3. **Whether to write to CNVC and to NVC Academy**, and who sends it (I can draft the note; you send it).
+3. **Whether to write to CNVC** (a short note confirming that extending and translating the categories is welcome) **and to NVC Academy** (a credited link or excerpt), and who sends them (I can draft both; you send them).
 4. **Where it appears:** a Learn page, a shelf under the coach, links inside replies, or all three.
 5. **Reviewer:** who reads each module before it goes live.
 6. **Counts:** whether to count module views.
@@ -72,6 +83,6 @@ Five modules, written by us, in this order (the ones the coach already needs mos
 
 ## Not verified
 - NVC Academy's terms (not read), whether it has an API or partner program (none found, which is not proof), and whether it would agree to anything.
-- CNVC's exact license wording for the 2023 inventory (I saw reposts and the store page, not a license text).
+- Whether CNVC regards extending and translating the categories as covered by what the document says (it does not say; asking settles it).
 - The licenses of the Quebec guide and the ELSA materials.
 - How the coach's replies change when given modules; the evaluation is how we find out.

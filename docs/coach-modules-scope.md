@@ -51,7 +51,7 @@ review             who reviewed it and when
   identifying detail; no episode numbers or titles in anything public.
 - Anything derived from the coaching material is private until the person it came from has agreed to its
   publication. `visibility: private` is the default for it.
-- Feelings and needs word lists belong to their authors and must be credited wherever shown.
+- Feelings and needs word lists belong to their authors and must be credited wherever shown. The CNVC inventory the categories followed is credited on the About NVC page and in `ATTRIBUTIONS.md` (see `docs/learning-modules-scope.md`).
 - Outside resources are added only with the owner's agreement where one is needed, and linked to, not copied.
 
 ## Pipeline
