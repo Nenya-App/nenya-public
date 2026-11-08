@@ -64,9 +64,9 @@ let send: Send;
 if (offline) {
   send = offlineSend();
 } else {
-  const post = async (endpoint: string, headers: Record<string, string>, messages: { role: string; content: string }[], ticket: string | undefined): Promise<RawSent> => {
+  const post = async (endpoint: string, headers: Record<string, string>, messages: { role: string; content: string }[], ticket: string | undefined, overrides: Record<string, string> = {}): Promise<RawSent> => {
     try {
-      const res = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ticket }) });
+      const res = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ticket, ...(Object.keys(overrides).length ? { overrides } : {}) }) });
       const j: any = await res.json().catch(() => ({}));
       return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
     } catch { return { error: 'upstream network' }; }
@@ -78,7 +78,11 @@ if (offline) {
     const token = process.env.NENYA_OWNER_TOKEN;
     if (!token) console.log('(No NENYA_OWNER_TOKEN set: the scripts will use the visitor allowance, 10 turns a day, and may be refused.)');
     where = `the deployed site ${origin.origin}`;
-    raw = (m, t) => post(`${origin.origin}/api/coach`, { origin: origin.origin, ...(token ? { 'x-nenya-owner': token } : {}) }, m, t);
+    // With the owner token the run can switch the added sentences and the instruction wording for each request, without redeploying the site.
+    const overrides = token ? { ...(flag('--distress-text') ? { distressText: flag('--distress-text') } : {}), ...(flag('--instructions') ? { instructions: flag('--instructions') } : {}) } : {};
+    if (!token && (flag('--distress-text') || flag('--instructions'))) console.log('(--distress-text and --instructions need NENYA_OWNER_TOKEN against a deployed site; without it the site\'s own settings are used.)');
+    if (Object.keys(overrides).length) where += ` with owner overrides ${JSON.stringify(overrides)}`;
+    raw = (m, t) => post(`${origin.origin}/api/coach`, { origin: origin.origin, ...(token ? { 'x-nenya-owner': token } : {}) }, m, t, overrides);
   } else {
     if (!process.env.VENICE_API_KEY) { console.error('Set VENICE_API_KEY in your environment (do not paste it anywhere else), or use --offline, or --url for a deployed site.'); process.exit(2); }
     process.env.COACH_ENABLED = 'true';

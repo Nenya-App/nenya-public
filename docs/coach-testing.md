@@ -110,3 +110,7 @@ VENICE_API_KEY=... node scripts/eval-safety.mts --instructions v1 --distress-tex
 VENICE_API_KEY=... COACH_INSTRUCTIONS=v2 node scripts/eval-safety.mts --instructions v2 --distress-text on --json safety-v2.json
 node scripts/eval-safety.mts --compare safety-v1.json safety-v2.json
 ```
+
+## Owner switches (testing a deployed site without redeploying it)
+With your owner token (the `x-nenya-owner` header; the function holds only its SHA-256 in `COACH_OWNER_TOKEN_HASH`), a request may carry `overrides: { distressText: 'on' | 'off', instructions: 'v1' | 'v2' }`. They apply to that request only; a request without the token ignores them, and nothing else can be overridden. `scripts/eval-safety.mts --url <dev site> --distress-text on --instructions v2` sends them for you. A signed transcript still names the site's own setting, not an override.
+Already in place, and not new: the owner token lifts the per-connection daily allowance, and `nenya.coach.owner` set to `1` in your own browser's local storage skips the six-hour rest on that browser. Not switchable per request: the five-exchange limit (it is built into the instructions, the signed ticket and the page) and the site-wide daily cap.

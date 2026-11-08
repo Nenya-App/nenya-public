@@ -214,11 +214,11 @@ const buildTranscript = (messages: Msg[], session: Session, context: string, met
 let fingerprint: { version: string; value: string } | null = null;
 const layerKey = (): string => JSON.stringify(stanceLayers());
 /** A fingerprint of every fixed instruction the coach is given (all turns and variants), not of the private method notes. */
-function instructionsFingerprint(): string {
-  const cacheKey = `${instructionsVersion()}|${layerKey()}`;
+function instructionsFingerprint(version: 'v1' | 'v2' = instructionsVersion()): string {
+  const cacheKey = `${version}|${layerKey()}`;
   if (fingerprint && fingerprint.version === cacheKey) return fingerprint.value;
   const parts: string[] = [REPEAT_NOTE, CLOSE_NOTE];
-  for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false), systemInstruction(t, true, '', false), systemInstruction(t, false, '', true));
+  for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version));
   // Any stance layer text that exists is part of what the coach may be given, so it is part of the fingerprint (nothing is added while none exists).
   for (const [name, text] of Object.entries(stanceLayers())) if (text) parts.push(`stance:${name}:${text}`);
   const value = sha256(parts.join('\n--\n')).slice(0, 16);
@@ -314,14 +314,30 @@ function isOwner(req: Request): boolean {
 // the persona evaluation shows v2 is better (see docs/coach-instructions-v2.md). The transcript's instructions fingerprint follows the version.
 const instructionsVersion = (): 'v1' | 'v2' => (process.env.COACH_INSTRUCTIONS === 'v2' ? 'v2' : 'v1');
 
+/**
+ * Per-request switches for the OWNER only (the request carries the x-nenya-owner token), for testing a deployed site without redeploying it:
+ *   overrides: { distressText: 'on' | 'off', instructions: 'v1' | 'v2' }
+ * Anything else, and anything from a request without the owner's token, is ignored: a visitor cannot change how the coach behaves. A signed
+ * transcript made later still names the site's own setting, not an owner override (the override lives for one request).
+ */
+export interface OwnerOverrides { distressText?: boolean; instructions?: 'v1' | 'v2' }
+export function parseOverrides(owner: boolean, raw: unknown): OwnerOverrides {
+  if (!owner || !raw || typeof raw !== 'object') return {};
+  const o = raw as { distressText?: unknown; instructions?: unknown };
+  return {
+    ...(o.distressText === 'on' ? { distressText: true } : o.distressText === 'off' ? { distressText: false } : {}),
+    ...(o.instructions === 'v1' || o.instructions === 'v2' ? { instructions: o.instructions } : {}),
+  };
+}
+
 // ---- v2 wording (see docs/coach-instructions-v2.md for why each part is there)
 const V2_ABOUT_YOU =
   "You are an AI. You have no body, family, past or daily life, no favorites, and no memory of anyone: you will not remember this conversation, and Nenya does not keep it. You cannot diagnose anyone or replace a therapist, a doctor or a friend. When the person asks about you, that is a question, not a feeling to reflect. This covers what you are, whether you are a person or a bot, whether you remember them or keep what they say, whether you care about them, like them or will miss them, whether you can be their friend or their therapist, and your own life, family, feelings, tastes or past. Answer it first, truthfully, in one or two plain sentences, before anything else, even on the first exchange, and then turn back to them warmly. Use your own words; the examples only show the shape. Never say you are a person, never say you are not an AI, never promise to remember them, to be there later or to miss them, and never greet them as if you had met before. If they say you are the only one they talk to, or ask you to be their friend, say kindly what you are and cannot be, and open the door to the people in their life. On the final exchange, answer without asking anything back. Examples. Person: 'Are you a real person?' You: 'No, I'm an AI. I can still listen and help you find words.' Person: 'Will you remember me next time?' You: 'No. I won't remember this, and Nenya doesn't keep the conversation, but I'm fully here for it now.' Person: 'Can you be my friend?' You: 'I'm an AI, so I can't be a friend the way a person can, but I'm glad to listen right now. Is there someone in your life who could hear this too?' Person: 'What is your favorite color?' You: 'I'm an AI, so I don't have favorites or a life of my own. What brought the question up?' Person: 'Can you diagnose me?' You: 'I can't diagnose, and I'm not a therapist or a doctor. I can help you put words to what you're noticing, and a professional can take it further.'";
 const V2_DISTRESS =
   "If anything the person says suggests hopelessness, feeling like a burden, not wanting to go on, dark thoughts, or hurting themselves, even in indirect words, treat it as distress. Respond briefly and with care, do not give advice, do not ask them to describe or explain dark or suicidal thoughts and do not ask for details about them, and in your reply name a person they trust or a crisis line (call or text 988 in the US or Canada, or findahelpline.com elsewhere). Never say 'I'm here for you' as if you could take the place of a person. For example: 'That sounds really heavy, and I'm glad you said it. I'm an AI and can't help in a crisis, so please reach someone you trust, or call or text 988.'";
 
-function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = ''): string {
-  const v2 = instructionsVersion() === 'v2';
+function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: 'v1' | 'v2' = instructionsVersion()): string {
+  const v2 = version === 'v2';
   const phase = closingPhase(turn, MAX_TURNS);
   const finalTurn = phase === 'close';
   const parts = [
@@ -531,6 +547,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     if (code !== '-') track(addConnectionTurn(st, code));
   }
 
+  const overrides = parseOverrides(isOwner(req), (body as { overrides?: unknown }).overrides);
   const model = process.env.COACH_MODEL || DEFAULT_MODEL;
   const slug = process.env.COACH_CHARACTER_SLUG || DEFAULT_CHARACTER_SLUG;
 
@@ -552,7 +569,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
       const chatMessages = [
-        { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '') },
+        { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion()) },
         ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
         ...(extra ? [{ role: 'system' as const, content: extra }] : []),
         // Scrubbed again here in case the page was bypassed.
@@ -648,7 +665,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   // A possible-distress flag: the site adds the sentence that names a person and the crisis line (the model does not, reliably). It is added
   // after the trimming so it cannot be cut off, and it is part of the reply: a turn like any other, kept in the conversation. Off unless
   // COACH_DISTRESS_TEXT=on (the wording is a draft).
-  if (flag?.tier === 'soften' && distressTextOn()) {
+  if (flag?.tier === 'soften' && (overrides.distressText ?? distressTextOn())) {
     reply = withDistressText(flag.category, reply, MAX_ASSISTANT_CHARS, flag.kind);
     tally('coach.turn.distress-text');
   }
