@@ -50,3 +50,12 @@ const v2 = lastSystem;
 await call('Work is tiring.', { instructions: 'v2' });
 const visitor = lastSystem;
 ok('the owner can choose the v2 instruction wording for one request; a visitor cannot', v2 !== v1 && /You are an AI\. You have no body/.test(v2) && !/You are an AI\. You have no body/.test(v1) && visitor === v1);
+
+// ---- why an origin was refused: told to the owner only
+const refused = async (token?: string) => {
+  const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://dev--elsewhere.netlify.app', ...(token ? { 'x-nenya-owner': token } : {}) }, body: JSON.stringify({ messages: [{ role: 'user', content: 'Hello.' }], session: SESSION }) }));
+  return { status: res.status, body: (await res.json()) as any };
+};
+const visitorRefused = await refused();
+const ownerRefused = await refused('owner-secret');
+ok('a refused origin is a 403 for everyone, and only the owner is told why', visitorRefused.status === 403 && visitorRefused.body.error === 'origin' && visitorRefused.body.reason === undefined && ownerRefused.status === 403 && /COACH_EXTRA_HOSTS is empty or not set/.test(ownerRefused.body.reason ?? ''));

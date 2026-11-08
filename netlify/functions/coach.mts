@@ -35,7 +35,7 @@ import { addCount } from '../../src/lib/counters.ts';
 import { tokenMatches } from '../../src/lib/ownerAuth.ts';
 import { recordReceipt } from '../../src/lib/receiptLog.ts';
 import { addConnectionTurn, allowanceReached, connectionCode, turnsFromEnv } from '../../src/lib/connectionLimit.ts';
-import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
+import { hostAllowed, originHint, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
 import { E2eeError, e2eeChat, isE2eeModel } from '../../src/lib/veniceE2ee.ts';
 import { detectDirectQuestion } from '../../src/lib/coachIntent.ts';
@@ -438,7 +438,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   } catch {
     originHost = '';
   }
-  if (!hostAllowed(originHost, process.env.COACH_EXTRA_HOSTS)) return fail(403, 'origin');
+  if (!hostAllowed(originHost, process.env.COACH_EXTRA_HOSTS)) return fail(403, 'origin', isOwner(req) ? originHint(originHost, process.env.COACH_EXTRA_HOSTS) : undefined);
   if (!(req.headers.get('content-type') || '').includes('application/json')) return fail(415, 'type');
 
   const text = await req.text();
