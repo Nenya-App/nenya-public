@@ -10,7 +10,7 @@ import { createHash, createHmac, createPrivateKey, createPublicKey, verify as ed
 import { addCount } from '../../src/lib/counters.ts';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { receiptRecordedOn } from '../../src/lib/receiptLog.ts';
-import { readableTranscript, type Receipt, type SignedTranscript } from '../../src/lib/transcript.ts';
+import { readableTranscript, signedJson, transcriptFilename, type Receipt, type SignedTranscript } from '../../src/lib/transcript.ts';
 import { sanitizePlainText } from '../../src/lib/textSanitize.ts';
 
 const ROUTE = '/api/report';
@@ -146,18 +146,19 @@ export default async (req: Request): Promise<Response> => {
   }
   const checked = createHmac('sha256', secret).update(`report-checked|${receipt.hash}`).digest('hex');
 
-  const form = new URLSearchParams({
-    'form-name': FORM,
-    'bot-field': '',
-    report: readable,
-    signed: JSON.stringify({ transcript, receipt }),
-    comments: note,
-    checked,
-    'key-id': receipt.keyId,
-    'issued-record': recorded ? `yes (${recorded})` : 'no record (older than 30 days, or not logged)',
-  });
+  // The signed file goes as a real file (so it can be downloaded as the .json it is, instead of sitting in the body of the
+  // email); the readable text and the facts stay as text fields. A multipart post, as a browser form with a file would send.
+  const form = new FormData();
+  form.set('form-name', FORM);
+  form.set('bot-field', '');
+  form.set('report', readable);
+  form.set('comments', note);
+  form.set('checked', checked);
+  form.set('key-id', receipt.keyId);
+  form.set('issued-record', recorded ? `yes (${recorded})` : 'no record (older than 30 days, or not logged)');
+  form.set('signed-file', new Blob([signedJson(transcript, receipt)], { type: 'application/json' }), transcriptFilename(receipt, 'json'));
   try {
-    const res = await fetch(`${url.origin}/`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: form.toString() });
+    const res = await fetch(`${url.origin}/`, { method: 'POST', body: form });
     if (!res.ok) throw new Error('forward');
   } catch {
     return reply(502, { error: 'forward' });

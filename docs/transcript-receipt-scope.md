@@ -80,7 +80,7 @@ The signed content gains a small `meta` block, so these facts are covered by the
 
 ## Built (2026-11-07): receipts, step 1
 - **Version 3 transcript** with a signed `meta` block (`closed`, `exchanges`, `build`, `model`, `instructions`), key order `v, session, meta, context?, messages`. The server returns the exact transcript object it hashed, and the page writes it out unchanged, so nothing is rebuilt (and key order cannot drift). The signed text is `nenya-coach-transcript-v3\n<hash>\n<issuedAt>`; the receipt is `version: 3`.
-- **`build`** is `COACH_BUILD`, else `COMMIT_REF`, else `DEPLOY_ID`, shortened to 12 characters, else `unknown`. Whether Netlify makes `COMMIT_REF` or `DEPLOY_ID` available to functions at run time is **not confirmed**: after the first deploy, a signed transcript on the preview shows what it got; if it says `unknown`, set `COACH_BUILD` in Netlify (or have the build write it).
+- **`build`** is the label written into the code at build time (release number, branch unless `main`, commit; see `docs/versioning.md`), unless `COACH_BUILD` overrides it. The first deploy showed that Netlify does not give `COMMIT_REF` to a running function (transcripts said `unknown`), so the build now writes it into `src/generated/build-info.ts`.
 - **`instructions`** is a fingerprint of every fixed instruction (all five turns, the softened and direct-question variants, and the retry notes), not of the private method notes.
 - **Daily count by key** (`coach.receipt.issued.<keyId>`, shown on the admin page) and the **30-day hash log** (`r/<day>/<hash>`, deleted by the daily cleanup job).
 - `scripts/verify-transcript.mjs` accepts versions 2 and 3 and prints the signed facts.

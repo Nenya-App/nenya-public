@@ -41,6 +41,7 @@ import { E2eeError, e2eeChat, isE2eeModel } from '../../src/lib/veniceE2ee.ts';
 import { detectDirectQuestion } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
+import { buildLabel } from '../../src/lib/buildInfo.ts';
 import type { ModuleGroup } from '../../src/lib/coachModules.ts';
 
 const MAX_TURNS = 5;
@@ -218,7 +219,8 @@ function instructionsFingerprint(): string {
 }
 export const __instructionsFingerprint = (): string => instructionsFingerprint();
 
-const buildId = (): string => (process.env.COACH_BUILD || process.env.COMMIT_REF || process.env.DEPLOY_ID || 'unknown').slice(0, 12);
+// The site version that produced the replies, written into the code at build time (see src/lib/buildInfo.ts); COACH_BUILD overrides it.
+const buildId = (): string => buildLabel(process.env.COACH_BUILD);
 
 // Backstop for the character card's own vocabulary: the coach may name its
 // methods, but may not present itself as a clinical or diagnostic tool. Drops

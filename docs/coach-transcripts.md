@@ -59,7 +59,7 @@ only the function can produce. The function sees the transcript on its way throu
 - **context** appears (between `session` and `messages`) only if a future version lets a visitor share a
   summary of their reflection with the coach. The current demo never sends one, so it is absent. If present, it is part of what is hashed and signed.
 - **meta** (version 3): `closed` is true when the conversation reached its final exchange; `exchanges` is how many
-  it holds; `build` is the site version that produced it (`unknown` if the host does not provide one); `model` is the
+  it holds; `build` is the site version that produced it, for example `1.1.0+679c4d2` (release number and commit; a `-dev` part means staging; see `docs/versioning.md`); `model` is the
   model that wrote the replies; `instructions` is the first 16 hex characters of a SHA-256 over every fixed instruction
   the coach is given (not the private method notes). None of it identifies a person.
 - **keyId** is the first 16 hex characters of SHA-256 of the `publicKey` string.

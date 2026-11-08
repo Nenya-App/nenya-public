@@ -4,3 +4,6 @@ dist/
 
 # Netlify CLI link state
 .netlify
+
+# Written by scripts/write-build-info.mjs before every build, test run and dev start
+src/generated/

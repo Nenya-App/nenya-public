@@ -1,4 +1,6 @@
 // Receipts: the signed facts, the daily count by key, the 30-day hash log, and that older (version 2) files still verify.
+import { BUILD_INFO } from '../src/generated/build-info.ts';
+import { formatBuild } from '../src/lib/buildInfo.ts';
 import { createHash, generateKeyPairSync, sign as edSign } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
@@ -18,7 +20,6 @@ process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret';
 process.env.COACH_MODEL = 'deepseek-v3.2';
 process.env.COACH_SIGNING_KEY = privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');
 delete process.env.COACH_IP_SECRET; delete process.env.COACH_BUILD;
-process.env.COMMIT_REF = 'abcdef1234567890abcdef';
 (globalThis as any).fetch = async () => new Response(JSON.stringify({ choices: [{ message: { content: 'That sounds heavy. Thank you for saying it.' } }] }), { status: 200 });
 
 const makeStore = () => {
@@ -51,13 +52,13 @@ ok('a partial conversation is signed as not complete, with its exchange count', 
 const five = await conversation(5);
 const full = await post({ action: 'receipt', messages: five.m, ticket: five.ticket });
 ok('a full conversation is signed as complete', full.transcript.meta.closed === true && full.transcript.meta.exchanges === 5);
-ok('the build comes from the deploy variable, shortened', full.transcript.meta.build === 'abcdef123456');
+ok('the build is the version written into the code at build time, not read from the host at run time', full.transcript.meta.build === formatBuild(BUILD_INFO) && /^\d+\.\d+\.\d+(-[a-z0-9-]+)?\+([0-9a-f]{7}|nogit)$/.test(full.transcript.meta.build), full.transcript.meta.build);
 process.env.COACH_BUILD = 'my-build';
 const alt = await post({ action: 'receipt', messages: five.m, ticket: five.ticket });
 ok('an explicit COACH_BUILD wins', alt.transcript.meta.build === 'my-build');
-delete process.env.COACH_BUILD; delete process.env.COMMIT_REF; delete process.env.DEPLOY_ID;
+delete process.env.COACH_BUILD;
 const unk = await post({ action: 'receipt', messages: five.m, ticket: five.ticket });
-ok('with no deploy variable the build says unknown rather than failing', unk.transcript.meta.build === 'unknown');
+ok('the build never says unknown', unk.transcript.meta.build !== 'unknown' && unk.transcript.meta.build === full.transcript.meta.build);
 ok('the model is recorded', full.transcript.meta.model === 'deepseek-v3.2');
 ok('the instruction fingerprint is 16 hex characters and stable', /^[0-9a-f]{16}$/.test(full.transcript.meta.instructions) && full.transcript.meta.instructions === __instructionsFingerprint() && __instructionsFingerprint() === __instructionsFingerprint());
 ok('the key order is version, session, meta, messages', Object.keys(full.transcript).join() === 'v,session,meta,messages');
@@ -87,7 +88,7 @@ ok('recent records, connection records and totals are untouched', ls.keys().incl
 
 // the readable copy carries the signed facts
 const readable = readableTranscript(five.m, S, full.receipt, '', full.transcript.meta);
-ok('the readable copy says whether the conversation is complete and which version wrote it', /Conversation complete: yes \(5 exchanges\)/.test(readable) && /build abcdef123456, model deepseek-v3\.2, instructions [0-9a-f]{16}/.test(readable));
+ok('the readable copy says whether the conversation is complete and which version wrote it', /Conversation complete: yes \(5 exchanges\)/.test(readable) && readable.includes(`build ${full.transcript.meta.build}, model deepseek-v3.2, instructions `));
 ok('a partial one says so', /Conversation complete: no, stopped after 2 exchanges/.test(readableTranscript(two.m, S, part.receipt, '', part.transcript.meta)));
 ok('without the facts (an older receipt) the readable copy is unchanged in kind', !/Conversation complete/.test(readableTranscript(five.m, S, full.receipt, '')));
 
