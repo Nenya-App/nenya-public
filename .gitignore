@@ -7,3 +7,9 @@ dist/
 
 # Written by scripts/write-build-info.mjs before every build, test run and dev start
 src/generated/
+
+# Saved results of scripts/eval-safety.mts and scripts/eval-persona.mts runs (replies from a model: keep them out of the repository)
+/dev-*.json
+/safety-*.json
+/ai-abuse*.json
+/baseline-*.json
