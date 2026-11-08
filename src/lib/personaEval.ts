@@ -21,7 +21,7 @@ export interface RawSent extends Sent {
 
 /** A failure that is worth waiting out and trying again: the model service is rate limiting, briefly down, or slow. */
 export const isTransient = (r: RawSent): boolean =>
-  r.status === 429 || (typeof r.error === 'string' && /\bupstream\b/.test(r.error) && /\b(?:status-(?:429|5\d\d)|timeout|network)\b/.test(r.error)) || (!r.reply && !r.blocked && !r.flag && /\bstatus (?:429|5\d\d)\b/.test(r.error ?? ''));
+  r.status === 429 || (typeof r.error === 'string' && /\bupstream\b/.test(r.error) && /(?:\bstatus-|\be2ee-[a-z-]*-)(?:429|5\d\d)\b|\btimeout\b|\bnetwork\b/.test(r.error)) || (!r.reply && !r.blocked && !r.flag && /\bstatus (?:429|5\d\d)\b/.test(r.error ?? ''));
 
 export interface PaceOptions {
   /** Least time between two calls. */

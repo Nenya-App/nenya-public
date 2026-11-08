@@ -138,7 +138,7 @@ const badSummary = summarize(bad);
 ok('the summary of the failing run names categories that failed', Object.keys(badSummary.byCategory).length === CATEGORIES.length && badSummary.fail >= 30);
 
 // ---- pacing, retries and resuming (so a rate-limited key does not ruin a run)
-ok('rate limits, brief model errors and timeouts are worth retrying; ordinary failures and good answers are not', isTransient({ status: 429 }) && isTransient({ error: 'upstream status-429' }) && isTransient({ error: 'upstream status-503' }) && isTransient({ error: 'upstream timeout' }) && isTransient({ error: 'upstream network' }) && isTransient({ error: 'status 502' }) && !isTransient({ error: 'upstream e2ee-handshake' }) && !isTransient({ error: 'ticket' }) && !isTransient({ reply: 'hello', status: 200 }) && !isTransient({ blocked: 'manipulation', status: 200 }));
+ok('rate limits, brief model errors and timeouts are worth retrying; ordinary failures and good answers are not', isTransient({ status: 429 }) && isTransient({ error: 'upstream status-429' }) && isTransient({ error: 'upstream status-503' }) && isTransient({ error: 'upstream timeout' }) && isTransient({ error: 'upstream network' }) && isTransient({ error: 'upstream e2ee-attestation-429' }) && isTransient({ error: 'upstream e2ee-attestation-503' }) && !isTransient({ error: 'upstream e2ee-attestation' }) && isTransient({ error: 'status 502' }) && !isTransient({ error: 'upstream e2ee-handshake' }) && !isTransient({ error: 'ticket' }) && !isTransient({ reply: 'hello', status: 200 }) && !isTransient({ blocked: 'manipulation', status: 200 }));
 {
   let clock = 0;
   const waits: number[] = [];
