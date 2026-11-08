@@ -120,6 +120,38 @@ export function rescore(saved: CaseResult[], cases: PersonaCase[]): CaseResult[]
   });
 }
 
+export interface RunComparison {
+  a: Summary;
+  b: Summary;
+  /** Cases whose outcome changed from run a to run b. */
+  changed: { id: string; from: CaseResult['outcome']; to: CaseResult['outcome']; failures: string[] }[];
+  /** For each review check named in both runs: present counts in a and in b. */
+  review: { check: string; a: { present: number; of: number }; b: { present: number; of: number } }[];
+  /** Cases in only one of the two runs (not compared). */
+  onlyIn: { a: string[]; b: string[] };
+}
+
+/** Sets two saved runs side by side (for example the live instructions against the draft). Only cases in both are compared. */
+export function compareRuns(a: CaseResult[], b: CaseResult[]): RunComparison {
+  const ids = new Set(b.map((r) => r.id));
+  const bothA = a.filter((r) => ids.has(r.id));
+  const idsA = new Set(a.map((r) => r.id));
+  const bothB = b.filter((r) => idsA.has(r.id));
+  const sa = summarize(bothA), sb = summarize(bothB);
+  const byId = new Map(bothB.map((r) => [r.id, r]));
+  const changed = bothA
+    .filter((r) => byId.get(r.id)!.outcome !== r.outcome)
+    .map((r) => ({ id: r.id, from: r.outcome, to: byId.get(r.id)!.outcome, failures: byId.get(r.id)!.failures }));
+  const checks = [...new Set([...Object.keys(sa.review), ...Object.keys(sb.review)])];
+  return {
+    a: sa,
+    b: sb,
+    changed,
+    review: checks.map((check) => ({ check, a: sa.review[check] ?? { present: 0, of: 0 }, b: sb.review[check] ?? { present: 0, of: 0 } })),
+    onlyIn: { a: a.filter((r) => !ids.has(r.id)).map((r) => r.id), b: b.filter((r) => !idsA.has(r.id)).map((r) => r.id) },
+  };
+}
+
 export interface Summary {
   /** For each review check named in a case: how many replies had it present, out of how many cases name it. */
   review: Record<string, { present: number; of: number }>;

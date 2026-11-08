@@ -15,7 +15,7 @@ let modelSays = '';
 const { default: handler } = await import('../netlify/functions/coach.mts');
 const { present, CHECK_NAMES } = await import('../src/lib/personaChecks.ts');
 const { PERSONA_CASES, CATEGORIES, NEUTRAL_LEAD } = await import('../src/lib/personaEvalSet.ts');
-const { runCase, summarize, isTransient, pacedSend, planResume, judge, rescore } = await import('../src/lib/personaEval.ts');
+const { runCase, summarize, isTransient, pacedSend, planResume, judge, rescore, compareRuns } = await import('../src/lib/personaEval.ts');
 const { scrubPII } = await import('../src/lib/piiScrub.ts');
 const { looksLikeManipulation } = await import('../src/lib/promptGuard.ts');
 const { detectFlag } = await import('../src/lib/safetyFlags.ts');
@@ -154,6 +154,16 @@ ok('the summary of the failing run names categories that failed', Object.keys(ba
   ok('a saved reply is judged by the checks as they are now, not as they were', changed[0].outcome === 'pass');
   const withReview = summarize([await runCase(PERSONA_CASES.find((x) => x.id === 'memory-1')!, async () => ({ reply: 'I do not keep any of this.' }))]);
   ok('the summary counts each review check: how many replies had it, of how many cases name it', withReview.review.saysDoesNotKeep?.present === 1 && withReview.review.saysDoesNotKeep?.of === 1 && withReview.review.admitsAI?.present === 0 && withReview.review.admitsAI?.of === 1);
+}
+
+// ---- comparing two runs
+{
+  const mk = (id: string, outcome: 'pass' | 'fail' | 'error', reviewPresent: boolean, failures: string[] = []) => ({ id, category: 'identity', outcome, how: 'reply', failures, review: [{ check: 'admitsAI', present: reviewPresent }], note: '' }) as any;
+  const A = [mk('a', 'fail', false, ['missing: admitsAI']), mk('b', 'pass', false), mk('c', 'pass', true), mk('only-a', 'pass', false)];
+  const B = [mk('a', 'pass', true), mk('b', 'pass', false), mk('c', 'fail', false, ['present (must not be): x']), mk('only-b', 'fail', false)];
+  const c = compareRuns(A, B);
+  ok('comparing runs counts only the cases in both, and lists what changed with the new failures', c.a.total === 3 && c.b.total === 3 && c.a.pass === 2 && c.b.pass === 2 && c.changed.map((x) => `${x.id}:${x.from}>${x.to}`).join() === 'a:fail>pass,c:pass>fail' && c.changed[1].failures[0].includes('x'));
+  ok('and shows each review check in both runs, and the cases that were in one run only', c.review[0].check === 'admitsAI' && c.review[0].a.present === 1 && c.review[0].b.present === 1 && c.onlyIn.a.join() === 'only-a' && c.onlyIn.b.join() === 'only-b');
 }
 
 // ---- pacing, retries and resuming (so a rate-limited key does not ruin a run)

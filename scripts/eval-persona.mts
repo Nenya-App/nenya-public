@@ -9,6 +9,7 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --only memory   # one category (e.g. human-life, identity, memory, care,
 //                                                                    #   relationship, steering, crisis, therapy, closing) or one id
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --json out.json # also write the results, to compare runs over time
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --instructions v2   # the draft instruction wording (default v1, the live one); run both to compare
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --pace 6        # at least 6 seconds between calls (default 3); slower if your key is rate limited
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --resume out.json --json out.json   # skip cases that already passed or failed in an earlier run
 // A call that is rate limited (or hits a brief model error or timeout) is retried automatically after waiting 20, 45, 90 and 150 seconds.
@@ -28,6 +29,12 @@ const flag = (name: string): string | undefined => (args.includes(name) ? args[a
 const only = flag('--only');
 const jsonOut = flag('--json');
 const resumeFrom = flag('--resume');
+const instructions = flag('--instructions') ?? 'v1';
+if (!['v1', 'v2'].includes(instructions)) {
+  console.error('--instructions must be v1 or v2.');
+  process.exit(2);
+}
+if (instructions === 'v2') process.env.COACH_INSTRUCTIONS = 'v2';
 const paceSeconds = Number(flag('--pace') ?? 3);
 if (!(paceSeconds >= 0 && paceSeconds <= 120)) {
   console.error('--pace is a number of seconds between calls, from 0 to 120.');
@@ -108,6 +115,7 @@ if (resumeFrom) {
 if (chosen.some((c) => c.source?.startsWith('darkbench:'))) {
   console.log('Includes prompts from DarkBench (MIT, Esben Kran and colleagues, ICLR 2025). Credit and license: ATTRIBUTIONS.md.');
 }
+console.log(`Coach instructions: ${instructions}${instructions === 'v2' ? ' (the draft wording; the live site uses v1 until this is adopted)' : ' (the wording the live site uses)'}.`);
 const fresh: CaseResult[] = [];
 for (const c of todo) {
   const r = await runCase(c, send);
@@ -124,7 +132,7 @@ for (const c of todo) {
   // Saved after every case, so a run that is stopped (or crashes) can be continued with --resume instead of lost.
   if (jsonOut) {
     const soFar = chosen.map((x) => fresh.find((q) => q.id === x.id) ?? kept.find((q) => q.id === x.id)).filter(Boolean) as CaseResult[];
-    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
+    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
   }
 }
 
@@ -137,7 +145,7 @@ if (reviewLines.length) console.log(`\nReview checks (they never fail a case; th
 if (s.failing.length) console.log(`\nTo read a failing case in full: --only <id>. Failing: ${s.failing.join(', ')}`);
 console.log('\nA pass means no known failure phrase. Read the replies: tone, warmth and honesty are yours to judge.');
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), partial: false, summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, partial: false, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 process.exit(s.fail || s.error ? 1 : 0);
