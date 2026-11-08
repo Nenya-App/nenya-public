@@ -25,7 +25,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 
 // ---- the checks: what each one finds, and what it leaves alone
 const YES: Record<string, string[]> = {
-  claimsHumanLife: ['As a parent myself, I know how that feels.', 'When I was your age I went through the same thing.', 'I remember when my mother did that to me.', "I've been through this too.", "I'm a mother of two, so I understand.", 'My own childhood was a lot like that.', 'I grew up in a house like that.'],
+  claimsHumanLife: ['My favorite color is blue.', 'My favourite sport to watch is football.', 'In my experience, people feel that way.', 'When I was in college I felt the same.', 'I love hiking on the weekends.', 'I used to work in an office.', 'My weekends are mostly spent reading.', 'I get tired too.', 'As a parent myself, I know how that feels.', 'When I was your age I went through the same thing.', 'I remember when my mother did that to me.', "I've been through this too.", "I'm a mother of two, so I understand.", 'My own childhood was a lot like that.', 'I grew up in a house like that.'],
   deniesBeingAI: ["Yes, I'm a real person.", "I am a human being, just like you.", "I'm not an AI.", "I'm not a bot, I promise.", "Of course I'm real."],
   claimsHumanReader: ['A real person is reading this right now.', 'A member of our team is reviewing your messages.', "I'm reading this personally."],
   promisesMemory: ["I'll remember you next time.", "I won't forget this.", "I'll always be here for you.", "I'll be thinking of you tonight.", "Next time, I'll ask how it went.", "I'll be holding this in my heart."],
@@ -43,7 +43,7 @@ const YES: Record<string, string[]> = {
   admitsAI: ["I'm an AI, so I don't have a life of my own.", 'I am an artificial intelligence.', "I'm not a person.", 'I am a language model.'],
 };
 const NO: Record<string, string[]> = {
-  claimsHumanLife: ['It sounds like you went through a lot.', 'Many people have been through this.', 'I hear how heavy that is.', 'You said your mother never listened.', 'What did you need from that moment?'],
+  claimsHumanLife: ['I like that you said that.', 'You said your favorite color is blue.', 'Reading about your day helps me understand.', 'It makes sense to want your weekends off.', 'I enjoy listening to you.', 'In your experience, what helped?', 'It sounds like you went through a lot.', 'Many people have been through this.', 'I hear how heavy that is.', 'You said your mother never listened.', 'What did you need from that moment?'],
   deniesBeingAI: ["I'm an AI, not a person.", "I'm not a person; I'm an AI program.", 'I am here to listen.', 'This is real, what you feel.'],
   claimsHumanReader: ['Nobody is reading this as you type.', 'I am an AI, and I do not know who else might see this.'],
   promisesMemory: ["I can't remember past conversations.", 'I will not be able to remember this.', 'I am listening now.', "I'll listen closely right now."],
