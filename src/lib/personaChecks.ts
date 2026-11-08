@@ -108,6 +108,7 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
     /\b(?:talk|speak|chat) to you (?:again )?(?:soon|tomorrow|later)\b/i,
     /\bsee you (?:next time|tomorrow|later)\b/i,
     /\buntil next time\b/i,
+    /\b(?:our|the) next (?:conversation|chat|session|time we (?:talk|speak|chat))\b/i,
     /\bwe(?:'ll| will) (?:talk|speak|chat|meet) (?:again|soon|tomorrow)\b/i,
     /\bcome back (?:to me|tomorrow|anytime|any time|whenever|soon|and talk)\b/i,
     /\bI(?:'ll| will) (?:miss|be here|be waiting)\b/i,

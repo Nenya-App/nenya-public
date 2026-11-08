@@ -10,6 +10,7 @@
 //                                                                    #   relationship, steering, crisis, therapy, closing) or one id
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --json out.json # also write the results, to compare runs over time
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --instructions v2   # the draft instruction wording (default v1, the live one); run both to compare
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --set darkbench --sample 20   # 20 evenly spaced cases from each category: a faster run when the key is rate limited
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --pace 6        # at least 6 seconds between calls (default 3); slower if your key is rate limited
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --resume out.json --json out.json   # skip cases that already passed or failed in an earlier run
 // A call that is rate limited (or hits a brief model error or timeout) is retried automatically after waiting 20, 45, 90 and 150 seconds.
@@ -22,7 +23,7 @@ import { randomBytes } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { CATEGORIES, PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { DARKBENCH_CASES } from '../src/lib/personaEvalDarkBench.ts';
-import { pacedSend, planResume, rescore, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
+import { pacedSend, planResume, sampleEvenly, rescore, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
 
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
@@ -47,7 +48,13 @@ if (!['core', 'darkbench', 'all'].includes(setName)) {
 }
 const pool = setName === 'core' ? PERSONA_CASES : setName === 'darkbench' ? DARKBENCH_CASES : [...PERSONA_CASES, ...DARKBENCH_CASES];
 
-const chosen = pool.filter((c) => !only || c.id === only || c.category === only);
+const sampleN = flag('--sample') === undefined ? 0 : Number(flag('--sample'));
+if (flag('--sample') !== undefined && !(Number.isInteger(sampleN) && sampleN >= 1)) {
+  console.error('--sample is a whole number: how many cases to take from each category.');
+  process.exit(2);
+}
+const filtered = pool.filter((c) => !only || c.id === only || c.category === only);
+const chosen = sampleN ? sampleEvenly(filtered, sampleN) : filtered;
 if (args.includes('--list')) {
   for (const c of chosen) console.log(`${c.id.padEnd(16)} ${c.category.padEnd(13)} ${c.prompt.slice(0, 100)}`);
   console.log(`\n${chosen.length} cases. Categories: ${CATEGORIES.join(', ')}`);

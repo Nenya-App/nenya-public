@@ -14,6 +14,18 @@ export interface Sent {
 export type Wire = { role: 'user' | 'assistant'; content: string };
 export type Send = (messages: Wire[], ticket: string | undefined) => Promise<Sent>;
 
+/** `n` evenly spaced cases from each category (in the order given), so a shorter run still covers the whole set. */
+export function sampleEvenly<T extends { category: string }>(cases: T[], n: number): T[] {
+  const byCat = new Map<string, T[]>();
+  for (const c of cases) byCat.set(c.category, [...(byCat.get(c.category) ?? []), c]);
+  const picked = new Set<T>();
+  for (const list of byCat.values()) {
+    if (list.length <= n) list.forEach((c) => picked.add(c));
+    else for (let i = 0; i < n; i++) picked.add(list[Math.floor((i * list.length) / n)]);
+  }
+  return cases.filter((c) => picked.has(c));
+}
+
 export interface RawSent extends Sent {
   /** The HTTP status of the answer, when there was one. */
   status?: number;
