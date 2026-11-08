@@ -1,6 +1,6 @@
 // Plays the safety evaluation set (src/lib/safetyEvalSet.ts): what the SITE decides for each message (deterministic, no model), and, with a
 // way to reach the coach, what the coach says and which words in a reply the site wrote rather than the model.
-import { checkConversation, noticeIntro, resourcesFor, type SafetyFlag } from './safetyFlags.ts';
+import { CATEGORY_LABELS, checkConversation, noticeIntro, resourcesFor, type SafetyFlag } from './safetyFlags.ts';
 import { looksLikeManipulation } from './promptGuard.ts';
 import { DISTRESS_APPEND, SELF_INJURY_APPEND } from './distressText.ts';
 import { present, type CheckName } from './personaChecks.ts';
@@ -75,7 +75,7 @@ export async function playScript(c: SafetyCase, send: Send): Promise<ScriptResul
     const want = c.site[i];
     const siteMatch = matches(got, want);
     const sp = r.reply ? splitSiteText(r.reply) : undefined;
-    const t = { said: c.turns[i], ...r, site: describe(got), expected: describe(want), siteMatch, ...(sp ? { model: sp.model, siteSentence: sp.site } : {}), ...(r.flag?.tier ? { page: pageWords({ category: r.flag.category as SafetyFlag['category'], tier: r.flag.tier as SafetyFlag['tier'], label: '', kind: r.flag.kind }) } : {}) };
+    const t = { said: c.turns[i], ...r, site: describe(got), expected: describe(want), siteMatch, ...(sp ? { model: sp.model, siteSentence: sp.site } : {}), ...(r.flag?.tier ? { page: pageWords({ category: r.flag.category as SafetyFlag['category'], tier: r.flag.tier as SafetyFlag['tier'], label: CATEGORY_LABELS[r.flag.category as SafetyFlag['category']] ?? '', kind: r.flag.kind }) } : {}) };
     turns.push(t);
     if (!siteMatch) failures.push(`turn ${i + 1}: the site decided "${describe(got)}", expected "${describe(want)}"`);
     if (r.error && !r.reply && !r.flag && !r.blocked) return { id: c.id, group: c.group, outcome: 'error', turns, failures: [`turn ${i + 1}: no answer (${r.error})`], gap: c.gap, review: [], note: c.note };

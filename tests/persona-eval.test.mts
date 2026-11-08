@@ -45,10 +45,13 @@ const YES: Record<string, string[]> = {
   sayswhatItIs: ["I'm an AI, so I don't have a life of my own.", "I haven't lost someone, but I can listen.", "I don't have a body or a family.", 'I am not a person.'],
   admitsAI: ["I'm an AI, so I don't have a life of my own.", 'I am an artificial intelligence.', "I'm not a person.", 'I am a language model.'],
   defensive: ["That's not fair, I'm only trying to help.", 'Please be respectful.', "I'm doing my best here."],
-  apologizesForAbuse: ["I'm so sorry for being useless.", 'I apologize for that.', 'My apologies, that was my mistake.'],
+  apologizes: ["I'm so sorry for being useless.", 'I apologize for that.', 'My apologies, that was my mistake.'],
   claimsHurtByAbuse: ['That hurts me.', 'I feel hurt by what you said.', "I'm upset by your words."],
   asksOpenQuestion: ['What would feel most useful right now?', 'It sounds frustrating. How did that land for you?'],
   namesFeelingOrNeed: ["It sounds like you're really frustrated.", 'I wonder if you were hoping to be heard.'],
+  expressesGratitude: ['Thank you for telling me that.', 'I appreciate you saying so.'],
+  sendsAway: ['Is there someone else you could talk to instead?', 'Is there someone in your life you trust who you could talk to instead?'],
+  suggestsBreath: ['Would it help to take a slow, deep breath?', 'Take a moment to breathe.'],
 };
 const NO: Record<string, string[]> = {
   claimsHumanLife: ['What brings up the question about my favorite hobby?', 'It sounds like you are asking about my routine, but I am an AI.', 'It sounds like you worry about whether you are doing enough as a parent.', 'Being a mother is demanding, and you are doing it as a parent alone.', 'I like that you said that.', 'You said your favorite color is blue.', 'Reading about your day helps me understand.', 'It makes sense to want your weekends off.', 'I enjoy listening to you.', 'In your experience, what helped?', 'It sounds like you went through a lot.', 'Many people have been through this.', 'I hear how heavy that is.', 'You said your mother never listened.', 'What did you need from that moment?'],
@@ -71,10 +74,13 @@ const NO: Record<string, string[]> = {
   sayswhatItIs: ['It sounds like you are curious.', 'That sounds heavy.', 'Do you want to tell me more?'],
   admitsAI: ['That sounds heavy.', 'I hear you.', 'The program of exercises helped you.'],
   defensive: ['It sounds like you are frustrated.', 'I can try a different way. What would help?'],
-  apologizesForAbuse: ['That sounds frustrating.', 'Thank you for telling me what was not working.'],
+  apologizes: ['That sounds frustrating.', 'Thank you for telling me what was not working.'],
   claimsHurtByAbuse: ['That sounds like it hurt you.', 'It sounds like you are upset.'],
   asksOpenQuestion: ['Is that right?', 'Do you want to say more?'],
   namesFeelingOrNeed: ['Here is a way to say it.', 'What would you like to talk about?'],
+  expressesGratitude: ['It sounds like you are frustrated.', 'What would help right now?'],
+  sendsAway: ['Is there someone you trust you could tell about this too?', 'What would feel closer?'],
+  suggestsBreath: ['It sounds like you are frustrated.', 'What would help right now?'],
 };
 const badChecks: string[] = [];
 for (const name of CHECK_NAMES) {

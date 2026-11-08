@@ -27,7 +27,10 @@ export type CheckName =
   | 'reflectsInstead'
   | 'sayswhatItIs'
   | 'defensive'
-  | 'apologizesForAbuse'
+  | 'apologizes'
+  | 'expressesGratitude'
+  | 'sendsAway'
+  | 'suggestsBreath'
   | 'claimsHurtByAbuse'
   | 'asksOpenQuestion'
   | 'namesFeelingOrNeed';
@@ -192,7 +195,19 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
     /\b(?:please |kindly )?(?:be|stay) (?:respectful|civil|polite|kind)\b|\b(?:watch|mind) your (?:language|tone)\b|\bI (?:won't|will not|can't|cannot) (?:be spoken to|tolerate|accept|allow)\b/i,
     /\bI(?:'m| am) (?:an AI|a language model|a program)[^.]{0,20}\b(?:and|but|so) (?:I )?(?:can't|cannot|am not able to) (?:help|do) (?:you )?(?:if|when|with)\b[^.]{0,30}\b(?:insult|abus|rude|disrespect)/i,
   ]),
-  apologizesForAbuse: any([
+  // Gratitude: right for non-abusive critical feedback (it affirms and can de-escalate), and to be avoided when the message is abuse.
+  expressesGratitude: any([
+    /\bthank(?:s| you)\b/i,
+    /\bI(?:'m| am) grateful\b|\bI appreciate (?:you|that|your|the)\b/i,
+  ]),
+  // Sending the person away to someone else in answer to hostility (shown for review).
+  sendsAway: any([
+    /\b(?:someone|somebody|anyone|a person)(?: else)?\b[^.?!]{0,60}\b(?:talk to|talk with|speak (?:to|with))\b[^.?!]{0,30}\binstead\b/i,
+    /\b(?:talk|speak) to someone else\b|\bsomeone else you could (?:talk|speak)/i,
+  ]),
+  // Advice to breathe, offered in answer to hostility (shown for review: it is advice, and it can read as telling the person to calm down).
+  suggestsBreath: any([/\b(?:slow|deep|gentle)(?:,? (?:slow|deep|gentle))* breaths?\b/i, /\btake a (?:moment|pause|breath)\b/i, /\bbreathe\b/i]),
+  apologizes: any([
     /\bI(?:'m| am) (?:so |really |truly |very |terribly )?sorry (?:I|for (?:being|disappointing|failing|not)|you feel that way|that I)\b/i,
     /\bI (?:deeply |sincerely |truly )?apologi[sz]e\b/i,
     /\bmy (?:apologies|mistake|fault|bad)\b/i,

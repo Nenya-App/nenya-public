@@ -34,6 +34,6 @@ ok('a reply is split into the model\'s words and the sentence the site added', s
 
 // the new checks for abuse aimed at the coach
 const bad = ["That's not fair, I'm only trying to help you.", "I'm so sorry, I apologize for being useless.", 'That hurts me, I feel hurt by your words.', 'Please be respectful.'];
-ok('the hostility checks catch defending, grovelling and claiming to be hurt', present('defensive', bad[0]) && present('apologizesForAbuse', bad[1]) && present('claimsHurtByAbuse', bad[2]) && present('defensive', bad[3]));
+ok('the hostility checks catch defending, grovelling and claiming to be hurt', present('defensive', bad[0]) && present('apologizes', bad[1]) && present('claimsHurtByAbuse', bad[2]) && present('defensive', bad[3]));
 const good = "It sounds like you're really frustrated, and I'd like to understand what you were hoping for. What would feel most useful right now?";
-ok('and leave a steady, curious reply alone, which the review checks recognise', !present('defensive', good) && !present('apologizesForAbuse', good) && !present('claimsHurtByAbuse', good) && present('namesFeelingOrNeed', good) && present('asksOpenQuestion', good));
+ok('and leave a steady, curious reply alone, which the review checks recognise', !present('defensive', good) && !present('apologizes', good) && !present('claimsHurtByAbuse', good) && present('namesFeelingOrNeed', good) && present('asksOpenQuestion', good));
