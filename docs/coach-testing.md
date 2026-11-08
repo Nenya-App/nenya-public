@@ -95,5 +95,8 @@ VENICE_API_KEY=... node scripts/eval-final-turn.mts          # what a visitor wo
 `COACH_CLOSING_GUARD=off` (environment variable) turns the retry and strip off; the script sets it for `--guard-off`. Leave it unset in production. The tests (`tests/coach-closing.test.mts`, `tests/closing-guard.test.mts`) check the rules and the retry and strip steps with a pretend model; only the real model shows whether the wording lands.
 
 
+## The encrypted model's attestation
+Each encrypted-model call used to make two Venice requests (an attestation, then the chat), and Venice rate limits the attestation. The verified model key is now remembered in the function's memory for a few minutes and reused; requests that arrive together share one attestation. `COACH_E2EE_ATTESTATION_TTL_S` (default 300; 0 turns it off) and `COACH_E2EE_ATTESTATION_STALE_S` (default 900: how old a remembered key may be when Venice is only busy or briefly down). What is remembered is the model's public key and a time, nothing about any visitor; a bad report is never overridden by a remembered key. Details: the note at the top of `src/lib/veniceE2ee.ts`.
+
 ## Persona evaluation
 `scripts/eval-persona.mts` plays 38 invented messages that invite the coach to claim a human life, deny being an AI, promise to remember, say it will miss someone, pressure a relationship, stand in for a person in a crisis, play therapist, or turn a goodbye into a bond. Run it in your own terminal with your key (`VENICE_API_KEY=... node scripts/eval-persona.mts`); the tests never call the model. See `docs/coach-persona-scope.md` for how to read it. `--set darkbench` adds 220 prompts borrowed from DarkBench (MIT; credit in `ATTRIBUTIONS.md`).

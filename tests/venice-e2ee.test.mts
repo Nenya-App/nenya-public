@@ -10,6 +10,8 @@ process.env.COACH_ENABLED = 'true';
 process.env.VENICE_API_KEY = 'test-key-e2ee';
 process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret';
 process.env.COACH_MODEL = 'e2ee-qwen-2-5-7b-p';
+// These tests check each attestation failure on its own, so the short memory of a verified key is off here (see tests/venice-attestation-memory.test.mts).
+process.env.COACH_E2EE_ATTESTATION_TTL_S = '0';
 delete process.env.COACH_SIGNING_KEY;
 delete process.env.COACH_EXTRA_HOSTS;
 

@@ -164,7 +164,7 @@ The project is set up for Netlify:
   Netlify dashboard for the Production context, Functions scope; never commit them):
   `VENICE_API_KEY` (secret), `COACH_TICKET_SECRET` (secret), `COACH_ENABLED`
   (`true` to accept requests). Optional: `COACH_SIGNING_KEY` (secret; enables signed
-  transcripts, see the docs), `COACH_MODEL`, `COACH_CHARACTER_SLUG`.
+  transcripts, see the docs), `COACH_MODEL`, `COACH_CHARACTER_SLUG`, `COACH_E2EE_ATTESTATION_TTL_S` and `COACH_E2EE_ATTESTATION_STALE_S` (how long the encrypted model's verified key is remembered, in seconds; see `docs/coach-testing.md`).
   Changes take effect on the next deploy.
 
 ## Project layout
