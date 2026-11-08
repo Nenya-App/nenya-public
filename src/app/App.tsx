@@ -395,8 +395,10 @@ export default function App() {
       />
       <TonesAnnouncer />
       {!veilGone && <LoadingVeil ready={assetsReady} onDone={() => setVeilGone(true)} />}
-      {!termsAgreed && veilGone && (
+      {/* Mounted under the loading screen, solid, so nothing half-drawn shows when the loading screen fades. */}
+      {!termsAgreed && (
         <OnboardingFlow
+          veilGone={veilGone}
           technique={breathingTechnique}
           onTechniqueChange={setBreathingTechnique}
           onFinish={handleOnboardingFinish}

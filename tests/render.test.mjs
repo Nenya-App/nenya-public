@@ -65,11 +65,17 @@ try {
   h = render(Onboarding, { technique: { ih: 5000, hi: 0, ex: 5000, ho: 0 }, onTechniqueChange: noop, onStepChange: noop, onFinish: noop });
   ok('first-visit panel: renders its dialog and the rhythm choice', typeof h === 'string' && h.includes('role="dialog"') && h.includes('onboarding-title'), h.error ?? '');
   ok('first-visit panel: no layer starts invisible', typeof h === 'string' && !/opacity:\s*0(?![.\d])/.test(h.replace(/<style>[\s\S]*?<\/style>/g, '')), 'found an inline opacity: 0');
-  ok('first-visit panel: entrance is done with CSS classes', typeof h === 'string' && h.includes('onb-fade-in') && h.includes('onb-card-in') && h.includes('onb-step-in'));
+  ok('first-visit panel: the steps ease in with a CSS class; the panel itself has no entrance (it is already there, solid, when the loading screen fades)', typeof h === 'string' && h.includes('onb-step-in') && !h.includes('onb-fade-in') && !h.includes('onb-card-in'));
   ok('first-visit panel: Box breathing is one of the four main choices, and there is no skip link', typeof h === 'string' && h.includes('>Box<') && h.includes('>5·5<') && h.includes('>4·6<') && h.includes('>3·3<') && !h.includes('>4·8<') && !h.includes('Skip to terms'), h.error ?? '');
   ok('first-visit panel: says that not choosing is fine', typeof h === 'string' && h.includes('Not choosing is fine'), h.error ?? '');
   {
     const src = readFileSync(new URL('../src/app/components/OnboardingFlow.tsx', import.meta.url), 'utf8');
+    const appSrc = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
+    ok('first-visit panel: mounted under the loading screen (not after it), and told when the loading screen has gone', /\{!termsAgreed && \(\s*<OnboardingFlow\s+veilGone=\{veilGone\}/.test(appSrc) && !/!termsAgreed && veilGone &&/.test(appSrc));
+    ok('first-visit panel: completely solid behind the loading screen, then see-through', /opacity: isExiting \? 0 : veilGone \? 0\.75 : 1/.test(src) && /bg-background backdrop-blur/.test(src) && !/bg-background\/75/.test(src));
+    ok('first-visit panel: hidden from assistive technology and the keyboard while the loading screen is over it', /inert: '', 'aria-hidden': 'true'/.test(src) && /if \(!veilGone\) return;/.test(src));
+    h = render(Onboarding, { technique: { ih: 5000, hi: 0, ex: 5000, ho: 0 }, onTechniqueChange: noop, onFinish: noop, veilGone: false });
+    ok('first-visit panel: rendered under the loading screen, it is inert, aria-hidden and fully solid', typeof h === 'string' && /inert=""/.test(h) && h.includes('aria-hidden="true"') && /opacity:1;transition:opacity 0\.9s/.test(h), h.error ?? '');
     ok('first-visit panel: goes straight from the rhythm to the terms', /STEPS: OnboardingStep\[\] = \['rhythm', 'terms'\]/.test(src) && !/'counter'|'process'/.test(src));
   }
   // The loading screen, the tour offer and the tour.

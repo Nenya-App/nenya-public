@@ -31,6 +31,13 @@ interface OnboardingFlowProps {
   onTechniqueChange: (t: BreathingTechnique) => void;
   onStepChange?: (step: OnboardingStep) => void;
   onFinish: () => void;
+  /**
+   * False while the loading screen is still over the page. The panel is mounted under the loading screen, completely solid, so that
+   * when the loading screen fades there is no half-drawn page or panel fading in; it is hidden from assistive technology and
+   * skipped by the keyboard until then. Once the loading screen has gone, the backdrop eases to see-through so the logo can be
+   * seen breathing behind. Defaults to true (no loading screen).
+   */
+  veilGone?: boolean;
 }
 
 function RhythmOrb({ t }: { t: BreathingTechnique }) {
@@ -55,7 +62,7 @@ function RhythmOrb({ t }: { t: BreathingTechnique }) {
   );
 }
 
-export default function OnboardingFlow({ technique, onTechniqueChange, onStepChange, onFinish }: OnboardingFlowProps) {
+export default function OnboardingFlow({ technique, onTechniqueChange, onStepChange, onFinish, veilGone = true }: OnboardingFlowProps) {
   const [step, setStep] = useState<OnboardingStep>('rhythm');
   const [showMore, setShowMore] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -67,10 +74,15 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
 
   useEffect(() => {
     onStepChange?.(step);
-    const t = setTimeout(() => headingRef.current?.focus({ preventScroll: true }), 350);
-    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
+
+  // Focus goes to the heading once the panel can be seen (not while the loading screen is over it).
+  useEffect(() => {
+    if (!veilGone) return;
+    const t = setTimeout(() => headingRef.current?.focus({ preventScroll: true }), 350);
+    return () => clearTimeout(t);
+  }, [step, veilGone]);
 
   // Off unless the visitor ticks it. Saves their settings and this agreement on this device only.
   const [rememberHere, setRememberHere] = useState(false);
@@ -135,16 +147,25 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
   );
 
   return (
-    <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
-      {/* Backdrop: light enough to see the logo breathing behind */}
+    <div
+      className="fixed inset-0 z-[100]"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onboarding-title"
+      {...(!veilGone ? ({ inert: '', 'aria-hidden': 'true' } as Record<string, string>) : {})}
+    >
+      {/* Backdrop: fully solid while the loading screen is up, then light enough to see the logo breathing behind */}
       <div
-        className="onb-fade-in absolute inset-0 bg-background/75 backdrop-blur-[2px]"
-        style={{ opacity: isExiting ? 0 : 1, transition: 'opacity 0.5s linear' }}
+        className="absolute inset-0 bg-background backdrop-blur-[2px]"
+        style={{
+          opacity: isExiting ? 0 : veilGone ? 0.75 : 1,
+          transition: isExiting ? 'opacity 0.5s linear' : 'opacity 0.9s ease-out',
+        }}
       />
 
       <div className="absolute inset-0 flex items-center justify-center overflow-y-auto p-4">
         <div
-          className={`onb-card-in relative my-auto flex w-full flex-col overflow-hidden rounded-2xl border border-nenya-accent-warm/30 bg-background/90 shadow-2xl backdrop-blur-xl ${
+          className={`relative my-auto flex w-full flex-col overflow-hidden rounded-2xl border border-nenya-accent-warm/30 bg-background/90 shadow-2xl backdrop-blur-xl ${
             isTerms ? 'max-w-2xl max-h-[calc(100dvh-2rem)]' : 'max-w-lg'
           }`}
           style={{
