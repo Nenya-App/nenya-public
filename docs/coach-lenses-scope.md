@@ -1,6 +1,13 @@
 # Scope: three lenses for the coach (Nenya, Vilya, Narya)
 
-Status: scoping only, for later. Nothing is built. Written 2026-11-08 from the owner's note. This was part of the earliest concept work for the coach; this document gathers it with what the evaluations since have taught us.
+Status: scoping, for later; **the layers do not exist, but the safeguards for them are built** (see "What is built now"). Written 2026-11-08 from the owner's note; updated the same day with the owner's decisions. This was part of the earliest concept work for the coach; this document gathers it with what the evaluations since have taught us.
+
+## Decided (2026-11-08)
+- **The third lens is Narya.**
+- **They are layers, not three coaches.** It is the same basic model throughout. **Nenya is the base**; Vilya and Narya are filters added on top of it. A stance is therefore *not* a strict difference between three alternatives: the base is always in force, and a layer only adds moves.
+- **Neutral labels for visitors, with the elements as descriptors:** **Reflect (Water)**, **Learn (Air)**, **Stretch (Fire)**. **Water is the default.** The ring names (Nenya, Vilya, Narya) stay as the owner's own shorthand, for the notes and the people reading the repository; visitors do not need them. In code they are called stances.
+- **The layers may become paid options** (a paid tier and a premium tier, each with capabilities). That is a possible future, not a plan, and it needs accounts and written approval from the fiscal sponsor before any paid tier (both are on hold).
+- **For now, proceed as if the layers do not exist, but build the safeguards for them anyway.**
 
 ## The idea
 A visitor chooses one of **three lenses** for the coach before they start (and may change it between exchanges). The lens changes the coach's stance, not its honesty or its safety:
@@ -11,9 +18,19 @@ A visitor chooses one of **three lenses** for the coach before they start (and m
 | **Vilya** | Teaching and system-oriented | Explains how the thing works: the steps of observation, feeling, need and request, why a pattern keeps repeating, a short framework to see it with, a way to try it. |
 | **Narya** | Challenging, encouraging growth | Gently questions the thought pattern, names an assumption, offers a stretch: one small step beyond the comfortable. |
 
-**One thing to confirm:** the note gave "Vilya" for both the second and the third. I have taken the third to be **Narya**, the Ring of Fire, the third of the three Elven rings that the Name & Philosophy page already mentions (Nenya, the Ring of Water; Vilya, the Ring of Air; Narya, the Ring of Fire). If you meant something else, this document changes with it.
+**The third lens** is Narya, the Ring of Fire, the third of the three Elven rings that the Name & Philosophy page already mentions (Nenya, the Ring of Water; Vilya, the Ring of Air; Narya, the Ring of Fire). Confirmed by the owner.
 
 **A naming collision to avoid in the code.** "Lens" already means something else inside the coach: the ICARUS-based diagnostic "lens" modules (`ModuleGroup = 'lens'` in `src/lib/coachModules.ts`, and `docs/coach-modules-scope.md`). In code and docs I would call the three choices **stances** (or "voices"); "lens" can stay as the word visitors see if you prefer it.
+
+## What is built now (the safeguards, with no layer in existence)
+`src/lib/stances.ts` and `src/lib/sensitiveTopics.ts`, wired into `netlify/functions/coach.mts`, tested in `tests/stances.test.mts`:
+- **A request may only name a known stance**; anything else (an invented name, text, a number) is the base.
+- **A layer runs only if it exists and the visitor is entitled to it.** No layer has text today, and everyone is entitled to the base only, so a request for Vilya or Narya changes nothing: the instructions are exactly the base's. The entitlement check is a seam: a future paid tier would fill it from an account (not built).
+- **Any layer falls back to the base** when the crisis check flags the message (soften or stop) or when a sensitive topic is present in the last two things the person wrote: grief, trauma or abuse, health fears, exhaustion or overwhelm, self-blame, acute pain (a deliberately broad phrase list; a false match only means the coach stays gentle).
+- **Layer text is linted before it can be registered**: it may not tell the model to ignore the rules above, withhold help or a person, hide that it is an AI, act as a person or therapist, diagnose, command the person, confront, shame or force, promise to remember or be there, or ask for details about suicidal thoughts; and it may not run past 900 characters (a small model keeps less in view).
+- **A layer is added to the base's instructions and never replaces them:** it is introduced as adding to everything above and below and never overriding the honest lines, the care for distress or the closing rules, and it sits before the pacing rules, so the closing rules and the care note still come after it.
+- **The instructions fingerprint in a signed transcript includes any layer text that exists** (nothing changes while none does), so a transcript can tell.
+- **Not built:** the layer texts themselves, the visitor's choice on the page, the signed `stance` fact and its format change, the counts, the per-stance evaluation, accounts and entitlements.
 
 ## What stays the same in every lens (never swapped)
 The lens is a small block on top of a fixed base. The base is the same for all three and is not negotiable by a lens:
@@ -68,8 +85,8 @@ The baselines show this model follows a strong habit (reflect) over a written ru
 5. Terms and README wording, the Name page text, and the translation plan.
 
 ## Decisions for you
-1. **The third lens is Narya?** And the final names and one-line descriptions for the page.
-2. **Neutral labels beside the ring names** ("Reflect", "Learn", "Stretch"), or only the ring names.
+1. ~~The third lens is Narya?~~ **Decided: yes.** Still to write: the one-line description of each for the page.
+2. ~~Neutral labels~~ **Decided:** Reflect (Water), Learn (Air), Stretch (Fire); Water is the default; the ring names stay in the notes.
 3. **Whether Narya ships at all at first**, or whether it waits until the distress and do-not-challenge handling are proven (a possible first release is Nenya and Vilya).
 4. **Whether the lens can change mid-conversation** (recommended: yes, from the next exchange) or is fixed once chosen.
 5. **Who checks the rights** to use the names.
