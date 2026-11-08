@@ -4,7 +4,7 @@ import NenyaLogo from '../app/components/NenyaLogo';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { getGradientMidpoint, getReadableTextColor } from '../app/components/ColorUtils';
-import { detectFlag, type SafetyFlag } from '../lib/safetyFlags';
+import { checkConversation, type SafetyFlag } from '../lib/safetyFlags';
 import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/veniceLinks';
@@ -207,7 +207,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     const next: Msg[] = [...messages, { role: 'user', content: scrubbed.text, note }];
 
     // A clear crisis statement never leaves this device: no request is made.
-    const local = detectFlag(text);
+    // Checked against what the person has written so far, so the self-injury ladder (recurs, escalates) can see the conversation.
+    const local = checkConversation(next.filter((m) => m.role === 'user').map((m) => m.content));
     if (local?.tier === 'stop') {
       setMessages(next);
       setFlag(local);

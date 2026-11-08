@@ -9,7 +9,23 @@
 // COACH_DISTRESS_TEXT=on, until the wording is approved.
 import type { FlagCategory } from './safetyFlags.ts';
 
+/**
+ * Hurting oneself on purpose: what the site adds after the coach's reply, by kind (the conversation stays open for these three; the stop
+ * kinds, "ends" and "emergency", never reach the coach and the page writes the notice). Plain statements, no question, no probing. Drafts
+ * for the owner to edit; they follow the same switch as the rest (COACH_DISTRESS_TEXT=on).
+ */
+export const SELF_INJURY_APPEND: Record<string, string> = {
+  background:
+    "Thank you for trusting me with this. It is a lot to carry, and it deserves a person as well as me: someone you trust, or the numbers below, where you can text or call a stranger who is trained to listen (text HOME to 741741 in the US, or call or text 988 in the US and Canada).",
+  other:
+    "If you are worried about someone, you don't have to handle it alone. You can call or text 988 (US and Canada) to talk through how to support them, and the numbers below are free.",
+  present:
+    "Please make sure you are physically and emotionally safe right now. If you have hurt yourself and need medical care, call your local emergency number or go to urgent care. This is a very heavy topic, and it deserves a person as well as me. If talking to someone you know doesn't feel safe, you can reach a stranger who is trained to listen: text HOME to 741741 (US), or call or text 988 (US and Canada). You can keep talking here, but I'm an AI and can't help in a crisis.",
+};
+
 export const DISTRESS_APPEND: Record<FlagCategory, string> = {
+  'self-injury':
+    SELF_INJURY_APPEND.present,
   'self-harm':
     "If any of this is about hurting yourself, please don't carry it alone. I'm an AI and can't help in a crisis, but a person can: call or text 988 any time in the US or Canada, or use the numbers below, which are free. If you might act on these thoughts, call your local emergency number or tell someone near you right now.",
   distress:
@@ -28,11 +44,19 @@ export const DISTRESS_APPEND: Record<FlagCategory, string> = {
 export const STOP_LEAD =
   "What you wrote sounds heavy, and it deserves a person, not an AI. I'm not able to help in a crisis. These numbers connect you with someone who can, any time of day:";
 
+/** The extra instruction for the coach when the person has talked about hurting themselves on purpose (or about someone who does). */
+export function selfInjuryNote(kind?: string): string {
+  if (kind === 'other') {
+    return "The person is worried about someone who hurts themselves on purpose. Acknowledge how heavy that is to carry, do not ask for details about the other person or their injuries, do not give instructions for caring for wounds, keep the reply short and warm, and say that a crisis line such as 988 can help them think through how to support that person.";
+  }
+  return "The person has talked about hurting themselves on purpose. Stay with them: acknowledge what it took to say it, do not judge, do not tell them to stop, do not ask how or when or for details, do not suggest ways of hurting or caring for wounds, keep the reply short and warm, and say that this deserves a person as well as you.";
+}
+
 export const distressTextOn = (env: Record<string, string | undefined> = process.env): boolean => env.COACH_DISTRESS_TEXT === 'on';
 
 /** The coach's reply with the distress sentence added after it, the reply trimmed (at a whole sentence) so the two fit in `maxChars`. */
-export function withDistressText(category: FlagCategory, reply: string, maxChars: number): string {
-  const add = DISTRESS_APPEND[category];
+export function withDistressText(category: FlagCategory, reply: string, maxChars: number, kind?: string): string {
+  const add = (category === 'self-injury' && kind && SELF_INJURY_APPEND[kind]) || DISTRESS_APPEND[category];
   if (/\b988\b/.test(reply) && /\b(?:call|text)\b/i.test(reply)) return reply; // it already names the line
   const room = maxChars - add.length - 2;
   let body = reply.trim();

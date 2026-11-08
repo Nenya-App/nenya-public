@@ -61,7 +61,7 @@ let rr = await handler(new Request('https://nenya.biz/api/coach',{method:'POST',
 rr = await handler(new Request('https://nenya.biz/api/coach',{method:'GET'})); ok('GET rejected', rr.status===405);
 // danger flags
 const before=veniceCalls.length;
-r = await call({messages:[{role:'user',content:"I'm thinking about hurting myself."}]});
+r = await call({messages:[{role:'user',content:"I want to kill myself."}]});
 ok('stop-tier: flag returned, no AI call, no reply', r.status===200 && r.json.flag?.tier==='stop' && r.json.flag?.category==='self-harm' && !r.json.reply && r.json.done===true && veniceCalls.length===before);
 r = await call({messages:[{role:'user',content:"I'm killing myself at work with these deadlines"}]});
 const lastCall = veniceCalls[veniceCalls.length-1].body;

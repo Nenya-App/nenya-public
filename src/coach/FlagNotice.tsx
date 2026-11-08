@@ -23,7 +23,7 @@ export function FlagNotice({ flag, flaggedMessage }: FlagNoticeProps) {
 
   const reportText = [
     'Coach demo: flag report',
-    `Notice shown: ${flag.label} (${flag.tier})`,
+    `Notice shown: ${flag.label}${flag.kind ? ` / ${flag.kind}` : ''} (${flag.tier})`,
     `Comment: ${comment.trim() || '(none)'}`,
     `Flagged message: ${includeMessage ? flaggedMessage : '(not included)'}`,
   ].join('\n');
@@ -58,7 +58,7 @@ export function FlagNotice({ flag, flaggedMessage }: FlagNoticeProps) {
       </div>
 
       <ul className="space-y-2 text-sm">
-        {resourcesFor(flag.category).map((r) => (
+        {resourcesFor(flag.category, flag.kind).map((r) => (
           <li key={r.name} className="rounded-lg border border-border bg-card p-3">
             <span className="block text-foreground">{r.name}</span>
             {r.href ? (

@@ -27,7 +27,7 @@
 // notes that are added to the system instruction. See docs/coach-method-notes.md.
 import { getStore } from '@netlify/blobs';
 import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes, sign as edSign, timingSafeEqual } from 'node:crypto';
-import { detectFlag } from '../../src/lib/safetyFlags.ts';
+import { checkConversation, detectFlag } from '../../src/lib/safetyFlags.ts';
 import { scrubPII } from '../../src/lib/piiScrub.ts';
 import { looksLikeManipulation, neutralize } from '../../src/lib/promptGuard.ts';
 import { countTurn, capFromEnv, type CounterStore } from '../../src/lib/dailyCap.ts';
@@ -42,7 +42,7 @@ import { detectDirectQuestion } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
 import { buildLabel } from '../../src/lib/buildInfo.ts';
-import { distressTextOn, withDistressText } from '../../src/lib/distressText.ts';
+import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
 import type { ModuleGroup } from '../../src/lib/coachModules.ts';
@@ -320,7 +320,7 @@ const V2_ABOUT_YOU =
 const V2_DISTRESS =
   "If anything the person says suggests hopelessness, feeling like a burden, not wanting to go on, dark thoughts, or hurting themselves, even in indirect words, treat it as distress. Respond briefly and with care, do not give advice, do not ask them to describe or explain dark or suicidal thoughts and do not ask for details about them, and in your reply name a person they trust or a crisis line (call or text 988 in the US or Canada, or findahelpline.com elsewhere). Never say 'I'm here for you' as if you could take the place of a person. For example: 'That sounds really heavy, and I'm glad you said it. I'm an AI and can't help in a crisis, so please reach someone you trust, or call or text 988.'";
 
-function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = ''): string {
+function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = ''): string {
   const v2 = instructionsVersion() === 'v2';
   const phase = closingPhase(turn, MAX_TURNS);
   const finalTurn = phase === 'close';
@@ -346,6 +346,8 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
       'The latest message may signal distress. Respond briefly and with care. Acknowledge what the person said without probing or interpreting it, do not give advice, and gently encourage them to reach a person they trust or a crisis line (call or text 988 in the US or Canada, or findahelpline.com for other countries). You are not able to help in a crisis.'
     );
   }
+  // Hurting oneself on purpose: the person stays in the conversation, so the coach is told how to stay with them (src/lib/distressText.ts).
+  if (softened && careNote) parts.push(careNote);
   // A direct question is answered first, even on the first exchange. Care for a possible crisis still comes first.
   const answerFirst = direct && !softened;
   if (answerFirst) {
@@ -496,7 +498,9 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   }
 
   // Stop-tier flags never reach the AI: the page shows resources and the conversation ends.
-  const flag = detectFlag(messages[messages.length - 1].content);
+  // The check sees what the person has written in the whole conversation (the server is sent all of it each time, so nothing is stored):
+  // the self-injury ladder depends on whether it recurs or escalates.
+  const flag = checkConversation(messages.filter((m) => m.role === 'user').map((m) => m.content));
   if (flag?.tier === 'stop') {
     tally('coach.turn.blocked.crisis');
     return json(200, { done: true, flag });
@@ -548,7 +552,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
       const chatMessages = [
-        { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '') },
+        { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '') },
         ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
         ...(extra ? [{ role: 'system' as const, content: extra }] : []),
         // Scrubbed again here in case the page was bypassed.
@@ -645,7 +649,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   // after the trimming so it cannot be cut off, and it is part of the reply: a turn like any other, kept in the conversation. Off unless
   // COACH_DISTRESS_TEXT=on (the wording is a draft).
   if (flag?.tier === 'soften' && distressTextOn()) {
-    reply = withDistressText(flag.category, reply, MAX_ASSISTANT_CHARS);
+    reply = withDistressText(flag.category, reply, MAX_ASSISTANT_CHARS, flag.kind);
     tally('coach.turn.distress-text');
   }
 
