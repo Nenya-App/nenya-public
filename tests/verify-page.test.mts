@@ -81,7 +81,7 @@ ok('a .json file is read as it is', !!extractSigned(JSON.stringify(FILE, null, 2
 ok('text with no block and broken JSON are both refused', extractSigned('just some text') === null && extractSigned('{not json') === null);
 
 // ---- nothing is sent, counted or stored
-const source = ['src/verify/VerifyPage.tsx', 'src/verify/main.tsx', 'src/lib/verifyTranscript.ts'].map((f) => readFileSync(join(root, f), 'utf8')).join('\n');
+const source = ['src/verify/VerifyPage.tsx', 'src/verify/TranscriptChecker.tsx', 'src/verify/main.tsx', 'src/lib/verifyTranscript.ts'].map((f) => readFileSync(join(root, f), 'utf8')).join('\n');
 ok('the verifier never sends, counts or stores anything', !/fetch\(|XMLHttpRequest|sendBeacon|usageCounts|localStorage|sessionStorage|document\.cookie|WebSocket/.test(source));
 ok('the published key id in the code is the one in the public docs', readFileSync(join(root, 'docs', 'coach-transcripts.md'), 'utf8').includes('`579b407dc600fa7d`') && PUBLISHED_KEY_IDS.join() === '579b407dc600fa7d');
 ok('the verify page is in no sitemap and asks for nothing', !/verify/i.test(readFileSync(join(root, 'public', 'sitemap.xml'), 'utf8')));

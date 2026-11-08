@@ -204,3 +204,21 @@ Small once the recordings exist: the clip files, a loader, one more option in th
 - That one-second beats are the clock's unit for every custom pace the site allows (true for the presets and the counter's code; a custom pace editor would need checking).
 - How long each clip can be and still fit a one-second beat without crowding the next; a test recording will show.
 - How the AGPL, a voice license and Fractured Atlas's terms fit together: a question for a lawyer, not settled by this note.
+
+
+## Scope: letting visitors shape how the tones sound
+Written 2026-11-08, nothing built. All four tone styles stay as choices; this adds a few controls for how they sound, kept on the device only if the visitor chose "Remember on this device" (the same rule as every other display setting, erased by "Forget me" and Emergency Exit).
+
+**Candidate controls** (each a plain labelled control in the accessibility panel, with a sensible default so nothing has to be touched):
+- **Volume** for tones (and later voice): one slider, with the sample note or a short taste as it moves.
+- **Brightness:** how high the notes reach and how much shimmer (for the harp, a lower top note and a softer filter; for the bowls, softer upper partials). A "soft / bright" slider or three steps.
+- **Room:** how much reverb (none, a little, more).
+- **Drone:** on or off (harp only today).
+- **Ticks:** on or off, and how loud, in the bowls and chord styles. An off setting needs a warning that the counts are then carried only by the notes and the visual counter.
+- **Steadiness of holds:** quiet repeated notes (today), or silence, for people who find the repeats a stimulus. Silence loses the audible count, so say so.
+
+**How it fits the code:** the notes are laid out in `breathArrangements.ts` (pure, tested) and played by `breathTones.ts`. These controls are playback settings (gain, filter, reverb send, drone, tick level) applied in the player, so they can change without changing the note layouts or the tests of them. A change is applied to notes not yet scheduled (the next beat), not to ones already ringing.
+
+**Saved settings:** one object under the display settings (e.g. `breathingSoundOptions`), validated like the others (numbers clamped, unknown keys dropped), so a hand-edited or stale value cannot break the page.
+
+**Questions to settle by listening and with testers:** which of these controls people actually reach for; whether brightness and room are one control or two; whether any should be hidden behind "more options" so the panel stays simple; how this reads with a screen reader (sliders need names, current values and units announced).
