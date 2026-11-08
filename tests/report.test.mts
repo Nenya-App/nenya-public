@@ -2,7 +2,7 @@
 import { createHash, createHmac, generateKeyPairSync, sign as edSign } from 'node:crypto';
 import coach, { __useStoreForTests as coachStore } from '../netlify/functions/coach.mts';
 import report, { __useStoreForTests as reportStore } from '../netlify/functions/report.mts';
-import { readableTranscript } from '../src/lib/transcript.ts';
+import { signedJson, transcriptFilename, readableTranscript } from '../src/lib/transcript.ts';
 import { eventKey } from '../src/lib/counters.ts';
 import { capDay } from '../src/lib/dailyCap.ts';
 import { ok } from './helpers.mts';
@@ -17,11 +17,17 @@ process.env.COACH_MODEL = 'deepseek-v3.2';
 process.env.COACH_SIGNING_KEY = mine.privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');
 delete process.env.COACH_ACCEPTED_KEY_IDS; delete process.env.COACH_EXTRA_HOSTS; delete process.env.COACH_IP_SECRET;
 
-let forwards: { url: string; fields: Record<string, string> }[] = [];
+let forwards: { url: string; fields: Record<string, string>; file?: { name: string; type: string; text: string } }[] = [];
 let forwardStatus = 200;
 (globalThis as any).fetch = async (url: string, init: any) => {
   if (String(url).includes('venice')) return new Response(JSON.stringify({ choices: [{ message: { content: 'That sounds heavy. Thank you for saying it.' } }] }), { status: 200 });
-  forwards.push({ url: String(url), fields: Object.fromEntries(new URLSearchParams(init.body)) });
+  const fields: Record<string, string> = {};
+  let file: { name: string; type: string; text: string } | undefined;
+  for (const [k, v] of (init.body as FormData).entries()) {
+    if (typeof v === 'string') fields[k] = v;
+    else file = { name: v.name, type: v.type, text: await v.text() };
+  }
+  forwards.push({ url: String(url), fields, file });
   return new Response('ok', { status: forwardStatus });
 };
 
@@ -60,7 +66,9 @@ ok('a genuine signed transcript is accepted', x.status === 204 && forwards.lengt
 const f = forwards[0].fields;
 ok('it is forwarded to our own site, to the separate form for signed transcripts', forwards[0].url === 'https://nenya.biz/' && f['form-name'] === 'verified-transcript' && f['bot-field'] === '');
 ok('the readable text is rebuilt from the signed transcript, exactly as the page shows it', f.report === readableTranscript(m, S, rc.receipt, '', rc.transcript.meta));
-ok('the signed file travels with it', JSON.parse(f.signed).receipt.hash === rc.receipt.hash && JSON.parse(f.signed).transcript.v === 3);
+const sf = forwards[0].file;
+ok('the signed file travels as a real JSON file, not as text in the body', !!sf && sf.type === 'application/json' && JSON.parse(sf.text).receipt.hash === rc.receipt.hash && JSON.parse(sf.text).transcript.v === 3 && !('signed' in f));
+ok('the file is exactly what the page would download, and is named by hash and time', !!sf && sf.text === signedJson(rc.transcript, rc.receipt) && sf.name === transcriptFilename(rc.receipt, 'json') && /^nenya-coach-transcript-[0-9a-f]{8}-\d{8}T\d{6}Z\.json$/.test(sf.name));
 ok('the note is cleaned of markup and control characters', f.comments === 'The reply felt off today');
 ok('a checked field only the function can make is attached', f.checked === createHmac('sha256', SECRET).update(`report-checked|${rc.receipt.hash}`).digest('hex'));
 ok('the key id is attached, and the receipt is found in the log', f['key-id'] === rc.receipt.keyId && /^yes \(\d{4}-\d{2}-\d{2}\)$/.test(f['issued-record']));
