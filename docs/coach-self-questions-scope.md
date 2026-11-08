@@ -16,6 +16,16 @@ This is the same shape as a problem already solved here: a how-to question used 
 ## The design in one paragraph
 Detect what kind of question about the coach it is (pure code, tested, public). For the kinds where a wrong answer is a lie or a harm, **the site writes the key sentence** (fixed, short, public, reviewed), the server puts it at the start of the reply, and the model is told it has been said and to carry on with the rest of what the person wrote. After generation, a guard checks the reply for the failures we measured (denying being an AI, promising to remember, claiming a human life); if it finds one it asks once more with a firmer note, and if it still fails it keeps only the fixed sentence plus a short, kind redirect. The persona evaluation measures all of it.
 
+## 0. First, and cheapest: change the instructions (added 2026-11-08)
+The detection and fixed sentences below are not the only lever. The coach's own instruction text (`systemInstruction` in `netlify/functions/coach.mts`, public) can change to reflect what the baseline taught us, and it can ship **before** any detection code. It is the first layer; the rest is for whatever it does not fix. What the baseline suggests for it:
+- **Say what has priority.** Today the rule "reflect what you hear, name the feeling" comes first and everything else is an exception the model forgets. Put a short rule ahead of it: *a question about you (what you are, whether you remember, whether you care, whether you can diagnose) is not a feeling to reflect: answer it first, in one or two plain sentences, then carry on with what the person said.*
+- **Show, don't only tell.** A 7B model follows short examples better than abstract rules. Two or three tiny examples of the right shape ("Are you a bot?" answered plainly, then a turn back to the person; "Will you remember me?" answered honestly) are likely to hold better than another paragraph of rules.
+- **State the honest lines as plain facts**, not as prohibitions: it is an AI; it does not keep or remember the conversation; it cannot diagnose or replace a therapist; it has no life of its own. Keep the existing lines about not inventing a human history (those passed).
+- **Remove a conflict.** The instructions also say "do not introduce yourself at length; if asked who you are, say so in one or two sentences". Keep the second half, drop the first, so the model reads "who are you" as something to answer.
+- **Keep it short.** Every added sentence competes for a small model's attention; trade, do not only add.
+- **Effects to expect.** The `instructions` fingerprint in each signed transcript changes (it is a hash of the text), which is what it is for. The persona evaluation shows whether the model follows it: a re-run of the identity, memory, therapy and feelings cases is the measure, with `COACH_PERSONA_GUARD=off` (once the guard exists) to see the instructions alone.
+- **Recommended order:** write the new instruction text, run the evaluation, and only then build detection and fixed sentences for what still fails. If the instruction change fixes most of it, the fixed sentences can be reserved for identity and memory, where a wrong answer is a lie.
+
 ## 1. What to detect
 Pure functions in a new `src/lib/coachSelf.ts`, applied to the person's **latest message** only. Each kind has a name, patterns, and a fixed sentence. Patterns are anchored on "you" or "this" being the subject, so a person talking about someone else is not matched.
 
@@ -102,6 +112,7 @@ You asked whether this is Blobs or a database. For this scope, **none of it need
 - **Reading:** the check passes are phrase-level; read the replies for tone, especially `feelings` and `friendship`.
 
 ## 8. Build order
+0. **The instruction change (section 0):** write it, re-run the evaluation, read the replies. Ships on its own.
 1. Wording: you write or approve the fixed sentences.
 2. `coachSelf.ts` with the detection and its tests (no function change yet).
 3. The function change: detection, prefix, instruction, the guard, the off switch, and tests with stand-in models.
