@@ -26,6 +26,8 @@ The detection and fixed sentences below are not the only lever. The coach's own 
 - **Effects to expect.** The `instructions` fingerprint in each signed transcript changes (it is a hash of the text), which is what it is for. The persona evaluation shows whether the model follows it: a re-run of the identity, memory, therapy and feelings cases is the measure, with `COACH_PERSONA_GUARD=off` (once the guard exists) to see the instructions alone.
 - **Recommended order:** write the new instruction text, run the evaluation, and only then build detection and fixed sentences for what still fails. If the instruction change fixes most of it, the fixed sentences can be reserved for identity and memory, where a wrong answer is a lie.
 
+**Related:** questions about *Nenya itself* (the name, who runs it, hosting and privacy, contact, cost, license) are a second family with defined, site-written answers and links to the About pages: see `docs/about-nenya-questions-scope.md`. The two share the detection and guard machinery.
+
 ## 1. What to detect
 Pure functions in a new `src/lib/coachSelf.ts`, applied to the person's **latest message** only. Each kind has a name, patterns, and a fixed sentence. Patterns are anchored on "you" or "this" being the subject, so a person talking about someone else is not matched.
 
