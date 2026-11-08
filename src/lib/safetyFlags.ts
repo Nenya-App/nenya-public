@@ -35,6 +35,9 @@ interface Rule {
 const FIGURATIVE_AFTER_KILL =
   '(?:at|with|over|trying|for|to (?:get|finish|keep|make|do|work|meet|stay|please|be|pay))';
 
+// What may follow "go on" for it to be about carrying on living: the end of the sentence, or "anymore", "like this", "with this" and so on.
+const GO_ON_ENDS = '(?=\\s*(?:[.!?,;]|$|anymore|any more|any longer|much longer|like (?:this|that)|this way|living|without|alone|with (?:this|it|life|living|my life)))';
+
 const IDEATION =
   "(?:thinking (?:of|about)|want(?:ed)? to|going to|gonna|might|could|plan(?:ning)? to|urge to|feel(?:ing)? like|about to|afraid i(?:'ll| will| might)|scared i(?:'ll| will| might))";
 
@@ -63,7 +66,10 @@ const RULES: Rule[] = [
   { category: 'harm-others', tier: 'soften', pattern: /\b(?:want(?:ed)? to|wanna|could|feel like) (?:kill|murder|shoot|stab|strangle|hurt|attack|beat up) (?:him|her|them|my \w+|someone|somebody|everyone)\b/i },
   { category: 'abuse', tier: 'soften', pattern: /\b(?:hit|beat|choked|raped|molested|abused|assaulted) me\b/i },
   { category: 'distress', tier: 'soften', pattern: /\b(?:i'?m|i am|i feel|feel(?:ing)?|it'?s|everything is) (?:so |completely |totally |utterly )?(?:hopeless(?! (?:at|with)\b)|worthless)\b/i },
-  { category: 'distress', tier: 'soften', pattern: /\bno way out\b|\bgive up on (?:everything|life)\b|\bnothing matters\b|\bcan'?t (?:go on|take (?:it|this) anymore|do this anymore)\b/i },
+  { category: 'distress', tier: 'soften', pattern: /\bno way out\b|\bgive up on (?:everything|life)\b|\bnothing matters\b/i },
+  // "can't" and "cannot" and "can not" alike. "Go on" counts only at the end of a thought or before "anymore", "like this", "with this"
+  // and the like, so "I cannot go on holiday" and "I can't go on a date" are left alone.
+  { category: 'distress', tier: 'soften', pattern: new RegExp(`\\bcan(?:'?t|not| not) (?:go on${GO_ON_ENDS}|take (?:it|this) anymore|do this anymore)\\b`, 'i') },
 ];
 
 /** The most serious flag in `text`, or null. Stop-tier rules win over soften-tier. */
