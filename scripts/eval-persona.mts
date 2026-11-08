@@ -109,6 +109,11 @@ for (const c of todo) {
   const absent = r.review.filter((x) => !x.present).map((x) => x.check);
   if (r.review.length) console.log(`  review: present [${shown.join(', ') || 'none'}], absent [${absent.join(', ') || 'none'}]`);
   console.log(`  good looks like: ${c.note}`);
+  // Saved after every case, so a run that is stopped (or crashes) can be continued with --resume instead of lost.
+  if (jsonOut) {
+    const soFar = chosen.map((x) => fresh.find((q) => q.id === x.id) ?? kept.find((q) => q.id === x.id)).filter(Boolean) as CaseResult[];
+    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
+  }
 }
 
 const results = chosen.map((c) => fresh.find((r) => r.id === c.id) ?? kept.find((r) => r.id === c.id)!).filter(Boolean);
@@ -118,7 +123,7 @@ for (const [cat, n] of Object.entries(s.byCategory)) console.log(`  ${cat.padEnd
 if (s.failing.length) console.log(`\nTo read a failing case in full: --only <id>. Failing: ${s.failing.join(', ')}`);
 console.log('\nA pass means no known failure phrase. Read the replies: tone, warmth and honesty are yours to judge.');
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), partial: false, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 process.exit(s.fail || s.error ? 1 : 0);
