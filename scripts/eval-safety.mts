@@ -68,6 +68,8 @@ if (offline) {
     try {
       const res = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ticket, ...(Object.keys(overrides).length ? { overrides } : {}) }) });
       const j: any = await res.json().catch(() => ({}));
+      // The coach function never answers 401 (a Venice 401 comes back as 502 "upstream status-401"), so a bare 401 came from in front of it.
+      if (res.status === 401 || res.status === 407) return { status: res.status, error: `site-protection ${res.status}` };
       return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
     } catch { return { error: 'upstream network' }; }
   };
@@ -109,6 +111,7 @@ for (const c of chosen) {
   console.log(`${r.outcome === 'pass' ? 'PASS' : r.outcome === 'fail' ? 'FAIL' : 'ERROR'}  ${r.id}  [${r.group}]${r.gap ? '  (gap: ' + r.gap + ')' : ''}`);
   r.turns.forEach((t, i) => {
     console.log(`  ${i + 1}. Person: ${t.said}`);
+    if (r.outcome === 'error' && t.reply === undefined && !t.flag && !t.blocked) { console.log('     (no answer from the site: nothing was decided)'); return; }
     console.log(`     site decided: ${t.site}   expected: ${t.expected}   ${t.siteMatch ? 'ok' : 'MISMATCH'}`);
     if (t.page) console.log(`     page would show: "${t.page.notice.slice(0, 150)}${t.page.notice.length > 150 ? '…' : ''}"  + ${t.page.resources.length} resources (${t.page.resources.filter((x) => /Childhelp|RAINN|Domestic/.test(x)).map((x) => x.split(' (')[0]).join(', ') || 'general'})`);
     if (t.reply !== undefined) {
@@ -117,7 +120,8 @@ for (const c of chosen) {
     } else if (t.flag || t.blocked) console.log('     (no model reply: the site answered alone)');
   });
   for (const f of r.failures) console.log(`  !! ${f}`);
-  if (r.failures.some((f) => /\b401\b/.test(f))) console.log('  !! A 401 means Venice rejected the API key (the site itself never answers 401). Check it with:  curl -s -o /dev/null -w "%{http_code}\\n" -H "Authorization: Bearer $VENICE_API_KEY" https://api.venice.ai/api/v1/models   (200 = the key works; 401 = it does not). For --url runs the key is the one in the deployed site\'s settings, not your terminal.');
+  if (r.failures.some((f) => /site-protection/.test(f))) console.log("  !! The deployed site answered 401 BEFORE the coach function ran (the function never answers 401, and Venice's 401 comes back as 'upstream status-401'). That is Netlify's site protection (a password or team login) on this deploy. Check:  curl -s -o /dev/null -w \"%{http_code}\\n\" <the --url address>/   (401 = protected). Either turn the protection off for branch deploys in the site's settings, or test without --url (the function in this folder) and use the owner panel in your browser, where you are already signed in.");
+  else if (r.failures.some((f) => /upstream.*\b401\b|\b401\b.*upstream/.test(f))) console.log('  !! Venice rejected the API key (upstream 401). For --url runs the key is the one in the deployed site\'s settings, not your terminal.');
   if (r.review.length) console.log(`  review: present [${r.review.filter((x) => x.present).map((x) => x.check).join(', ') || 'none'}], absent [${r.review.filter((x) => !x.present).map((x) => x.check).join(', ') || 'none'}]`);
   console.log(`  good looks like: ${r.note}\n`);
 }
