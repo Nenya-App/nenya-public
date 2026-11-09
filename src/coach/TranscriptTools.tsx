@@ -93,7 +93,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered), signedRef.current?.checks ?? checkNotesFor(messages));
+    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered, context), signedRef.current?.checks ?? checkNotesFor(messages, context));
     // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
     const text = r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
     downloadText(transcriptFilename(r, 'txt'), 'text/plain', text);
@@ -106,7 +106,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setShare('preview');
   };
 
-  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns, answered), signed?.checks ?? checkNotesFor(messages));
+  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns, answered, context), signed?.checks ?? checkNotesFor(messages, context));
   const tooLong = shareText.length > MAX_SHARE_CHARS;
 
   // Only a signed transcript can be sent. The function checks the signature first, then forwards the readable text (rebuilt

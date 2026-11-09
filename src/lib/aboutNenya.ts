@@ -209,8 +209,8 @@ export const ANSWERS: Answer[] = [
       { claim: 'what is shared is not stored, and appears in a signed transcript on request', file: TERMS, has: 'We do not store what you share' },
       { claim: 'palettes are starting points, not a scientific or medical instrument', file: TERMS, has: 'not a scientific or medical instrument' },
     ],
-    status: 'pending',
-    ownerNote: 'Written 2026-11-09 with the report-to-coach module (docs/report-to-coach-scope.md). Held until the picker is on the page: the answer must not describe something a visitor cannot do.',
+    status: 'ready',
+    ownerNote: 'Written 2026-11-09 with the report-to-coach module (docs/report-to-coach-scope.md). Ready: the picker is on the coach start page.',
   },
   {
     id: 'n-device', part: 'nenya', title: 'What Nenya keeps on my device, and how to erase it',

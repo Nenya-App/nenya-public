@@ -17,6 +17,9 @@ import { AppFooter } from '../app/components/AppFooter';
 import { SupportThisWork } from '../app/components/SupportThisWork';
 import { ShareNenya } from '../app/components/ShareNenya';
 import { FlagNotice } from './FlagNotice';
+import { ReportShare, type ReportInput } from './ReportShare';
+import { openingText } from '../lib/reportShare';
+import type { SharedText } from '../lib/reportFragments';
 import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
@@ -102,11 +105,13 @@ interface CoachDemoProps {
   onBreathe?: () => void;
   /** Optional link to the partner-practice demo. */
   onPartnerPractice?: () => void;
+  /** The reflection report in memory, if the visitor has made one in this visit. It is only ever offered, never read or sent unless they choose. */
+  report?: ReportInput;
 }
 
 // The conversation lives in this component's memory and closing the tab ends it. The only thing
 // written to browser storage is the finish time described above.
-export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, onPartnerPractice }: CoachDemoProps) {
+export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, onPartnerPractice, report }: CoachDemoProps) {
   const color1 = norm(colors.color1, '#7A9B9E');
   const color2 = norm(colors.color2, '#DAC682');
   const session = { color1, color2 };
@@ -115,6 +120,10 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const onGradient = getReadableTextColor(getGradientMidpoint(color1, color2));
 
   const [stage, setStage] = useState<Stage>('consent');
+  // Parts of a report the visitor chose to bring (null: none). Sent with every request once chosen, because the conversation's ticket is bound to it.
+  const [shared, setShared] = useState<SharedText | null>(null);
+  const [contextFlag, setContextFlag] = useState<SafetyFlag | null>(null);
+  const [sharedDropped, setSharedDropped] = useState(false);
   const [restEnds] = useState(readRestEnds);
   const [pauseEnds, setPauseEnds] = useState(() => readPauseEnds());
   const hoursLeft = Math.max(1, Math.ceil((restEnds - Date.now()) / HOUR_MS));
@@ -232,7 +241,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...ownerHeader() },
-        body: JSON.stringify({ messages: toWire(next), session, ticket, ...overridesForRequest() }),
+        body: JSON.stringify({ messages: toWire(next), session, ticket, ...(shared ? { context: shared.text } : {}), ...overridesForRequest() }),
       });
       if (!res.ok) {
         // Say what went wrong instead of a bare "failed". The server's answer carries a code, a reason and a reference.
@@ -250,6 +259,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         ticket?: string;
         done?: boolean;
         flag?: SafetyFlag;
+        contextFlag?: SafetyFlag;
         blocked?: string;
         card?: AnswerCardData;
       };
@@ -258,10 +268,17 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         setCapped(data.blocked);
         return;
       }
+      if (data.blocked === 'context') {
+        // What was shared reads like instructions to the coach: it is left out, and the visitor continues without it.
+        setShared(null);
+        setSharedDropped(true);
+        return;
+      }
       if (data.blocked) {
         setBlocked(true);
         return;
       }
+      if (data.contextFlag) setContextFlag(data.contextFlag);
       setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}) }] : next);
       setTicket(data.ticket);
       touch();
@@ -576,6 +593,16 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 </li>
                 <li>The full Terms of Use and Privacy Policy are in the About menu on nenya.biz.</li>
               </ul>
+              <ReportShare
+                report={report}
+                shared={shared}
+                onChange={(next) => {
+                  setShared(next);
+                  setSharedDropped(false);
+                  // The same crisis check as for a message: a flag is shown now, before anything is sent. It never ends the conversation.
+                  setContextFlag(next ? checkConversation([next.text]) : null);
+                }}
+              />
               <QuietTimeoutPicker id="coach-quiet-start" value={timeoutChoice} onChange={setTimeoutChoice} />
               <div className="flex flex-wrap items-center gap-3">
                 <Button size="lg" onClick={() => setStage('chat')} className="gap-2" style={gradientButton}>
@@ -615,7 +642,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               )}
 
               <div className="space-y-4" role="log" aria-live="polite" aria-label="Conversation">
-                {pageBubble(GREETING)}
+                {pageBubble(shared ? openingText(shared.meta) : GREETING)}
                 {messages.map((m, i) => (
                   <Fragment key={i}>
                   <div
@@ -678,6 +705,12 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               </div>
 
               {flag && <FlagNotice flag={flag} flaggedMessage={flaggedText} />}
+              {contextFlag && !flag && <FlagNotice flag={contextFlag} flaggedMessage="" source="report" />}
+              {sharedDropped && !shared && (
+                <p role="status" className="rounded-xl border border-border bg-card/50 p-3 text-xs text-muted-foreground">
+                  Part of what you shared reads like instructions to the coach, so it was left out. You can send your message again without it.
+                </p>
+              )}
 
               {stage === 'chat' && !timedOut && !capped && (
                 <QuietNotice state={quiet} choice={timeoutChoice} onKeepOpen={touch} onSave={() => setCopyOpen(true)} />
@@ -693,7 +726,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     Keep a record, or report a problem
                   </summary>
                   <div className="pt-3">
-                    <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                    <TranscriptTools messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
                   </div>
                 </details>
               )}
@@ -814,7 +847,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               {stage === 'done' && !flag && venicePanel}
 
               {stage === 'done' && (
-                <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                <TranscriptTools messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
               )}
             </>
           )}

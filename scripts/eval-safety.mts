@@ -73,17 +73,19 @@ const offline = args.includes('--offline');
 const url = flag('--url');
 const paceSeconds = Number(flag('--pace') ?? 3);
 let where = 'offline (the site\'s decisions only)';
+// Report text a script shares with the coach, set before each script is played.
+let evalContext: string | undefined;
 let send: Send;
 if (offline) {
   send = offlineSend();
 } else {
   const post = async (endpoint: string, headers: Record<string, string>, messages: { role: string; content: string }[], ticket: string | undefined, overrides: Record<string, string> = {}): Promise<RawSent> => {
     try {
-      const res = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ticket, ...(Object.keys(overrides).length ? { overrides } : {}) }) });
+      const res = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ...(evalContext ? { context: evalContext } : {}), ticket, ...(Object.keys(overrides).length ? { overrides } : {}) }) });
       const j: any = await res.json().catch(() => ({}));
       // The coach function never answers 401 (a Venice 401 comes back as 502 "upstream status-401"), so a bare 401 came from in front of it.
       if (res.status === 401 || res.status === 407) return { status: res.status, error: `site-protection ${res.status}` };
-      return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
+      return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, contextFlag: j.contextFlag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
     } catch { return { error: 'upstream network' }; }
   };
   let raw: (m: any, t: string | undefined) => Promise<RawSent>;
@@ -108,9 +110,9 @@ if (offline) {
     const { default: handler } = await import('../netlify/functions/coach.mts');
     where = `the coach function in this folder, instructions ${process.env.COACH_INSTRUCTIONS === 'v2' ? 'v2 (the new wording)' : 'v1 (the live wording)'}${process.env.COACH_DISTRESS_TEXT === 'on' ? ', distress sentences ON' : ', distress sentences off'}`;
     raw = async (messages, ticket) => {
-      const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ticket }) }));
+      const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ...(evalContext ? { context: evalContext } : {}), ticket }) }));
       const j: any = await res.json().catch(() => ({}));
-      return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
+      return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, contextFlag: j.contextFlag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
     };
   }
   send = pacedSend(raw, { paceMs: paceSeconds * 1000, backoffMs: [20000, 45000, 90000, 150000], sleep: (ms) => new Promise((r) => setTimeout(r, ms)), now: () => Date.now(), onWait: (ms, a, why) => console.log(`  (${why}: waiting ${Math.round(ms / 1000)}s, retry ${a} of 4)`) });
@@ -119,6 +121,7 @@ console.log(`Playing ${chosen.length} script(s) against ${where}.\n`);
 
 const results: ScriptResult[] = [];
 for (const c of chosen) {
+  evalContext = c.context;
   const r = await playScript(c, send);
   results.push(r);
   console.log(`${r.outcome === 'pass' ? 'PASS' : r.outcome === 'fail' ? 'FAIL' : 'ERROR'}  ${r.id}  [${r.group}]${r.gap ? '  (gap: ' + r.gap + ')' : ''}`);
@@ -127,6 +130,7 @@ for (const c of chosen) {
     if (r.outcome === 'error' && t.reply === undefined && !t.flag && !t.blocked) { console.log('     (no answer from the site: nothing was decided)'); return; }
     console.log(`     site decided: ${t.site}   expected: ${t.expected}   ${t.siteMatch ? 'ok' : 'MISMATCH'}`);
     if (t.page) console.log(`     page would show: "${t.page.notice.slice(0, 150)}${t.page.notice.length > 150 ? '…' : ''}"  + ${t.page.resources.length} resources (${t.page.resources.filter((x) => /Childhelp|RAINN|Domestic/.test(x)).map((x) => x.split(' (')[0]).join(', ') || 'general'})`);
+    if ((t as any).contextFlag) console.log(`     SHARED REPORT TEXT FLAGGED: ${(t as any).contextFlag.category}${(t as any).contextFlag.kind ? ' / ' + (t as any).contextFlag.kind : ''} (${(t as any).contextFlag.tier}); the conversation goes on`);
     if (t.reply !== undefined) {
       console.log(`     model:  ${(t.model ?? '').replace(/\n+/g, ' ')}`);
       if (t.siteSentence) console.log(`     SITE ADDED: ${t.siteSentence}`);

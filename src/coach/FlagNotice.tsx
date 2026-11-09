@@ -9,6 +9,8 @@ interface FlagNoticeProps {
   flag: SafetyFlag;
   /** The message that was flagged. Only ever sent if the visitor chooses to include it. */
   flaggedMessage: string;
+  /** Where the flag came from. 'report' means the part of a report the visitor chose to share, not one of their messages: the notice says so, and nothing is ended. */
+  source?: 'message' | 'report';
 }
 
 type ReportState = 'closed' | 'open' | 'sending' | 'sent' | 'error';
@@ -16,7 +18,7 @@ type ReportState = 'closed' | 'open' | 'sending' | 'sent' | 'error';
 // What the visitor sees when a message is flagged: the notice, resources they can
 // tap, and an optional way to tell us the notice was wrong. Nothing is sent
 // anywhere unless they press Send on the report.
-export function FlagNotice({ flag, flaggedMessage }: FlagNoticeProps) {
+export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNoticeProps) {
   const [state, setState] = useState<ReportState>('closed');
   const [comment, setComment] = useState('');
   const [includeMessage, setIncludeMessage] = useState(false);
@@ -54,7 +56,7 @@ export function FlagNotice({ flag, flaggedMessage }: FlagNoticeProps) {
           className={`mt-0.5 size-5 shrink-0 ${stop ? 'text-red-500' : 'text-amber-500'}`}
           aria-hidden="true"
         />
-        <p className="text-sm leading-relaxed">{noticeIntro(flag)}</p>
+        <p className="text-sm leading-relaxed">{source === 'report' ? noticeIntro(flag).replace(/^This message/, 'The part of the report you shared') : noticeIntro(flag)}</p>
       </div>
 
       <ul className="space-y-2 text-sm">

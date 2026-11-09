@@ -86,6 +86,18 @@ try {
     }
     ok('first-visit panel: goes straight from the rhythm to the terms', /STEPS: OnboardingStep\[\] = \['rhythm', 'terms'\]/.test(src) && !/'counter'|'process'/.test(src));
   }
+  // Bringing part of a report to the coach: listed in pieces with nothing chosen, never read or sent unless the visitor chooses.
+  {
+    const { ReportShare } = await vite.ssrLoadModule('/src/coach/ReportShare.tsx');
+    const report = { gatewayData: [{ gateway: 'sight', data: { color1: '#1B4F6E', color2: '#123456' } }, { gateway: 'sound', data: { currentPitch: 30, currentVolume: 20, potentialPitch: 60, potentialVolume: 50 } }], bodyMap: { placements: [{ bodyPartId: 'chest', color: '#E3752B' }], notes: {} } };
+    h = render(ReportShare, { report, shared: null, onChange: noop });
+    ok('report sharing: offered as optional, listed in pieces, and NOTHING is chosen for the visitor', typeof h === 'string' && h.includes('Bring something from a report you made (optional)') && h.includes('Sight - Chromesthesia') && h.includes('Sound - Audition') && h.includes('Body map') && !/checked=""/.test(h) && !h.includes('This is exactly what the coach would be given'), h.error ?? '');
+    ok('report sharing: "No thanks" is as plain as "Share these", and the page says no report is needed and what travels how', typeof h === 'string' && h.includes('No thanks, I would rather talk about something else') && h.includes('Share these') && h.includes('You do not need a report') && h.includes('not a measurement'), h.error ?? '');
+    h = render(ReportShare, { shared: null, onChange: noop });
+    ok('report sharing: with no report in memory a saved one can be pasted instead (and nothing else is shown)', typeof h === 'string' && h.includes('Paste a saved report') && h.includes('Read it') && !h.includes('Choose the pieces'), h.error ?? '');
+    const demo = readFileSync(new URL('../src/coach/CoachDemo.tsx', import.meta.url), 'utf8');
+    ok('report sharing: the chosen text goes with every request, opens the conversation in place of the greeting, and a flag shows the notice without ending anything', /\.\.\.\(shared \? \{ context: shared\.text \} : \{\}\)/.test(demo) && /shared \? openingText\(shared\.meta\) : GREETING/.test(demo) && /contextFlag && !flag && <FlagNotice flag=\{contextFlag\}/.test(demo) && /setContextFlag\(next \? checkConversation\(\[next\.text\]\) : null\)/.test(demo) && /data\.blocked === 'context'/.test(demo));
+  }
   // The loading screen, the tour offer and the tour.
   const { LoadingVeil } = await vite.ssrLoadModule('/src/app/components/LoadingVeil.tsx');
   h = render(LoadingVeil, { ready: false, onDone: noop });

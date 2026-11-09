@@ -6,6 +6,8 @@ import type { PersonaCase } from './personaEvalSet.ts';
 export interface Sent {
   reply?: string;
   ticket?: string;
+  /** A flag in report text the person chose to share (the conversation goes on). */
+  contextFlag?: { category: string; tier: string; kind?: string };
   blocked?: string;
   flag?: { tier?: string };
   done?: boolean;

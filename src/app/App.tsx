@@ -616,6 +616,7 @@ export default function App() {
           {currentScreen === 'session' && (
             <CoachDemo
               colors={interfaceColors}
+              report={gatewayData.length > 0 ? { gatewayData: gatewayData.map((gd) => ({ gateway: gd.gateway, data: gd.data })), bodyMap: bodyMapData } : undefined}
               onBack={() => navigateBack('home')}
               onBreathe={() => handleGlobalNavigation('welcome')}
               onPartnerPractice={handleNavigateToCell}
