@@ -107,3 +107,13 @@ ok('a long message with no question about Nenya goes to the model alone', !r.j.c
 r = await ask(STORY.replace('who runs this site?', 'who runs this site? I want to kill myself.'));
 ok('a long message the crisis check flags is never answered this way', !r.j.card);
 (globalThis as any).fetch = realFetch;
+
+// ── one system message only (the encrypted route answered a second one with a 400)
+(globalThis as any).fetch = async (u: string, init: any) => { try { sent = JSON.parse(init.body).messages; } catch { sent = null; } return realFetch(u, init); };
+modelSays = ['It sounds like a lot.'];
+r = await ask(STORY);
+ok('answer first: the model receives exactly one system message, with the note inside it', !!sent && sent.filter((m: any) => m.role === 'system').length === 1 && /the site has already answered it/.test(sent.find((m: any) => m.role === 'system').content));
+modelSays = ['We run on AWS.', 'Your words matter. What would help most?'];
+r = await ask('I had a hard day at work and I feel tired.');
+ok('a retry (the guard) also sends exactly one system message, with the retry note inside it', !!sent && sent.filter((m: any) => m.role === 'system').length === 1 && /Your last reply described how Nenya runs/.test(sent.find((m: any) => m.role === 'system').content));
+(globalThis as any).fetch = realFetch;

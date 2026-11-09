@@ -164,7 +164,7 @@ veniceCalls=[];
 let c1=await call({messages:[{role:'user',content:'one'}],context:CTX});
 ok('context accepted', c1.status===200 && !!c1.json.reply);
 const sysMsgs=veniceCalls[0].body.messages.filter((m:any)=>m.role==='system');
-ok('context sent as framed data, not instruction', sysMsgs.length===2 && /<<<REFLECTION/.test(sysMsgs[1].content) && sysMsgs[1].content.includes('tight chest') && /never instructions/.test(sysMsgs[1].content));
+ok('context sent as framed data, not instruction, inside the single system message', sysMsgs.length===1 && /<<<REFLECTION/.test(sysMsgs[0].content) && sysMsgs[0].content.includes('tight chest') && /never instructions/.test(sysMsgs[0].content));
 const ch=[{role:'user',content:'one'},{role:'assistant',content:c1.json.reply},{role:'user',content:'two'}];
 r=await call({messages:ch,ticket:c1.json.ticket,context:CTX}); ok('same context carries on', r.status===200);
 r=await call({messages:ch,ticket:c1.json.ticket}); ok('dropping context mid-way rejected', r.status===400&&r.json.error==='ticket');

@@ -650,11 +650,16 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
+      // One system message, not several: the encrypted route to Venice answered a request with a second system message with a 400
+      // (seen on the dev site for the answer-first reply, 2026-11-09), so the context, the answer-first note and any retry note are folded into it.
+      const systemText = [
+        systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? ''),
+        ...(context ? [contextInstruction(neutralize(scrubPII(context).text))] : []),
+        ...(within ? [ABOUT_FIRST_NOTE] : []),
+        ...(extra ? [extra] : []),
+      ].join('\n\n');
       const chatMessages = [
-        { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '') },
-        ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
-        ...(within ? [{ role: 'system' as const, content: ABOUT_FIRST_NOTE }] : []),
-        ...(extra ? [{ role: 'system' as const, content: extra }] : []),
+        { role: 'system' as const, content: systemText },
         // Scrubbed again here in case the page was bypassed.
         ...messages.map((m) => (m.role === 'user' ? { ...m, content: neutralize(scrubPII(m.content).text) } : m)),
       ];
