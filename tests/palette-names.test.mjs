@@ -49,6 +49,8 @@ try {
   const pub = readdirSync(root + 'public').filter((f) => f.endsWith('.html'));
   const bad = pub.filter((f) => shows(text(readFileSync(root + 'public/' + f, 'utf8'))));
   ok('the public pages (about-nenya.html, why-nenya.html and the rest) name no palette by its older name and do not say "Valar"', bad.length === 0, bad.map((f) => `${f}: ${(shows(text(readFileSync(root + 'public/' + f, 'utf8'))) ?? [''])[0]}`).join(' | '));
+  const fanFacing = pub.filter((f) => /rings of power|amazon|wellness or reflection tool inspired/i.test(text(readFileSync(root + 'public/' + f, 'utf8'))) || /rings of power|inspired by (?:the )?lord of the rings/i.test(readFileSync(root + 'public/' + f, 'utf8')));
+  ok('the public pages no longer court fans of the books or the series (no series note, no "tool inspired by The Lord of the Rings" question, in the page or its structured data)', fanFacing.length === 0, fanFacing.join(', '));
   const readme = readFileSync(root + 'README.md', 'utf8');
   ok('the README does not say "Valar"', !/\bValar\b/.test(readme));
   const llms = readFileSync(root + 'public/llms.txt', 'utf8');

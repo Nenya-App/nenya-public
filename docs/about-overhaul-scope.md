@@ -49,6 +49,12 @@ As decided in `docs/about-nenya-questions-scope.md`: each section becomes a page
 6. **The routes.**
 7. **The coach's answers**, re-checked.
 
+## Done already (2026-11-08)
+- The owner agreed with the recommendation: **the series note and the "wellness tool inspired by The Lord of the Rings" question are removed** from the public page (the page, its structured data, and the "who it's for" clause), replaced by one line saying Nenya is an independent project, not affiliated with or endorsed by the Tolkien Estate or any publisher or studio. A test keeps them out (`tests/palette-names.test.mjs`). The rest of the public page (title, tagline, the "why the name" section, the two-makers section) still carries the Tolkien framing and is rewritten in step 4.
+
+## A private addition from the owner
+The owner has an unpublished, AI-assisted rough draft of a work of Tolkien fan-fiction ("Nierilindalë", about 200 pages; dream records from August 2024 to September 2025, one per archetype, with essays and a retelling of the myth) that matters to her and appears to be where the sixteen archetypes began. It is private: nothing from it goes into the repository or the site without her say-so. How, and whether, it figures in the origin note is for the two of us to draft together: an honest "this began as a personal creative practice" can be said without naming a character, and without linking to the work. If the work were ever published or linked, that is a rights question for a lawyer, like the project name.
+
 ## Decisions for the owner
 1. **The origin note's wording**, and whether it appears on the Name page only.
 2. **Whether to remove the series note and the fan question** from the public page (recommended).
