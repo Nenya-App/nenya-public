@@ -253,7 +253,7 @@ function ArchetypeCard({ archetype, isExpanded, onToggle }: {
   isExpanded: boolean; 
   onToggle: () => void;
 }) {
-  // Use the first color (Gravity Well) as the primary color
+  // Use the first color as the main color
   const primaryColor = archetype.colorVector[0];
   const useWhiteText = shouldUseWhiteText(primaryColor);
 

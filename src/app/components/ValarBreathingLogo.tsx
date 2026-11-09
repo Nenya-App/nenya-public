@@ -7,13 +7,13 @@ export const valarColors = [
   // AIR & LIGHT — Perception, Awareness, Order
   {
     name: 'Manwë',
-    vector: ['#2C6E9E', '#4A8BC2', '#6EA8D4', '#96C4E5', '#C2E0F2', '#E6F2F8'],
+    vector: ['#2C6E9E', '#6EA8D4', '#DCE9F2', '#8F9DB0', '#E9C46A', '#1E3F63'],
     individualFocus: 'Perspective, Clarity, Non-Attachment, Detachment',
     communalFocus: 'Fair Governance, Systemic Oversight, Peaceful Order',
   },
   {
     name: 'Varda',
-    vector: ['#F7D44A', '#F9DF6C', '#FBE88E', '#FDF0B4', '#FFF6D8', '#FFFFFF'],
+    vector: ['#F7D44A', '#FFF6D8', '#C9D1E0', '#A9C7F2', '#5B4A96', '#1B2447'],
     individualFocus: 'Hope, Illumination, Self-Worth, Sacredness',
     communalFocus: 'Shared Vision, Guiding Truth, Moral Clarity',
   },
@@ -21,13 +21,13 @@ export const valarColors = [
   // WATER & FLOW — Emotion, Communion, Change
   {
     name: 'Ulmo',
-    vector: ['#1B4F6E', '#2D6F8E', '#4B8EAA', '#72AEC6', '#A1CDE0', '#D4ECF2'],
+    vector: ['#1B4F6E', '#4B8EAA', '#6CBFA6', '#E4F2F0', '#D3C9CF', '#0D2A3F'],
     individualFocus: 'Flow, Intuition, Emotional Depth/Process',
     communalFocus: 'Systemic Connection, Fluid Communication, Collective Rhythm',
   },
   {
     name: 'Nienna',
-    vector: ['#8B8B9E', '#A2A2B8', '#BCBCD0', '#D6D6E4', '#ECECF0', '#F8F8FA'],
+    vector: ['#8B8B9E', '#6F7F95', '#A8BCCF', '#A58BBE', '#E3E6EC', '#4A4F63'],
     individualFocus: 'Grief Processing, Self-Compassion, Emotional Release',
     communalFocus: 'Empathy, Shared Lament, Communal Witnessing of Pain',
   },
@@ -35,19 +35,19 @@ export const valarColors = [
   // EARTH & CRAFT — Structure, Growth, Material Justice
   {
     name: 'Aulë',
-    vector: ['#9C5D3A', '#B8784B', '#D29B6E', '#E6BE9A', '#F2DFC8', '#FAF2E8'],
+    vector: ['#9C5D3A', '#D9822B', '#5B5F66', '#C9B79C', '#BFC9D6', '#2E2A28'],
     individualFocus: 'Structure, Competence, Mastery, Self-Efficacy',
     communalFocus: 'Functional Systems, Reliable Infrastructure, Shared Resources',
   },
   {
     name: 'Yavanna',
-    vector: ['#3B6E47', '#5B8C63', '#7DAA80', '#A4C8A4', '#CCE3CC', '#EDF5E8'],
+    vector: ['#3B6E47', '#7DAA80', '#CCE3CC', '#D8B24A', '#E0786A', '#6B4E37'],
     individualFocus: 'Nourishment, Health, Embodiment, Personal Vitality',
     communalFocus: 'Ecosystemic Balance, Resource Management, Shared Generativity',
   },
   {
     name: 'Vána',
-    vector: ['#A8B84C', '#C0CC6E', '#D4DD94', '#E8EDBC', '#F2F5DE', '#F9FAD8'],
+    vector: ['#A8B84C', '#F2A7B8', '#F6D55C', '#A877CC', '#9DC8E8', '#4F7F34'],
     individualFocus: 'Vibrant Life, Uninhibited Joy, Radiance',
     communalFocus: 'Cultivating Beauty, Aesthetic Generosity, Collective Flourishing',
   },
@@ -55,13 +55,13 @@ export const valarColors = [
   // TIME & FATE — Memory, Consequence, Continuity
   {
     name: 'Mandos',
-    vector: ['#5C4B6E', '#7A6790', '#9B88AE', '#BBAECE', '#D9D2E5', '#F0ECF2'],
+    vector: ['#5C4B6E', '#2B2540', '#8FA0BF', '#D08AA2', '#E4DCCB', '#6F6C7A'],
     individualFocus: 'Finality, Acceptance, Non-Attachment, Reckoning',
     communalFocus: 'Justice, Accountability, Collective Reckoning',
   },
   {
     name: 'Vairë',
-    vector: ['#3A6B6B', '#5E8A8A', '#86ACAC', '#B0C8C8', '#D4E4E4', '#EEF4F4'],
+    vector: ['#3A6B6B', '#2F4B7A', '#D8B25A', '#B04A50', '#E8DCC4', '#86ACAC'],
     individualFocus: 'Meaning-Making, Memory, Personal Narrative',
     communalFocus: 'Historiography, Cultural Record, Collective Identity/History',
   },
@@ -69,19 +69,19 @@ export const valarColors = [
   // WILD & VITALITY — Instinct, Motion, Freedom
   {
     name: 'Oromë',
-    vector: ['#4D6E3B', '#6B8F55', '#8EB073', '#B2CF9A', '#D5E6C4', '#F0F5E8'],
+    vector: ['#4D6E3B', '#A87D4B', '#E3CFA4', '#E0B04A', '#8BA7B8', '#253A2A'],
     individualFocus: 'Action, Ethical Defense, Clear Boundaries',
     communalFocus: 'Just Protection, Ethical Vigilance, Enforcing Shared Boundaries',
   },
   {
     name: 'Tulkas',
-    vector: ['#E3752B', '#EB8F4D', '#F2AA74', '#F6C89E', '#FBE2CC', '#FEF2E8'],
+    vector: ['#E3752B', '#F2B84B', '#B8392B', '#FBE2CC', '#6B3A22', '#F2AA74'],
     individualFocus: 'Strength, Vitality, Uncomplicated Physical Power',
     communalFocus: 'Collective Vigor, Energetic Defense, Uncomplicated Action',
   },
   {
     name: 'Nessa',
-    vector: ['#D9626B', '#E27F88', '#EC9EA5', '#F2C0C4', '#F8E0E2', '#FDF2F2'],
+    vector: ['#D9626B', '#8DBF6A', '#C98B52', '#6BB5B0', '#F8E0E2', '#A63D54'],
     individualFocus: 'Joy, Rhythm, Embodied Movement, Play',
     communalFocus: 'Celebration, Shared Ritual, Collective Merriment',
   },
@@ -89,13 +89,13 @@ export const valarColors = [
   // DREAM & REST — Vision, Healing, Inner Worlds
   {
     name: 'Irmo',
-    vector: ['#845A9E', '#9E7AB8', '#BB9ED4', '#D4C2E8', '#ECE2F4', '#F8F4FC'],
+    vector: ['#845A9E', '#BB9ED4', '#6F8FD0', '#D9DDF0', '#6FA58A', '#2D2347'],
     individualFocus: 'Imagination, Creative Expression, Vision',
     communalFocus: 'Shared Myth, Collective Dreamscape, Cultural Articulation',
   },
   {
     name: 'Estë',
-    vector: ['#5A9C8E', '#7BB5A8', '#9ECCC0', '#C2E0D6', '#E2F0EA', '#F2F8F5'],
+    vector: ['#5A9C8E', '#C2E0D6', '#7FA0AD', '#E6D8BF', '#D9B8A8', '#2F5F59'],
     individualFocus: 'Restoration, Sanctuary, Deep Peace, Sleep',
     communalFocus: 'Collective Healing, Safe Space creation, Non-Violent Refuge',
   },
@@ -103,13 +103,13 @@ export const valarColors = [
   // SHADOW & ENTROPY — Corruption, Decay, Burnout
   {
     name: 'Melkor',
-    vector: ['#5C2E2E', '#7E4646', '#A06464', '#C28A8A', '#E2B8B8', '#F2E0E0'],
+    vector: ['#5C2E2E', '#D9552B', '#6E6A6A', '#A9CFE8', '#EAF2F8', '#1E1818'],
     individualFocus: 'Raw Power, Sovereignty, Radical Self-Will',
     communalFocus: 'Disruptive Innovation, Challenging Orthodoxy, Unconstrained Creation',
   },
   {
     name: 'Ungoliant',
-    vector: ['#1E1E2A', '#3A3A50', '#5C5C78', '#8585A0', '#B3B3C8', '#DCDCE8'],
+    vector: ['#1E1E2A', '#3A3A50', '#8585A0', '#DCDCE8', '#D01C1F', '#B3B3C8'],
     individualFocus: 'Fixed Corruption, Despair, Self-Domination',
     communalFocus: 'Oppression, Nihilism, Systematic Destruction (Need for release)',
   },

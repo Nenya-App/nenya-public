@@ -23,94 +23,94 @@ const VALAR_PALETTES: ValarPalette[] = [
   {
     name: 'Manwë',
     domain: 'Air, Wind, Sovereignty',
-    colors: ['#4A90E2', '#F5A623', '#F0F4F7', '#607D8B', '#B0C4DE', '#1C3B6F']
+    colors: ['#2C6E9E', '#6EA8D4', '#DCE9F2', '#8F9DB0', '#E9C46A', '#1E3F63']
   },
   {
     name: 'Varda',
     domain: 'Light, Stars, Awareness',
-    colors: ['#EBEFF2', '#0B0E23', '#C7ECEC', '#87CEEB', '#ADD8E6', '#6A5ACD']
+    colors: ['#F7D44A', '#FFF6D8', '#C9D1E0', '#A9C7F2', '#5B4A96', '#1B2447']
   },
   
   // WATER & FLOW — Emotion, Communion, Change
   {
     name: 'Ulmo',
     domain: 'Water, Flow, Communal Needs',
-    colors: ['#004D7A', '#4682B4', '#5F9EA0', '#A9A9A9', '#F0F8FF', '#3C763D']
+    colors: ['#1B4F6E', '#4B8EAA', '#6CBFA6', '#E4F2F0', '#D3C9CF', '#0D2A3F']
   },
   {
     name: 'Nienna',
     domain: 'Mercy, Compassion, Empathy',
-    colors: ['#C8A2C8', '#E6E6FA', '#98FB98', '#FFE5B4', '#FFE4E1', '#CCCCFF']
+    colors: ['#8B8B9E', '#6F7F95', '#A8BCCF', '#A58BBE', '#E3E6EC', '#4A4F63']
   },
   
   // EARTH & CRAFT — Structure, Growth, Material Justice
   {
     name: 'Aulë',
     domain: 'Earth, Structure, Accountability',
-    colors: ['#484A49', '#B87333', '#B22222', '#8B4513', '#1D1F21', '#3CB371']
+    colors: ['#9C5D3A', '#D9822B', '#5B5F66', '#C9B79C', '#BFC9D6', '#2E2A28']
   },
   {
     name: 'Yavanna',
     domain: 'Growth, Nourishment, Ecological Balance',
-    colors: ['#228B22', '#DAA520', '#8FBC8F', '#6B4226', '#9ACD32', '#FFF8DC']
+    colors: ['#3B6E47', '#7DAA80', '#CCE3CC', '#D8B24A', '#E0786A', '#6B4E37']
   },
   {
     name: 'Vána',
     domain: 'Youth, Renewal, Perpetual Bloom',
-    colors: ['#FFFACD', '#FFB6C1', '#FFD700', '#ADFF2F', '#E0FFFF', '#FAEBD7']
+    colors: ['#A8B84C', '#F2A7B8', '#F6D55C', '#A877CC', '#9DC8E8', '#4F7F34']
   },
   
   // TIME & FATE — Memory, Consequence, Continuity
   {
     name: 'Mandos',
     domain: 'Fate, Judgment, Necessary Grief',
-    colors: ['#4B0082', '#DCDCDC', '#546E7A', '#A52A2A', '#191970', '#F2F2F2']
+    colors: ['#5C4B6E', '#2B2540', '#8FA0BF', '#D08AA2', '#E4DCCB', '#6F6C7A']
   },
   {
     name: 'Vairë',
     domain: 'Memory, Time, Weaving of Lives',
-    colors: ['#FFD700', '#C0C0C0', '#FAF0E6', '#9932CC', '#4169E1', '#D2B48C']
+    colors: ['#3A6B6B', '#2F4B7A', '#D8B25A', '#B04A50', '#E8DCC4', '#86ACAC']
   },
   
   // WILD & VITALITY — Instinct, Motion, Freedom
   {
     name: 'Oromë',
     domain: 'Action, Courage, Untamed Spirit',
-    colors: ['#2E4600', '#C19A6B', '#355E3B', '#3B3C36', '#FF8C00', '#C0D9D9']
+    colors: ['#4D6E3B', '#A87D4B', '#E3CFA4', '#E0B04A', '#8BA7B8', '#253A2A']
   },
   {
     name: 'Tulkas',
     domain: 'Joy, Defiance, Vital Resistance',
-    colors: ['#FFD700', '#B08D57', '#FF7F50', '#CC7722', '#6B8E23', '#FFFACD']
+    colors: ['#E3752B', '#F2B84B', '#B8392B', '#FBE2CC', '#6B3A22', '#F2AA74']
   },
   {
     name: 'Nessa',
     domain: 'Dance, Freedom, Kinetic Joy',
-    colors: ['#FFBF00', '#FF6F61', '#F4A460', '#87CEFA', '#BC8F8F', '#FDF5E6']
+    colors: ['#D9626B', '#8DBF6A', '#C98B52', '#6BB5B0', '#F8E0E2', '#A63D54']
   },
   
   // DREAM & REST — Vision, Healing, Inner Worlds
   {
     name: 'Irmo',
     domain: 'Dream, Vision, Inner Worlds',
-    colors: ['#AFEEEE', '#BA55D3', '#5F9EA0', '#F8F8FF', '#483D8B', '#D3D3D3']
+    colors: ['#845A9E', '#BB9ED4', '#6F8FD0', '#D9DDF0', '#6FA58A', '#2D2347']
   },
   {
     name: 'Estë',
     domain: 'Rest, Healing, Restoration',
-    colors: ['#F5F5F5', '#B0C4C4', '#D2B48C', '#EED5D2', '#E0FFFF', '#C0C0C0']
+    colors: ['#5A9C8E', '#C2E0D6', '#7FA0AD', '#E6D8BF', '#D9B8A8', '#2F5F59']
   },
   
   // SHADOW & ENTROPY — Corruption, Decay, Burnout
   {
     name: 'Melkor',
     domain: 'Raw Power, Potential, Tension',
-    colors: ['#FF4500', '#CD7F32', '#4B0082', '#36454F', '#00FFFF', '#CC0000']
+    colors: ['#5C2E2E', '#D9552B', '#6E6A6A', '#A9CFE8', '#EAF2F8', '#1E1818']
   },
   {
     name: 'Morgoth',
     domain: 'Despair, Emptiness, Power Turned Destructive',
-    colors: ['#1E1E2A', '#3A3A50', '#5C5C78', '#8585A0', '#B3B3C8', '#DCDCE8']
+    colors: ['#1E1E2A', '#3A3A50', '#8585A0', '#DCDCE8', '#D01C1F', '#B3B3C8']
   },
 ];
 
