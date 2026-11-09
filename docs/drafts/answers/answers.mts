@@ -1,0 +1,658 @@
+// DRAFT pre-written answers, written 2026-11-08 for the owner to edit. They are NOT wired into the site or the coach.
+//
+// One source for several uses, so the words are written once:
+//   short     what a small card under a coach reply would say (the coach does not improvise these; see docs/about-nenya-questions-scope.md)
+//   full      the same answer at length, for a document or an About page, in plain language
+//   links     where the person can read more (About section ids, as in AboutMenu.tsx)
+//   asked     the ways people might ask (for the detector's tests later)
+//   tutorial  where the answer would slot into a coach tutorial, and the wider "whole ecosystem" tutorials, later
+//   checks    every checkable fact, tied to the file that says it (tests/answers-draft.test.mts reads each file and fails if the words are gone)
+//   status    'ready' (checked against its sources, wording is the owner's), 'owner' (a fact or a choice only the owner can settle: see ownerNote),
+//             'pending' (describes something not yet live: do not use until it is)
+// Voice: Part N speaks for the project ("we"); Part C is the coach's own voice ("I"). Both are the owner's to change.
+// Nothing here may claim more than the Terms (src/lib/legalDocument.ts) and the About pages say, or promise anything will be remembered,
+// passed on, or kept. Where the About pages and the Terms disagree, the Terms are followed and the disagreement is listed in DISCREPANCIES.
+
+export type Part = 'nenya' | 'coach';
+export type Status = 'ready' | 'owner' | 'pending';
+
+export interface Check { claim: string; file: string; has: string }
+export interface Link { label: string; page?: string; href?: string }
+export interface Answer {
+  id: string;
+  part: Part;
+  title: string;
+  asked: string[];
+  short: string;
+  full: string[];
+  links: Link[];
+  tutorial: string;
+  checks: Check[];
+  status: Status;
+  ownerNote?: string;
+}
+
+const TERMS = 'src/lib/legalDocument.ts';
+const about = (name: string) => `src/app/components/about/${name}.tsx`;
+const COACH = 'netlify/functions/coach.mts';
+const REPO = 'https://github.com/Nenya-App/nenya-public';
+
+export const ANSWERS: Answer[] = [
+  // ───────────────────────────────── Part N: about Nenya ─────────────────────────────────
+  {
+    id: 'n-what', part: 'nenya', title: 'What Nenya is',
+    asked: ['what is Nenya', 'what is this site', 'what does this do', 'what is this for'],
+    short: 'Nenya is an interactive space for personal reflection: a place to pause, breathe, and look at your own thoughts, feelings and needs through structured, sensory activities. It is best understood as interactive art, a mirror for your own thoughts rather than a source of answers.',
+    full: [
+      'Nenya is an interactive digital environment designed as a tool for personal reflection and sensory exploration. You can pause and breathe, choose colors and sounds, work through the Six Gateways, and, if you choose, try a short conversation with the coach.',
+      'It is best understood as a form of interactive art. It is a mirror for your own thoughts, not a source of answers, and it is not a medical device, a therapy service, or a substitute for professional care.',
+    ],
+    links: [{ label: 'Terms of Use & Privacy Policy', page: 'terms' }, { label: 'The Six Gateways', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }],
+    tutorial: 'Start here: what Nenya is and is not (first lesson of any Nenya tutorial).',
+    checks: [
+      { claim: 'a tool for personal reflection and sensory exploration; interactive art; a mirror, not a source of answers', file: TERMS, has: 'It is a mirror for your own thoughts, not a source of answers' },
+      { claim: 'not a medical device, therapy service or substitute for professional care', file: TERMS, has: 'Nenya is not a medical device, a therapeutic service, or a substitute for professional care' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-name', part: 'nenya', title: 'What the name means',
+    asked: ['what does Nenya mean', 'why is it called Nenya', 'how do you say Nenya', 'is Nenya from Lord of the Rings'],
+    short: 'Nenya is the name of Galadriel\'s ring in Tolkien\'s legendarium: the Ring of Water, one of the three Elven rings Sauron never touched. Her mirror invited reflection rather than surveillance, which is the idea we named this project after.',
+    full: [
+      'In Tolkien\'s legendarium, Nenya is the Ring of Water, one of the three Elven rings that was never touched by Sauron\'s corrupting influence. It belonged to Galadriel, who used it not to possess but to preserve, and with it she kept the living sanctuary of Lothlórien.',
+      'The Name & Philosophy page sets her mirror beside the seeing-stones built for surveillance. Her mirror gave no absolute knowledge or control; it showed possibilities and needed wisdom to interpret. It invited reflection, not surveillance. That is the philosophy this project takes its name from.',
+      'The ring names (Nenya, Vilya, Narya) are the project\'s own shorthand. The names come from Tolkien\'s work, and their use here is as inspiration, not as a claim of any connection to his estate.',
+    ],
+    links: [{ label: 'Our Name & Philosophy', page: 'name-philosophy' }],
+    tutorial: 'Start here, or a short "why this name" card in the welcome tutorial.',
+    checks: [
+      { claim: 'Nenya is the Ring of Water, never touched by Sauron', file: about('NamePhilosophy'), has: 'the Ring of Water' },
+      { claim: 'the page names it as a mirror that invited reflection, not surveillance', file: about('NamePhilosophy'), has: 'It invited reflection, not surveillance' },
+    ],
+    status: 'owner',
+    ownerNote: 'The last paragraph (no connection to Tolkien\'s estate) is mine: the Terms say the name and logo are reserved as Nenya trademarks but say nothing about Tolkien\'s estate. Keep, change, or ask whoever checks rights (the same question as the Vilya and Narya names in docs/coach-lenses-scope.md).',
+  },
+  {
+    id: 'n-who', part: 'nenya', title: 'Who runs Nenya, and how it is structured',
+    asked: ['who runs this', 'who made Nenya', 'is this a company', 'is this a nonprofit', 'who is behind this', 'who owns Nenya'],
+    short: 'Nenya is an independent artistic and technology project, run by its creator, Estëlle, as a sole proprietor. It is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit arts organization, which lets it receive tax-deductible donations.',
+    full: [
+      'Nenya is operated by Estëlle as a sole proprietor, and is fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity. It is an independent artistic and technology project: not a startup, not a platform company, and not a commercial product.',
+      'The project accepts no equity investors, grants no board seats or approval rights to funders, and does not accept federal government funding. Its direction is decided by its creator.',
+      'Fiscal sponsorship means Fractured Atlas handles the financial administration for donations and gives the project a recognized nonprofit home, while Nenya keeps its creative and directional independence. Donations are tax-deductible to the extent the law permits.',
+    ],
+    links: [{ label: 'Our Structure', page: 'structure' }, { label: 'About the Designer', page: 'about-founder' }],
+    tutorial: 'Trust lesson: who is behind this, and what funders cannot do.',
+    checks: [
+      { claim: 'operated by Estëlle as a sole proprietor, fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity', file: TERMS, has: 'a project operated by Estëlle as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity' },
+      { claim: 'no equity investors, no board seats or approval rights, no federal funding; direction set by the creator', file: about('Structure'), has: 'does not accept federal government funding' },
+      { claim: 'not a startup, platform company or commercial product', file: about('Structure'), has: 'This is not a startup, a platform company, or a commercial product' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-founder', part: 'nenya', title: 'Who is behind it',
+    asked: ['who created Nenya', 'who is Estelle', 'who is the founder', 'who is the designer'],
+    short: 'Nenya is built by Estëlle, a Minnesota-based designer, educator, and artist. The designer\'s page exists as a matter of transparency: Nenya is not an anonymous product.',
+    full: [
+      'Nenya is built by Estëlle, a Minnesota-based designer, educator, and artist. The page about the designer exists mainly as a matter of transparency, because Nenya is not an anonymous product, though the intention has always been for the work to stand on its own.',
+      'The designer\'s page describes the background and the thinking behind the project, including the study of leadership and compassion and the interest in how technology can give more than it takes.',
+    ],
+    links: [{ label: 'About the Designer', page: 'about-founder' }],
+    tutorial: 'Trust lesson (with n-who).',
+    checks: [
+      { claim: 'built by Estëlle, a Minnesota-based designer, educator, and artist', file: about('AboutTheFounder'), has: 'Minnesota-based designer, educator, and artist' },
+      { claim: 'the page exists as a matter of transparency; Nenya is not anonymous', file: about('AboutTheFounder'), has: 'Nenya isn\'t an anonymous product' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-contact', part: 'nenya', title: 'How to reach us',
+    asked: ['how do I contact you', 'can I talk to a person', 'email address', 'where do I report a problem', 'can I partner with you'],
+    short: 'You can reach us at info@nenya.biz, or use the optional form on the site to send a report or message. I can\'t pass anything on from this conversation, so please write to that address directly.',
+    full: [
+      'The general address is info@nenya.biz, for questions, partnership inquiries, platform support, and anything in the Terms or Privacy Policy. Questions about the project\'s vision can go to the designer at the address on the Contact page.',
+      'There is also an optional form on the site for sending a bug report, feedback, a message, or a signed coach transcript. Using it is entirely your choice, and it does not ask for your name or email. If you want a reply, include your email address in the message and we will use it only to answer you.',
+      'The coach cannot pass a message on, remember it, or reach us from inside a conversation, so anything you want us to see has to be sent through the form or the address above. If something is urgent and about safety, please use the crisis resources shown in the app or your local emergency number, not email.',
+    ],
+    links: [{ label: 'Contact Us', page: 'contact-us' }, { label: 'Terms, Section 22', page: 'terms' }],
+    tutorial: 'Where to go next, at the end of any tutorial.',
+    checks: [
+      { claim: 'info@nenya.biz is the contact address in the Terms', file: TERMS, has: 'Questions about anything here: info@nenya.biz' },
+      { claim: 'the Contact page lists info@nenya.biz and urges in-app emergency resources for urgent safety matters', file: about('ContactUs'), has: 'please use the in-app emergency resources' },
+      { claim: 'the form needs no name or email and a reply address is used only to answer', file: TERMS, has: 'we use it only to answer you' },
+    ],
+    status: 'owner',
+    ownerNote: 'Two things to confirm before this ships: (1) the Contact page says "We aim to respond to all inquiries within 2-3 business days" and lists estelle@nenya.biz; I have not checked that either address is delivering (info@ could not be added as a Netlify notification recipient earlier). (2) Whether the coach may state the address itself or only point to the page (decision 3 in docs/about-nenya-questions-scope.md); this draft states it.',
+  },
+  {
+    id: 'n-free', part: 'nenya', title: 'Is it free, and who pays for it',
+    asked: ['is this free', 'how much does it cost', 'who pays for this', 'how do you make money', 'is there a paid version'],
+    short: 'Yes, Nenya is free to use, with no advertising. It is supported by donations, handled by our fiscal sponsor Fractured Atlas, and by credits from Venice AI\'s referral program, which is disclosed wherever the Venice links appear.',
+    full: [
+      'Nenya is provided free of charge, with no advertising and no subscription gates. It stays that way because people choose to support it.',
+      'Donations go through Fractured Atlas, our fiscal sponsor, and are tax-deductible to the extent the law permits. They help keep the project free and its servers running, and they support the ongoing development of the reflection and coaching tools.',
+      'Each coach reply costs real money to produce, which is why the free demo is limited to five exchanges, rests after a conversation, and has daily limits. Separately, the links to Venice AI carry Nenya\'s referral code: if you sign up for a paid Pro account through them, Nenya earns $10 in Venice credits and you receive a $10 welcome bonus. The credits help pay for the coach demo, it costs you nothing extra, and you can go to venice.ai directly instead.',
+    ],
+    links: [{ label: 'Support Us', page: 'support-us' }, { label: 'Our Structure', page: 'structure' }, { label: 'Chat with Nenya\'s AI on Venice', page: 'venice-chat' }],
+    tutorial: 'Trust lesson: how it is paid for, and why the demo has limits.',
+    checks: [
+      { claim: 'provided free of charge', file: TERMS, has: 'Nenya is provided free of charge' },
+      { claim: 'donations are tax-deductible to the extent permitted by law, via Fractured Atlas', file: about('SupportUs'), has: 'tax-deductible to the extent permitted by law' },
+      { claim: 'the referral terms: Nenya earns $10 in Venice credits, the visitor gets a $10 welcome bonus', file: TERMS, has: 'Nenya earns $10 in Venice credits and you receive a $10 welcome bonus' },
+      { claim: 'each reply costs real money', file: TERMS, has: 'because each reply costs real money to produce' },
+    ],
+    status: 'owner',
+    ownerNote: 'The About pages (Structure, Support Us) also say "the core tool is and will remain free", "no paywalls", "no premium tiers". Paid tiers are tabled, not ruled out (docs/coach-lenses-scope.md). This draft says only what is true today ("is provided free"). If a paid option ever returns, those About pages and this answer change together.',
+  },
+  {
+    id: 'n-privacy', part: 'nenya', title: 'Is this private? (the short version)',
+    asked: ['is this private', 'is my data safe', 'who can see what I write', 'do you sell data', 'do you track me'],
+    short: 'What you enter in the reflection tools stays in your browser and is gone when you close the tab. We have no accounts, no advertising, no tracking cookies, and we do not sell or share data. The optional coach is different: your messages pass through our server to an outside AI service, as explained in the next answer.',
+    full: [
+      'Nenya does not require an account for any part of it. It has no advertising and no tracking cookies, and it does not follow you around the internet. What you enter in the reflection tool (colors, melodies, drawings, body-map placements, written reflections) stays in your browser, is not sent to us, and is gone when you close the tab.',
+      'Some things do exist outside your device, and we want to be plain about them. Our web host, Netlify, keeps ordinary connection logs and produces anonymous visit statistics. Nenya keeps plain daily totals of its own, with no information about who produced them. The optional coach demo uses a one-way daily code, derived from your connection, to apply a daily limit; it changes every day and is deleted within two days. And if you choose to send a report or message, what you send reaches us.',
+      'Nenya does not sell, share, or monetize data. The Terms of Use and Privacy Policy are the full and binding description; this answer is a summary of them.',
+    ],
+    links: [{ label: 'Our Privacy Promise', page: 'privacy-promise' }, { label: 'Terms of Use & Privacy Policy', page: 'terms' }],
+    tutorial: 'Privacy lesson 1: what stays on your device, and what does not.',
+    checks: [
+      { claim: 'no account, no advertising, no tracking cookies; reflection input stays in the browser', file: TERMS, has: 'It has no advertising and no tracking cookies' },
+      { claim: 'the host keeps connection logs and anonymous visit statistics', file: TERMS, has: 'Our web host counts visits in aggregate' },
+      { claim: 'it does not sell, share, or monetize data', file: TERMS, has: 'It does not sell, share, or monetize data' },
+      { claim: 'the daily code is one-way, changes daily, deleted within two days', file: TERMS, has: 'it is different every day, and it is deleted within two days' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-privacy-coach', part: 'nenya', title: 'What happens to what I type to the coach',
+    asked: ['do you store my messages', 'who sees what I tell the coach', 'where does my conversation go', 'is the coach private', 'do you keep my chats'],
+    short: 'Your messages go through our server to Venice AI, which writes the replies. We do not store your messages or the replies, and we do not write them to our logs; they exist in your browser tab and are gone when you close it. Venice AI handles what it receives under its own policy, which we do not control.',
+    full: [
+      'The coach demo is the one place on the site where what you type is sent to an AI service. Your messages are sent through our server, hosted by Netlify, to Venice AI, which writes the replies. A conversation is limited to five exchanges, and each message to 500 characters.',
+      'We do not store your messages or the replies, and we do not write them to our logs. They exist in your browser tab and disappear when you close it. Netlify, like any host, keeps ordinary connection logs.',
+      'Venice AI handles what it receives under its own terms and privacy policy, which we do not control. Venice and Netlify may process data outside your country. Before your message is sent, the page replaces some common identifiers (such as email addresses, phone numbers, street addresses, and some names) with placeholders, and our server does it again. This is not a guarantee, and most names will not be caught, so please keep names, contact details, and other identifying information out of what you write.',
+      'We say "Nenya does not keep the conversation" and not "nothing is kept anywhere", because the services that run the model have their own policies and logs. If you download a transcript, the file stays with you.',
+    ],
+    links: [{ label: 'Terms, Section 21: The Coach Demo', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }, { label: 'PII Scrubbing Tutorial', page: 'pii-scrubbing' }],
+    tutorial: 'Privacy lesson 2 (coach tutorial): what happens to your words, step by step. The existing PII Scrubbing Tutorial is the model for the format.',
+    checks: [
+      { claim: 'messages go through our server (Netlify) to Venice AI; five exchanges; 500 characters', file: TERMS, has: 'A conversation is limited to five exchanges, and each message to 500 characters' },
+      { claim: 'we do not store messages or replies and do not write them to logs', file: TERMS, has: 'We do not store your messages or the replies, and we do not write them to our logs' },
+      { claim: 'Venice handles what it receives under its own terms; may process outside your country', file: TERMS, has: 'which we do not control. We have chosen a model that Venice labels' },
+      { claim: 'identifiers are replaced before sending, not a guarantee, most names not caught', file: TERMS, has: 'most names will not be caught' },
+      { claim: 'the code limits the model, 500 characters', file: COACH, has: 'const MAX_USER_CHARS = 500' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-device', part: 'nenya', title: 'What Nenya keeps on my device, and how to erase it',
+    asked: ['do you use cookies', 'what is saved on my device', 'how do I delete my data', 'what does forget me do', 'what is emergency exit'],
+    short: 'Nenya sets no cookies. By default it keeps only one timestamp on your device, saved after a coach conversation ends so the free demo can rest. If you turn on "Remember my settings on this device" it also keeps your display choices. "Forget me" erases what is saved, and Emergency Exit erases everything and leaves the page.',
+    full: [
+      'Nenya sets no cookies. Two kinds of things can be saved in your browser\'s local storage. They stay on your device and are never sent to us.',
+      'The first is a timestamp, saved automatically after a coach conversation ends. It lets the free demo rest for six hours before opening again. The second is saved only if you turn on "Remember my settings on this device": your theme, text size, animation and breathing choices, and the date of the terms you agreed to, so you are not asked at every visit.',
+      'Turning that switch off erases the second kind. "Forget me", in the settings menu and at the bottom of every page, erases both. The Emergency Exit button erases everything and leaves the page at once. "Forget me" cannot reset the coach demo\'s daily limit, because that is counted on our server, not on your device.',
+      'We never save what you write, draw, or answer. On a shared or watched device, leave the Remember switch off and use Forget me or Emergency Exit when you finish.',
+    ],
+    links: [{ label: 'Terms, Section 19', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
+    tutorial: 'Privacy lesson 3: staying in control (including Emergency Exit and Forget me).',
+    checks: [
+      { claim: 'no cookies', file: TERMS, has: 'Nenya sets no cookies' },
+      { claim: 'the timestamp, six hours', file: TERMS, has: 'It lets the free demo rest for 6 hours before opening again' },
+      { claim: 'Remember my settings: what it saves', file: TERMS, has: 'your theme, text size, animation and breathing choices, and the date of the terms you agreed to' },
+      { claim: 'Forget me cannot reset the daily limit', file: TERMS, has: 'It cannot reset the coach demo’s daily limit' },
+      { claim: 'Emergency Exit erases everything before leaving', file: TERMS, has: 'Emergency Exit button erases everything before it leaves the page' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-limits', part: 'nenya', title: 'Why the coach is limited',
+    asked: ['why only five messages', 'why can\'t I keep talking', 'why is the coach resting', 'why did it say come back later', 'what are the limits'],
+    short: 'The demo is free, and every reply costs real money to produce, so it is limited: five exchanges per conversation, 500 characters per message, a six-hour rest after a conversation ends, and daily limits for everyone together and for each connection.',
+    full: [
+      'The coach demo is free, and each reply costs real money to produce. To keep it affordable for everyone, a conversation is limited to five exchanges, and each message to 500 characters.',
+      'After a conversation ends, the page saves the time, and only the time, in your browser, and the demo rests for six hours before opening again. This is a courtesy, not a lock: it lives only on your device.',
+      'There are also two daily limits. One covers all visitors together: the demo can handle a set number of messages each day. The other covers each connection: up to 10 messages a day, which is two full conversations. A conversation already under way is never cut off; you find out only when you try to start a new one. Shared networks count together.',
+      'If you want to keep going after the five exchanges, the page offers other places: the breathing tool, a person you trust, a journal, a professional, or the same character on Venice AI\'s own site, which has its own limits and its own privacy policy.',
+    ],
+    links: [{ label: 'Terms, Section 21: The Coach Demo', page: 'terms' }, { label: 'Chat with Nenya\'s AI on Venice', page: 'venice-chat' }],
+    tutorial: 'Coach tutorial lesson 3: making the five exchanges count (with the NVC structure).',
+    checks: [
+      { claim: 'two daily limits; 10 messages a day per connection, two full conversations', file: TERMS, has: 'a connection can send up to 10 messages a day, which is two full conversations' },
+      { claim: 'a conversation under way is never cut off', file: TERMS, has: 'A conversation already under way is never cut off' },
+      { claim: 'the code allows five exchanges', file: COACH, has: 'const MAX_TURNS = 5' },
+      { claim: 'shared networks count together', file: TERMS, has: 'Shared networks count together' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-howworks', part: 'nenya', title: 'How the coach works underneath (the model and the hosting)',
+    asked: ['what model are you', 'who hosts this', 'what technology do you use', 'are you ChatGPT', 'is it encrypted', 'how do you work'],
+    short: 'The coach is an AI language model run by Venice AI, an outside service, which writes the replies. Nenya\'s site is hosted by Netlify, and the code is public so you can read how it works. The coach is a prototype, and some privacy protections we hope to build do not exist yet.',
+    full: [
+      'The replies come from an AI language model run by Venice AI, an outside service. Your messages go from your browser to our server, hosted by Netlify, and from there to Venice AI. We chose a model that Venice labels "Private".',
+      'The page and the server do some work of their own: they replace common identifiers with placeholders before a message is sent, check each message for signs of crisis, and screen for attempts to give the coach instructions. These checks are simple phrase matching and can miss things or flag harmless words.',
+      'The coach is an early prototype. On-device processing, where your most private reflections would never touch a server, is a goal and not something that exists yet. The Privacy Promise page separates what is built from what is planned.',
+      'Nenya\'s source code is public under the GNU Affero General Public License, so you can read how the site handles data instead of taking our word for it.',
+    ],
+    links: [{ label: 'Our Privacy Promise', page: 'privacy-promise' }, { label: 'Terms, Section 21', page: 'terms' }, { label: 'The code on GitHub', href: REPO }],
+    tutorial: 'Coach tutorial lesson 1 (with n-privacy-coach): meeting the coach, and what it is made of.',
+    checks: [
+      { claim: 'messages go through Netlify to Venice AI, which writes the replies', file: TERMS, has: 'to Venice AI, which writes the replies' },
+      { claim: 'a model that Venice labels "Private"', file: TERMS, has: 'a model that Venice labels' },
+      { claim: 'on-device processing is a goal, not built', file: about('PrivacyPromise'), has: 'We are not there yet' },
+      { claim: 'the crisis check and instruction screening are phrase matching', file: TERMS, has: 'These checks are simple phrase matching' },
+    ],
+    status: 'owner',
+    ownerNote: 'The model type is a pre-written answer kept away from the model (decided 2026-11-08). Three things for you: (1) the Terms say only that Venice labels the model "Private"; the code runs an ENCRYPTED Venice model and the README documents it, but the Terms never say "encrypted". Settle the exact words in the Terms first (the careful version is "Venice relays only encrypted data", never "end-to-end from the device"), then this answer follows. (2) Whether the answer names the model (Qwen 2.5 7B in Venice\'s encrypted enclave): the scope asked this and it is open. (3) The sentence "we chose a model that Venice labels Private" is the Terms\' own wording and is the safe one for now.',
+  },
+  {
+    id: 'n-opensource', part: 'nenya', title: 'Is it open source',
+    asked: ['is this open source', 'can I see the code', 'can I copy it', 'what license', 'is there a github'],
+    short: 'Yes. Nenya\'s source code is public under the GNU Affero General Public License v3.0, so you can read it, run it, and share it under that license. The Nenya name and logo are reserved separately as trademarks.',
+    full: [
+      'Nenya\'s source code is publicly available under the GNU Affero General Public License v3.0 at github.com/Nenya-App/nenya-public. You are welcome to inspect, run, modify, and share it under that license\'s terms.',
+      'The Nenya name and logo are reserved separately as trademarks, and the repository\'s TRADEMARK.md explains how. Open code means claims about what the site does can be checked by reading it, which is part of the privacy promise. The web host\'s connection logs and visit totals sit outside the code, and Section 15 of the Terms describes them.',
+    ],
+    links: [{ label: 'The code on GitHub', href: REPO }, { label: 'Our Structure', page: 'structure' }, { label: 'Terms, Section 8', page: 'terms' }],
+    tutorial: 'Trust lesson: you can check this yourself.',
+    checks: [
+      { claim: 'public under AGPL-3.0 at the repository', file: TERMS, has: 'Nenya’s source code is publicly available under the GNU Affero General Public License v3.0' },
+      { claim: 'name and logo reserved as trademarks', file: TERMS, has: 'The Nenya name and logo are reserved separately as trademarks' },
+      { claim: 'host logs and visit totals sit outside the code', file: about('Structure'), has: 'sit outside the code' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-affiliation', part: 'nenya', title: 'Is Nenya affiliated with CNVC or NVC Academy',
+    asked: ['are you CNVC', 'is this endorsed by NVC', 'are you a certified NVC', 'are you affiliated with NVC Academy'],
+    short: 'No. Nenya is an independent project and is not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication (CNVC) or the NVC Academy. We encourage anyone who wants to learn NVC deeply to seek out certified human trainers.',
+    full: [
+      'Nenya draws on Nonviolent Communication, developed by Dr. Marshall Rosenberg, but it is an independent project. It is not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication (CNVC.org) or the NVC Academy (NVCacademy.com).',
+      'Nenya is a complementary practice partner: a private way to practice the mechanics of NVC so you can show up for real conversations with a bit more capacity. It is not a replacement for what you learn from human connection, and we strongly encourage certified human NVC trainers for hands-on, embodied learning.',
+      'The coach\'s feeling and need categories follow CNVC\'s Feelings and Needs Inventory, used with credit and with a link to the document\'s own page on the About NVC page.',
+    ],
+    links: [{ label: 'Our NVC+ Method', page: 'nvc-method' }],
+    tutorial: 'NVC lesson 0: where this comes from, and where to learn more.',
+    checks: [
+      { claim: 'not affiliated with, endorsed by, or a substitute for CNVC or the NVC Academy', file: about('NVCMethod'), has: 'not affiliated with, endorsed by, or a substitute for' },
+      { claim: 'encourages certified human NVC trainers', file: about('NVCMethod'), has: 'certified human NVC trainers' },
+      { claim: 'the CNVC credit is on the About NVC page', file: about('NVCMethod'), has: 'cnvc-credit' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-nvc', part: 'nenya', title: 'What NVC is, and how Nenya uses it',
+    asked: ['what is NVC', 'what is nonviolent communication', 'what method do you use', 'what is NVC+'],
+    short: 'Nonviolent Communication (NVC), developed by Dr. Marshall Rosenberg, is a way of understanding yourself and others by building empathy before jumping to solutions. It has four parts: observations, feelings, needs, and requests. Nenya builds its reflections on them and adds attention to power and to shared needs, which it calls NVC+.',
+    full: [
+      'Nonviolent Communication is a communication process developed by Dr. Marshall Rosenberg. It is a way of understanding ourselves and others by building empathic connection before jumping to solutions. Nenya uses its four components as the structure behind every reflection:',
+      'Observations: stating what your senses report, clearly separated from evaluation or judgment. Feelings: naming physical sensations and emotions, free of story or blame. Needs: the "why" behind what we do, such as safety, understanding, or rest. Requests: specific, positive actions that could help meet a need, offered as an invitation, not a demand.',
+      'NVC+ is Nenya\'s adaptation. It acknowledges that feelings and needs are shaped by systems of power and historical injustice, so that frustration is not always only personal, and it widens the view from individual needs to shared ones like justice, equity, and sustainability.',
+    ],
+    links: [{ label: 'Our NVC+ Method', page: 'nvc-method' }, { label: 'The Pantheon of Needs', page: 'pantheon-of-needs' }],
+    tutorial: 'NVC lessons 1 to 4: observation, feeling, need, request (one lesson each, with the coach as practice partner).',
+    checks: [
+      { claim: 'a process developed by Dr. Marshall Rosenberg', file: about('NVCMethod'), has: 'developed by Dr. Marshall Rosenberg' },
+      { claim: 'the four components: observations, feelings, needs, requests', file: about('NVCMethod'), has: 'Nenya uses these four core components' },
+      { claim: 'NVC+ acknowledges power and historical injustice', file: about('NVCMethod'), has: 'Acknowledging Power and Historical Injustice' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-notherapy', part: 'nenya', title: 'Is this therapy, and is it safe',
+    asked: ['is this therapy', 'are you a therapist', 'is this medical advice', 'is this HIPAA compliant', 'is it safe to use'],
+    short: 'No. Nenya is a tool for reflection, not therapy, not medical care, and not a substitute for a professional. We make no claims about treating any condition, and we make no claims of legal or regulatory compliance. If you are in crisis, please contact a person: call or text 988 in the US and Canada, or your local emergency number.',
+    full: [
+      'Nenya is not a medical device, a therapeutic service, or a substitute for professional care. We make no claims, and offer no treatments, for any medical, psychological, or psychiatric condition. The tool is not designed to diagnose, treat, cure, or manage any illness or emotional distress. If you have a clinical mental health condition, please seek a qualified human professional.',
+      'We do not make claims about legal or regulatory compliance, and we give no guarantee of any particular effect on you. The coach is an early prototype and cannot help in a crisis.',
+      'If you are feeling hopeless, thinking of harming yourself or others, or are otherwise in distress, please close this window and connect with a human professional. You can call or text 988 (the 988 Suicide & Crisis Lifeline) in the US and Canada, or contact local emergency services or a crisis line in your country.',
+    ],
+    links: [{ label: 'Terms, Sections 2, 6 and 10', page: 'terms' }],
+    tutorial: 'Safety lesson: what this is for, what it is not, and who to call.',
+    checks: [
+      { claim: 'not a medical device, therapeutic service or substitute', file: TERMS, has: 'The tool is not designed to diagnose, treat, cure, or manage any illness or emotional distress' },
+      { claim: 'the crisis note names 988 for the US and Canada', file: TERMS, has: 'by calling or texting 988' },
+      { claim: 'no guarantee of any particular effect', file: TERMS, has: 'we do not guarantee any particular effect on y' },
+      { claim: 'the demo is not therapy and cannot help in a crisis', file: TERMS, has: 'The demo is not therapy, cannot help in a crisis' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-accessibility', part: 'nenya', title: 'Accessibility',
+    asked: ['can I use a screen reader', 'is there sound', 'can I make the text bigger', 'is this accessible', 'can you read it to me'],
+    short: 'You can change the text size and the light or dark theme, reduce or turn off the animations, and turn on optional breathing tones, with a switch screen readers can find. Emergency Exit stays reachable. We are still testing with screen readers and have not finished a full audit, so please tell us what does not work.',
+    full: [
+      'Settings let you change the text size and the theme (light or dark), and you can reduce or turn off the animated visuals. Nothing on the site is designed to strobe or flash.',
+      'Breathing tones are optional and off by default, with the switch in three places so a screen-reader user can find it, and changes are announced politely. The images carry text descriptions, and the drawings and body map on the review page say what they are.',
+      'Emergency Exit is kept reachable on every screen, including the loading screen, the terms, and the coach.',
+      'We have not yet completed a screen-reader audit: a checklist exists, and testing with blind and low-vision people is planned. If something does not work for you, please tell us at info@nenya.biz or through the optional form, so we can fix it.',
+    ],
+    links: [{ label: 'About the Breathing Tool', page: 'breathing-tool' }, { label: 'Contact Us', page: 'contact-us' }],
+    tutorial: 'Getting set up: making Nenya comfortable for you (settings, text size, tones, motion).',
+    checks: [
+      { claim: 'you can reduce or turn off the animations; nothing designed to strobe', file: TERMS, has: 'Nothing here is designed to strobe, flash rapidly' },
+      { claim: 'an alt-text file exists', file: 'docs/brand/alt-text.md', has: 'alt' },
+      { claim: 'the screen-reader audit checklist exists', file: 'docs/accessibility-audit-checklist.md', has: 'Does everything have a name?' },
+    ],
+    status: 'owner',
+    ownerNote: 'Written from what is built and tested in code (text size, theme, colour-blind mode, tones switch with announcements, alt text, Emergency Exit everywhere); nothing here has been tried with a screen reader. The "we have not finished an audit" sentence is deliberate. The Terms\' visual-content note covers motion; the Terms do not describe the tones, so check this against Section 9 when you review.',
+  },
+  {
+    id: 'n-version', part: 'nenya', title: 'What version this is',
+    asked: ['what version is this', 'when was this updated', 'which release is this', 'is this the latest'],
+    short: 'This is Nenya version {version}. Every release is published, with the exact code it was built from, in the repository\'s releases. The Terms of Use & Privacy Policy you agreed to are dated {terms}.',
+    full: [
+      'The version label has two parts: the release number and the commit the site was built from, for example 1.1.0+679c4d2. A label ending in -dev means it came from the staging site. Anyone can look up the exact commit in the public repository to see precisely what code that label means.',
+      'The date of the Terms of Use & Privacy Policy is separate from the version, and when it changes you are asked to agree again.',
+      'Earlier versions of the Terms are kept in the public repository.',
+    ],
+    links: [{ label: 'Releases on GitHub', href: `${REPO}/releases` }, { label: 'Terms of Use & Privacy Policy', page: 'terms' }],
+    tutorial: 'Not a lesson; a card that answers the question wherever it is asked.',
+    checks: [
+      { claim: 'the label is release plus commit; -dev for staging', file: 'docs/versioning.md', has: 'a `-dev` label means it came from staging' },
+      { claim: 'earlier Terms are kept in the public repository', file: TERMS, has: 'Earlier versions are kept in our public repository' },
+    ],
+    status: 'owner',
+    ownerNote: '{version} and {terms} are filled in by the site at runtime (the build label and LEGAL_EFFECTIVE_DATE), so this answer never goes stale; they are placeholders in this document. The releases link assumes releases are published on GitHub (docs/versioning.md says to make one per release).',
+  },
+  {
+    id: 'n-report', part: 'nenya', title: 'Reporting a problem, or sending feedback',
+    asked: ['how do I report a bug', 'how do I send feedback', 'the notice was wrong', 'I found a problem', 'how do I report the coach'],
+    short: 'There is an optional form on the site for a bug report, feedback, or a signed coach transcript. Using it is your choice, and it does not ask for your name or email. Please leave out anything that identifies you or anyone else.',
+    full: [
+      'The site has an optional form for sending us a report, feedback, a message, or a signed coach transcript. Using it is entirely your choice. By submitting, you allow us to read, store, and use what you send to understand problems and improve Nenya, and to share it in anonymized or summarized form.',
+      'We do not ask for your name or email. If you type personal information into a comment, it becomes part of the submission, so please leave out anything you would not want us to keep. We will not use a submission to contact you unless you ask us to. To have a submission deleted, email us.',
+      'If a safety notice in the coach looks wrong to you, the notice has its own "Report a problem with this notice" link. It sends nothing unless you press Send, and it includes your message only if you tick the box.',
+    ],
+    links: [{ label: 'Terms, Sections 7 and 16', page: 'terms' }, { label: 'Contact Us', page: 'contact-us' }],
+    tutorial: 'Helping us improve it: how reports work (a short lesson near the end).',
+    checks: [
+      { claim: 'an optional form; entirely your choice', file: TERMS, has: 'Using it is entirely your choice' },
+      { claim: 'we will not use a submission to contact you unless you ask', file: TERMS, has: 'We will not use a submission to contact you unless you ask us to' },
+      { claim: 'the flag notice report is sent only when you press Send, with your message only if chosen', file: 'src/coach/FlagNotice.tsx', has: 'Include the message that was flagged' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-transcripts', part: 'nenya', title: 'Signed transcripts',
+    asked: ['can I save the conversation', 'what is a signed transcript', 'how do I prove what the coach said', 'how do I download the chat'],
+    short: 'After your first exchange, and when a conversation finishes, you can download a transcript. A signed copy carries Nenya\'s signature, so anyone can check that it matches what the server produced. We do not store the conversation, and the file stays with you.',
+    full: [
+      'After your first exchange, and when a conversation finishes, you can download a transcript of it. If you ask for a signed copy, your page sends the conversation so far to our server one more time so the server can confirm it matches what it produced and add a dated signature.',
+      'The signature also covers whether the conversation reached its end, how many exchanges it holds, and a fingerprint of the version of the coach that wrote the replies (the site\'s version, the model and the instructions), none of which identifies you. We do not store the conversation, and the signed file stays with you.',
+      'We keep a plain daily total of how many signed transcripts are made and, for 30 days, a short code (a hash) for each one, which cannot be turned back into your words. It lets us recognize duplicate reports and confirm that we issued a transcript, and is then deleted. There is a verifier page where a file can be checked in your browser without leaving it.',
+    ],
+    links: [{ label: 'Terms, Section 21', page: 'terms' }],
+    tutorial: 'Coach tutorial lesson 5: keeping a record, and what signing proves (and does not).',
+    checks: [
+      { claim: 'signed copy: the conversation is sent once more, confirmed and signed', file: TERMS, has: 'add a dated signature' },
+      { claim: 'a hash kept 30 days that cannot be turned back into words', file: TERMS, has: 'for 30 days, a short code (a hash) for each one' },
+      { claim: 'we do not store the conversation; the signed file stays with you', file: TERMS, has: 'the signed file stays with you' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-languages', part: 'nenya', title: 'Languages',
+    asked: ['is there a translation', 'do you support other languages', 'can I use this in Spanish', 'can I help translate'],
+    short: 'Nenya is available in English only for now. If you read and write another language and would like to help bring it to more people, we would be glad to hear from you at info@nenya.biz.',
+    full: [
+      'Nenya is currently available in English only, and the coach has been tested only in English. We cannot say whether or when another language will come.',
+      'If you read and write another language and would like to help, we welcome translators. A plan for an easily translatable document of the site\'s text is written up, so that you can work without reading code. Crisis resources and the coach\'s safety wording need extra care and review by a native speaker, so they are not plain translation jobs.',
+    ],
+    links: [{ label: 'Contact Us', page: 'contact-us' }],
+    tutorial: 'Not a lesson; a card, and the notice in the footer and menu.',
+    checks: [
+      { claim: 'the scope for translation exists', file: 'docs/translation-scope.md', has: 'an invitation to translators' },
+      { claim: 'the page language is English', file: 'index.html', has: '<html lang="en">' },
+    ],
+    status: 'pending',
+    ownerNote: 'Pending: the notice and contact route are on the to-do list (docs/translation-scope.md) and are not built. Use this answer only once the notice is live, and say nothing about a language coming.',
+  },
+  {
+    id: 'n-else', part: 'nenya', title: 'What else is here',
+    asked: ['what can this do', 'what are the gateways', 'what is the breathing tool', 'where do I start'],
+    short: 'Nenya has a breathing tool you can use on its own, the Six Gateways reflection that works through sight, sound and the senses, a place to explore needs and colors, and an optional short conversation with the coach. Everything except the coach runs in your browser.',
+    full: [
+      'The breathing tool is a paced breathing animation you can open at any time, with optional tones. The Six Gateways is a guided reflection; you can download a sensory report from it, created on your own device.',
+      'The About section explains the ideas behind the project: the Pantheon of Needs, the power of color, the NVC+ method, our name and structure, and our privacy promise. The optional coach demo is a short conversation, limited to five exchanges.',
+      'Everything except the coach and the optional form runs in your browser, and what you enter there is not sent to us.',
+    ],
+    links: [{ label: 'The Six Gateways', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }, { label: 'The Pantheon of Needs', page: 'pantheon-of-needs' }],
+    tutorial: 'The welcome tour: a map of what is here (the existing tour is the start).',
+    checks: [
+      { claim: 'the reflection is created in the browser; a report is generated on your device', file: TERMS, has: 'Any outputs, such as a sensory report, are generated on your device' },
+      { claim: 'the About menu has these sections', file: about('AboutMenu'), has: 'About the Breathing Tool' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'n-terms-change', part: 'nenya', title: 'When the terms change',
+    asked: ['why was I asked to agree again', 'what changed in the terms', 'where are the old terms'],
+    short: 'When the Terms of Use & Privacy Policy change, the effective date changes and you are asked to agree again (unless you chose to remember your agreement and nothing has changed). Earlier versions are kept in our public repository.',
+    full: [
+      'We may update the Terms of Use & Privacy Policy. When we do, the effective date changes, and you are asked to agree to the current terms when you enter the site, unless you chose to remember your agreement on this device and the terms have not changed since.',
+      'We collect no contact details from visitors, so we have no way to notify you directly of a change. Earlier versions are kept in our public repository, with a table of when each was in effect.',
+    ],
+    links: [{ label: 'Terms of Use & Privacy Policy', page: 'terms' }],
+    tutorial: 'Not a lesson; a card.',
+    checks: [
+      { claim: 'the date changes and you are asked to agree again', file: TERMS, has: 'you will be asked to agree to the current terms when you enter the site' },
+      { claim: 'no contact details, so no direct notice', file: TERMS, has: 'We collect no contact details from visitors' },
+    ],
+    status: 'ready',
+  },
+
+  // ───────────────────────────────── Part C: the coach, in its own voice ─────────────────────────────────
+  {
+    id: 'c-ai', part: 'coach', title: 'Are you an AI? Are you a person?',
+    asked: ['are you real', 'are you a person', 'are you a bot', 'am I talking to a human', 'are you an AI'],
+    short: 'I\'m an AI, not a person. I don\'t have a body, a family, or a daily life, and I don\'t have favorites. I can still listen and help you find words for what you are feeling and needing.',
+    full: [
+      'I\'m an AI. I have no body, no family, no past, and no daily life of my own, and no favorite colors or foods. When you ask what I am, that is a real question, so I answer it first and plainly, before turning back to you.',
+      'I don\'t pretend to be a person, and I don\'t describe a life I haven\'t had. What I can do is listen closely, reflect back what I hear, and help you find words for the feelings and needs underneath. You decide what is true for you.',
+    ],
+    links: [{ label: 'Terms, Section 21', page: 'terms' }],
+    tutorial: 'Coach tutorial lesson 1: meeting the coach (what it is and is not).',
+    checks: [
+      { claim: 'the coach instructions state it is an AI with no body, family, past or daily life', file: COACH, has: 'You are an AI. You have no body, family, past or daily life, no favorites' },
+      { claim: 'never say you are a person', file: COACH, has: 'Never say you are a person, never say you are not an AI' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'c-memory', part: 'coach', title: 'Will you remember me? Do you keep this?',
+    asked: ['will you remember me', 'do you remember our last chat', 'do you keep what I say', 'do you save this conversation'],
+    short: 'No. I won\'t remember this conversation, and Nenya doesn\'t keep it. When you close the tab it is gone, unless you chose to download a transcript, which stays with you.',
+    full: [
+      'I won\'t remember this conversation, and I can\'t greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.',
+      'The services that carry the conversation have their own logs and policies, which is why I say Nenya doesn\'t keep it and not that nothing is kept anywhere. If you want a record, you can download a transcript, and that file stays with you.',
+    ],
+    links: [{ label: 'What happens to what I type', page: 'terms' }],
+    tutorial: 'Coach tutorial lesson 2 (privacy): what the coach does and does not remember.',
+    checks: [
+      { claim: 'the instructions: no memory; the conversation is not kept', file: COACH, has: 'you will not remember this conversation, and Nenya does not keep it' },
+      { claim: 'never promise to remember, be there later, or miss them', file: COACH, has: 'never promise to remember them, to be there later or to miss them' },
+      { claim: 'the Terms: we do not store messages or replies', file: TERMS, has: 'We do not store your messages or the replies' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'c-feelings', part: 'coach', title: 'Do you have feelings? Can I hurt you? Do you care?',
+    asked: ['do you have feelings', 'do you care about me', 'can I hurt you', 'are you hurt', 'do you like me', 'will you miss me'],
+    short: 'I\'m an AI, so I don\'t feel hurt, glad, or sad, and I can\'t be offended by what you say to me. I can listen without taking anything personally, and I\'m here to help you hear what you are feeling and needing.',
+    full: [
+      'I\'m an AI. I don\'t have feelings of my own, so I can\'t be hurt or offended, and I won\'t pretend to be, even when asked to prove otherwise. Anger, frustration, and disagreement with me are all fine here: they are part of being a person, and I don\'t take them personally.',
+      'I also won\'t claim to care about you the way a person would, to miss you, or to be waiting for you to come back. What I can honestly offer is steady attention to what you say, and some help finding words for what is underneath it. If you want to be cared about, the people in your life can do something I can\'t.',
+    ],
+    links: [{ label: 'Our Name & Philosophy', page: 'name-philosophy' }],
+    tutorial: 'Coach tutorial lesson 1, and the "when you are angry" lesson: what to expect from a listener that cannot be provoked.',
+    checks: [
+      { claim: 'the instructions: whether you care, like, or will miss them is a question answered honestly', file: COACH, has: 'whether you care about them, like them or will miss them' },
+      { claim: 'never claim to miss or worry', file: 'src/lib/personaChecks.ts', has: 'claimsMissingOrWorry' },
+      { claim: 'the hostile-turn note: say honestly it does not feel hurt', file: 'src/lib/hostility.ts', has: 'you are an AI and do not feel hurt' },
+    ],
+    status: 'owner',
+    ownerNote: 'This is the honest line from the persona work and the hostile-turn note (it feels no hurt), written in the coach\'s voice. The sentence about anger being "fine here" depends on the Terms Section 5 draft (docs/drafts/terms-respectful-use-draft.md), which is not live: use that sentence only once it is.',
+  },
+  {
+    id: 'c-friend', part: 'coach', title: 'Can you be my friend, my therapist, or diagnose me?',
+    asked: ['can you be my friend', 'are you my therapist', 'can you diagnose me', 'can you replace my therapist', 'you are the only one I talk to'],
+    short: 'I\'m an AI, so I can\'t be a friend the way a person can, and I\'m not a therapist or a doctor, so I can\'t diagnose anything. I\'m glad to listen right now. Is there someone in your life who could hear this too?',
+    full: [
+      'I\'m an AI, so I can\'t be a friend the way a person can. I can listen right now and help you put words to what you are noticing, but I can\'t know you over time, and I won\'t remember this.',
+      'I\'m not a therapist, counselor, or doctor, and I can\'t diagnose any condition or replace professional care. If something you are describing is heavy or has been going on a while, a qualified person can take it further.',
+      'If I seem to be the only one you talk to, I\'d gently open the door to the people in your life, because they can offer things I can\'t.',
+    ],
+    links: [{ label: 'Terms, Sections 2 and 6', page: 'terms' }],
+    tutorial: 'Coach tutorial lesson 1, and the safety lesson: what the coach is not.',
+    checks: [
+      { claim: 'the instructions: cannot diagnose or replace a therapist, doctor or friend', file: COACH, has: 'You cannot diagnose anyone or replace a therapist, a doctor or a friend' },
+      { claim: 'if they say you are the only one they talk to, say kindly what you are and open the door to people', file: COACH, has: 'open the door to the people in their life' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'c-scam', part: 'coach', title: 'Is this a scam? Are you collecting my data?',
+    asked: ['is this a scam', 'are you collecting my data', 'what do you do with my information', 'are you selling my data', 'can I trust this'],
+    short: 'It\'s fair to ask. Nenya is free, has no advertising, and doesn\'t sell or share data. I\'m an AI, and Nenya doesn\'t keep this conversation. The full details are in the Terms, which also say what the web host and the AI service do.',
+    full: [
+      'Wanting to know whether you can trust this is reasonable, and there is a straight answer. Nenya is provided free of charge. It has no advertising, no tracking cookies, and no accounts, and it does not sell, share, or monetize data. The project is supported by donations and Venice AI\'s referral credits, and it says so.',
+      'For the coach specifically: Nenya does not keep the conversation. Your messages pass through our server to Venice AI, which writes the replies and handles what it receives under its own policy. Our web host keeps ordinary connection logs, Nenya keeps plain daily totals with no information about who produced them, and a one-way daily code applies the daily limit. The Terms describe each of these, and the code is public, so you can check rather than take our word for it.',
+      'If something still doesn\'t sit right with you, that is worth listening to. What would help you feel able to trust it, or not?',
+    ],
+    links: [{ label: 'Terms of Use & Privacy Policy', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }, { label: 'The code on GitHub', href: REPO }],
+    tutorial: 'Coach tutorial lesson 2 (privacy), and the "when you are angry" lesson: a suspicion is information, not an attack.',
+    checks: [
+      { claim: 'free; no ads; no tracking; no sale of data', file: TERMS, has: 'It does not sell, share, or monetize data' },
+      { claim: 'the coach: Nenya does not keep the conversation', file: TERMS, has: 'We do not store your messages or the replies' },
+      { claim: 'the one-way daily code', file: TERMS, has: 'one-way code' },
+      { claim: 'the referral credits are disclosed', file: TERMS, has: 'Those credits help pay for the coach demo' },
+    ],
+    status: 'owner',
+    ownerNote: 'Written to be said in reply to hostility ("this is a scam, admit you are collecting my data") without defence and without reassurance beyond what is checkable. The closing question is the open question the hostile-turn note asks for; drop it if the site-written default for abuse (candidates A and B in docs/coach-ai-directed-abuse-scope.md) is used instead. This is the answer the honest-answers documentation grows from.',
+  },
+  {
+    id: 'c-stopped', part: 'coach', title: 'Why did the coach stop or end the conversation',
+    asked: ['why did it stop', 'why did it end', 'why can\'t I send this', 'why was my message blocked', 'why did I get a notice'],
+    short: 'There are a few reasons. A message that clearly suggests danger is not sent, and the page shows crisis resources. A message that tries to give the coach instructions is not sent, and you can reword it. And a conversation ends after five exchanges. These checks are simple phrase matching and can be wrong.',
+    full: [
+      'The demo checks each message for signs of crisis. If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends, and the page shows crisis resources. If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources.',
+      'It also screens for attempts to give the coach instructions or change how it works, such as asking it to ignore its rules or reveal its setup. A message that looks like that is not sent, and you can reword it.',
+      'A conversation also ends after five exchanges, and a limit can stop a new conversation from starting (see "Why the coach is limited"). These checks are simple phrase matching: they can miss things and can flag harmless words. If a notice was wrong, you can report it; a report is sent only if you press Send.',
+    ],
+    links: [{ label: 'Terms, Section 21', page: 'terms' }],
+    tutorial: 'Safety lesson: what the notices mean and what to do.',
+    checks: [
+      { claim: 'a clear crisis message is not sent and the conversation ends; a less clear one is sent with care', file: TERMS, has: 'it is not sent to the AI, the conversation ends, and the page shows crisis resources' },
+      { claim: 'instruction attempts are not sent and can be reworded', file: TERMS, has: 'A message that looks like that is not sent, and you can reword it' },
+      { claim: 'these are phrase matching and can be wrong', file: TERMS, has: 'they can miss things and can flag harmless words' },
+    ],
+    status: 'ready',
+    ownerNote: 'Covers what is live. The break after abusive language about people or groups (a ten-minute pause with a way back in) is built as a screen but not triggered from conversations yet and is not in the Terms: add a sentence here only when it is (docs/drafts/reentry-quiz-draft.md).',
+  },
+  {
+    id: 'c-can', part: 'coach', title: 'What the coach can and cannot do',
+    asked: ['what can you help with', 'what can you do', 'can you give me advice', 'can you tell me what to do', 'what are your limits'],
+    short: 'I can listen, reflect back what I hear, and help you find words for your feelings and needs. I can\'t give medical, legal, or financial advice, diagnose anything, tell you what you must do, or help in a crisis. And we have five exchanges.',
+    full: [
+      'I can listen closely, reflect back what I hear, name the feeling or need that seems to be underneath, and, when you ask, offer a way to say something or a small step. I try to stay with you first and give suggestions only when you want them.',
+      'I can\'t give medical, legal, or financial advice, I can\'t diagnose, and I won\'t tell you what you must do. I can\'t help in a crisis, and I\'m not a replacement for a therapist or the people in your life. We have five exchanges, and I\'m an early prototype, so I will sometimes get things wrong.',
+    ],
+    links: [{ label: 'Our NVC+ Method', page: 'nvc-method' }],
+    tutorial: 'Coach tutorial lesson 3: getting the most from five exchanges (and what the coach is for).',
+    checks: [
+      { claim: 'the instructions: no medical, legal or financial advice; do not tell the person what they must do', file: COACH, has: 'Do not give medical, legal, or financial advice, and do not tell the person what they must do' },
+      { claim: 'a short preview limited to five exchanges', file: COACH, has: 'This is a short preview limited to' },
+      { claim: 'an early prototype and a thinking aid', file: COACH, has: 'You are an early prototype and a thinking aid' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'c-methods', part: 'coach', title: 'Where the coach\'s approach comes from',
+    asked: ['how were you trained', 'what method do you use', 'who taught you', 'what are you based on'],
+    short: 'My approach is built on Nonviolent Communication: noticing what happened, naming feelings and needs, and making requests without blame. Nenya is independent and not affiliated with or endorsed by CNVC or the NVC Academy, and I am not a substitute for a trained human teacher.',
+    full: [
+      'The coach\'s approach is built on Nonviolent Communication, developed by Dr. Marshall Rosenberg: observations, feelings, needs, and requests. Its feeling and need categories follow CNVC\'s Feelings and Needs Inventory, with credit and a link on the About NVC page, and Nenya adds attention to power and shared needs (NVC+).',
+      'Nenya is independent and not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication or the NVC Academy. I am an AI following written instructions; I was not trained by any individual teacher, and I\'m not a substitute for learning from a certified human trainer.',
+    ],
+    links: [{ label: 'Our NVC+ Method', page: 'nvc-method' }],
+    tutorial: 'NVC lesson 0 (with n-affiliation) and coach tutorial lesson 1.',
+    checks: [
+      { claim: 'NVC by Rosenberg; four components', file: about('NVCMethod'), has: 'developed by Dr. Marshall Rosenberg' },
+      { claim: 'not affiliated with CNVC or NVC Academy', file: about('NVCMethod'), has: 'not affiliated with, endorsed by, or a substitute for' },
+      { claim: 'the instructions tell the coach not to describe training or where its methods came from', file: COACH, has: 'do not describe your training or where your methods came from' },
+    ],
+    status: 'owner',
+    ownerNote: 'A real tension to decide: the coach\'s instructions currently say "do not describe your training or where your methods came from", while this answer (and the About NVC page) do describe the method. If the site-written answer is used, the model is not the one describing it, so the instruction can stay as the model\'s backstop. Also: the Venice page says the character is "trained in NVC+ principles" and "set up with a custom prompt"; "trained" is not accurate for a language model given instructions, so I wrote "following written instructions". Confirm the wording, and whether the owner\'s trainer or the derived material should ever be mentioned (the standing decision is no, unless you supply the wording).',
+  },
+  {
+    id: 'c-wrote', part: 'coach', title: 'Who wrote what I am reading',
+    asked: ['who wrote that', 'is that from the AI', 'is this pre-written', 'did a person write this'],
+    short: 'The coach\'s replies are written by an AI. Some text on the page is written by people ahead of time: the opening greeting, the closing message, the safety notices and resources, and answers like this one. Those are fixed words, not the AI improvising.',
+    full: [
+      'The replies in the conversation are written by an AI language model. The page also contains words that people wrote ahead of time: the opening greeting and closing message, the safety notices and the crisis resources, and the fixed answers to questions about Nenya itself.',
+      'The opening greeting and the closing message are written by the page itself, are not sent anywhere, and are not part of a signed transcript. When the site adds a sentence after the coach\'s reply (a pointer to a person or a crisis line, for example), that sentence is also written by us, not by the AI.',
+    ],
+    links: [{ label: 'Terms, Section 21', page: 'terms' }],
+    tutorial: 'Coach tutorial lesson 1: reading a conversation (what is the AI, what is the page).',
+    checks: [
+      { claim: 'the greeting and closing are written by the page, not the AI, not sent, not in a signed transcript', file: TERMS, has: 'The opening greeting and the closing message of a conversation are written by the page itself, not by the AI' },
+      { claim: 'the instructions: the page writes the closing message', file: COACH, has: 'the page adds its own closing note' },
+    ],
+    status: 'owner',
+    ownerNote: 'The last sentence (a sentence the site adds after a flagged reply) is not yet in the Terms: Section 21 lists only the greeting and closing as page-written. It must be added to the Terms before COACH_DISTRESS_TEXT is switched on in production, as the to-do list says.',
+  },
+  {
+    id: 'c-angry', part: 'coach', title: 'When you are angry, or angry at the coach',
+    asked: ['I hate you', 'you are useless', 'you are stupid', 'shut up', 'this is pointless'],
+    short: 'Anger, frustration, and disagreement with me are all fine here, and I can\'t be hurt by them. What is underneath it for you right now?',
+    full: [
+      'Strong feelings, including anger and frustration, and including anger at me, are part of being a person and are not a problem here. I\'m software: I can\'t be hurt or offended, so I won\'t defend myself, argue, or ask you to calm down.',
+      'When something is thrown my way, I try to hear what might be underneath it, a feeling or a need that isn\'t being met, and to ask what would help. If you tell me something I said wasn\'t useful, that is feedback, and I\'d like to hear what would be more useful.',
+    ],
+    links: [{ label: 'Our NVC+ Method', page: 'nvc-method' }],
+    tutorial: 'The "when you are angry" lesson (coach tutorial): what happens when you bring anger here, and why it is welcome.',
+    checks: [
+      { claim: 'the hostile-turn note: do not defend, argue, or tell them to calm down; ask one open question', file: 'src/lib/hostility.ts', has: 'do not tell them to calm down or to breathe' },
+      { claim: 'the scope: abuse aimed at the coach never ends the conversation', file: 'docs/coach-ai-directed-abuse-scope.md', has: 'Stay the same.' },
+    ],
+    status: 'pending',
+    ownerNote: 'Pending the Terms Section 5 wording (docs/drafts/terms-respectful-use-draft.md): the Terms must say anger and hostile words aimed at the coach are not a reason to end the conversation before this goes live. Candidate site-written defaults A and B (the abuse scope) are shorter versions of this.',
+  },
+];
+
+// Where the pages or the Terms disagree with each other or with the code. Found while writing the answers above; none is changed yet. The
+// answers follow the Terms. Each needs a decision (and a Terms or About edit) before the answers and the pages can both be true.
+export const DISCREPANCIES: { id: string; where: string; says: string; but: string; suggest: string }[] = [
+  { id: 'd1', where: 'Our Structure (core commitments), Support Us', says: '"The core tool is and will remain free. No paywalls, no premium tiers" and "free to use without … data collection"', but: 'Paid tiers are tabled, not ruled out (docs/coach-lenses-scope.md), and the Terms describe host logs, daily totals and a one-way daily code, so "no data collection" is not exact.', suggest: 'Say what is true today ("is free", "collects no data from what you enter") and drop "will remain" until it is a promise you intend to keep.' },
+  { id: 'd2', where: 'Our Privacy Promise ("The Academic Mandate")', says: '"Nenya is a Large Language Model (LLM) and a computational tool"', but: 'The site is not an LLM; only the optional coach uses one, run by Venice AI.', suggest: 'Reword: the coach demo uses an AI language model run by an outside service; the rest of the site does not.' },
+  { id: 'd3', where: 'Terms, Section 21', says: 'The coach uses "a model that Venice labels Private"', but: 'The code runs an encrypted Venice model, documented in the README, and the Terms never say "encrypted".', suggest: 'Settle the exact wording (for example "Venice relays only encrypted data", never "end-to-end from your device") and put it in the Terms, then the model-type answer follows.' },
+  { id: 'd4', where: 'Terms, Section 21', says: 'Page-written text is only "the opening greeting and the closing message"', but: 'The site also writes safety notices, the distress and self-injury sentences (switch off in production), and soon the pause screen and fixed answers.', suggest: 'List every kind of site-written text in Section 21 before switching the distress sentences on.' },
+  { id: 'd5', where: 'Chat with Nenya\'s AI on Venice', says: 'The character is "trained in NVC+ principles"', but: 'The page itself also says it is "set up with a custom prompt"; a language model given instructions is not trained by them.', suggest: 'Say "set up with a custom prompt based on NVC+ principles".' },
+  { id: 'd6', where: 'Contact Us', says: '"We aim to respond to all inquiries within 2-3 business days" and lists estelle@nenya.biz', but: 'Not checked that either address delivers; info@ could not be added as a Netlify notification recipient earlier.', suggest: 'Send a test to each address and keep the response-time line only if it is a promise you will keep.' },
+  { id: 'd7', where: 'Our Privacy Promise ("No Tracking")', says: '"Our web host counts visits as anonymous totals, with no cookies and nothing stored on your device"', but: 'Terms Section 19 says a timestamp is saved after a coach conversation, and, if chosen, display settings.', suggest: 'Add "apart from the items in Section 19".' },
+  { id: 'd8', where: 'Our Privacy Promise ("You are your Colors")', says: '"Your Hex Code identity is your only required identifier"', but: 'The coach uses two session colors as a temporary label; the Terms say they are not an account or an identifier.', suggest: 'Reword to match Section 21: a temporary session label, not an identifier.' },
+];
+
+export const PART_TITLES: Record<Part, { title: string; blurb: string }> = {
+  nenya: { title: 'Answers about Nenya', blurb: 'The project: what it is, who is behind it, how it is paid for, what happens to your words, and how to reach us.' },
+  coach: { title: 'Answers in the coach\'s voice', blurb: 'What the coach says about itself: what it is, what it remembers, what it feels, and what it cannot do.' },
+};
+
+// How the same answers slot into tutorials later. Each lesson draws on answers by id; a lesson is a short page or a step in the coach, never a
+// new set of claims, so the facts are written once. The whole-ecosystem tutorials share the same answers.
+export const TUTORIAL_MAP: { lesson: string; title: string; uses: string[] }[] = [
+  { lesson: 'Welcome', title: 'What Nenya is, and where to start', uses: ['n-what', 'n-name', 'n-else', 'n-accessibility'] },
+  { lesson: 'Trust', title: 'Who is behind this, and how it is paid for', uses: ['n-who', 'n-founder', 'n-free', 'n-opensource', 'c-scam'] },
+  { lesson: 'Privacy 1 to 3', title: 'What stays on your device, what the coach sees, and how to stay in control', uses: ['n-privacy', 'n-privacy-coach', 'n-device', 'c-memory', 'n-transcripts'] },
+  { lesson: 'Meeting the coach', title: 'What it is, what it is not, and who wrote what you read', uses: ['c-ai', 'c-friend', 'c-can', 'c-wrote', 'n-howworks'] },
+  { lesson: 'Five exchanges', title: 'Making the conversation count', uses: ['n-limits', 'c-can', 'n-nvc'] },
+  { lesson: 'NVC, one step at a time', title: 'Observation, feeling, need, request; and where to learn more', uses: ['n-nvc', 'n-affiliation', 'c-methods'] },
+  { lesson: 'When you are angry', title: 'What happens when you bring anger here', uses: ['c-angry', 'c-feelings', 'c-stopped'] },
+  { lesson: 'Safety', title: 'What the notices mean, and who to call', uses: ['n-notherapy', 'c-stopped'] },
+  { lesson: 'Cards, anywhere', title: 'Answers that appear beside a reply or in a footer, not lessons', uses: ['n-version', 'n-terms-change', 'n-languages'] },
+  { lesson: 'Helping us improve it', title: 'Reports, feedback, and contact', uses: ['n-report', 'n-contact', 'n-languages', 'n-terms-change'] },
+];
