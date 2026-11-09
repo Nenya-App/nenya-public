@@ -1,4 +1,4 @@
-// Builds the branded PDFs (and an editable Markdown copy) from the draft pre-written answers in docs/drafts/answers/answers.mts.
+// Builds the branded PDFs (and an editable Markdown copy) from the draft pre-written answers in src/lib/aboutNenya.ts.
 // Same look as the Terms PDF (src/lib/legalPdf.ts): cream pages, gold rules, Cinzel and Manrope, the logo, a cover, a header band, a footer.
 //
 //   node scripts/build-answers-pdf.mts [outDir]        (default: ~/Downloads/Nenya-Answers)
@@ -10,7 +10,8 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { jsPDF } from 'jspdf';
-import { ANSWERS, DISCREPANCIES, PART_TITLES, TUTORIAL_MAP, type Answer, type Part } from '../docs/drafts/answers/answers.mts';
+import { ANSWERS, PART_TITLES, type Answer, type Part } from '../src/lib/aboutNenya.ts';
+import { DISCREPANCIES, TUTORIAL_MAP } from '../docs/drafts/answers/review-notes.mts';
 
 const root = resolve(import.meta.dirname, '..');
 // pdfCommon fetches its fonts and logo from the site's own paths; serve them from disk instead.
@@ -227,7 +228,7 @@ fullAnswers('coach', 'Nenya-Answers-2-The-Coach.pdf', 2);
 
 // ───────────────── the editable copy
 {
-  const L: string[] = ['# Nenya: pre-written answers (draft, ' + MONTH + ')', '', 'Source of truth: `docs/drafts/answers/answers.mts`. This file is generated; edit the words there (or tell me what to change). Status: ready = checked against its sources; decision = needs you; hold = describes something not live.', ''];
+  const L: string[] = ['# Nenya: pre-written answers (draft, ' + MONTH + ')', '', 'Source of truth: `src/lib/aboutNenya.ts`. This file is generated; edit the words there (or tell me what to change). Status: ready = checked against its sources; decision = needs you; hold = describes something not live.', ''];
   (['nenya', 'coach'] as Part[]).forEach((part) => {
     L.push(`## ${PART_TITLES[part].title}`, '', PART_TITLES[part].blurb, '');
     ANSWERS.filter((a) => a.part === part).forEach((a) => {

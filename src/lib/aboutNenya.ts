@@ -1,4 +1,6 @@
-// DRAFT pre-written answers, written 2026-11-08 for the owner to edit. They are NOT wired into the site or the coach.
+// Pre-written answers about Nenya and about the coach: the single source for the coach's cards, the About pages and the tutorials. Written 2026-11-08;
+// the wording is the owner's to edit. Only answers with status 'ready' may be used live (liveAnswers); 'owner' and 'pending' wait for a decision or a feature.
+// STEP 1 and 2 of docs/about-nenya-questions-scope.md: the content and the detector. The coach function does not use them yet.
 //
 // One source for several uses, so the words are written once:
 //   short     what a small card under a coach reply would say (the coach does not improvise these; see docs/about-nenya-questions-scope.md)
@@ -93,7 +95,7 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'n-founder', part: 'nenya', title: 'Who is behind it',
-    asked: ['who created Nenya', 'who is Estelle', 'who is the founder', 'who is the designer'],
+    asked: ['who designed Nenya', 'who is Estelle', 'who is the founder', 'who is the designer'],
     short: 'Nenya is built by Estëlle, a Minnesota-based designer, educator, and artist. The designer\'s page exists as a matter of transparency: Nenya is not an anonymous product.',
     full: [
       'Nenya is built by Estëlle, a Minnesota-based designer, educator, and artist. The page about the designer exists mainly as a matter of transparency, because Nenya is not an anonymous product, though the intention has always been for the work to stand on its own.',
@@ -109,7 +111,7 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'n-contact', part: 'nenya', title: 'How to reach us',
-    asked: ['how do I contact you', 'can I talk to a person', 'email address', 'where do I report a problem', 'can I partner with you'],
+    asked: ['how do I contact you', 'can I talk to a person', 'what is your email address', 'how do I email you', 'can I partner with you'],
     short: 'You can reach us at info@nenya.biz, or use the optional form on the site to send a report or message. I can\'t pass anything on from this conversation, so please write to that address directly.',
     full: [
       'The general address is info@nenya.biz, for questions, partnership inquiries, platform support, and anything in the Terms or Privacy Policy. Questions about the project\'s vision can go to the designer at the address on the Contact page.',
@@ -148,7 +150,7 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'n-privacy', part: 'nenya', title: 'Is this private? (the short version)',
-    asked: ['is this private', 'is my data safe', 'who can see what I write', 'do you sell data', 'do you track me'],
+    asked: ['is this private', 'is my data safe', 'is my information private', 'do you sell data', 'do you track me'],
     short: 'What you enter in the reflection tools stays in your browser and is gone when you close the tab. We have no accounts, no advertising, no tracking cookies, and we do not sell or share data. The optional coach is different: your messages pass through our server to an outside AI service, as explained in the next answer.',
     full: [
       'Nenya does not require an account for any part of it. It has no advertising and no tracking cookies, and it does not follow you around the internet. What you enter in the reflection tool (colors, melodies, drawings, body-map placements, written reflections) stays in your browser, is not sent to us, and is gone when you close the tab.',
@@ -167,7 +169,7 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'n-privacy-coach', part: 'nenya', title: 'What happens to what I type to the coach',
-    asked: ['do you store my messages', 'who sees what I tell the coach', 'where does my conversation go', 'is the coach private', 'do you keep my chats'],
+    asked: ['do you store my messages', 'who sees what I tell the coach', 'where does my conversation go', 'is the coach private', 'do you keep my chats', 'do you keep what I say', 'do you save this conversation'],
     short: 'Your messages go through our server to Venice AI, which writes the replies. We do not store your messages or the replies, and we do not write them to our logs; they exist in your browser tab and are gone when you close it. Venice AI handles what it receives under its own policy, which we do not control.',
     full: [
       'The coach demo is the one place on the site where what you type is sent to an AI service. Your messages are sent through our server, hosted by Netlify, to Venice AI, which writes the replies. A conversation is limited to five exchanges, and each message to 500 characters.',
@@ -464,7 +466,7 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'c-memory', part: 'coach', title: 'Will you remember me? Do you keep this?',
-    asked: ['will you remember me', 'do you remember our last chat', 'do you keep what I say', 'do you save this conversation'],
+    asked: ['will you remember me', 'do you remember our last chat', 'will you remember this', 'can you remember me next time'],
     short: 'No. I won\'t remember this conversation, and Nenya doesn\'t keep it. When you close the tab it is gone, unless you chose to download a transcript, which stays with you.',
     full: [
       'I won\'t remember this conversation, and I can\'t greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.',
@@ -555,7 +557,7 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'c-can', part: 'coach', title: 'What the coach can and cannot do',
-    asked: ['what can you help with', 'what can you do', 'can you give me advice', 'can you tell me what to do', 'what are your limits'],
+    asked: ['what can you help with', 'what can you do', 'what are your limits', 'what can\'t you do'],
     short: 'I can listen, reflect back what I hear, and help you find words for your feelings and needs. I can\'t give medical, legal, or financial advice, diagnose anything, tell you what you must do, or help in a crisis. And we have five exchanges.',
     full: [
       'I can listen closely, reflect back what I hear, name the feeling or need that seems to be underneath, and, when you ask, offer a way to say something or a small step. I try to stay with you first and give suggestions only when you want them.',
@@ -572,7 +574,7 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'c-methods', part: 'coach', title: 'Where the coach\'s approach comes from',
-    asked: ['how were you trained', 'what method do you use', 'who taught you', 'what are you based on'],
+    asked: ['how were you trained', 'who taught you', 'what are you based on', 'what were you trained on'],
     short: 'My approach is built on Nonviolent Communication: noticing what happened, naming feelings and needs, and making requests without blame. Nenya is independent and not affiliated with or endorsed by CNVC or the NVC Academy, and I am not a substitute for a trained human teacher.',
     full: [
       'The coach\'s approach is built on Nonviolent Communication, developed by Dr. Marshall Rosenberg: observations, feelings, needs, and requests. Its feeling and need categories follow CNVC\'s Feelings and Needs Inventory, with credit and a link on the About NVC page, and Nenya adds attention to power and shared needs (NVC+).',
@@ -624,35 +626,197 @@ export const ANSWERS: Answer[] = [
   },
 ];
 
-// Where the pages or the Terms disagree with each other or with the code. Found while writing the answers above; none is changed yet. The
-// answers follow the Terms. Each needs a decision (and a Terms or About edit) before the answers and the pages can both be true.
-export const DISCREPANCIES: { id: string; where: string; says: string; but: string; suggest: string }[] = [
-  { id: 'd1', where: 'Our Structure (core commitments), Support Us', says: '"The core tool is and will remain free. No paywalls, no premium tiers" and "free to use without … data collection"', but: 'Paid tiers are tabled, not ruled out (docs/coach-lenses-scope.md), and the Terms describe host logs, daily totals and a one-way daily code, so "no data collection" is not exact.', suggest: 'Say what is true today ("is free", "collects no data from what you enter") and drop "will remain" until it is a promise you intend to keep.' },
-  { id: 'd2', where: 'Our Privacy Promise ("The Academic Mandate")', says: '"Nenya is a Large Language Model (LLM) and a computational tool"', but: 'The site is not an LLM; only the optional coach uses one, run by Venice AI.', suggest: 'Reword: the coach demo uses an AI language model run by an outside service; the rest of the site does not.' },
-  { id: 'd3', where: 'Terms, Section 21', says: 'The coach uses "a model that Venice labels Private"', but: 'The code runs an encrypted Venice model, documented in the README, and the Terms never say "encrypted".', suggest: 'Settle the exact wording (for example "Venice relays only encrypted data", never "end-to-end from your device") and put it in the Terms, then the model-type answer follows.' },
-  { id: 'd4', where: 'Terms, Section 21', says: 'Page-written text is only "the opening greeting and the closing message"', but: 'The site also writes safety notices, the distress and self-injury sentences (switch off in production), and soon the pause screen and fixed answers.', suggest: 'List every kind of site-written text in Section 21 before switching the distress sentences on.' },
-  { id: 'd5', where: 'Chat with Nenya\'s AI on Venice', says: 'The character is "trained in NVC+ principles"', but: 'The page itself also says it is "set up with a custom prompt"; a language model given instructions is not trained by them.', suggest: 'Say "set up with a custom prompt based on NVC+ principles".' },
-  { id: 'd6', where: 'Contact Us', says: '"We aim to respond to all inquiries within 2-3 business days" and lists estelle@nenya.biz', but: 'Not checked that either address delivers; info@ could not be added as a Netlify notification recipient earlier.', suggest: 'Send a test to each address and keep the response-time line only if it is a promise you will keep.' },
-  { id: 'd7', where: 'Our Privacy Promise ("No Tracking")', says: '"Our web host counts visits as anonymous totals, with no cookies and nothing stored on your device"', but: 'Terms Section 19 says a timestamp is saved after a coach conversation, and, if chosen, display settings.', suggest: 'Add "apart from the items in Section 19".' },
-  { id: 'd8', where: 'Our Privacy Promise ("You are your Colors")', says: '"Your Hex Code identity is your only required identifier"', but: 'The coach uses two session colors as a temporary label; the Terms say they are not an account or an identifier.', suggest: 'Reword to match Section 21: a temporary session label, not an identifier.' },
-];
-
 export const PART_TITLES: Record<Part, { title: string; blurb: string }> = {
   nenya: { title: 'Answers about Nenya', blurb: 'The project: what it is, who is behind it, how it is paid for, what happens to your words, and how to reach us.' },
   coach: { title: 'Answers in the coach\'s voice', blurb: 'What the coach says about itself: what it is, what it remembers, what it feels, and what it cannot do.' },
 };
 
-// How the same answers slot into tutorials later. Each lesson draws on answers by id; a lesson is a short page or a step in the coach, never a
-// new set of claims, so the facts are written once. The whole-ecosystem tutorials share the same answers.
-export const TUTORIAL_MAP: { lesson: string; title: string; uses: string[] }[] = [
-  { lesson: 'Welcome', title: 'What Nenya is, and where to start', uses: ['n-what', 'n-name', 'n-else', 'n-accessibility'] },
-  { lesson: 'Trust', title: 'Who is behind this, and how it is paid for', uses: ['n-who', 'n-founder', 'n-free', 'n-opensource', 'c-scam'] },
-  { lesson: 'Privacy 1 to 3', title: 'What stays on your device, what the coach sees, and how to stay in control', uses: ['n-privacy', 'n-privacy-coach', 'n-device', 'c-memory', 'n-transcripts'] },
-  { lesson: 'Meeting the coach', title: 'What it is, what it is not, and who wrote what you read', uses: ['c-ai', 'c-friend', 'c-can', 'c-wrote', 'n-howworks'] },
-  { lesson: 'Five exchanges', title: 'Making the conversation count', uses: ['n-limits', 'c-can', 'n-nvc'] },
-  { lesson: 'NVC, one step at a time', title: 'Observation, feeling, need, request; and where to learn more', uses: ['n-nvc', 'n-affiliation', 'c-methods'] },
-  { lesson: 'When you are angry', title: 'What happens when you bring anger here', uses: ['c-angry', 'c-feelings', 'c-stopped'] },
-  { lesson: 'Safety', title: 'What the notices mean, and who to call', uses: ['n-notherapy', 'c-stopped'] },
-  { lesson: 'Cards, anywhere', title: 'Answers that appear beside a reply or in a footer, not lessons', uses: ['n-version', 'n-terms-change', 'n-languages'] },
-  { lesson: 'Helping us improve it', title: 'Reports, feedback, and contact', uses: ['n-report', 'n-contact', 'n-languages', 'n-terms-change'] },
-];
+
+// ───────────────────────── Step 2: detecting which question was asked ─────────────────────────
+// Pure phrase matching on the person's latest message, like the crisis check: it misses some wordings and a wrong match is possible, so the answers are
+// plain and true and never a surprise. Anchored on Nenya, "this site / app / tool", "you guys", or the coach itself, so a person's own story (a friend
+// who happens to be called Nenya, "who runs my life", "is it safe to tell my mom") is left to the coach. Longer messages are treated as a story, not
+// a question about the site (ABOUT_MAX_CHARS), and are not matched; the owner can raise that once the false-alarm rate is known.
+
+export const ABOUT_MAX_CHARS = 300;
+
+const SITE = "(?:this|the)\\s+(?:site|app|website|tool|demo|coach|chat|project|place)";
+
+// Highest priority first: specific questions before general ones.
+export const ABOUT_ORDER = [
+  'n-who', 'n-founder', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
+  'n-name', 'n-version', 'n-contact', 'n-free', 'n-privacy-coach', 'n-privacy', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
+  'n-affiliation', 'n-nvc', 'n-notherapy', 'n-accessibility', 'n-report', 'n-transcripts', 'n-languages', 'n-terms-change', 'n-else', 'n-what',
+] as const;
+
+export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
+  'n-who': [
+    new RegExp(`\\bwho\\s+(?:runs?|owns?|made|created|built|founded|operates|is\\s+behind|'s\\s+behind)\\s+(?:${SITE}|nenya|you\\s+guys|it)\\b`, 'i'),
+    /\bwho(?:'s|\s+is)\s+behind\s+(?:this|nenya|you|the\s+(?:site|app|coach))\b/i,
+    /\bwho\s+(?:is|'s)\s+nenya\b|\bwho\s+(?:are|r)\s+(?:you|u)\s+guys\b|\bwho\s+(?:made|created|built|runs)\s+you\b/i,
+    new RegExp(`\\bis\\s+(?:${SITE}|nenya)\\s+(?:a\\s+|an\\s+)?(?:company|nonprofit|non-profit|startup|business|charity|organi[sz]ation|corporation)\\b`, 'i'),
+  ],
+  'n-founder': [
+    /\bwho\s+(?:is|'s)\s+est[eë]lle\b|\bwho\s+is\s+the\s+(?:founder|designer|creator|owner)\b|\bwho\s+designed\s+(?:nenya|this|you|it)\b/i,
+    /\babout\s+the\s+(?:founder|designer|creator)\b/i,
+  ],
+  'c-friend': [
+    /\bcan\s+you\s+be\s+my\s+(?:friend|therapist|counsel+or|coach|girlfriend|boyfriend|partner)(?!'s|s\b)\b|\bbe\s+my\s+friend(?!'s|s\b)/i,
+    /\bare\s+you\s+my\s+(?:friend|therapist|counsel+or|doctor)\b|\bcan\s+you\s+(?:diagnose|treat)\s+me\b/i,
+    /\b(?:replace|instead\s+of)\s+(?:my\s+)?therapist\b|\byou(?:'re|\s+are)\s+the\s+only\s+(?:one|person)\s+(?:i|who)\b/i,
+  ],
+  'c-feelings': [
+    /\bdo\s+you\s+(?:have|feel|get)\s+(?:any\s+)?(?:feelings?|emotions?)\b|\bdo\s+you\s+(?:actually\s+|really\s+)?(?:care|like|love|miss|hate)(?:\s+(?:about\s+)?me)?\s*\??\s*$/i,
+    /\bdo\s+you\s+(?:care|like|love|miss)\s+(?:about\s+)?me\b|\bcan\s+i\s+hurt\s+you\b|\bare\s+you\s+(?:hurt|sad|upset|offended)\b|\bwill\s+you\s+miss\s+me\b/i,
+  ],
+  'c-scam': [
+    /\b(?:is\s+this|this\s+is)\s+(?:a\s+|just\s+a\s+)?(?:scam|fraud|rip-?off)\b|\bare\s+you\s+(?:a\s+)?(?:scam|scammers?)\b/i,
+    /\bcollecting\s+(?:my\s+)?(?:data|information|info)\b|\bselling\s+my\s+(?:data|information|info)\b|\bwhat\s+do\s+you\s+do\s+with\s+my\s+(?:data|information|info|messages)\b/i,
+    /\bcan\s+i\s+trust\s+(?:you|nenya|this\s+(?:site|app|tool|coach|place|demo))\b|\bcan\s+i\s+trust\s+this\s*\?*\s*$|\b(?:is\s+(?:this|nenya)|are\s+you)\s+legit(?:imate)?\s*[?.!]*\s*$/i,
+  ],
+  'c-memory': [
+    /\b(?:will|do|can|would|could)\s+you\s+remember\b|\bremember\s+(?:me|this\s+conversation|our\s+(?:last|previous)|what\s+i)\b|\bwill\s+you\s+(?:forget|recall)\b/i,
+  ],
+  'c-ai': [
+    /\bare\s+(?:you|u)\s+(?:a\s+|an\s+)?(?:real(?:\s+person)?|person|human|bot|robot|ai|a\.i\.|artificial(?:\s+intelligence)?|machine|program|alive|chatbot|computer)\b/i,
+    /\b(?:am\s+i|is\s+this)\s+(?:talking|speaking|chatting|typing)\s+(?:to|with)\s+(?:a\s+)?(?:human|real\s+person|robot|bot|ai|machine|person)\b/i,
+    /\bis\s+(?:this|there)\s+(?:a\s+)?(?:real\s+)?(?:person|human)\s+(?:there|behind|typing|on\s+the\s+other)\b|\bis\s+this\s+a\s+(?:bot|real\s+person|human|robot|machine)\b|\bwho\s+(?:am\s+i|are\s+you)\s+(?:talking\s+to|speaking\s+(?:to|with))\b|\bwho\s+are\s+you\s*\??\s*$/i,
+  ],
+  'c-stopped': [
+    /\bwhy\s+(?:did|was|is|has)\s+it\s+(?:stop|stopped|block|blocked|cut\s+off|refuse|refused)\b|\bwhy\s+did\s+it\s+end\s*[?.!]*\s*$|\bwhy\s+(?:did|was|is|has)\s+(?:the\s+(?:coach|conversation|chat)|my\s+(?:message|chat|conversation))\s+(?:stop|end|ended|stopped|block|blocked|cut\s+off|refuse|refused)\b/i,
+    /\bwhy\s+can(?:'t|not)\s+i\s+send\s+(?:this|that|it)\b|\bwhy\s+did\s+i\s+get\s+(?:a|this)\s+(?:notice|warning|flag)\b|\bwhy\s+(?:was|is)\s+my\s+message\s+(?:blocked|flagged|not\s+sent)\b/i,
+  ],
+  'c-wrote': [
+    /\bwho\s+wrote\s+(?:(?:that|this|these|those)\s*[?.!]*\s*$|the\s+(?:replies|answers|messages)\b)|\bis\s+(?:that|this)\s+(?:pre-?written|scripted|canned)\b|\bis\s+(?:that|this)\s+(?:from\s+the\s+ai|written\s+by\s+(?:a\s+)?(?:person|human|the\s+ai))\b|\bdid\s+a\s+(?:person|human)\s+write\b|\bare\s+(?:these|your)\s+(?:replies|answers)\s+(?:pre-?written|scripted)\b/i,
+  ],
+  'c-methods': [
+    /\bhow\s+(?:were|are)\s+you\s+trained\b|\bwho\s+(?:taught|trained)\s+you(?!\s+to\b)|\bwhat\s+(?:are\s+you|is\s+this)\s+based\s+on\b|\bwhat\s+were\s+you\s+trained\s+on\b/i,
+  ],
+  'c-can': [
+    /\bwhat\s+can\s+you\s+(?:help\s+(?:me\s+)?with|do|not\s+do)\b|\bwhat\s+are\s+your\s+limits\b|\bwhat\s+(?:you\s+)?can(?:'t|not)\s+you\s+do\b/i,
+    /\bcan\s+you\s+give\s+(?:me\s+)?(?:medical|legal|financial)\s+advice\b|\bwhat\s+should\s+i\s+(?:use|ask)\s+you\s+for\b/i, // asking for ordinary advice ("can you give me advice") is a request for help, not a question about limits: it goes to the coach
+
+  ],
+  'n-name': [
+    /\bwhat\s+does\s+nenya\s+mean\b|\bwhy\s+nenya\b|\bwhy\s+(?:is\s+it|are\s+you|is\s+this)\s+called\s+nenya\b|\bmeaning\s+of\s+(?:the\s+name\s+)?nenya\b/i,
+    /\bhow\s+(?:do\s+(?:you|i)|to)\s+(?:say|pronounce)\s+nenya\b|\bwhere\s+does\s+(?:the\s+name\s+)?nenya\s+come\s+from\b|\bis\s+nenya\s+from\s+(?:lord|tolkien|the\s+lord)/i,
+  ],
+  'n-version': [
+    /\bwhat\s+version\s+(?:is\s+(?:this|it|nenya)|of\s+(?:nenya|this|the\s+(?:site|app|coach)))\b|\bwhich\s+(?:version|release)\s+(?:is\s+(?:this|it)|are\s+(?:you|we))\b|\bwhen\s+was\s+(?:this|it|the\s+site)\s+(?:last\s+)?updated\b|\bis\s+this\s+the\s+latest\s+(?:version|release)\b|\bversion\s+number\b/i,
+  ],
+  'n-contact': [
+    /\bhow\s+(?:do|can|could)\s+(?:i|we)\s+(?:contact|reach|email|message|get\s+in\s+touch\s+with)\s+(?:you|nenya|the\s+(?:team|creator|founder))\b|\b(?:your|nenya(?:'s)?)\s+(?:email|e-mail|contact\s+(?:info|information|details)|phone\s+number)\b/i,
+    /\bcan\s+i\s+(?:talk|speak)\s+to\s+(?:a\s+)?(?:real\s+)?(?:person|human)\b(?!\s+(?:about|who|that|when|instead))/i,
+    /\bwhere\s+(?:do|can)\s+i\s+(?:send\s+feedback|complain)\b|\bwhat(?:'s|\s+is)\s+(?:your|the)\s+(?:email|e-mail)\b|\bemail\s+address\b|\bcan\s+i\s+partner\s+with\b/i,
+  ],
+  'n-free': [
+    new RegExp(`\\bis\\s+(?:${SITE}|nenya)\\s+free\\b|\\bhow\\s+much\\s+(?:does|is)\\s+(?:${SITE}|nenya)\\s+(?:cost|\\?)`, 'i'),
+    new RegExp(`\\bwho\\s+(?:pays|funds|is\\s+paying)\\s+for\\s+(?:${SITE}|nenya|you|it)\\b|\\bhow\\s+do\\s+you\\s+(?:make\\s+money|earn\\s+money|fund\\s+(?:this|yourselves))`, 'i'),
+    /\bis\s+there\s+a\s+(?:paid|premium|pro)\s+(?:version|tier|plan)\b|\bdo\s+i\s+have\s+to\s+pay\b|\bwhat(?:'s|\s+is)\s+the\s+(?:referral|venice)\s+(?:link|code)\b/i,
+  ],
+  'n-privacy-coach': [
+    /\bdo\s+you\s+(?:store|save|keep|record|log)\s+(?:my|this|our|what\s+i|the)\s+(?:messages?|chats?|conversations?|words|data|info(?:rmation)?|replies|say)\b/i,
+    /\bwhere\s+(?:does|do|is|are)\s+(?:my|the)\s+(?:data|messages?|conversation|chat|info(?:rmation)?|words)\s+(?:go|stored|saved|kept)\b|\bwho\s+(?:sees|reads|has\s+access\s+to|can\s+(?:see|read))\s+(?:my\s+(?:messages?|chat|conversation|words)|this\s+(?:chat|conversation)|what\s+i\s+(?:write|type|say|tell|share))\b/i,
+    /\bis\s+(?:this|the)\s+(?:conversation|chat|coach|demo)\s+(?:private|saved|stored|recorded|safe|secure|anonymous|confidential)\b|\bwhat\s+happens\s+to\s+(?:my\s+(?:messages?|data|words|conversation|chat)|what\s+i\s+(?:write|type|say))\b/i,
+  ],
+  'n-privacy': [
+    new RegExp(`\\bis\\s+(?:${SITE}|nenya)\\s+(?:private|safe|secure|anonymous|confidential)\\b`, 'i'),
+    /\bwho\s+can\s+see\s+(?:what\s+i|my\s+(?:reflections?|entries|answers|writing))\b|\bis\s+my\s+(?:data|information|privacy)\s+(?:safe|private|secure)\b/i,
+    /\bdo\s+you\s+(?:track|sell|spy\s+on|monitor)\s+(?:me|my\s+data|people)\b|\bare\s+you\s+(?:tracking|watching|spying\s+on|monitoring)\s+me\b|\bdo\s+you\s+sell\s+(?:data|my\s+data|information)\b/i,
+  ],
+  'n-device': [
+    /\b(?:do\s+you|does\s+(?:this|nenya|the\s+site))\s+(?:use|set|store)\s+cookies\b|\bany\s+cookies\b/i,
+    /\bwhat(?:'s|\s+is)\s+(?:saved|stored)\s+on\s+my\s+(?:device|phone|computer|browser)\b|\bhow\s+do\s+i\s+(?:delete|erase|clear|remove|wipe)\s+(?:my\s+)?(?:data|history|everything|info(?:rmation)?|conversation|chat)\b/i,
+    /\bwhat\s+(?:does|is)\s+(?:forget\s+me|emergency\s+exit)\b/i,
+  ],
+  'n-limits': [
+    /\bwhy\s+(?:only|just)\s+(?:five|5)\b|\bwhy\s+can(?:'t|not)\s+i\s+(?:keep\s+(?:talking|chatting)|send\s+more|continue)\b/i,
+    /\bwhy\s+(?:is|are)\s+(?:the\s+(?:coach|demo)|you)\s+(?:resting|limited|closed)\b|\bwhat\s+are\s+the\s+limits\b|\bwhy\s+(?:is\s+there\s+a|the|a)\s+(?:limit|rest|wait)\b/i,
+    /\bhow\s+many\s+(?:messages|exchanges)\s+(?:can|do)\s+i\b|\bwhy\s+did\s+it\s+say\s+(?:come\s+back|rest)\b/i,
+  ],
+  'n-howworks': [
+    /\bwhat\s+(?:model|ai|llm|technology|tech|software|language\s+model|engine)\s+(?:are\s+you|is\s+this|do\s+you\s+(?:use|run))\b|\bwhat\s+(?:powers|runs)\s+(?:you|this)\b|\bwho\s+hosts\s+(?:this|you|the\s+site)\b/i,
+    /\b(?:are|r)\s+you\s+(?:chatgpt|gpt|claude|gemini|llama|openai|anthropic|deepseek|qwen)\b|\bis\s+(?:it|this|the\s+coach)\s+encrypted\b|\bhow\s+do\s+you\s+work\b|\bwhat\s+are\s+you\s+(?:built|made|running)\s+(?:on|with|from)\b/i,
+  ],
+  'n-opensource': [
+    /\bopen[- ]source\b|\bcan\s+i\s+(?:see|read|view|copy|fork|download|reuse)\s+(?:(?:the\s+)?(?:code|source)\b|(?:it|this)\s*[?.!]*\s*$)|\bwhat\s+licen[sc]e\b|\bis\s+there\s+a\s+github\b|\bgithub\b/i,
+  ],
+  'n-affiliation': [
+    /\bare\s+you\s+(?:affiliated|connected|associated|endorsed|certified|part\s+of)\b|\b(?:affiliated|endorsed)\s+(?:with|by)\s+(?:cnvc|nvc|the\s+center)\b|\bis\s+(?:this|nenya)\s+(?:cnvc|official|endorsed|affiliated|certified)\b|\bare\s+you\s+(?:cnvc|nvc\s+academy)\b|\bare\s+you\s+(?:a\s+)?certified\b/i,
+  ],
+  'n-nvc': [
+    /\bwhat(?:'s|\s+is)\s+(?:nvc\+?|nonviolent\s+communication|non-violent\s+communication)\b|\bwhat\s+does\s+nvc\s+(?:stand\s+for|mean)\b/i,
+    new RegExp(`\\bwhat\\s+(?:method|approach|framework|technique)\\s+(?:do\\s+you|does\\s+(?:${SITE}|nenya))\\s+use\\b`, 'i'),
+  ],
+  'n-notherapy': [
+    new RegExp(`\\bis\\s+(?:${SITE}|nenya)\\s+(?:therapy|medical|a\\s+(?:therapy|medical|clinical)\\s+(?:tool|service))\\b|\\bis\\s+(?:${SITE}|nenya)\\s+(?:hipaa|gdpr)\\b`, 'i'),
+    /\bare\s+you\s+a\s+(?:doctor|therapist|psychologist|counsel+or|clinician|medical)\b|\bhipaa\b|\bis\s+this\s+(?:real\s+)?medical\s+advice\b/i,
+    new RegExp(`\\bis\\s+(?:${SITE})\\s+(?:safe|ok(?:ay)?)\\s+(?:to\\s+use|for\\s+(?:me|people))\\b`, 'i'),
+  ],
+  'n-accessibility': [
+    /\b(?:screen\s*reader|voiceover|talkback|nvda|jaws)\b|\baccessibility\b|\bcolou?r\s*blind\b/i,
+    new RegExp(`\\bis\\s+(?:${SITE}|nenya)\\s+accessible\\b|\\bis\\s+there\\s+(?:any\\s+)?(?:sound|audio)\\b|\\bcan\\s+you\\s+read\\s+(?:it|this)\\s+(?:to\\s+me|aloud)\\b|\\bcan\\s+i\\s+(?:make|change)\\s+the\\s+(?:text|font)\\b`, 'i'),
+  ],
+  'n-report': [
+    /\bhow\s+(?:do|can)\s+i\s+(?:report|flag)\s+(?:a\s+|the\s+|this\s+)?(?:bug|problem|issue|error|mistake|coach|notice)\b|\bhow\s+(?:do|can)\s+i\s+(?:send|give|leave)\s+(?:you\s+)?feedback\b|\bfound\s+a\s+(?:bug|glitch)\b|\bthe\s+(?:notice|warning|flag)\s+(?:was|is)\s+wrong\b|\bwhere\s+do\s+i\s+report\b/i,
+  ],
+  'n-transcripts': [
+    /\b(?:signed\s+)?transcripts?\b|\bprove\s+what\s+the\s+coach\s+said\b|\b(?:how\s+do\s+i|can\s+i)\s+(?:save|download|export|keep|copy)\s+(?:this|the|our|my)\s+(?:conversation|chat)\b/i,
+  ],
+  'n-languages': [
+    /\b(?:other|another)\s+languages?\b|\bdo\s+you\s+(?:speak|support|offer)\s+(?:spanish|french|german|portuguese|chinese|arabic|hindi|italian|japanese|korean|russian)\b|\bhelp\s+translate\b|\bis\s+there\s+a\s+translation\b|\bcan\s+i\s+use\s+(?:this|it|nenya)\s+in\s+(?:spanish|french|german|portuguese|chinese|arabic|hindi|italian|japanese|korean|russian)\b/i,
+    new RegExp(`\\b(?:translate|translation)\\s+(?:of\\s+)?(?:${SITE}|nenya|it)\\b|\\bcan\\s+(?:i|you)\\s+(?:use|talk|speak)\\s+(?:${SITE}|to\\s+you)\\s+in\\s+\\w+\\b`, 'i'),
+  ],
+  'n-terms-change': [
+    /\bwhy\s+(?:was\s+i|am\s+i|did\s+i\s+get)\s+(?:asked|prompted)\s+to\s+agree\s+again\b|\bwhat\s+changed\s+in\s+the\s+terms\b|\bwhere\s+are\s+the\s+(?:old|earlier|previous)\s+terms\b|\bagree\s+again\b/i,
+  ],
+  'n-else': [
+    new RegExp(`\\bwhat\\s+can\\s+(?:${SITE}|nenya)\\s+(?:do|offer|have)\\b|\\bwhat\\s+else\\s+(?:is\\s+(?:here|there)|can\\s+i\\s+do\\s+here)\\b`, 'i'),
+    /\bwhat\s+are\s+the\s+(?:six\s+)?gateways\b|\bwhat\s+is\s+the\s+breathing\s+tool\b|\bwhere\s+do\s+i\s+start\b|\bwhat\s+features\b/i,
+  ],
+  'n-what': [
+    new RegExp(`\\bwhat\\s+does\\s+(?:${SITE}|nenya)\\s+do\\b|\\bwhat(?:'s|\\s+is|\\s+are)\\s+(?:nenya|${SITE})\\b|\\bwhat\\s+is\\s+nenya\\s+(?:about|for)\\b|\\btell\\s+me\\s+about\\s+(?:nenya|${SITE})\\b`, 'i'),
+  ],
+  'c-angry': [], // handled by the hostile-turn path, not by a pre-written card
+};
+
+// Very short messages that are plainly about the site even without naming it ("is this free?", "who runs this?"). Anchored to the whole message, and
+// only for messages up to 80 characters, so "is this free?" is answered but "is this free time I'm wasting on my boss" is not.
+const LEAD = "(?:hey|hi|hello|so|ok|okay|um|quick question|one question|just curious|sorry)?[,.:! ]*";
+export const ABOUT_BARE: Record<string, string> = {
+  'n-what': "what\\s+(?:does\\s+this\\s+do|is\\s+this\\s+for|is\\s+this\\s+(?:site|app|thing|place))",
+  'n-else': "what\\s+can\\s+this\\s+do",
+  'n-who': "(?:who\\s+(?:runs|owns|made|created|built|is\\s+behind|'s\\s+behind)\\s+(?:this|it))|(?:is\\s+this\\s+(?:a\\s+)?(?:company|nonprofit|non-profit|business|startup|charity))",
+  'n-free': "(?:is\\s+(?:this|it)\\s+free)|(?:how\\s+much\\s+(?:does\\s+(?:it|this)|is\\s+(?:it|this))\\s+(?:cost)?)|(?:who\\s+pays\\s+for\\s+(?:this|it))",
+  'n-privacy': "is\\s+(?:this|it)\\s+(?:private|safe|secure|anonymous|confidential)",
+  'n-notherapy': "(?:is\\s+this\\s+(?:therapy|medical|a\\s+therapy\\s+(?:tool|app)))|(?:is\\s+(?:it|this)\\s+safe\\s+to\\s+use)",
+  'n-accessibility': "is\\s+(?:this|it)\\s+accessible",
+  'n-version': "is\\s+this\\s+the\\s+latest",
+  'n-report': "i\\s+found\\s+a\\s+(?:bug|problem|glitch|mistake|error)(?:\\s+(?:here|on\\s+the\\s+site|with\\s+(?:this|the\\s+(?:site|app|coach))))?",
+};
+const BARE_RE: Record<string, RegExp> = Object.fromEntries(Object.entries(ABOUT_BARE).map(([id, alt]) => [id, new RegExp(`^${LEAD}(?:${alt})[ ?!.]*$`, 'i')]));
+export const ABOUT_BARE_MAX_CHARS = 80;
+
+// "my friend Nenya", "a cat called Nenya": the word is a name in the person's own story, not this site.
+const A_NAMED_NENYA = /\b(?:my|our|his|her|their|a|the)\s+(?:\w+\s+){0,2}(?:named|called)\s+nenya\b|\b(?:my|our|his|her|their)\s+(?:friend|sister|daughter|cousin|dog|cat|neighbou?r|coworker|colleague|boss|ex|aunt|niece|mom|mother)\s+nenya\b/i;
+
+/** The id of the answer to the question asked in this message, or null. Answers that are not yet live ('owner', 'pending') are still recognised, so the caller can choose to leave them to the coach. */
+export function detectAboutNenya(text: string): string | null {
+  const t = text.replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim();
+  if (!t || t.length > ABOUT_MAX_CHARS) return null;
+  if (A_NAMED_NENYA.test(t)) return null;
+  for (const id of ABOUT_ORDER) {
+    if ((ABOUT_PATTERNS[id] ?? []).some((re) => re.test(t))) return id;
+    if (t.length <= ABOUT_BARE_MAX_CHARS && BARE_RE[id]?.test(t)) return id;
+  }
+  return null;
+}
+
+/** The answers that may be used live: checked against their sources, and not waiting on a decision or a feature. */
+export const liveAnswers = (): Answer[] => ANSWERS.filter((a) => a.status === 'ready');
+
+/** The answer to use for a message, or null (nothing asked, or the answer is not live). */
+export function aboutAnswerFor(text: string): Answer | null {
+  const id = detectAboutNenya(text);
+  return id ? liveAnswers().find((a) => a.id === id) ?? null : null;
+}

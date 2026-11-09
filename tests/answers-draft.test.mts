@@ -1,7 +1,8 @@
-// The draft pre-written answers (docs/drafts/answers/answers.mts): every checkable fact is still in the file that says it, every link goes to a real
+// The draft pre-written answers (src/lib/aboutNenya.ts): every checkable fact is still in the file that says it, every link goes to a real
 // About section, nothing promises what the site cannot keep, and every answer has a place in the tutorial map. Fails when a source changes under an answer.
 import { readFileSync, existsSync } from 'node:fs';
-import { ANSWERS, DISCREPANCIES, TUTORIAL_MAP } from '../docs/drafts/answers/answers.mts';
+import { ANSWERS } from '../src/lib/aboutNenya.ts';
+import { DISCREPANCIES, TUTORIAL_MAP } from '../docs/drafts/answers/review-notes.mts';
 import { ok } from './helpers.mts';
 
 const norm = (s: string) =>
