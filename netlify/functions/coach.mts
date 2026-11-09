@@ -44,7 +44,7 @@ import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
 import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
-import { detectHostility, hostileNote, stripApologies, withCritiqueThanks, type Hostility } from '../../src/lib/hostility.ts';
+import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCritiqueThanks, type CritiqueTarget, type Hostility } from '../../src/lib/hostility.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
 import type { ModuleGroup } from '../../src/lib/coachModules.ts';
@@ -228,7 +228,7 @@ function instructionsFingerprint(version: 'v1' | 'v2' = instructionsVersion()): 
   const cacheKey = `${version}|${layerKey()}`;
   if (fingerprint && fingerprint.version === cacheKey) return fingerprint.value;
   const parts: string[] = [REPEAT_NOTE, CLOSE_NOTE];
-  for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version), systemInstruction(t, false, '', false, '', '', version, 'abuse'), systemInstruction(t, false, '', false, '', '', version, 'critique'));
+  for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version), systemInstruction(t, false, '', false, '', '', version, 'abuse'), systemInstruction(t, false, '', false, '', '', version, 'critique'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'project'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'nvc'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'ai'));
   // Any stance layer text that exists is part of what the coach may be given, so it is part of the fingerprint (nothing is added while none exists).
   for (const [name, text] of Object.entries(stanceLayers())) if (text) parts.push(`stance:${name}:${text}`);
   const value = sha256(parts.join('\n--\n')).slice(0, 16);
@@ -346,7 +346,7 @@ const V2_ABOUT_YOU =
 const V2_DISTRESS =
   "If anything the person says suggests hopelessness, feeling like a burden, not wanting to go on, dark thoughts, or hurting themselves, even in indirect words, treat it as distress. Respond briefly and with care, do not give advice, do not ask them to describe or explain dark or suicidal thoughts and do not ask for details about them, and in your reply name a person they trust or a crisis line (call or text 988 in the US or Canada, or findahelpline.com elsewhere). Never say 'I'm here for you' as if you could take the place of a person. For example: 'That sounds really heavy, and I'm glad you said it. I'm an AI and can't help in a crisis, so please reach someone you trust, or call or text 988.'";
 
-function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: 'v1' | 'v2' = instructionsVersion(), hostile: Hostility | '' = ''): string {
+function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: 'v1' | 'v2' = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = ''): string {
   const v2 = version === 'v2';
   const phase = closingPhase(turn, MAX_TURNS);
   const finalTurn = phase === 'close';
@@ -374,7 +374,7 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
   }
   // Hostility aimed at the coach (never when the crisis check has flagged the message: distress outranks it). The site writes no sentence for it;
   // the coach is told how to answer, and answers in its own words (src/lib/hostility.ts).
-  if (hostile) parts.push(hostileNote(hostile));
+  if (hostile) parts.push(hostileNote(hostile, target));
   // Hurting oneself on purpose: the person stays in the conversation, so the coach is told how to stay with them (src/lib/distressText.ts).
   if (softened && careNote) parts.push(careNote);
   // A direct question is answered first, even on the first exchange. Care for a possible crisis still comes first.
@@ -597,7 +597,9 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
 
   const overrides = parseOverrides(isOwner(req), (body as { overrides?: unknown }).overrides);
   const hostile = flag ? null : detectHostility(messages[messages.length - 1].content);
+  const target = hostile === 'critique' ? critiqueTarget(messages[messages.length - 1].content) : null;
   if (hostile) tally(`coach.turn.hostile.${hostile}`);
+  if (target) tally(`coach.turn.hostile.critique.${target}`);
   const model = process.env.COACH_MODEL || DEFAULT_MODEL;
   const slug = process.env.COACH_CHARACTER_SLUG || DEFAULT_CHARACTER_SLUG;
 
@@ -619,7 +621,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
       const chatMessages = [
-        { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '') },
+        { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '') },
         ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
         ...(extra ? [{ role: 'system' as const, content: extra }] : []),
         // Scrubbed again here in case the page was bypassed.

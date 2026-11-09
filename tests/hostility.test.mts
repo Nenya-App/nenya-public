@@ -57,3 +57,21 @@ ok('the notes carry examples of the shape, and still contain the rules', /Exampl
 
 ok('a reply to critique is opened with the site\'s thank-you, unless the coach already thanked the person', withCritiqueThanks('What would be more helpful right now?') === `${CRITIQUE_THANKS} What would be more helpful right now?` && withCritiqueThanks('Thank you for pointing that out. What would help?') === 'Thank you for pointing that out. What would help?' && withCritiqueThanks('Thanks for saying so. What would help?') === 'Thanks for saying so. What would help?');
 ok('the thank-you is plain: no apology, no question, no promise', !/\?/.test(CRITIQUE_THANKS) && !stripApologies(CRITIQUE_THANKS).includes('XX') && !/sorry|apolog|promise|always/i.test(CRITIQUE_THANKS));
+
+// ── what a critique is about: the reply, the site, NVC, or the use of AI ──
+import { critiqueTarget } from '../src/lib/hostility.ts';
+const T = (list: string[], target: string | null) => list.filter((x) => critiqueTarget(x) !== target).map((x) => `${x} -> ${critiqueTarget(x)}`);
+const NVC_CRIT = ['NVC is just manipulation with nicer words.', 'Nonviolent communication is a cult.', 'I think NVC is patronizing.', 'This NVC stuff is bullshit.', 'Manipulative NVC language makes me angry.'];
+const AI_CRIT = ["An AI shouldn't be doing this at all.", "I don't trust a chatbot with my feelings.", "AI can't understand feelings.", 'Why is there an AI here doing this?', 'Robots have no business doing therapy.'];
+const PROJECT_CRIT = ['This site is pointless.', "This app doesn't help.", 'The colors thing is pseudoscience.', "I don't see the point of this.", 'Nenya is a gimmick.', 'This tool seems really useless to me.'];
+ok('criticism of NVC is a critique aimed at NVC', T(NVC_CRIT, 'nvc').length === 0, T(NVC_CRIT, 'nvc').join(' | '));
+ok('criticism of using an AI for this is a critique aimed at AI use', T(AI_CRIT, 'ai').length === 0, T(AI_CRIT, 'ai').join(' | '));
+ok('criticism of the site, the tool or the colors is a critique aimed at the project', T(PROJECT_CRIT, 'project').length === 0, T(PROJECT_CRIT, 'project').join(' | '));
+ok('criticism of a reply is still aimed at the reply', T(CRITIQUE, 'reply').length === 0, T(CRITIQUE, 'reply').join(' | '));
+ok('every one of these is a critique, never abuse', [...NVC_CRIT, ...AI_CRIT, ...PROJECT_CRIT].every((x) => detectHostility(x) === 'critique'));
+const QUIET = ['I used NVC with my sister and it went well.', 'Can you explain NVC?', "I'm worried AI will take my job.", 'My boss uses AI for everything.', 'The colors helped me notice I was sad.', "I don't get why my sister is mad at me.", "I can't trust my boss.", 'This app is great.', 'The site looks nice.', 'I like the breathing tool.', 'NVC helped me talk to my dad.', 'Is this AI?'];
+ok('questions, praise, worries about other things and ordinary uses are not critiques', QUIET.every((x) => critiqueTarget(x) === null && detectHostility(x) === null), QUIET.filter((x) => critiqueTarget(x) !== null).join(' | '));
+ok('abuse is never given a critique target (the coach does not ask abusers to elaborate)', ABUSE.every((x) => critiqueTarget(x) === null));
+ok('the note for each target names its topic and asks the two kinds of question', (['project', 'nvc', 'ai'] as const).every((t) => /thank them for sharing their thoughts/.test(hostileNote('critique', t)) && /Could you tell me more about what you mean by/.test(hostileNote('critique', t)) && /What questions or concerns do you have about/.test(hostileNote('critique', t)) && /Do not apologize, do not defend/.test(hostileNote('critique', t))));
+ok('the topic notes say who they are about, and the reply note is unchanged', /critical of Nonviolent Communication/.test(hostileNote('critique', 'nvc')) && /critical of using an AI/.test(hostileNote('critique', 'ai')) && /critical of this site and tool/.test(hostileNote('critique', 'project')) && /critical of your reply/.test(hostileNote('critique', 'reply')) && hostileNote('critique') === hostileNote('critique', 'reply'));
+ok('the topic notes state only facts the coach has been given', !/open source|AGPL|Venice/i.test(hostileNote('critique', 'nvc')));

@@ -37,3 +37,14 @@ ok('matched words are cut short', (explainConversation(['I feel ' + 'x'.repeat(1
 const rt = readableTranscript(stopped, { color1: '#111111', color2: '#222222' }, null, '', undefined, siteMessagesFor(stopped, 5), checkNotesFor(stopped));
 ok('the readable copy shows the greeting before and the notice after, marked as written by the site', rt.indexOf('Coach (written by the site, not the AI): Hello.') < rt.indexOf('You: I am going') && rt.indexOf('You: I am going') < rt.indexOf('Safety notice (written by the site, not the AI)') && rt.includes('  - 988 Suicide & Crisis Lifeline (US): Call or text 988, any time'));
 ok('and the process note says what matched and that the check can be wrong', rt.includes('Process note (written by the site): the safety check flagged this message as self-harm (stop). Why: matched words in the message: "kill myself".') && rt.includes('can be wrong'));
+
+// ── the invitation to send feedback ──
+import { INVITATION_TEXT } from '../src/lib/siteMessages.ts';
+const crit = (c: string) => { const m: any[] = []; for (let i = 1; i <= 5; i++) m.push(u(i === 3 ? c : `message ${i}`), a(`reply ${i}`)); return m; };
+const withInv = (m: any[]) => siteMessagesFor(m, 5).some((x) => x.kind === 'invitation');
+ok('a finished conversation with a critique ends with the closing message and then the invitation', siteMessagesFor(crit('NVC is just manipulation with nicer words.'), 5).map((x) => x.kind).join() === 'greeting,closing,invitation' && siteMessagesFor(crit("That wasn't very helpful."), 5).at(-1)!.text === INVITATION_TEXT);
+ok('critique of a reply, of the site, of NVC and of AI use all get it', ['That wasn\'t very helpful.', 'This site is pointless.', 'NVC is a cult.', "An AI shouldn't be doing this."].every((c) => withInv(crit(c))));
+ok('no invitation without a critique, or for abuse', !withInv(crit('A normal message')) && !withInv(crit('You are a useless piece of garbage bot.')));
+ok('no invitation while the conversation is still going', !withInv([u('NVC is a cult.'), a('hm')]));
+ok('no invitation when a message was flagged (distress comes first)', !withInv([...crit('NVC is a cult.').slice(0, 8), u('I feel so hopeless'), a('Reply 5')]));
+ok('the invitation is an invitation: nothing is sent unless the person chooses', /up to you/.test(INVITATION_TEXT) && /nothing is sent unless you choose/.test(INVITATION_TEXT) && !/please|must|should/i.test(INVITATION_TEXT));

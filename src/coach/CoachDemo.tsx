@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Play, Send } from 'lucide-react';
 import NenyaLogo from '../app/components/NenyaLogo';
 import { Button } from '../app/components/ui/button';
@@ -17,7 +17,7 @@ import { AppFooter } from '../app/components/AppFooter';
 import { SupportThisWork } from '../app/components/SupportThisWork';
 import { ShareNenya } from '../app/components/ShareNenya';
 import { FlagNotice } from './FlagNotice';
-import { CLOSING_TEXT, greetingText } from '../lib/siteMessages';
+import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
 import { FailureNotice } from './FailureNotice';
 import { resetScroll } from '../app/components/ScrollToTop';
@@ -667,6 +667,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </p>
                 )}
                 {stage === 'done' && !flag && pageBubble(CLOSING)}
+                {stage === 'done' && !flag && siteMessagesFor(toWire(messages), MAX_TURNS).filter((x) => x.kind === 'invitation').map((x) => <Fragment key="invitation">{pageBubble(x.text)}</Fragment>)}
                 <div ref={endRef} />
               </div>
 

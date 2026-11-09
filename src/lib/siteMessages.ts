@@ -3,6 +3,7 @@
 // server when it signs a transcript and by the page when it makes an unsigned copy, so a signed transcript shows exactly what the
 // visitor was shown. (The sentences the server adds to a reply, and the thank-you after critical feedback, are already inside the
 // reply. The note about replaced identifiers is made by the page from the visitor's own message and is not part of this list.)
+import { detectHostility } from './hostility.ts';
 import { checkConversation, explainConversation, noticeIntro, resourcesFor } from './safetyFlags.ts';
 
 export const greetingText = (maxTurns: number): string =>
@@ -11,8 +12,12 @@ export const greetingText = (maxTurns: number): string =>
 export const CLOSING_TEXT =
   'That is our five. Thank you for letting me listen. Whatever came up deserves more time than this, so if it is still with you, a person you trust, a journal, or a professional can carry it further. For now, one slow breath, in and out, with the breathing tool below.';
 
+/** After a conversation in which the person criticized the reply, the site, Nonviolent Communication or the use of AI: an invitation, never a request. */
+export const INVITATION_TEXT =
+  'If you would like the people who made Nenya to read what you thought, you can send this conversation to us with a note, using the buttons below. It is up to you, and nothing is sent unless you choose.';
+
 export interface SiteMessage {
-  kind: 'greeting' | 'closing' | 'notice';
+  kind: 'greeting' | 'closing' | 'notice' | 'invitation';
   /** The index of the message this one follows; -1 means before the first message. */
   after: number;
   text: string;
@@ -38,6 +43,8 @@ export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content:
     out.push({ kind: 'notice', after: last, text: noticeIntro(flag), resources: resourcesFor(flag.category, flag.kind).map((r) => ({ name: r.name, detail: r.detail })) });
   } else if (messages.length === maxTurns * 2 && messages[last]?.role === 'assistant') {
     out.push({ kind: 'closing', after: last, text: CLOSING_TEXT });
+    // Critique is feedback the people who made Nenya want. Offered only at the end, never when a message was flagged, never as a request.
+    if (users.some((t) => detectHostility(t) === 'critique')) out.push({ kind: 'invitation', after: last, text: INVITATION_TEXT });
   }
   return out;
 }
