@@ -72,8 +72,8 @@ export const ANSWERS: Answer[] = [
       { claim: 'Nenya is the Ring of Water, never touched by Sauron', file: about('NamePhilosophy'), has: 'the Ring of Water' },
       { claim: 'the page names it as a mirror that invited reflection, not surveillance', file: about('NamePhilosophy'), has: 'It invited reflection, not surveillance' },
     ],
-    status: 'owner',
-    ownerNote: 'The last paragraph (no connection to Tolkien\'s estate) is mine: the Terms say the name and logo are reserved as Nenya trademarks but say nothing about Tolkien\'s estate. Keep, change, or ask whoever checks rights (the same question as the Vilya and Narya names in docs/coach-lenses-scope.md).',
+    status: 'ready',
+    ownerNote: "Decided 2026-11-08: keep the last paragraph (the ring names are the project's own shorthand; no claim of connection to Tolkien's estate).",
   },
   {
     id: 'n-who', part: 'nenya', title: 'Who runs Nenya, and how it is structured',
@@ -112,9 +112,9 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-contact', part: 'nenya', title: 'How to reach us',
     asked: ['how do I contact you', 'can I talk to a person', 'what is your email address', 'how do I email you', 'can I partner with you'],
-    short: 'You can reach us at info@nenya.biz, or use the optional form on the site to send a report or message. I can\'t pass anything on from this conversation, so please write to that address directly.',
+    short: 'You can reach us at info@nenya.biz, and we aim to respond within 2-3 business days. There is also an optional form on the site for a report or message. I can\'t pass anything on from this conversation, so please write to that address or use the form.',
     full: [
-      'The general address is info@nenya.biz, for questions, partnership inquiries, platform support, and anything in the Terms or Privacy Policy. Questions about the project\'s vision can go to the designer at the address on the Contact page.',
+      'The general address is info@nenya.biz, for questions, partnership inquiries, platform support, questions about the project\'s vision, and anything in the Terms or Privacy Policy. We aim to respond within 2-3 business days.',
       'There is also an optional form on the site for sending a bug report, feedback, a message, or a signed coach transcript. Using it is entirely your choice, and it does not ask for your name or email. If you want a reply, include your email address in the message and we will use it only to answer you.',
       'The coach cannot pass a message on, remember it, or reach us from inside a conversation, so anything you want us to see has to be sent through the form or the address above. If something is urgent and about safety, please use the crisis resources shown in the app or your local emergency number, not email.',
     ],
@@ -122,18 +122,18 @@ export const ANSWERS: Answer[] = [
     tutorial: 'Where to go next, at the end of any tutorial.',
     checks: [
       { claim: 'info@nenya.biz is the contact address in the Terms', file: TERMS, has: 'Questions about anything here: info@nenya.biz' },
-      { claim: 'the Contact page lists info@nenya.biz and urges in-app emergency resources for urgent safety matters', file: about('ContactUs'), has: 'please use the in-app emergency resources' },
+      { claim: 'the Contact page gives a 2-3 business day aim and urges in-app emergency resources for urgent safety matters', file: about('ContactUs'), has: 'We aim to respond to all inquiries within 2-3 business days' },
       { claim: 'the form needs no name or email and a reply address is used only to answer', file: TERMS, has: 'we use it only to answer you' },
     ],
-    status: 'owner',
-    ownerNote: 'Two things to confirm before this ships: (1) the Contact page says "We aim to respond to all inquiries within 2-3 business days" and lists estelle@nenya.biz; I have not checked that either address is delivering (info@ could not be added as a Netlify notification recipient earlier). (2) Whether the coach may state the address itself or only point to the page (decision 3 in docs/about-nenya-questions-scope.md); this draft states it.',
+    status: 'ready',
+    ownerNote: 'Decided 2026-11-08: list info@nenya.biz only (it also receives the form\'s notifications) and keep the 2-3 business day aim. The Contact page still lists a second address (estelle@nenya.biz): update that page to match.',
   },
   {
     id: 'n-free', part: 'nenya', title: 'Is it free, and who pays for it',
     asked: ['is this free', 'how much does it cost', 'who pays for this', 'how do you make money', 'is there a paid version'],
-    short: 'Yes, Nenya is free to use, with no advertising. It is supported by donations, handled by our fiscal sponsor Fractured Atlas, and by credits from Venice AI\'s referral program, which is disclosed wherever the Venice links appear.',
+    short: 'Yes, Nenya is provided free, with no advertising. The plan is for the core breathing and reflection tools to stay free, and we are exploring subscriptions for additional features. It is supported by donations, handled by our fiscal sponsor Fractured Atlas, and by credits from Venice AI\'s referral program, which is disclosed wherever the Venice links appear.',
     full: [
-      'Nenya is provided free of charge, with no advertising and no subscription gates. It stays that way because people choose to support it.',
+      'Nenya is provided free of charge, with no advertising. The plan is for the core breathing and reflection tools to stay free indefinitely. We are exploring subscriptions for additional features; nothing like that exists today.',
       'Donations go through Fractured Atlas, our fiscal sponsor, and are tax-deductible to the extent the law permits. They help keep the project free and its servers running, and they support the ongoing development of the reflection and coaching tools.',
       'Each coach reply costs real money to produce, which is why the free demo is limited to five exchanges, rests after a conversation, and has daily limits. Separately, the links to Venice AI carry Nenya\'s referral code: if you sign up for a paid Pro account through them, Nenya earns $10 in Venice credits and you receive a $10 welcome bonus. The credits help pay for the coach demo, it costs you nothing extra, and you can go to venice.ai directly instead.',
     ],
@@ -144,9 +144,10 @@ export const ANSWERS: Answer[] = [
       { claim: 'donations are tax-deductible to the extent permitted by law, via Fractured Atlas', file: about('SupportUs'), has: 'tax-deductible to the extent permitted by law' },
       { claim: 'the referral terms: Nenya earns $10 in Venice credits, the visitor gets a $10 welcome bonus', file: TERMS, has: 'Nenya earns $10 in Venice credits and you receive a $10 welcome bonus' },
       { claim: 'each reply costs real money', file: TERMS, has: 'because each reply costs real money to produce' },
+      { claim: 'subscriptions for additional features are being considered (paid options for stance layers)', file: "docs/coach-lenses-scope.md", has: 'may become paid options' },
     ],
-    status: 'owner',
-    ownerNote: 'The About pages (Structure, Support Us) also say "the core tool is and will remain free", "no paywalls", "no premium tiers". Paid tiers are tabled, not ruled out (docs/coach-lenses-scope.md). This draft says only what is true today ("is provided free"). If a paid option ever returns, those About pages and this answer change together.',
+    status: 'ready',
+    ownerNote: 'Decided 2026-11-08: say "is provided free", that the plan is for the core breathing and reflection tools to stay free, and that subscriptions for additional features are being explored. Our Structure and Support Us still say "will remain free / no paywalls / no premium tiers": reword them the same way.',
   },
   {
     id: 'n-privacy', part: 'nenya', title: 'Is this private? (the short version)',
@@ -232,23 +233,25 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-howworks', part: 'nenya', title: 'How the coach works underneath (the model and the hosting)',
     asked: ['what model are you', 'who hosts this', 'what technology do you use', 'are you ChatGPT', 'is it encrypted', 'how do you work'],
-    short: 'The coach is an AI language model run by Venice AI, an outside service, which writes the replies. Nenya\'s site is hosted by Netlify, and the code is public so you can read how it works. The coach is a prototype, and some privacy protections we hope to build do not exist yet.',
+    short: 'The coach\'s replies are written by an AI language model{model_clause}, run by Venice AI, an outside service. Our server encrypts your message before it goes to Venice, so Venice relays only encrypted data. The site is hosted by Netlify, and the code is public so you can read how it works. The coach is a prototype, and some protections we hope to build do not exist yet.',
     full: [
-      'The replies come from an AI language model run by Venice AI, an outside service. Your messages go from your browser to our server, hosted by Netlify, and from there to Venice AI. We chose a model that Venice labels "Private".',
-      'The page and the server do some work of their own: they replace common identifiers with placeholders before a message is sent, check each message for signs of crisis, and screen for attempts to give the coach instructions. These checks are simple phrase matching and can miss things or flag harmless words.',
-      'The coach is an early prototype. On-device processing, where your most private reflections would never touch a server, is a goal and not something that exists yet. The Privacy Promise page separates what is built from what is planned.',
-      'Nenya\'s source code is public under the GNU Affero General Public License, so you can read how the site handles data instead of taking our word for it.',
+      'The replies come from an AI language model{model_clause}, run by Venice AI, an outside service. Your messages go from your browser to our server, hosted by Netlify, and from there to Venice AI.',
+      'Our server encrypts your message before it goes to Venice, and Venice relays only encrypted data to the model. The encryption happens on our server, not in your browser, because the server has to read your message to scrub it and screen it first, so it is not encryption all the way from your device.',
+      'The page and the server also replace common identifiers with placeholders before a message is sent, check each message for signs of crisis, and screen for attempts to give the coach instructions. These checks are simple phrase matching and can miss things or flag harmless words.',
+      'The coach is an early prototype. On-device processing, where your most private reflections would never touch a server, is a goal and not something that exists yet. Nenya\'s source code is public under the GNU Affero General Public License, so you can read how the site handles data instead of taking our word for it.',
     ],
     links: [{ label: 'Our Privacy Promise', page: 'privacy-promise' }, { label: 'Terms, Section 21', page: 'terms' }, { label: 'The code on GitHub', href: REPO }],
     tutorial: 'Coach tutorial lesson 1 (with n-privacy-coach): meeting the coach, and what it is made of.',
     checks: [
       { claim: 'messages go through Netlify to Venice AI, which writes the replies', file: TERMS, has: 'to Venice AI, which writes the replies' },
-      { claim: 'a model that Venice labels "Private"', file: TERMS, has: 'a model that Venice labels' },
+      { claim: 'Venice\'s servers relay ciphertext; the encryption happens in our function, not the browser', file: "src/lib/veniceE2ee.ts", has: 'Venice\'s servers relay ciphertext' },
+      { claim: 'it must not be described as end-to-end from the visitor\'s device', file: "src/lib/veniceE2ee.ts", has: "describe it as end-to-end encryption from the visitor's device" },
+      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: COACH, has: 'e2ee-qwen-2-5-7b-p' },
       { claim: 'on-device processing is a goal, not built', file: about('PrivacyPromise'), has: 'We are not there yet' },
       { claim: 'the crisis check and instruction screening are phrase matching', file: TERMS, has: 'These checks are simple phrase matching' },
     ],
-    status: 'owner',
-    ownerNote: 'The model type is a pre-written answer kept away from the model (decided 2026-11-08). Three things for you: (1) the Terms say only that Venice labels the model "Private"; the code runs an ENCRYPTED Venice model and the README documents it, but the Terms never say "encrypted". Settle the exact words in the Terms first (the careful version is "Venice relays only encrypted data", never "end-to-end from the device"), then this answer follows. (2) Whether the answer names the model (Qwen 2.5 7B in Venice\'s encrypted enclave): the scope asked this and it is open. (3) The sentence "we chose a model that Venice labels Private" is the Terms\' own wording and is the safe one for now.',
+    status: 'ready',
+    ownerNote: 'Decided 2026-11-08: use the careful wording ("Venice relays only encrypted data", and say plainly it is not encryption all the way from the device), and name the model. {model_clause} is filled by the site from the model actually in use (fillAnswer and MODEL_NAMES), so it changes automatically if the model changes, and says nothing if the model is not in the list. STILL TO DO: the Terms (Section 21) say only that Venice labels the model "Private"; add the encryption wording there so the answer and the Terms agree.',
   },
   {
     id: 'n-opensource', part: 'nenya', title: 'Is it open source',
@@ -275,6 +278,7 @@ export const ANSWERS: Answer[] = [
       'Nenya draws on Nonviolent Communication, developed by Dr. Marshall Rosenberg, but it is an independent project. It is not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication (CNVC.org) or the NVC Academy (NVCacademy.com).',
       'Nenya is a complementary practice partner: a private way to practice the mechanics of NVC so you can show up for real conversations with a bit more capacity. It is not a replacement for what you learn from human connection, and we strongly encourage certified human NVC trainers for hands-on, embodied learning.',
       'The coach\'s feeling and need categories follow CNVC\'s Feelings and Needs Inventory, used with credit and with a link to the document\'s own page on the About NVC page.',
+      'If you practise or teach NVC, we would especially value your feedback, including critical and dissenting views: please send it through the optional form on the site or at info@nenya.biz.',
     ],
     links: [{ label: 'Our NVC+ Method', page: 'nvc-method' }],
     tutorial: 'NVC lesson 0: where this comes from, and where to learn more.',
@@ -293,6 +297,7 @@ export const ANSWERS: Answer[] = [
       'Nonviolent Communication is a communication process developed by Dr. Marshall Rosenberg. It is a way of understanding ourselves and others by building empathic connection before jumping to solutions. Nenya uses its four components as the structure behind every reflection:',
       'Observations: stating what your senses report, clearly separated from evaluation or judgment. Feelings: naming physical sensations and emotions, free of story or blame. Needs: the "why" behind what we do, such as safety, understanding, or rest. Requests: specific, positive actions that could help meet a need, offered as an invitation, not a demand.',
       'NVC+ is Nenya\'s adaptation. It acknowledges that feelings and needs are shaped by systems of power and historical injustice, so that frustration is not always only personal, and it widens the view from individual needs to shared ones like justice, equity, and sustainability.',
+      'If you practise or teach NVC, we would especially value your feedback, including critical and dissenting views: please send it through the optional form on the site or at info@nenya.biz.',
     ],
     links: [{ label: 'Our NVC+ Method', page: 'nvc-method' }, { label: 'The Pantheon of Needs', page: 'pantheon-of-needs' }],
     tutorial: 'NVC lessons 1 to 4: observation, feeling, need, request (one lesson each, with the coach as practice partner).',
@@ -339,26 +344,26 @@ export const ANSWERS: Answer[] = [
       { claim: 'an alt-text file exists', file: 'docs/brand/alt-text.md', has: 'alt' },
       { claim: 'the screen-reader audit checklist exists', file: 'docs/accessibility-audit-checklist.md', has: 'Does everything have a name?' },
     ],
-    status: 'owner',
-    ownerNote: 'Written from what is built and tested in code (text size, theme, colour-blind mode, tones switch with announcements, alt text, Emergency Exit everywhere); nothing here has been tried with a screen reader. The "we have not finished an audit" sentence is deliberate. The Terms\' visual-content note covers motion; the Terms do not describe the tones, so check this against Section 9 when you review.',
+    status: 'ready',
+    ownerNote: 'Approved 2026-11-08 as accurate to what is live or coded, including the honest line about the unfinished screen-reader audit.',
   },
   {
     id: 'n-version', part: 'nenya', title: 'What version this is',
     asked: ['what version is this', 'when was this updated', 'which release is this', 'is this the latest'],
-    short: 'This is Nenya version {version}. Every release is published, with the exact code it was built from, in the repository\'s releases. The Terms of Use & Privacy Policy you agreed to are dated {terms}.',
+    short: 'This is Nenya version {version}. The exact code it was built from is public, so you can read precisely what this version is. The Terms of Use & Privacy Policy you agreed to are dated {terms}.',
     full: [
-      'The version label has two parts: the release number and the commit the site was built from, for example 1.1.0+679c4d2. A label ending in -dev means it came from the staging site. Anyone can look up the exact commit in the public repository to see precisely what code that label means.',
+      'The version label has two parts: the release number and the commit the site was built from, for example 1.1.0+679c4d2. A label ending in -dev means it came from the staging site. The commit is in the public repository, so anyone can read exactly what code that label means.',
       'The date of the Terms of Use & Privacy Policy is separate from the version, and when it changes you are asked to agree again.',
       'Earlier versions of the Terms are kept in the public repository.',
     ],
-    links: [{ label: 'Releases on GitHub', href: `${REPO}/releases` }, { label: 'Terms of Use & Privacy Policy', page: 'terms' }],
+    links: [{ label: 'The code for this version on GitHub', href: '{commit_url}' }, { label: 'Terms of Use & Privacy Policy', page: 'terms' }],
     tutorial: 'Not a lesson; a card that answers the question wherever it is asked.',
     checks: [
-      { claim: 'the label is release plus commit; -dev for staging', file: 'docs/versioning.md', has: 'a `-dev` label means it came from staging' },
+      { claim: 'the label is release plus commit; -dev for staging', file: "docs/versioning.md", has: 'a `-dev` label means it came from staging' },
       { claim: 'earlier Terms are kept in the public repository', file: TERMS, has: 'Earlier versions are kept in our public repository' },
     ],
-    status: 'owner',
-    ownerNote: '{version} and {terms} are filled in by the site at runtime (the build label and LEGAL_EFFECTIVE_DATE), so this answer never goes stale; they are placeholders in this document. The releases link assumes releases are published on GitHub (docs/versioning.md says to make one per release).',
+    status: 'ready',
+    ownerNote: '{version}, {terms} and {commit_url} are filled in by the site at run time (the build label, the Terms date, and a link to that exact commit), so this never goes stale. GitHub has no releases or tags yet (checked 2026-11-08), so the card links to the commit, the most exact place to review the code; when 1.1.0 is tagged at the production merge, a releases link can be added.',
   },
   {
     id: 'n-report', part: 'nenya', title: 'Reporting a problem, or sending feedback',
@@ -395,6 +400,28 @@ export const ANSWERS: Answer[] = [
       { claim: 'we do not store the conversation; the signed file stays with you', file: TERMS, has: 'the signed file stays with you' },
     ],
     status: 'ready',
+  },
+  {
+    id: 'n-safety', part: 'nenya', title: 'The safety precautions, and how they work',
+    asked: ['what safety features do you have', 'how do the safety precautions work', 'what safety checks are there', 'is there any safety'],
+    short: 'The coach demo has a few safety precautions. Each message is checked for signs of crisis: a clear one is not sent, and the page shows crisis resources. Messages that try to give the coach instructions are not sent. Common identifiers are replaced before a message is sent, and conversations are limited. These checks are simple phrase matching, so they can miss things and can flag harmless words.',
+    full: [
+      'The coach demo checks each message for signs of crisis. If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends, and the page shows crisis resources. If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources.',
+      'It also screens for attempts to give the coach instructions or change how it works, and such a message is not sent, so you can reword it. Before a message is sent, the page and then the server replace common identifiers (email addresses, phone numbers, street addresses, and some names) with placeholders. Conversations are limited to five exchanges and 500 characters a message, and there are daily limits and a rest period.',
+      'Some words on the page are written by us ahead of time: the opening greeting, the closing message, the safety notices and the crisis resources.',
+      'None of this is a guarantee. All of it is simple phrase matching: it can miss things, and it can flag harmless words. The coach cannot help in a crisis and is not therapy. If a notice looks wrong to you, you can report it, and nothing is sent unless you press Send.',
+    ],
+    links: [{ label: 'Terms, Section 21: The Coach Demo', page: 'terms' }, { label: 'PII Scrubbing Tutorial', page: 'pii-scrubbing' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
+    tutorial: 'Safety lesson: how the precautions work, step by step (the PII Scrubbing Tutorial is the format model).',
+    checks: [
+      { claim: 'a clear crisis message is not sent and the conversation ends; a less clear one is sent with care', file: TERMS, has: 'it is not sent to the AI, the conversation ends, and the page shows crisis resources' },
+      { claim: 'instruction attempts are not sent and can be reworded', file: TERMS, has: 'A message that looks like that is not sent, and you can reword it' },
+      { claim: 'identifiers are replaced before sending, not a guarantee', file: TERMS, has: 'most names will not be caught' },
+      { claim: 'these are phrase matching and can be wrong', file: TERMS, has: 'they can miss things and can flag harmless words' },
+      { claim: 'five exchanges, 500 characters', file: TERMS, has: 'A conversation is limited to five exchanges, and each message to 500 characters' },
+    ],
+    status: 'ready',
+    ownerNote: 'New answer (2026-11-08), written because you asked for more information on how the precautions work for people who want it. It describes only what is live in production; the sentence the site adds after a flagged reply is in the \'who wrote what\' answer, which waits for the Terms.',
   },
   {
     id: 'n-languages', part: 'nenya', title: 'Languages',
@@ -496,8 +523,8 @@ export const ANSWERS: Answer[] = [
       { claim: 'never claim to miss or worry', file: 'src/lib/personaChecks.ts', has: 'claimsMissingOrWorry' },
       { claim: 'the hostile-turn note: say honestly it does not feel hurt', file: 'src/lib/hostility.ts', has: 'you are an AI and do not feel hurt' },
     ],
-    status: 'owner',
-    ownerNote: 'This is the honest line from the persona work and the hostile-turn note (it feels no hurt), written in the coach\'s voice. The sentence about anger being "fine here" depends on the Terms Section 5 draft (docs/drafts/terms-respectful-use-draft.md), which is not live: use that sentence only once it is.',
+    status: 'ready',
+    ownerNote: 'Approved to post now (2026-11-08); circle back tomorrow to review the wording and the sentence about anger once the Terms Section 5 text is live. Not to overpromise.',
   },
   {
     id: 'c-friend', part: 'coach', title: 'Can you be my friend, my therapist, or diagnose me?',
@@ -533,8 +560,8 @@ export const ANSWERS: Answer[] = [
       { claim: 'the one-way daily code', file: TERMS, has: 'one-way code' },
       { claim: 'the referral credits are disclosed', file: TERMS, has: 'Those credits help pay for the coach demo' },
     ],
-    status: 'owner',
-    ownerNote: 'Written to be said in reply to hostility ("this is a scam, admit you are collecting my data") without defence and without reassurance beyond what is checkable. The closing question is the open question the hostile-turn note asks for; drop it if the site-written default for abuse (candidates A and B in docs/coach-ai-directed-abuse-scope.md) is used instead. This is the answer the honest-answers documentation grows from.',
+    status: 'ready',
+    ownerNote: 'Approved 2026-11-08: keep the closing question and the mention of donations and Venice referral credits.',
   },
   {
     id: 'c-stopped', part: 'coach', title: 'Why did the coach stop or end the conversation',
@@ -575,37 +602,39 @@ export const ANSWERS: Answer[] = [
   {
     id: 'c-methods', part: 'coach', title: 'Where the coach\'s approach comes from',
     asked: ['how were you trained', 'who taught you', 'what are you based on', 'what were you trained on'],
-    short: 'My approach is built on Nonviolent Communication: noticing what happened, naming feelings and needs, and making requests without blame. Nenya is independent and not affiliated with or endorsed by CNVC or the NVC Academy, and I am not a substitute for a trained human teacher.',
+    short: 'My approach is built on Nonviolent Communication: noticing what happened, naming feelings and needs, and making requests without blame. I follow written instructions; I wasn\'t trained by any individual teacher. Nenya is independent and not affiliated with or endorsed by CNVC or the NVC Academy, and I am not a substitute for a trained human teacher.',
     full: [
       'The coach\'s approach is built on Nonviolent Communication, developed by Dr. Marshall Rosenberg: observations, feelings, needs, and requests. Its feeling and need categories follow CNVC\'s Feelings and Needs Inventory, with credit and a link on the About NVC page, and Nenya adds attention to power and shared needs (NVC+).',
       'Nenya is independent and not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication or the NVC Academy. I am an AI following written instructions; I was not trained by any individual teacher, and I\'m not a substitute for learning from a certified human trainer.',
+      'If you practise or teach NVC, your feedback would mean a great deal to us, and we especially welcome critical and dissenting views on how Nenya uses it. You can send it through the optional form on the site or at info@nenya.biz.',
     ],
-    links: [{ label: 'Our NVC+ Method', page: 'nvc-method' }],
-    tutorial: 'NVC lesson 0 (with n-affiliation) and coach tutorial lesson 1.',
+    links: [{ label: 'Our NVC+ Method', page: 'nvc-method' }, { label: 'Contact Us', page: 'contact-us' }],
+    tutorial: 'NVC lesson 0 (with n-affiliation) and coach tutorial lesson 1; and the invitation to give feedback.',
     checks: [
       { claim: 'NVC by Rosenberg; four components', file: about('NVCMethod'), has: 'developed by Dr. Marshall Rosenberg' },
       { claim: 'not affiliated with CNVC or NVC Academy', file: about('NVCMethod'), has: 'not affiliated with, endorsed by, or a substitute for' },
       { claim: 'the instructions tell the coach not to describe training or where its methods came from', file: COACH, has: 'do not describe your training or where your methods came from' },
     ],
-    status: 'owner',
-    ownerNote: 'A real tension to decide: the coach\'s instructions currently say "do not describe your training or where your methods came from", while this answer (and the About NVC page) do describe the method. If the site-written answer is used, the model is not the one describing it, so the instruction can stay as the model\'s backstop. Also: the Venice page says the character is "trained in NVC+ principles" and "set up with a custom prompt"; "trained" is not accurate for a language model given instructions, so I wrote "following written instructions". Confirm the wording, and whether the owner\'s trainer or the derived material should ever be mentioned (the standing decision is no, unless you supply the wording).',
+    status: 'ready',
+    ownerNote: 'Decided 2026-11-08: the coach may describe the method, but the default is this site-written text, not model-generated; the model keeps its instruction not to describe its training as a backstop. "Following written instructions" is approved. NVC practitioners and trainers are the best people to ask for feedback, so the answer actively invites critical and dissenting views through the form and info@nenya.biz. TO DO: a clear place on the About NVC page for this, and a category for it in the feedback form. The trainer or derived material is never named unless the owner supplies the wording.',
   },
   {
-    id: 'c-wrote', part: 'coach', title: 'Who wrote what I am reading',
+    id: 'c-wrote', part: 'coach', title: 'Who wrote what I am reading, and the safety precautions',
     asked: ['who wrote that', 'is that from the AI', 'is this pre-written', 'did a person write this'],
-    short: 'The coach\'s replies are written by an AI. Some text on the page is written by people ahead of time: the opening greeting, the closing message, the safety notices and resources, and answers like this one. Those are fixed words, not the AI improvising.',
+    short: 'The coach\'s replies are written by an AI. Some words on the page are written by people ahead of time, as safety precautions: the opening greeting and closing message, the safety notices and resources, and a sentence the site adds after some replies to point to a person or a crisis line. Those are fixed words, not the AI improvising.',
     full: [
-      'The replies in the conversation are written by an AI language model. The page also contains words that people wrote ahead of time: the opening greeting and closing message, the safety notices and the crisis resources, and the fixed answers to questions about Nenya itself.',
-      'The opening greeting and the closing message are written by the page itself, are not sent anywhere, and are not part of a signed transcript. When the site adds a sentence after the coach\'s reply (a pointer to a person or a crisis line, for example), that sentence is also written by us, not by the AI.',
+      'The replies in the conversation are written by an AI language model. The page also contains words that people wrote ahead of time, and they are some of the safety precautions: the opening greeting and closing message, the safety notices and the crisis resources, and the fixed answers to questions about Nenya itself.',
+      'The opening greeting and the closing message are written by the page itself, are not sent anywhere, and are not part of a signed transcript. When a message may signal distress, the coach is asked to answer with care, and the site may add a sentence after the reply, written by us and not by the AI, that points to a person or a crisis line.',
+      'If you would like to know how these precautions work, there is an answer for that: ask what safety features Nenya has.',
     ],
     links: [{ label: 'Terms, Section 21', page: 'terms' }],
-    tutorial: 'Coach tutorial lesson 1: reading a conversation (what is the AI, what is the page).',
+    tutorial: 'Coach tutorial lesson 1: reading a conversation (what is the AI, what is the page), and the safety lesson.',
     checks: [
       { claim: 'the greeting and closing are written by the page, not the AI, not sent, not in a signed transcript', file: TERMS, has: 'The opening greeting and the closing message of a conversation are written by the page itself, not by the AI' },
       { claim: 'the instructions: the page writes the closing message', file: COACH, has: 'the page adds its own closing note' },
     ],
-    status: 'owner',
-    ownerNote: 'The last sentence (a sentence the site adds after a flagged reply) is not yet in the Terms: Section 21 lists only the greeting and closing as page-written. It must be added to the Terms before COACH_DISTRESS_TEXT is switched on in production, as the to-do list says.',
+    status: 'pending',
+    ownerNote: 'Approved by the owner 2026-11-08 (reply 11): name the page-written text as one of the safety precautions, and explain how they work (see the new answer n-safety). Held until the Terms (Section 21) list every kind of site-written text, and until COACH_DISTRESS_TEXT is switched on in production, because the sentence added after a flagged reply is not live there yet.',
   },
   {
     id: 'c-angry', part: 'coach', title: 'When you are angry, or angry at the coach',
@@ -622,7 +651,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'the scope: abuse aimed at the coach never ends the conversation', file: 'docs/coach-ai-directed-abuse-scope.md', has: 'Stay the same.' },
     ],
     status: 'pending',
-    ownerNote: 'Pending the Terms Section 5 wording (docs/drafts/terms-respectful-use-draft.md): the Terms must say anger and hostile words aimed at the coach are not a reason to end the conversation before this goes live. Candidate site-written defaults A and B (the abuse scope) are shorter versions of this.',
+    ownerNote: 'Approved by the owner 2026-11-08 (reply 12). Still held until the Terms Section 5 text (docs/drafts/terms-respectful-use-draft.md) is live: the Terms must say hostile words aimed at the coach are not a reason to end the conversation before this card is used.',
   },
 ];
 
@@ -645,7 +674,7 @@ const SITE = "(?:this|the)\\s+(?:site|app|website|tool|demo|coach|chat|project|p
 // Highest priority first: specific questions before general ones.
 export const ABOUT_ORDER = [
   'n-who', 'n-founder', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
-  'n-name', 'n-version', 'n-contact', 'n-free', 'n-privacy-coach', 'n-privacy', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
+  'n-name', 'n-version', 'n-contact', 'n-free', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
   'n-affiliation', 'n-nvc', 'n-notherapy', 'n-accessibility', 'n-report', 'n-transcripts', 'n-languages', 'n-terms-change', 'n-else', 'n-what',
 ] as const;
 
@@ -723,6 +752,10 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     new RegExp(`\\bis\\s+(?:${SITE}|nenya)\\s+(?:private|safe|secure|anonymous|confidential)\\b`, 'i'),
     /\bwho\s+can\s+see\s+(?:what\s+i|my\s+(?:reflections?|entries|answers|writing))\b|\bis\s+my\s+(?:data|information|privacy)\s+(?:safe|private|secure)\b/i,
     /\bdo\s+you\s+(?:track|sell|spy\s+on|monitor)\s+(?:me|my\s+data|people)\b|\bare\s+you\s+(?:tracking|watching|spying\s+on|monitoring)\s+me\b|\bdo\s+you\s+sell\s+(?:data|my\s+data|information)\b/i,
+  ],
+  'n-safety': [
+    /\b(?:what|which)\s+safety\s+(?:precautions|features|checks|measures|protections)\b|\bhow\s+do\s+(?:the\s+)?(?:safety\s+)?(?:precautions|safety\s+(?:checks|features|measures))\s+work\b/i,
+    /\bare\s+there\s+(?:any\s+)?safety\s+(?:features|precautions|checks|measures)\b|\bis\s+there\s+any\s+safety\b/i,
   ],
   'n-device': [
     /\b(?:do\s+you|does\s+(?:this|nenya|the\s+site))\s+(?:use|set|store)\s+cookies\b|\bany\s+cookies\b/i,
@@ -819,4 +852,38 @@ export const liveAnswers = (): Answer[] => ANSWERS.filter((a) => a.status === 'r
 export function aboutAnswerFor(text: string): Answer | null {
   const id = detectAboutNenya(text);
   return id ? liveAnswers().find((a) => a.id === id) ?? null : null;
+}
+
+// ───────────────────────── Filling in what the site knows at run time ─────────────────────────
+// Some answers carry placeholders so they never go stale: {version} (the build label), {terms} (the date of the Terms), {commit_url} (a link to the
+// exact commit this build was made from, the most precise place to review the code), and {model_clause} (the model's name, from the model actually in use).
+// A model that is not listed here is simply not named, so a change of model can never leave a wrong name behind: add the new one here to name it.
+export const MODEL_NAMES: Record<string, string> = {
+  'e2ee-qwen-2-5-7b-p': 'Qwen 2.5 7B',
+};
+
+export interface FillContext {
+  /** The model id in use (COACH_MODEL or the default). */
+  model?: string;
+  /** The build label, for example 1.1.0+679c4d2. */
+  label?: string;
+  /** The date of the Terms of Use & Privacy Policy. */
+  terms?: string;
+  /** The commit the build was made from (full or short). */
+  commit?: string;
+}
+
+/** An answer with its placeholders filled. A link whose address cannot be built (no commit known) is dropped rather than left broken. */
+export function fillAnswer(a: Answer, ctx: FillContext): { short: string; full: string[]; links: Link[] } {
+  const name = ctx.model ? MODEL_NAMES[ctx.model] : undefined;
+  const commit = ctx.commit && /^[0-9a-f]{7,40}$/i.test(ctx.commit) ? ctx.commit : '';
+  const fill = (t: string) =>
+    t.replace(/\{model_clause\}/g, name ? ` called ${name}` : '').replace(/\{version\}/g, ctx.label || 'unknown').replace(/\{terms\}/g, ctx.terms || 'the date shown in the Terms');
+  return {
+    short: fill(a.short),
+    full: a.full.map(fill),
+    links: a.links
+      .map((l) => (l.href?.includes('{commit_url}') ? (commit ? { ...l, href: `${REPO}/commit/${commit}` } : null) : l))
+      .filter((l): l is Link => !!l),
+  };
 }

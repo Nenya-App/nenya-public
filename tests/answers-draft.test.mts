@@ -19,7 +19,7 @@ const menu = readFileSync('src/app/components/about/AboutMenu.tsx', 'utf8');
 const pages = new Set([...menu.matchAll(/id: '([a-z-]+)'/g)].map((m) => m[1]));
 const badPage = ANSWERS.flatMap((a) => a.links.filter((l) => l.page && !pages.has(l.page)).map((l) => `${a.id}: ${l.page}`));
 ok('every link to an About section names a real one', badPage.length === 0, badPage.join(' | '));
-ok('every link has a page or an address, and external addresses are the repository or https', ANSWERS.every((a) => a.links.length > 0 && a.links.every((l) => !!l.page !== !!l.href && (!l.href || /^https:\/\//.test(l.href)))));
+ok('every link has a page or an address, and external addresses are the repository or https', ANSWERS.every((a) => a.links.length > 0 && a.links.every((l) => !!l.page !== !!l.href && (!l.href || /^https:\/\//.test(l.href) || l.href === '{commit_url}'))));
 
 const ids = ANSWERS.map((a) => a.id);
 ok('ids are unique and each is "n-" or "c-" by part', new Set(ids).size === ids.length && ANSWERS.every((a) => a.id.startsWith(a.part === 'nenya' ? 'n-' : 'c-')));
