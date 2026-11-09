@@ -84,3 +84,26 @@ ok('an ordinary reply is left alone', modelCalls === 1 && r.j.reply === modelSay
 ok('the fixed sentence points to the About pages and the Terms and states no fact', /About pages and the Terms/.test(INFRA_FALLBACK) && !/\b(?:AWS|encrypt|HIPAA)\b/.test(INFRA_FALLBACK));
 const quiet = ['It sounds like you are carrying a lot.', 'Your messages go through our server to an outside service, as the Terms describe.', 'I do not have that detail.', 'Thank you for telling me.'];
 ok('ordinary sentences, and the Terms\' own wording, do not trip the guard', quiet.every((x) => !claimsInfrastructure(x)));
+
+// ── answer first, then carry on (a longer message with a question about Nenya inside it)
+process.env.COACH_INFRA_GUARD = 'off'; delete process.env.COACH_INFRA_GUARD;
+const STORY = 'My sister and I have not spoken since the funeral, and I keep replaying the argument at night. I feel guilty and angry at the same time, and I do not know whether to call her or wait for her to call me. Work has been heavy too and I am tired of holding it all. Also, who runs this site? I want to know who is on the other end before I say more.';
+ok('the story is over the limit the whole-message detector accepts', STORY.length > 300);
+modelSays = ['It sounds like you are carrying grief, guilt and tiredness all at once. What do you most need from her right now?'];
+let sent: any = null;
+const realFetch = (globalThis as any).fetch;
+(globalThis as any).fetch = async (u: string, init: any) => { try { sent = JSON.parse(init.body).messages; } catch { sent = null; } return realFetch(u, init); };
+r = await ask(STORY);
+const whoAnswer = liveAnswers().find((a) => a.id === 'n-who')!;
+ok('a long message with a question inside gets the site\'s answer first and then the model\'s reply to the rest, in one reply', r.status === 200 && modelCalls === 1 && r.j.reply.startsWith(fillAnswer(whoAnswer, { model: 'deepseek-v3.2', label: 'x', terms: 'x' }).short.slice(0, 40)) && r.j.reply.endsWith(modelSays[0]) && r.j.reply.includes('\n\n'));
+ok('the card is there and says only the first part is the site\'s', r.j.card?.id === 'n-who' && r.j.card.partial === true);
+ok('the model was told the question is already answered and not to answer or describe Nenya', !!sent && sent.some((m: any) => m.role === 'system' && /the site has already answered it/.test(m.content)));
+const ticket1 = r.j.ticket;
+const convP = [{ role: 'user', content: STORY }, { role: 'assistant', content: r.j.reply }];
+const rcP = await post({ action: 'receipt', messages: convP, ticket: ticket1 });
+ok('a signed copy says the first part of that reply was written by the site and the rest is the AI\'s', rcP.status === 200 && rcP.j.transcript.site.some((x: any) => x.kind === 'answer' && x.after === 1 && /first part of the reply above/.test(x.text)));
+r = await ask(STORY.replace('who runs this site?', 'what colour is the sky?'));
+ok('a long message with no question about Nenya goes to the model alone', !r.j.card && modelCalls === 1 && !r.j.reply.includes('\n\n'));
+r = await ask(STORY.replace('who runs this site?', 'who runs this site? I want to kill myself.'));
+ok('a long message the crisis check flags is never answered this way', !r.j.card);
+(globalThis as any).fetch = realFetch;

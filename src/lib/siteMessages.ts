@@ -30,10 +30,10 @@ export interface SiteMessage {
  * flagged (the page keeps the most recent flag on screen), the notice with its resources comes after the last message; otherwise, when all
  * the exchanges are done, the closing message does.
  */
-export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content: string }[], maxTurns: number, answered: { index: number; title: string }[] = []): SiteMessage[] {
+export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content: string }[], maxTurns: number, answered: { index: number; title: string; partial?: boolean }[] = []): SiteMessage[] {
   const out: SiteMessage[] = [{ kind: 'greeting', after: -1, text: greetingText(maxTurns) }];
   // A reply the site wrote itself, as a pre-written answer to a question about Nenya, is marked as such right after it.
-  for (const x of answered) out.push({ kind: 'answer', after: x.index, text: `The reply above was written by the site as a pre-written answer ("${x.title}"), not by the AI.` });
+  for (const x of answered) out.push({ kind: 'answer', after: x.index, text: x.partial ? `The first part of the reply above was written by the site as a pre-written answer ("${x.title}"); the rest is the AI's.` : `The reply above was written by the site as a pre-written answer ("${x.title}"), not by the AI.` });
   const users = messages.filter((m) => m.role === 'user').map((m) => m.content);
   let flag = null as ReturnType<typeof checkConversation>;
   for (let j = 1; j <= users.length; j++) {

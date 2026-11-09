@@ -30,7 +30,7 @@ interface TranscriptToolsProps {
   /** The number of exchanges in a full conversation (the greeting and closing message depend on it). */
   maxTurns?: number;
   /** The replies the site wrote itself as pre-written answers (index in the conversation, and the answer's title). */
-  answered?: { index: number; title: string }[];
+  answered?: { index: number; title: string; partial?: boolean }[];
 }
 
 type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';

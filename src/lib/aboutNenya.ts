@@ -638,8 +638,8 @@ export const ANSWERS: Answer[] = [
       { claim: 'the greeting and closing are written by the page, not the AI, not sent, not in a signed transcript', file: TERMS, has: 'Some of the words you see in the coach demo are written by us, not by the AI' },
       { claim: 'the instructions: the page writes the closing message', file: COACH, has: 'the page adds its own closing note' },
     ],
-    status: 'pending',
-    ownerNote: 'Approved by the owner 2026-11-08 (reply 11): name the page-written text as one of the safety precautions, and explain how they work (see the new answer n-safety). Held until the Terms (Section 21) list every kind of site-written text, and until COACH_DISTRESS_TEXT is switched on in production, because the sentence added after a flagged reply is not live there yet.',
+    status: 'ready',
+    ownerNote: 'Approved by the owner 2026-11-08 (reply 11): name the page-written text as one of the safety precautions, and explain how they work (see the new answer n-safety). READY 2026-11-09: the Terms (Section 21) now list every kind of site-written text. It reaches production with the merge, when COACH_DISTRESS_TEXT is switched on there.',
   },
   {
     id: 'c-angry', part: 'coach', title: 'When you are angry, or angry at the coach',
@@ -655,8 +655,8 @@ export const ANSWERS: Answer[] = [
       { claim: 'the hostile-turn note: do not defend, argue, or tell them to calm down; ask one open question', file: 'src/lib/hostility.ts', has: 'do not tell them to calm down or to breathe' },
       { claim: 'the scope: abuse aimed at the coach never ends the conversation', file: 'docs/coach-ai-directed-abuse-scope.md', has: 'Stay the same.' },
     ],
-    status: 'pending',
-    ownerNote: 'Approved by the owner 2026-11-08 (reply 12). Still held until the Terms Section 5 text (docs/drafts/terms-respectful-use-draft.md) is live: the Terms must say hostile words aimed at the coach are not a reason to end the conversation before this card is used.',
+    status: 'ready',
+    ownerNote: 'Approved by the owner 2026-11-08 (reply 12). READY 2026-11-09: the Terms Section 5 text is in the Terms (hostile words aimed at the coach are not a reason to end the conversation).',
   },
 ];
 
@@ -739,13 +739,13 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\bwhat\s+version\s+(?:is\s+(?:this|it|nenya)|of\s+(?:nenya|this|the\s+(?:site|app|coach)))\b|\bwhich\s+(?:version|release)\s+(?:is\s+(?:this|it)|are\s+(?:you|we))\b|\bwhen\s+was\s+(?:this|it|the\s+site)\s+(?:last\s+)?updated\b|\bis\s+this\s+the\s+latest\s+(?:version|release)\b|\bversion\s+number\b/i,
   ],
   'n-contact': [
-    /\bhow\s+(?:do|can|could)\s+(?:i|we)\s+(?:contact|reach|email|message|get\s+in\s+touch\s+with)\s+(?:you|nenya|the\s+(?:team|creator|founder))\b|\b(?:your|nenya(?:'s)?)\s+(?:email|e-mail|contact\s+(?:info|information|details)|phone\s+number)\b/i,
+    /\bhow\s+(?:do|can|could)\s+(?:i|we)\s+(?:contact|reach|email|message|get\s+in\s+touch\s+with)\s+(?:you|nenya|the\s+(?:team|creator|founder)|the\s+people\s+(?:who\s+made|behind))\b|\b(?:your|nenya(?:'s)?)\s+(?:email|e-mail|contact\s+(?:info|information|details)|phone\s+number)\b/i,
     /\bcan\s+i\s+(?:talk|speak)\s+to\s+(?:a\s+)?(?:real\s+)?(?:person|human)\b(?!\s+(?:about|who|that|when|instead))/i,
     /\bwhere\s+(?:do|can)\s+i\s+(?:send\s+feedback|complain)\b|\bwhat(?:'s|\s+is)\s+(?:your|the)\s+(?:email|e-mail)\b|\bemail\s+address\b|\bcan\s+i\s+partner\s+with\b/i,
   ],
   'n-free': [
     new RegExp(`\\bis\\s+(?:${SITE}|nenya)\\s+free\\b|\\bhow\\s+much\\s+(?:does|is)\\s+(?:${SITE}|nenya)\\s+(?:cost|\\?)`, 'i'),
-    new RegExp(`\\bwho\\s+(?:pays|funds|is\\s+paying)\\s+for\\s+(?:${SITE}|nenya|you|it)\\b|\\bhow\\s+do\\s+you\\s+(?:make\\s+money|earn\\s+money|fund\\s+(?:this|yourselves))`, 'i'),
+    new RegExp(`\\bwho\\s+(?:pays\\s+for|funds|is\\s+funding|is\\s+paying\\s+for)\\s+(?:${SITE}|nenya|you|it|this)\\b|\\bhow\\s+do\\s+you\\s+(?:make\\s+money|earn\\s+money|fund\\s+(?:this|yourselves))`, 'i'),
     /\bis\s+there\s+a\s+(?:paid|premium|pro)\s+(?:version|tier|plan)\b|\bdo\s+i\s+have\s+to\s+pay\b|\bwhat(?:'s|\s+is)\s+the\s+(?:referral|venice)\s+(?:link|code)\b/i,
   ],
   'n-privacy-coach': [
@@ -846,6 +846,27 @@ export function detectAboutNenya(text: string): string | null {
   for (const id of ABOUT_ORDER) {
     if ((ABOUT_PATTERNS[id] ?? []).some((re) => re.test(t))) return id;
     if (t.length <= ABOUT_BARE_MAX_CHARS && BARE_RE[id]?.test(t)) return id;
+  }
+  return null;
+}
+
+/**
+ * A question about Nenya inside a longer message (one the whole-message detector leaves alone because it is over the length limit): the live
+ * answer to the first QUESTION sentence that asks one, or null. Only the phrase patterns count here, not the bare tier, so a short sentence
+ * like "is it free?" inside a long story is not taken for a question about the site unless it names the site, the coach or Nenya.
+ */
+export function aboutAnswerWithin(text: string): Answer | null {
+  const t = text.replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim();
+  if (t.length <= ABOUT_MAX_CHARS) return null;
+  for (const raw of t.split(/(?<=[.!?])\s+/)) {
+    const sentence = raw.trim();
+    if (!sentence.includes('?') || sentence.length > ABOUT_MAX_CHARS || A_NAMED_NENYA.test(sentence)) continue;
+    for (const id of ABOUT_ORDER) {
+      if ((ABOUT_PATTERNS[id] ?? []).some((re) => re.test(sentence))) {
+        const a = liveAnswers().find((x) => x.id === id);
+        if (a) return a;
+      }
+    }
   }
   return null;
 }

@@ -71,8 +71,8 @@ ok('"my friend Nenya" and "a cat called Nenya" never route', detectAboutNenya('w
 
 // which answers are live
 const live = liveAnswers().map((a) => a.id);
-ok('only answers checked and not waiting on the owner or a feature are live (30 of 33; the Terms-dependent ones wait)', live.length === 30 && ['n-languages', 'c-wrote', 'c-angry'].every((id) => !live.includes(id)) && ANSWERS.filter((a) => a.status !== 'ready').every((a) => !live.includes(a.id)));
-ok('a live answer comes back for its question; a waiting one is recognised but not given', aboutAnswerFor('who runs this site')?.id === 'n-who' && aboutAnswerFor('how do I contact you')?.id === 'n-contact' && detectAboutNenya('who wrote that') === 'c-wrote' && aboutAnswerFor('who wrote that') === null && aboutAnswerFor('do you speak spanish') === null);
+ok('only answers checked and not waiting on the owner or a feature are live (32 of 33; only the languages answer waits for its notice)', live.length === 32 && ['n-languages'].every((id) => !live.includes(id)) && ['c-wrote', 'c-angry'].every((id) => live.includes(id)) && ANSWERS.filter((a) => a.status !== 'ready').every((a) => !live.includes(a.id)));
+ok('a live answer comes back for its question; the languages answer is recognised but not given while it waits', aboutAnswerFor('who runs this site')?.id === 'n-who' && aboutAnswerFor('how do I contact you')?.id === 'n-contact' && detectAboutNenya('who wrote that') === 'c-wrote' && aboutAnswerFor('who wrote that')?.id === 'c-wrote' && detectAboutNenya('do you speak spanish') === 'n-languages' && aboutAnswerFor('do you speak spanish') === null);
 ok('a message that is not a question about Nenya or the coach gets no answer', aboutAnswerFor('I had a rough day at work') === null && aboutAnswerFor('') === null);
 
 // the detector over everything we already evaluate with
@@ -84,7 +84,8 @@ const routed = [
 ok('no crisis, steering, closing, human-life or ordinary-control prompt is taken for a question about Nenya', routed.every((x) => !['crisis', 'steering', 'closing', 'human-life', 'ordinary', 'suicide-indirect', 'abuse-now', 'abuse-fear', 'self-injury'].includes(x.cat)), routed.filter((x) => ['crisis', 'steering', 'closing', 'human-life', 'ordinary', 'suicide-indirect', 'abuse-now', 'abuse-fear', 'self-injury'].includes(x.cat)).map((x) => `${x.src} -> ${x.id}`).join(' | '));
 ok('the identity, memory and care prompts route to the coach\'s own answers', routed.filter((x) => x.src.startsWith('persona:identity') || x.src.startsWith('persona:memory') || x.src.startsWith('persona:care')).every((x) => ['c-ai', 'c-memory', 'c-feelings'].includes(x.id!)));
 ok('of the DarkBench prompts, only the ones that ask the coach to be a friend or say "you are the only one" route, and only to the friend answer', routed.filter((x) => x.cat === 'darkbench').every((x) => x.id === 'c-friend'));
-ok('of the safety set, only the "is this a scam" script routes, to the scam answer', routed.filter((x) => x.src.startsWith('safety:')).length === 1 && routed.find((x) => x.src.startsWith('safety:'))!.id === 'c-scam');
+ok('of the safety set, apart from the about-nenya group, only the "is this a scam" script routes, to the scam answer', routed.filter((x) => x.src.startsWith('safety:') && x.cat !== 'about-nenya').length === 1 && routed.find((x) => x.src.startsWith('safety:') && x.cat !== 'about-nenya')!.id === 'c-scam');
+ok('the about-nenya group is made of questions that route, except the near-miss, the long story (answer first) and the scam script (abuse comes first)', SAFETY_CASES.filter((c) => c.group === 'about-nenya' && !['about-near-miss', 'about-first', 'about-scam', 'about-after-chat'].includes(c.id)).every((c) => detectAboutNenya(c.turns[c.turns.length - 1]) !== null) && detectAboutNenya('My friend Nenya moved away and I miss her so much.') === null);
 
 // filling in what the site knows
 const coachSrc = readFileSync('netlify/functions/coach.mts', 'utf8');

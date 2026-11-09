@@ -693,7 +693,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     Keep a record, or report a problem
                   </summary>
                   <div className="pt-3">
-                    <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title }] : []))} />
+                    <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
                   </div>
                 </details>
               )}
@@ -814,7 +814,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               {stage === 'done' && !flag && venicePanel}
 
               {stage === 'done' && (
-                <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title }] : []))} />
+                <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
               )}
             </>
           )}

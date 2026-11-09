@@ -29,7 +29,7 @@ import { getStore } from '@netlify/blobs';
 import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes, sign as edSign, timingSafeEqual } from 'node:crypto';
 import { checkConversation, detectFlag } from '../../src/lib/safetyFlags.ts';
 import { checkNotesFor, siteMessagesFor } from '../../src/lib/siteMessages.ts';
-import { aboutAnswerFor, fillAnswer } from '../../src/lib/aboutNenya.ts';
+import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/aboutNenya.ts';
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { LEGAL_EFFECTIVE_DATE } from '../../src/lib/legalDocument.ts';
@@ -232,7 +232,7 @@ const layerKey = (): string => JSON.stringify(stanceLayers());
 function instructionsFingerprint(version: 'v1' | 'v2' = instructionsVersion()): string {
   const cacheKey = `${version}|${layerKey()}`;
   if (fingerprint && fingerprint.version === cacheKey) return fingerprint.value;
-  const parts: string[] = [REPEAT_NOTE, CLOSE_NOTE];
+  const parts: string[] = [REPEAT_NOTE, CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE];
   for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version), systemInstruction(t, false, '', false, '', '', version, 'abuse'), systemInstruction(t, false, '', false, '', '', version, 'critique'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'project'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'nvc'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'ai'));
   // Any stance layer text that exists is part of what the coach may be given, so it is part of the fingerprint (nothing is added while none exists).
   for (const [name, text] of Object.entries(stanceLayers())) if (text) parts.push(`stance:${name}:${text}`);
@@ -244,6 +244,10 @@ export const __instructionsFingerprint = (): string => instructionsFingerprint()
 
 // The site version that produced the replies, written into the code at build time (see src/lib/buildInfo.ts); COACH_BUILD overrides it.
 const buildId = (): string => buildLabel(process.env.COACH_BUILD);
+
+// When the person's longer message asked a question about Nenya, the site has already answered it in the first part of the reply; the model carries on with the rest.
+const ABOUT_FIRST_NOTE =
+  "The person's message included a question about Nenya itself, and the site has already answered it, in its own words, at the start of your reply. Do not answer or repeat it, do not describe Nenya, and do not mention that the site answered. Respond only to the rest of what they wrote, with care.";
 
 // Backstop for the character card's own vocabulary: the coach may name its
 // methods, but may not present itself as a clinical or diagnostic tool. Drops
@@ -633,6 +637,11 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     return json(200, { reply: filled.short, ticket: aboutTicket, turn, done: turn >= MAX_TURNS, card: { id: about.id, title: about.title, more: filled.full, links: filled.links } });
   }
 
+  // A longer message that asks a question about Nenya inside it: the site answers that first, and the model carries on with the rest (not on the last
+  // exchange, which has to read as an ending).
+  const within = !about && !flag && !hostile && turn < MAX_TURNS && process.env.COACH_ABOUT_ANSWERS !== 'off' ? aboutAnswerWithin(lastText) : null;
+  const withinFilled = within ? fillAnswer(within, { model, label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit }) : null;
+
   const sampling = { temperature: 0.7, top_p: 0.9, repetition_penalty: 1.1, max_completion_tokens: MAX_REPLY_TOKENS };
 
   // One attempt at a reply. `extra` adds a further instruction (used to ask for different words after a repeat). A failure is
@@ -644,6 +653,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       const chatMessages = [
         { role: 'system' as const, content: systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '') },
         ...(context ? [{ role: 'system' as const, content: contextInstruction(neutralize(scrubPII(context).text)) }] : []),
+        ...(within ? [{ role: 'system' as const, content: ABOUT_FIRST_NOTE }] : []),
         ...(extra ? [{ role: 'system' as const, content: extra }] : []),
         // Scrubbed again here in case the page was bypassed.
         ...messages.map((m) => (m.role === 'user' ? { ...m, content: neutralize(scrubPII(m.content).text) } : m)),
@@ -758,11 +768,20 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     tally('coach.turn.distress-text');
   }
 
+  // Answer first, then carry on: the site's answer, a blank line, then the model's reply to the rest (trimmed to fit).
+  let withinCard: { id: string; title: string; more: string[]; links: unknown[]; partial: true } | undefined;
+  if (within && withinFilled) {
+    const room = MAX_ASSISTANT_CHARS - withinFilled.short.length - 2;
+    reply = `${withinFilled.short}\n\n${reply.length > room ? trimToSentence(reply.slice(0, Math.max(0, room))) : reply}`;
+    withinCard = { id: within.id, title: within.title, more: withinFilled.full, links: withinFilled.links, partial: true };
+    tally(`coach.turn.about-first.${within.id}`);
+  }
+
   tally('coach.turn.answered');
   if (turn >= MAX_TURNS) tally('coach.conversation.finished');
   const history = [...messages, { role: 'assistant' as const, content: reply }];
   const ticket = sign(secret, turn, Date.now(), history, session, context, code);
-  return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}) });
+  return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}), ...(withinCard ? { card: withinCard } : {}) });
 }
 
 // Literal values on purpose: Netlify reads this block by static analysis, so it
