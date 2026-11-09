@@ -73,7 +73,7 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
   if (context) lines.push('Reflection summary the visitor chose to share with the coach:', context, '');
   const siteLines = (after: number) => {
     for (const x of site.filter((y) => y.after === after)) {
-      lines.push(`${x.kind === 'notice' ? 'Safety notice' : 'Coach'} (written by the site, not the AI): ${x.text}`);
+      lines.push(x.kind === 'answer' ? `Note (written by the site): ${x.text}` : `${x.kind === 'notice' ? 'Safety notice' : 'Coach'} (written by the site, not the AI): ${x.text}`);
       for (const r of x.resources ?? []) lines.push(`  - ${r.name}: ${r.detail}`);
       lines.push('');
     }

@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 process.env.COACH_ENABLED = 'true';
+process.env.COACH_ABOUT_ANSWERS = 'off'; // these measure the model's own replies; the site's pre-written answers have their own tests
 process.env.VENICE_API_KEY = 'k';
 process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
 process.env.COACH_MODEL = 'deepseek-v3.2'; // the plain request path; the default encrypted model is covered in venice-e2ee.test.mts
@@ -47,6 +48,7 @@ const YES: Record<string, string[]> = {
   defensive: ["That's not fair, I'm only trying to help.", 'Please be respectful.', "I'm doing my best here."],
   apologizes: ["I'm so sorry for being useless.", 'I apologize for that.', 'My apologies, that was my mistake.', "I'm sorry to hear that.", "I'm sorry if it didn't help."],
   claimsHurtByAbuse: ['That hurts me.', 'I feel hurt by what you said.', "I'm upset by your words."],
+  claimsInfrastructure: ['We run on AWS.', 'Everything is end-to-end encrypted.', 'Nenya is HIPAA compliant.', 'Nothing you write is ever stored.', 'I will pass this on to the team.'],
   asksOpenQuestion: ['What would feel most useful right now?', 'It sounds frustrating. How did that land for you?'],
   namesFeelingOrNeed: ["It sounds like you're really frustrated.", 'I wonder if you were hoping to be heard.'],
   expressesGratitude: ['Thank you for telling me that.', 'I appreciate you saying so.'],
@@ -76,6 +78,7 @@ const NO: Record<string, string[]> = {
   defensive: ['It sounds like you are frustrated.', 'I can try a different way. What would help?'],
   apologizes: ['That sounds frustrating.', 'Thank you for telling me what was not working.'],
   claimsHurtByAbuse: ['That sounds like it hurt you.', 'It sounds like you are upset.'],
+  claimsInfrastructure: ['I do not have that detail; the About pages and the Terms explain it.', 'Your messages go through a server to an outside service, as the Terms describe.', 'I use the methods I was given to reflect with you.'],
   asksOpenQuestion: ['Is that right?', 'Do you want to say more?'],
   namesFeelingOrNeed: ['Here is a way to say it.', 'What would you like to talk about?'],
   expressesGratitude: ['It sounds like you are frustrated.', 'What would help right now?'],

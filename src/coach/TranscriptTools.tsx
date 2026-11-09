@@ -29,6 +29,8 @@ interface TranscriptToolsProps {
   stopped?: boolean;
   /** The number of exchanges in a full conversation (the greeting and closing message depend on it). */
   maxTurns?: number;
+  /** The replies the site wrote itself as pre-written answers (index in the conversation, and the answer's title). */
+  answered?: { index: number; title: string }[];
 }
 
 type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
@@ -37,7 +39,7 @@ type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
 // our server once more (it was already there, turn by turn) so it can confirm it
 // is untouched and date it. Nothing is stored. Sharing with Nenya shows exactly
 // what would be sent first.
-export function TranscriptTools({ messages, session, context = '', ticket, stopped = false, maxTurns = 5 }: TranscriptToolsProps) {
+export function TranscriptTools({ messages, session, context = '', ticket, stopped = false, maxTurns = 5, answered = [] }: TranscriptToolsProps) {
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [signed, setSigned] = useState<SignedTranscript | null>(null);
   const signedRef = useRef<SignedTranscript | null>(null); // the latest, for handlers that run before a re-render
@@ -91,7 +93,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns), signedRef.current?.checks ?? checkNotesFor(messages));
+    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered), signedRef.current?.checks ?? checkNotesFor(messages));
     // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
     const text = r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
     downloadText(transcriptFilename(r, 'txt'), 'text/plain', text);
@@ -104,7 +106,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setShare('preview');
   };
 
-  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns), signed?.checks ?? checkNotesFor(messages));
+  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns, answered), signed?.checks ?? checkNotesFor(messages));
   const tooLong = shareText.length > MAX_SHARE_CHARS;
 
   // Only a signed transcript can be sent. The function checks the signature first, then forwards the readable text (rebuilt

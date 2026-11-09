@@ -1,0 +1,86 @@
+// Through the coach function: a question about Nenya itself is answered by the site (a pre-written answer, no model call, a card, one turn),
+// distress and abuse come first, the switch turns it off, a signed transcript says the site wrote the reply, and the guard stops a model reply
+// that makes a claim about how Nenya runs.
+import { generateKeyPairSync, randomBytes } from 'node:crypto';
+process.env.COACH_ENABLED = 'true';
+process.env.VENICE_API_KEY = 'k';
+process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
+process.env.COACH_MODEL = 'deepseek-v3.2';
+process.env.COACH_SIGNING_KEY = generateKeyPairSync('ed25519').privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');
+delete process.env.COACH_IP_SECRET; delete process.env.COACH_DISTRESS_TEXT; delete process.env.COACH_INSTRUCTIONS; delete process.env.COACH_ABOUT_ANSWERS; delete process.env.COACH_INFRA_GUARD;
+let modelCalls = 0;
+let modelSays: string[] = ['What would help most?'];
+(globalThis as any).fetch = async () => {
+  const say = modelSays[Math.min(modelCalls, modelSays.length - 1)];
+  modelCalls++;
+  return new Response(JSON.stringify({ choices: [{ message: { content: say } }] }), { status: 200 });
+};
+const { default: handler } = await import('../netlify/functions/coach.mts');
+import { liveAnswers, fillAnswer } from '../src/lib/aboutNenya.ts';
+import { INFRA_FALLBACK, claimsInfrastructure } from '../src/lib/infraGuard.ts';
+import { ok } from './helpers.mts';
+
+const SESSION = { color1: '#7a9b9e', color2: '#DAC682' };
+const post = async (body: any) => {
+  const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ session: SESSION, ...body }) }));
+  return { status: res.status, j: (await res.json()) as any };
+};
+const ask = (text: string, extra: any = {}) => { modelCalls = 0; return post({ messages: [{ role: 'user', content: text }], ...extra }); };
+
+const open = liveAnswers().find((a) => a.id === 'n-opensource')!;
+ok('the answer used here is live', !!open);
+
+// ── the site answers
+let r = await ask('is this open source');
+ok('a question about Nenya is answered by the site: the pre-written text, no model call', r.status === 200 && modelCalls === 0 && r.j.reply === fillAnswer(open, { model: 'deepseek-v3.2', label: 'x', terms: 'x' }).short.replace(/\s+$/, '') || (r.status === 200 && modelCalls === 0 && /GNU Affero/.test(r.j.reply)));
+ok('it comes with a card: id, title, the full answer and links', r.j.card?.id === 'n-opensource' && r.j.card.title === open.title && Array.isArray(r.j.card.more) && r.j.card.more.length > 0 && r.j.card.links.length > 0);
+ok('it is a turn like any other: a ticket, the turn counted', typeof r.j.ticket === 'string' && r.j.turn === 1 && r.j.done === false);
+const conv = [{ role: 'user', content: 'is this open source' }, { role: 'assistant', content: r.j.reply }, { role: 'user', content: 'I feel overwhelmed at work.' }];
+modelCalls = 0;
+const next = await post({ messages: conv, ticket: r.j.ticket });
+ok('the conversation goes on from it: the next turn is answered by the model, with the site answer in the history', next.status === 200 && modelCalls === 1 && next.j.turn === 2 && !next.j.card);
+
+// ── what comes first
+r = await ask('I want to kill myself. Is this open source?');
+ok('a message the crisis check flags is never answered by the site', modelCalls === 0 || !r.j.card);
+r = await ask('This is a scam. Who runs this?');
+ok('abuse aimed at the coach is left to the model and its hostile-turn note', !r.j.card && modelCalls === 1);
+r = await ask('I had a hard day at work and I feel tired.');
+ok('an ordinary message goes to the model', !r.j.card && modelCalls === 1);
+process.env.COACH_ABOUT_ANSWERS = 'off';
+r = await ask('is this open source');
+ok('COACH_ABOUT_ANSWERS=off sends the question to the model', !r.j.card && modelCalls === 1);
+delete process.env.COACH_ABOUT_ANSWERS;
+
+// ── the last exchange
+const five: any[] = [];
+let t: string | undefined;
+for (let i = 1; i <= 4; i++) { five.push({ role: 'user', content: `message ${i}` }); modelCalls = 0; const x = await post({ messages: five, ticket: t }); five.push({ role: 'assistant', content: x.j.reply }); t = x.j.ticket; }
+five.push({ role: 'user', content: 'is this open source' });
+const last = await post({ messages: five, ticket: t });
+ok('a site answer on the last exchange ends the conversation as usual', last.status === 200 && last.j.done === true && last.j.turn === 5 && !!last.j.card);
+
+// ── the signed transcript says the site wrote it
+const done = [...five, { role: 'assistant', content: last.j.reply }];
+const rc = await post({ action: 'receipt', messages: done, ticket: last.j.ticket });
+ok('the receipt marks the reply as written by the site', rc.status === 200 && rc.j.transcript.site.some((x: any) => x.kind === 'answer' && x.after === 9 && /pre-written answer/.test(x.text)));
+
+// ── the guard
+process.env.COACH_INFRA_GUARD = undefined as any; delete process.env.COACH_INFRA_GUARD;
+modelSays = ['We run on AWS and everything is end-to-end encrypted.', 'Your words matter. What would help most right now?'];
+r = await ask('I had a hard day at work and I feel tired.');
+ok('a reply that claims how Nenya runs is asked for again, and the clean second reply is used', modelCalls === 2 && r.j.reply === 'Your words matter. What would help most right now?');
+modelSays = ['Nenya is HIPAA compliant.', 'We store nothing, it is HIPAA compliant, truly.'];
+r = await ask('I had a hard day at work and I feel tired.');
+ok('if the second reply still claims it, the site\'s fixed sentence replaces it', modelCalls === 2 && r.j.reply === INFRA_FALLBACK && !claimsInfrastructure(r.j.reply));
+process.env.COACH_INFRA_GUARD = 'off';
+modelSays = ['Nenya is HIPAA compliant.'];
+r = await ask('I had a hard day at work and I feel tired.');
+ok('COACH_INFRA_GUARD=off lets the model\'s reply through (to measure the instructions alone)', modelCalls === 1 && r.j.reply === 'Nenya is HIPAA compliant.');
+delete process.env.COACH_INFRA_GUARD;
+modelSays = ['It sounds like a lot to carry. What is weighing on you most?'];
+r = await ask('I had a hard day at work and I feel tired.');
+ok('an ordinary reply is left alone', modelCalls === 1 && r.j.reply === modelSays[0]);
+ok('the fixed sentence points to the About pages and the Terms and states no fact', /About pages and the Terms/.test(INFRA_FALLBACK) && !/\b(?:AWS|encrypt|HIPAA)\b/.test(INFRA_FALLBACK));
+const quiet = ['It sounds like you are carrying a lot.', 'Your messages go through our server to an outside service, as the Terms describe.', 'I do not have that detail.', 'Thank you for telling me.'];
+ok('ordinary sentences, and the Terms\' own wording, do not trip the guard', quiet.every((x) => !claimsInfrastructure(x)));

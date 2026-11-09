@@ -17,6 +17,7 @@ import { AppFooter } from '../app/components/AppFooter';
 import { SupportThisWork } from '../app/components/SupportThisWork';
 import { ShareNenya } from '../app/components/ShareNenya';
 import { FlagNotice } from './FlagNotice';
+import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
 import { FailureNotice } from './FailureNotice';
@@ -76,6 +77,8 @@ interface Msg {
   content: string;
   /** Page-only note, never sent anywhere. */
   note?: string;
+  /** Set when the site wrote this reply itself as a pre-written answer: the card shown beneath it. */
+  card?: AnswerCardData;
 }
 
 const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content }));
@@ -248,6 +251,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         done?: boolean;
         flag?: SafetyFlag;
         blocked?: string;
+        card?: AnswerCardData;
       };
       // The server screens too. A blocked message is not part of the conversation.
       if (data.blocked === 'cap' || data.blocked === 'ip') {
@@ -258,7 +262,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         setBlocked(true);
         return;
       }
-      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply }] : next);
+      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}) }] : next);
       setTicket(data.ticket);
       touch();
       setDraft('');
@@ -613,8 +617,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               <div className="space-y-4" role="log" aria-live="polite" aria-label="Conversation">
                 {pageBubble(GREETING)}
                 {messages.map((m, i) => (
+                  <Fragment key={i}>
                   <div
-                    key={i}
                     className={`coach-msg flex items-end gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {m.role === 'assistant' && (
@@ -641,6 +645,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       {m.note && <span className="mt-2 block text-xs italic text-muted-foreground">{m.note}</span>}
                     </div>
                   </div>
+                  {m.card && <AnswerCard card={m.card} />}
+                  </Fragment>
                 ))}
                 {sending && (
                   <div className="coach-msg flex items-end gap-2" role="status">
@@ -687,7 +693,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     Keep a record, or report a problem
                   </summary>
                   <div className="pt-3">
-                    <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} />
+                    <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title }] : []))} />
                   </div>
                 </details>
               )}
@@ -808,7 +814,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               {stage === 'done' && !flag && venicePanel}
 
               {stage === 'done' && (
-                <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} />
+                <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title }] : []))} />
               )}
             </>
           )}
