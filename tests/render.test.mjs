@@ -76,6 +76,9 @@ try {
     ok('first-visit panel: hidden from assistive technology and the keyboard while the loading screen is over it', /inert: '', 'aria-hidden': 'true'/.test(src) && /if \(!veilGone\) return;/.test(src));
     h = render(Onboarding, { technique: { ih: 5000, hi: 0, ex: 5000, ho: 0 }, onTechniqueChange: noop, onFinish: noop, veilGone: false });
     ok('first-visit panel: rendered under the loading screen, it is inert, aria-hidden and fully solid', typeof h === 'string' && /inert=""/.test(h) && h.includes('aria-hidden="true"') && /opacity:1;transition:opacity 0\.9s/.test(h), h.error ?? '');
+    h = render(Onboarding, { technique: { ih: 5000, hi: 0, ex: 5000, ho: 0 }, onTechniqueChange: noop, onFinish: noop, skipRhythm: true });
+    ok('first-visit panel: arriving on another page (skipRhythm) opens on the terms, with no rhythm choice and no step dots', typeof h === 'string' && h.includes('Terms of Use') && h.includes('Agree, Enter') && !h.includes('Not choosing is fine') && !h.includes('>Box<') && !h.includes('h-1.5 rounded-full'), h.error ?? '');
+    ok('first-visit panel: the App skips the rhythm only when the visitor arrived on an About page, and does not count a rhythm that was never chosen', /skipRhythm=\{arrivedElsewhere\}/.test(appSrc) && /arrivedElsewhere\] = useState\(initialAbout !== null\)/.test(appSrc) && /rhythm && !arrivedElsewhere/.test(appSrc));
     ok('first-visit panel: goes straight from the rhythm to the terms', /STEPS: OnboardingStep\[\] = \['rhythm', 'terms'\]/.test(src) && !/'counter'|'process'/.test(src));
   }
   // The loading screen, the tour offer and the tour.

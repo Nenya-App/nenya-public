@@ -38,6 +38,12 @@ interface OnboardingFlowProps {
    * seen breathing behind. Defaults to true (no loading screen).
    */
   veilGone?: boolean;
+  /**
+   * True when the visitor arrived on a page other than the welcome page (a link straight to one of the About pages). The rhythm choice is
+   * about the breathing counter on the welcome page, so it is left out there and the panel opens on the terms, which still wrap everything.
+   * The rhythm stays the default (Steady) and can be changed later from the breathing counter.
+   */
+  skipRhythm?: boolean;
 }
 
 function RhythmOrb({ t }: { t: BreathingTechnique }) {
@@ -62,14 +68,15 @@ function RhythmOrb({ t }: { t: BreathingTechnique }) {
   );
 }
 
-export default function OnboardingFlow({ technique, onTechniqueChange, onStepChange, onFinish, veilGone = true }: OnboardingFlowProps) {
-  const [step, setStep] = useState<OnboardingStep>('rhythm');
+export default function OnboardingFlow({ technique, onTechniqueChange, onStepChange, onFinish, veilGone = true, skipRhythm = false }: OnboardingFlowProps) {
+  const [step, setStep] = useState<OnboardingStep>(skipRhythm ? 'terms' : 'rhythm');
   const [showMore, setShowMore] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const stepIndex = STEPS.indexOf(step);
+  const steps = skipRhythm ? STEPS.filter((x) => x !== 'rhythm') : STEPS;
+  const stepIndex = steps.indexOf(step);
   const goTo = (s: OnboardingStep) => setStep(s);
 
   useEffect(() => {
@@ -269,7 +276,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
 
           {/* Progress dots */}
           <div className="flex shrink-0 items-center justify-center gap-1.5 pb-3" aria-hidden="true">
-            {STEPS.map((s, i) => (
+            {steps.length > 1 && steps.map((s, i) => (
               <div
                 key={s}
                 className={`h-1.5 rounded-full transition-all ${

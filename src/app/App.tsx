@@ -75,6 +75,8 @@ export default function App() {
     }
   });
   const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : 'welcome');
+  // Arrived on a page other than the welcome page (a link to an About page): the first-visit panel then skips the breathing-rhythm choice.
+  const [arrivedElsewhere] = useState(initialAbout !== null);
   // Real navigation history instead of a single "previousScreen" value.
   // A single value can only ever answer "what screen came immediately
   // before this one" -- it breaks the moment a screen is reachable more
@@ -171,7 +173,7 @@ export default function App() {
   const handleOnboardingFinish = () => {
     enableUsageCounts();
     const rhythm = PRESETS.find((p) => sameTechnique(breathingTechnique, p));
-    const rhythmName = rhythm ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
+    const rhythmName = rhythm && !arrivedElsewhere ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
     countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : [])]);
     setBreathingCounterMinimized(true);
     setEntryUnlocked(true);
@@ -399,6 +401,7 @@ export default function App() {
       {!termsAgreed && (
         <OnboardingFlow
           veilGone={veilGone}
+          skipRhythm={arrivedElsewhere}
           technique={breathingTechnique}
           onTechniqueChange={setBreathingTechnique}
           onFinish={handleOnboardingFinish}
