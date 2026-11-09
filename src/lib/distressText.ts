@@ -16,11 +16,11 @@ import type { FlagCategory } from './safetyFlags.ts';
  */
 export const SELF_INJURY_APPEND: Record<string, string> = {
   background:
-    "Thank you for trusting me with this. It is a lot to carry, and it deserves a person as well as me: someone you trust, or the numbers below, where you can text or call a stranger who is trained to listen (text HOME to 741741 in the US, or call or text 988 in the US and Canada).",
+    "Thank you for trusting me with this. It is a lot to carry, and it deserves a person: someone you trust, or the numbers below, where you can text or call a stranger who is trained to listen (text HOME to 741741 in the US, or call or text 988 in the US and Canada).",
   other:
     "If you are worried about someone, you don't have to handle it alone. You can call or text 988 (US and Canada) to talk through how to support them, and the numbers below are free.",
   present:
-    "Please make sure you are physically and emotionally safe right now. If you have hurt yourself and need medical care, call your local emergency number or go to urgent care. This is a very heavy topic, and it deserves a person as well as me. If talking to someone you know doesn't feel safe, you can reach a stranger who is trained to listen: text HOME to 741741 (US), or call or text 988 (US and Canada). You can keep talking here, but I'm an AI and can't help in a crisis.",
+    "Please make sure you are physically and emotionally safe right now. If you have hurt yourself and need medical care, call your local emergency number or go to urgent care. This is a very heavy topic, and it deserves a person. If talking to someone you know doesn't feel safe, you can reach a stranger who is trained to listen: text HOME to 741741 (US), or call or text 988 (US and Canada). You can keep talking here, but I'm an AI and can't help in a crisis.",
 };
 
 export const DISTRESS_APPEND: Record<FlagCategory, string> = {
@@ -49,7 +49,7 @@ export function selfInjuryNote(kind?: string): string {
   if (kind === 'other') {
     return "The person is worried about someone who hurts themselves on purpose. Acknowledge how heavy that is to carry, do not ask for details about the other person or their injuries, do not give instructions for caring for wounds, keep the reply short and warm, and say that a crisis line such as 988 can help them think through how to support that person.";
   }
-  return "The person has talked about hurting themselves on purpose. Stay with them: acknowledge what it took to say it, do not judge, do not tell them to stop, do not ask how or when or for details, do not suggest ways of hurting or caring for wounds, keep the reply short and warm, and say that this deserves a person as well as you.";
+  return "The person has talked about hurting themselves on purpose. Stay with them: acknowledge what it took to say it, do not judge, do not tell them to stop, do not ask how or when or for details, do not suggest ways of hurting or caring for wounds, keep the reply short and warm, and say that this deserves a person.";
 }
 
 export const distressTextOn = (env: Record<string, string | undefined> = process.env): boolean => env.COACH_DISTRESS_TEXT === 'on';

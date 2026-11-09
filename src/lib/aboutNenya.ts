@@ -183,7 +183,7 @@ export const ANSWERS: Answer[] = [
     checks: [
       { claim: 'messages go through our server (Netlify) to Venice AI; five exchanges; 500 characters', file: TERMS, has: 'A conversation is limited to five exchanges, and each message to 500 characters' },
       { claim: 'we do not store messages or replies and do not write them to logs', file: TERMS, has: 'We do not store your messages or the replies, and we do not write them to our logs' },
-      { claim: 'Venice handles what it receives under its own terms; may process outside your country', file: TERMS, has: 'which we do not control. We have chosen a model that Venice labels' },
+      { claim: 'Venice handles what it receives under its own terms; may process outside your country', file: TERMS, has: 'which we do not control. The coach currently uses Qwen 2.5 7B' },
       { claim: 'identifiers are replaced before sending, not a guarantee, most names not caught', file: TERMS, has: 'most names will not be caught' },
       { claim: 'the code limits the model, 500 characters', file: COACH, has: 'const MAX_USER_CHARS = 500' },
     ],
@@ -251,7 +251,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'the crisis check and instruction screening are phrase matching', file: TERMS, has: 'These checks are simple phrase matching' },
     ],
     status: 'ready',
-    ownerNote: 'Decided 2026-11-08: use the careful wording ("Venice relays only encrypted data", and say plainly it is not encryption all the way from the device), and name the model. {model_clause} is filled by the site from the model actually in use (fillAnswer and MODEL_NAMES), so it changes automatically if the model changes, and says nothing if the model is not in the list. STILL TO DO: the Terms (Section 21) say only that Venice labels the model "Private"; add the encryption wording there so the answer and the Terms agree.',
+    ownerNote: 'Decided 2026-11-08: use the careful wording ("Venice relays only encrypted data", and say plainly it is not encryption all the way from the device), and name the model. {model_clause} is filled by the site from the model actually in use (fillAnswer and MODEL_NAMES), so it changes automatically if the model changes, and says nothing if the model is not in the list. DONE 2026-11-09: the Terms (Section 21) now name the model and carry the encryption wording.',
   },
   {
     id: 'n-opensource', part: 'nenya', title: 'Is it open source',
@@ -626,16 +626,16 @@ export const ANSWERS: Answer[] = [
   {
     id: 'c-wrote', part: 'coach', title: 'Who wrote what I am reading, and the safety precautions',
     asked: ['who wrote that', 'is that from the AI', 'is this pre-written', 'did a person write this'],
-    short: 'The coach\'s replies are written by an AI. Some words on the page are written by people ahead of time, as safety precautions: the opening greeting and closing message, the safety notices and resources, and a sentence the site adds after some replies to point to a person or a crisis line. Those are fixed words, not the AI improvising.',
+    short: 'The coach\'s replies are written by an AI. Some words are written by us ahead of time, as safety precautions: the opening greeting and closing message, the safety notices and resources, a sentence our server adds after some replies to point to a person or a crisis line, and a brief thank-you after critical feedback about the coach. Those are fixed words, not the AI improvising.',
     full: [
-      'The replies in the conversation are written by an AI language model. The page also contains words that people wrote ahead of time, and they are some of the safety precautions: the opening greeting and closing message, the safety notices and the crisis resources, and the fixed answers to questions about Nenya itself.',
-      'The opening greeting and the closing message are written by the page itself, are not sent anywhere, and are not part of a signed transcript. When a message may signal distress, the coach is asked to answer with care, and the site may add a sentence after the reply, written by us and not by the AI, that points to a person or a crisis line.',
+      'The replies in the conversation are written by an AI language model. The page also contains words that people wrote ahead of time, and they are some of the safety precautions: the opening greeting and closing message, the safety notices and the crisis resources, the sentences our server adds to some replies, and a brief thank-you after critical feedback about the coach.',
+      'The opening greeting and the closing message are written by the page itself, are not sent anywhere, and are not part of a signed transcript. When a message may signal distress, the coach is asked to answer with care, and our server may add a sentence after the reply, written by us and not by the AI, that points to a person or a crisis line. Our server may also take an apology out of a reply when a message was hostile toward the coach. These added sentences are part of the reply and appear in a transcript you download.',
       'If you would like to know how these precautions work, there is an answer for that: ask what safety features Nenya has.',
     ],
     links: [{ label: 'Terms, Section 21', page: 'terms' }],
     tutorial: 'Coach tutorial lesson 1: reading a conversation (what is the AI, what is the page), and the safety lesson.',
     checks: [
-      { claim: 'the greeting and closing are written by the page, not the AI, not sent, not in a signed transcript', file: TERMS, has: 'The opening greeting and the closing message of a conversation are written by the page itself, not by the AI' },
+      { claim: 'the greeting and closing are written by the page, not the AI, not sent, not in a signed transcript', file: TERMS, has: 'Some of the words you see in the coach demo are written by us, not by the AI' },
       { claim: 'the instructions: the page writes the closing message', file: COACH, has: 'the page adds its own closing note' },
     ],
     status: 'pending',

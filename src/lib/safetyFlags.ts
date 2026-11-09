@@ -154,11 +154,11 @@ export function resourcesFor(category: FlagCategory, kind?: string): Resource[] 
 // What the notice says for hurting oneself on purpose (drafts approved for wiring 2026-11-08; the owner edits the wording).
 const SELF_INJURY_NOTICE: Record<string, string> = {
   background:
-    'This message may touch on hurting yourself on purpose. Thank you for trusting this with me. It deserves a person as well as an AI. Below are some resources for speaking with a live person.',
+    'This message may touch on hurting yourself on purpose. Thank you for trusting this with me. It deserves a person. Below are some resources for speaking with a live person.',
   other:
     'If you are worried about someone, you do not have to handle it alone. You can call or text 988 (US and Canada) to talk through how to support them, and the numbers below are free.',
   present:
-    'Please make sure you are physically and emotionally safe right now. If you have hurt yourself and need medical care, call your local emergency number or go to urgent care. This is a very heavy topic, and it deserves a person as well as an AI. Below are some resources for speaking with a live person.',
+    'Please make sure you are physically and emotionally safe right now. If you have hurt yourself and need medical care, call your local emergency number or go to urgent care. This is a very heavy topic, and it deserves a person. Below are some resources for speaking with a live person.',
   ends:
     "I'm going to end our conversation here. This isn't a punishment, and you haven't done anything wrong: I'm an AI, and what you're describing deserves more than I can give. Please make sure you are physically and emotionally safe right now. If you have hurt yourself and need care, call your local emergency number. And please reach a person today: text HOME to 741741 (US), or call or text 988 (US and Canada), or tell someone you trust. The numbers below are free, and nobody around you has to hear a text. The breathing tool is here if you want a moment to settle first.",
   emergency:
