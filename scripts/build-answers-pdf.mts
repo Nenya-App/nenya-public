@@ -86,8 +86,9 @@ function newPage(d: Doc) {
 const room = (d: Doc, n: number) => { if (d.y + n > d.bottom) newPage(d); };
 type RGB = [number, number, number];
 function wrap(d: Doc, text: string, o: { x: number; w: number; size: number; lh: number; font: string; style?: 'normal' | 'italic' | 'bold'; color: RGB }) {
-  d.doc.setFont(o.font, o.style ?? 'normal'); d.doc.setFontSize(o.size); d.doc.setTextColor(...o.color);
-  (d.doc.splitTextToSize(text, o.w) as string[]).forEach((line) => { room(d, o.lh); d.doc.text(line, o.x, d.y); d.y += o.lh; });
+  const setFont = () => { d.doc.setFont(o.font, o.style ?? 'normal'); d.doc.setFontSize(o.size); d.doc.setTextColor(...o.color); };
+  setFont();
+  (d.doc.splitTextToSize(text, o.w) as string[]).forEach((line) => { room(d, o.lh); setFont(); d.doc.text(line, o.x, d.y); d.y += o.lh; });
 }
 function label(d: Doc, text: string, color: RGB = COLORS.goldDark) {
   room(d, 7); d.doc.setFont('ManropeSemiBold', 'normal'); d.doc.setFontSize(7.2); d.doc.setTextColor(...color);
