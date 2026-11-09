@@ -50,6 +50,8 @@ Translators should not need to read code. Three formats were considered:
 - **Privacy:** an invitation means people will write to info@nenya.biz or open a repository issue. A translator's name and email are personal information: kept only to answer, never shared; the Terms already describe the contact form.
 - **Review:** a second reader for each language before it is shown, since a small error in a page about feelings can change its meaning.
 
+**A contributor agreement is on the needs list (owner, 2026-11-08).** A first draft, co-written, is in `docs/drafts/contributor-agreement-draft.md`: you keep your copyright; contributions are licensed under the project's own license (AGPL-3.0-or-later, so inbound equals outbound); the name and logo are not included; contributions must respect the core stance; safety-critical text is reviewed per language; credit as the contributor chooses. It is not in force, it has an open clause on collective and Indigenous knowledge the owner has yet to finish, and it needs a lawyer's read.
+
 ## 5. Order
 1. **The notice and the contact route** (no infrastructure; words and a link).
 2. **The generated source document and the strings file**, produced by a script from the site's text (a read-only extraction first, so people can start while the string layer is built).

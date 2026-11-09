@@ -330,8 +330,9 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-accessibility', part: 'nenya', title: 'Accessibility',
     asked: ['can I use a screen reader', 'is there sound', 'can I make the text bigger', 'is this accessible', 'can you read it to me'],
-    short: 'You can change the text size and the light or dark theme, reduce or turn off the animations, and turn on optional breathing tones, with a switch screen readers can find. Emergency Exit stays reachable. We are still testing with screen readers and have not finished a full audit, so please tell us what does not work.',
+    short: 'Our goal is maximum accessibility, and we are still working toward it. You can change the text size and the light or dark theme, reduce or turn off the animations, and turn on optional breathing tones, with a switch screen readers can find. Emergency Exit stays reachable. We have not finished testing with screen readers, so please tell us what does not work.',
     full: [
+      'Our goal is maximum accessibility. We are still working toward it, and we want to hear from anyone it does not yet work for.',
       'Settings let you change the text size and the theme (light or dark), and you can reduce or turn off the animated visuals. Nothing on the site is designed to strobe or flash.',
       'Breathing tones are optional and off by default, with the switch in three places so a screen-reader user can find it, and changes are announced politely. The images carry text descriptions, and the drawings and body map on the review page say what they are.',
       'Emergency Exit is kept reachable on every screen, including the loading screen, the terms, and the coach.',
@@ -345,7 +346,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'the screen-reader audit checklist exists', file: 'docs/accessibility-audit-checklist.md', has: 'Does everything have a name?' },
     ],
     status: 'ready',
-    ownerNote: 'Approved 2026-11-08 as accurate to what is live or coded, including the honest line about the unfinished screen-reader audit.',
+    ownerNote: 'Approved 2026-11-08 as accurate to what is live or coded, including the honest line about the unfinished screen-reader audit. The owner states the goal confidently (2026-11-08): "our goal is maximum accessibility".',
   },
   {
     id: 'n-version', part: 'nenya', title: 'What version this is',
