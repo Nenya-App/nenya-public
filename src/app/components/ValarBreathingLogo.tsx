@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
 
 // Valar Sigils: Dual Focus (Individual/Communal) with 6-Color Chromatic Vectors
-// Gravity Well (first color) is the primary diagnostic color
+// The first color of each palette is its main color. Palettes are starting points, not a measurement.
 export const valarColors = [
   // AIR & LIGHT — Perception, Awareness, Order
   {

@@ -13,7 +13,7 @@ const gateways = [
     subtitle: 'Chromesthesia',
     icon: Eye,
     description: 'Explore through color & image',
-    explanation: 'Visual processing is our dominant sensory pathway. The Sight Gateway uses color psychology and chromesthesia (seeing emotions as colors) to map your inner landscape. Color associations tend to be tied to memory and cultural meaning in ways that are hard to put into words directly.',
+    explanation: 'Visual processing is our dominant sensory pathway. The Sight Gateway invites you to choose colors for how you feel. There is no right answer and no color has a fixed meaning: color associations tend to be tied to memory and cultural meaning in ways that are hard to put into words directly.',
     neuroscience: 'Color processing involves the visual cortex and emotional centers in the limbic system — part of why a color can carry a feeling before you consciously name it.',
     color: 'from-blue-500/20 to-purple-500/20',
     iconColor: 'text-blue-400',

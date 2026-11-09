@@ -293,7 +293,7 @@ function ArchetypeCard({ archetype, isExpanded, onToggle }: {
         <div className="p-6 space-y-6 bg-background dark:bg-background">
           {/* Color Vector Display */}
           <div>
-            <h4 className="text-sm font-medium mb-2 text-muted-foreground">Chromatic Vector (Gravity Well first)</h4>
+            <h4 className="text-sm font-medium mb-2 text-muted-foreground">The palette (main color first)</h4>
             <div className="flex gap-2">
               {archetype.colorVector.map((color, idx) => (
                 <div key={idx} className="flex flex-col items-center gap-1">
@@ -373,7 +373,7 @@ export default function PantheonOfNeeds({ containerRef }: PantheonOfNeedsProps) 
           </p>
           <div className="bg-muted/50 dark:bg-muted/30 p-4 rounded-lg">
             <p className="text-sm">
-              <strong>Dual Focus:</strong> Each archetype holds both an <strong>Individual dimension</strong> (needs of the Self) and a <strong>Communal dimension</strong> (needs of the System). The first color in each vector is the <strong>Gravity Well</strong>—the primary diagnostic color that draws attention to this need domain.
+              <strong>Dual Focus:</strong> Each archetype holds both an <strong>Individual dimension</strong> (needs of the Self) and a <strong>Communal dimension</strong> (needs of the System). The first color in each palette is its main color; the others are lighter and darker companions to it.
             </p>
           </div>
         </div>
@@ -403,10 +403,10 @@ export default function PantheonOfNeeds({ containerRef }: PantheonOfNeedsProps) 
         {/* Footer */}
         <div className="bg-muted/50 dark:bg-muted/30 p-6 rounded-lg space-y-3">
           <p className="text-sm">
-            <strong>Color-Based Needs Analysis:</strong> When you select colors in Nenya, the system uses Bayesian inference to calculate which needs (archetypes) are most likely active for you. Each archetype's 6-color vector represents the multi-dimensional signature of that need domain.
+            <strong>Starting points, not a measurement:</strong> The sixteen palettes are simple starting points, offered so you do not have to begin with the whole spectrum. Nothing here calculates, scores or decodes your colors, and no color has a fixed meaning. A color means what it means to you.
           </p>
           <p className="text-sm">
-            The breathing animations you see cycle through all 16 archetypes × 6 colors = <strong>96 total color transitions</strong>, creating a continuous, meditative flow that honors the full spectrum of human need.
+            The breathing animations you see cycle through all 16 archetypes × 6 colors = <strong>96 total color transitions</strong>, creating a continuous, gentle flow through all of the palettes.
           </p>
         </div>
       </div>
