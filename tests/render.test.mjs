@@ -79,6 +79,11 @@ try {
     h = render(Onboarding, { technique: { ih: 5000, hi: 0, ex: 5000, ho: 0 }, onTechniqueChange: noop, onFinish: noop, skipRhythm: true });
     ok('first-visit panel: arriving on another page (skipRhythm) opens on the terms, with no rhythm choice and no step dots', typeof h === 'string' && h.includes('Terms of Use') && h.includes('Agree, Enter') && !h.includes('Not choosing is fine') && !h.includes('>Box<') && !h.includes('h-1.5 rounded-full'), h.error ?? '');
     ok('first-visit panel: the App skips the rhythm only when the visitor arrived on an About page, and does not count a rhythm that was never chosen', /skipRhythm=\{arrivedElsewhere\}/.test(appSrc) && /arrivedElsewhere\] = useState\(initialAbout !== null\)/.test(appSrc) && /rhythm && !arrivedElsewhere/.test(appSrc));
+    {
+      const coachPage = readFileSync(new URL('../src/coach/CoachPage.tsx', import.meta.url), 'utf8');
+      ok('the coach page: reached only after the terms are accepted (the same panel, opened on the terms), unless the agreement was remembered for these terms', /useState\(\(\) => termsAcceptedFor\(LEGAL_EFFECTIVE_DATE\)\)/.test(coachPage) && /\{!agreed && <OnboardingFlow skipRhythm/.test(coachPage));
+      ok('the coach page: nothing behind the panel is mounted or reachable until then, the Emergency Exit stays reachable, and counting begins only after agreement', /\{!agreed \? null : !colors/.test(coachPage) && /inert: ''/.test(coachPage) && /EmergencyExitDock show=\{popoutOpen \|\| !agreed\}/.test(coachPage) && /if \(agreed\) enableUsageCounts\(\)/.test(coachPage));
+    }
     ok('first-visit panel: goes straight from the rhythm to the terms', /STEPS: OnboardingStep\[\] = \['rhythm', 'terms'\]/.test(src) && !/'counter'|'process'/.test(src));
   }
   // The loading screen, the tour offer and the tour.
