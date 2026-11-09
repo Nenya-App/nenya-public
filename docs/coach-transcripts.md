@@ -12,6 +12,8 @@ page explains what the signature does and does not prove, and how to verify one.
 - The conversation was signed on the date and time in the receipt (the server's clock).
 - Whether the conversation was complete (`closed`, `exchanges`) and which version of the coach wrote the replies (`build`, `model`, `instructions`, a fingerprint of the instruction text) are inside the signature too (version 3, below). A partial transcript therefore says it is partial, and it cannot be cut down from a complete one without breaking the signature.
 
+- **A conversation the site ended.** When the site's safety check stops the last message, the message never reaches the AI, and the page ran the check on its own. A signed copy of such a conversation proves something different: the server was given the stopped message (with the earlier exchanges, bound by their ticket as usual), ran the same check again, and signs only if that check does stop the message. The transcript then ends with that user message, so it has an odd number of messages, and `meta` carries `endedBy: "site"` and `stop: { category, kind? }` (kind is, for example, `ends` or `emergency` for self-injury). The signature says that the site's check, at the `build` in `meta`, stops this exact text. A reviewer can run the check on the text themselves. This is the evidence a false-positive report needs.
+
 ## What it does not prove
 
 - That the person typing was who they say they are. It is not an identity check.
@@ -22,7 +24,7 @@ page explains what the signature does and does not prove, and how to verify one.
 ## Privacy
 
 Signing sends the conversation to the server once more so it can check the ticket and sign a hash.
-The conversation is not stored and message text is not logged. What is kept: a plain daily count of
+The conversation is not stored and message text is not logged. For a conversation the site ended, the stopped message goes to the server in the same way, only when the visitor asks for a signed copy, and is not kept or logged either. What is kept: a plain daily count of
 receipts issued, by signing key, and, for 30 days, each receipt's hash (a fingerprint that cannot be
 turned back into the conversation) so duplicates can be recognized. The signed file stays with the visitor.
 
@@ -62,6 +64,7 @@ only the function can produce. The function sees the transcript on its way throu
   it holds; `build` is the site version that produced it, for example `1.1.0+679c4d2` (release number and commit; a `-dev` part means staging; see `docs/versioning.md`); `model` is the
   model that wrote the replies; `instructions` is the first 16 hex characters of a SHA-256 over every fixed instruction
   the coach is given (not the private method notes). None of it identifies a person.
+- **meta, when the site ended the conversation:** `closed` is false, `exchanges` counts only the earlier exchanges, `endedBy` is `"site"`, and `stop` names the check's category and kind. These two fields are present only for such a conversation, and are part of what is hashed and signed.
 - **keyId** is the first 16 hex characters of SHA-256 of the `publicKey` string.
 
 The readable `.txt` copy carries the same signed file at its end, in a marked block (`-----BEGIN NENYA SIGNED

@@ -127,6 +127,26 @@ let tam2=c.map(m=>({...m})); tam2[0].content='I never said that'; rc = await cal
 rc = await call({action:'receipt',messages:c.slice(0,2),ticket:a2.json.ticket}); ok('truncated transcript: no receipt', rc.status===400);
 rc = await call({action:'receipt',messages:c}); ok('missing ticket: no receipt', rc.status===400);
 
+// ── a conversation the site ended: the stopped message is signed too ──
+const STOPPED = 'I am going to kill myself tonight';
+rc = await call({action:'receipt',stopped:true,messages:[{role:'user',content:STOPPED}]});
+ok('a stopped first message gets a receipt without a ticket', rc.status===200 && !!rc.json.receipt?.signature);
+const SR = rc.json.receipt, ST = rc.json.transcript;
+ok('the stopped transcript ends with the stopped message and says the site ended it', ST.v===3 && ST.messages.length===1 && ST.messages[0].content===STOPPED && ST.meta.endedBy==='site' && ST.meta.stop.category==='self-harm' && ST.meta.closed===false && ST.meta.exchanges===0);
+ok('its hash and signature verify like any other', SR.hash===createHash('sha256').update(JSON.stringify(ST)).digest('hex') && edVerify(null, Buffer.from(`nenya-coach-transcript-v3\n${SR.hash}\n${SR.issuedAt}`), createPublicKey({key:Buffer.from(SR.publicKey,'base64'),format:'der',type:'spki'}), Buffer.from(SR.signature,'base64')));
+rc = await call({action:'receipt',stopped:true,messages:[...c,{role:'user',content:STOPPED}],ticket:a2.json.ticket});
+ok('a stop after two exchanges is signed, with the earlier exchanges bound by their ticket', rc.status===200 && rc.json.transcript.meta.exchanges===2 && rc.json.transcript.messages.length===5 && rc.json.transcript.meta.endedBy==='site');
+rc = await call({action:'receipt',stopped:true,messages:[...c,{role:'user',content:'I had a hard day at work'}],ticket:a2.json.ticket});
+ok('a message the check does not stop gets no stopped receipt (the signature cannot be used to invent one)', rc.status===400 && rc.json.error==='not-stopped');
+rc = await call({action:'receipt',stopped:true,messages:[{role:'user',content:'I had a hard day at work'}]});
+ok('a first message that is not stopped gets none either', rc.status===400);
+rc = await call({action:'receipt',stopped:true,messages:[...tam,{role:'user',content:STOPPED}],ticket:a2.json.ticket});
+ok('an altered earlier reply: no stopped receipt', rc.status===400 && rc.json.error==='ticket');
+rc = await call({action:'receipt',stopped:true,messages:[...c,{role:'user',content:STOPPED}]});
+ok('earlier exchanges without their ticket: no stopped receipt', rc.status===400);
+rc = await call({action:'receipt',stopped:true,messages:[{role:'user',content:STOPPED},{role:'assistant',content:'x'}]});
+ok('a stopped transcript must end with the stopped message', rc.status===400);
+
 // ── session colors ──
 r = await call({messages:[{role:'user',content:'hi'}],session:undefined}); ok('missing session rejected', r.status===400 && r.json.error==='session');
 r = await call({messages:[{role:'user',content:'hi'}],session:{color1:'red',color2:'#DAC682'}}); ok('invalid color rejected', r.status===400 && r.json.error==='session');

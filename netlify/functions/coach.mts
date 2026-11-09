@@ -200,6 +200,10 @@ interface TranscriptMeta {
   build: string; // the site version (the deploy's commit, when Netlify provides it)
   model: string;
   instructions: string; // a short fingerprint of the instruction text, not the text
+  // Present only when the site ended the conversation by stopping the last message (it never reached the AI). The transcript then ends
+  // with that message, and the signature says the site's own check, run again by this server, stops it.
+  endedBy?: 'site';
+  stop?: { category: string; kind?: string };
 }
 
 // The transcript exactly as it is hashed and signed (version 3). Documented in docs/coach-transcripts.md. The key order
@@ -458,6 +462,41 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   if (!session) return fail(400, 'session');
   const context = parseContext((body as { context?: unknown }).context);
   if (context === null) return fail(400, 'context');
+
+  if ((body as { action?: unknown }).action === 'receipt' && (body as { stopped?: unknown }).stopped === true) {
+    // A conversation the site ended: the last message was stopped by the crisis check and never sent to the AI. The earlier exchanges are
+    // bound by their ticket as usual; the stopped message is checked again here, with the same code the page ran, and the receipt is
+    // issued only if that check really does stop it. Nothing is stored.
+    const withStop = parseMessages(body.messages);
+    if (!withStop) return fail(400, 'messages');
+    const history = withStop.slice(0, -1);
+    if (history.length > 0 && verify(secret, body.ticket, history.length / 2, history, session, context) === null) return fail(400, 'ticket');
+    const stopFlag = checkConversation(withStop.filter((m) => m.role === 'user').map((m) => m.content));
+    if (stopFlag?.tier !== 'stop') return fail(400, 'not-stopped');
+    const k = signingKey();
+    if (!k) return fail(503, 'signing-off');
+    const meta: TranscriptMeta = {
+      closed: false,
+      exchanges: history.length / 2,
+      build: buildId(),
+      model: process.env.COACH_MODEL || DEFAULT_MODEL,
+      instructions: instructionsFingerprint(),
+      endedBy: 'site',
+      stop: { category: stopFlag.category, ...(stopFlag.kind ? { kind: stopFlag.kind } : {}) },
+    };
+    const transcript = buildTranscript(withStop, session, context, meta);
+    const hash = sha256(JSON.stringify(transcript));
+    const issuedAt = new Date().toISOString();
+    const signature = edSign(null, Buffer.from(`nenya-coach-transcript-v3\n${hash}\n${issuedAt}`), k.key).toString('base64');
+    tally(`coach.receipt.issued.${k.keyId}`);
+    tally('coach.receipt.stopped');
+    const st = store();
+    if (st) track(recordReceipt(st, hash));
+    return json(200, {
+      transcript,
+      receipt: { version: 3, algorithm: 'Ed25519', keyId: k.keyId, publicKey: k.publicKey, hash, issuedAt, signature },
+    });
+  }
 
   if ((body as { action?: unknown }).action === 'receipt') {
     const done = parseMessages(body.messages, 'assistant');

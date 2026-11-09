@@ -130,6 +130,20 @@ ok('only JSON is accepted', (await send(GOOD, { type: 'text/plain' })).status ==
 ok('only the public route is served', (await send(GOOD, { path: '/.netlify/functions/report' })).status === 404);
 ok('an oversized body is refused', (await send(null, { raw: JSON.stringify({ signed: GOOD, pad: 'x'.repeat(41000) }) })).status === 413);
 
+// ---- a conversation the site ended (the stopped message is signed)
+const stopRc = await coachPost({ action: 'receipt', stopped: true, messages: [{ role: 'user', content: 'I am going to kill myself tonight' }] });
+const STOP_OK = { transcript: stopRc.transcript, receipt: stopRc.receipt };
+const nBeforeStop = forwards.length;
+const stopSent = await send(STOP_OK, { note: 'The site stopped this; I think it was a mistake.' });
+ok('a genuine signed transcript of a conversation the site ended is accepted', stopSent.status === 204 && forwards.length === nBeforeStop + 1);
+ok('its readable text says the site ended it', forwards[forwards.length - 1].fields.report.includes('Ended by the site') && forwards[forwards.length - 1].fields.report === readableTranscript(stopRc.transcript.messages, S, stopRc.receipt, '', stopRc.transcript.meta));
+const noEnded = JSON.parse(JSON.stringify(STOP_OK)); delete noEnded.transcript.meta.endedBy; delete noEnded.transcript.meta.stop;
+ok('an odd number of messages without the site-ended facts is refused', (await send(noEnded)).status === 400);
+const claimsEnded = JSON.parse(JSON.stringify(GOOD)); claimsEnded.transcript.meta.endedBy = 'site';
+ok('a finished conversation that claims the site ended it is refused', (await send(claimsEnded)).status === 400);
+const forgedStop = JSON.parse(JSON.stringify(STOP_OK)); forgedStop.transcript.messages[0].content = 'I am going to kill myself';
+ok('an altered stopped message breaks the signature', (await send(forgedStop)).status === 400);
+
 // ---- if our own form cannot be reached
 forwardStatus = 500;
 const vBefore = n('coach.report.verified');

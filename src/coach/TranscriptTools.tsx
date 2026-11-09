@@ -22,8 +22,10 @@ interface TranscriptToolsProps {
   session: SessionColors;
   /** The reflection summary the visitor chose to share, if any. */
   context?: string;
-  /** Ticket from the last reply. Absent when the conversation ended on a safety flag. */
+  /** Ticket from the last reply. Absent before the first reply. */
   ticket?: string;
+  /** The site ended the conversation by stopping the last message (it never reached the AI). The signed copy then includes that message. */
+  stopped?: boolean;
 }
 
 type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
@@ -32,7 +34,7 @@ type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
 // our server once more (it was already there, turn by turn) so it can confirm it
 // is untouched and date it. Nothing is stored. Sharing with Nenya shows exactly
 // what would be sent first.
-export function TranscriptTools({ messages, session, context = '', ticket }: TranscriptToolsProps) {
+export function TranscriptTools({ messages, session, context = '', ticket, stopped = false }: TranscriptToolsProps) {
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [signed, setSigned] = useState<SignedTranscript | null>(null);
   const signedRef = useRef<SignedTranscript | null>(null); // the latest, for handlers that run before a re-render
@@ -50,7 +52,8 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     setShare('closed');
   }, [messages.length]);
 
-  const canSign = !!ticket;
+  // A conversation stopped on its first message has no earlier exchange, so it has no ticket and needs none.
+  const canSign = stopped ? !!ticket || messages.length === 1 : !!ticket;
 
   const getReceipt = async (): Promise<Receipt | null> => {
     if (receipt) return receipt;
@@ -59,7 +62,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'receipt', messages, session, ...(context ? { context } : {}), ticket }),
+        body: JSON.stringify({ action: 'receipt', messages, session, ...(context ? { context } : {}), ticket, ...(stopped ? { stopped: true } : {}) }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { receipt: Receipt; transcript: SignedTranscript };
@@ -124,7 +127,9 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
       <h2 className="text-lg">Keep a record or report a problem</h2>
       <p className="text-sm text-muted-foreground">
         {canSign
-          ? 'Nenya can sign and date the conversation so far so no one can alter it afterward. Nothing is stored; you keep the file. You can also send the signed transcript to us, with a note, if something went wrong.'
+          ? stopped
+            ? 'The site stopped your last message with its safety check. If you think that was a mistake, Nenya can sign and date the conversation, including the message that was stopped, so no one can alter it and the check can be shown exactly. Signing sends the conversation to our server once; nothing is stored, and you keep the file. You can also send the signed transcript to us, with a note.'
+            : 'Nenya can sign and date the conversation so far so no one can alter it afterward. Nothing is stored; you keep the file. You can also send the signed transcript to us, with a note, if something went wrong.'
           : 'This conversation ended before it could be signed. You can still keep a readable copy.'}
       </p>
       <div className="flex flex-wrap gap-2">

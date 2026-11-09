@@ -807,7 +807,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               {stage === 'done' && !flag && venicePanel}
 
               {stage === 'done' && (
-                <TranscriptTools messages={toWire(messages)} session={session} ticket={stopped ? undefined : ticket} />
+                <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} stopped={stopped} />
               )}
             </>
           )}

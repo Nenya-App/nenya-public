@@ -57,7 +57,9 @@ function problem(signed: unknown): string | null {
   if (!t || !r || typeof t !== 'object' || typeof r !== 'object') return 'shape';
   if (t.v !== 2 && t.v !== 3) return 'version';
   if (!t.session || !HEX.test(t.session.color1) || !HEX.test(t.session.color2)) return 'shape';
-  if (!Array.isArray(t.messages) || t.messages.length < 2 || t.messages.length > 10 || t.messages.length % 2 !== 0) return 'shape';
+  // A conversation the site ended carries one more message than a finished one: the user message the check stopped.
+  const endedBySite = t.v === 3 && t.meta?.endedBy === 'site';
+  if (!Array.isArray(t.messages) || t.messages.length < 1 || t.messages.length > 10 || (endedBySite ? t.messages.length % 2 !== 1 : t.messages.length < 2 || t.messages.length % 2 !== 0)) return 'shape';
   for (let i = 0; i < t.messages.length; i++) {
     const m = t.messages[i];
     const role = i % 2 === 0 ? 'user' : 'assistant';
@@ -67,6 +69,8 @@ function problem(signed: unknown): string | null {
   if (t.v === 3) {
     const m = t.meta;
     if (!m || typeof m.closed !== 'boolean' || !Number.isInteger(m.exchanges) || typeof m.build !== 'string' || typeof m.model !== 'string' || typeof m.instructions !== 'string') return 'shape';
+    if (m.endedBy !== undefined && (m.endedBy !== 'site' || !m.stop || typeof m.stop.category !== 'string' || (m.stop.kind !== undefined && typeof m.stop.kind !== 'string') || m.closed)) return 'shape';
+    if (m.stop !== undefined && m.endedBy !== 'site') return 'shape';
   } else if (t.meta !== undefined) return 'shape';
   if (r.algorithm !== 'Ed25519' || typeof r.hash !== 'string' || typeof r.signature !== 'string' || typeof r.publicKey !== 'string' || typeof r.keyId !== 'string' || typeof r.issuedAt !== 'string' || !ISO.test(r.issuedAt)) return 'shape';
 

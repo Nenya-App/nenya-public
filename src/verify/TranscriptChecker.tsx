@@ -92,8 +92,20 @@ export default function TranscriptChecker({ lookup }: { lookup?: (hash: string) 
             </dd>
             {o.details.meta && (
               <>
-                <dt className="text-muted-foreground">Complete</dt>
-                <dd>{o.details.meta.closed ? 'Yes' : 'No'}, {o.details.meta.exchanges} exchange{o.details.meta.exchanges === 1 ? '' : 's'}</dd>
+                {o.details.meta.endedBy === 'site' ? (
+                  <>
+                    <dt className="text-muted-foreground">Ended by the site</dt>
+                    <dd>
+                      The last message was stopped by the site&rsquo;s safety check and never sent to the AI. Check: {o.details.meta.stop?.category ?? 'unknown'}
+                      {o.details.meta.stop?.kind ? ` (${o.details.meta.stop.kind})` : ''}; {o.details.meta.exchanges} earlier exchange{o.details.meta.exchanges === 1 ? '' : 's'}.
+                    </dd>
+                  </>
+                ) : (
+                  <>
+                    <dt className="text-muted-foreground">Complete</dt>
+                    <dd>{o.details.meta.closed ? 'Yes' : 'No'}, {o.details.meta.exchanges} exchange{o.details.meta.exchanges === 1 ? '' : 's'}</dd>
+                  </>
+                )}
                 <dt className="text-muted-foreground">Produced by</dt>
                 <dd className="break-words">build {o.details.meta.build}, model {o.details.meta.model}, instructions {o.details.meta.instructions}</dd>
               </>

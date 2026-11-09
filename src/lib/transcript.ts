@@ -17,6 +17,9 @@ export interface TranscriptMeta {
   build: string;
   model: string;
   instructions: string;
+  /** Present only when the site ended the conversation by stopping the last message: the transcript then ends with that message. */
+  endedBy?: 'site';
+  stop?: { category: string; kind?: string };
 }
 
 /** The transcript object exactly as the server hashed and signed it (version 3 has `meta`; older files, version 2, do not). */
@@ -68,10 +71,17 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
   lines.push('— — —');
   if (receipt) {
     if (meta) {
-      lines.push(
-        meta.closed ? `Conversation complete: yes (${meta.exchanges} exchanges)` : `Conversation complete: no, stopped after ${meta.exchanges} exchange${meta.exchanges === 1 ? '' : 's'}`,
-        `Version that wrote the replies: build ${meta.build}, model ${meta.model}, instructions ${meta.instructions}`
-      );
+      if (meta.endedBy === 'site') {
+        lines.push(
+          `Ended by the site: the last message was stopped by the site's safety check and was never sent to the AI. Check: ${meta.stop?.category ?? 'unknown'}${meta.stop?.kind ? ` (${meta.stop.kind})` : ''}. ${meta.exchanges} earlier exchange${meta.exchanges === 1 ? '' : 's'}.`,
+          `Version of the site that ran the check: build ${meta.build}, model ${meta.model}, instructions ${meta.instructions}`
+        );
+      } else {
+        lines.push(
+          meta.closed ? `Conversation complete: yes (${meta.exchanges} exchanges)` : `Conversation complete: no, stopped after ${meta.exchanges} exchange${meta.exchanges === 1 ? '' : 's'}`,
+          `Version that wrote the replies: build ${meta.build}, model ${meta.model}, instructions ${meta.instructions}`
+        );
+      }
     }
     lines.push(
       `Signed by Nenya on: ${receipt.issuedAt}`,
