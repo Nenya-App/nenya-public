@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { useIsMobile } from './useIsMobile';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { displayNameFor } from '../../lib/paletteNames';
 
 interface ValarColorPickerProps {
   selectedColor: string;
@@ -74,7 +75,7 @@ const VALAR_PALETTES: ValarPalette[] = [
   // WILD & VITALITY — Instinct, Motion, Freedom
   {
     name: 'Oromë',
-    domain: 'Wild Hunt, Courage, Untamed Spirit',
+    domain: 'Action, Courage, Untamed Spirit',
     colors: ['#2E4600', '#C19A6B', '#355E3B', '#3B3C36', '#FF8C00', '#C0D9D9']
   },
   {
@@ -103,12 +104,12 @@ const VALAR_PALETTES: ValarPalette[] = [
   // SHADOW & ENTROPY — Corruption, Decay, Burnout
   {
     name: 'Melkor',
-    domain: 'Unfallen Chief, Potential, Entropic Tension',
+    domain: 'Raw Power, Potential, Tension',
     colors: ['#FF4500', '#CD7F32', '#4B0082', '#36454F', '#00FFFF', '#CC0000']
   },
   {
     name: 'Morgoth',
-    domain: 'Fallen Destroyer, Entropic Actuality, Despair',
+    domain: 'Despair, Emptiness, Power Turned Destructive',
     colors: ['#1E1E2A', '#3A3A50', '#5C5C78', '#8585A0', '#B3B3C8', '#DCDCE8']
   },
 ];
@@ -184,7 +185,7 @@ export function ValarColorPicker({ selectedColor, onColorChange, className = '',
       {/* Valar Palettes Explainer */}
       <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/50">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          <span className="text-foreground">The Valar Palettes:</span> Sixteen archetypal domains drawn from Tolkien's mythology, each representing fundamental human needs and experiences—from sovereignty and compassion to wild vitality and necessary rest. Choose colors that resonate with your current state and aspiration.
+          <span className="text-foreground">The sixteen palettes:</span> Sixteen archetypes of need, each representing fundamental human needs and experiences—from sovereignty and compassion to wild vitality and necessary rest. Choose colors that resonate with your current state and aspiration.
         </p>
       </div>
       
@@ -201,7 +202,7 @@ export function ValarColorPicker({ selectedColor, onColorChange, className = '',
                 className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
               >
                 <div className="text-left">
-                  <h4 className="font-medium">{palette.name}</h4>
+                  <h4 className="font-medium">{displayNameFor(palette.name)}</h4>
                   <p className="text-xs text-muted-foreground">{palette.domain}</p>
                 </div>
                 {isExpanded ? (

@@ -143,7 +143,7 @@ export function AccessibilitySettingsContent({
           <div className="flex items-center gap-2">
             <Orbit className="size-4 text-muted-foreground" />
             <Label htmlFor="orbit-toggle" className="cursor-pointer text-sm">
-              Valar Orbit
+              Palette Orbit
             </Label>
           </div>
           <Switch

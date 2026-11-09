@@ -1,6 +1,6 @@
 # Scope: renaming the sixteen palettes outwardly
 
-Status: scoping only, nothing changed. Written 2026-11-08 from the owner's note: the Valar palette names should be renamed before the project grows, to avoid any dispute with the Tolkien estate, **at least externally** (what visitors and outsiders see; the code can keep its own internal names for now).
+Status: **done outwardly 2026-11-08** (the sixteen outward names, the Pantheon page rewritten around needs and focus with no character stories, the picker, settings, the designer page, the Sight page, the public about page, the README, and a test that keeps the older names out of what visitors see: `tests/palette-names.test.mjs`, `src/lib/paletteNames.ts`). Internal ids in the code keep the older names for now. Not done: the rest of the Tolkien material (see `docs/about-overhaul-scope.md`). Original scope follows. Written 2026-11-08 from the owner's note: the Valar palette names should be renamed before the project grows, to avoid any dispute with the Tolkien estate, **at least externally** (what visitors and outsiders see; the code can keep its own internal names for now).
 
 I am not a lawyer, and this is not a legal opinion. It is a plan for removing the names from view, plus the questions a lawyer (or Fractured Atlas's legal resources) should answer.
 

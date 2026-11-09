@@ -533,7 +533,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
           <DialogHeader>
             <DialogTitle>Select Current State Color</DialogTitle>
             <DialogDescription>
-              Choose a color that represents where you are now. Browse the Valar palettes or enter a custom color below.
+              Choose a color that represents where you are now. Browse the sixteen palettes or enter a custom color below.
             </DialogDescription>
           </DialogHeader>
           <ValarColorPicker
@@ -553,7 +553,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
           <DialogHeader>
             <DialogTitle>Select Wish State Color</DialogTitle>
             <DialogDescription>
-              Choose a color for how you wish to feel. Browse the Valar palettes or enter a custom color below.
+              Choose a color for how you wish to feel. Browse the sixteen palettes or enter a custom color below.
             </DialogDescription>
           </DialogHeader>
           <ValarColorPicker

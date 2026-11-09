@@ -1,3 +1,4 @@
+<!-- OUTWARD NAMES (what visitors see; see src/lib/paletteNames.ts and docs/valar-rename-scope.md): Manwë = Sky, Varda = Starlight, Ulmo = Tide, Nienna = Soft Rain, Aulë = Craft, Yavanna = Greenwood, Vána = Blossom, Mandos = Twilight, Vairë = Tapestry, Oromë = Stride, Tulkas = Ember, Nessa = Rhythm, Irmo = Reverie, Estë = Haven, Melkor = Cinder, Ungoliant = Hollow. The headings below keep the internal ids used in the code. -->
 <!-- Matches the palettes in src/app/components/ValarBreathingLogo.tsx (checked: all 96 hexes). Update both together. -->
 ## Revised 6‑Color Palettes for the Sixteen Valar (Color Theory Based)
 

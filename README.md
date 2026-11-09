@@ -30,7 +30,7 @@ the in-app Terms of Use for the full statement, including crisis resources.
 - **Add to Home Screen.** A header button explains how to save Nenya to a phone's
   home screen or a browser's bookmarks. This is a shortcut, not an offline app.
 - **Reading.** The About section explains the design, the Nonviolent
-  Communication approach, and the sixteen "Valar" archetypes of need that give
+  Communication approach, and the sixteen archetypes of need that give
   the colors their meaning.
 
 ## Privacy: what is and isn't true
