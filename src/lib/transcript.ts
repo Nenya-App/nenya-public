@@ -70,7 +70,7 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
     `Session colors (a temporary label, not an account): ${session.color1.toUpperCase()}.${session.color2.toUpperCase()}`,
     '',
   ];
-  if (context) lines.push('Reflection summary the visitor chose to share with the coach:', context, '');
+  if (context) lines.push('Parts of a report that the visitor chose to share with the coach:', context, '');
   const siteLines = (after: number) => {
     for (const x of site.filter((y) => y.after === after)) {
       lines.push(x.kind === 'answer' ? `Note (written by the site): ${x.text}` : `${x.kind === 'notice' ? 'Safety notice' : 'Coach'} (written by the site, not the AI): ${x.text}`);
@@ -79,9 +79,12 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
     }
   };
   siteLines(-1);
+  for (const c of checks.filter((y) => y.shared)) {
+    lines.push(`Process note (written by the site): the safety check flagged the report text the visitor chose to share, as ${c.category}${c.kind ? ` / ${c.kind}` : ''} (${c.tier}). The conversation was not ended for this. Why: ${c.source === 'phrase' ? `matched words${c.matched ? `: "${c.matched}"` : ''}` : `the self-injury ladder, rung: ${c.rung ?? 'unknown'}`}. This is simple phrase matching and can be wrong.`, '');
+  }
   messages.forEach((m, i) => {
     lines.push(`${m.role === 'user' ? 'You' : 'Coach'}: ${m.content}`, '');
-    for (const c of checks.filter((y) => y.message === i)) {
+    for (const c of checks.filter((y) => y.message === i && !y.shared)) {
       const what = `${c.category}${c.kind ? ` / ${c.kind}` : ''} (${c.tier})`;
       const why = c.source === 'phrase'
         ? `matched words in the message${c.matched ? `: "${c.matched}"` : ''}`

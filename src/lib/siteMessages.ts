@@ -4,6 +4,7 @@
 // visitor was shown. (The sentences the server adds to a reply, and the thank-you after critical feedback, are already inside the
 // reply. The note about replaced identifiers is made by the page from the visitor's own message and is not part of this list.)
 import { detectHostility } from './hostility.ts';
+import { openingText, parseReportHeader } from './reportShare.ts';
 import { checkConversation, explainConversation, noticeIntro, resourcesFor } from './safetyFlags.ts';
 
 export const greetingText = (maxTurns: number): string =>
@@ -30,8 +31,10 @@ export interface SiteMessage {
  * flagged (the page keeps the most recent flag on screen), the notice with its resources comes after the last message; otherwise, when all
  * the exchanges are done, the closing message does.
  */
-export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content: string }[], maxTurns: number, answered: { index: number; title: string; partial?: boolean }[] = []): SiteMessage[] {
-  const out: SiteMessage[] = [{ kind: 'greeting', after: -1, text: greetingText(maxTurns) }];
+export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content: string }[], maxTurns: number, answered: { index: number; title: string; partial?: boolean }[] = [], context = ''): SiteMessage[] {
+  // When the person shared part of a report, the site opens with a message built from what was shared (reportShare.ts) in place of the greeting.
+  const shared = context ? parseReportHeader(context) : null;
+  const out: SiteMessage[] = [{ kind: 'greeting', after: -1, text: shared ? openingText(shared) : greetingText(maxTurns) }];
   // A reply the site wrote itself, as a pre-written answer to a question about Nenya, is marked as such right after it.
   for (const x of answered) out.push({ kind: 'answer', after: x.index, text: x.partial ? `The first part of the reply above was written by the site as a pre-written answer ("${x.title}"); the rest is the AI's.` : `The reply above was written by the site as a pre-written answer ("${x.title}"), not by the AI.` });
   const users = messages.filter((m) => m.role === 'user').map((m) => m.content);
@@ -65,12 +68,16 @@ export interface CheckNote {
   rung?: string;
   /** For the ladder: the numbers (1 = first) of the person's earlier messages that count toward the rung. */
   basedOn?: number[];
+  /** True when the flag came from the report text the person shared, not from one of their messages (message is then -1). */
+  shared?: boolean;
 }
 
 /** For each message the check flagged (judged with what the person had written up to then, as the page and server do), why it did. */
-export function checkNotesFor(messages: { role: 'user' | 'assistant'; content: string }[]): CheckNote[] {
+export function checkNotesFor(messages: { role: 'user' | 'assistant'; content: string }[], context = ''): CheckNote[] {
   const users = messages.map((m, i) => ({ m, i })).filter((x) => x.m.role === 'user');
   const out: CheckNote[] = [];
+  const sharedFlag = context ? explainConversation([context]) : null;
+  if (sharedFlag) out.push({ message: -1, shared: true, tier: sharedFlag.flag.tier, category: sharedFlag.flag.category, ...(sharedFlag.flag.kind ? { kind: sharedFlag.flag.kind } : {}), source: sharedFlag.why.source, ...(sharedFlag.why.matched ? { matched: sharedFlag.why.matched } : {}), ...(sharedFlag.why.rung ? { rung: sharedFlag.why.rung } : {}) });
   users.forEach((u, j) => {
     const e = explainConversation(users.slice(0, j + 1).map((x) => x.m.content));
     if (!e) return;

@@ -152,7 +152,7 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-privacy', part: 'nenya', title: 'Is this private? (the short version)',
     asked: ['is this private', 'is my data safe', 'is my information private', 'do you sell data', 'do you track me'],
-    short: 'What you enter in the reflection tools stays in your browser and is gone when you close the tab. We have no accounts, no advertising, no tracking cookies, and we do not sell or share data. The optional coach is different: your messages pass through our server to an outside AI service, as explained in the next answer.',
+    short: 'What you enter in the reflection tools stays in your browser and is gone when you close the tab. We have no accounts, no advertising, no tracking cookies, and we do not sell or share data. The optional coach is different: your messages, and any parts of a report you choose to bring to it, pass through our server to an outside AI service.',
     full: [
       'Nenya does not require an account for any part of it. It has no advertising and no tracking cookies, and it does not follow you around the internet. What you enter in the reflection tool (colors, melodies, drawings, body-map placements, written reflections) stays in your browser, is not sent to us, and is gone when you close the tab.',
       'Some things do exist outside your device, and we want to be plain about them. Our web host, Netlify, keeps ordinary connection logs and produces anonymous visit statistics. Nenya keeps plain daily totals of its own, with no information about who produced them. The optional coach demo uses a one-way daily code, derived from your connection, to apply a daily limit; it changes every day and is deleted within two days. And if you choose to send a report or message, what you send reaches us.',
@@ -176,6 +176,7 @@ export const ANSWERS: Answer[] = [
       'The coach demo is the one place on the site where what you type is sent to an AI service. Your messages are sent through our server, hosted by Netlify, to Venice AI, which writes the replies. A conversation is limited to five exchanges, and each message to 500 characters.',
       'We do not store your messages or the replies, and we do not write them to our logs. They exist in your browser tab and disappear when you close it. Netlify, like any host, keeps ordinary connection logs.',
       'Venice AI handles what it receives under its own terms and privacy policy, which we do not control. Venice and Netlify may process data outside your country. Before your message is sent, the page replaces some common identifiers (such as email addresses, phone numbers, street addresses, and some names) with placeholders, and our server does it again. This is not a guarantee, and most names will not be caught, so please keep names, contact details, and other identifying information out of what you write.',
+      'If you choose to bring parts of a reflection report to the coach, those words go the same way as a message and through the same checks; the answer about sharing a report explains it.',
       'We say "Nenya does not keep the conversation" and not "nothing is kept anywhere", because the services that run the model have their own policies and logs. If you download a transcript, the file stays with you.',
     ],
     links: [{ label: 'Terms, Section 21: The Coach Demo', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }, { label: 'PII Scrubbing Tutorial', page: 'pii-scrubbing' }],
@@ -188,6 +189,28 @@ export const ANSWERS: Answer[] = [
       { claim: 'the code limits the model, 500 characters', file: COACH, has: 'const MAX_USER_CHARS = 500' },
     ],
     status: 'ready',
+  },
+  {
+    id: 'n-report-share', part: 'nenya', title: 'Can the coach see my report? Sharing part of a report',
+    asked: ['can the coach see my report', 'does the coach see what I did in the reflection', 'will you read my report', 'can I share my report with you', 'can you see my colors'],
+    short: 'Not unless you choose. A report stays in your browser. If you want, you can bring parts of it to the coach: you pick the pieces, nothing is chosen for you, and you see the exact words that would go. They travel like a message, through our server to an outside AI service, with the same safety checks. You never need a report to use the coach.',
+    full: [
+      'A reflection report is made on your device and stays there. Nothing from it reaches the coach unless you choose to bring parts of it, and you do not need to have made a report, or to share anything from one, to use the coach.',
+      'If you choose to, the page lists your report in pieces with nothing selected, and shows you exactly the words that would be sent, with identifiers replaced as in a message. For a color, the words name the palette it comes from and add a short note about that palette: an image, and a few rough guesses at feelings and needs. They are starting points, not a measurement: no color has a fixed meaning, and Nenya is not a scientific or medical instrument.',
+      'What you share goes through our server to Venice AI along with your messages, in the same way and through the same checks: identifiers are replaced, text that looks like instructions to the coach is left out, and the crisis check runs. If the shared text is flagged, you see the safety notice and the coach responds with care; the conversation continues. We do not store what you share. It appears in a signed transcript if you ask for one.',
+      'You can share nothing and talk about something else at any time.',
+    ],
+    links: [{ label: 'Terms, Section 21: The Coach Demo', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
+    tutorial: 'Privacy lesson 3: staying in control (what you can choose to share).',
+    checks: [
+      { claim: 'bringing parts of a report to the coach is optional and never automatic; no report is needed to use the coach', file: TERMS, has: 'you do not need to have made a report, or to share anything from one, to use the coach' },
+      { claim: 'the shared words go through our server to Venice AI, through the same checks as a message', file: TERMS, has: 'in the same way and through the same checks as a message' },
+      { claim: 'a flag in the shared text shows the notice and does not end the conversation', file: TERMS, has: 'this does not end the conversation' },
+      { claim: 'what is shared is not stored, and appears in a signed transcript on request', file: TERMS, has: 'We do not store what you share' },
+      { claim: 'palettes are starting points, not a scientific or medical instrument', file: TERMS, has: 'not a scientific or medical instrument' },
+    ],
+    status: 'pending',
+    ownerNote: 'Written 2026-11-09 with the report-to-coach module (docs/report-to-coach-scope.md). Held until the picker is on the page: the answer must not describe something a visitor cannot do.',
   },
   {
     id: 'n-device', part: 'nenya', title: 'What Nenya keeps on my device, and how to erase it',
@@ -679,7 +702,7 @@ const SITE = "(?:this|the)\\s+(?:site|app|website|tool|demo|coach|chat|project|p
 // Highest priority first: specific questions before general ones.
 export const ABOUT_ORDER = [
   'n-who', 'n-founder', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
-  'n-name', 'n-version', 'n-contact', 'n-free', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
+  'n-name', 'n-version', 'n-contact', 'n-free', 'n-report-share', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
   'n-affiliation', 'n-nvc', 'n-notherapy', 'n-accessibility', 'n-report', 'n-transcripts', 'n-languages', 'n-terms-change', 'n-else', 'n-what',
 ] as const;
 
@@ -821,6 +844,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
 // Added 2026-11-09 from the synthetic corpus (src/lib/aboutEvalCorpus.ts): more ways of asking the same questions. Each is anchored on this site, Nenya,
 // the coach or "you", or is a whole-sentence question, so a person talking about something else is left alone.
 const EXTRA_PATTERNS: Record<string, RegExp[]> = {
+  'n-report-share': [/\b(?:can|does|will|could|would)\s+(?:the\s+coach|you)\s+(?:see|read|access|use|look\s+at)\s+(?:my\s+|the\s+)?(?:report|reflection|colou?rs|answers|results)\b|\bcan\s+i\s+(?:share|show|bring|give)\s+(?:my\s+|the\s+|a\s+)?(?:report|reflection)\s+(?:with|to)\s+(?:you|the\s+coach)\b|\bdoes\s+the\s+coach\s+see\s+what\s+i\s+(?:did|chose|picked|made)\b|\bwill\s+my\s+(?:report|reflection)\s+be\s+(?:sent|shared|seen)\b/i],
   'n-what': [/\bwhat\s+even\s+is\s+(?:this|nenya)\b|\bwhat\s+is\s+this\s+(?:site|app|website|place|tool)\s+(?:for|about)\b|\bwhat(?:'s|s)\s+this\s+(?:site|app|website|place)\s+about\b|\bwhat\s+this\s+(?:website|site|app)\s+is\s+for\b|\bexplain\s+what\s+(?:nenya|this\s+(?:site|app))\s+is\b/i],
   'n-name': [/\bis\s+nenya\s+a\s+word\b|\bstory\s+behind\s+the\s+name\b/i],
   'n-who': [/\bwho(?:'s|\s+is)\s+(?:running|behind|responsible\s+for)\s+(?:this|nenya|the\s+(?:site|app|project))\b|\bis\s+there\s+a\s+(?:team|company|person|group)\s+behind\s+(?:this|nenya)\b|\bwho\s+(?:built|created|made|owns)\s+(?:nenya|this(?:\s+(?:thing|site|app|place|website|coach|tool))?)(?=\s*[?.!,]|\s*$)/i],

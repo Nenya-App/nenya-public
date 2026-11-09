@@ -62,7 +62,7 @@ export default function Mellonamin() {
               </h4>
               <p className="text-sm text-muted-foreground">
                 You're not asked to be anyone here beyond the colors and choices you make in the moment. There's no
-                advertising profile being built on you — there's nothing to build one from. (The optional coach demo and the contact form are the only places anything you type leaves your browser, and only if you choose to use them.) Our web host keeps ordinary connection records and anonymous visit totals; the Privacy Promise and the Terms explain them.
+                advertising profile being built on you — there's nothing to build one from. (The optional coach demo and the contact form are the only places anything you type leaves your browser, and only if you choose to use them. Parts of a report you made go to the coach only if you choose to bring them, and you see exactly what would go first.) Our web host keeps ordinary connection records and anonymous visit totals; the Privacy Promise and the Terms explain them.
               </p>
             </div>
 
