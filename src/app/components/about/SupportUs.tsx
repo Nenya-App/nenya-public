@@ -43,7 +43,7 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                   leave you more present than when you arrived.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  It is free to use without advertising, data collection, or subscription gates. It stays that way because people choose to support it.
+                  It is provided free, with no advertising and no profiles of visitors. The plan is for the core breathing and reflection tools to stay free, and people who choose to support it help make that possible. We are exploring subscriptions for additional features.
                 </p>
               </div>
             </Card>
@@ -69,8 +69,8 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                 <div className="size-10 rounded-full bg-nenya-gold/10 flex items-center justify-center">
                   <Heart className="size-5 text-nenya-gold" />
                 </div>
-                <h4 className="font-medium">Free for everyone</h4>
-                <p className="text-sm text-muted-foreground">No paywalls. No tiers. The same experience for every person who arrives.</p>
+                <h4 className="font-medium">Provided free</h4>
+                <p className="text-sm text-muted-foreground">The core breathing and reflection tools are provided free to every person who arrives, and the plan is to keep them that way.</p>
               </Card>
             </div>
           </section>
@@ -84,7 +84,7 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                   platform, are tax-deductible to the extent permitted by law, and are handled with full financial transparency.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Contributions go directly toward keeping the platform free and its infrastructure maintained — including the servers, the ongoing
+                  Contributions go directly toward keeping the core tools free and the infrastructure maintained — including the servers, the ongoing
                   development of the reflection and coaching tools, and the research that grounds the work.
                 </p>
               </div>

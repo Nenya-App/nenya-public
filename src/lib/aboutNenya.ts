@@ -126,7 +126,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'the form needs no name or email and a reply address is used only to answer', file: TERMS, has: 'we use it only to answer you' },
     ],
     status: 'ready',
-    ownerNote: 'Decided 2026-11-08: list info@nenya.biz only (it also receives the form\'s notifications) and keep the 2-3 business day aim. The Contact page still lists a second address (estelle@nenya.biz): update that page to match.',
+    ownerNote: 'Decided 2026-11-08: list info@nenya.biz only (it also receives the form\'s notifications) and keep the 2-3 business day aim. DONE 2026-11-09: the Contact page now lists info@nenya.biz only.',
   },
   {
     id: 'n-free', part: 'nenya', title: 'Is it free, and who pays for it',
@@ -147,7 +147,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'subscriptions for additional features are being considered (paid options for stance layers)', file: "docs/coach-lenses-scope.md", has: 'may become paid options' },
     ],
     status: 'ready',
-    ownerNote: 'Decided 2026-11-08: say "is provided free", that the plan is for the core breathing and reflection tools to stay free, and that subscriptions for additional features are being explored. Our Structure and Support Us still say "will remain free / no paywalls / no premium tiers": reword them the same way.',
+    ownerNote: 'Decided 2026-11-08: say "is provided free", that the plan is for the core breathing and reflection tools to stay free, and that subscriptions for additional features are being explored. DONE 2026-11-09: Our Structure, Support Us, Partner Practice and the public page now say the same.',
   },
   {
     id: 'n-privacy', part: 'nenya', title: 'Is this private? (the short version)',

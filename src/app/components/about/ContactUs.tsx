@@ -129,16 +129,16 @@ export default function ContactUs({ onBack }: ContactUsProps) {
           <BloomOnScroll>
             <Card className="p-6 border-nenya-accent-secondary/30">
               <div className="space-y-4">
-                <h3 className="text-xl">Connect with the Founder</h3>
+                <h3 className="text-xl">Questions about the project</h3>
                 <p className="text-sm text-muted-foreground">
-                  For specific questions about the project's vision, philosophy, or potential collaborations, you can reach out directly to Estëlle, our founder and steward.
+                  For questions about the project's vision, philosophy, or potential collaborations, write to the same address. It is read by the people who look after Nenya.
                 </p>
                 <a
-                  href="mailto:estelle@nenya.biz"
+                  href="mailto:info@nenya.biz"
                   className="inline-flex items-center gap-2 text-sm text-nenya-accent-warm hover:text-nenya-accent-primary transition-colors"
                 >
                   <Mail className="size-4" />
-                  estelle@nenya.biz
+                  info@nenya.biz
                 </a>
               </div>
             </Card>

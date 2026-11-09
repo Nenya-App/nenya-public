@@ -172,8 +172,8 @@ export default function Structure({ onBack }: StructureProps) {
                 <p className="text-sm text-muted-foreground">The commitment to privacy is structural, not a policy. We cannot share what we do not collect.</p>
               </Card>
               <Card className="p-5 bg-gradient-to-br from-background-secondary to-background">
-                <h3 className="mb-2 text-foreground">Free for Everyone</h3>
-                <p className="text-sm text-muted-foreground">The core tool is and will remain free. No paywalls, no premium tiers, no engagement metrics.</p>
+                <h3 className="mb-2 text-foreground">Provided Free</h3>
+                <p className="text-sm text-muted-foreground">Nenya is provided free, with no advertising. The plan is for the core breathing and reflection tools to stay free. We are exploring subscriptions for additional features, and will say so plainly here before anything changes.</p>
               </Card>
               <Card className="p-5 bg-gradient-to-br from-background-secondary to-background">
                 <h3 className="mb-2 text-foreground">Sovereign Direction</h3>

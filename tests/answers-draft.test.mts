@@ -54,7 +54,6 @@ ok('every lesson uses real answers, and every answer is used by at least one les
 ok('the discrepancies each say where, what is said, the conflict, and a suggestion', DISCREPANCIES.length >= 6 && DISCREPANCIES.every((d) => d.where && d.says && d.but && d.suggest));
 // the discrepancies are real: what is quoted is actually in the pages
 const quoted: [string, string, string][] = [
-  ['d1', 'src/app/components/about/Structure.tsx', 'will remain free'],
   ['d3', 'src/lib/legalDocument.ts', 'a mode that Venice labels'],
   ['d5', 'src/app/components/about/VeniceChat.tsx', 'trained in NVC+ principles'],
   ['d6', 'src/app/components/about/ContactUs.tsx', '2-3 business days'],
@@ -63,10 +62,13 @@ const unreal = quoted.filter(([, f, s]) => !text(f).includes(norm(s))).map(([d, 
 ok('what the discrepancies quote is really there (so the list does not go stale unnoticed)', unreal.length === 0, unreal.join(' | '));
 // fixed on 2026-11-09 (Privacy Promise rewrite): the old wording must stay gone
 const fixedGone: [string, string, string][] = [
+  ['d1', 'src/app/components/about/Structure.tsx', 'will remain free'],
+  ['d1', 'src/app/components/about/SupportUs.tsx', 'No paywalls. No tiers.'],
+  ['d1', 'public/about-nenya.html', 'no paywalls or premium tiers'],
   ['d2', 'src/app/components/about/PrivacyPromise.tsx', 'Nenya is a Large Language Model (LLM)'],
   ['d8', 'src/app/components/about/PrivacyPromise.tsx', 'Hex Code identity is your only required identifier'],
 ];
-ok('the fixed discrepancies (d2, d8) do not come back', fixedGone.every(([, f, s]) => !text(f).includes(norm(s))));
+ok('the fixed discrepancies (d1, d2, d8) do not come back', fixedGone.every(([, f, s]) => !text(f).includes(norm(s))));
 
 // the languages answer invites contributions without promising any contributor terms (none exist yet)
 const langs = ANSWERS.find((a) => a.id === 'n-languages')!;
