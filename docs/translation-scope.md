@@ -7,13 +7,13 @@ Status: scoping only, nothing built. Written 2026-11-08 from the owner's note: t
 - There is **no invitation** anywhere for people who could help. `docs/learning-modules-scope.md` section 8 already says what other languages would need for the *coach* (written per language by native speakers, detection and crisis phrases never machine-translated alone, resources per country, an evaluation per language). This document is about the *site*, and what a volunteer translator can usefully be given today.
 
 ## 1. The notice
-Short, honest, and not a promise: say what is true now, and how to help.
+Short, honest, and not a promise: say what is true now, and how to help. **Decided 2026-11-08 (owner): state the language situation clearly and invite contributions, but do not overpromise on what kind of contributor agreement exists, because none does yet.**
 
-> Nenya is available in English only for now. If you read and write another language and would like to help bring it to more people, we would be glad to hear from you. [The text to translate, and how] · info@nenya.biz
+> Nenya is available in English only for now. If you read and write another language and would like to help bring it to more people, we would be glad to hear from you at info@nenya.biz. We have not set up a contributor agreement yet, so we cannot say how contributions would be credited or licensed; we would work that out with you.
 
 - **Where:** the About menu and the page footer (every page), and a line on the coach's start screen. Not as a banner that competes with Emergency Exit or the breathing tool.
 - **Not in the page's way:** no pop-up; the line is plain text and a link; it is announced like any other text; it carries `lang="en"` and the link says where it goes.
-- **What it must not say:** that a language is coming, or when. It can say it is welcome.
+- **What it must not say:** that a language is coming, or when; that contributions will be credited, licensed or paid in any particular way; or that a translation document is available before it exists. It can say translators are welcome and that the arrangement is still to be worked out.
 
 ## 2. The translatable document
 Translators should not need to read code. Three formats were considered:
@@ -45,7 +45,7 @@ Translators should not need to read code. Three formats were considered:
 - **A test** that every id has English text, that a locale file has no unknown ids, and that placeholders match.
 
 ## 4. Credit, rights and privacy
-- **Credit** translators by name or handle (as they choose) in `ATTRIBUTIONS.md` and a page.
+- **Credit and license: nothing is promised yet.** The aim is to credit translators by name or handle as they choose, and that is a plan, not an arrangement: the notice and the answer say that no contributor agreement exists and that terms would be worked out with each person. The words below are what an agreement would need to settle, and the repository does not say what a contributor agreement contains, because there is none.
 - **License:** the code is AGPL-3.0; the words need a clear statement of what a contributor grants (for example, that they agree their translation may be published with the site under the same terms as the English text, and that they may be credited). To be settled, and by someone who can give legal advice.
 - **Privacy:** an invitation means people will write to info@nenya.biz or open a repository issue. A translator's name and email are personal information: kept only to answer, never shared; the Terms already describe the contact form.
 - **Review:** a second reader for each language before it is shown, since a small error in a page about feelings can change its meaning.

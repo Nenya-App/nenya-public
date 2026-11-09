@@ -63,3 +63,9 @@ const quoted: [string, string, string][] = [
 ];
 const unreal = quoted.filter(([, f, s]) => !text(f).includes(norm(s))).map(([d, f, s]) => `${d}: "${s}" not in ${f}`);
 ok('what the discrepancies quote is really there (so the list does not go stale unnoticed)', unreal.length === 0, unreal.join(' | '));
+
+// the languages answer invites contributions without promising any contributor terms (none exist yet)
+const langs = ANSWERS.find((a) => a.id === 'n-languages')!;
+const langText = [langs.short, ...langs.full].join(' ');
+ok('the languages answer says plainly that no contributor agreement exists yet, and promises no credit, license, payment or language', /not (?:yet )?set up a contributor agreement/i.test(langText) && !/\b(?:you will be|we will|we'll) (?:be )?(?:credit|licen[sc]e|pay|compensat|list|name|publish)/i.test(langText) && !/\b(?:is|are|will be) (?:coming|available soon)\b/i.test(langText));
+ok('the languages answer invites translators by email and names what is not a plain translation job', /info@nenya\.biz/.test(langText) && /crisis resources/.test(langText) && /safety wording/.test(langText));

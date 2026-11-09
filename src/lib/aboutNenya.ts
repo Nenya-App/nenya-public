@@ -426,19 +426,23 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-languages', part: 'nenya', title: 'Languages',
     asked: ['is there a translation', 'do you support other languages', 'can I use this in Spanish', 'can I help translate'],
-    short: 'Nenya is available in English only for now. If you read and write another language and would like to help bring it to more people, we would be glad to hear from you at info@nenya.biz.',
+    short: 'Nenya is available in English only for now, and the coach has been tested only in English. If you read and write another language and would like to help, we would be glad to hear from you at info@nenya.biz. We have not set up a contributor agreement yet, so we cannot yet say how contributions would be credited or licensed; we would work that out with you.',
     full: [
       'Nenya is currently available in English only, and the coach has been tested only in English. We cannot say whether or when another language will come.',
-      'If you read and write another language and would like to help, we welcome translators. A plan for an easily translatable document of the site\'s text is written up, so that you can work without reading code. Crisis resources and the coach\'s safety wording need extra care and review by a native speaker, so they are not plain translation jobs.',
+      'If you read and write another language and would like to help, we welcome translators and would be glad to hear from you at info@nenya.biz. Tell us which language you read and write, and what you have in mind.',
+      'We are working toward a document of the site\'s text that is easy to translate without reading code. It is not ready yet.',
+      'We have not yet set up a contributor agreement, so we cannot say how contributions would be credited or licensed. We would work that out with you, and we do not want to promise more than we have in place.',
+      'Some parts need special care and are not plain translation jobs: the crisis resources are specific to each country and must be checked, and the coach\'s safety wording has to be written and reviewed by a native speaker, and tested, before it is offered in a new language.',
     ],
     links: [{ label: 'Contact Us', page: 'contact-us' }],
     tutorial: 'Not a lesson; a card, and the notice in the footer and menu.',
     checks: [
       { claim: 'the scope for translation exists', file: 'docs/translation-scope.md', has: 'an invitation to translators' },
       { claim: 'the page language is English', file: 'index.html', has: '<html lang="en">' },
+      { claim: 'the scope says no contributor agreement is promised yet', file: 'docs/translation-scope.md', has: 'does not say what a contributor agreement contains' },
     ],
     status: 'pending',
-    ownerNote: 'Pending: the notice and contact route are on the to-do list (docs/translation-scope.md) and are not built. Use this answer only once the notice is live, and say nothing about a language coming.',
+    ownerNote: 'Direction approved 2026-11-08: state the language situation clearly, invite contributions, and do not overpromise on any contributor agreement (none exists yet, so the answer says so and promises no credit or licence terms). Held until the notice and contact route are live (docs/translation-scope.md). Say nothing about a language coming.',
   },
   {
     id: 'n-else', part: 'nenya', title: 'What else is here',
