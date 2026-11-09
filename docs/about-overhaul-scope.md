@@ -18,7 +18,8 @@ Today the project explains itself through Tolkien: the Name & Philosophy page is
 ## Page by page (the 18 About pages and the public pages)
 | Page | What changes |
 | --- | --- |
-| **Our Name & Philosophy** | The centre of the overhaul. Rewrite around the project's idea: a mirror that shows without taking, set against the watching eye of surveillance (as an idea, no named characters); keep the one origin note. |
+| **Our Name & Philosophy** | The centre of the overhaul. Rewrite around the project's idea: a mirror that shows without taking, set against the watching eye of surveillance (as an idea, no named characters). Carries the one origin note, which now **names and explains the ring** (decided 2026-11-08), the meaning "you may rest here", and a link to "What you can check" on the About page. Working text: `docs/drafts/origin-and-name-draft.md`. |
+| **About: What you can check (new section)** | A short list where each claim links to the place it can be verified (source, Terms, the feature itself): open source, Forget me, Emergency Exit, the closing note, the pause. Lives here, not on the Name page; the Name page only links to it. Needs a stable anchor so the link survives the rewrite. Items that are not in production yet (the closing note, the pause) stay out until they ship. Claims and wording limits are in the draft's claim table. |
 | **Mellonamin: Welcome Letter** | "Mellonamin" is an Elvish word. Retitle in plain words; keep the warmth. |
 | **Our Privacy Promise** | Replace the Palantíri and the One Ring with the plain argument already there (surveillance changes how people think); fix the LLM, "nothing stored" and hex-code claims. |
 | **The Pantheon of Needs** | Done (needs and focus, no character stories). Check the section titles and the footer. |
@@ -41,7 +42,7 @@ Today the project explains itself through Tolkien: the Name & Philosophy page is
 As decided in `docs/about-nenya-questions-scope.md`: each section becomes a page at `nenya.biz/<section>` (a page per section built with the rest, prerendered so it reads without scripts, with `/?about=<id>` redirected). Order matters: **rewrite first, then move**, so the new routes carry the new words and the coach's cards link to the right page.
 
 ## Order of work
-1. **The origin note and the Name & Philosophy page** (the owner approves the wording; I draft it).
+1. **The origin note, the Name & Philosophy page and the About "What you can check" section.** Working drafts exist (`docs/drafts/origin-and-name-draft.md`). **The owner rewrites the naming passages** (see the note below); I check the facts and the claims.
 2. **The Privacy Promise and the welcome letter** (the two most Tolkien-framed after the Name page).
 3. **The accuracy pass on every page** against the Terms, with the 8 discrepancies fixed in the same edits.
 4. **The public pages** (about, why, previews, JSON-LD, llms.txt).
@@ -52,10 +53,19 @@ As decided in `docs/about-nenya-questions-scope.md`: each section becomes a page
 ## Done already (2026-11-08)
 - The owner agreed with the recommendation: **the series note and the "wellness tool inspired by The Lord of the Rings" question are removed** from the public page (the page, its structured data, and the "who it's for" clause), replaced by one line saying Nenya is an independent project, not affiliated with or endorsed by the Tolkien Estate or any publisher or studio. A test keeps them out (`tests/palette-names.test.mjs`). The rest of the public page (title, tagline, the "why the name" section, the two-makers section) still carries the Tolkien framing and is rewritten in step 4.
 
+- Decided with the owner (2026-11-08): show the philosophy through the structure and let visitors find it; no Palantir named on the public page; the Harp of Móru not mentioned publicly for now; the project's voice, as a witness ("here is what we noticed"), with no personal or family history; the ring **named and explained**; "What you can check" lives on About and is linked from the Name page.
+
+## A note for the owner: the naming passages are yours to write
+The draft's origin paragraph and Name-page line describe the ring in brief, paraphrased words. I cannot reproduce Tolkien's story, and a retelling of it is not what the page needs. What only you can write is how the name and the stories affected you: what the ring meant, what it gave you when you needed it, and why it matters that its keeper held it for others. **To do:** rewrite the ring and name passages in your own voice, as short and as plain as you like, and keep the facts to a line (a ring of water, kept to preserve and protect, never to rule). I will check any facts you want checked, and the wording against the claim table, but the words about how it affected you are yours. Keep in mind the project's voice and the anonymity decision: say what it did for you without family or personal history.
+
 ## A private addition from the owner
-The owner has an unpublished, AI-assisted rough draft of a work of Tolkien fan-fiction ("Nierilindalë", about 200 pages; dream records from August 2024 to September 2025, one per archetype, with essays and a retelling of the myth) that matters to her and appears to be where the sixteen archetypes began. It is private: nothing from it goes into the repository or the site without her say-so. How, and whether, it figures in the origin note is for the two of us to draft together: an honest "this began as a personal creative practice" can be said without naming a character, and without linking to the work. If the work were ever published or linked, that is a rights question for a lawyer, like the project name.
+The owner has an unpublished, AI-assisted rough draft of a work of Tolkien fan-fiction ("Nierilindalë", about 200 pages; dream records from August 2024 to September 2025, one per archetype, with essays and a retelling of the myth) that matters to them and appears to be where the sixteen archetypes began. It is private: nothing from it goes into the repository or the site without their say-so. How, and whether, it figures in the origin note is for the two of us to draft together: an honest "this began as a personal creative practice" can be said without naming a character, and without linking to the work. If the work were ever published or linked, that is a rights question for a lawyer, like the project name.
+
+Update 2026-11-08: the owner shared the full draft and answered questions about the origin. The note's spine is that the name began as a refusal of technology that takes Tolkien's names for watching and control, and that Nenya is a place to rest before a crisis, with everything checkable. The draft stays private and is not mentioned publicly for now.
 
 ## Decisions for the owner
+Resolved 2026-11-08: 2 (removed), 5 (the ring is named and explained, briefly), and the placement of "What you can check". Still open: 1 (the final wording, which the owner now writes), 3, 4, 6.
+
 1. **The origin note's wording**, and whether it appears on the Name page only.
 2. **Whether to remove the series note and the fan question** from the public page (recommended).
 3. **The welcome letter's new title.**
