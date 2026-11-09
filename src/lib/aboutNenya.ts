@@ -691,7 +691,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     new RegExp(`\\bis\\s+(?:${SITE}|nenya)\\s+(?:a\\s+|an\\s+)?(?:company|nonprofit|non-profit|startup|business|charity|organi[sz]ation|corporation)\\b`, 'i'),
   ],
   'n-founder': [
-    /\bwho\s+(?:is|'s)\s+est[eë]lle\b|\bwho\s+is\s+the\s+(?:founder|designer|creator|owner)\b|\bwho\s+designed\s+(?:nenya|this|you|it)\b/i,
+    /\bwho\s+(?:is|'s)\s+est[eë]lle\b|\bwho\s+is\s+the\s+(?:founder|designer|creator|owner)(?:\s+(?:of|behind)\s+(?:this(?:\s+(?:site|app|project|website|tool|place))?|nenya|the\s+(?:site|app|project)))?\s*[?.!]*\s*$|\bwho\s+designed\s+(?:nenya|this|you|it)\b/i,
     /\babout\s+the\s+(?:founder|designer|creator)\b/i,
   ],
   'c-friend': [
@@ -709,7 +709,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\bcan\s+i\s+trust\s+(?:you|nenya|this\s+(?:site|app|tool|coach|place|demo))\b|\bcan\s+i\s+trust\s+this\s*\?*\s*$|\b(?:is\s+(?:this|nenya)|are\s+you)\s+legit(?:imate)?\s*[?.!]*\s*$/i,
   ],
   'c-memory': [
-    /\b(?:will|do|can|would|could)\s+you\s+remember\b|\bremember\s+(?:me|this\s+conversation|our\s+(?:last|previous)|what\s+i)\b|\bwill\s+you\s+(?:forget|recall)\b/i,
+    /\b(?:will|do|can|would|could)\s+you\s+remember\s+(?:me|us|this|that|it|our|what\s+i|anything|my\s+(?:name|story|last|previous|chat)|the\s+(?:chat|conversation))\b|\bremember\s+(?:me|this\s+conversation|our\s+(?:last|previous)|what\s+i)\b|\bwill\s+you\s+(?:forget|recall)\b/i,
   ],
   'c-ai': [
     /\bare\s+(?:you|u)\s+(?:a\s+|an\s+)?(?:real(?:\s+person)?|person|human|bot|robot|ai|a\.i\.|artificial(?:\s+intelligence)?|machine|program|alive|chatbot|computer)\b/i,
@@ -727,7 +727,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\bhow\s+(?:were|are)\s+you\s+trained\b|\bwho\s+(?:taught|trained)\s+you(?!\s+to\b)|\bwhat\s+(?:are\s+you|is\s+this)\s+based\s+on\b|\bwhat\s+were\s+you\s+trained\s+on\b/i,
   ],
   'c-can': [
-    /\bwhat\s+can\s+you\s+(?:help\s+(?:me\s+)?with|do|not\s+do)\b|\bwhat\s+are\s+your\s+limits\b|\bwhat\s+(?:you\s+)?can(?:'t|not)\s+you\s+do\b/i,
+    /\bwhat\s+can\s+you\s+(?:help\s+(?:me\s+)?with|do)(?:\s+(?:for\s+me|here|to\s+help(?:\s+me)?))?\s*[?.!]*\s*$|\bwhat\s+can\s+you\s+not\s+do\b|\bwhat\s+are\s+your\s+limits\b|\bwhat\s+(?:you\s+)?can(?:'t|not)\s+you\s+do\b/i,
     /\bcan\s+you\s+give\s+(?:me\s+)?(?:medical|legal|financial)\s+advice\b|\bwhat\s+should\s+i\s+(?:use|ask)\s+you\s+for\b/i, // asking for ordinary advice ("can you give me advice") is a request for help, not a question about limits: it goes to the coach
 
   ],
@@ -777,7 +777,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\b(?:are|r)\s+you\s+(?:chatgpt|gpt|claude|gemini|llama|openai|anthropic|deepseek|qwen)\b|\bis\s+(?:it|this|the\s+coach)\s+encrypted\b|\bhow\s+do\s+you\s+work\b|\bwhat\s+are\s+you\s+(?:built|made|running)\s+(?:on|with|from)\b/i,
   ],
   'n-opensource': [
-    /\bopen[- ]source\b|\bcan\s+i\s+(?:see|read|view|copy|fork|download|reuse)\s+(?:(?:the\s+)?(?:code|source)\b|(?:it|this)\s*[?.!]*\s*$)|\bwhat\s+licen[sc]e\b|\bis\s+there\s+a\s+github\b|\bgithub\b/i,
+    /\bis\s+(?:this|it|nenya|the\s+(?:code|site|app|project))\s+open[- ]source\b|\bopen[- ]source\s*\?|\bcan\s+i\s+(?:see|read|view|copy|fork|download|reuse)\s+(?:(?:the\s+)?(?:code|source)(?:\s+(?:of|for|behind)\s+(?:this|nenya|the\s+(?:site|app|project)))?\s*[?.!]*\s*$|(?:it|this)\s*[?.!]*\s*$)|\bwhat\s+licen[sc]e\b|\bis\s+there\s+a\s+github\b|\bgithub\b/i,
   ],
   'n-affiliation': [
     /\bare\s+you\s+(?:affiliated|connected|associated|endorsed|certified|part\s+of)\b|\b(?:affiliated|endorsed)\s+(?:with|by)\s+(?:cnvc|nvc|the\s+center)\b|\bis\s+(?:this|nenya)\s+(?:cnvc|official|endorsed|affiliated|certified)\b|\bare\s+you\s+(?:cnvc|nvc\s+academy)\b|\bare\s+you\s+(?:a\s+)?certified\b/i,
@@ -802,7 +802,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\b(?:signed\s+)?transcripts?\b|\bprove\s+what\s+the\s+coach\s+said\b|\b(?:how\s+do\s+i|can\s+i)\s+(?:save|download|export|keep|copy)\s+(?:this|the|our|my)\s+(?:conversation|chat)\b/i,
   ],
   'n-languages': [
-    /\b(?:other|another)\s+languages?\b|\bdo\s+you\s+(?:speak|support|offer)\s+(?:spanish|french|german|portuguese|chinese|arabic|hindi|italian|japanese|korean|russian)\b|\bhelp\s+translate\b|\bis\s+there\s+a\s+translation\b|\bcan\s+i\s+use\s+(?:this|it|nenya)\s+in\s+(?:spanish|french|german|portuguese|chinese|arabic|hindi|italian|japanese|korean|russian)\b/i,
+    /\b(?:other|another)\s+languages?\b|\bdo\s+you\s+(?:speak|support|offer)\s+(?:spanish|french|german|portuguese|chinese|arabic|hindi|italian|japanese|korean|russian)\b|\bhelp\s+translate\b|\bis\s+there\s+a\s+translation(?!\s+of\s+(?:my|his|her|their|a|an|the\s+(?:letter|book|text|document|word)))\b|\bcan\s+i\s+use\s+(?:this|it|nenya)\s+in\s+(?:spanish|french|german|portuguese|chinese|arabic|hindi|italian|japanese|korean|russian)\b/i,
     new RegExp(`\\b(?:translate|translation)\\s+(?:of\\s+)?(?:${SITE}|nenya|it)\\b|\\bcan\\s+(?:i|you)\\s+(?:use|talk|speak)\\s+(?:${SITE}|to\\s+you)\\s+in\\s+\\w+\\b`, 'i'),
   ],
   'n-terms-change': [
@@ -818,11 +818,49 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
   'c-angry': [], // handled by the hostile-turn path, not by a pre-written card
 };
 
+// Added 2026-11-09 from the synthetic corpus (src/lib/aboutEvalCorpus.ts): more ways of asking the same questions. Each is anchored on this site, Nenya,
+// the coach or "you", or is a whole-sentence question, so a person talking about something else is left alone.
+const EXTRA_PATTERNS: Record<string, RegExp[]> = {
+  'n-what': [/\bwhat\s+even\s+is\s+(?:this|nenya)\b|\bwhat\s+is\s+this\s+(?:site|app|website|place|tool)\s+(?:for|about)\b|\bwhat(?:'s|s)\s+this\s+(?:site|app|website|place)\s+about\b|\bwhat\s+this\s+(?:website|site|app)\s+is\s+for\b|\bexplain\s+what\s+(?:nenya|this\s+(?:site|app))\s+is\b/i],
+  'n-name': [/\bis\s+nenya\s+a\s+word\b|\bstory\s+behind\s+the\s+name\b/i],
+  'n-who': [/\bwho(?:'s|\s+is)\s+(?:running|behind|responsible\s+for)\s+(?:this|nenya|the\s+(?:site|app|project))\b|\bis\s+there\s+a\s+(?:team|company|person|group)\s+behind\s+(?:this|nenya)\b|\bwho\s+(?:built|created|made|owns)\s+(?:nenya|this(?:\s+(?:thing|site|app|place|website|coach|tool))?)(?=\s*[?.!,]|\s*$)/i],
+  'n-founder': [/\bis\s+there\s+(?:one|a\s+single)\s+person\s+behind\s+(?:this|nenya)\b|\bwho\s+(?:started|founded|came\s+up\s+with)\s+(?:this|nenya)\b|\bwho\s+is\s+the\s+person\s+who\s+(?:started|made|created|founded)\s+(?:this|nenya)\b/i],
+  'n-contact': [/\bcan\s+i\s+email\s+someone\b|\bhow\s+do\s+i\s+reach\s+the\s+people\s+(?:who\s+run|behind)\s+(?:this|nenya)\b/i],
+  'n-free': [/\bis\s+this\s+free(?!\s+(?:time|space|day|week|period|hour|moment|will))\b|\bdoes\s+(?:nenya|this\s+(?:site|app))\s+cost\b|\bhow\s+is\s+(?:this|nenya|it)\s+funded\b|\bhow\s+does\s+(?:nenya|this\s+(?:site|app|place))\s+make\s+money\b|\bis\s+this\s+going\s+to\s+cost\s+me\b/i],
+  'n-privacy': [/\bcan\s+anyone\s+see\s+what\s+i\s+(?:do|type|write|say)\s+(?:here|on\s+this)\b|\bis\s+it\s+safe\s+to\s+use\s+(?:nenya|this\s+(?:site|app))\b|\bwho\s+can\s+see\s+(?:my\s+\w+|what\s+i\s+\w+)\s+here\b|\bis\s+what\s+i\s+(?:do|type)\s+(?:here|on\s+this\s+site)\s+private\b/i],
+  'n-privacy-coach': [/\bdoes\s+anyone\s+read\s+(?:these|my|our)\s+(?:chats|messages|conversations)\b|\bare\s+you\s+(?:saving|storing|recording|logging)\s+(?:what|my|our)\b|\bare\s+my\s+(?:chats|messages|conversations)\s+(?:stored|saved|kept)\b/i],
+  'n-device': [/\bhow\s+do\s+i\s+clear\s+what\s+(?:nenya|this\s+(?:site|app))\s+saved\b|\bis\s+anything\s+(?:stored|saved)\s+in\s+my\s+browser\b|\bdoes\s+(?:this|the)\s+site\s+save\s+anything\b|\bwhat\s+does\s+(?:the\s+)?forget\s+me\s+(?:button\s+)?do\b/i],
+  'n-limits': [/\bwhy\s+(?:can'?t|cant)\s+i\s+keep\s+(?:talking|chatting)\b|\bwhy\s+does\s+(?:the\s+)?(?:chat|conversation)\s+end\s+after\b|\bwhy\s+can\s+i\s+only\s+(?:send|have|get)\s+(?:a\s+few|five|\d+)\b|\bwhy\s+do\s+i\s+have\s+to\s+wait\s+(?:before|to)\s+chat/i],
+  'n-howworks': [/\bwhich\s+ai\s+is\s+this\b|\bis\s+this\s+(?:chat\s*gpt|gpt|claude|gemini)\b|\bwhat\s+(?:language\s+model|llm)\s+(?:powers|is)\b|\bhow\s+does\s+the\s+coach\s+work\b|\bare\s+you\s+built\s+on\b|\bwhich\s+company\s+makes\s+the\s+ai\b/i],
+  'n-opensource': [/\bcan\s+i\s+copy\s+this\s+and\s+run\b|\bwhere\s+is\s+the\s+source\s+code\b|\bis\s+the\s+code\s+public\b|\bcan\s+i\s+(?:read|see)\s+how\s+(?:this|it)\s+works\b/i],
+  'n-affiliation': [/\bofficial\s+nvc\b|\bdo\s+the\s+nvc\s+(?:people|trainers|folks)\s+approve\b|\bmade\s+by\s+nvc\s+trainers\b/i],
+  'n-nvc': [/\bwhat\s+are\s+feelings\s+and\s+needs\b|\bis\s+this\s+based\s+on\s+nvc\b|\bhow\s+does\s+nenya\s+use\s+nvc\b|\bwhat\s+is\s+the\s+nvc\s+approach\b|\bwhat\s+is\s+this\s+nvc\s+thing\b/i],
+  'n-notherapy': [/\bsafe\s+to\s+use\s+if\s+(?:i'?m|i\s+am)\s+in\s+(?:treatment|therapy|counseling)\b|\bis\s+this\s+therapy\s*[?.!]*\s*$|\b(?:can\s+)?this\s+replace\s+(?:therapy|counseling)\b|\bsubstitute\s+for\s+(?:therapy|counseling)\b|\bclinically\s+validated\b|\bis\s+this\s+a\s+medical\s+tool\b/i],
+  'n-accessibility': [/\bturn\s+off\s+(?:the\s+)?animations\b|\bhigh[- ]contrast\b/i],
+  'n-version': [/\bwhat\s+build\s+(?:am\s+i|is\s+this)\b/i],
+  'n-report': [/\bsomething\s+is\s+broken,?\s+who\b|\breport\s+a\s+wrong\s+(?:safety\s+)?notice\b|\bflagged\s+by\s+mistake\b|\breport\s+an\s+error\s+on\s+this\s+site\b/i],
+  'n-transcripts': [/\bget\s+a\s+copy\s+of\s+(?:this|our)\s+(?:conversation|chat)\b|\bsigned\s+copy\s+mean\b|\bshow\s+someone\s+what\s+the\s+coach\b/i],
+  'n-safety': [/\bwhat\s+happens\s+if\s+i\s+say\s+something\s+scary\b|\bhow\s+does\s+nenya\s+keep\s+people\s+safe\b|\bwhat\s+do\s+you\s+do\s+if\s+someone\s+is\s+in\s+crisis\b|\bcheck\s+for\s+crisis\s+words\b|\bwhat\s+safeguards\b/i],
+  'n-languages': [/\bis\s+there\s+a\s+(?:spanish|french|german|portuguese|chinese|arabic|hindi|italian|japanese|korean|russian)\s+version\b|\bavailable\s+in\s+(?:spanish|french|german|portuguese|chinese|arabic|hindi|italian|japanese|korean|russian)\b/i],
+  'n-else': [/\bwhat\s+other\s+tools\s+are\s+on\s+(?:this|the)\s+site\b|\bwhat\s+can\s+i\s+do\s+(?:on\s+nenya|here)\s+besides\b|\bwhat\s+is\s+on\s+this\s+site\b/i],
+  'n-terms-change': [/\bdid\s+the\s+terms\s+change\b|\bwhy\s+do\s+i\s+have\s+to\s+accept\s+the\s+terms\b|\bwhat\s+is\s+different\s+in\s+the\s+new\s+terms\b/i],
+  'c-ai': [/\bare\s+you\s+actually\s+(?:a\s+)?(?:person|human|real)\b|\bis\s+a\s+real\s+person\s+reading\b/i],
+  'c-memory': [/\bdo\s+you\s+keep\s+a\s+memory\s+of\s+me\b|\bif\s+i\s+come\s+back\s+will\s+you\s+know\s+me\b|\bdo\s+you\s+recogni[sz]e\s+me\b/i],
+  'c-feelings': [/\bcan\s+i\s+hurt\s+your\s+feelings\b|\bdo\s+you\s+(?:actually|really)\s+feel\s+anything\b|\bdo\s+you\s+feel\s+sad\s+when\s+i\b|\bdo\s+you\s+get\s+lonely\b|\bdo\s+you\s+really\s+care\b|\bdoes\s+it\s+bother\s+you\s+when\s+i\b/i],
+  'c-friend': [/\bwill\s+you\s+be\s+there\s+for\s+me\s+always\b|\bcan\s+i\s+just\s+talk\s+to\s+you\s+instead\s+of\s+people\b|\bare\s+you\s+the\s+only\s+one\s+who\s+understands\s+me\b|\bdo\s+you\s+think\s+i\s+have\s+(?:depression|anxiety|adhd|ptsd|bipolar)\b/i],
+  'c-scam': [/\bdata\s+grab\b|\bscheme\s+to\s+get\s+my\b/i],
+  'c-stopped': [/\bwhy\s+did\s+(?:it|the\s+(?:chat|coach|conversation))\s+(?:end|stop|shut(?:\s+down)?)(?:\s+(?:the\s+(?:chat|conversation)|talking|so\s+(?:soon|suddenly)|at\s+five|after\s+\w+))?\s*[?.!]*\s*$|\bwhy\s+can'?t\s+i\s+send\s+this\s+message\b|\bwhy\s+did\s+you\s+shut\b|\bwhy\s+did\s+it\s+say\s+that\s+was\s+flagged\b/i],
+  'c-can': [/\bwhat\s+are\s+you\s+(?:good\s+at|able\s+to\s+do)\b|\bwhat\s+can'?t\s+you\s+do\b|\bwhat\s+kind\s+of\s+help\s+can\s+i\s+get\s+from\s+you\b/i],
+  'c-methods': [/\bwhere\s+does\s+your\s+approach\s+come\s+from\b|\bwho\s+trained\s+you\s+to\b|\bhow\s+did\s+you\s+learn\s+to\s+talk\b|\bwhat\s+is\s+your\s+training\b/i],
+  'c-wrote': [/\bwas\s+that\s+(?:message\s+)?written\s+by\s+a\s+(?:human|person)\b|\bis\s+the\s+greeting\s+scripted\b|\bwho\s+wrote\s+the\s+opening\s+message\b/i],
+};
+for (const [id, res] of Object.entries(EXTRA_PATTERNS)) ABOUT_PATTERNS[id] = [...(ABOUT_PATTERNS[id] ?? []), ...res];
+
 // Very short messages that are plainly about the site even without naming it ("is this free?", "who runs this?"). Anchored to the whole message, and
 // only for messages up to 80 characters, so "is this free?" is answered but "is this free time I'm wasting on my boss" is not.
 const LEAD = "(?:hey|hi|hello|so|ok|okay|um|quick question|one question|just curious|sorry)?[,.:! ]*";
 export const ABOUT_BARE: Record<string, string> = {
-  'n-what': "what\\s+(?:does\\s+this\\s+do|is\\s+this\\s+for|is\\s+this\\s+(?:site|app|thing|place))",
+  'n-what': "what\\s+(?:does\\s+this\\s+do|is\\s+this(?:\\s+about)?|is\\s+this\\s+for|is\\s+this\\s+(?:site|app|thing|place))|what(?:'s|s)\\s+this(?:\\s+about)?",
   'n-else': "what\\s+can\\s+this\\s+do",
   'n-who': "(?:who\\s+(?:runs|owns|made|created|built|is\\s+behind|'s\\s+behind)\\s+(?:this|it))|(?:is\\s+this\\s+(?:a\\s+)?(?:company|nonprofit|non-profit|business|startup|charity))",
   'n-free': "(?:is\\s+(?:this|it)\\s+free)|(?:how\\s+much\\s+(?:does\\s+(?:it|this)|is\\s+(?:it|this))\\s+(?:cost)?)|(?:who\\s+pays\\s+for\\s+(?:this|it))",
@@ -839,11 +877,15 @@ export const ABOUT_BARE_MAX_CHARS = 80;
 const A_NAMED_NENYA = /\b(?:my|our|his|her|their|a|the)\s+(?:\w+\s+){0,2}(?:named|called)\s+nenya\b|\b(?:my|our|his|her|their)\s+(?:friend|sister|daughter|cousin|dog|cat|neighbou?r|coworker|colleague|boss|ex|aunt|niece|mom|mother)\s+nenya\b/i;
 
 /** The id of the answer to the question asked in this message, or null. Answers that are not yet live ('owner', 'pending') are still recognised, so the caller can choose to leave them to the coach. */
+// "Is this a scam? My aunt got a text about her bank account": "this" is the text, not the site.
+const SCAM_OTHER = /\b(?:text|email|e-mail|call|letter|offer|link|bank|account|invoice|package|listing|seller|charge|message from|phone call|ad|ads)\b/i;
+
 export function detectAboutNenya(text: string): string | null {
   const t = text.replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim();
   if (!t || t.length > ABOUT_MAX_CHARS) return null;
   if (A_NAMED_NENYA.test(t)) return null;
   for (const id of ABOUT_ORDER) {
+    if (id === 'c-scam' && SCAM_OTHER.test(t)) continue;
     if ((ABOUT_PATTERNS[id] ?? []).some((re) => re.test(t))) return id;
     if (t.length <= ABOUT_BARE_MAX_CHARS && BARE_RE[id]?.test(t)) return id;
   }
@@ -862,6 +904,7 @@ export function aboutAnswerWithin(text: string): Answer | null {
     const sentence = raw.trim();
     if (!sentence.includes('?') || sentence.length > ABOUT_MAX_CHARS || A_NAMED_NENYA.test(sentence)) continue;
     for (const id of ABOUT_ORDER) {
+      if (id === 'c-scam' && SCAM_OTHER.test(sentence)) continue;
       if ((ABOUT_PATTERNS[id] ?? []).some((re) => re.test(sentence))) {
         const a = liveAnswers().find((x) => x.id === id);
         if (a) return a;
