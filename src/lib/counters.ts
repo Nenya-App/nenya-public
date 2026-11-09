@@ -11,6 +11,7 @@ export const FIXED_EVENTS = [
   'coach.turn.answered', // the message went to the model and a reply came back
   'coach.turn.hostile.abuse', // the message was hostile toward the coach (contempt, insults, dares): the coach was told how to answer, a count and no content
   'coach.turn.hostile.critique', // the message was sharp feedback on the coach's reply: same
+  'coach.turn.hostile.thanks-added', // the site opened a reply to critique with its thank-you
   'coach.turn.hostile.apology-removed', // an apologising sentence was taken out of a reply to a hostile message
   'coach.turn.distress-text', // a reply to a possible-distress message had the site's pointer to a person and a crisis line added
   'coach.conversation.started', // a first exchange was accepted

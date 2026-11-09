@@ -82,3 +82,21 @@ The server sees the whole conversation on every request, so it can **count how m
 - How often visitors would use language like this (a demo has no data), and how often the detector would be wrong.
 - The licenses of any dehumanization or hate-speech dataset beyond what the dataset cards show.
 - Whether ending a conversation is the right response in every case: it is the owner's boundary, and it should be read against real-looking conversations first.
+
+## Owner direction, 2026-11-08: emotional aikido, and a break with a graceful way back in
+**The principle.** Every interaction gets the same stance, whatever the content: meet it, do not oppose it, and turn it toward the person's own connection and learning. Hostility, critique and dehumanising language are not offences to punish; they are material for reflection, and the coach's steadiness is the point. The Terms say the site is for reflection, which abusive language falls outside of, so the site may respond by default (not only the model) and may enforce a pause.
+
+**Abusive language about people or groups** (this document's ladder) may lead to an **enforced break with a built-in, graceful re-entry**, not only to ending the conversation. Proposed shape, for the owner to change:
+1. **Levels 1 and 2** as above: the coach's empathy and the educate move; nothing enforced.
+2. **Level 3 is a break.** The conversation ends with a calm site-written note (this is a pause, not a punishment; what the site is for; the breathing tool; a person if they seem overwhelmed), and the demo rests for a short, set time.
+3. **Two ways back in:** wait the break out, **or** return sooner by (a) **reviewing the Terms' acceptable-use section** (it does not exist yet and must be written first) and (b) **a short quiz** that resets the timer and the counter. Retakes are unlimited; each answer teaches (observation versus evaluation, naming a feeling and a need, turning an "enemy image" into a need), so the quiz is the educate move in another form. The owner's note: "I'm not above being slightly petty." The design keeps that as a light touch, because a quiz that only humiliates teaches nothing and loses the person it could reach.
+4. **After re-entry,** the next conversation starts at level 2, not 0, so the ladder is not reset to nothing.
+
+**Things to decide or watch**
+- **Enforcement without accounts.** The break can only be a **timestamp in the visitor's browser** (as the six-hour rest is today: a courtesy, easily cleared), or a **short server-side record per connection** (the allowance record already kept about a day and a half, hashed, no content). The browser version keeps the privacy promise unchanged; the server version is stronger and means one more thing the Terms must say. Recommended: the browser first.
+- **False alarms cost more here.** A person venting in pain about a group, a person quoting what was said to them, or someone misread by phrase matching would be put on a break. The must-not-count list and "distress outranks it" stay as written, levels 1 and 2 come first, and the break is short.
+- **Accessibility and fairness.** The quiz must work by keyboard and screen reader, have no time limit, and always have the wait-it-out alternative, so it never becomes a barrier for someone with a cognitive disability or in distress.
+- **Content.** The quiz questions and the acceptable-use text are written fresh by the owner (with a draft from me if asked); the learning-modules pilot (`docs/learning-modules-scope.md`) is the natural home for the teaching.
+- **Nothing is kept** about the quiz or the break except the timestamp that makes it work.
+
+**Decisions for the owner:** the length of the break; the closing note's wording; whether re-entry is quiz or terms or either; browser timestamp or server record; whether level 3 applies to individuals or only to groups; who writes the acceptable-use section and the quiz.

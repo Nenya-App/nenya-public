@@ -11,6 +11,7 @@ const LABELS: Record<string, string> = {
   'coach.turn.answered': 'Messages answered',
   'coach.turn.hostile.abuse': 'Messages hostile toward the coach',
   'coach.turn.hostile.critique': 'Messages critical of the coach\'s reply',
+  'coach.turn.hostile.thanks-added': 'Thank-yous added to replies to critique',
   'coach.turn.hostile.apology-removed': 'Apologies removed from replies to hostile messages',
   'coach.turn.distress-text': 'Replies with the crisis pointer added',
   'coach.conversation.started': 'Conversations started',

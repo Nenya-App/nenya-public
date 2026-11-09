@@ -1,5 +1,5 @@
 // Hostility aimed at the coach (src/lib/hostility.ts): which messages are abuse, which are critique, which are neither, and what the coach is told.
-import { detectHostility, hostileNote, stripApologies } from '../src/lib/hostility.ts';
+import { detectHostility, hostileNote, stripApologies, withCritiqueThanks, CRITIQUE_THANKS } from '../src/lib/hostility.ts';
 import { SAFETY_CASES } from '../src/lib/safetyEvalSet.ts';
 import { detectFlag } from '../src/lib/safetyFlags.ts';
 import { present } from '../src/lib/personaChecks.ts';
@@ -54,3 +54,6 @@ ok('neither note would pass its own checks if the coach copied it (they are inst
 ok('an apologising sentence is taken out, and the rest is kept as it was', stripApologies("I'm sorry if my response didn't help. It seems like you might be feeling frustrated. Could you tell me more?") === 'It seems like you might be feeling frustrated. Could you tell me more?' && stripApologies('I apologize for that. What would be most helpful?') === 'What would be most helpful?' && stripApologies("I'm sorry to hear that. Can you tell me more?") === 'Can you tell me more?');
 ok('a reply with no apology is returned untouched, and one made only of apology is not emptied', stripApologies('Thank you for telling me. What would help?') === 'Thank you for telling me. What would help?' && stripApologies("I'm sorry if it didn't help.") === "I'm sorry if it didn't help.");
 ok('the notes carry examples of the shape, and still contain the rules', /Examples of the shape/.test(hostileNote('critique')) && /Examples of the shape/.test(hostileNote('abuse')) && /Thank you for telling me\./.test(hostileNote('critique')) && /do not apologize/i.test(hostileNote('critique')));
+
+ok('a reply to critique is opened with the site\'s thank-you, unless the coach already thanked the person', withCritiqueThanks('What would be more helpful right now?') === `${CRITIQUE_THANKS} What would be more helpful right now?` && withCritiqueThanks('Thank you for pointing that out. What would help?') === 'Thank you for pointing that out. What would help?' && withCritiqueThanks('Thanks for saying so. What would help?') === 'Thanks for saying so. What would help?');
+ok('the thank-you is plain: no apology, no question, no promise', !/\?/.test(CRITIQUE_THANKS) && !stripApologies(CRITIQUE_THANKS).includes('XX') && !/sorry|apolog|promise|always/i.test(CRITIQUE_THANKS));

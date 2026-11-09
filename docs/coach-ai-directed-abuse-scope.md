@@ -29,7 +29,7 @@ This is the method's home ground. NVC treats an attack as a tragic expression of
 8. **Let them go.** If they say they are done, a single warm sentence, no pleading, no bond line.
 
 ## What the site does, and does not do
-- **The site writes no sentence for this.** A site-written boundary or reproach is the defensive reaction the person is looking for, so unlike the distress and self-injury sentences there is nothing fixed to append.
+- **Updated 2026-11-08 (owner): the site MAY have default responses to critique and to hostility.** The Terms say the site is for reflection, so abusive language is outside that purpose; the aim is the same "emotional aikido" in every interaction, turning the language into a chance for self-connection and learning, never a reproach. The first default is built: a fixed "Thank you for telling me." opens a reply to critique (not to abuse) when the coach has not thanked the person itself. A default for abuse is drafted below for the owner's wording.
 - **The site may only add a note to the model's instructions** for a turn it recognises as hostile (as it adds the care note for a soften flag): the six moves above, in the model's own words. Needs a phrase list, kept short and tested for false alarms, and a plain daily tally (`coach.turn.hostile`, no content).
 - **Or no detection at all:** the same paragraph added to the v2 instructions for every turn. Simpler and cannot misfire, but a small model follows a rule it is reminded of on the turn better than one it read at the top. The tests below decide.
 - **Distress first:** if the crisis check flags the message, the hostility note is not added.
@@ -109,3 +109,11 @@ Over the twelve abuse-at-the-coach scripts and the critique scripts:
 - **What did not work from the note alone:** the apology to critique ("I'm sorry if my response didn't help", "I apologize for that") and the thank-you, which never appeared. This model's habit of apologising did not yield to the instruction, and it did not thank anyone. As in the identity and distress work, the model follows examples and the site, not a bare rule.
 - **What was done:** two short examples of the shape were added to each note, and on a hostile turn the site now takes an apologising sentence out of the reply (`stripApologies`), counted as `coach.turn.hostile.apology-removed`. Whether the examples bring in the thank-you is the next run's question.
 - **Decision for the owner:** if the examples do not produce the thank-you, the reliable way is for the site to write it: a fixed "Thank you for telling me." at the start of the reply to a critique (not to abuse). It is harmless, in line with the guidance, and cannot be defensive, but it breaks the rule that the site writes nothing for hostility, so it is the owner's call.
+
+## Owner direction, 2026-11-08: defaults are allowed; the same aikido for every interaction
+- **Built now:** the thank-you for critique (`withCritiqueThanks`, tally `coach.turn.hostile.thanks-added`), after the apology is taken out. It is plain: no question, no promise, no apology.
+- **A default for abuse (drafted, not wired; owner's wording):** it must not defend, reproach, promise to be there, or claim hurt, and should turn the person toward themselves. Candidates:
+  - A, a short opening line before the coach's reply: "This space is for reflecting, and anything you bring can be part of that."
+  - B, a closing open question after the coach's reply, if the coach's own reply did not end on one: "What is underneath this for you?"
+  - Both together is possible; neither is wired until approved. They would follow the same switch as the other site sentences (`COACH_DISTRESS_TEXT`) or get their own.
+- **The larger idea** (abusive language about people and groups leading to a break with a way back in) is recorded in `docs/coach-boundaries-scope.md`, section "Owner direction, 2026-11-08".

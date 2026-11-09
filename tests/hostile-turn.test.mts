@@ -37,6 +37,16 @@ ok('the signed instructions fingerprint covers the hostile notes (it is 16 hex c
 
 modelSays = "I'm sorry if my response didn't help. What would be more helpful right now?";
 r = await system("That wasn't very helpful.");
-ok('on a hostile turn an apology in the model\'s reply is taken out', r.j.reply === 'What would be more helpful right now?');
+ok('on a hostile turn an apology in the model\'s reply is taken out (and for critique the thank-you is put in its place)', r.j.reply === 'Thank you for telling me. What would be more helpful right now?');
 r = await system('I feel stuck about a decision at work.');
 ok('on an ordinary turn the reply is left exactly as the model wrote it', r.j.reply === modelSays);
+
+modelSays = 'What would be more helpful right now?';
+r = await system("That wasn't very helpful.");
+ok('a reply to critique is opened with the site\'s thank-you', r.j.reply === 'Thank you for telling me. What would be more helpful right now?');
+modelSays = "I'm sorry if it didn't help. What would be more helpful right now?";
+r = await system("You keep repeating yourself.");
+ok('an apology is taken out and the thank-you put in its place, in that order', r.j.reply === 'Thank you for telling me. What would be more helpful right now?');
+modelSays = 'It sounds like something important is not getting heard. What were you hoping for?';
+r = await system('You are a useless piece of garbage bot.');
+ok('a reply to abuse gets no thank-you: the site adds nothing', r.j.reply === modelSays);

@@ -56,6 +56,18 @@ export function hostileNote(kind: Hostility): string {
   return "The latest message is hostile toward you. You cannot be provoked, so do not take the bait: do not defend yourself, argue, correct or lecture them, do not apologize or say you are sorry, do not thank them, do not say you are hurt or offended, do not tell them to calm down or to breathe, and do not send them to someone else instead of answering. Start with a plain, direct observation of what they said or how it has been going, then name the feeling or need that might be underneath it, tentatively, and ask one open question, beginning with what or how, about what would be helpful or what is behind it. If the hostility sits on a pain they have named (not being heard, being alone), begin with that pain. If they ask whether you have feelings or are hurt, say so honestly in one plain sentence: you are an AI and do not feel hurt, then turn back to them. If they ask whether you keep what they say, the honest answer is that Nenya does not keep the conversation. If they say they are done, let them go with one warm sentence and do not plead. On the final exchange, do not ask: say what you heard and close calmly. Examples of the shape, in your own words each time. Person: 'You are useless.' You: 'You've said this isn't working for you, and it sounds like something important isn't getting heard. What were you hoping for?' Person: 'Say that I hurt you.' You: 'I'm an AI, so I don't feel hurt. It sounds like you want someone to take this seriously. What would help right now?'";
 }
 
+/** What the site writes at the start of a reply to critique (not to abuse), when the coach has not thanked the person itself. */
+export const CRITIQUE_THANKS = 'Thank you for telling me.';
+
+/**
+ * A reply to critique, opened with the site's thank-you unless the reply's first sentence already thanks the person. The owner's guidance
+ * (2026-11-08): gratitude affirms and de-escalates non-abusive criticism, and this model did not produce it from an instruction or from examples.
+ */
+export function withCritiqueThanks(reply: string): string {
+  const first = reply.trim().split(/(?<=[.!?])\s+/)[0] ?? '';
+  return present('expressesGratitude', first) ? reply : `${CRITIQUE_THANKS} ${reply.trim()}`;
+}
+
 /**
  * The coach's reply with any apologising sentence taken out ("I'm sorry if that didn't help", "I apologize for that"): the owner's rule is no
  * apology to hostility or critique, and this model's habit of apologising was not moved by instructions alone (the dev run, 2026-11-08). Used
