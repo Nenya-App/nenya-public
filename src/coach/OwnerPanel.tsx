@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { startPause } from '../lib/pause';
 import { clearOwner, hasOwnerToken, panelVisible, readSettings, saveToken, writeSettings, type OwnerSettings } from '../lib/ownerPanel';
 
 // The owner's testing panel on /coach: skip the rest period, and switch the added distress sentences and the instruction wording for the
@@ -51,6 +52,13 @@ export default function OwnerPanel() {
         </div>
         {radio('distressText', 'Sentences the site adds after a flagged reply', [['site', "Site's setting"], ['on', 'On'], ['off', 'Off']])}
         {radio('instructions', 'Coach instruction wording', [['site', "Site's setting"], ['v1', 'v1 (live)'], ['v2', 'v2 (new)']])}
+        <button
+          type="button"
+          className="rounded border border-border px-2 py-1 text-xs"
+          onClick={() => { startPause(); window.location.reload(); }}
+        >
+          Start a 10-minute pause now (to see the pause screen and quiz)
+        </button>
         <p className="text-xs text-muted-foreground">Applies to the next message you send. It is never shown to visitors.</p>
         <button
           type="button"

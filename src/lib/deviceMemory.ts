@@ -8,6 +8,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 //   nenya.remember     '1' only if the visitor turned on "Remember on this device".
 //   nenya.prefs        display settings, written only while nenya.remember is on.
 //   nenya.terms        the terms date the visitor agreed to, written only while nenya.remember is on.
+//   nenya.coach.pause  a timestamp: when the coach demo may open again after it ended a conversation (see src/lib/pause.ts). Removed by Forget me.
 //   nenya.coach.owner  '1' in the owner's own browser, to skip the coach rest while testing.
 //   nenya.coach.ownerToken  the owner's secret, to skip the per-connection limit while testing.
 //   nenya.coach.overrides   the owner's testing switches (distress sentences on/off, instruction wording), sent only with the owner's token.
@@ -15,6 +16,8 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 // Nothing here is ever sent to a server, and there are no random identifiers.
 
 export const REST_KEY = 'nenya.coach.rest';
+/** When the coach demo may open again after a pause (ms since epoch), set by the pause (src/lib/pause.ts). Only a time; erased by Forget me and Emergency Exit. */
+export const PAUSE_KEY = 'nenya.coach.pause';
 export const OWNER_KEY = 'nenya.coach.owner';
 /** The owner's secret token, kept in the owner's own browser only and sent to the coach as a header (see coach.mts). */
 export const OWNER_TOKEN_KEY = 'nenya.coach.ownerToken';

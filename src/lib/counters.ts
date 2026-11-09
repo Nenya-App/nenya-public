@@ -27,7 +27,7 @@ export const SCREENS = ['welcome', 'home', 'sight', 'sound', 'touch', 'essence',
 export const RHYTHM_NAMES = ['steady', 'calming', 'lively', 'deep-calm', 'box', '478'] as const;
 
 /** Counted from the browser, and only after the visitor has agreed to the terms (see src/lib/usageCounts.ts). */
-export const BROWSER_FIXED_EVENTS = ['onboarding.terms.accepted', 'tour.accepted', 'tour.declined', 'tour.completed'] as const;
+export const BROWSER_FIXED_EVENTS = ['onboarding.terms.accepted', 'tour.accepted', 'tour.declined', 'tour.completed', 'coach.pause.begun', 'coach.pause.returned.waited', 'coach.pause.returned.quiz'] as const;
 
 const under = (name: string, prefix: string, allowed: readonly string[]): boolean =>
   name.startsWith(prefix) && allowed.includes(name.slice(prefix.length));

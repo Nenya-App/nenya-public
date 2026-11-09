@@ -10,6 +10,7 @@ a server, no random identifiers, and never anything a visitor writes, draws, ans
 | `nenya.remember` | `1` | Only when the visitor turns on "Remember my settings on this device" |
 | `nenya.prefs` | Theme, text size, animation and breathing choices (validated allow-list) | Only while `nenya.remember` is on |
 | `nenya.terms` | The date of the terms the visitor agreed to | Only while `nenya.remember` is on; ignored if the terms date changes |
+| `nenya.coach.pause` | A time: when the coach demo may open again after it ended a conversation for abusive language about people or groups (10 minutes) | Set automatically by the pause (not yet triggered from conversations; the owner panel can start one to test). Erased by Forget me and by Emergency Exit. Never sent |
 | `nenya.coach.owner` | `1` in the owner's own browser, to skip the rest while testing | Set by hand, see `docs/coach-testing.md` |
 | `nenya.coach.overrides` | The owner's testing switches (distress sentences on/off, instruction wording v1/v2) as JSON | Set from the owner panel (`/coach?owner`). Sent to the coach only together with the owner token, which the coach checks; kept by Forget me, erased by Emergency Exit |
 

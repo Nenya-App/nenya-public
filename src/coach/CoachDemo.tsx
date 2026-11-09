@@ -11,6 +11,8 @@ import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/v
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
 import { OWNER_KEY, OWNER_TOKEN_KEY, REST_KEY } from '../lib/deviceMemory';
 import { overridesForRequest } from '../lib/ownerPanel';
+import { readPauseEnds } from '../lib/pause';
+import PauseScreen from './PauseScreen';
 import { AppFooter } from '../app/components/AppFooter';
 import { SupportThisWork } from '../app/components/SupportThisWork';
 import { ShareNenya } from '../app/components/ShareNenya';
@@ -111,6 +113,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
   const [stage, setStage] = useState<Stage>('consent');
   const [restEnds] = useState(readRestEnds);
+  const [pauseEnds, setPauseEnds] = useState(() => readPauseEnds());
   const hoursLeft = Math.max(1, Math.ceil((restEnds - Date.now()) / HOUR_MS));
   const [messages, setMessages] = useState<Msg[]>([]);
   const [ticket, setTicket] = useState<string | undefined>();
@@ -426,7 +429,9 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
       <main className="scroll-container flex-1 overflow-y-auto px-4 py-6 md:px-6">
         <div className="mx-auto w-full max-w-xl space-y-5">
-          {stage === 'consent' && restEnds > 0 && (
+          {stage === 'consent' && pauseEnds > 0 && <PauseScreen ends={pauseEnds} onReturn={() => setPauseEnds(0)} breatheButton={breatheButton} />}
+
+          {stage === 'consent' && pauseEnds === 0 && restEnds > 0 && (
             <section className="space-y-5" aria-labelledby="coach-title">
               <h1 id="coach-title" ref={headingRef} tabIndex={-1} className="text-2xl outline-none md:text-3xl">
                 The coach is resting for now
@@ -453,7 +458,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
             </section>
           )}
 
-          {stage === 'consent' && restEnds === 0 && (
+          {stage === 'consent' && pauseEnds === 0 && restEnds === 0 && (
             <section className="space-y-5" aria-labelledby="coach-title">
               <h1 id="coach-title" ref={headingRef} tabIndex={-1} className="text-2xl outline-none md:text-3xl">
                 A short conversation with the Nenya coach
