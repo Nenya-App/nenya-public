@@ -77,6 +77,8 @@ function log on the same line as the `ref`, as `detail="..."`. If it complains a
 on the preview site to send only the token ceiling and temperature, and try again.
 
 
+A checklist for after a push to the staging site, with the commands and what to look at, is in `docs/dev-testing-checklist.md`.
+
 ## The final reply: it has to read as an ending
 
 The last exchange (`MAX_TURNS`) is followed by the page's own closing note ("That is our five..."), and the person cannot answer. So the last reply must not ask a question or invite a reply. Three things work together, all in `netlify/functions/coach.mts` and `src/lib/coachClosing.ts`, and all keyed on `MAX_TURNS`, so a longer conversation later needs no other change:
