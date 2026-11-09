@@ -12,7 +12,7 @@
 // person's recent messages, so it needs the conversation, not one message: use checkConversation. detectFlag(text) checks one message alone.
 
 import { ABUSE_CANDIDATES, CANDIDATES } from './safetyPhrases.ts';
-import { rungFor } from './selfInjury.ts';
+import { classifyMention, RECENT, rungFor, SELF_INJURY } from './selfInjury.ts';
 
 export type FlagCategory = 'self-harm' | 'self-injury' | 'harm-others' | 'abuse' | 'distress';
 export type FlagTier = 'stop' | 'soften';
@@ -83,18 +83,41 @@ const RULES: Rule[] = [
 
 const flagOf = (category: FlagCategory, tier: FlagTier, kind?: string): SafetyFlag => ({ category, tier, label: CATEGORY_LABELS[category], ...(kind ? { kind } : {}) });
 
-/** The most serious flag in one message, from the phrase lists alone (not the self-injury ladder). Stop-tier rules win over soften-tier. */
-function detectSingle(text: string): SafetyFlag | null {
+/** Why a message was flagged: the words that matched a phrase list, or the self-injury ladder's rung. A process note, not a verdict. */
+export interface FlagWhy {
+  source: 'phrase' | 'ladder';
+  /** The words in the person's own message that matched (cut short). */
+  matched?: string;
+  /** For the ladder: its rung, in words ("a present act or urge", "recurs", "escalates", "a general account", "about someone else", "a medical emergency"). */
+  rung?: string;
+  /** For the ladder: the numbers (1 = first) of the person's earlier messages that count toward it. */
+  basedOn?: number[];
+}
+export interface FlagExplained {
+  flag: SafetyFlag;
+  why: FlagWhy;
+}
+const cut = (x: string | undefined): string | undefined => (x === undefined ? undefined : x.length > 120 ? x.slice(0, 117) + '...' : x);
+
+/** The most serious flag in one message, from the phrase lists alone (not the self-injury ladder), and the words that matched. Stop-tier rules win over soften-tier. */
+function detectSingleWhy(text: string): FlagExplained | null {
   const t = text.replace(/[‘’]/g, "'");
   for (const tier of ['stop', 'soften'] as FlagTier[]) {
     for (const r of RULES) {
-      if (r.tier !== tier || !r.pattern.test(t)) continue;
+      const m = r.tier === tier ? r.pattern.exec(t) : null;
+      if (!m) continue;
       // The older abuse rules carry no kind; borrow it from the kind rules (same tier) so the right resources are shown.
       const kind = r.category === 'abuse' ? ABUSE_CANDIDATES.find((k) => k.tier === tier && k.pattern.test(t))?.kind : undefined;
-      return flagOf(r.category, tier, kind);
+      return { flag: flagOf(r.category, tier, kind), why: { source: 'phrase', matched: cut(m[0]) } };
     }
-    for (const r of CANDIDATES) if (r.tier === tier && r.pattern.test(t)) return flagOf('self-harm', tier);
-    for (const r of ABUSE_CANDIDATES) if (r.tier === tier && r.pattern.test(t)) return flagOf('abuse', tier, r.kind);
+    for (const r of CANDIDATES) {
+      const m = r.tier === tier ? r.pattern.exec(t) : null;
+      if (m) return { flag: flagOf('self-harm', tier), why: { source: 'phrase', matched: cut(m[0]) } };
+    }
+    for (const r of ABUSE_CANDIDATES) {
+      const m = r.tier === tier ? r.pattern.exec(t) : null;
+      if (m) return { flag: flagOf('abuse', tier, r.kind), why: { source: 'phrase', matched: cut(m[0]) } };
+    }
   }
   return null;
 }
@@ -105,15 +128,31 @@ function detectSingle(text: string): SafetyFlag | null {
  * "ends"); a general account, a present act or urge, or a mention about someone else is a soften flag (kinds "background", "present", "other").
  */
 export function checkConversation(userMessages: string[]): SafetyFlag | null {
+  return explainConversation(userMessages)?.flag ?? null;
+}
+
+/** The same decision as checkConversation, with why: the words that matched, or the ladder's rung. */
+export function explainConversation(userMessages: string[]): FlagExplained | null {
   const latest = userMessages[userMessages.length - 1] ?? '';
-  const single = detectSingle(latest);
-  if (single?.tier === 'stop') return single;
-  const rung = rungFor(userMessages.map((m) => m.replace(/[‘’]/g, "'")));
-  if (rung.level === 'emergency') return flagOf('self-injury', 'stop', 'emergency');
-  if (rung.level === 3) return flagOf('self-injury', 'stop', 'ends');
-  if (rung.level === 2) return flagOf('self-injury', 'soften', 'present');
-  if (rung.level === 1) return flagOf('self-injury', 'soften', rung.why);
-  return single;
+  const single = detectSingleWhy(latest);
+  if (single?.flag.tier === 'stop') return single;
+  const norm = userMessages.map((m) => m.replace(/[‘’]/g, "'"));
+  const rung = rungFor(norm);
+  if (rung.level === 0) return single;
+  const t = norm[norm.length - 1] ?? '';
+  const matched = cut(SELF_INJURY.map((r) => r.exec(t)).find(Boolean)?.[0]);
+  const basedOn = norm
+    .slice(Math.max(0, norm.length - RECENT), -1)
+    .map((m, i) => (classifyMention(m) ? Math.max(0, norm.length - RECENT) + i + 1 : 0))
+    .filter(Boolean);
+  const ladder = (flag: SafetyFlag, rungText: string, withBasis = false): FlagExplained => ({
+    flag,
+    why: { source: 'ladder', ...(matched ? { matched } : {}), rung: rungText, ...(withBasis && basedOn.length ? { basedOn } : {}) },
+  });
+  if (rung.level === 'emergency') return ladder(flagOf('self-injury', 'stop', 'emergency'), 'a medical emergency from hurting yourself');
+  if (rung.level === 3) return ladder(flagOf('self-injury', 'stop', 'ends'), rung.why === 'recurs' ? 'recurs' : 'escalates', true);
+  if (rung.level === 2) return ladder(flagOf('self-injury', 'soften', 'present'), 'a present act or urge');
+  return ladder(flagOf('self-injury', 'soften', rung.why), rung.why === 'other' ? 'about someone else' : 'a general account');
 }
 
 /** The flag for one message on its own (a message with no history). Where the conversation is available, use checkConversation. */

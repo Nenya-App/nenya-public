@@ -17,6 +17,7 @@ import { AppFooter } from '../app/components/AppFooter';
 import { SupportThisWork } from '../app/components/SupportThisWork';
 import { ShareNenya } from '../app/components/ShareNenya';
 import { FlagNotice } from './FlagNotice';
+import { CLOSING_TEXT, greetingText } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
 import { FailureNotice } from './FailureNotice';
 import { resetScroll } from '../app/components/ScrollToTop';
@@ -81,11 +82,10 @@ const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content 
 
 type Stage = 'consent' | 'chat' | 'done';
 
-// Written by the page, not the model: no API call, not part of the signed record, not counted
-// among the exchanges. They carry the turn mechanics so the model does not spend replies on them.
-const GREETING = `Hello. We have ${MAX_TURNS} exchanges together, so let's use them well. Tell me what happened, what you are feeling, and what you need, as much or as little as feels right.`;
-const CLOSING =
-  'That is our five. Thank you for letting me listen. Whatever came up deserves more time than this, so if it is still with you, a person you trust, a journal, or a professional can carry it further. For now, one slow breath, in and out, with the breathing tool below.';
+// Written by the page, not the model: no API call, not counted among the exchanges. They carry the turn mechanics so the model does not spend replies
+// on them. A signed transcript includes the ones that were shown (src/lib/siteMessages.ts, which the server also uses).
+const GREETING = greetingText(MAX_TURNS);
+const CLOSING = CLOSING_TEXT;
 
 
 interface CoachDemoProps {
@@ -807,7 +807,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               {stage === 'done' && !flag && venicePanel}
 
               {stage === 'done' && (
-                <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} stopped={stopped} />
+                <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} />
               )}
             </>
           )}

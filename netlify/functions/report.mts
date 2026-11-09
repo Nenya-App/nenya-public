@@ -66,6 +66,21 @@ function problem(signed: unknown): string | null {
     if (!m || m.role !== role || typeof m.content !== 'string' || m.content.length < 1 || m.content.length > (role === 'user' ? 500 : 3000)) return 'shape';
   }
   if (t.context !== undefined && (typeof t.context !== 'string' || t.context.length > 2500)) return 'shape';
+  if (t.checks !== undefined) {
+    if (!Array.isArray(t.checks) || t.checks.length > 5) return 'shape';
+    for (const c of t.checks) {
+      if (!c || !Number.isInteger(c.message) || c.message < 0 || c.message >= t.messages.length || (c.tier !== 'stop' && c.tier !== 'soften') || typeof c.category !== 'string' || (c.source !== 'phrase' && c.source !== 'ladder')) return 'shape';
+      if ((c.kind !== undefined && typeof c.kind !== 'string') || (c.matched !== undefined && (typeof c.matched !== 'string' || c.matched.length > 130)) || (c.rung !== undefined && typeof c.rung !== 'string') || (c.basedOn !== undefined && (!Array.isArray(c.basedOn) || c.basedOn.length > 5 || c.basedOn.some((n: unknown) => !Number.isInteger(n))))) return 'shape';
+    }
+  }
+  if (t.site !== undefined) {
+    const kinds = new Set(['greeting', 'closing', 'notice']);
+    if (!Array.isArray(t.site) || t.site.length > 4) return 'shape';
+    for (const x of t.site) {
+      if (!x || !kinds.has(x.kind) || !Number.isInteger(x.after) || x.after < -1 || x.after >= t.messages.length || typeof x.text !== 'string' || x.text.length > 1500) return 'shape';
+      if (x.resources !== undefined && (!Array.isArray(x.resources) || x.resources.length > 12 || x.resources.some((r: any) => !r || typeof r.name !== 'string' || typeof r.detail !== 'string' || r.name.length > 200 || r.detail.length > 300))) return 'shape';
+    }
+  }
   if (t.v === 3) {
     const m = t.meta;
     if (!m || typeof m.closed !== 'boolean' || !Number.isInteger(m.exchanges) || typeof m.build !== 'string' || typeof m.model !== 'string' || typeof m.instructions !== 'string') return 'shape';
@@ -139,7 +154,7 @@ export default async (req: Request): Promise<Response> => {
 
   const { transcript, receipt } = body.signed as { transcript: SignedTranscript; receipt: Receipt };
   const note = typeof body.note === 'string' ? sanitizePlainText(body.note, MAX_NOTE) : '';
-  const readable = readableTranscript(transcript.messages, transcript.session, receipt, transcript.context ?? '', transcript.meta);
+  const readable = readableTranscript(transcript.messages, transcript.session, receipt, transcript.context ?? '', transcript.meta, transcript.site ?? [], transcript.checks ?? []);
   if (readable.length > MAX_READABLE) return refuse('size');
 
   let recorded: string | null = null;

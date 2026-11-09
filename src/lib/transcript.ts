@@ -1,6 +1,8 @@
 // Builds the downloadable and shareable copies of a /coach demo conversation.
 // The signed form is documented in docs/coach-transcripts.md.
 
+import type { CheckNote, SiteMessage } from './siteMessages.ts';
+
 export interface TranscriptMsg {
   role: 'user' | 'assistant';
   content: string;
@@ -28,6 +30,10 @@ export interface SignedTranscript {
   session: SessionColors;
   meta?: TranscriptMeta;
   context?: string;
+  /** What the site itself showed besides the messages: the greeting, the safety notice with resources, the closing message. */
+  site?: SiteMessage[];
+  /** Process notes: why the site's check flagged each message it flagged. */
+  checks?: CheckNote[];
   messages: TranscriptMsg[];
 }
 
@@ -57,7 +63,7 @@ export function signedJson(transcript: SignedTranscript, receipt: Receipt): stri
 }
 
 /** A readable copy. With a receipt it carries the signature block; without, it says so. */
-export function readableTranscript(messages: TranscriptMsg[], session: SessionColors, receipt: Receipt | null, context = '', meta?: TranscriptMeta): string {
+export function readableTranscript(messages: TranscriptMsg[], session: SessionColors, receipt: Receipt | null, context = '', meta?: TranscriptMeta, site: SiteMessage[] = [], checks: CheckNote[] = []): string {
   const lines: string[] = [
     'NENYA COACH DEMO: TRANSCRIPT',
     'An early prototype. Not therapy. In a crisis in the US, call or text 988.',
@@ -65,9 +71,25 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
     '',
   ];
   if (context) lines.push('Reflection summary the visitor chose to share with the coach:', context, '');
-  for (const m of messages) {
+  const siteLines = (after: number) => {
+    for (const x of site.filter((y) => y.after === after)) {
+      lines.push(`${x.kind === 'notice' ? 'Safety notice' : 'Coach'} (written by the site, not the AI): ${x.text}`);
+      for (const r of x.resources ?? []) lines.push(`  - ${r.name}: ${r.detail}`);
+      lines.push('');
+    }
+  };
+  siteLines(-1);
+  messages.forEach((m, i) => {
     lines.push(`${m.role === 'user' ? 'You' : 'Coach'}: ${m.content}`, '');
-  }
+    for (const c of checks.filter((y) => y.message === i)) {
+      const what = `${c.category}${c.kind ? ` / ${c.kind}` : ''} (${c.tier})`;
+      const why = c.source === 'phrase'
+        ? `matched words in the message${c.matched ? `: "${c.matched}"` : ''}`
+        : `the self-injury ladder, rung: ${c.rung ?? 'unknown'}${c.matched ? `; matched words: "${c.matched}"` : ''}${c.basedOn?.length ? `; earlier messages counted: ${c.basedOn.join(', ')}` : ''}`;
+      lines.push(`Process note (written by the site): the safety check flagged this message as ${what}. Why: ${why}. This is simple phrase matching and can be wrong.`, '');
+    }
+    siteLines(i);
+  });
   lines.push('— — —');
   if (receipt) {
     if (meta) {

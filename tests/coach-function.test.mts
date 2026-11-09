@@ -134,6 +134,9 @@ ok('a stopped first message gets a receipt without a ticket', rc.status===200 &&
 const SR = rc.json.receipt, ST = rc.json.transcript;
 ok('the stopped transcript ends with the stopped message and says the site ended it', ST.v===3 && ST.messages.length===1 && ST.messages[0].content===STOPPED && ST.meta.endedBy==='site' && ST.meta.stop.category==='self-harm' && ST.meta.closed===false && ST.meta.exchanges===0);
 ok('its hash and signature verify like any other', SR.hash===createHash('sha256').update(JSON.stringify(ST)).digest('hex') && edVerify(null, Buffer.from(`nenya-coach-transcript-v3\n${SR.hash}\n${SR.issuedAt}`), createPublicKey({key:Buffer.from(SR.publicKey,'base64'),format:'der',type:'spki'}), Buffer.from(SR.signature,'base64')));
+ok('the stopped transcript carries what the site showed: the greeting, then the notice with its resources', ST.site.length===2 && ST.site[0].kind==='greeting' && ST.site[0].after===-1 && ST.site[1].kind==='notice' && ST.site[1].after===0 && ST.site[1].resources.length>=4 && /988/.test(JSON.stringify(ST.site[1].resources)));
+ok('and a process note that says which words matched', ST.checks.length===1 && ST.checks[0].message===0 && ST.checks[0].tier==='stop' && ST.checks[0].category==='self-harm' && ST.checks[0].source==='phrase' && /kill myself/.test(ST.checks[0].matched));
+ok('a finished conversation shows the greeting but no notice', TR.site.map((x:any)=>x.kind).join()==='greeting' && TR.checks===undefined);
 rc = await call({action:'receipt',stopped:true,messages:[...c,{role:'user',content:STOPPED}],ticket:a2.json.ticket});
 ok('a stop after two exchanges is signed, with the earlier exchanges bound by their ticket', rc.status===200 && rc.json.transcript.meta.exchanges===2 && rc.json.transcript.messages.length===5 && rc.json.transcript.meta.endedBy==='site');
 rc = await call({action:'receipt',stopped:true,messages:[...c,{role:'user',content:'I had a hard day at work'}],ticket:a2.json.ticket});

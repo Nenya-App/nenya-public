@@ -63,7 +63,7 @@ ok('a browser without this signature support says so, rather than calling the fi
 ok('a browser with no crypto at all says so too', (await verifySigned(FILE, { subtle: { digest: undefined } as any }).catch(() => ({ status: 'unsupported' }))).status !== 'valid');
 
 // ---- the readable copy
-const readable = readableTranscript(m, S, rc.receipt, '', rc.transcript.meta);
+const readable = readableTranscript(m, S, rc.receipt, '', rc.transcript.meta, rc.transcript.site, rc.transcript.checks);
 const txt = readableWithBlock(readable, FILE);
 ok('a readable copy ends with the marked block', txt.includes(BLOCK_BEGIN) && txt.trim().endsWith('-----END NENYA SIGNED TRANSCRIPT-----') && signedBlock(FILE).split('\n').every((l) => l.length <= 76 || l.startsWith('-----')));
 const got = extractSigned(txt);

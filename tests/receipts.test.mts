@@ -61,7 +61,7 @@ const unk = await post({ action: 'receipt', messages: five.m, ticket: five.ticke
 ok('the build never says unknown', unk.transcript.meta.build !== 'unknown' && unk.transcript.meta.build === full.transcript.meta.build);
 ok('the model is recorded', full.transcript.meta.model === 'deepseek-v3.2');
 ok('the instruction fingerprint is 16 hex characters and stable', /^[0-9a-f]{16}$/.test(full.transcript.meta.instructions) && full.transcript.meta.instructions === __instructionsFingerprint() && __instructionsFingerprint() === __instructionsFingerprint());
-ok('the key order is version, session, meta, messages', Object.keys(full.transcript).join() === 'v,session,meta,messages');
+ok('the key order is version, session, meta, site, messages', Object.keys(full.transcript).join() === 'v,session,meta,site,messages');
 ok('the receipt is version 3 and its hash is of the transcript as returned', full.receipt.version === 3 && full.receipt.hash === createHash('sha256').update(JSON.stringify(full.transcript)).digest('hex'));
 
 // counts and the hash log

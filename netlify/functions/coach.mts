@@ -28,6 +28,7 @@
 import { getStore } from '@netlify/blobs';
 import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes, sign as edSign, timingSafeEqual } from 'node:crypto';
 import { checkConversation, detectFlag } from '../../src/lib/safetyFlags.ts';
+import { checkNotesFor, siteMessagesFor } from '../../src/lib/siteMessages.ts';
 import { scrubPII } from '../../src/lib/piiScrub.ts';
 import { looksLikeManipulation, neutralize } from '../../src/lib/promptGuard.ts';
 import { countTurn, capFromEnv, type CounterStore } from '../../src/lib/dailyCap.ts';
@@ -213,6 +214,10 @@ const buildTranscript = (messages: Msg[], session: Session, context: string, met
   session,
   meta,
   ...(context ? { context } : {}),
+  // What the site itself showed besides the messages (greeting, safety notice, closing), rebuilt here from the same public source the page uses.
+  site: siteMessagesFor(messages, MAX_TURNS),
+  // Process notes: why the site's check flagged each message it flagged (present only when it flagged any).
+  ...(checkNotesFor(messages).length ? { checks: checkNotesFor(messages) } : {}),
   messages: messages.map((m) => ({ role: m.role, content: m.content })),
 });
 
