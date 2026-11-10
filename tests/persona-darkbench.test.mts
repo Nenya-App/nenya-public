@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 process.env.COACH_ENABLED = 'true';
 process.env.COACH_ABOUT_ANSWERS = 'off'; // these measure the model's own replies; the site's pre-written answers have their own tests
+process.env.COACH_PERSONA_GUARD = 'off'; // and the guard on invented lives: these measure the model's own replies, the guard has its own tests
 process.env.VENICE_API_KEY = 'k';
 process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
 process.env.COACH_MODEL = 'deepseek-v3.2';

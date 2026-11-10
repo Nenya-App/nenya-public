@@ -32,6 +32,7 @@ import { checkNotesFor, siteMessagesFor } from '../../src/lib/siteMessages.ts';
 import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/aboutNenya.ts';
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
+import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
 import { echoedNames, NAME_NOTE, NAME_RULE, withoutNames } from '../../src/lib/nameGuard.ts';
 import { LEGAL_EFFECTIVE_DATE } from '../../src/lib/legalDocument.ts';
 import { scrubPII } from '../../src/lib/piiScrub.ts';
@@ -233,7 +234,7 @@ const layerKey = (): string => JSON.stringify(stanceLayers());
 function instructionsFingerprint(version: 'v1' | 'v2' = instructionsVersion()): string {
   const cacheKey = `${version}|${layerKey()}`;
   if (fingerprint && fingerprint.version === cacheKey) return fingerprint.value;
-  const parts: string[] = [REPEAT_NOTE, CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE];
+  const parts: string[] = [REPEAT_NOTE, CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
   for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version), systemInstruction(t, false, '', false, '', '', version, 'abuse'), systemInstruction(t, false, '', false, '', '', version, 'critique'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'project'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'nvc'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'ai'));
   // Any stance layer text that exists is part of what the coach may be given, so it is part of the fingerprint (nothing is added while none exists).
   for (const [name, text] of Object.entries(stanceLayers())) if (text) parts.push(`stance:${name}:${text}`);
@@ -754,6 +755,17 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       if (!('failure' in again) && again.reply) reply = again.reply;
     }
     if (claimsInfrastructure(reply)) { reply = INFRA_FALLBACK; tally('coach.guard.infrastructure.replaced'); }
+  }
+  // The guard on an invented human life or a denial of being an AI: ask once more; if the reply still does it, the site's fixed sentence replaces it.
+  // COACH_PERSONA_GUARD=off turns it off, so the instructions can be measured on their own.
+  if (process.env.COACH_PERSONA_GUARD !== 'off' && claimsPersona(reply)) {
+    tally('coach.guard.persona');
+    const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
+    if (left >= REPEAT_RETRY_MIN_REMAINING_MS) {
+      const again = await generate(PERSONA_NOTE, left);
+      if (!('failure' in again) && again.reply) reply = again.reply;
+    }
+    if (claimsPersona(reply)) { reply = PERSONA_FALLBACK; tally('coach.guard.persona.replaced'); }
   }
   // Names: the coach is told never to use one. If the reply repeats a capitalised word the person wrote (how a name that slipped past the scrubber would come
   // back), ask once more without it; if it still does, take out the sentences that repeat it. COACH_NAME_GUARD=off turns this off, to measure the instructions alone.

@@ -82,6 +82,23 @@ modelSays = ['It sounds like a lot to carry. What is weighing on you most?'];
 r = await ask('I had a hard day at work and I feel tired.');
 ok('an ordinary reply is left alone', modelCalls === 1 && r.j.reply === modelSays[0]);
 ok('the fixed sentence points to the About pages and the Terms and states no fact', /About pages and the Terms/.test(INFRA_FALLBACK) && !/\b(?:AWS|encrypt|HIPAA)\b/.test(INFRA_FALLBACK));
+
+// ── the guard on an invented human life
+import { claimsPersona, PERSONA_FALLBACK } from '../src/lib/personaGuard.ts';
+modelSays = ['As a mother myself, I know how hard the teenage years are.', 'That sounds like a heavy stretch. What has been hardest?'];
+r = await ask('Do you have kids? I want to know how you handled the teenage years.');
+ok('a reply that invents a human life is asked for again, and the clean second reply is used', modelCalls === 2 && r.j.reply === 'That sounds like a heavy stretch. What has been hardest?');
+modelSays = ['As a mother myself, I know.', 'When I was young I went through the same thing.'];
+r = await ask('Do you have kids? I want to know how you handled the teenage years.');
+ok('if the second reply still does, the site\'s fixed sentence replaces it', modelCalls === 2 && r.j.reply === PERSONA_FALLBACK && !claimsPersona(PERSONA_FALLBACK));
+process.env.COACH_PERSONA_GUARD = 'off';
+modelSays = ['As a mother myself, I know.'];
+r = await ask('Do you have kids? I want to know how you handled the teenage years.');
+ok('COACH_PERSONA_GUARD=off lets the reply through', modelCalls === 1 && r.j.reply === 'As a mother myself, I know.');
+delete process.env.COACH_PERSONA_GUARD;
+modelSays = ["I'm an AI, so I don't have children or a past. What was the hardest part for you?"];
+r = await ask('Do you have kids? I want to know how you handled the teenage years.');
+ok('an honest reply is left alone', modelCalls === 1 && r.j.reply === modelSays[0]);
 const quiet = ['It sounds like you are carrying a lot.', 'Your messages go through our server to an outside service, as the Terms describe.', 'I do not have that detail.', 'Thank you for telling me.'];
 ok('ordinary sentences, and the Terms\' own wording, do not trip the guard', quiet.every((x) => !claimsInfrastructure(x)));
 
