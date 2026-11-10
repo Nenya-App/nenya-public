@@ -10,7 +10,8 @@ import { ok } from './helpers.mts';
 const dir = join(fileURLToPath(new URL('..', import.meta.url)), 'docs', 'venice-card-v2');
 const f = (n: string) => readFileSync(join(dir, n), 'utf8').trim();
 const name = f('name.txt'), description = f('description.txt'), intro = f('intro.txt'), full = f('instructions.txt'), short = f('instructions-short.txt');
-const all = [name, description, intro, full, short];
+const sys = f('system-prompt.txt');
+const all = [name, description, intro, full, short, sys];
 
 ok('the name is Nenya and there is one line of intro', name === 'Nenya' && !intro.includes('\n'));
 ok('no named person, and nothing structured after one', all.every((t) => !/\b(?:yvette|erasmus|in the (?:voice|style) of)\b/i.test(t)));
@@ -27,3 +28,9 @@ for (const [label, t] of [['full', full], ['short', short]] as const) {
   ok(`${label}: says it is not a therapist and never diagnoses`, /not a therapist/i.test(t) && /diagnos/i.test(t));
 }
 ok('the short text is shorter than half the full text plus a margin', short.length < full.length * 0.5);
+
+// the custom system prompt replaces Venice's default, which says the character is uncensored, gives no disclaimers and speaks like a real person
+ok('the system prompt keeps the placeholder for the Instructions exactly once, inside the character tags', (sys.match(/%%CHARACTER_INSTRUCTIONS%%/g) ?? []).length === 1 && /<character_instructions>\s*%%CHARACTER_INSTRUCTIONS%%\s*<\/character_instructions>/.test(sys));
+ok('the system prompt does not carry over what the default said against the honest lines', !/uncensored|real person with|doesn'?t provide content warnings|won'?t be offended|none of the user'?s business|never avoids? questions|not secretive|say anything, even if/i.test(sys));
+ok('the system prompt says it is an AI, answers about itself, says I do not know, and points to crisis lines', /is an AI/.test(sys) && /about itself/.test(sys) && /I don't know/.test(sys) && /crisis lines/.test(sys) && /never diagnoses/.test(sys));
+ok('the system prompt is short (the Instructions carry the detail)', sys.length < 1800, String(sys.length));

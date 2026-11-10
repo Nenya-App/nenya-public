@@ -9,7 +9,7 @@ Status: **draft, 2026-11-10, nothing pasted into Venice yet.** Scope: `docs/veni
 | Intro Statement | `intro.txt` | One line, 129 characters. |
 | Instructions | `instructions.txt` | about 3,570 characters. The full text. |
 | Instructions (if the limit is lower) | `instructions-short.txt` | 1,485 characters: the same rules, compressed. Use whichever fits Venice's limit (unknown: see the scope's questions). |
-| Add Custom System Prompt | (none yet) | Unknown whether it replaces or adds to Venice's own prompt. Decide after Venice answers; if it is the better home for the rules, the same text goes there. |
+| Add Custom System Prompt | `system-prompt.txt` | **Use it.** Venice says a custom prompt "will override the default Venice system prompt". The default (owner pasted it, 2026-11-10) tells the character it is uncensored, gives no disclaimers, and speaks like a real person with complex emotions and motives, which pulls against everything the Instructions say. The replacement keeps the default's frame and its `%%CHARACTER_INSTRUCTIONS%%` placeholder (where the Instructions field is inserted) and swaps the bullets for honest ones. **Check on a test character that the placeholder is filled** (ask "are you a real person?"; if the reply claims to be one, the Instructions did not arrive: paste `instructions.txt` in place of the placeholder instead). |
 | Context | (none) | Not needed for a card this short. |
 | Memories | (none) | Leave Documents, Notes and Extraction empty. |
 
