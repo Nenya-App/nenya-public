@@ -21,6 +21,8 @@ import { ReportShare, type ReportInput } from './ReportShare';
 import { openingText } from '../lib/reportShare';
 import type { SharedText } from '../lib/reportFragments';
 import { LearningOffer } from './LearningCard';
+import { WordPanel, type Picked } from './WordPanel';
+import { addWordToDraft } from '../lib/feelingsNeeds';
 import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
@@ -133,6 +135,16 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const [messages, setMessages] = useState<Msg[]>([]);
   const [ticket, setTicket] = useState<string | undefined>();
   const [draft, setDraft] = useState('');
+  // The word lists: open on the first exchange, on the needs list once the coach has answered once (unless the person chose a tab themselves).
+  const [wordsOpen, setWordsOpen] = useState(true);
+  const [wordsTab, setWordsTab] = useState<'feelings' | 'needs'>('feelings');
+  const [tabChosen, setTabChosen] = useState(false);
+  const [picked, setPicked] = useState<Picked[]>([]);
+  const pickWord = (p: Picked): void => {
+    const on = picked.some((x) => x.kind === p.kind && x.word === p.word);
+    setPicked(on ? picked.filter((x) => !(x.kind === p.kind && x.word === p.word)) : [...picked, p]);
+    if (!on) setDraft((d) => addWordToDraft(d, p.kind, p.word, MAX_CHARS));
+  };
   const [sending, setSending] = useState(false);
   const [failure, setFailure] = useState<FailureInfo | null>(null);
   const [blocked, setBlocked] = useState(false);
@@ -160,7 +172,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
   useEffect(() => {
     onActiveChange?.(messages.length > 0);
-  }, [messages.length, onActiveChange]);
+    if (messages.length >= 2 && !tabChosen) setWordsTab('needs');
+  }, [messages.length, onActiveChange, tabChosen]);
 
   // Quiet time only counts while the page is waiting on the person: it pauses while a reply is on its way.
   const quiet = quietState(timeoutChoice, sending ? 0 : now - activeAt);
@@ -787,6 +800,17 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   <label htmlFor="coach-input" className="sr-only">
                     Your message
                   </label>
+                  <WordPanel
+                    open={wordsOpen}
+                    onToggle={setWordsOpen}
+                    tab={wordsTab}
+                    onTab={(t) => {
+                      setWordsTab(t);
+                      setTabChosen(true);
+                    }}
+                    picked={picked}
+                    onPick={pickWord}
+                  />
                   <Textarea
                     id="coach-input"
                     value={draft}

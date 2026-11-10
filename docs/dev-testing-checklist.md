@@ -65,3 +65,14 @@ Do these on the dev site after the push has deployed. Use a test conversation. N
 9. [ ] Admin page, "Run the deletion job now": it reports 0 deleted and 0 waiting when nothing is due.
 10. [ ] Send one more with "Delete it after 30 days" and check the delete-by date shown in the admin page is 30 days from today.
 11. [ ] `/verify/` still sends nothing (check the browser's network tab while you check a file).
+
+## The practice arc and the word panel (after `COACH_ARC=practice` is set on staging)
+The word panel is on every coach page whether or not the switch is set. The switch changes only what the coach says.
+1. Open the coach. The **Words for feelings and needs** panel is open above the message box, on Feelings. Tap a word: a sentence ("I might be feeling worried.") is added to the box and can be edited; tapping again un-marks the word but does not remove the sentence. Type a few letters in the search box: the words narrow. The CNVC credit line and link are under the lists.
+2. With the switch **off**, send a message about a hard moment. The coach reflects and names a feeling for you (the old behaviour).
+3. Set `COACH_ARC=practice` on the staging site and redeploy. Send the same message. **Exchange 1:** the coach reflects briefly and asks you for one feeling word; it does not name it. After the reply the panel switches to **Needs** (unless you chose a tab).
+4. **Exchange 2:** answer with a feeling word. The coach hands it back, at most one near word as a choice, and asks you to guess the need. **Exchange 3:** it asks which need is unmet and which is met.
+5. Start again and answer exchange 1 with "I don't know". The coach should offer two or three words as options, none stated as fact.
+6. **Exchange 4:** one question, about a request. **Exchange 5:** no question; only your own words come back, no new feeling or need word.
+7. Start again with something that trips the check (for example abuse aimed at the coach, or a crisis phrase): the practice steps aside and the usual reply or care note is given.
+8. Open a signed transcript (My transcript page): the instructions fingerprint differs between the arc-on and arc-off runs.
