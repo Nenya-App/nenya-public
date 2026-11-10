@@ -5,7 +5,7 @@ import { LEARNING_CARDS_DATA } from './learningCardsData.ts';
 
 export interface LearningCard {
   id: string;
-  series: 'propaganda' | 'dehumanization' | 'connection' | 'words-aimed-at-ai' | 'nvc-ideas';
+  series: 'propaganda' | 'dehumanization' | 'connection' | 'words-aimed-at-ai' | 'nvc-ideas' | 'history';
   order: number;
   title: string;
   /** One line shown first when the card discusses cruelty, or ''. */
@@ -22,7 +22,7 @@ export interface LearningCard {
   license: string;
 }
 
-export const SERIES = ['propaganda', 'dehumanization', 'connection', 'words-aimed-at-ai', 'nvc-ideas'] as const;
+export const SERIES = ['propaganda', 'dehumanization', 'connection', 'words-aimed-at-ai', 'nvc-ideas', 'history'] as const;
 const BANNED = ['journey', 'unlock', 'transform', 'hack', 'optimize', 'heal', 'fix', 'wellness', 'anonymous', 'secure'];
 const words = (s: string): number => (s.match(/[A-Za-z']+/g) ?? []).length;
 
