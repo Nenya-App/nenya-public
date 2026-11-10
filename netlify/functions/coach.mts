@@ -12,6 +12,7 @@
 //   COACH_ENABLED        plain    "true" to accept requests
 //   COACH_IP_SECRET      secret   long random string for the per-connection daily code; without it that limit is off
 //   COACH_ARC            plain    optional, 'practice' makes the coach ask for the person's own feeling and need words (docs/coach-practice-arc-scope.md; off by default)
+//   COACH_ARC_GUARD      plain    optional, 'off' skips the practice arc's guard (naming, confirming and echoing are then left as the model wrote them)
 //   COACH_IP_TURNS       plain    optional, turns a connection may use a day (default 10, two full conversations)
 //   COACH_DAILY_CAP      plain    optional, turns the whole site may use a day (default 500)
 //   COACH_OWNER_TOKEN_HASH secret optional, SHA-256 (hex) of the owner's token; the header x-nenya-owner with the token
@@ -57,7 +58,7 @@ import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
 import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCritiqueThanks, type CritiqueTarget, type Hostility } from '../../src/lib/hostility.ts';
-import { ARC_CLOSE, ARC_CORE, WORDS_ONLY_NOTE, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
+import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_NOTE, WORDS_ONLY_NOTE, guardedProblems, repairArc, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
 import type { ModuleGroup } from '../../src/lib/coachModules.ts';
@@ -262,7 +263,7 @@ const layerKey = (): string => JSON.stringify(stanceLayers());
 function instructionsFingerprint(version: 'v1' | 'v2' = instructionsVersion()): string {
   const cacheKey = `${version}|${layerKey()}|${practiceArcOn() ? 'arc' : ''}`;
   if (fingerprint && fingerprint.version === cacheKey) return fingerprint.value;
-  const parts: string[] = [WORDS_ONLY_NOTE, gapText({ feeling: true, need: false }), gapText({ feeling: false, need: true }), gapText({ feeling: true, need: true }), REPEAT_NOTE, CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
+  const parts: string[] = [ARC_NOTE, ARC_INVITE, WORDS_ONLY_NOTE, gapText({ feeling: true, need: false }), gapText({ feeling: false, need: true }), gapText({ feeling: true, need: true }), REPEAT_NOTE, CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
   for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version), systemInstruction(t, false, '', false, '', '', version, 'abuse'), systemInstruction(t, false, '', false, '', '', version, 'critique'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'project'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'nvc'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'ai'));
   if (practiceArcOn()) for (let t = 1; t <= MAX_TURNS; t++) parts.push(`arc:${t}:${arcTurnLine(t, MAX_TURNS, false)}:${arcTurnLine(t, MAX_TURNS, true)}`, ARC_CORE, ARC_CLOSE);
   // Any stance layer text that exists is part of what the coach may be given, so it is part of the fingerprint (nothing is added while none exists).
@@ -392,7 +393,7 @@ const V2_DISTRESS =
 function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: 'v1' | 'v2' = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = '', arc: { stuck: boolean } | null = practiceArcOn() ? { stuck: false } : null, wordsOnly = false, gap = ''): string {
   const v2 = version === 'v2';
   // The practice arc (docs/coach-practice-arc-scope.md) replaces the "name the feeling or need underneath" line, and steps aside for distress and hostility.
-  const practice = !!arc && !softened && !hostile;
+  const practice = !!arc && !softened && !hostile && !direct; // a how-to question is answered first, as before
   const phase = closingPhase(turn, MAX_TURNS);
   const finalTurn = phase === 'close';
   const parts = [
@@ -437,6 +438,8 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
       'This is the final exchange, and the person will not be able to reply: the conversation ends after your message, and the page adds its own closing note straight after it. So write a closing, not a turn in a conversation. This overrides any earlier instruction in these notes to ask a question or to offer a next step. Do not ask any question, and do not invite the person to share, reply, or tell you more. Do not open a new topic or offer a new suggestion. In three or four sentences: first say, in their own words, what you heard in what they shared; then name one thing that is theirs to keep, such as something they already did, said, or know; then end with one calm, complete statement that settles it. End on a full stop. Do not say goodbye or thank them for talking, and do not announce that the conversation is ending: the page does that.'
     );
     if (answerFirst) parts.push('If their question has not been answered yet, answer it briefly in your first sentence or two, then close as described.');
+  } else if (phase === 'invite' && practice) {
+    parts.push(ARC_INVITE);
   } else if (phase === 'invite') {
     parts.push(
       'One exchange remains after this one. Do not open a new topic. If the person has asked for help, answer it. Then, in place of any other question, close with one short, gentle question that invites their last word: whether there is one thing they would still like to say, or hear, before the end. Do not mention how many exchanges are left.'
@@ -830,6 +833,22 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       if (!('failure' in again) && again.reply) reply = again.reply;
     }
     if (asksOrInvites(reply)) reply = settleReply(reply);
+  }
+  // The practice arc's guard: the coach is told not to name the person's feeling or need, not to check words they already gave and not to repeat picked
+  // words back. This model does it anyway, so if it did, ask once more; if it still does, take those sentences out and add one plain question (or, for picked
+  // words alone, the site's own reply). COACH_ARC_GUARD=off turns this off, to measure the instructions alone.
+  if (process.env.COACH_ARC_GUARD !== 'off' && turn < MAX_TURNS && !about && !softened && !hostile && !flag && !detectDirectQuestion(lastText) && (practiceArcOn() || isWordsOnly(lastText))) {
+    const userTexts = messages.filter((m) => m.role === 'user').map((m) => m.content);
+    const check = (r: string) => guardedProblems(r, { turn, max: MAX_TURNS, userTexts });
+    if (check(reply).length) {
+      tally('coach.guard.arc');
+      const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
+      if (left >= REPEAT_RETRY_MIN_REMAINING_MS) {
+        const again = await generate(ARC_NOTE, left);
+        if (!('failure' in again) && again.reply) reply = again.reply;
+      }
+      if (check(reply).length) { reply = repairArc(reply, { userTexts, wordsOnly: isWordsOnly(lastText) }); tally('coach.guard.arc.repaired'); }
+    }
   }
   // On a hostile turn an apology is taken out (the note asks the coach not to, and this model's habit does not always yield to it).
   if (hostile) { const cleaned = stripApologies(reply); if (cleaned !== reply) { reply = cleaned; tally('coach.turn.hostile.apology-removed'); } }

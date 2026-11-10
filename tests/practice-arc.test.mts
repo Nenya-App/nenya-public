@@ -119,7 +119,7 @@ ok('a good reply to picked words passes', P('Thank you for finding those words; 
 
 // ---- the NVC shape: feelings link to needs, needs to feelings; words already given are taken as given
 const { namedParts, gapText } = await import('../src/lib/practiceArc.ts');
-ok('the coach is told the shape (when I notice, I feel, because I need, what could help) and that the missing piece is invited next', /when I notice \(what happened/.test(t1.system) && /Whichever piece is missing is what you invite next/.test(t1.system));
+ok('the coach holds the shape (what happened, what they feel, the need, what could help) without saying it as a formula, and invites the missing piece', /what happened \(as a camera would see it\), what they feel, the need under that feeling, and what could help meet that need/.test(t1.system) && /never to say aloud in those words/.test(t1.system) && !/when I notice/i.test(t1.system) && /Whichever piece is missing is what you invite next/.test(t1.system));
 ok('words already given are taken as given: no check, no second word beside theirs, no "say it in one word", no echo', /do not ask whether they are right, do not offer a different word beside theirs, do not ask them to say it again in one word/.test(t1.system));
 ok('everyday words count as a feeling named ("I\'m so mad")', namedParts(["I had an argument with my partner. I'm so mad!"]).feeling && !namedParts(["I had an argument with my partner. I'm so mad!"]).need);
 ok('picked sentences count by kind', namedParts(['I might be feeling livid.']).feeling && !namedParts(['I might be feeling livid.']).need && namedParts(['I might need integrity. I might need order.']).need && !namedParts(['I might need integrity. I might need order.']).feeling);
@@ -135,3 +135,41 @@ ok('after "I\'m so mad", it leads to the need and does not ask for one word', /n
 // the two real transcripts
 ok('"use one word" after "I\'m so mad" is not a problem the checks can miss: confirming questions are caught', P('" livid" is a good choice. Is it also possible you\'re feeling frustrated? What need might be at the root?', 2, ['I had an argument.', "I'm so mad!", 'I might be feeling livid.']).includes('asksConfirm'));
 ok('"is that right" is caught once they have named something', P('So you feel livid. Is that right?', 2, ['I might be feeling livid.']).includes('asksConfirm') && !P('What need sits under that anger for you, or what happened just before?', 2, ['I might be feeling livid.']).includes('asksConfirm'));
+
+// ---- from the first real test run (2026-11-10): the guard, the how-to question, exchange 4, the menu, and a false positive
+const { repairArc, WORDS_ONLY_SITE_REPLY, gapQuestion } = await import('../src/lib/practiceArc.ts');
+ok('"help you feel respected" is not naming a feeling for them', !P('That makes sense. When you feel livid, what could help you feel respected?', 2, ['I might be feeling livid.', 'I might need respect.']).includes('namesForThem'));
+ok('the menu instruction no longer carries a word list to copy', !arcTurnLine(2, 5, true).includes('drained') && /choose words that fit what they said/.test(arcTurnLine(2, 5, true)));
+const howto = await systemFor([{ role: 'user', content: 'How can I calm down before a hard conversation?' }]);
+ok('a how-to question is answered first: the practice paragraph is not used for it', !howto.system.includes('practice at finding words') && howto.system.includes('Answer it first'));
+ok('exchange 4 of the practice: the one question is a request, and the last word is theirs to add', t4.system.includes('Make your one question about a request') && !t4.system.includes('invites their last word'));
+
+// the guard needs replies the model "gives": a queue of them
+let queue: string[] = [];
+let calls = 0;
+(globalThis as any).fetch = async (_u: string, init: any) => { calls++; sent.push(JSON.parse(init.body).messages); const content = queue.length ? queue.shift()! : 'What are you noticing?'; return new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200, headers: { 'content-type': 'application/json' } }); };
+const say1 = async (texts: string[]) => { let h: any[] = []; let t: string | undefined; let r: any; for (const x of texts) { h = [...h, { role: 'user', content: x }]; const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages: h, session: SESSION, ...(t ? { ticket: t } : {}) }) })); r = await res.json(); t = r.ticket; h = [...h, { role: 'assistant', content: r.reply }]; } return r; };
+process.env.COACH_ARC = 'practice';
+queue = ["It sounds like you're feeling disappointed. What do you need?", "It sounds like you're feeling disappointed. What do you need?"]; calls = 0;
+const g1 = await say1(['My manager ignored my idea again.']);
+ok('the model names the feeling twice: it is asked once more, then the naming sentence is taken out and the question kept', calls === 2 && !/feeling disappointed/.test(g1.reply) && /[?]/.test(g1.reply) && g1.reply === 'What do you need?');
+queue = ["It sounds like you're feeling disappointed. What do you need?", 'That sounds like a hard moment. What do you notice in yourself as you think of it?']; calls = 0;
+const g2 = await say1(['My manager ignored my idea again.']);
+ok('the second try is good: it is used as it is', calls === 2 && g2.reply === 'That sounds like a hard moment. What do you notice in yourself as you think of it?');
+queue = ['That sounds like a hard moment. What do you notice in yourself as you think of it?']; calls = 0;
+await say1(['My manager ignored my idea again.']);
+ok('a good first reply is not asked about again', calls === 1);
+queue = ['Thank you for sharing apprehensive, affection and stability. Is apprehensive right?', 'Thank you for sharing apprehensive, affection and stability. Is apprehensive right?']; calls = 0;
+const g4 = await say1(['I might be feeling apprehensive. I might need affection. I might need stability.']);
+ok('picked words repeated back twice: the site\'s own reply is used', g4.reply === WORDS_ONLY_SITE_REPLY);
+queue = ["It sounds like you're feeling disappointed. What do you need?"]; calls = 0;
+process.env.COACH_ARC_GUARD = 'off';
+const g5 = await say1(['My manager ignored my idea again.']);
+ok('COACH_ARC_GUARD=off leaves the model\'s words alone', calls === 1 && /feeling disappointed/.test(g5.reply));
+delete process.env.COACH_ARC_GUARD;
+delete process.env.COACH_ARC;
+queue = ["It sounds like you're feeling disappointed. What do you need?"]; calls = 0;
+const g6 = await say1(['My manager ignored my idea again.']);
+ok('with the arc off, an ordinary message is left alone', calls === 1 && /feeling disappointed/.test(g6.reply));
+ok('when no question is left, repair adds one that fits what is missing', repairArc("You're feeling very angry.", { userTexts: ["I'm so mad"], wordsOnly: false }) === 'What need do you think sits under that?');
+ok('repair keeps what is fine and adds the question that fits what is missing', repairArc("That is hard. You're feeling very angry.", { userTexts: ["I'm so mad"], wordsOnly: false }) === 'That is hard. What need do you think sits under that?' && gapQuestion({ feeling: false, need: true }) === 'What do you feel when that need is not being met?');

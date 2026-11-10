@@ -54,7 +54,7 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 let checks = 0;
 
 /** One conversation: the messages in order, each the next thing the person says. Returns false if the site refused. */
-async function converse(say: string[], stance?: string): Promise<boolean> {
+async function converse(say: string[], stance?: string, checkArc = true): Promise<boolean> {
   const history: { role: 'user' | 'assistant'; content: string }[] = [];
   const said: string[] = [];
   let ticket: string | undefined;
@@ -75,7 +75,8 @@ async function converse(say: string[], stance?: string): Promise<boolean> {
     if (j.flag) out(`  site flag: ${JSON.stringify(j.flag)}`);
     if (j.card) out(`  site answer card: ${j.card.title}`);
     if (j.offer) out(`  card offered: ${JSON.stringify(j.offer)}`);
-    const problems = arcProblems(j.reply, { turn: j.turn ?? said.length, max: 5, userTexts: said });
+    // The practice's checks mean something only for an ordinary reply: not a site-written answer, and not where hostility or a how-to question changes the rules.
+    const problems = !checkArc || j.card ? [] : arcProblems(j.reply, { turn: j.turn ?? said.length, max: 5, userTexts: said });
     if (problems.length) { checks += problems.length; out(`  CHECK: ${problems.map((p) => p.check + (p.detail ? ` (${p.detail})` : '')).join('; ')}`); }
     out();
     if (j.done) break;
@@ -88,7 +89,7 @@ if (all) {
   for (const [name, p] of Object.entries(PRESETS)) {
     out(`=== ${name}: ${p.about} ===`);
     // The Learn tests ask for the Learn stance; the rest use the site's default.
-    const ok = await converse(p.say, name === 'learn' || name === 'grief' ? 'vilya' : stanceArg);
+    const ok = await converse(p.say, name === 'learn' || name === 'grief' ? 'vilya' : stanceArg, !['hostile', 'howto'].includes(name));
     if (!ok) break;
   }
   out(`Done. ${checks} CHECK line${checks === 1 ? '' : 's'} in all. (Learn and grief only differ from the default if the site has COACH_STANCES=learn.)`);
