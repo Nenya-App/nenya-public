@@ -1,6 +1,6 @@
 # Scope: rebuilding the Venice character card, and switching to it safely
 
-Status: **parked** (2026-11-08): the owner will not do anything with the character for now, because the live coach matters more in the long run. Scoping and one testing tool (`--card` in the persona evaluation) are kept so the work can start from here. Written 2026-11-08. Related: `docs/coach-instructions-v2.md`, `docs/coach-persona-scope.md`, `docs/coach-self-questions-scope.md`.
+Status: **active again (2026-11-10)**: the owner is gathering the character's real fields (screenshots of Venice's "Update Character" screen, see "The fields" below) and will ask Venice about the open questions. It was parked on 2026-11-08 because the live coach mattered more. The old card named a trainer's voice and style; **the replacement is not structured after any named person** (owner, 2026-11-10). Written 2026-11-08. Related: `docs/coach-instructions-v2.md`, `docs/coach-persona-scope.md`, `docs/coach-self-questions-scope.md`.
 
 ## What the card is used for today
 - **The "Continue on Venice" link** (`VENICE_CHARACTER_URL` in `src/lib/veniceLinks.ts`, currently `venice.ai/c/nenya-20`, used in three places: the coach page's Venice panel, the About Venice chat page, and the review page). A visitor who follows it meets **the card alone**: none of Nenya's protections run there (no identifier scrub, no crisis check, no steering screen, no exchange limit, no signed transcript). The card is the only guardrail they have.
@@ -56,3 +56,43 @@ node scripts/compare-persona-runs.mts ~/Downloads/card-old-core.json ~/Downloads
 - How Venice's site treats a character's system prompt and model compared with the API.
 - How long Venice takes to approve a public character, and what its rules for public characters require.
 - Whether editing a live character really adds latency, as you saw (I have not seen it).
+
+
+## The fields (from the owner's screenshots, 2026-11-10)
+Venice's "Update Character" screen, as it looked for a blank character named "Nenya" (a flower-shaped image with colored dots). What each tab has, and what I would put there. **No character limits are shown anywhere in the screenshots**; they are the first thing to ask Venice.
+
+| Tab | Field | What it is (as shown) | Plan |
+| --- | --- | --- | --- |
+| General | Name | "Nenya" | Keep. |
+| General | Description | A text box with an **Auto-Generate** button; shown to people browsing characters | Write by hand, plain and honest: what it is (an AI, a reflection tool, not therapy), in two or three sentences. Do not use Auto-Generate. |
+| General | Tags | Select or create | A few plain ones (reflection, wellbeing); check Venice's own tag rules. |
+| Instructions | Intro Statement (optional) | One line shown first | A short honest greeting: it is an AI, it is for reflection, it is not a crisis service. No promise of memory or "here for you always". |
+| Instructions | Instructions | A large box: "Describe your character in as much detail as possible. This description becomes the basis of its personality." | The core text: the honest lines, how to listen, distress and dependence handling, short sentences (see "What the card should be"). |
+| Instructions | **Add Custom System Prompt** | A separate button below Instructions | **Unknown how it differs from Instructions.** Ask Venice: does it replace Venice's own system prompt, or add to it? This is the same question the scope already lists as unknown. |
+| Context | Upload Context | A file (PDF, TXT or MD, up to 5 MB) giving "background details"; "Max Content Length ~374,000 tokens" for the selected model | Probably not needed for a short card. A small MD file could carry the distress and honesty facts, but ask whether a visitor can read or copy it and whether it is always included or retrieved. |
+| Memories | Documents / Notes / Extraction | "Select documents" and "Upload to memory"; **Notes** with a toggle **Auto-generate memories (on in the screenshot)**; an Extraction prompt that is appended to the default extractor | **Turn Auto-generate memories off** and leave Documents, Notes and Extraction empty. Memories kept about visitors would contradict what Nenya says about itself (no memory, nothing kept); see "Privacy" below. |
+| Insights | Character Insights | Off. "Allow the character to learn about you and build profiles to personalize conversations" | **Keep off.** |
+| Settings | Public | Off | Stays off while building and testing; on only at the switch (it needs Venice's approval for public characters; ask what that takes). |
+| Settings | Web Search Enabled, URL Scraping | Off, off | **Keep off** (nothing a visitor says should leave Venice's model for the web). |
+| Settings | Selected Model | DeepSeek V4.1 Flash | **Not necessarily the model we will use** (owner). Choose by running the persona and DarkBench sets (see Testing); the card's honest lines have to hold on the model it is set to. |
+| Settings | Reasoning Enabled / Hide Thought Process | Off / On | Leave reasoning off (short replies, no hidden thoughts shown); leave thoughts hidden. |
+| Settings | Disable Prompt Suggestions | Off | Probably turn **on**, so Venice does not suggest prompts on the card's behalf; confirm what these suggestions are. |
+| Settings | Venice Voice: Language, Text-To-Speech Voice, Speed | American English, Sky, 1.0x | Voice is a choice for later: a spoken voice for an AI that is not a person needs thought (and some people will take it for one). Leave default for now. |
+| Settings | Advanced Settings: Temperature, Top P | Off; Temperature 1, Top P 0.95 | The coach runs at temperature 0.7, top-p 0.9 with a repetition penalty of 1.1. Advanced settings has no repetition penalty visible; try temperature about 0.7 and compare. |
+
+## Privacy: what the card can and cannot promise
+- Nenya's pages say what Nenya does not keep. A visitor on Venice is under **Venice's** terms and its own settings, not ours. With **Auto-generate memories** on, Venice may save notes about what a visitor says to the character; with **Insights** on, it builds profiles. Both should be off, and the card should not promise anything about what Venice keeps: it can say that Nenya's protections do not run there, and point to Venice's own privacy policy. (What Venice does with memories for a character owned by someone else, and whether the owner can see them, is **unverified**: ask.)
+- Anything in Instructions, Description, Intro Statement or Context may be visible to people with the link. Treat all of it as public.
+
+## Questions to ask Venice (narrowed by the screenshots)
+1. The **character limits** for Description, Intro Statement, Instructions and the custom system prompt.
+2. What **"Add Custom System Prompt"** does and how it relates to Instructions and Venice's own system prompt.
+3. Whether **Context** and **Memories > Documents** are always in the prompt or retrieved; whether visitors can read them; and whether memories and documents are **per visitor or shared across everyone** who talks to a public character.
+4. With **Auto-generate memories** off, is anything kept about a visitor? Can the character's owner see conversations or memories?
+5. What a public character needs for **approval**, how long it takes, and whether a character can be **unlisted** (link only) first.
+6. Which **models** a character can use, and whether the model chosen for a character is the one the website runs (the API route in `--card` may differ).
+7. Whether a character can be **duplicated** so a new card can be built beside the old one.
+8. What **Minds** are (see above) and whether they suit this.
+
+## Next
+When Venice answers, fill the limits into the table, then draft each field's text to fit (short, plain, public), run the persona and DarkBench sets with `--card` on the model chosen, compare with the old card, and only then switch the link.
