@@ -175,3 +175,10 @@ export const shapeById = (id: string): Shape | undefined => SHAPES.find((s) => s
 
 /** An image address for the drawing, for use in an <img> (the drawing is the text color only when inlined; as an image it is dark grey). */
 export const shapeDataUrl = (s: Shape): string => `data:image/svg+xml;utf8,${encodeURIComponent(s.svg.replace('currentColor', '#3b3b3b').replace(/currentColor/g, '#3b3b3b'))}`;
+
+/** The ids of the drawings chosen in one gateway's saved data (Movement or Insight), present state first, no repeats, only ones that exist. */
+export function chosenShapeIds(gateway: string, data: any): string[] {
+  const keys = gateway === 'movement' ? ['currentMovementShapes', 'potentialMovementShapes'] : gateway === 'insight' ? ['currentPatternShapes', 'potentialPatternShapes'] : [];
+  const ids = keys.flatMap((k) => (Array.isArray(data?.[k]) ? data[k] : [])).filter((id: unknown): id is string => typeof id === 'string' && !!shapeById(id));
+  return [...new Set(ids)];
+}

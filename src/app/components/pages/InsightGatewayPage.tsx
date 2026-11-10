@@ -12,6 +12,7 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
+import { ShapePicker, MAX_SHAPES } from '../ShapePicker';
 interface InsightGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -57,6 +58,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   }, [step]);
 
   // Current state
+  const [currentPatternShapes, setCurrentPatternShapes] = useState<string[]>([]);
   const [currentPatterns, setCurrentPatterns] = useState<string[]>([]);
   const [currentPatternOther, setCurrentPatternOther] = useState('');
   const [currentClarity, setCurrentClarity] = useState([50]);
@@ -67,6 +69,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [currentPatternDrawing, setCurrentPatternDrawing] = useState<string | null>(null);
 
   // Potential state
+  const [potentialPatternShapes, setPotentialPatternShapes] = useState<string[]>([]);
   const [potentialPatterns, setPotentialPatterns] = useState<string[]>([]);
   const [potentialPatternOther, setPotentialPatternOther] = useState('');
   const [potentialClarity, setPotentialClarity] = useState([50]);
@@ -89,6 +92,10 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
     }
   };
 
+  const toggleShape = (id: string, list: string[], set: (v: string[]) => void) => {
+    set(list.includes(id) ? list.filter((x) => x !== id) : list.length < MAX_SHAPES ? [...list, id] : list);
+  };
+
   const handleNextInstructionCard = () => {
     if (instructionCardIndex < INSTRUCTION_CARDS.length - 1) {
       setInstructionCardIndex(instructionCardIndex + 1);
@@ -99,6 +106,8 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
 
   const handleNext = () => {
     onComplete({
+      currentPatternShapes: currentPatternShapes.length > 0 ? currentPatternShapes : null,
+      potentialPatternShapes: potentialPatternShapes.length > 0 ? potentialPatternShapes : null,
       currentPatterns: currentPatterns.length > 0 ? currentPatterns : null,
       currentPatternOther: currentPatternOther || null,
       currentClarity: currentClarity[0],
@@ -263,6 +272,11 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   </div>
 
                   <div className="space-y-2">
+                    <Label id="currentPattern-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="pattern" idPrefix="currentPattern" selected={currentPatternShapes} onToggle={(id) => toggleShape(id, currentPatternShapes, setCurrentPatternShapes)} />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label className="text-sm">Describe the patterns (optional)</Label>
                     <Textarea
                       placeholder="Describe the patterns and perspectives..."
@@ -327,6 +341,11 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                       onChange={setPotentialPatternDrawing}
                       placeholder="What shape would you rather your thinking take?"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label id="potentialPattern-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="pattern" idPrefix="potentialPattern" selected={potentialPatternShapes} onToggle={(id) => toggleShape(id, potentialPatternShapes, setPotentialPatternShapes)} />
                   </div>
 
                   <div className="space-y-2">

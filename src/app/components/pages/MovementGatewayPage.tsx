@@ -12,6 +12,7 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
+import { ShapePicker, MAX_SHAPES } from '../ShapePicker';
 interface MovementGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -57,6 +58,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   }, [step]);
 
   // Current state
+  const [currentMovementShapes, setCurrentMovementShapes] = useState<string[]>([]);
   const [currentDirections, setCurrentDirections] = useState<string[]>([]);
   const [currentDirectionOther, setCurrentDirectionOther] = useState('');
   const [currentEnergy, setCurrentEnergy] = useState([50]);
@@ -67,6 +69,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [currentMovementDrawing, setCurrentMovementDrawing] = useState<string | null>(null);
 
   // Potential state
+  const [potentialMovementShapes, setPotentialMovementShapes] = useState<string[]>([]);
   const [potentialDirections, setPotentialDirections] = useState<string[]>([]);
   const [potentialDirectionOther, setPotentialDirectionOther] = useState('');
   const [potentialEnergy, setPotentialEnergy] = useState([50]);
@@ -89,6 +92,10 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
     }
   };
 
+  const toggleShape = (id: string, list: string[], set: (v: string[]) => void) => {
+    set(list.includes(id) ? list.filter((x) => x !== id) : list.length < MAX_SHAPES ? [...list, id] : list);
+  };
+
   const handleNextInstructionCard = () => {
     if (instructionCardIndex < INSTRUCTION_CARDS.length - 1) {
       setInstructionCardIndex(instructionCardIndex + 1);
@@ -99,6 +106,8 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
 
   const handleNext = () => {
     onComplete({
+      currentMovementShapes: currentMovementShapes.length > 0 ? currentMovementShapes : null,
+      potentialMovementShapes: potentialMovementShapes.length > 0 ? potentialMovementShapes : null,
       currentDirections: currentDirections.length > 0 ? currentDirections : null,
       currentDirectionOther: currentDirectionOther || null,
       currentEnergy: currentEnergy[0],
@@ -262,6 +271,11 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   </div>
 
                   <div className="space-y-2">
+                    <Label id="currentMovement-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="movement" idPrefix="currentMovement" selected={currentMovementShapes} onToggle={(id) => toggleShape(id, currentMovementShapes, setCurrentMovementShapes)} />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label className="text-sm">Describe the movement (optional)</Label>
                     <Textarea
                       placeholder="Describe the kinesthetic qualities..."
@@ -326,6 +340,11 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                       onChange={setPotentialMovementDrawing}
                       placeholder="Trace the shape you're moving toward instead."
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label id="potentialMovement-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="movement" idPrefix="potentialMovement" selected={potentialMovementShapes} onToggle={(id) => toggleShape(id, potentialMovementShapes, setPotentialMovementShapes)} />
                   </div>
 
                   <div className="space-y-2">

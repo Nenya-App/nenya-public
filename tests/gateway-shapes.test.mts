@@ -25,3 +25,14 @@ ok('the words each drawing might go with are words the gateway already offers', 
 ok('drawings are the same every time they are made', JSON.stringify(SHAPES.map((s) => s.svg)) === JSON.stringify(SHAPES.map((s) => s.svg)) && shapeById('p-scattered')!.svg === shapeById('p-scattered')!.svg);
 ok('a drawing can be used as an image address', shapeDataUrl(SHAPES[0]).startsWith('data:image/svg+xml;utf8,') && !shapeDataUrl(SHAPES[0]).includes('currentColor'));
 ok('no two drawings are the same picture', new Set(SHAPES.map((s) => s.svg)).size === SHAPES.length);
+
+// the saved choices, and how the reports carry them
+import { chosenShapeIds } from '../src/lib/gatewayShapes.ts';
+import { formatGatewayData } from '../src/lib/reportText.ts';
+ok('the chosen drawings are read from a gateway\'s saved data, present first, without repeats or unknown ids', JSON.stringify(chosenShapeIds('movement', { currentMovementShapes: ['m-rising', 'nope'], potentialMovementShapes: ['m-rising', 'm-still'] })) === JSON.stringify(['m-rising', 'm-still']) && chosenShapeIds('insight', { currentPatternShapes: ['p-grid'] })[0] === 'p-grid' && chosenShapeIds('touch', { currentMovementShapes: ['m-rising'] }).length === 0 && chosenShapeIds('movement', null).length === 0);
+{
+  const mv = formatGatewayData('movement', { currentMovementShapes: ['m-rising'], potentialMovementShapes: ['m-still', 'm-flowing'] }).join('\n');
+  ok('the movement report names each chosen drawing with its description', /Drawings chosen \(present\): Rising \(Three arrows side by side/.test(mv) && /Drawings chosen \(wish\): Still \(.*\) Flowing \(/.test(mv), mv);
+  const pt = formatGatewayData('insight', { currentPatternShapes: ['p-grid'] }).join('\n');
+  ok('the insight report does the same, and says nothing when none were chosen', /Drawings chosen \(present\): Grid \(/.test(pt) && !/Drawings chosen/.test(formatGatewayData('insight', { currentPatternShapes: [] }).join('\n')));
+}

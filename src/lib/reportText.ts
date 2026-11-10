@@ -2,11 +2,19 @@
 // (src/lib/reportShare.ts) all use these, so what the person sees, downloads and may share is the same words.
 import { getNoteNames, TONAL_SYSTEM_LABELS, type TonalSystem } from './audio.ts';
 import { describePalettePlainly } from './colorSchemes.ts';
+import { shapeById } from './gatewayShapes.ts';
 
 export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight';
 export interface BodyMapLike {
   placements: { bodyPartId: string; color: string; colorName?: string }[];
   notes: Record<string, string>;
+}
+
+/** The drawings a person chose in the Movement or Insight gateway, as plain lines: the name and the one-sentence description of each. */
+function shapeLine(state: 'present' | 'wish', ids: unknown): string[] {
+  if (!Array.isArray(ids)) return [];
+  const found = ids.map((id) => (typeof id === 'string' ? shapeById(id) : undefined)).filter((x): x is NonNullable<typeof x> => !!x);
+  return found.length ? [`  Drawings chosen (${state}): ${found.map((x) => `${x.label} (${x.alt})`).join(' ')}`] : [];
 }
 
 export const gatewayTitles: Record<Gateway, string> = {
@@ -202,6 +210,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.currentQualityOther) info.push(`  Quality (other): ${data.currentQualityOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
       if (data.currentMovementDrawing) info.push(`  Drawing: captured`);
+      info.push(...shapeLine('present', data.currentMovementShapes));
 
       if (data.potentialDirections && Array.isArray(data.potentialDirections) && data.potentialDirections.length > 0) {
         info.push(`Potential Direction: ${data.potentialDirections.join(', ')}`);
@@ -219,6 +228,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialQualityOther) info.push(`  Quality (other): ${data.potentialQualityOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       if (data.potentialMovementDrawing) info.push(`  Drawing: captured`);
+      info.push(...shapeLine('wish', data.potentialMovementShapes));
       break;
 
     case 'insight':
@@ -238,6 +248,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.currentPerspectiveOther) info.push(`  Perspective (other): ${data.currentPerspectiveOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
       if (data.currentPatternDrawing) info.push(`  Drawing: captured`);
+      info.push(...shapeLine('present', data.currentPatternShapes));
 
       if (data.potentialPatterns && Array.isArray(data.potentialPatterns) && data.potentialPatterns.length > 0) {
         info.push(`Potential Pattern: ${data.potentialPatterns.join(', ')}`);
@@ -255,6 +266,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialPerspectiveOther) info.push(`  Perspective (other): ${data.potentialPerspectiveOther}`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       if (data.potentialPatternDrawing) info.push(`  Drawing: captured`);
+      info.push(...shapeLine('wish', data.potentialPatternShapes));
       break;
   }
   
