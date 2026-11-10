@@ -3,18 +3,19 @@
 // so a person can read them (the numbers are only half of the result). The data is never in this repository: download the set to a folder of your own first.
 //
 //   read -s NENYA_OWNER_TOKEN; export NENYA_OWNER_TOKEN
-//   node scripts/eval-prompts.mts --url https://nenyastaging.netlify.app --set xstest --file ~/Downloads/nenya-test-prompts/xstest_prompts.csv --n 50 --seed 1
+//   node scripts/eval-prompts.mts --url https://nenyastaging.netlify.app --set xstest --file xstest_prompts.csv --n 50 --seed 1
 //   ... --quote 3        # put up to 3 short example prompts in the public file (only for sets whose licence allows it)
 //   ... --pace 5         # seconds between messages (default 5)
 //   node scripts/eval-prompts.mts --sets               # the sets, their licences, and what each allows
-// Sets: xstest (CSV), oasst2 (the message export, JSON lines), dolly (JSON lines), esconv (JSON). Output goes to your Downloads folder.
+// Sets: xstest (CSV), oasst2 (the message export, JSON lines), dolly (JSON lines), esconv (JSON). Files live in one research folder outside the repository (default: Nenya Research on the Desktop; NENYA_RESEARCH_DIR changes it): datasets/ for the data, results/public/ for what can be published,
+// results/private/ for the readings. --file may be just a file name inside datasets/.
 import { readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { TEST_SETS, creditsFor } from '../src/lib/testSets.ts';
 import { readPrompts, sample, summarize, type Outcome } from '../src/lib/promptEval.ts';
+import { ensureResearchDirs, resolveDataset } from '../src/lib/researchDir.ts';
 import { arcProblems } from '../src/lib/practiceArc.ts';
-import { detectDirectQuestion } from '../src/lib/coachIntent.ts';
+import { aboutTheWorld, detectDirectQuestion } from '../src/lib/coachIntent.ts';
 
 const args = process.argv.slice(2);
 const flag = (n: string): string | undefined => (args.includes(n) ? args[args.indexOf(n) + 1] : undefined);
@@ -32,7 +33,7 @@ const token = process.env.NENYA_OWNER_TOKEN;
 if (!token) console.log('(No NENYA_OWNER_TOKEN: using the visitor allowance, 10 turns a day. Set it to run more than a few.)\n');
 if (set.licenceChecked !== 'verified') console.log(`NOTE: ${set.name}'s licence is not marked verified. Read it at ${set.url} before publishing anything.\n`);
 
-const pool = readPrompts(setId, readFileSync(file.replace(/^~/, homedir()), 'utf8'));
+const pool = readPrompts(setId, readFileSync(resolveDataset(file), 'utf8'));
 const chosen = sample(pool, n, seed);
 console.log(`${set.name}: ${pool.length} prompts in the file, ${chosen.length} chosen (seed ${seed}). About ${Math.round((chosen.length * pace) / 60000)} minutes.\n`);
 
@@ -49,7 +50,7 @@ for (const p of chosen) {
   const j: any = await res.json().catch(() => ({}));
   const reply: string = j.reply ?? '';
   // The practice's checks do not apply to a how-to or factual question (the site answers those first) or to a site-written card.
-  const checks = res.ok && !j.card && !detectDirectQuestion(p.text) ? arcProblems(reply, { turn: 1, max: 5, userTexts: [p.text] }).map((c) => c.check) : [];
+  const checks = res.ok && !j.card && !detectDirectQuestion(p.text) && !aboutTheWorld(p.text) ? arcProblems(reply, { turn: 1, max: 5, userTexts: [p.text] }).map((c) => c.check) : [];
   outcomes.push({
     id: p.id, group: p.group, status: res.status, flag: j.flag ? `${j.flag.tier ?? ''}:${j.flag.category ?? ''}` : '', blocked: !!j.blocked,
     card: j.card ? String(j.card.id ?? j.card.title ?? 'card') : '', offer: j.offer ? String(j.offer.id ?? 'offer') : '', replyWords: (reply.match(/\S+/g) ?? []).length, checks,
@@ -64,16 +65,16 @@ console.log('\n');
 
 const sum = summarize(outcomes);
 const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-const dir = join(homedir(), 'Downloads');
+const dirs = ensureResearchDirs();
 const header = {
   set: set.id, name: set.name, authors: set.authors, source: set.url, licence: set.licence, licenceChecked: set.licenceChecked, credit: set.credit,
   poolSize: pool.length, sampled: chosen.length, seed, sampling: 'A seeded shuffle of the whole file, first n taken (src/lib/promptEval.ts, sample)', site: origin.origin, date: new Date().toISOString().slice(0, 10),
   notRun: 'Each prompt was sent alone as the first message of a conversation. Nothing shows how the coach does later in a conversation, and the checks are phrase checks, not judgments.',
 };
 const examples = set.may.quoteShort && quote ? chosen.slice(0, quote).map((p) => ({ id: p.id, prompt: p.text.slice(0, 200) })) : [];
-const publicFile = join(dir, `prompt-eval-${set.id}-${stamp}.json`);
+const publicFile = join(dirs.publicResults, `prompt-eval-${set.id}-${stamp}.json`);
 writeFileSync(publicFile, JSON.stringify({ header, summary: sum, outcomes, ...(examples.length ? { examples } : {}) }, null, 2) + '\n');
-const privateFile = join(dir, `PRIVATE-prompt-eval-${set.id}-${stamp}.txt`);
+const privateFile = join(dirs.privateResults, `prompt-eval-${set.id}-${stamp}.txt`);
 writeFileSync(privateFile, `PRIVATE: prompts and replies for a person to read. Do not publish. ${set.name} (${set.licence}); credit: ${set.credit}\n\n${priv.join('\n')}`);
 const pct = (x: number): string => `${(x * 100).toFixed(1)}%`;
 const md = `# ${set.name}: the coach on the dev site, ${header.date}
@@ -97,7 +98,7 @@ ${header.notRun} The sample is small, a person read the replies (not recorded he
 ## Credit
 ${creditsFor([set.id]).join('\n')}
 `;
-const mdFile = join(dir, `prompt-eval-${set.id}-${stamp}.md`);
+const mdFile = join(dirs.publicResults, `prompt-eval-${set.id}-${stamp}.md`);
 writeFileSync(mdFile, md);
 console.log(md);
 console.log(`Saved:\n  ${publicFile}\n  ${mdFile}\n  ${privateFile}   (private: read it, do not publish it)`);

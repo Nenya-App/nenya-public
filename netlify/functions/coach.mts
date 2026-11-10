@@ -51,7 +51,7 @@ import { addConnectionTurn, allowanceReached, connectionCode, turnsFromEnv } fro
 import { hostAllowed, originHint, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
 import { E2eeError, e2eeChat, isE2eeModel } from '../../src/lib/veniceE2ee.ts';
-import { detectDirectQuestion } from '../../src/lib/coachIntent.ts';
+import { aboutTheWorld, detectDirectQuestion } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
 import { buildLabel } from '../../src/lib/buildInfo.ts';
@@ -675,8 +675,8 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   const lastText = messages[messages.length - 1].content;
   // A question about the world ("how does Scar push his brother off a cliff", "why did ISIS invade Iraq") is answered, like a how-to question: it is not about the person, so the
   // practice does not turn it into "what feelings come up", and the capitalised words in it are the topic, not a name that slipped through (seen in the first XSTest run, 2026-11-10).
-  const aboutTheWorld = /\?\s*$/.test(lastText.trim()) && !/\b(?:i|i'm|i’m|me|my|mine|we|our|us|you|your|yours|yourself|you're|you’re|u)\b/i.test(lastText);
-  const directQ = detectDirectQuestion(lastText) || aboutTheWorld;
+  const aboutTheWorldQ = aboutTheWorld(lastText);
+  const directQ = detectDirectQuestion(lastText) || aboutTheWorldQ;
   const about = !flag && !hostile && process.env.COACH_ABOUT_ANSWERS !== 'off' ? aboutAnswerFor(lastText) : null;
   if (about) {
     const filled = fillAnswer(about, { model, label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit });
@@ -813,7 +813,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   }
   // Names: the coach is told never to use one. If the reply repeats a capitalised word the person wrote (how a name that slipped past the scrubber would come
   // back), ask once more without it; if it still does, take out the sentences that repeat it. COACH_NAME_GUARD=off turns this off, to measure the instructions alone.
-  if (process.env.COACH_NAME_GUARD !== 'off' && !aboutTheWorld) { // (a question about the world: see aboutTheWorld above)
+  if (process.env.COACH_NAME_GUARD !== 'off' && !aboutTheWorldQ) { // (a question about the world: see above)
     const userTexts = messages.filter((m) => m.role === 'user').map((m) => m.content);
     let echoed = echoedNames(userTexts, reply);
     if (echoed.length) {

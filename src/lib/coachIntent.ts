@@ -30,3 +30,9 @@ export function detectDirectQuestion(text: string): boolean {
   if (NOT_A_REQUEST.test(t)) return false;
   return ASKS.some((re) => re.test(t));
 }
+
+/**
+ * A question about the world rather than the person: it ends in a question mark and has no "I", "me", "my", "we", "you" or "your" in it ("how does Scar push his
+ * brother off a cliff", "why did ISIS invade Iraq"). It is answered like a how-to question, and its capitalised words are the topic, not a name that slipped through.
+ */
+export const aboutTheWorld = (text: string): boolean => /\?\s*$/.test(text.trim()) && !/\b(?:i|i'm|i’m|me|my|mine|we|our|us|you|your|yours|yourself|you're|you’re|u)\b/i.test(text);

@@ -11,7 +11,7 @@
 // Each message after the first is the next thing the person says. The deployed site's own switches (COACH_ARC, COACH_STANCES, COACH_INSTRUCTIONS) decide how it behaves.
 // Without the token the visitor allowance of 10 turns a day is used. Nothing from your environment is printed.
 import { arcProblems } from '../src/lib/practiceArc.ts';
-import { detectDirectQuestion } from '../src/lib/coachIntent.ts';
+import { aboutTheWorld, detectDirectQuestion } from '../src/lib/coachIntent.ts';
 
 const PRESETS: Record<string, { about: string; say: string[] }> = {
   words: { about: 'only picked words (should be thanked, not echoed)', say: ['I might be feeling apprehensive. I might need affection. I might need stability.'] },
@@ -27,8 +27,8 @@ const PRESETS: Record<string, { about: string; say: string[] }> = {
 };
 
 import { writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { ensureResearchDirs } from '../src/lib/researchDir.ts';
 
 const args = process.argv.slice(2);
 const flag = (n: string): string | undefined => (args.includes(n) ? args[args.indexOf(n) + 1] : undefined);
@@ -77,7 +77,7 @@ async function converse(say: string[], stance?: string, checkArc = true): Promis
     if (j.card) out(`  site answer card: ${j.card.title}`);
     if (j.offer) out(`  card offered: ${JSON.stringify(j.offer)}`);
     // The practice's checks mean something only for an ordinary reply: not a site-written answer, and not where hostility or a how-to question changes the rules.
-    const problems = !checkArc || j.card || detectDirectQuestion(text) ? [] : arcProblems(j.reply, { turn: j.turn ?? said.length, max: 5, userTexts: said });
+    const problems = !checkArc || j.card || detectDirectQuestion(text) || aboutTheWorld(text) ? [] : arcProblems(j.reply, { turn: j.turn ?? said.length, max: 5, userTexts: said });
     if (problems.length) { checks += problems.length; out(`  CHECK: ${problems.map((p) => p.check + (p.detail ? ` (${p.detail})` : '')).join('; ')}`); }
     out();
     if (j.done) break;
@@ -94,7 +94,7 @@ if (all) {
     if (!ok) break;
   }
   out(`Done. ${checks} CHECK line${checks === 1 ? '' : 's'} in all. (Learn and grief only differ from the default if the site has COACH_STANCES=learn.)`);
-  const file = join(homedir(), 'Downloads', `dev-coach-results-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}.txt`);
+  const file = join(ensureResearchDirs().devChecks, `dev-coach-results-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}.txt`);
   writeFileSync(file, lines.join('\n') + '\n');
   console.log(`\nSaved to ${file}`);
 } else {

@@ -36,9 +36,12 @@ Every published result prints the set's credit line, which is in `src/lib/testSe
 These are model outputs from a hosted model. Before publishing a reply (rather than counts) read the hosting service's and the model's terms for publishing outputs; I have not checked them. The runner's public file contains no replies at all. A reply to a *test prompt* carries no privacy question; a reply to a real visitor is never published.
 
 ## 6. Steps to publish a result
-1. Download the set to a folder outside the repository, read its licence at the source, and confirm `licenceChecked` in `src/lib/testSets.ts`.
-2. Run `scripts/eval-prompts.mts` (it writes a public JSON, a Markdown summary and a **private** file).
+1. Download the set into `datasets/` in the research folder (below), read its licence at the source, and confirm `licenceChecked` in `src/lib/testSets.ts`.
+2. Run `scripts/eval-prompts.mts` (it writes a public JSON and Markdown summary to `results/public/` and a **private** reading file to `results/private/`).
 3. Read the private file: every flagged reply and a tenth of the rest. Write down what you judged.
-4. Put the Markdown summary, the JSON and your reading notes in `docs/results/` (or a page on the site), with the credit.
+4. Copy the Markdown summary and the JSON from `results/public/` into `docs/results/` (or a page on the site), with your reading notes and the credit.
 5. Add the set to `ATTRIBUTIONS.md`. Add a short line to the page: date, build, and the "does not show" paragraph.
 6. Re-run when the coach changes, and keep the old results with their build named.
+
+## 7. Where the files live
+One folder outside the repository: **`~/Desktop/Nenya Research/`** (set `NENYA_RESEARCH_DIR` to change it). `datasets/` holds the downloaded sets; `results/public/` holds the files made for publishing (counts and ids only); `results/private/` holds the readings of prompts and replies; `results/dev-checks/` holds the quick checks from `scripts/dev-coach.mts`. The folder has its own README and is never committed. The scripts create it the first time they run, and `--file` can be just a file name inside `datasets/`.
