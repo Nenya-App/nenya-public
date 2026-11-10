@@ -85,3 +85,13 @@ The Sound gateway links to **solresol.xyz**, a Solresol translator and player fr
 ## Touch gateway surfaces
 
 The surface pictures in the Touch gateway (`public/touch-textures/`, listed with their sources in [`src/lib/touchTexturesData.ts`](./src/lib/touchTexturesData.ts)) are photographed material textures from [ambientCG](https://ambientcg.com) and [Poly Haven](https://polyhaven.com), both of which publish their assets under CC0 1.0 (public domain). CC0 asks for no credit; we give it anyway, with a link to each original. The pictures are shrunk to 256 px and saved as JPEG. The license of each library was taken from its own statement and has not been checked by a lawyer. The measured feel labels are ours: each is the average steepness of the surface in the library's published normal map.
+
+## HurtLex (detection list)
+
+Nenya's private list of slurs and dehumanizing language, used only to offer a gentle educational card and never to block or report anyone, is built partly from **HurtLex**, English version 1.2, conservative level only.
+
+- Source: <https://github.com/valeriobasile/hurtlex>
+- Paper: Elisa Bassignana, Valerio Basile and Viviana Patti, "Hurtlex: A Multilingual Lexicon of Words to Hurt", CLiC-it 2018.
+- Licence: [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/), as stated in the project's README.
+- What we changed: we use only the conservative level and some of its categories, drop entries that are ordinary words unless a nearby cue word is present, and add our own context rules and entries from other sources. The list itself is private and is not distributed, in this repository or anywhere else.
+- The authors have not endorsed Nenya. Nenya's coach is free to use, and nothing in it is sold.

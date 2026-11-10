@@ -15,7 +15,15 @@ Written 2026-11-10. No list content is in this repository, and none appears in t
 3. **ShareAlike.** The derived list is **never distributed**: it lives in the site's private store, not the repository, a download or the app. (If it ever were, it would have to be CC BY-NC-SA, which cannot sit in an AGPL repository. That is a reason to keep it private for good.)
 4. **Changes** are stated in the credit. **No endorsement** is claimed.
 
+## Done 2026-11-10 (owner's instruction)
+- **NonCommercial reading confirmed by the owner.** The credit is applied: `ATTRIBUTIONS.md` (new HurtLex section) and the About answer about the cards (`c-cards`, with a check against `ATTRIBUTIONS.md`). Emails to the authors and to Fractured Atlas are drafted in the private correspondence folder (06); **not sent**.
+
 ## What is not done
-- The credit is not applied; the owner's confirmations in `PROVENANCE.md` are blank; the request to the authors is not sent.
+- The request to the authors is not sent (the owner sends it).
 - No list has been built or loaded. The next step is a script that turns the conservative level into the loader's format (`scripts/prepare-private-list.mts`), keeps the source and licence on every row, and drops entries that are ordinary words until a cue word exists. Not started.
 - The same record should be made for each further source (Wiktionary, LDNOOBW, Weaponized Words) as it is added.
+
+## The matcher's list from HurtLex (built 2026-11-10; not uploaded, not switched on)
+`scripts/prepare-hurtlex.mts` (with `src/lib/hurtlexMap.ts`) turns the conservative level into the loader's batch format, keeps only categories about people (negative stereotypes and ethnic slurs, homosexuality-related slurs, disability-related slurs, animal words, derogatory words, sexual and prostitution-related insults), and leaves out plants, professions, places, crime, the seven deadly sins, social and economic disadvantage and "potential negative connotation", which are mostly ordinary words. It prints counts only, and `scripts/prepare-private-list.mts` then applies the loader's safeguards.
+Counts: 8,228 read; 2,273 taken (derogatory words 974, cognitive-disability-related 342, animal words 299, male-genitalia-related 180, ethnic slurs 148, prostitution-related 140, female-genitalia-related 127, homosexuality-related 44, physical-disability-related 19); the loader kept 2,218 after merging 54 duplicates, dropped 1 neutral identity word, switched off 4 until cue words are given, and holds 42 context rows with no cues (they never match). Severity is a first guess: **2** for slurs aimed at a kind of person, **1** for animal words and coarse insults (below the offer threshold of 2, and the animal words are off without a cue). Every row carries its source, licence and an "unreviewed" mark.
+The files are in the research folder (`datasets/hurtlex/prepared/` and `datasets/hurtlex/list/`, including `review-packet.md` for the counselor and the advocate, which contains the terms and is private). **Next:** the reviewers read the packet and correct severities and cues; only then is the list uploaded (`scripts/upload-private-list.mts`, needs the site id and token) to staging and, later, production.

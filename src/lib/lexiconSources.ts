@@ -26,7 +26,7 @@ export const LEXICON_SOURCES: Record<string, LexiconSource> = {
     licence: 'CC BY-NC-SA 4.0', licenceStatedIn: 'the repository\'s root README (GitHub\'s licence detection returned none)',
     citation: 'Bassignana, Basile and Patti (2018), "Hurtlex: A Multilingual Lexicon of Words to Hurt", CLiC-it 2018. Licence: CC BY-NC-SA 4.0. https://github.com/valeriobasile/hurtlex',
     may: { useInFreeTool: true, distribute: false }, status: 'downloaded',
-    pending: ['the owner confirms the NonCommercial reading (and the authors and Fractured Atlas are asked)', 'the credit is applied in ATTRIBUTIONS.md and the About page', 'the conservative level only, with our own cue words and exceptions'],
+    pending: ['the authors and Fractured Atlas are asked (the NonCommercial reading is confirmed by the owner, 2026-11-10; the emails are drafted)', 'the conservative level only, with our own cue words and exceptions, reviewed by a person'],
   },
 };
 
