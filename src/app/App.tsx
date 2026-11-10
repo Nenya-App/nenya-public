@@ -553,6 +553,7 @@ export default function App() {
               bodyMapData={bodyMapData}
               onUpdateBodyMap={setBodyMapData}
               melodyColors={melodyColorsFor(gatewayData.find((g) => g.gateway === 'sound')?.data)}
+              soundComesLater={selectedGateways.includes('sound') && !gatewayData.some((g) => g.gateway === 'sound')}
             />
           )}
 

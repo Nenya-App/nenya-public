@@ -34,6 +34,8 @@ interface SightGatewayPageProps {
   onUpdateBodyMap: (data: BodyMapData) => void;
   /** Colors a melody made first in the Sound gateway can offer as a starting point (null if none). */
   melodyColors?: { color1: string; color2: string } | null;
+  /** Whether the Sound gateway is still to come in this session (so a kept palette can be marked for it). */
+  soundComesLater?: boolean;
 }
 
 const generateRandomColor = () => {
@@ -99,7 +101,7 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap, melodyColors }: SightGatewayPageProps) {
+export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap, melodyColors, soundComesLater = true }: SightGatewayPageProps) {
   const { theme } = useTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -476,7 +478,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 </Card>
               </div>
 
-              <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} />
+              <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} soundComesLater={soundComesLater} />
 
               <BodyMapAvatar
                 inline
