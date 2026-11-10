@@ -485,8 +485,8 @@ export const ANSWERS: Answer[] = [
       { claim: 'the page language is English', file: 'index.html', has: '<html lang="en">' },
       { claim: 'the scope says no contributor agreement is promised yet', file: 'docs/translation-scope.md', has: 'does not say what a contributor agreement contains' },
     ],
-    status: 'pending',
-    ownerNote: 'Direction approved 2026-11-08: state the language situation clearly, invite contributions, and do not overpromise on any contributor agreement (none exists yet, so the answer says so and promises no credit or licence terms). Held until the notice and contact route are live (docs/translation-scope.md). Say nothing about a language coming.',
+    status: 'ready',
+    ownerNote: 'Direction approved 2026-11-08: state the language situation clearly, invite contributions, and do not overpromise on any contributor agreement (none exists yet, so the answer says so and promises no credit or licence terms). The notice and contact route are live (footer, coach start screen; 2026-11-10). Say nothing about a language coming.',
   },
   {
     id: 'n-else', part: 'nenya', title: 'What else is here',

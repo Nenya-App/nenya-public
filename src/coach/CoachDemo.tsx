@@ -592,6 +592,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   immediate danger, call your local emergency number.
                 </li>
                 <li>The full Terms of Use and Privacy Policy are in the About menu on nenya.biz.</li>
+                <li>The coach has been tested in English only. If you read and write another language and would like to help, write to info@nenya.biz.</li>
               </ul>
               <ReportShare
                 report={report}
