@@ -1,0 +1,261 @@
+# Changelog
+
+All notable changes to Nenya. This file was **backfilled on 2026-11-10 from the commit subjects** (the history has no pull-request merge records to draw on, so it is grouped by month, one line per commit, oldest first, with the short commit id). Early commit subjects are terse; where a subject says little, read the commit itself. From 1.1.0 on, each change is described in its commit message and, when released, summarised here under the version.
+
+Format follows [Keep a Changelog](https://keepachangelog.com/) loosely. Nenya is licensed AGPL-3.0; see `LICENSE`.
+
+## August 2026
+
+- 2026-08-22 `a3fa223` Initial public release
+- 2026-08-22 `685d787` Update package-lock.json
+- 2026-08-22 `d5fcd4c` Update custom sponsorship URL in FUNDING.yml
+- 2026-08-22 `5506477` Add Netlify badge and open-source/license notice to the live site
+- 2026-08-22 `409a2ad` Merge branch 'main' of https://github.com/Nenya-App/nenya-public
+- 2026-08-22 `d8de74f` Added Tutorial
+- 2026-08-22 `06abb29` Persistent Footer
+- 2026-08-22 `4efdf9f` Footer Fix
+- 2026-08-22 `105baf2` Fixed accessibility panel
+- 2026-08-22 `fc71929` Add site preview
+- 2026-08-23 `5a77de7` Scrolling fix
+- 2026-08-23 `819b95b` Update Scroll to Top
+- 2026-08-24 `d7ce3b9` Breathing Animation Troubleshoot
+- 2026-08-24 `ad63462` Update ValarBreathingLogo.tsx
+- 2026-08-24 `ea24f99` Restructure main page
+- 2026-08-24 `e3e286f` Sensory warning, name scrub
+- 2026-08-24 `440e30f` Update breathing animation
+- 2026-08-24 `8566512` report update
+- 2026-08-25 `c795c9d` Visual Aids Added
+- 2026-08-25 `19250d7` Cleanup dead code
+- 2026-08-26 `e9a14c1` Layout bug fix
+- 2026-08-26 `0fc2358` Security buff
+- 2026-08-26 `e004e16` Fix navigation
+- 2026-08-28 `718814e` Added submission forms
+- 2026-08-28 `e9122d0` Audit
+- 2026-08-30 `f0ecfad` Add body report to all gateways
+- 2026-08-30 `b0676e6` Body map implementation
+- 2026-08-30 `878a5d0` Update netlify.toml
+
+## September 2026
+
+- 2026-09-04 `387d5bc` Added drawing
+- 2026-09-04 `862da14` Major update
+- 2026-09-04 `447a710` Update Tonals
+- 2026-09-04 `026d2de` New Updates 9.4.26
+- 2026-09-04 `c025e26` Addition to Sound Gateway
+- 2026-09-04 `5e85fa4` Audio update
+- 2026-09-06 `a859468` Opacity Update
+- 2026-09-12 `b055b37` Update to transparency & Audio gateway
+- 2026-09-12 `21b762e` Update ScrollIndicator.tsx
+- 2026-09-12 `3cc354f` Audio update
+- 2026-09-12 `11d11d7` Report update for audio gateway
+- 2026-09-12 `0dacb8e` Logo reduction
+- 2026-09-12 `c49a5a2` Hidable breathing counter
+- 2026-09-13 `0f0b360` Updates
+- 2026-09-13 `c56f4b3` Update ThemeProvider.tsx
+- 2026-09-16 `c6f8a8b` Update add bookmark
+- 2026-09-23 `f6f3771` Update to scroll.
+- 2026-09-23 `f5476ca` Scroll fix
+- 2026-09-23 `663e677` Real scroll fix
+- 2026-09-23 `1641aa8` Self-host donate button
+
+## October 2026
+
+- 2026-10-04 `d95d039` Tutorial Opt-in
+- 2026-10-20 `d39636d` Update fiscal sponsor exact language
+- 2026-10-24 `cc8d58a` Privacy and Terms Update
+- 2026-10-24 `bdde27e` Cue fixes
+- 2026-10-26 `6facf4f` Update Welcome
+- 2026-10-26 `834b3d6` Breathing Counter Update
+- 2026-10-26 `e0d3c43` Header fix
+- 2026-10-26 `d339155` Header fix mobile
+- 2026-10-26 `1d859ce` Header Fix 2
+- 2026-10-30 `ccff925` Update README.md
+- 2026-10-30 `eb55578` Build out of Coach Demo Initial
+- 2026-10-30 `b0bbdaf` Coach fix
+- 2026-10-30 `4e7aca3` Coach Update
+- 2026-10-30 `e54cfe1` Coach Update
+- 2026-10-30 `b2630d8` Coach: fix cut-off replies, set coach identity in our own system instruction
+- 2026-10-30 `ef1456b` Sensory Report Inclusion for Coach
+- 2026-10-30 `51e07de` Updates to Coach Intro and Date 10/31/2026
+- 2026-10-30 `dd4262e` Coach Updates
+- 2026-10-31 `0bf0016` Update to Report Mechanism and Dyad Cell Statements
+
+## November 2026 (the 1.1.0 work, on `dev`, unreleased)
+
+- 2026-11-02 `51c7211` Update discoverability
+- 2026-11-02 `b050ca3` Search engine support and Vite update
+- 2026-11-02 `7fca9cb` Adding blobs and modules for coach discernment
+- 2026-11-02 `8b2c953` Update coach section
+- 2026-11-02 `7477b7f` Coach interface update
+- 2026-11-02 `13a3764` Coach Dynamics Update
+- 2026-11-03 `d1e11c3` Add Index Now compatibility
+- 2026-11-03 `9f4ff72` Adding options persistence in-browser
+- 2026-11-03 `618a4a4` Coach crash fix, remove redundant code
+- 2026-11-03 `528b95a` Update terms and coach upload option
+- 2026-11-04 `f795a63` Create
+- 2026-11-04 `c471955` Update branches-and-previews.md
+- 2026-11-04 `fc16e06` Lighthouse Ext Audit
+- 2026-11-04 `a2611ee` Compacting large images and animations
+- 2026-11-04 `54a0a3a` Update to file sizing
+- 2026-11-04 `65d15fd` Logo update
+- 2026-11-05 `1510e9c` Complete revamp of logo/gem
+- 2026-11-05 `d93750c` Switch models on preview
+- 2026-11-05 `402da3e` Coach updates
+- 2026-11-05 `eb6fd8e` Build in modules
+- 2026-11-05 `3fd42e7` Update coach model defaults
+- 2026-11-05 `9181254` Upgrade node to 24
+- 2026-11-05 `31dcc09` Update logo bezel
+- 2026-11-05 `2f8c112` Update gem again
+- 2026-11-05 `1b6d8a4` Gem fix
+- 2026-11-05 `d5061df` Update gem pass 3
+- 2026-11-05 `0cd7320` Gems fixed final
+- 2026-11-05 `ef0c2ae` Breathing animation update
+- 2026-11-05 `225e7c5` Error reports on coach
+- 2026-11-05 `54b4de8` Error Status Update push
+- 2026-11-05 `7967445` Encryption error fix
+- 2026-11-05 `ceab1a9` Scroll fix
+- 2026-11-05 `2d43aa5` Stop the coach repeating itself on follow-up turns
+- 2026-11-05 `62c0aff` Keep the repeat retry inside the single-attempt time budget
+- 2026-11-05 `6c64bde` Mobile Icon Updates
+- 2026-11-06 `bda7706` Make the coach's final reply read as an ending
+- 2026-11-06 `5d3038a` Keep paragraph breaks in the coach's replies
+- 2026-11-06 `cbd878a` Make "Forget me" return to the start, where the terms are asked again
+- 2026-11-06 `b4cac25` Ask "Are you sure?" before "Forget me" erases and restarts
+- 2026-11-06 `843e42e` Scope a per-connection allowance for the coach demo
+- 2026-11-06 `174549a` Replace the petals, orbs and bezel with vector versions
+- 2026-11-06 `c7e53dc` Rework the opening: loading screen, rhythm then terms, then an offered tour
+- 2026-11-06 `69a405b` Load the gem first, hold the loading screen for its first frame; lower inner orbs
+- 2026-11-06 `25e657e` Tour: draw the highlight only after the page has stopped scrolling
+- 2026-11-06 `72d6cf5` Add scope for audio cues and screen-reader support
+- 2026-11-06 `c6fd023` Scope tones as off by default, add alt text scope and audit checklist
+- 2026-11-06 `aa352dd` Scope site metrics, transcript receipts and turn-counted allowance
+- 2026-11-07 `8fea8cb` Terms and privacy: describe the host's visit statistics, update site copy
+- 2026-11-07 `d7bd0b8` Terms and copy: "account not required"; scope admin sign-in
+- 2026-11-07 `5a5e038` Add a fixed 15% grain to the logo and orb glows to break up banding
+- 2026-11-07 `411b411` Terms: keep Section 17 to what visitors experience; move internal notes out
+- 2026-11-07 `86f3106` Remove the glow grain
+- 2026-11-07 `d21965e` Scope a coach voice that does not speak as a person
+- 2026-11-07 `2a329d7` Replace the coach voice scope with a persona scope
+- 2026-11-07 `2e0ddd3` Record decisions in the scope docs
+- 2026-11-07 `fde0088` Terms revision 2 (effective Nov 8, 2026): daily totals, connection limit, 6-hour rest
+- 2026-11-07 `f46140a` Scope the extra receipt fields and say so in the Terms
+- 2026-11-07 `e0dbeb9` Coach: per-connection turn limit, turn-based site cap, plain daily totals
+- 2026-11-07 `d1f06fd` Add browser counts: page views, rhythm chosen and tour answers
+- 2026-11-07 `de31662` Add the owner's private usage page and its protected stats endpoint
+- 2026-11-07 `02947ef` Prepare release: hold back unbuilt transcript wording, align public copy
+- 2026-11-07 `e3cd2ff` Admin page: scroll, and download the totals as a spreadsheet
+- 2026-11-07 `f386d58` Receipts: signed facts, daily count by key, and a 30-day hash log
+- 2026-11-07 `a2b4998` Reports: only a genuine signed transcript can be sent to Nenya
+- 2026-11-07 `195b741` Add a public page to check a signed transcript, and tamper-evident readable copies
+- 2026-11-07 `5992e2b` Terms revision 2: add the transcript wording now that it is built
+- 2026-11-08 `9e468c7` Admin Initial Identity Build
+- 2026-11-08 `679c4d2` Emergency Exit everywhere and without Back, coach quiet timeout, optional sound, clearer transcript names
+- 2026-11-08 `ebb9933` Tests: hearing the signature sound stays optional on both coach start screens
+- 2026-11-08 `d35a67b` Versioning: a real build label in every signed transcript
+- 2026-11-08 `61dd63d` Reports: send the signed transcript as a real .json file
+- 2026-11-08 `7108052` Release 1.1.0
+- 2026-11-08 `3d5244e` Reports: also send the signed JSON as text, with the hash and time as their own fields
+- 2026-11-08 `214a69a` Alt text: one shared set of image descriptions, and a logo that is decorative unless described
+- 2026-11-08 `f35022d` Breathing tones: a note for each count, off by default, with a switch screen readers find
+- 2026-11-08 `6c08181` Breathing tones: four styles to compare (harp, bowls, chord, and the original scale)
+- 2026-11-08 `87faea3` Breathing tones: a new style begins with the next breath, not midway
+- 2026-11-08 `3b186fd` First-visit panel loads solid, under the loading screen
+- 2026-11-08 `802f219` Admin: check a signed transcript and look it up in the 30-day log
+- 2026-11-08 `fde16c3` Coach persona evaluation set: 38 messages, phrase checks, and a runner
+- 2026-11-08 `8894a74` Crisis check: "cannot" and "can not" are caught like "can't"
+- 2026-11-08 `7e70f42` Persona evaluation: 220 prompts borrowed from DarkBench (MIT), credited
+- 2026-11-08 `4259d2d` Persona checks: catch invented preferences and daily life, not only family history
+- 2026-11-08 `c488f98` Persona runner: pace the calls, wait out rate limits, and resume a run
+- 2026-11-08 `f5cd0de` Persona runner: retry the encrypted model's attestation rate limit too
+- 2026-11-08 `42d797b` Scope: what the coach says when asked about itself (identity, memory, feelings)
+- 2026-11-08 `e4280eb` Persona runner: save the results after every case
+- 2026-11-08 `40bcdf4` Scope: learning modules visitors can read; instructions as the first lever for self-questions
+- 2026-11-08 `93b8570` Credit CNVC's Feelings and Needs Inventory; scope the categories and other languages
+- 2026-11-08 `2e33fcc` Persona evaluation: fix a false positive, add review measures and offline re-scoring
+- 2026-11-08 `889c432` Coach instructions: a draft v2 (not live), a switch to compare it, and a run comparison tool
+- 2026-11-08 `4eaa5e4` Persona runner: --sample for a shorter run; farewell check catches "our next conversation"
+- 2026-11-08 `4da10ed` Scope the Venice character card rebuild; test a card on its own (--card)
+- 2026-11-08 `f0a95dd` Venice card scope: parked; record that its context is dated, and note "Minds"
+- 2026-11-08 `76d8f8b` Scope: questions about Nenya itself (name, structure, infrastructure, contact), with defined answers
+- 2026-11-08 `f1e4d26` Encrypted model: remember the verified model key for a few minutes
+- 2026-11-08 `e603261` Persona checks: do not flag a coach that quotes the question ("about my favorite hobby")
+- 2026-11-08 `fc910eb` Scopes: pre-written answers count as turns and stay in the model's context
+- 2026-11-08 `11e54f8` Docs: how the coach keeps improving, Blobs versus a database, and the owner's decisions
+- 2026-11-08 `b5b4adf` Distress: a site-written sentence naming a person and a crisis line (draft wording, off by default)
+- 2026-11-08 `a98d19d` Scope: three lenses for the coach (Nenya, Vilya, Narya)
+- 2026-11-08 `a6a18d4` Stances: build the safeguards for the Vilya and Narya layers while none of them exists
+- 2026-11-08 `4e12780` Scope: dehumanizing language and a ladder of boundaries
+- 2026-11-08 `0fe45f9` Crisis check: add the reviewed phrase lists and a ladder for self-injury
+- 2026-11-08 `1193320` Scope abuse aimed at the coach, and add a safety test set that separates site from model
+- 2026-11-08 `3de9ce2` Safety runner: choose the instruction wording and compare two runs
+- 2026-11-08 `18bdecf` Coach: owner-only per-request switches for the distress sentences and the instruction wording
+- 2026-11-08 `5333828` Coach page: an owner panel for the testing switches
+- 2026-11-08 `9103b97` Safety runner: explain a 401
+- 2026-11-08 `d255a15` Update eval-safety.mts
+- 2026-11-08 `c6ad924` Coach: tell the owner why an origin was refused
+- 2026-11-08 `2937836` Safety set: no apologies, gratitude only for critique; show breath advice and sending away
+- 2026-11-08 `737bd9a` Persona checks: "I'm sorry to hear that" and "I'm sorry if" count as apologies
+- 2026-11-08 `f25f5da` Safety runner: rescore a saved run with today's checks
+- 2026-11-08 `b51fee0` Coach: a hostile-turn note for abuse aimed at the coach and for sharp critique
+- 2026-11-08 `6e12f71` Ignore saved evaluation run files
+- 2026-11-08 `b36ba1a` Hostile turns: examples in the note, and take apologies out of the reply
+- 2026-11-08 `0768a80` Hostile turns: a site thank-you for critique; scope the break with a way back in
+- 2026-11-08 `af989e5` Boundaries scope: browser-based break, and the lure framing with its cautions
+- 2026-11-08 `7f2e89e` Boundaries scope: record the break as redirection, not bait
+- 2026-11-08 `6fa13d2` Drafts: Terms wording for respectful use, and the pause screen and reflective quiz
+- 2026-11-08 `18135d9` Pause screen and reflective quiz, built; not yet triggered from a conversation
+- 2026-11-08 `45fddb4` Scope: an English-only notice, an invitation to translators, and a translatable document
+- 2026-11-08 `c83a667` Draft pre-written answers, checked against their sources, with a branded PDF builder
+- 2026-11-08 `a5483ef` About-Nenya answers: move the content into the site's code and add a tested detector
+- 2026-11-08 `8b23529` About-Nenya answers: apply the owner's replies, add a safety answer, fill model and version at run time
+- 2026-11-08 `14cf25a` Languages answer and notice: invite contributions without promising contributor terms
+- 2026-11-08 `079fae1` Draft contributor agreement; state the accessibility goal
+- 2026-11-08 `0c2d60f` Branded PDFs of the draft contributor agreement; fix a font bug at page breaks
+- 2026-11-08 `10afcb9` Scope: renaming the sixteen palettes outwardly
+- 2026-11-08 `5ed3849` Rename the sixteen palettes outwardly, rewrite the Pantheon page, and scope the About overhaul
+- 2026-11-08 `afbd4b1` Public page: remove the series note and the "inspired by The Lord of the Rings" question
+- 2026-11-09 `bb35938` Docs: draft the origin note and Name page, add "What you can check" to the About overhaul scope
+- 2026-11-09 `f2588d4` About pages: rewrite the welcome letter and Privacy Promise; remove scientific-sounding claims about colors
+- 2026-11-09 `d1db517` Palettes: new thematic colors for all sixteen, one source for logo, picker and docs
+- 2026-11-09 `aa99272` Docs: draft the Terms revision for the 1.1.0 release (respectful use, encryption wording, site-written text)
+- 2026-11-09 `1ee20f6` Terms: apply the 1.1.0 revision (respectful use, model and encryption wording, site-written text); distress sentences point to people only
+- 2026-11-09 `84bf596` Coach: sign a conversation the site ended, so a false stop can be reported with proof
+- 2026-11-09 `e1a4f0c` Coach: a signed transcript shows what the site displayed and why a message was flagged
+- 2026-11-09 `aff18f3` Docs: scope letting a visitor bring parts of a reflection report to the coach
+- 2026-11-09 `eb1f45e` Coach: ask about critique of the site, NVC and AI use, and invite the feedback
+- 2026-11-09 `33949bd` Coach: answer questions about Nenya with the site's pre-written answers, with a card, and guard against invented claims
+- 2026-11-09 `812d159` Coach: answer first, then carry on, when a longer message asks about Nenya; two more answers live; a starter evaluation group
+- 2026-11-09 `6e2bff6` About pages: one contact address, and "provided free" wording that matches the Terms
+- 2026-11-09 `e476196` Coach: a synthetic corpus for the questions-about-Nenya detector, and the fixes it found
+- 2026-11-09 `db91b6b` Site: opening on an About page no longer starts with the breathing-rhythm choice
+- 2026-11-09 `8f01883` Coach page: the terms must be accepted before the coach can be reached
+- 2026-11-09 `47e353d` Coach: send the model one system message (the encrypted route rejected a second one)
+- 2026-11-09 `00f5554` Docs: record that the encrypted route accepts only one system message (confirmed on staging)
+- 2026-11-09 `43b7782` Docs: a checklist for testing the staging site after a push
+- 2026-11-09 `c60b328` Ignore saved evaluation output text files (dev-*.txt) as well as the json
+- 2026-11-09 `1ba679a` Coach: bring parts of a reflection report to the coach (logic, server, privacy wording)
+- 2026-11-09 `03ecbc9` Coach: the picker for bringing part of a report to the coach, and the evaluation scripts
+- 2026-11-09 `1d8c643` Docs: scope color naming and palette tools for the Sight gateway, local first
+- 2026-11-09 `0b9b97d` Sight gateway: suggest a name for a color, from a bundled MIT list, announced to screen readers
+- 2026-11-09 `a0a6efa` Sight gateway: palettes from the person's colors, on the device or through The Color API, kept in the report
+- 2026-11-09 `d95cb7f` Sight gateway: the body map on the page, and a kept palette in the PDF report
+- 2026-11-09 `cc64d4b` Names: a bare-name pass, a rule and a reply guard for the coach, a corpus, and palette names in the reports
+- 2026-11-09 `31ffe09` Sight gateway: keep up to two palettes, choose to carry them into Sound, two chip rows in the PDF
+- 2026-11-09 `9852568` Docs: scope longer melodies from palettes, and images with alt text for four gateways
+- 2026-11-09 `4de133a` Coach: "are you a scam?" is a question, not abuse; a run of short questions about the site is answered
+- 2026-11-09 `9aeb335` Coach: guard on data claims; plain words and nearest names for colors in the shared report; gateway decisions and accessibility testing list
+- 2026-11-09 `b062047` Gateways: a much larger set of words to choose from, grouped, each described
+- 2026-11-09 `9596700` Docs: accessibility testing list: the larger word lists and the Essence wheels
+- 2026-11-09 `d54b47a` Gateways: one grouped, searchable word picker replaces the scroll boxes and the Essence wheels
+- 2026-11-09 `580d6c1` Attributions: the Color API paragraph credits the author and our limits, without the contact attempt
+- 2026-11-09 `b40c1a1` Docs: scope a Solresol phrase-to-melody step for the Sound gateway
+- 2026-11-09 `550929a` Sound gateway: a link to solresol.xyz, labeled as an outside site, with credit
+- 2026-11-09 `193bd15` Sound gateway: a melody of phrases, one for each color, with reorder, mute, pace, volume and a sound file
+- 2026-11-09 `d281eee` Body map: at the bottom of the Sight page, and the color picker opens when a body part is chosen
+- 2026-11-09 `1302a1b` English-only notice and a way for translators to write; the languages answer goes live
+- 2026-11-09 `e4e873f` Color picker: the custom color control is at the top, above the palettes
+- 2026-11-09 `c16730e` Coach: a gentle note while typing when a name or contact detail is found, and a notice before sending a transcript
+- 2026-11-09 `12cac40` Coach: colors in a pasted saved report are described in plain words too
+- 2026-11-09 `d2d6a37` NVC page: an invitation to critical feedback; the report form names it
+- 2026-11-09 `4b030b1` Docs: image candidates from the Met and Openverse, and live search from the gateways scoped
+
