@@ -111,13 +111,13 @@ try {
   // Palettes in the Sight gateway: optional, made on the device by default, and the one online choice says what it sends before it is pressed.
   {
     const { PalettePanel } = await vite.ssrLoadModule('/src/app/components/PalettePanel.tsx');
-    h = render(PalettePanel, { color1: '#1B4F6E', color2: '#E3752B', value: null, onChange: noop });
+    h = render(PalettePanel, { color1: '#1B4F6E', color2: '#E3752B', values: [], onChange: noop });
     ok('palettes: optional, with a bridge and the kinds of harmony, and nothing is made or asked until a button is pressed', typeof h === 'string' && h.includes('Make a palette from these colors (optional)') && h.includes('Make a bridge') && h.includes('Make it on my device') && h.includes('Neighbors and opposite') && h.includes('Three evenly spaced') && !h.includes('Keep this palette in my report'), h.error ?? '');
     ok('palettes: the online button says what is sent, to whom, and that nothing else is, before it is pressed', typeof h === 'string' && h.includes('Ask The Color API') && h.includes('sends this one color, as a hex code, through our server to The Color API') && h.includes('Nothing else is sent, and we store nothing') && h.includes('sends nothing anywhere') && h.includes('no color has a fixed meaning'), h.error ?? '');
-    h = render(PalettePanel, { color1: '#1B4F6E', color2: '#E3752B', value: { source: 'The Color API', kind: 'analogic', base: 'present', colors: [{ hex: '#1B4F6E', name: 'Seafarer' }, { hex: '#2D6F8E' }] }, onChange: noop });
-    { const t = typeof h === 'string' ? h.replace(/<!-- -->/g, '') : ''; ok('palettes: a kept palette is shown with where it was made, and can be removed', t.includes('In your report: Palette you made') && t.includes('generated with The Color API') && t.includes('Seafarer #1B4F6E') && t.includes('Remove it'), h.error ?? ''); }
+    h = render(PalettePanel, { color1: '#1B4F6E', color2: '#E3752B', values: [{ source: 'The Color API', kind: 'analogic', base: 'present', colors: [{ hex: '#1B4F6E', name: 'Seafarer' }, { hex: '#2D6F8E' }] }, { source: 'device', kind: 'bridge', useInSound: true, colors: [{ hex: '#1B4F6E' }, { hex: '#E3752B' }] }], onChange: noop });
+    { const t = typeof h === 'string' ? h.replace(/<!-- -->/g, '') : ''; ok('palettes: up to two kept palettes are shown, numbered, with where each was made, each with a choice to use it in the Sound gateway, and can be removed', t.includes('In your report: Palette 1 you made') && t.includes('In your report: Palette 2 you made') && t.includes('generated with The Color API') && t.includes('Seafarer #1B4F6E') && t.includes('also used in the Sound gateway') && t.includes('Use this palette in the Sound gateway') && t.includes('Remove it'), h.error ?? ''); }
     const sightSrc = readFileSync(new URL('../src/app/components/pages/SightGatewayPage.tsx', import.meta.url), 'utf8');
-    ok('palettes: the Sight gateway carries a kept palette into its data, and clears it when reset', /<PalettePanel color1=\{color1\} color2=\{color2\} value=\{generatedPalette\} onChange=\{setGeneratedPalette\}/.test(sightSrc) && /gradientDirection,\n\s+generatedPalette,/.test(sightSrc) && /setGeneratedPalette\(null\)/.test(sightSrc));
+    ok('palettes: the Sight gateway carries up to two kept palettes into its data, and clears them when reset', /<PalettePanel color1=\{color1\} color2=\{color2\} values=\{generatedPalettes\} onChange=\{setGeneratedPalettes\}/.test(sightSrc) && /gradientDirection,\n\s+generatedPalettes:/.test(sightSrc) && /setGeneratedPalettes\(\[\]\)/.test(sightSrc));
   }
   // The body map on the Sight gateway's page, and a kept palette in the PDF.
   {
@@ -129,7 +129,7 @@ try {
     const sightPage = readFileSync(new URL('../src/app/components/pages/SightGatewayPage.tsx', import.meta.url), 'utf8');
     ok('the Sight gateway shows the body map on the page, beside the palette', /<BodyMapAvatar\s+inline/.test(sightPage) && !/setShowBodyMap/.test(sightPage));
     const pdfSrc = readFileSync(new URL('../src/lib/nenyaPdfReport.ts', import.meta.url), 'utf8');
-    ok('the PDF report draws a kept palette as colour chips with their names written out in full (wrapped, not cut short)', /generatedPalette\?\.colors/.test(pdfSrc) && /label: `Palette \$\{i \+ 1\}`/.test(pdfSrc) && /caption: c\.name \?\? c\.hex/.test(pdfSrc) && /splitTextToSize\(s\.caption/.test(pdfSrc));
+    ok('the PDF report draws each kept palette (up to two) as a row of colour chips with their names written out in full (wrapped, not cut short)', /generatedPalettes/.test(pdfSrc) && /heading: `Palette/.test(pdfSrc) && /caption: c\.name \?\? c\.hex/.test(pdfSrc) && /splitTextToSize\(s\.caption/.test(pdfSrc));
   }
   // The loading screen, the tour offer and the tour.
   const { LoadingVeil } = await vite.ssrLoadModule('/src/app/components/LoadingVeil.tsx');

@@ -104,11 +104,16 @@ export interface GeneratedPalette {
   /** For a mode: which colour it was made around. */
   base?: 'present' | 'wish';
   colors: { hex: string; name?: string }[];
+  /** The person chose to carry this palette into the Sound gateway (docs/sound-from-colors-scope.md). */
+  useInSound?: boolean;
 }
 
+/** Up to two palettes can be kept. */
+export const MAX_PALETTES = 2;
+
 /** One plain line for the report: what it is, where it was made, and the colours. */
-export function describePalettePlainly(p: GeneratedPalette): string {
+export function describePalettePlainly(p: GeneratedPalette, n?: number): string {
   const how = p.kind === 'bridge' ? 'a bridge from the current color to the wish color' : `${MODE_LABELS[p.kind].label.toLowerCase()}, around the ${p.base === 'wish' ? 'wish' : 'current'} color`;
   const src = p.source === 'The Color API' ? 'generated with The Color API (thecolorapi.com)' : 'made on the device';
-  return `Palette you made: ${how}, ${src}: ${p.colors.map((c) => (c.name ? `${c.name} ${c.hex}` : c.hex)).join(', ')}`;
+  return `${n ? `Palette ${n} you made` : 'Palette you made'}: ${how}, ${src}: ${p.colors.map((c) => (c.name ? `${c.name} ${c.hex}` : c.hex)).join(', ')}${p.useInSound ? ' (also used in the Sound gateway)' : ''}`;
 }

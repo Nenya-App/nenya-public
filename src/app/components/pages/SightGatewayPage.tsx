@@ -130,7 +130,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   const [color2, setColor2] = useState(theme === 'dark' ? '#FFFFFF' : '#000000');
   const [color1Name, setColor1Name] = useState('');
   const [color2Name, setColor2Name] = useState('');
-  const [generatedPalette, setGeneratedPalette] = useState<GeneratedPalette | null>(null);
+  const [generatedPalettes, setGeneratedPalettes] = useState<GeneratedPalette[]>([]);
   const [color1Qualities, setColor1Qualities] = useState<string[]>([]);
   const [color2Qualities, setColor2Qualities] = useState<string[]>([]);
   const [color1Intensity, setColor1Intensity] = useState(50);
@@ -151,7 +151,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
     setColor2Qualities([]);
     setColor1Intensity(50);
     setColor2Intensity(50);
-    setGeneratedPalette(null);
+    setGeneratedPalettes([]);
   };
 
   const handleNext = () => {
@@ -167,7 +167,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
       color1Intensity,
       color2Intensity,
       gradientDirection,
-      generatedPalette,
+      generatedPalettes: generatedPalettes.length > 0 ? generatedPalettes : null,
     });
   };
 
@@ -504,7 +504,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 initialNotes={bodyMapData.notes}
               />
 
-              <PalettePanel color1={color1} color2={color2} value={generatedPalette} onChange={setGeneratedPalette} />
+              <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} />
 
               {/* Next Button */}
               <div className="flex justify-center pt-4">

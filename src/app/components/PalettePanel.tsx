@@ -6,19 +6,20 @@
 // without seeing it.
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
-import { bridge, describePalettePlainly, fetchScheme, localScheme, MODE_LABELS, SCHEME_MODES, type GeneratedPalette, type SchemeMode } from '../../lib/colorSchemes';
+import { bridge, describePalettePlainly, fetchScheme, localScheme, MAX_PALETTES, MODE_LABELS, SCHEME_MODES, type GeneratedPalette, type SchemeMode } from '../../lib/colorSchemes';
 import { describePlainly, loadColorNames, suggestName } from '../../lib/colorNames';
 
 interface PalettePanelProps {
   color1: string;
   color2: string;
-  value: GeneratedPalette | null;
-  onChange: (next: GeneratedPalette | null) => void;
+  /** The palettes kept so far (up to two). */
+  values: GeneratedPalette[];
+  onChange: (next: GeneratedPalette[]) => void;
 }
 
 type Draft = Omit<GeneratedPalette, 'colors'> & { colors: string[] };
 
-export function PalettePanel({ color1, color2, value, onChange }: PalettePanelProps) {
+export function PalettePanel({ color1, color2, values, onChange }: PalettePanelProps) {
   const [mode, setMode] = useState<SchemeMode>('analogic');
   const [base, setBase] = useState<'present' | 'wish'>('present');
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -60,7 +61,8 @@ export function PalettePanel({ color1, color2, value, onChange }: PalettePanelPr
 
   // Every color is kept with its suggested name, so the report names the colors of the palette (the names were found when it was shown; any that are
   // missing are found now).
-  const keep = async () => {
+  // `slot` replaces palette 1 or 2; without it the draft is added as the next palette.
+  const keep = async (slot?: number) => {
     if (!draft) return;
     let all = names;
     if (draft.colors.some((hex) => !names[hex])) {
@@ -70,8 +72,12 @@ export function PalettePanel({ color1, color2, value, onChange }: PalettePanelPr
         for (const hex of draft.colors) if (!all[hex]) { const s = suggestName(hex, list); if (s) all[hex] = s.name; }
       } catch { /* the report then carries hex codes for those */ }
     }
-    onChange({ source: draft.source, kind: draft.kind, ...(draft.base ? { base: draft.base } : {}), colors: draft.colors.map((hex) => ({ hex, ...(all[hex] ? { name: all[hex] } : {}) })) });
-    setSaid('Palette kept in your report, with the names of its colors.');
+    const next: GeneratedPalette = { source: draft.source, kind: draft.kind, ...(draft.base ? { base: draft.base } : {}), colors: draft.colors.map((hex) => ({ hex, ...(all[hex] ? { name: all[hex] } : {}) })) };
+    const at = slot ?? values.length;
+    const list = [...values];
+    list[Math.min(at, MAX_PALETTES - 1)] = next;
+    onChange(list.slice(0, MAX_PALETTES));
+    setSaid(`Palette ${Math.min(at, MAX_PALETTES - 1) + 1} kept in your report, with the names of its colors.`);
   };
 
   return (
@@ -135,18 +141,31 @@ export function PalettePanel({ color1, color2, value, onChange }: PalettePanelPr
               ))}
             </ol>
             <div className="flex flex-wrap items-center gap-3">
-              <Button type="button" size="sm" onClick={keep}>Keep this palette in my report</Button>
+              {values.length < MAX_PALETTES ? (
+                <Button type="button" size="sm" onClick={() => keep()}>Keep this palette in my report ({values.length + 1} of {MAX_PALETTES})</Button>
+              ) : (
+                <>
+                  <Button type="button" size="sm" onClick={() => keep(0)}>Replace palette 1 with this</Button>
+                  <Button type="button" size="sm" variant="outline" onClick={() => keep(1)}>Replace palette 2 with this</Button>
+                </>
+              )}
               <button type="button" className="text-xs underline underline-offset-4 hover:text-foreground" onClick={() => setDraft(null)}>Discard</button>
             </div>
           </div>
         )}
 
-        {value && (
-          <p role="status" className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-foreground">
-            In your report: {describePalettePlainly(value)}.{' '}
-            <button type="button" className="underline underline-offset-4" onClick={() => onChange(null)}>Remove it</button>
-          </p>
-        )}
+        {values.map((v, i) => (
+          <div key={i} role="status" className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-foreground">
+            <p>In your report: {describePalettePlainly(v, values.length > 1 ? i + 1 : undefined)}.</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={!!v.useInSound} onChange={(e) => onChange(values.map((x, j) => (j === i ? { ...x, useInSound: e.target.checked } : x)))} className="size-4" />
+                Use this palette in the Sound gateway
+              </label>
+              <button type="button" className="underline underline-offset-4" onClick={() => onChange(values.filter((_, j) => j !== i))}>Remove it</button>
+            </div>
+          </div>
+        ))}
       </div>
     </details>
   );

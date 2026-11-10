@@ -92,7 +92,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.color2Intensity !== undefined) {
         info.push(`  Intensity: ${data.color2Intensity}/100`);
       }
-      if (data.generatedPalette?.colors?.length) info.push(describePalettePlainly(data.generatedPalette));
+      (data.generatedPalettes ?? []).forEach((p: any, i: number) => { if (p?.colors?.length) info.push(describePalettePlainly(p, (data.generatedPalettes ?? []).length > 1 ? i + 1 : undefined)); });
       break;
 
     case 'sound':

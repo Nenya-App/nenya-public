@@ -251,10 +251,14 @@ export async function downloadNenyaPdfReport(
       gd.gateway === 'sound' && Array.isArray(gd.data?.melody) && gd.data.melody.some((n: number | null) => n !== null)
         ? gd.data.melody
         : null;
-    // A palette the person kept (src/lib/colorSchemes.ts): its colours drawn as chips, a second row under the present and wish colours.
-    const kept: { hex: string; name?: string }[] = gd.gateway === 'sight' && Array.isArray(gd.data?.generatedPalette?.colors) ? gd.data.generatedPalette.colors.filter((c: any) => /^#[0-9a-f]{6}$/i.test(c?.hex ?? '')) : [];
+    // Palettes the person kept (src/lib/colorSchemes.ts, up to two): each drawn as a row of colour chips with the names written out.
+    const keptPalettes: { colors: { hex: string; name?: string }[]; heading: string }[] = gd.gateway === 'sight' && Array.isArray(gd.data?.generatedPalettes)
+      ? gd.data.generatedPalettes
+          .map((p: any, i: number) => ({ colors: (p?.colors ?? []).filter((c: any) => /^#[0-9a-f]{6}$/i.test(c?.hex ?? '')), heading: `Palette ${gd.data.generatedPalettes.length > 1 ? i + 1 : ''}`.trim() + (p?.source === 'The Color API' ? ' (generated with The Color API)' : ' (made on the device)') }))
+          .filter((p: any) => p.colors.length)
+      : [];
     const estimatedHeight =
-      14 + dataLines.length * 5.6 + (hasColorSwatches ? 26 : 0) + (kept.length ? 26 : 0) + (melody ? 33 : 0) + 10;
+      14 + dataLines.length * 5.6 + (hasColorSwatches ? 26 : 0) + keptPalettes.length * 32 + (melody ? 33 : 0) + 10;
 
     if (y + estimatedHeight > pageHeight - 26) {
       y = newContentPage();
@@ -283,12 +287,17 @@ export async function downloadNenyaPdfReport(
       y += consumed;
     }
 
-    if (kept.length) {
-      if (y + 26 > pageHeight - 26) {
+    for (const kp of keptPalettes) {
+      if (y + 32 > pageHeight - 26) {
         y = newContentPage();
       }
-      // The names of the colors are written out in full under each chip (wrapped onto two lines if long), not cut short.
-      y += drawColorSwatches(doc, margin + 4, y, kept.map((c, i) => ({ hex: c.hex, label: `Palette ${i + 1}`, caption: c.name ?? c.hex })));
+      doc.setFont('ManropeSemiBold', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...COLORS.ink);
+      doc.text(kp.heading, margin + 4, y + 2);
+      y += 5;
+      // The names of the colors are written out in full under each chip (wrapped onto lines if long), not cut short.
+      y += drawColorSwatches(doc, margin + 4, y, kp.colors.map((c: { hex: string; name?: string }, i: number) => ({ hex: c.hex, label: `${i + 1}`, caption: c.name ?? c.hex })));
     }
 
     if (melody) {

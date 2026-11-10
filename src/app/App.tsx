@@ -55,8 +55,8 @@ export interface UserColors {
   color1Intensity?: number;
   color2Intensity?: number;
   gradientDirection?: string;
-  /** A palette the person made in the Sight gateway and chose to keep (their own colours; see src/lib/colorSchemes.ts). */
-  generatedPalette?: import('../lib/colorSchemes').GeneratedPalette | null;
+  /** Up to two palettes the person made in the Sight gateway and chose to keep (their own colours; see src/lib/colorSchemes.ts). */
+  generatedPalettes?: import('../lib/colorSchemes').GeneratedPalette[] | null;
 }
 
 export interface GatewayData {
