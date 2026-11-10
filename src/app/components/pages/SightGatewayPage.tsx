@@ -305,20 +305,24 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               <div className="grid md:grid-cols-2 gap-6 md:gap-8">
                 {/* Present State Card */}
                 <Card
-                  className="cursor-pointer transition-all hover:shadow-lg overflow-hidden"
+                  className="transition-all hover:shadow-lg overflow-hidden"
                   style={{
                     boxShadow: `0 0 20px ${color1}40, 0 0 40px ${color1}20`,
                     borderColor: `${color1}60`,
                     borderWidth: '2px'
                   }}
-                  onClick={() => setActiveColorPicker('present')}
                 >
                   <div
-                    className="h-32 md:h-40 relative group"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Choose the current state color. It is now ${color1}.`}
+                    onClick={() => setActiveColorPicker('present')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveColorPicker('present'); } }}
+                    className="h-32 md:h-40 relative group cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring"
                     style={{ backgroundColor: color1 }}
                   >
                     <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-                      <Palette className="size-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                      <Palette className="size-8 text-white opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity drop-shadow-lg" />
                     </div>
                   </div>
                   <CardHeader>
@@ -387,20 +391,24 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
 
                 {/* Potential State Card */}
                 <Card
-                  className="cursor-pointer transition-all hover:shadow-lg overflow-hidden"
+                  className="transition-all hover:shadow-lg overflow-hidden"
                   style={{
                     boxShadow: `0 0 20px ${color2}40, 0 0 40px ${color2}20`,
                     borderColor: `${color2}60`,
                     borderWidth: '2px'
                   }}
-                  onClick={() => setActiveColorPicker('potential')}
                 >
                   <div
-                    className="h-32 md:h-40 relative group"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Choose the wish state color. It is now ${color2}.`}
+                    onClick={() => setActiveColorPicker('potential')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveColorPicker('potential'); } }}
+                    className="h-32 md:h-40 relative group cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring"
                     style={{ backgroundColor: color2 }}
                   >
                     <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-                      <Palette className="size-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                      <Palette className="size-8 text-white opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity drop-shadow-lg" />
                     </div>
                   </div>
                   <CardHeader>
