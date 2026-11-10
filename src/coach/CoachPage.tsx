@@ -54,7 +54,7 @@ export default function CoachPage() {
   }, [colors]);
 
   const goToApp = (about?: string) => {
-    window.location.href = about === undefined ? '/' : `/?about=${encodeURIComponent(about)}`;
+    window.location.href = about === undefined ? '/' : about === '' ? '/about' : `/about/${encodeURIComponent(about)}`;
   };
 
   return (

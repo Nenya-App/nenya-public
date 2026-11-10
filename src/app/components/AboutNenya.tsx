@@ -49,6 +49,8 @@ type AboutSection =
   | 'support-us'
   | 'terms';
 
+import { aboutPath, aboutSectionFromLocation, aboutTitle } from '../../lib/aboutRoutes';
+
 export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOpenPartnerPreview }: AboutNenyaProps) {
   const [currentSection, setCurrentSection] = useState<AboutSection>(
     (initialSection as AboutSection) || 'menu'
@@ -65,6 +67,29 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOp
   }, [currentSection]);
 
   const handleBackToMenu = () => setCurrentSection('menu');
+
+  // The address follows the page: /about for the menu, /about/<section> for a page. A new address is a history entry, so the browser's back button works.
+  useEffect(() => {
+    const path = aboutPath(currentSection === 'menu' ? '' : currentSection);
+    if (window.location.pathname !== path) {
+      // Moving between About addresses is a new history entry; arriving by the old ?about= form or from another address replaces it.
+      const onAboutPath = /^\/about(\/|$)/i.test(window.location.pathname);
+      window.history[onAboutPath ? 'pushState' : 'replaceState'](null, '', path);
+    } else if (window.location.search) {
+      window.history.replaceState(null, '', path);
+    }
+    document.title = aboutTitle(currentSection === 'menu' ? '' : currentSection);
+  }, [currentSection]);
+
+  // Back and forward between About addresses.
+  useEffect(() => {
+    const onPop = () => {
+      const s = aboutSectionFromLocation(window.location.pathname, window.location.search);
+      if (s !== null) setCurrentSection((s || 'menu') as AboutSection);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   return (
     <ErrorBoundary>

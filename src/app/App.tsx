@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ThemeProvider } from './components/ThemeProvider';
 import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
+import { aboutSectionFromLocation, SITE_TITLE } from '../lib/aboutRoutes';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
@@ -67,11 +68,10 @@ export interface GatewayData {
 type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about';
 
 export default function App() {
-  // The coach page's header links back here with ?about or ?about=<section>.
+  // An address under /about (or the older /?about=<section>) opens that About page.
   const [initialAbout] = useState<string | null>(() => {
     try {
-      const p = new URLSearchParams(window.location.search);
-      return p.has('about') ? p.get('about') || '' : null;
+      return aboutSectionFromLocation(window.location.pathname, window.location.search);
     } catch {
       return null;
     }
@@ -88,6 +88,23 @@ export default function App() {
   const [, setScreenHistory] = useState<ScreenType[]>([]);
   const [aboutSection, setAboutSection] = useState<string | undefined>(initialAbout || undefined);
   // Agreement is asked every visit unless the visitor chose "Remember on this device" and the terms are unchanged.
+  // The browser's back button from an About address to a non-About one leaves the About pages.
+  useEffect(() => {
+    const onPop = () => {
+      if (currentScreen === 'about' && aboutSectionFromLocation(window.location.pathname, window.location.search) === null) {
+        setAboutSection(undefined);
+        setCurrentScreen('welcome');
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [currentScreen]);
+  // Leaving the About pages by the app's own buttons returns the address and the title to the site's own.
+  useEffect(() => {
+    if (currentScreen === 'about') return;
+    if (aboutSectionFromLocation(window.location.pathname, '') !== null) window.history.replaceState(null, '', '/');
+    document.title = SITE_TITLE;
+  }, [currentScreen]);
   const [termsAgreed, setTermsAgreed] = useState(() => termsAcceptedFor(LEGAL_EFFECTIVE_DATE));
   
   // Gateway system state

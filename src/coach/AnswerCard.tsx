@@ -11,7 +11,7 @@ export interface AnswerCardData {
   partial?: boolean;
 }
 
-const hrefFor = (l: { page?: string; href?: string }): string | null => (l.href ? l.href : l.page ? `/?about=${encodeURIComponent(l.page)}` : null);
+const hrefFor = (l: { page?: string; href?: string }): string | null => (l.href ? l.href : l.page ? `/about/${encodeURIComponent(l.page)}` : null);
 
 export function AnswerCard({ card }: { card: AnswerCardData }) {
   const links = card.links.map((l) => ({ label: l.label, href: hrefFor(l) })).filter((l): l is { label: string; href: string } => !!l.href);
