@@ -22,12 +22,29 @@ Status (2026-11-10): **draft for the owner's review. Nothing here is live and no
 | Claim | Status | Who found it | Verified |
 | --- | --- | --- | --- |
 | Israel's continued presence in the occupied Palestinian territory is unlawful and must end as soon as possible; the settlements and their regime were set up in violation of international law; Israel must evacuate settlers and make reparation; other states should not recognize or assist the situation | **A court's opinion** (advisory, not binding): International Court of Justice, 19 July 2024, 11 votes to 4 on the main finding | ICJ | Verified |
-| Israel's laws and measures in the West Bank and East Jerusalem breach Article 3 of the anti-racial-discrimination convention, which prohibits racial segregation and apartheid (the Court did not say which of the two) | **A court's opinion**, same advisory opinion | ICJ | **To check** (the HRW headline reads it as apartheid; the Court's own wording is narrower) |
-| Israel's rule over Palestinians amounts to the crime of apartheid | Findings by **human rights organizations**, including Israeli ones: B'Tselem (2021), Human Rights Watch (2021), Amnesty International (2022), and UN special rapporteurs. Not a ruling by a court. Disputed by Israel and others | B'Tselem, HRW, Amnesty | **To check** dates and wording |
-| What Israel has done in Gaza since October 2023 is genocide | **Findings by an independent UN commission and by human rights and genocide scholars' bodies**: the UN Independent International Commission of Inquiry on the Occupied Palestinian Territory (16 September 2025, chaired by Navi Pillay), Amnesty International (December 2024), B'Tselem and Physicians for Human Rights Israel (2025). **The ICJ has not ruled.** In January 2024 it found South Africa's claim plausible and ordered protective measures; Israel filed its counter-memorial in March 2026 and the written rounds run to 2029. Israel rejects the finding | UN COI, Amnesty, B'Tselem, PHRI | Verified (the UN COI and the case timeline); Amnesty, B'Tselem, PHRI reported |
+| Israel's laws and measures in the West Bank and East Jerusalem breach Article 3 of the anti-racial-discrimination convention, which prohibits racial segregation and apartheid (the Court did not say which of the two) | **A court's opinion**, same advisory opinion | ICJ | **To check** (the HRW headline reads it as apartheid; the Court's own wording is narrower). The UN's copy of the opinion is linked below |
+| Israel's rule over Palestinians amounts to the crime of apartheid | Findings by **human rights organizations**, including an Israeli one: B'Tselem (12 January 2021), Human Rights Watch (27 April 2021: the crimes against humanity of apartheid and persecution; HRW says "apartheid state" is not a legal category), Amnesty International (1 February 2022), and UN special rapporteurs. Not a ruling by a court. Disputed by Israel and others | B'Tselem, HRW, Amnesty | Verified (official pages found) |
+| What Israel has done in Gaza since October 2023 is genocide | **Findings by an independent UN commission and by human rights and genocide scholars' bodies**: the UN Independent International Commission of Inquiry on the Occupied Palestinian Territory (16 September 2025, chaired by Navi Pillay), Amnesty International (5 December 2024), B'Tselem and Physicians for Human Rights Israel (2025). **The ICJ has not ruled.** In January 2024 it found South Africa's claim plausible and ordered protective measures; Israel filed its counter-memorial in March 2026 and the written rounds run to 2029. Israel rejects the finding. Amnesty reported in November 2025 that it continued despite the ceasefire | UN COI, Amnesty, B'Tselem, PHRI | Verified (UN COI, Amnesty and the case timeline); B'Tselem and PHRI reported |
 | The Holocaust; the Armenian genocide (recognized by the US in 2021); Rwanda 1994; Srebrenica (the ICJ found genocide there in 2007); Cambodia (convictions in 2018) | **Adjudicated or universally recognized** | Courts and tribunals, historians | To check dates |
+| In October 2025 the ICJ gave a second advisory opinion: Israel must ensure the population's basic needs are met, must not use starvation of civilians as a method of warfare, and may not unilaterally block the UN's work | **A court's opinion** (advisory), 22 October 2025 | ICJ | Verified (summary on the UN's page) |
 | Slavery, the removal and killing of Native peoples, Native boarding schools (the US government apologized in October 2024), Jim Crow, the incarceration of Japanese Americans (the US apologized and paid redress in 1988) | **Documented history; the US government has itself acknowledged several** | Historians, government records | To check dates |
 | Colonization and settler colonialism: the taking of land and rule over peoples by force, with the denial of their rights, across the Americas, Africa, Asia, Australia and elsewhere | **Documented history**, including in the founding of several states | Historians | General |
+
+## 2b. Links to name (decided 2026-11-10: name the organizations, link where possible)
+- International Court of Justice, advisory opinion of 19 July 2024 (the UN's copy): https://www.un.org/unispal/document/advisory-opinion-icj-19jul24/ and its summary https://www.un.org/unispal/document/summary-of-the-icj-order-icj-19jul24/; the Court's site: https://www.icj-cij.org/
+- International Court of Justice, advisory opinion of 22 October 2025 (summary): https://www.un.org/unispal/document/summary-advisory-opinion-icj-22oct25/
+- UN Independent International Commission of Inquiry, report of 16 September 2025: **link still to add** (I could not find the report page in search; the OHCHR page for the Commission is the place)
+- Amnesty International, apartheid (1 February 2022): https://www.amnesty.org/en/documents/mde15/5141/2022/en/
+- Amnesty International, genocide, "You Feel Like You Are Subhuman" (5 December 2024), executive summary: https://www.amnesty.org/en/documents/mde15/8744/2024/en/
+- Human Rights Watch, "A Threshold Crossed" (27 April 2021): https://www.hrw.org/report/2021/04/27/threshold-crossed/israeli-authorities-and-crimes-apartheid-and-persecution
+- B'Tselem, "This is apartheid" (12 January 2021): https://www.btselem.org/publications/fulltext/202101_this_is_apartheid
+- Still to add by the reviewer: B'Tselem and PHRI on genocide; the ICJ order of January 2024; the US apologies; the genocide convention text.
+
+## 2c. Keeping it current (the coach cannot search the web)
+The coach runs in an encrypted environment with no web search or scraping, and that is how it should stay. So the facts live in **the site's text and cards, updated by you** (and by me in a session, when you ask), never fetched by the coach:
+- Every card and the page carry a **"last reviewed" date** and a short "as of" line for anything still moving (the Gaza case, the ceasefire, new rulings or reports).
+- A **review every month or two**, and any time a court rules or a major body reports: a short checklist is in the to-do list. The coach's own rule states only durable facts (the Holocaust, the 2024 advisory opinion), so it does not go out of date; what moves is on the cards, which are served by the site.
+- A search for what changed is run in a Claude Code session when you ask, with sources recorded in the commit message.
 
 ## 3. The page text (draft, for an About page: "Where we stand on genocide, occupation, apartheid and colonization")
 Plain language, for a general reader.
@@ -85,9 +102,10 @@ They are built from the NVC tradition, the public record and our own words. **Th
 4. **Link to the boundaries ladder** (`docs/coach-boundaries-scope.md`): justifying or denying mass violence is a new category; its response is the challenge above, not ending the conversation. Ending is for continued dehumanizing language after the ladder's second level.
 5. **Review:** a historian or international-law reader for section 2; a counselor for the survivor wording; your read of the voice. Translation later, with native speakers.
 
-## 7. Decisions for you
-1. **The positions in section 3 as written.** In particular: "we agree with them" on apartheid and on genocide in Gaza, and the sentence about the court. If you want it firmer or plainer, say so.
-2. **Whether the page names the organizations** (ICJ, UN commission, Amnesty, HRW, B'Tselem) or says "leading human rights organizations".
+## 7. Decisions
+**Decided 2026-11-10:** keep "we agree with them" on apartheid and on genocide in Gaza; name the organizations and link where possible; the text is updated from the site, not by the coach.
+**Still open:**
+1. The sentence about the court, and the rest of section 3 as written.
 3. **The 7 October paragraph and the sentence that no Jewish person or Palestinian is responsible for their government.** I added them because the same standard for everyone is what makes the page hold up; strike them if you disagree.
 4. **Whether the list of recognized genocides should include more** (for example Bosnia beyond Srebrenica, Darfur, the Uyghurs, the Rohingya) and which counts as established versus found by some bodies.
 5. **Who reviews the facts**, and whether to link primary documents.
