@@ -81,6 +81,7 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
               <li>Technical errors or unexpected behavior</li>
               <li>Conversations you'd like to submit as training data</li>
               <li>Violations of our Terms of Service or community guidelines</li>
+              <li>Criticism of Nonviolent Communication, of using AI for something like this, or of Nenya itself (all welcome)</li>
               <li>General feedback about your experience with Nenya</li>
             </ul>
           </div>

@@ -312,6 +312,16 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               </div>
             </Card>
 
+            {/* Critical feedback */}
+            <Card className="p-6">
+              <h3 className="mb-2 text-base">Critical feedback is welcome</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Nonviolent Communication has thoughtful critics, and so does using an AI for something like this. If you think NVC is the wrong method, that parts of it are used badly here, or that an AI should not be part of this at all, we would like to hear it. Write to{' '}
+                <a href="mailto:info@nenya.biz?subject=Feedback%20about%20NVC%20and%20Nenya" className="underline underline-offset-2">info@nenya.biz</a>{' '}
+                or use the report form. A person reads what arrives; we cannot promise a reply, and we may not agree, but we will read it.
+              </p>
+            </Card>
+
             {/* Final note */}
             <Card className="p-6 bg-gradient-to-br from-nenya-gold/5 to-nenya-gold-light/5 border-nenya-gold/30">
               <p className="text-sm text-muted-foreground italic leading-relaxed">
