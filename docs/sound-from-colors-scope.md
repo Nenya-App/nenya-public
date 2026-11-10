@@ -31,3 +31,8 @@ Up to two kept palettes (`generatedPalettes`: five colors each, each with a colo
 
 ## Not verified
 - How a 36-note melody sounds and whether it is pleasant (it needs listening); the audio code with long sequences on phones; any change needed to the scales for 36 notes.
+
+## Progress (2026-11-10): built in dev
+- `src/lib/longMelody.ts` (phrases, order, mute, note edits, scale carry-over), `src/lib/melodyPlayer.ts` (pace, volume, stop, highlight callback, WAV file made on the device), `src/app/components/PhraseMelody.tsx`, the Sound page, and the report text. Tests: `tests/long-melody.test.mts`.
+- Rules as built: present and wish phrases cannot be muted or removed (they can be moved and their notes changed); palette phrases can be muted (a muted phrase is left out of playback and the file, not played as silence); the colors seed the notes once and after that nothing a person does with notes changes a color; the report's melody colors while connected are the Sight colors; with no description written by the site, the report lists only the colors and note values, and the person's own words go in the existing description box.
+- Not done: nobody has listened to a 36-note melody, or tried the sound page with a screen reader, a phone or the file download in Safari.
