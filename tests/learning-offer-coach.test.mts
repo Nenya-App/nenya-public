@@ -69,6 +69,6 @@ ok('a forged proof, a proof moved to another reply, or another card\'s id is ign
 ok('an offer for a card that no longer exists is not recorded', (__setCardsForTests([card('dehum-04')]), (await receipt([{ after: offerAt, id: offerObj.id, proof: offerObj.proof }])).transcript.site.every((x: any) => x.kind !== 'offer')));
 __setCardsForTests([{ ...card('dehum-01'), title: 'What blatant dehumanization is' }]);
 // the report function accepts the new kind
-const sent = await report(new Request('https://nenya.biz/api/report', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ signed: { transcript: good.transcript, receipt: good.receipt }, choices: { keep: '30d', uses: [] } }) }));
-ok('a signed transcript that records an offer is accepted when sent to Nenya', sent.status === 204);
+const sent = await report(new Request('https://nenya.biz/api/report', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ signed: { transcript: good.transcript, receipt: good.receipt }, choices: { adult: true, keep: '30d', uses: [] } }) }));
+ok('a signed transcript that records an offer is accepted when sent to Nenya', sent.status < 300);
 __setCardsForTests(null);

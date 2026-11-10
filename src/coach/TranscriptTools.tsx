@@ -119,6 +119,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
   // Only a signed transcript can be sent. The function checks the signature first, then forwards the readable text (rebuilt
   // from the signed transcript, so it is exactly the text shown above) with the signed file.
   const [choices, setChoices] = useState<ChoiceState>(emptyChoices());
+  const [consentReceipt, setConsentReceipt] = useState<string | null>(null);
   const toSend = choicesToSend(choices);
 
   const sendToNenya = async () => {
@@ -131,6 +132,15 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
         body: JSON.stringify({ signed: { transcript: signedRef.current, receipt }, note: note.trim(), choices: toSend }),
       });
       if (!res.ok) throw new Error(String(res.status));
+      // With a signing key the site answers with the person's consent receipt (what they agreed to, signed); they are offered it to keep.
+      if (res.status === 200) {
+        try {
+          const j = (await res.json()) as { consentReceipt?: unknown };
+          if (j.consentReceipt) setConsentReceipt(JSON.stringify(j.consentReceipt, null, 2) + '\n');
+        } catch {
+          /* no receipt; the conversation was still sent */
+        }
+      }
       setShare('sent');
     } catch {
       setShare('error');
@@ -209,7 +219,16 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
           )}
         </div>
       )}
-      {share === 'sent' && <p className="text-xs text-muted-foreground" role="status">Thank you. Your transcript was sent{toSend ? `. You chose: ${describeChoices({ uses: toSend.uses, keep: toSend.keep, portions: toSend.portions })}` : ''}. To change or take back any of it, keep the signed file you downloaded and show it at nenya.biz/my-transcript.</p>}
+      {share === 'sent' && <p className="text-xs text-muted-foreground" role="status">Thank you. Your transcript was sent{toSend ? `. You chose: ${describeChoices({ uses: toSend.uses, keep: toSend.keep, adult: true, terms: toSend.terms, portions: toSend.portions })}` : ''}. To change or take back any of it, keep the signed file you downloaded and show it at nenya.biz/my-transcript.</p>}
+      {share === 'sent' && consentReceipt && (
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">Your consent receipt is a small file, signed by Nenya, that says what you agreed to and when. It is your own record, and it does not contain the conversation.</p>
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => downloadText(`nenya-consent-receipt-${(receipt?.hash ?? 'transcript').slice(0, 8)}.json`, 'application/json', consentReceipt)}>
+            <Download className="size-4" />
+            Consent receipt (.json)
+          </Button>
+        </div>
+      )}
     </section>
   );
 }

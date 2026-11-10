@@ -31,11 +31,12 @@ const stopRc = await coachPost({ action: 'receipt', stopped: true, messages: [{ 
 const STOPPED = { transcript: stopRc.transcript, receipt: stopRc.receipt };
 
 const call = async (fn: any, path: string, body?: any, method = 'POST') => { const res = await fn(new Request(`https://nenya.biz${path}`, { method, headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: method === 'GET' ? undefined : JSON.stringify(body) })); const t = await res.text(); return { status: res.status, json: t ? JSON.parse(t) : null }; };
-const send = (signed: any, choices: any) => call(report, '/api/report', { signed, choices });
+const withAdult = (c: any) => (c && typeof c === 'object' && !Array.isArray(c) && !('adult' in c) ? { adult: true, ...c } : c);
+const send = (signed: any, choices: any) => call(report, '/api/report', { signed, choices: withAdult(choices) });
 
 // ── the stop-level gate
 ok('a stopped conversation is recognised, an ordinary one is not', stopLevelFlagged(STOPPED.transcript) && !stopLevelFlagged(GOOD.transcript) && !stopLevelFlagged(null) && !stopLevelFlagged({ meta: undefined, checks: [{ message: 0, tier: 'soften', category: 'distress', source: 'phrase' } as any] }));
-ok('a stopped conversation can be sent for other uses, but never for publishing', (await send(STOPPED, { keep: '30d', uses: ['evaluate'] })).status === 204 && (await send(STOPPED, { keep: '30d', uses: ['publish'], portions: 'all', showFor: '30d' })).json?.reason === 'publish-not-allowed' && !store.j.has(pendingKey(STOPPED.receipt.hash)));
+ok('a stopped conversation can be sent for other uses, but never for publishing', (await send(STOPPED, { keep: '30d', uses: ['evaluate'] })).status < 300 && (await send(STOPPED, { keep: '30d', uses: ['publish'], portions: 'all', showFor: '30d' })).json?.reason === 'publish-not-allowed' && !store.j.has(pendingKey(STOPPED.receipt.hash)));
 
 // ── the automatic anonymizing
 const draft = anonymize(GOOD.transcript, 'all');
@@ -46,7 +47,7 @@ ok('the draft carries no colors, key id or date', !/#7A9B9E|keyId|issuedAt|sessi
 ok('the reviewer\'s final copy is refused if it has the wrong shape or still has an identifier', reviewProblem([]) === 'shape' && reviewProblem([{ by: 'person', text: '' }]) === 'shape' && reviewProblem([{ by: 'robot', text: 'x' }]) === 'shape' && reviewProblem([{ by: 'person', text: 'write to me@example.com' }]) === 'still-identifying' && reviewProblem([{ by: 'person', text: 'A calm week.' }]) === null);
 
 // ── sending for publishing, then review
-ok('allowing publishing waits for a person: nothing is public', (await send(GOOD, { keep: '90d', uses: ['publish'], portions: 'all', showFor: '30d' })).status === 204 && store.j.get(recordKey(hash)).publication === 'pending-review' && (await call(witnessed, '/api/witnessed', undefined, 'GET')).json.conversations.length === 0);
+ok('allowing publishing waits for a person: nothing is public', (await send(GOOD, { keep: '90d', uses: ['publish'], portions: 'all', showFor: '30d' })).status < 300 && store.j.get(recordKey(hash)).publication === 'pending-review' && (await call(witnessed, '/api/witnessed', undefined, 'GET')).json.conversations.length === 0);
 ok('only the owner can use the review function', (owner = false, (await call(review, '/api/witnessed-review', { action: 'list' })).status === 401) && (owner = true));
 const listed = await call(review, '/api/witnessed-review', { action: 'list' });
 ok('the owner sees the waiting conversation with an anonymized draft and not the signed original', listed.status === 200 && listed.json.pending.length === 1 && listed.json.pending[0].hash === hash && !/maria@example\.com/.test(JSON.stringify(listed.json)) && !/signature|"transcript"/.test(JSON.stringify(listed.json)));
@@ -95,7 +96,7 @@ const waiting = await call(review, '/api/witnessed-review', { action: 'deletions
 ok('a deletion that did not go through is listed for the owner, without any conversation', waiting.json.waiting.length === 1 && waiting.json.waiting[0].hash === hash && !/messages|content/.test(JSON.stringify(waiting.json)));
 ok('only the owner can see that list or act on it', (owner = false, (await call(review, '/api/witnessed-review', { action: 'deletions' })).status === 401 && (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).status === 401 && (await call(review, '/api/witnessed-review', { action: 'inbox' })).status === 401) && (owner = true));
 ok('the owner deletes it from the list; it leaves the list and becomes a marker', (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).json?.status === 'deleted' && store.j.get(recordKey(hash)).status === 'deleted' && (await call(review, '/api/witnessed-review', { action: 'deletions' })).json.waiting.length === 0);
-ok('something not yet due cannot be marked deleted that way', (await send(GOOD, { keep: '30d', uses: [] })).status === 204 && (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).status === 404);
+ok('something not yet due cannot be marked deleted that way', (await send(GOOD, { keep: '30d', uses: [] })).status < 300 && (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).status === 404);
 
 // ── the inbox: the owner reads what people sent, and can delete early
 store.j.clear();
@@ -135,3 +136,5 @@ ok('the page marks the writer of every message and says how to take one down', /
 
 const panel2 = readFileSync(new URL('../src/admin/WitnessedPanel.tsx', import.meta.url), 'utf8');
 ok('the panel has the run-now button and the received-transcripts list, and no token anywhere', /Run the deletion job now/.test(panel2) && /Transcripts people sent/.test(panel2) && /Delete now/.test(panel2) && !/NETLIFY_API_TOKEN|tokenSet/.test(panel2));
+
+ok('a stopped conversation can never be sent for training either', (await send(STOPPED, { keep: '30d', uses: ['train'] })).status === 400);

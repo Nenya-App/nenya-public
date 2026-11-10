@@ -55,3 +55,6 @@ Decided: a person may allow their conversation to be used to train or improve a 
 2. The consent receipt (a signed file the person keeps), and the terms version recorded.
 3. The Terms and the page wording, applied once you and a reader have read them.
 4. A review checklist for the person who edits conversations before they are shown or used (anonymize, check for a minor, remove anything identifying).
+
+## Built 2026-11-10 (owner's go-ahead; "18+" is for sending a conversation only, not for browsing the site)
+The 18+ statement and the training choice are in the consent step, the record, take-back and the owner's inbox; a signed consent receipt is returned and offered for download; `docs/transcript-review-checklist.md` is the reader's checklist; the dev steps are in `docs/dev-testing-checklist.md`. **Not built:** the Terms and Privacy Promise wording (it is a separate consent from the site's general terms; the site stays browsable by anyone, and the Terms may recommend that anyone under 18 use Nenya with a trusted adult with them or looking on); the training ledger and the reader's approve action; any training pipeline (a conversation with a training choice is recorded as waiting for review and nothing reads it).

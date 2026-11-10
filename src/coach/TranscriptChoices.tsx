@@ -1,6 +1,6 @@
 // What the person allows us to do with a transcript they send, and for how long (src/lib/transcriptPolicy.ts). Nothing is chosen for them: a keeping time must
 // be picked before it can be sent, the other uses start unchecked, and publishing asks what to show.
-import { USES, KEEPS, USE_LABELS, KEEP_LABELS, type Choices, type Keep, type Use } from '../lib/transcriptPolicy';
+import { USES, KEEPS, USE_LABELS, KEEP_LABELS, CONSENT_TERMS_VERSION, type Choices, type Keep, type Use } from '../lib/transcriptPolicy';
 
 export interface ChoiceState {
   keep: Keep | null;
@@ -9,8 +9,10 @@ export interface ChoiceState {
   portions: 'all' | number[];
   /** How long it may stay on the public page; null until chosen. */
   showFor: Keep | null;
+  /** "I am 18 or older, and these are my own words." Starts unchecked; nothing can be sent without it. */
+  adult: boolean;
 }
-export const emptyChoices = (): ChoiceState => ({ keep: null, uses: [], portions: [], showFor: null });
+export const emptyChoices = (): ChoiceState => ({ keep: null, uses: [], portions: [], showFor: null, adult: false });
 
 const RANK: Record<Keep, number> = { '30d': 1, '90d': 2, '1y': 3, 'until-asked': 4 };
 /** A copy cannot stay on show longer than the transcript is kept. */
@@ -18,12 +20,12 @@ export const showForFits = (keep: Keep, show: Keep): boolean => RANK[keep] >= RA
 
 /** The valid choices to send, or null while something still has to be chosen. */
 export function choicesToSend(c: ChoiceState): Choices | null {
-  if (!c.keep) return null;
+  if (!c.keep || !c.adult) return null;
   if (c.uses.includes('publish')) {
     if (c.portions !== 'all' && c.portions.length === 0) return null;
     if (!c.showFor || !showForFits(c.keep, c.showFor)) return null;
   }
-  return { keep: c.keep, uses: c.uses, ...(c.uses.includes('publish') ? { portions: c.portions, showFor: c.showFor! } : {}) };
+  return { keep: c.keep, uses: c.uses, adult: true, terms: CONSENT_TERMS_VERSION, ...(c.uses.includes('publish') ? { portions: c.portions, showFor: c.showFor! } : {}) };
 }
 
 interface Props {
@@ -41,18 +43,30 @@ export function TranscriptChoices({ value, onChange, messages, publishBlocked = 
   const picked = value.portions === 'all' ? [] : value.portions;
   return (
     <div className="space-y-4 rounded-lg border border-border p-3 text-sm">
+      <fieldset className="space-y-2 rounded-md bg-muted/40 p-2">
+        <legend className="font-medium">Before you send anything</legend>
+        <label className="flex items-start gap-2">
+          <input type="checkbox" className="mt-1 size-4" checked={value.adult} onChange={(e) => onChange({ ...value, adult: e.target.checked })} />
+          <span>
+            I am 18 or older, and these are my own words.
+            <span className="block text-xs text-muted-foreground">Sending a conversation is for people 18 and over. If you are younger, you are welcome to use Nenya, and it is best to have a trusted adult with you or looking on, but please do not send a conversation for any of these uses. You keep ownership of your own words. The AI&rsquo;s replies were written by a machine.</span>
+          </span>
+        </label>
+        {!value.adult && <p className="text-xs text-muted-foreground" role="status">Check this to be able to send.</p>}
+      </fieldset>
+
       <fieldset className="space-y-2">
         <legend className="font-medium">What may we do with it?</legend>
         <p className="text-xs text-muted-foreground">We will read it and consider what you wrote: that is why you are sending it. Everything else below is up to you, and nothing is checked for you.</p>
         {USES.map((u) => {
-          const blocked = u === 'publish' && publishBlocked;
+          const blocked = (u === 'publish' || u === 'train') && publishBlocked;
           return (
             <label key={u} className={`flex items-start gap-2 ${blocked ? 'opacity-60' : ''}`}>
               <input type="checkbox" className="mt-1 size-4" disabled={blocked} checked={!blocked && value.uses.includes(u)} onChange={() => toggleUse(u)} />
               <span>
                 {USE_LABELS[u].label}
                 <span className="block text-xs text-muted-foreground">
-                  {blocked ? 'Not available for this conversation. When the site\u2019s safety check stops a message, we never offer the conversation for the public page, to protect you.' : USE_LABELS[u].detail}
+                  {blocked ? 'Not available for this conversation. When the site\u2019s safety check stops a message, we never offer the conversation for the public page or for training, to protect you.' : USE_LABELS[u].detail}
                 </span>
               </span>
             </label>

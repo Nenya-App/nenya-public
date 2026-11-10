@@ -54,7 +54,7 @@ const GOOD = { transcript: rc.transcript, receipt: rc.receipt };
 const send = async (signed: any, opts: { note?: unknown; choices?: unknown; origin?: string | null; method?: string; path?: string; raw?: string; type?: string } = {}) => {
   const headers: Record<string, string> = { 'content-type': opts.type ?? 'application/json' };
   if (opts.origin !== null) headers.origin = opts.origin ?? 'https://nenya.biz';
-  const res = await report(new Request(`https://nenya.biz${opts.path ?? '/api/report'}`, { method: opts.method ?? 'POST', headers, body: opts.method === 'GET' ? undefined : (opts.raw ?? JSON.stringify({ signed, note: opts.note, choices: 'choices' in opts ? opts.choices : { keep: '30d', uses: [] } })) }));
+  const res = await report(new Request(`https://nenya.biz${opts.path ?? '/api/report'}`, { method: opts.method ?? 'POST', headers, body: opts.method === 'GET' ? undefined : (opts.raw ?? JSON.stringify({ signed, note: opts.note, choices: 'choices' in opts ? opts.choices : { adult: true, keep: '30d', uses: [] } })) }));
   const text = await res.text();
   return { status: res.status, text, json: text ? JSON.parse(text) : null };
 };
@@ -63,7 +63,7 @@ const n = (e: string) => Number(store.peek(eventKey(day, e)) ?? 0);
 
 // ---- a genuine one
 let x = await send(GOOD, { note: '<b>The reply felt</b> off\u0007 today' });
-ok('a genuine signed transcript is accepted', x.status === 204 && forwards.length === 1);
+ok('a genuine signed transcript is accepted', x.status < 300 && forwards.length === 1);
 const f = forwards[0].fields;
 const inboxOf = (hash: string): any => store.json.get('inbox/' + hash);
 const ib = inboxOf(rc.receipt.hash);
@@ -99,7 +99,7 @@ t1 = clone(); t1.receipt.signature = Buffer.alloc(64).toString('base64'); await 
   await refused('a transcript signed with someone else\'s key', { transcript: tr, receipt: rec }, 'key');
   process.env.COACH_ACCEPTED_KEY_IDS = ` ${rec.keyId.toUpperCase()}, deadbeefdeadbeef `;
   const before = forwards.length; const y = await send({ transcript: tr, receipt: rec });
-  ok('an earlier key listed in COACH_ACCEPTED_KEY_IDS is accepted', y.status === 204 && forwards.length === before + 1);
+  ok('an earlier key listed in COACH_ACCEPTED_KEY_IDS is accepted', y.status < 300 && forwards.length === before + 1);
   delete process.env.COACH_ACCEPTED_KEY_IDS;
 }
 t1 = clone(); t1.receipt.keyId = '0000000000000000'; await refused('a key id that does not match the key', t1, 'key');
@@ -120,7 +120,7 @@ await refused('not JSON at all', null, 'json', { raw: '{nope' });
   const pub = mine.publicKey.export({ type: 'spki', format: 'der' }).toString('base64');
   const rec = { version: 2, algorithm: 'Ed25519', keyId: createHash('sha256').update(pub).digest('hex').slice(0, 16), publicKey: pub, hash, issuedAt, signature: edSign(null, Buffer.from(`nenya-coach-transcript-v2\n${hash}\n${issuedAt}`), mine.privateKey).toString('base64') };
   const before = forwards.length; const y = await send({ transcript: old, receipt: rec });
-  ok('an older version 2 transcript is accepted', y.status === 204 && forwards.length === before + 1 && !/Conversation complete/.test(inboxOf(rec.hash).readable));
+  ok('an older version 2 transcript is accepted', y.status < 300 && forwards.length === before + 1 && !/Conversation complete/.test(inboxOf(rec.hash).readable));
   ok('and it is marked as having no record in the log', /^no record/.test(inboxOf(rec.hash).issuedRecord));
 }
 
@@ -137,7 +137,7 @@ const stopRc = await coachPost({ action: 'receipt', stopped: true, messages: [{ 
 const STOP_OK = { transcript: stopRc.transcript, receipt: stopRc.receipt };
 const nBeforeStop = forwards.length;
 const stopSent = await send(STOP_OK, { note: 'The site stopped this; I think it was a mistake.' });
-ok('a genuine signed transcript of a conversation the site ended is accepted', stopSent.status === 204 && forwards.length === nBeforeStop + 1);
+ok('a genuine signed transcript of a conversation the site ended is accepted', stopSent.status < 300 && forwards.length === nBeforeStop + 1);
 ok('its readable text says the site ended it', inboxOf(stopRc.receipt.hash).readable.includes('Ended by the site') && inboxOf(stopRc.receipt.hash).readable === readableTranscript(stopRc.transcript.messages, S, stopRc.receipt, '', stopRc.transcript.meta, stopRc.transcript.site, stopRc.transcript.checks));
 const noEnded = JSON.parse(JSON.stringify(STOP_OK)); delete noEnded.transcript.meta.endedBy; delete noEnded.transcript.meta.stop;
 ok('an odd number of messages without the site-ended facts is refused', (await send(noEnded)).status === 400);
@@ -150,6 +150,6 @@ ok('an altered stopped message breaks the signature', (await send(forgedStop)).s
 forwardStatus = 500;
 const vBefore = n('coach.report.verified');
 const down = await send(GOOD);
-ok('if only the email alert fails, the transcript is still safely kept, the visitor is not failed, and the failed alert is counted', down.status === 204 && n('coach.report.verified') === vBefore + 1 && n('coach.report.alert-failed') >= 1 && !!inboxOf(rc.receipt.hash));
+ok('if only the email alert fails, the transcript is still safely kept, the visitor is not failed, and the failed alert is counted', down.status < 300 && n('coach.report.verified') === vBefore + 1 && n('coach.report.alert-failed') >= 1 && !!inboxOf(rc.receipt.hash));
 forwardStatus = 200;
 coachStore(null); reportStore(null);
