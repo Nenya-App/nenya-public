@@ -80,3 +80,9 @@ The word panel is on every coach page whether or not the switch is set. The swit
 10. At exchange 4 of a practice conversation, the coach may offer, as something you can decline, to wonder what the other person might be feeling and needing, with a caution that it is only if it feels okay.
 11. Say "I'm so mad" in your first message. The coach should not ask you for one word or to restate it, and should lead toward the need and what happened. Then pick only needs and send: it should lead toward the feeling. Pick a feeling, then a need: it should not ask whether either is right, and should ask what could help meet the need.
 12. In the panel, with only a feeling picked, a line asks about a need that goes with it, with a link to Needs; with only a need picked, a line asks about a feeling. Neither is required, and Send works without them.
+
+## Sound first, then Sight: "Bring this to the Sight gateway?"
+1. Choose both Sound and Sight, and do **Sound first**. On the melody step, a small box under the Solresol note reads **Bring this to the Sight gateway?** with a checkbox, **checked** by default, and a plain line under it. It can be checked and unchecked. (The Connected/Disconnected button only shows when Sight was done first.)
+2. Make a melody of at least six notes, leave it checked, finish Sound, and open Sight. The two color cards **start in your melody's two colors** (not white or black), and a line under the buttons says you brought your melody. Change a color: the melody and its report do not change. "Start from my melody's colors" puts them back.
+3. Repeat with the box **unchecked**: Sight starts from plain white (dark mode) or black (light mode), and the button "Start from my melody's colors" is still there.
+4. Do **Sight first**, then Sound: the box is not shown; the Connected/Disconnected button is (as before). Choose Sound only: no box.

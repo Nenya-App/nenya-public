@@ -35,6 +35,8 @@ interface SightGatewayPageProps {
   onUpdateBodyMap: (data: BodyMapData) => void;
   /** Colors a melody made first in the Sound gateway can offer as a starting point (null if none). */
   melodyColors?: { color1: string; color2: string } | null;
+  /** True if the person chose, on the Sound page, to bring the melody's colors here: they are then the starting colors. */
+  melodyShared?: boolean;
   /** Whether the Sound gateway is still to come in this session (so a kept palette can be marked for it). */
   soundComesLater?: boolean;
 }
@@ -102,7 +104,7 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap, melodyColors, soundComesLater = true }: SightGatewayPageProps) {
+export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap, melodyColors, melodyShared = false, soundComesLater = true }: SightGatewayPageProps) {
   const { theme } = useTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -121,8 +123,9 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   }, [step]);
 
   // Set default colors based on theme: dark mode = white, light mode = black
-  const [color1, setColor1] = useState(theme === 'dark' ? '#FFFFFF' : '#000000');
-  const [color2, setColor2] = useState(theme === 'dark' ? '#FFFFFF' : '#000000');
+  // The usual start is white (dark mode) or black (light mode). If a melody was made first and the person chose to bring it here, its two colors are the start.
+  const [color1, setColor1] = useState(melodyShared && melodyColors ? melodyColors.color1 : theme === 'dark' ? '#FFFFFF' : '#000000');
+  const [color2, setColor2] = useState(melodyShared && melodyColors ? melodyColors.color2 : theme === 'dark' ? '#FFFFFF' : '#000000');
   const [color1Name, setColor1Name] = useState('');
   const [color2Name, setColor2Name] = useState('');
   const [generatedPalettes, setGeneratedPalettes] = useState<GeneratedPalette[]>([]);
@@ -300,7 +303,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               </div>
               {melodyColors && (
                 <p className="text-center text-xs text-muted-foreground">
-                  You made a melody in the Sound gateway first. Its first three notes and its last three notes can give these two colors a starting point. Changing them here never changes your melody or what was recorded about it.
+                  {melodyShared ? 'You brought your melody here, so these two colors started from it (its first three notes and its last three). ' : 'You made a melody in the Sound gateway first. Its first three notes and its last three notes can give these two colors a starting point. '}Changing them here never changes your melody or what was recorded about it.
                 </p>
               )}
 

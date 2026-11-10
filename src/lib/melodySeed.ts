@@ -13,3 +13,9 @@ export function melodyColorsFor(sound: any): { color1: string; color2: string } 
   const { melodyColor1: a, melodyColor2: b } = sound;
   return typeof a === 'string' && typeof b === 'string' && HEX.test(a) && HEX.test(b) ? { color1: a.toUpperCase(), color2: b.toUpperCase() } : null;
 }
+
+/** True if the melody's colors should be Sight's starting colors without being asked: the melody was made first, has colors to offer, and the person left
+ *  "Bring this to the Sight gateway?" checked on the Sound page. */
+export function melodyShared(sound: any): boolean {
+  return !!sound && sound.bringToSight === true && melodyColorsFor(sound) !== null;
+}

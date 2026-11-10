@@ -41,6 +41,8 @@ interface SoundGatewayPageProps {
   userColors?: { color1?: string; color2?: string; color1Name?: string | null; color2Name?: string | null; generatedPalettes?: { colors?: { hex: string; name?: string }[]; useInSound?: boolean }[] | null };
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
+  /** Whether the Sight gateway is still to come in this session (so the melody's colors can be brought to it). */
+  sightComesLater?: boolean;
 }
 
 
@@ -153,7 +155,7 @@ function ColorSwatch({ hex, label, muted }: { hex: string; label: string; muted:
   );
 }
 
-export default function SoundGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: SoundGatewayPageProps) {
+export default function SoundGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap, sightComesLater = true }: SoundGatewayPageProps) {
   const hasValidColors = !!userColors?.color1 && !!userColors?.color2 && isValidHex(userColors.color1) && isValidHex(userColors.color2);
   const [showBodyMap, setShowBodyMap] = useState(false);
 
@@ -176,6 +178,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
   // Melody state
   const [melodyConnected, setMelodyConnected] = useState(hasValidColors);
+  // Sound first: should the melody's two colors be where the Sight gateway starts? Checked unless the person unchecks it.
+  const [bringToSight, setBringToSight] = useState(true);
   const seedMelody = useCallback(
     () => (hasValidColors && melodyConnected ? colorsToMelody(userColors!.color1!, userColors!.color2!, scale.length) : Array(6).fill(null)),
     [hasValidColors, melodyConnected, userColors, scale.length]
@@ -366,6 +370,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
       melodyColor1,
       melodyColor2,
       melodyConnected,
+      // Only meaningful when the melody was made before Sight: then it says whether Sight should start from the melody's colors.
+      bringToSight: !hasValidColors && sightComesLater && bringToSight,
       currentPitch: sliderValue(currentPitch),
       currentVolume: sliderValue(currentVolume),
       currentTimbres: currentTimbres.length > 0 ? currentTimbres : null,
@@ -472,37 +478,40 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               (from the Machine Perception and Cognitive Robotics Laboratory at Florida Atlantic University) has a translator and player. It is a separate site with its own terms, and nothing from Nenya is sent to it.
             </p>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{melodyConnected ? 'Connected to Sight' : 'Independent melody'}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {melodyConnected ? 'Your colors shape the melody. Adjust freely.' : 'Composing from silence. Colors and melody are separate.'}
-                </p>
+            {hasValidColors ? (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">{melodyConnected ? 'Connected to Sight' : 'Independent melody'}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {melodyConnected ? 'Your colors shape the melody. Adjust freely.' : 'Composing from silence. Colors and melody are separate.'}
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setMelodyConnected((c) => !c)} className="gap-2 shrink-0">
+                  {melodyConnected ? (
+                    <>
+                      <Link2 className="size-3.5" /> Connected
+                    </>
+                  ) : (
+                    <>
+                      <Unlink className="size-3.5" /> Disconnected
+                    </>
+                  )}
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setMelodyConnected((c) => !c)}
-                className="gap-2 shrink-0"
-                disabled={!hasValidColors}
-                title={hasValidColors ? undefined : 'Visit the Sight gateway first to enable connection'}
-              >
-                {melodyConnected ? (
-                  <>
-                    <Link2 className="size-3.5" /> Connected
-                  </>
-                ) : (
-                  <>
-                    <Unlink className="size-3.5" /> Disconnected
-                  </>
-                )}
-              </Button>
-            </div>
-
-            {!hasValidColors && (
-              <p className="text-center text-xs text-muted-foreground">
-                You are making this melody before choosing colors in the Sight gateway. If you visit Sight afterward, it can offer to start from your melody&rsquo;s colors. Whichever you do second starts from the first and never changes it or what was recorded about it.
-              </p>
+            ) : (
+              sightComesLater && (
+                <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-foreground">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={bringToSight} onChange={(e) => setBringToSight(e.target.checked)} className="size-4" />
+                    Bring this to the Sight gateway?
+                  </label>
+                  <p className="text-muted-foreground">
+                    {bringToSight
+                      ? 'The two colors your melody makes will be where Sight starts, instead of plain black or white. You can change them there. Nothing you do in Sight changes your melody.'
+                      : 'Sight will start from its usual plain colors. Your melody stays as it is.'}
+                  </p>
+                </div>
+              )
             )}
 
             <div className="flex items-center justify-center gap-8">

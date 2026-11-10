@@ -3,7 +3,7 @@ import { ThemeProvider } from './components/ThemeProvider';
 import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { aboutSectionFromLocation, SITE_TITLE } from '../lib/aboutRoutes';
-import { melodyColorsFor } from '../lib/melodySeed';
+import { melodyColorsFor, melodyShared } from '../lib/melodySeed';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
@@ -553,6 +553,7 @@ export default function App() {
               bodyMapData={bodyMapData}
               onUpdateBodyMap={setBodyMapData}
               melodyColors={melodyColorsFor(gatewayData.find((g) => g.gateway === 'sound')?.data)}
+              melodyShared={melodyShared(gatewayData.find((g) => g.gateway === 'sound')?.data)}
               soundComesLater={selectedGateways.includes('sound') && !gatewayData.some((g) => g.gateway === 'sound')}
             />
           )}
@@ -566,6 +567,7 @@ export default function App() {
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
               bodyMapData={bodyMapData}
               onUpdateBodyMap={setBodyMapData}
+              sightComesLater={selectedGateways.includes('sight') && !gatewayData.some((g) => g.gateway === 'sight')}
             />
           )}
 
