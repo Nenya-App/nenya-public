@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from './ui/button';
 import { X, Download, ChevronDown, ChevronRight } from 'lucide-react';
 import { Card } from './ui/card';
@@ -32,6 +32,8 @@ interface BodyMapAvatarProps {
   onSave?: (bodyMapData: BodyMapData) => void;
   initialPlacements?: ColorPlacement[];
   initialNotes?: Record<string, string>;
+  /** Shown as a section of the page (the Sight gateway) instead of a full-screen window. It saves as the person goes, so there is nothing to close or save. */
+  inline?: boolean;
 }
 
 const NOTE_MAX_LENGTH = 300;
@@ -54,7 +56,7 @@ const bodyParts: BodyPart[] = [
   { id: 'right-foot', label: 'R. Foot', position: { x: 190, y: 390 }, radius: 15 },
 ];
 
-export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements = [], initialNotes = {} }: BodyMapAvatarProps) {
+export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements = [], initialNotes = {}, inline = false }: BodyMapAvatarProps) {
   const [placements, setPlacements] = useState<ColorPlacement[]>(initialPlacements);
   const [notes, setNotes] = useState<Record<string, string>>(initialNotes);
   const [expandedPartId, setExpandedPartId] = useState<string | null>(null);
@@ -193,23 +195,39 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
     onClose();
   };
 
+  // Inline (the Sight gateway): save as the person goes, a moment after the last change, including the picture that goes into the report.
+  const savedFirst = useRef(true);
+  useEffect(() => {
+    if (!inline || !onSave) return;
+    if (savedFirst.current) { savedFirst.current = false; return; }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const imageDataUrl = await generateBodyMapImage();
+      if (!cancelled) onSave({ placements, notes, imageDataUrl });
+    }, 700);
+    return () => { cancelled = true; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placements, notes, inline]);
+
   return (
-    <div className="fixed inset-0 bg-background z-50 flex flex-col">
+    <div className={inline ? 'rounded-2xl border border-border bg-card/50' : 'fixed inset-0 bg-background z-50 flex flex-col'}>
       {/* Header */}
-      <div className="border-b border-border bg-background px-4 md:px-6 py-3 md:py-4">
+      <div className={inline ? 'px-4 md:px-6 pt-4' : 'border-b border-border bg-background px-4 md:px-6 py-3 md:py-4'}>
         <div className="flex items-center justify-between">
           <div>
-            <h2>Body Emotion Map</h2>
-            <p className="text-sm text-muted-foreground">Place colors and notes where you feel them in your body</p>
+            {inline ? <h3 className="text-lg">Body emotion map (optional)</h3> : <h2>Body Emotion Map</h2>}
+            <p className="text-sm text-muted-foreground">Place colors and notes where you feel them in your body{inline ? '. It saves as you go.' : ''}</p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="size-5" />
-          </Button>
+          {!inline && (
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="size-5" />
+            </Button>
+          )}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto scroll-container">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
+      <div className={inline ? '' : 'flex-1 overflow-y-auto scroll-container'}>
+        <div className={inline ? 'px-4 md:px-6 py-4' : 'max-w-6xl mx-auto px-4 md:px-6 py-8'}>
           <div className="grid md:grid-cols-2 gap-8">
             {/* Body Map */}
             <div className="space-y-4">
@@ -362,7 +380,7 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
       </div>
 
       {/* Footer */}
-      <div className="border-t border-border bg-background px-4 md:px-6 py-4">
+      <div className={inline ? 'px-4 md:px-6 pb-4' : 'border-t border-border bg-background px-4 md:px-6 py-4'}>
         <div className="flex justify-between gap-2">
           <Button
             variant="outline"
@@ -372,14 +390,16 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
             <Download className="size-4" />
             Download Image
           </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose}>
-              Close
-            </Button>
-            <Button onClick={handleSaveMap}>
-              Save Map
-            </Button>
-          </div>
+          {!inline && (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={onClose}>
+                Close
+              </Button>
+              <Button onClick={handleSaveMap}>
+                Save Map
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

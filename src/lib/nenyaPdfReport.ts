@@ -248,8 +248,10 @@ export async function downloadNenyaPdfReport(
       gd.gateway === 'sound' && Array.isArray(gd.data?.melody) && gd.data.melody.some((n: number | null) => n !== null)
         ? gd.data.melody
         : null;
+    // A palette the person kept (src/lib/colorSchemes.ts): its colours drawn as chips, a second row under the present and wish colours.
+    const kept: { hex: string; name?: string }[] = gd.gateway === 'sight' && Array.isArray(gd.data?.generatedPalette?.colors) ? gd.data.generatedPalette.colors.filter((c: any) => /^#[0-9a-f]{6}$/i.test(c?.hex ?? '')) : [];
     const estimatedHeight =
-      14 + dataLines.length * 5.6 + (hasColorSwatches ? 26 : 0) + (melody ? 33 : 0) + 10;
+      14 + dataLines.length * 5.6 + (hasColorSwatches ? 26 : 0) + (kept.length ? 26 : 0) + (melody ? 33 : 0) + 10;
 
     if (y + estimatedHeight > pageHeight - 26) {
       y = newContentPage();
@@ -276,6 +278,14 @@ export async function downloadNenyaPdfReport(
         { hex: gd.data.color2, label: 'Wish', caption: gd.data.color2Name || gd.data.color2 },
       ]);
       y += consumed;
+    }
+
+    if (kept.length) {
+      if (y + 26 > pageHeight - 26) {
+        y = newContentPage();
+      }
+      const short = (t?: string) => (t && t.length > 14 ? t.slice(0, 13) + '…' : t);
+      y += drawColorSwatches(doc, margin + 4, y, kept.map((c, i) => ({ hex: c.hex, label: `Palette ${i + 1}`, caption: short(c.name) ?? c.hex })));
     }
 
     if (melody) {

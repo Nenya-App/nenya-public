@@ -119,6 +119,18 @@ try {
     const sightSrc = readFileSync(new URL('../src/app/components/pages/SightGatewayPage.tsx', import.meta.url), 'utf8');
     ok('palettes: the Sight gateway carries a kept palette into its data, and clears it when reset', /<PalettePanel color1=\{color1\} color2=\{color2\} value=\{generatedPalette\} onChange=\{setGeneratedPalette\}/.test(sightSrc) && /gradientDirection,\n\s+generatedPalette,/.test(sightSrc) && /setGeneratedPalette\(null\)/.test(sightSrc));
   }
+  // The body map on the Sight gateway's page, and a kept palette in the PDF.
+  {
+    const { BodyMapAvatar } = await vite.ssrLoadModule('/src/app/components/BodyMapAvatar.tsx');
+    h = render(BodyMapAvatar, { inline: true, onClose: noop, onSave: noop, userColors: { color1: '#1B4F6E', color2: '#E3752B' } });
+    ok('body map, inline: a section of the page (not a full-screen window), with no Close or Save to hunt for', typeof h === 'string' && h.includes('Body emotion map (optional)') && !h.includes('fixed inset-0') && !h.includes('>Save Map<') && !h.includes('>Close<') && h.includes('Download Image') && h.includes('It saves as you go'), h.error ?? '');
+    h = render(BodyMapAvatar, { onClose: noop, onSave: noop });
+    ok('body map, in the other gateways: still the full-screen window with Close and Save Map', typeof h === 'string' && h.includes('fixed inset-0') && h.includes('Save Map') && h.includes('Close'), h.error ?? '');
+    const sightPage = readFileSync(new URL('../src/app/components/pages/SightGatewayPage.tsx', import.meta.url), 'utf8');
+    ok('the Sight gateway shows the body map on the page, beside the palette', /<BodyMapAvatar\s+inline/.test(sightPage) && !/setShowBodyMap/.test(sightPage));
+    const pdfSrc = readFileSync(new URL('../src/lib/nenyaPdfReport.ts', import.meta.url), 'utf8');
+    ok('the PDF report draws a kept palette as colour chips with their names', /generatedPalette\?\.colors/.test(pdfSrc) && /label: `Palette \$\{i \+ 1\}`/.test(pdfSrc));
+  }
   // The loading screen, the tour offer and the tour.
   const { LoadingVeil } = await vite.ssrLoadModule('/src/app/components/LoadingVeil.tsx');
   h = render(LoadingVeil, { ready: false, onDone: noop });

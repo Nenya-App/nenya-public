@@ -3,7 +3,7 @@ import { ColorNameSuggest } from '../ColorNameSuggest';
 import { PalettePanel } from '../PalettePanel';
 import type { GeneratedPalette } from '../../../lib/colorSchemes';
 import { Button } from '../ui/button';
-import { ArrowLeft, Shuffle, User, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
+import { ArrowLeft, Shuffle, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { ValarColorPicker } from '../ValarColorPicker';
@@ -136,7 +136,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   const [color1Intensity, setColor1Intensity] = useState(50);
   const [color2Intensity, setColor2Intensity] = useState(50);
   const [gradientDirection] = useState('to-right');
-  const [showBodyMap, setShowBodyMap] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<'present' | 'potential' | null>(null);
   // bodyMapData/onUpdateBodyMap come from props -- shared App-level state
   // accessible from every gateway, not local to Sight.
@@ -286,15 +285,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 >
                   <Shuffle className="size-4" />
                   Surprise Me
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => setShowBodyMap(true)}
-                  className="gap-2"
-                >
-                  <User className="size-4" />
-                  Map Colors to Body
                 </Button>
               </div>
 
@@ -505,6 +495,15 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 </Card>
               </div>
 
+              <BodyMapAvatar
+                inline
+                userColors={{ color1, color2, color1Name, color2Name }}
+                onClose={() => undefined}
+                onSave={(data) => onUpdateBodyMap(data)}
+                initialPlacements={bodyMapData.placements}
+                initialNotes={bodyMapData.notes}
+              />
+
               <PalettePanel color1={color1} color2={color2} value={generatedPalette} onChange={setGeneratedPalette} />
 
               {/* Next Button */}
@@ -525,17 +524,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
         </div>
         <ScrollIndicator containerRef={scrollContainerRef} />
       </div>
-
-      {/* Body Map Avatar Modal */}
-      {showBodyMap && (
-        <BodyMapAvatar
-          userColors={{ color1, color2, color1Name, color2Name }}
-          onClose={() => setShowBodyMap(false)}
-          onSave={(data) => onUpdateBodyMap(data)}
-          initialPlacements={bodyMapData.placements}
-          initialNotes={bodyMapData.notes}
-        />
-      )}
 
       {/* Present Color Picker Dialog */}
       <Dialog open={activeColorPicker === 'present'} onOpenChange={(open) => !open && setActiveColorPicker(null)}>
