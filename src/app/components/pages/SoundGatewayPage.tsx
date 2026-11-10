@@ -30,6 +30,7 @@ import {
   Timbre,
 } from '../../../lib/audio';
 
+import { wordsOf } from '../../../lib/senseWords';
 interface SoundGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -40,8 +41,8 @@ interface SoundGatewayPageProps {
   onUpdateBodyMap: (data: BodyMapData) => void;
 }
 
-const timbres = ['Resonant', 'Hollow', 'Bright', 'Warm', 'Metallic', 'Breathy', 'Rich', 'Thin'];
-const rhythms = ['Steady', 'Syncopated', 'Flowing', 'Staccato', 'Irregular', 'Pulsing', 'Languid', 'Urgent'];
+const timbres = wordsOf('timbre');
+const rhythms = wordsOf('rhythm');
 
 const TIMBRE_OPTIONS: { label: string; value: Timbre }[] = [
   { label: 'Soft', value: 'soft' },

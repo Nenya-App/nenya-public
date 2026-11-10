@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { FlavorWheel } from '../FlavorWheel';
+import { MoreWords } from '../MoreWords';
 
 interface EssenceGatewayPageProps {
   onComplete: (data: any) => void;
@@ -240,6 +241,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                   <div className="space-y-2">
                     <Label className="text-sm">Taste (optional)</Label>
                     <FlavorWheel terms={tastes} selected={currentTastes} onToggle={(t) => handleCheckboxChange(t, !currentTastes.includes(t), currentTastes, setCurrentTastes)} accentColor="#8FA98C" />
+                    <MoreWords category="taste" selected={currentTastes} onToggle={(t) => handleCheckboxChange(t, !currentTastes.includes(t), currentTastes, setCurrentTastes)} idPrefix="currentTastes" />
                     <Input
                       placeholder="Other taste..."
                       value={currentTasteOther}
@@ -251,6 +253,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                   <div className="space-y-2">
                     <Label className="text-sm">Scent (optional)</Label>
                     <FlavorWheel terms={scents} selected={currentScents} onToggle={(t) => handleCheckboxChange(t, !currentScents.includes(t), currentScents, setCurrentScents)} accentColor="#B79ACB" />
+                    <MoreWords category="scent" selected={currentScents} onToggle={(t) => handleCheckboxChange(t, !currentScents.includes(t), currentScents, setCurrentScents)} idPrefix="currentScents" />
                     <Input
                       placeholder="Other scent..."
                       value={currentScentOther}
@@ -301,6 +304,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                   <div className="space-y-2">
                     <Label className="text-sm">Taste (optional)</Label>
                     <FlavorWheel terms={tastes} selected={potentialTastes} onToggle={(t) => handleCheckboxChange(t, !potentialTastes.includes(t), potentialTastes, setPotentialTastes)} accentColor="#8FA98C" />
+                    <MoreWords category="taste" selected={potentialTastes} onToggle={(t) => handleCheckboxChange(t, !potentialTastes.includes(t), potentialTastes, setPotentialTastes)} idPrefix="potentialTastes" />
                     <Input
                       placeholder="Other taste..."
                       value={potentialTasteOther}
@@ -312,6 +316,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                   <div className="space-y-2">
                     <Label className="text-sm">Scent (optional)</Label>
                     <FlavorWheel terms={scents} selected={potentialScents} onToggle={(t) => handleCheckboxChange(t, !potentialScents.includes(t), potentialScents, setPotentialScents)} accentColor="#B79ACB" />
+                    <MoreWords category="scent" selected={potentialScents} onToggle={(t) => handleCheckboxChange(t, !potentialScents.includes(t), potentialScents, setPotentialScents)} idPrefix="potentialScents" />
                     <Input
                       placeholder="Other scent..."
                       value={potentialScentOther}

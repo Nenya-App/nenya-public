@@ -14,6 +14,7 @@ import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
+import { wordsOf } from '../../../lib/senseWords';
 interface InsightGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -24,30 +25,9 @@ interface InsightGatewayPageProps {
   onUpdateBodyMap: (data: BodyMapData) => void;
 }
 
-const patterns = [
-  'Fragmented',
-  'Linear',
-  'Branching',
-  'Circular',
-  'Layered',
-  'Web-like',
-  'Crystalline',
-  'Fractal',
-  'Spiraling',
-  'Chaotic',
-  'Unified'
-];
+const patterns = wordsOf('pattern');
 
-const perspectives = [
-  'Narrow',
-  'Focused',
-  'Panoramic',
-  'Microscopic',
-  'Telescopic',
-  'Multi-faceted',
-  "Bird's Eye",
-  'Immersed'
-];
+const perspectives = wordsOf('perspective');
 
 const INSTRUCTION_CARDS = [
   {

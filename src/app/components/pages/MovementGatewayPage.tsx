@@ -14,6 +14,7 @@ import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
+import { wordsOf } from '../../../lib/senseWords';
 interface MovementGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -24,30 +25,9 @@ interface MovementGatewayPageProps {
   onUpdateBodyMap: (data: BodyMapData) => void;
 }
 
-const directions = [
-  'Upward',
-  'Downward',
-  'Inward',
-  'Outward',
-  'Expansive',
-  'Contracting',
-  'Spiraling',
-  'Oscillating',
-  'Flowing',
-  'Stuck',
-  'Still'
-];
+const directions = wordsOf('direction');
 
-const qualities = [
-  'Fluid',
-  'Jerky',
-  'Graceful',
-  'Forceful',
-  'Hesitant',
-  'Determined',
-  'Gentle',
-  'Turbulent'
-];
+const qualities = wordsOf('quality');
 
 const INSTRUCTION_CARDS = [
   {

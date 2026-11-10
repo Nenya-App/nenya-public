@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 
+import { wordsOf } from '../../../lib/senseWords';
 interface SightGatewayPageProps {
   onComplete: (data: UserColors & { gradientDirection?: string }) => void;
   onBack: () => void;
@@ -76,16 +77,7 @@ const hslToHex = (hsl: string): string => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
-const LIGHT_QUALITIES = [
-  'Steady',
-  'Pulsing',
-  'Flickering',
-  'Glowing',
-  'Shimmering',
-  'Radiating',
-  'Fading',
-  'Intensifying',
-];
+const LIGHT_QUALITIES = wordsOf('lightQuality');
 
 const MAX_DESCRIPTION_LENGTH = 150;
 
