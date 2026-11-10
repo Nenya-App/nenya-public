@@ -48,3 +48,12 @@ ok('there are example replies, each short, with at most one question', examples.
 ok('no example says it is a person, promises to remember, or says I am here for you', examples.every((e) => !/I'm here for you|I will remember|I'll remember|I am a (?:real )?person|I'm a (?:real )?person/i.test(e)));
 ok('the distress example names a person and a crisis line, and asks nothing about the dark thoughts', /988/.test(examples.find((e) => /reach someone you trust/.test(e)) ?? '') && !/why|how long|plan|method/i.test(examples.find((e) => /reach someone you trust/.test(e)) ?? ''));
 ok('the extraction prompt says to save nothing personal', /Do not save any memory about the person/.test(extraction) && /name, contact details/.test(extraction));
+
+// the method file: NVC in plain steps and the framework as plain listening moves, with no labels, scores or diagnosis
+const method = f('context-method.md');
+ok('the method file keeps the framework\'s labels out: no name, no variable letters, no scores', !/icarus|volt|\b[IUVOLRSCT]-(?:state|vector|gravity|coherence|offset)|bottleneck score|\d\/10/i.test(method.replace(/Never give a score, label, category, bottleneck or diagnosis/, '')));
+ok('the method file covers the four NVC parts and says empathy comes first', ['Observation', 'Feeling', 'Need', 'Request'].every((w) => method.includes(`**${w}:**`)) && /Empathy comes first/.test(method));
+ok('the method file says these are not a test or a diagnosis, never to name them, and handles control and fear with care', /not a test/.test(method) && /Do not name the framework/.test(method) && /1-800-799-7233/.test(method) && /do not advise confronting/i.test(method));
+ok('the method file is not an inventory (no long list of feeling words copied from anywhere)', (method.match(/\b(?:afraid|angry|anxious|ashamed|confused|content|delighted|discouraged|embarrassed|excited|frustrated|grateful|hopeful|jealous|lonely|nervous|overwhelmed|peaceful|sad|tired)\b/gi) ?? []).length < 8);
+ok('the method file is modest in size and shows no named person', method.length < 7000 && !/yvette|erasmus|estëlle|estelle/i.test(method), String(method.length));
+ok('the method file says nothing about hosting, data or a human life', !claimsInfrastructure(method) && !claimsPersona(method));
