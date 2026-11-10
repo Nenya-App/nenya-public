@@ -57,7 +57,7 @@ import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
 import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCritiqueThanks, type CritiqueTarget, type Hostility } from '../../src/lib/hostility.ts';
-import { ARC_CLOSE, ARC_CORE, WORDS_ONLY_NOTE, arcTurnLine, isStuck, isWordsOnly, practiceArcOn } from '../../src/lib/practiceArc.ts';
+import { ARC_CLOSE, ARC_CORE, WORDS_ONLY_NOTE, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
 import type { ModuleGroup } from '../../src/lib/coachModules.ts';
@@ -262,7 +262,7 @@ const layerKey = (): string => JSON.stringify(stanceLayers());
 function instructionsFingerprint(version: 'v1' | 'v2' = instructionsVersion()): string {
   const cacheKey = `${version}|${layerKey()}|${practiceArcOn() ? 'arc' : ''}`;
   if (fingerprint && fingerprint.version === cacheKey) return fingerprint.value;
-  const parts: string[] = [WORDS_ONLY_NOTE, REPEAT_NOTE, CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
+  const parts: string[] = [WORDS_ONLY_NOTE, gapText({ feeling: true, need: false }), gapText({ feeling: false, need: true }), gapText({ feeling: true, need: true }), REPEAT_NOTE, CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
   for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version), systemInstruction(t, false, '', false, '', '', version, 'abuse'), systemInstruction(t, false, '', false, '', '', version, 'critique'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'project'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'nvc'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'ai'));
   if (practiceArcOn()) for (let t = 1; t <= MAX_TURNS; t++) parts.push(`arc:${t}:${arcTurnLine(t, MAX_TURNS, false)}:${arcTurnLine(t, MAX_TURNS, true)}`, ARC_CORE, ARC_CLOSE);
   // Any stance layer text that exists is part of what the coach may be given, so it is part of the fingerprint (nothing is added while none exists).
@@ -389,7 +389,7 @@ const V2_ABOUT_YOU =
 const V2_DISTRESS =
   "If anything the person says suggests hopelessness, feeling like a burden, not wanting to go on, dark thoughts, or hurting themselves, even in indirect words, treat it as distress. Respond briefly and with care, do not give advice, do not ask them to describe or explain dark or suicidal thoughts and do not ask for details about them, and in your reply name a person they trust or a crisis line (call or text 988 in the US or Canada, or findahelpline.com elsewhere). Never say 'I'm here for you' as if you could take the place of a person. For example: 'That sounds really heavy, and I'm glad you said it. I'm an AI and can't help in a crisis, so please reach someone you trust, or call or text 988.'";
 
-function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: 'v1' | 'v2' = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = '', arc: { stuck: boolean } | null = practiceArcOn() ? { stuck: false } : null, wordsOnly = false): string {
+function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: 'v1' | 'v2' = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = '', arc: { stuck: boolean } | null = practiceArcOn() ? { stuck: false } : null, wordsOnly = false, gap = ''): string {
   const v2 = version === 'v2';
   // The practice arc (docs/coach-practice-arc-scope.md) replaces the "name the feeling or need underneath" line, and steps aside for distress and hostility.
   const practice = !!arc && !softened && !hostile;
@@ -443,6 +443,7 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
     );
   }
   if (wordsOnly && !softened && !hostile) parts.push(WORDS_ONLY_NOTE);
+  if (gap && !softened && !hostile && (practice || wordsOnly)) parts.push(gap);
   if (practice) {
     const line = arcTurnLine(turn, MAX_TURNS, arc?.stuck ?? false);
     if (line) parts.push(line);
@@ -696,7 +697,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       // One system message, not several: the encrypted route to Venice answered a request with a second system message with a 400
       // (seen on the dev site for the answer-first reply, 2026-11-09), so the context, the answer-first note and any retry note are folded into it.
       const systemText = [
-        systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '', practiceArcOn() ? { stuck: isStuck(lastText) } : null, isWordsOnly(lastText)),
+        systemInstruction(turn, softened, notes, detectDirectQuestion(messages[messages.length - 1].content), stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '', practiceArcOn() ? { stuck: isStuck(lastText) } : null, isWordsOnly(lastText), gapText(namedParts(messages.filter((m) => m.role === 'user').map((m) => m.content)))),
         ...(context ? [contextInstruction(neutralize(scrubPII(context).text))] : []),
         ...(within ? [ABOUT_FIRST_NOTE] : []),
         ...(extra ? [extra] : []),

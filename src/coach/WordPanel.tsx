@@ -82,7 +82,7 @@ function Browser({ kind, groups, query, picked, onPick, accent, label }: { kind:
   );
 }
 
-export function WordPanel({ open, onToggle, tab, onTab, picked, onPick, onUnpick, accent }: { open: boolean; onToggle: (open: boolean) => void; tab: 'feelings' | 'needs'; onTab: (t: 'feelings' | 'needs') => void; picked: Picked[]; onPick: (p: Picked) => void; onUnpick: (p: Picked) => void; accent: string }) {
+export function WordPanel({ open, onToggle, tab, onTab, picked, have, onPick, onUnpick, accent }: { open: boolean; onToggle: (open: boolean) => void; tab: 'feelings' | 'needs'; onTab: (t: 'feelings' | 'needs') => void; picked: Picked[]; have: { feeling: boolean; need: boolean }; onPick: (p: Picked) => void; onUnpick: (p: Picked) => void; accent: string }) {
   const [query, setQuery] = useState('');
   const [side, setSide] = useState<Side>('unmet');
   const seg = (active: boolean, onClick: () => void, label: string, id?: string) => (
@@ -105,7 +105,30 @@ export function WordPanel({ open, onToggle, tab, onTab, picked, onPick, onUnpick
         {picked.length > 0 && <span> · {picked.length} picked</span>}
       </summary>
       <div className="mt-3 space-y-3 pb-1">
-        <p className="text-sm text-muted-foreground">Only if they help. Tap a word that is close, even if it is not exact; it adds a sentence you can change. A guess that misses is still useful.</p>
+        <p className="text-sm text-muted-foreground">Only if they help. Tap a word that is close, even if it is not exact; it adds a sentence you can change. One way to put it, if that helps: <em>when I notice (what happened), I feel (a feeling) because I need (a need). What could help?</em></p>
+        {/* A soft pointer to the piece that has not come up yet. Never required. */}
+        {have.feeling && !have.need && (
+          <p className="text-sm">
+            A need that goes with that feeling?{' '}
+            {tab !== 'needs' && (
+              <button type="button" onClick={() => onTab('needs')} className="underline underline-offset-2">
+                Look in Needs
+              </button>
+            )}
+          </p>
+        )}
+        {have.need && !have.feeling && (
+          <p className="text-sm">
+            A feeling that goes with that need?{' '}
+            {tab !== 'feelings' && (
+              <button type="button" onClick={() => onTab('feelings')} className="underline underline-offset-2">
+                Look in Feelings
+              </button>
+            )}{' '}
+            <span className="text-muted-foreground">What happened, as a camera would see it, can go in your message.</span>
+          </p>
+        )}
+        {have.feeling && have.need && <p className="text-sm text-muted-foreground">If you like, you can add what you could ask for, from yourself or someone else.</p>}
 
         {picked.length > 0 && (
           <ul className="flex flex-wrap gap-1.5" aria-label="Words you picked">

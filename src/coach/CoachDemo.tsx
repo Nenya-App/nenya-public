@@ -23,6 +23,7 @@ import type { SharedText } from '../lib/reportFragments';
 import { LearningOffer } from './LearningCard';
 import { WordPanel, type Picked } from './WordPanel';
 import { addWordToDraft } from '../lib/feelingsNeeds';
+import { namedParts } from '../lib/practiceArc';
 import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
@@ -186,8 +187,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
   useEffect(() => {
     onActiveChange?.(messages.length > 0);
-    if (messages.length >= 2 && !tabChosen) setWordsTab('needs');
-  }, [messages.length, onActiveChange, tabChosen]);
+    if (messages.length >= 2 && !tabChosen) setWordsTab(namedParts(messages.filter((m) => m.role === 'user').map((m) => m.content)).feeling ? 'needs' : 'feelings');
+  }, [messages, onActiveChange, tabChosen]);
 
   // Quiet time only counts while the page is waiting on the person: it pauses while a reply is on its way.
   const quiet = quietState(timeoutChoice, sending ? 0 : now - activeAt);
@@ -814,19 +815,6 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   <label htmlFor="coach-input" className="sr-only">
                     Your message
                   </label>
-                  <WordPanel
-                    open={wordsOpen}
-                    onToggle={rememberWordsOpen}
-                    accent={color1}
-                    onUnpick={(p) => setPicked((cur) => cur.filter((x) => !(x.kind === p.kind && x.word === p.word)))}
-                    tab={wordsTab}
-                    onTab={(t) => {
-                      setWordsTab(t);
-                      setTabChosen(true);
-                    }}
-                    picked={picked}
-                    onPick={pickWord}
-                  />
                   <Textarea
                     id="coach-input"
                     value={draft}
@@ -870,6 +858,23 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       Send
                     </Button>
                   </div>
+                  {/* From the second exchange on: the first one is in their own words, to show they can do it without an aid. */}
+                  {messages.length >= 2 && (
+                  <WordPanel
+                    open={wordsOpen}
+                    onToggle={rememberWordsOpen}
+                    accent={color1}
+                    onUnpick={(p) => setPicked((cur) => cur.filter((x) => !(x.kind === p.kind && x.word === p.word)))}
+                    tab={wordsTab}
+                    onTab={(t) => {
+                      setWordsTab(t);
+                      setTabChosen(true);
+                    }}
+                    picked={picked}
+                    have={{ feeling: picked.some((x) => x.kind === 'feeling') || namedParts([...messages.filter((m) => m.role === 'user').map((m) => m.content), draft]).feeling, need: picked.some((x) => x.kind === 'need') || namedParts([...messages.filter((m) => m.role === 'user').map((m) => m.content), draft]).need }}
+                    onPick={pickWord}
+                  />
+                  )}
                   {blocked && (
                     <p role="alert" className="rounded-lg border border-amber-500/60 p-3 text-sm">
                       {MANIPULATION_NOTICE}

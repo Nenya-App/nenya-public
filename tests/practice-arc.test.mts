@@ -51,10 +51,11 @@ process.env.COACH_ARC = 'practice';
 const fpOn = __instructionsFingerprint();
 ok('turning it on changes the signed instructions fingerprint', fpOn !== fpOff);
 const t1 = await systemFor([{ role: 'user', content: 'My manager ignored my idea again in the meeting.' }]);
-ok('exchange 1: the person does the finding, the coach does not name the feeling, and says a miss is useful', t1.system.includes('Do not name their feeling or need for them') && /a guess that misses is still useful/.test(t1.system) && t1.system.includes('Exchange 1 of the practice'));
+ok('exchange 1: the person does the finding, the coach does not name the feeling, and does not ask for one word', t1.system.includes('Do not name their feeling or need for them') && t1.system.includes('Exchange 1 of the practice') && /Do not ask them to boil it down to one word/.test(t1.system));
 ok('the old "name the feeling or need underneath" line is gone while the arc is on', !t1.system.includes('name the feeling or need underneath'));
-ok('every guess is a question, and the coach does not list words (the page does)', /Phrase every guess as a question/.test(t1.system) && /do not list words yourself/.test(t1.system));
-ok('met needs are asked about, not only unmet ones', /which need is being met, even a little/.test(t1.system));
+ok('every guess is a question, and the coach does not list words (the page does)', /Phrase any guess of your own as a question/.test(t1.system) && /do not list words yourself/.test(t1.system));
+const t3 = await conv(['a', 'b', 'c'].map((x) => `It was hard at work, part ${x}.`));
+ok('met needs are asked about, not only unmet ones (exchange 3)', /which need is not being met and which is being met, even a little/.test(t3.system));
 ok('not stuck: no menu instruction', !t1.system.includes('Offer two or three possible words'));
 const stuck = await conv(['Something happened with my sister.', "I don't know"]);
 ok('after "I don\'t know": a menu of two or three words as options, none stated as fact', stuck.system.includes('Offer two or three possible words as options') && stuck.system.includes('Never state one word as fact about them'));
@@ -115,3 +116,22 @@ ok('a message with a situation does not get that note', !t1.system.includes('Do 
 const echo = "It sounds like you're experiencing a mix of feelings and needs. Could apprehensive be one of the words you're using? And is affection one that matters right now?";
 ok('the echo from the real transcript is caught', P(echo, 1, [W]).includes('echoesWords'));
 ok('a good reply to picked words passes', P('Thank you for finding those words; they give us something to work with. Would you like to tell me a little of what is going on, think about how to spend this time, or work out a request?', 1, [W]).length === 0);
+
+// ---- the NVC shape: feelings link to needs, needs to feelings; words already given are taken as given
+const { namedParts, gapText } = await import('../src/lib/practiceArc.ts');
+ok('the coach is told the shape (when I notice, I feel, because I need, what could help) and that the missing piece is invited next', /when I notice \(what happened/.test(t1.system) && /Whichever piece is missing is what you invite next/.test(t1.system));
+ok('words already given are taken as given: no check, no second word beside theirs, no "say it in one word", no echo', /do not ask whether they are right, do not offer a different word beside theirs, do not ask them to say it again in one word/.test(t1.system));
+ok('everyday words count as a feeling named ("I\'m so mad")', namedParts(["I had an argument with my partner. I'm so mad!"]).feeling && !namedParts(["I had an argument with my partner. I'm so mad!"]).need);
+ok('picked sentences count by kind', namedParts(['I might be feeling livid.']).feeling && !namedParts(['I might be feeling livid.']).need && namedParts(['I might need integrity. I might need order.']).need && !namedParts(['I might need integrity. I might need order.']).feeling);
+ok('ordinary talk with list words is not mistaken for a named feeling or need', !namedParts(['I lost my keys and the kitchen is a mess']).feeling && !namedParts(['I lost my keys and the kitchen is a mess']).need && !namedParts(['The room was quiet and the order was wrong']).feeling);
+ok('named across the conversation: a feeling first, a need later', (() => { const p = namedParts(["I'm so mad", 'I might need order.']); return p.feeling && p.need; })());
+ok('a need without a feeling: lead to the feeling and a camera-like observation', /named a need but no feeling/.test(gapText({ feeling: false, need: true })) && /as a camera would see it/.test(gapText({ feeling: false, need: true })));
+ok('a feeling without a need: lead to the need and later a request', /named a feeling but no need/.test(gapText({ feeling: true, need: false })) && /what they could ask for or try/.test(gapText({ feeling: true, need: false })));
+ok('both: no confirming, ask what would better meet the need', /do not ask them to confirm/.test(gapText({ feeling: true, need: true })) && /other ways to meet it/.test(gapText({ feeling: true, need: true })) && gapText({ feeling: false, need: false }) === '');
+const pickedNeed = await conv(['I had an argument with my partner.', 'I might need integrity. I might need order.']);
+ok('after only needs, the coach is told to lead to the feeling', /named a need but no feeling/.test(pickedNeed.system));
+const feltOnly = await conv(["I had an argument with my partner. I'm so mad!"]);
+ok('after "I\'m so mad", it leads to the need and does not ask for one word', /named a feeling but no need/.test(feltOnly.system) && /Do not ask them to boil it down to one word/.test(feltOnly.system));
+// the two real transcripts
+ok('"use one word" after "I\'m so mad" is not a problem the checks can miss: confirming questions are caught', P('" livid" is a good choice. Is it also possible you\'re feeling frustrated? What need might be at the root?', 2, ['I had an argument.', "I'm so mad!", 'I might be feeling livid.']).includes('asksConfirm'));
+ok('"is that right" is caught once they have named something', P('So you feel livid. Is that right?', 2, ['I might be feeling livid.']).includes('asksConfirm') && !P('What need sits under that anger for you, or what happened just before?', 2, ['I might be feeling livid.']).includes('asksConfirm'));

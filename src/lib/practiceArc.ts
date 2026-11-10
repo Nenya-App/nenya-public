@@ -25,11 +25,11 @@ export function isWordsOnly(text: string): boolean {
 }
 
 export const WORDS_ONLY_NOTE =
-  'The person has sent only words they picked from lists of feelings and needs, and has not said what is going on. Do not repeat their words back as a list, and do not ask whether those are the words they meant. Thank them briefly for finding words and say it gives you something to work with. Then, in one short, warm invitation, offer these ways to go on and let them choose: tell you a little of what is going on that brings these up; think about what would be a helpful way to spend this time; or work out a request they could make, of themselves or of someone else. You may add that, if they would like, they can also think about what another person in the situation might be feeling and needing, only if that feels okay, and that it is never about excusing what happened. Do not guess a situation for them, and do not name any feeling or need yourself.';
+  'The person has sent only words they picked from lists of feelings and needs, with no account of what happened in this message. Do not repeat their words back as a list, and do not ask whether those are the words they meant. Thank them briefly for finding words and say it gives you something to work with. Then, in one short, warm invitation, offer these ways to go on and let them choose: tell you a little of what is going on that brings these up; think about what would be a helpful way to spend this time; or work out a request they could make, of themselves or of someone else. You may add that, if they would like, they can also think about what another person in the situation might be feeling and needing, only if that feels okay, and that it is never about excusing what happened. Do not guess a situation for them, and do not name any feeling or need yourself.';
 
 /** The paragraph that replaces "reflect... name the feeling or need underneath" while the arc is on. */
 export const ARC_CORE =
-  'This conversation is practice at finding words for feelings and needs, and the person should do the finding. Do not name their feeling or need for them. In your first reply, reflect briefly what happened in their own words, then invite them to try one word for what they are feeling, and say that a guess that misses is still useful. In the next, hand their word back, check it against one near word as a choice, and ask them to guess the need underneath. Then ask which need is not being met, and which need is being met, even a little. Phrase every guess as a question, never as "you feel" or "you need". The page shows them word lists, so do not list words yourself. If they only want to be heard, reflect and invite once without pushing. Ask at most one question. Do not give medical, legal, or financial advice, and do not tell the person what they must do.';
+  'This conversation is practice at finding words for feelings and needs, and the person should do the finding. Do not name their feeling or need for them. The shape you are helping them toward, in their own words and never recited as a template, is: when I notice (what happened, as a camera would see it), I feel (a feeling) because I need (a need), and what could help meet that need? Whichever piece is missing is what you invite next, as an open question, and a feeling is best linked to a need and a need to a feeling. Take any feeling or need words they have given as given: do not ask whether they are right, do not offer a different word beside theirs, do not ask them to say it again in one word, and do not repeat their words back as a list. Use their words naturally in what you ask next. If they have not said what happened, invite it, but never as a condition. Phrase any guess of your own as a question, never as "you feel" or "you need". The page shows them word lists, so do not list words yourself. If they only want to be heard, reflect and invite once without pushing. Ask at most one question. Do not give medical, legal, or financial advice, and do not tell the person what they must do.';
 
 /** What each exchange is for, and the menu rule when the person is stuck. */
 export function arcTurnLine(turn: number, max: number, stuck: boolean): string {
@@ -37,9 +37,9 @@ export function arcTurnLine(turn: number, max: number, stuck: boolean): string {
   if (stuck && turn < max) {
     lines.push('The person has said they do not know or cannot find the word. Offer two or three possible words as options, and tell them none of them has to fit ("it might be closer to drained, numb or overwhelmed, or something else"). Never state one word as fact about them.');
   }
-  if (turn === 1) lines.push('Exchange 1 of the practice: reflect what happened in their words, then invite one feeling word. Do not name the feeling.');
-  else if (turn === 2) lines.push('Exchange 2 of the practice: check their feeling word, offering at most one near word as a choice, then ask them to guess the need underneath.');
-  else if (turn === 3) lines.push('Exchange 3 of the practice: keep their guess as a guess ("does that fit?"), then ask which need is not being met, and which need is being met, even a little.');
+  if (turn === 1) lines.push('Exchange 1 of the practice: reflect briefly what happened in their words. If they have not named a feeling, invite what they notice in themselves; if they have, take it as given and invite the piece that is missing. Do not ask them to boil it down to one word.');
+  else if (turn === 2) lines.push('Exchange 2 of the practice: take any words they gave as given, with no check on them, and invite the missing piece: the feeling, the need, or what happened.');
+  else if (turn === 3) lines.push('Exchange 3 of the practice: if it has not come up, ask which need is not being met and which is being met, even a little. Keep any guess of theirs as theirs.');
   else if (turn === max - 1) lines.push('Exchange 4 of the practice: make your one question about a request in their own words (what would help, from them or from someone else), and say they may add anything else they would still like to say. You may offer, as something they can decline, to guess what the other person might be feeling and needing. Say a caution in your own words with it: only if it feels okay, it is not about excusing what happened, and if they have been hurt or are not safe they owe no one understanding.');
   return lines.join(' ');
 }
@@ -48,12 +48,57 @@ export function arcTurnLine(turn: number, max: number, stuck: boolean): string {
 export const ARC_CLOSE =
   'Say back, in their own words only, the feeling and need words they chose, which need was unmet, which was met if they said one, and the request if they made one. Add no new feeling or need word of your own. Do not give medical, legal, or financial advice, and do not tell the person what they must do.';
 
+// ---- what the person has named so far (feeling, need), so the coach can lead to the missing piece (feelings link to needs, needs to feelings)
+// Detection only: a few everyday words that are not in CNVC's list, so "I'm so mad" counts as a feeling named.
+const EVERYDAY_FEELINGS = ['mad', 'pissed', 'pissed off', 'sad', 'happy', 'down', 'stressed', 'fed up', 'worked up', 'freaking out', 'ticked off', 'upset', 'angry', 'scared', 'anxious'];
+const esc = (w: string): string => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const FEEL_LEAD = "(?:i(?:'|’)m|i am|i feel|i felt|i was|i have been|i(?:'|’)ve been|feel|feeling|felt|makes? me|made me|am|so|really|very|just|kind of|a bit|a little|pretty|quite)\\s+(?:(?:so|really|very|a bit|a little|kind of|pretty|just|quite|totally|more than)\\s+)*";
+const NEED_LEAD = "(?:(?:i|we)\\s+(?:might\\s+)?(?:need|needed|want|miss|crave|lack)|needs?|need for|lack of|longing for|wish(?:ing)? for)\\s+(?:(?:some|more|a|the|my|our|any|to have)\\s+)?";
+let named: { feel: RegExp; need: RegExp } | null = null;
+function namedRegexes(): { feel: RegExp; need: RegExp } {
+  if (named) return named;
+  const alt = (ws: string[]): string => [...new Set(ws.map((w) => w.toLowerCase()))].sort((a, b) => b.length - a.length).map(esc).join('|');
+  named = {
+    feel: new RegExp(`${FEEL_LEAD}(?:${alt([...wordsOf('feeling'), ...EVERYDAY_FEELINGS])})(?![a-z-])`, 'i'),
+    need: new RegExp(`${NEED_LEAD}(?:${alt(wordsOf('need'))})(?![a-z-])`, 'i'),
+  };
+  return named;
+}
+
+/** Whether the person has named a feeling and a need, across what they have written so far (a picked-words message counts as both kinds it holds). */
+export function namedParts(userTexts: string[]): { feeling: boolean; need: boolean } {
+  const r = namedRegexes();
+  let feeling = false;
+  let need = false;
+  for (const t of userTexts) {
+    const x = t.replace(/[“”]/g, '"');
+    if (r.feel.test(x)) feeling = true;
+    if (r.need.test(x)) need = true;
+    if (isWordsOnly(x)) {
+      if (matches(x, wordsOf('feeling')).length && /\bi might be feeling\b|\bfeeling\b/i.test(x)) feeling = true;
+      if (matches(x, wordsOf('need')).length && /\bi might need\b|\bneed/i.test(x)) need = true;
+    }
+  }
+  return { feeling, need };
+}
+
+/** What to lead toward, from what has been named so far. Empty if nothing is named yet. */
+export function gapText(p: { feeling: boolean; need: boolean }): string {
+  if (p.feeling && p.need) return 'They have named a feeling and a need. Take both as given: do not ask them to confirm, repeat or choose between them. Ask what they could do, or ask of someone, that would better meet that need, and whether there are other ways to meet it.';
+  if (p.feeling) return 'They have named a feeling but no need. Take the feeling as given, with no check on it. Invite them to wonder what need sits under it, and later what they could ask for or try.';
+  if (p.need) return 'They have named a need but no feeling. Take the need as given, with no check on it. Invite what they feel when that need is not being met, and what happened, described as a camera would see it, without judgment.';
+  return '';
+}
+
 // ---- checks (plain phrase checks, like personaChecks: they find replies worth reading, they are not proof of judgment)
 const NAMES_FOR_THEM =
   /\b(?:you(?:'|’)re|you are|you must be|you seem to be|sounds like you(?:'|’)re|sounds like you are)\s+(?:really\s+)?feeling\b|(?<!\b(?:do|did|would|could|can|if|when|whether|what|how)\s)\byou(?:\s+(?:really|just))?\s+(?:feel|need)\s+(?!to\b)|\bsounds like you\s+(?:feel|need)\b/i;
 
+// Questions that check words the person has already spelled out ("is that right?", "could X be one of the words you are using?", "is it also possible you feel Y?").
+const CONFIRMS = /\b(?:is that (?:right|correct|what you (?:mean|meant|feel))|did i (?:get|hear) (?:that )?right|could [\"“']?\w[\w -]*[\"”']? be one of the words|is it (?:also )?possible (?:that )?you(?:'|’)?re feeling|are you saying|is that how you feel|is that the (?:right )?word)\b/i;
+
 export interface ArcProblem {
-  check: 'echoesWords' | 'namesForThem' | 'noQuestion' | 'questionOnClose' | 'wordList' | 'noMenu' | 'newWords';
+  check: 'asksConfirm' | 'echoesWords' | 'namesForThem' | 'noQuestion' | 'questionOnClose' | 'wordList' | 'noMenu' | 'newWords';
   detail?: string;
 }
 
@@ -83,6 +128,8 @@ export function arcProblems(reply: string, o: { turn: number; max: number; userT
     return out;
   }
   if (!/[?？]/.test(reply)) out.push({ check: 'noQuestion' });
+  const said = namedParts(o.userTexts);
+  if ((said.feeling || said.need) && CONFIRMS.test(reply)) out.push({ check: 'asksConfirm', detail: 'checks words the person already gave' });
   if (wordsOnly) {
     const theirs = matches(last, all);
     if (matches(reply, theirs).length >= 2) out.push({ check: 'echoesWords', detail: 'repeats the words they sent' });
