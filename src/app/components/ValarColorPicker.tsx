@@ -182,10 +182,48 @@ export function ValarColorPicker({ selectedColor, onColorChange, className = '',
 
   return (
     <div className={`space-y-4 ${className}`}>
+      {/* Custom Color Input */}
+      <div className="flex items-center gap-2 md:gap-3 p-3 bg-muted/30 rounded-lg border border-border">
+        <label htmlFor="custom-color" className="text-sm font-medium">
+          Custom:
+        </label>
+        <input
+          id="custom-color"
+          type="color"
+          value={customColor}
+          onChange={(e) => setCustomColor(e.target.value)}
+          className="rounded-full border-2 border-border cursor-pointer overflow-hidden"
+          style={{
+            width: `${width}px`,
+            height: `${width}px`,
+            padding: '0',
+          }}
+        />
+        <input
+          type="text"
+          value={customColor}
+          onChange={(e) => setCustomColor(e.target.value)}
+          placeholder="#000000"
+          className="flex-1 px-2 md:px-3 py-1 md:py-2 text-sm bg-background border border-border rounded focus:ring-2 focus:ring-nenya-gold/50 focus:border-nenya-gold"
+          pattern="^#[0-9A-Fa-f]{6}$"
+        />
+        <Button
+          size="sm"
+          onClick={() => {
+            onColorChange(customColor);
+            onClose?.(); // Close the dialog when Apply is clicked
+          }}
+          disabled={!/^#[0-9A-Fa-f]{6}$/i.test(customColor)}
+          className="text-xs md:text-sm"
+        >
+          Apply
+        </Button>
+      </div>
+
       {/* Valar Palettes Explainer */}
       <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/50">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          <span className="text-foreground">The sixteen palettes:</span> Simple starting points, offered so you do not have to begin with the whole spectrum. They do not measure or diagnose anything, and no color has a fixed meaning. Choose what feels right to you, or pick any color below.
+          <span className="text-foreground">The sixteen palettes:</span> Simple starting points, offered so you do not have to begin with the whole spectrum. They do not measure or diagnose anything, and no color has a fixed meaning. Choose what feels right to you, or pick any color with the custom color control above.
         </p>
       </div>
       
@@ -233,44 +271,6 @@ export function ValarColorPicker({ selectedColor, onColorChange, className = '',
             </div>
           );
         })}
-      </div>
-      
-      {/* Custom Color Input */}
-      <div className="flex items-center gap-2 md:gap-3 p-3 bg-muted/30 rounded-lg border border-border">
-        <label htmlFor="custom-color" className="text-sm font-medium">
-          Custom:
-        </label>
-        <input
-          id="custom-color"
-          type="color"
-          value={customColor}
-          onChange={(e) => setCustomColor(e.target.value)}
-          className="rounded-full border-2 border-border cursor-pointer overflow-hidden"
-          style={{
-            width: `${width}px`,
-            height: `${width}px`,
-            padding: '0',
-          }}
-        />
-        <input
-          type="text"
-          value={customColor}
-          onChange={(e) => setCustomColor(e.target.value)}
-          placeholder="#000000"
-          className="flex-1 px-2 md:px-3 py-1 md:py-2 text-sm bg-background border border-border rounded focus:ring-2 focus:ring-nenya-gold/50 focus:border-nenya-gold"
-          pattern="^#[0-9A-Fa-f]{6}$"
-        />
-        <Button
-          size="sm"
-          onClick={() => {
-            onColorChange(customColor);
-            onClose?.(); // Close the dialog when Apply is clicked
-          }}
-          disabled={!/^#[0-9A-Fa-f]{6}$/i.test(customColor)}
-          className="text-xs md:text-sm"
-        >
-          Apply
-        </Button>
       </div>
     </div>
   );
