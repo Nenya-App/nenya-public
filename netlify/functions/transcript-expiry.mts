@@ -6,7 +6,7 @@
 import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
 import { addCount } from '../../src/lib/counters.ts';
-import { dueForDeletion, pendingKey, type TranscriptRecord } from '../../src/lib/transcriptPolicy.ts';
+import { dueForDeletion, pendingKey, publicExpired, publicKey, type TranscriptRecord } from '../../src/lib/transcriptPolicy.ts';
 
 let storeOverride: ReturnType<typeof getStore> | null = null;
 export const __useStoreForTests = (s: unknown): void => { storeOverride = s as ReturnType<typeof getStore> | null; };
@@ -19,8 +19,13 @@ export async function expireDue(now: Date, env: Record<string, string | undefine
   let deleted = 0, manual = 0;
   for (const { key } of blobs) {
     const rec = (await s.get(key, { type: 'json' })) as TranscriptRecord | null;
+    // A public copy that has been up as long as its owner allowed comes down now, even though the transcript itself may still be kept.
+    if (rec && publicExpired(rec, now) && !dueForDeletion(rec, now)) {
+      try { await s.delete(publicKey(rec.hash)); await s.setJSON(key, { ...rec, publication: 'withdrawn', updatedAt: now.toISOString() }); } catch { /* tried again tomorrow */ }
+      continue;
+    }
     if (!rec || !dueForDeletion(rec, now)) continue;
-    try { await s.delete(pendingKey(rec.hash)); } catch { /* may not exist */ }
+    try { await s.delete(pendingKey(rec.hash)); await s.delete(publicKey(rec.hash)); } catch { /* may not exist */ }
     let gone = false;
     if (rec.submissionId && env.NETLIFY_API_TOKEN) {
       try {

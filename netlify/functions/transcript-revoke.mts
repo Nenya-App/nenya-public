@@ -5,7 +5,7 @@
 import { getStore } from '@netlify/blobs';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { signedProblem } from '../../src/lib/signedCheck.ts';
-import { applyRevocation, pendingKey, recordKey, USES, type TranscriptRecord, type Use } from '../../src/lib/transcriptPolicy.ts';
+import { applyRevocation, pendingKey, publicKey, recordKey, USES, type TranscriptRecord, type Use } from '../../src/lib/transcriptPolicy.ts';
 
 const ROUTE = '/api/transcript-revoke';
 const MAX_BODY = 40000;
@@ -44,7 +44,7 @@ export default async (req: Request): Promise<Response> => {
   try {
     await s.setJSON(recordKey(hash), next);
     // A public or waiting copy goes at once when publishing is taken back or deletion is asked for.
-    if (next.publication === 'withdrawn') await s.delete(pendingKey(hash));
+    if (next.publication === 'withdrawn') { await s.delete(pendingKey(hash)); await s.delete(publicKey(hash)); }
   } catch { return reply(503, { error: 'store' }); }
   return reply(200, { status: next.status, uses: next.uses, publication: next.publication });
 };

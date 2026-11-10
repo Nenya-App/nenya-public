@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Download, Send } from 'lucide-react';
 import { describeChoices } from '../lib/transcriptPolicy';
+import { stopLevelFlagged } from '../lib/publicCopy';
 import { TranscriptChoices, choicesToSend, emptyChoices, type ChoiceState } from './TranscriptChoices';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
@@ -183,7 +184,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
               placeholder="For example: what felt wrong, or what you would change."
             />
           </label>
-          <TranscriptChoices value={choices} onChange={setChoices} messages={messages} />
+          <TranscriptChoices value={choices} onChange={setChoices} messages={messages} publishBlocked={stopLevelFlagged(signed ?? signedRef.current)} />
           {tooLong && <p className="text-xs text-destructive">This is too long to send. Download it instead.</p>}
           <div className="flex items-center gap-3">
             <Button size="sm" onClick={sendToNenya} disabled={tooLong || share === 'sending' || !toSend}>

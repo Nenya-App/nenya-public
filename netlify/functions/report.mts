@@ -14,6 +14,7 @@ import { receiptRecordedOn } from '../../src/lib/receiptLog.ts';
 import { readableTranscript, signedJson, transcriptFilename, type Receipt, type SignedTranscript } from '../../src/lib/transcript.ts';
 import { sanitizePlainText } from '../../src/lib/textSanitize.ts';
 import { signedProblem } from '../../src/lib/signedCheck.ts';
+import { stopLevelFlagged } from '../../src/lib/publicCopy.ts';
 import { describeChoices, mergeResend, newRecord, parseChoices, pendingKey, recordKey, type TranscriptRecord } from '../../src/lib/transcriptPolicy.ts';
 
 const ROUTE = '/api/report';
@@ -86,6 +87,8 @@ export default async (req: Request): Promise<Response> => {
   if (!choices) return refuse('choices');
 
   const { transcript, receipt } = body.signed as { transcript: SignedTranscript; receipt: Receipt };
+  // A conversation in which the site's safety check stopped a message is never offered for publishing, whatever the request says.
+  if (choices.uses.includes('publish') && stopLevelFlagged(transcript)) return refuse('publish-not-allowed');
   const note = typeof body.note === 'string' ? sanitizePlainText(body.note, MAX_NOTE) : '';
   const readable = readableTranscript(transcript.messages, transcript.session, receipt, transcript.context ?? '', transcript.meta, transcript.site ?? [], transcript.checks ?? []);
   if (readable.length > MAX_READABLE) return refuse('size');

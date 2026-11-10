@@ -8,8 +8,9 @@ Nothing is chosen for them.
 - **Optional uses (unchecked):**
   - *Test and improve the coach:* kept with names and contact details removed among our test conversations. Never used to train a model.
   - *Quote short parts in public:* a few words, never with a name, never the whole conversation.
-  - *Show it on a "witnessed conversations" page, without a name:* see below. They also choose **what to show**: the whole conversation (anyone can check the signature) or only chosen messages (an excerpt, which cannot be checked against the signature).
-- **How long (required):** delete after 30 days, 90 days, one year, or keep until they ask.
+  - *Show it on a "witnessed conversations" page, without a name:* see below. They also choose **what to show**: the whole conversation (anyone can check the signature) or only chosen messages. Either way the public copy is anonymized, so a stranger cannot check its signature (see below).
+- **How long we keep it (required):** delete after 30 days, 90 days, one year, or keep until they ask.
+- **How long it may stay on the public page (required if they allow publishing):** the same four choices, and never longer than the keeping time. The clock starts the day a person approves the copy, and the copy comes down by itself on that day (the daily job), even if the transcript itself is still kept. This is a separate permission, like a testimonial with an end date.
 The send button stays off until a keeping time is chosen.
 
 ## What we keep
@@ -23,20 +24,32 @@ A small record keyed by the transcript's fingerprint (hash): the choices, the da
 ## What the signature does and does not prove
 The signature proves the transcript is genuine and unchanged. Holding the file is the key. It does **not** prove who holds it: anyone with the file can make the request, so keep it as private as the conversation. Because a request can only remove permissions, the worst a stranger with the file could do is take your own transcript down. This is why it is safe for the key to be a bearer token. It is not an identity check, and nothing says it is.
 
+## What needs a person (owner, 2026-11-10)
+Software cannot finish every deletion, so the by-hand steps are explicit and listed, not left to memory:
+- **A queue of deletions waiting for a hand** (`/api/witnessed-review`, action `deletions`; owner only): every transcript that is due (its time passed, or the person asked) and has not been marked deleted. Each shows what to do: delete the stored submission in Netlify (Forms, verified-transcript) if the daily job could not, and delete the notification email copy.
+- **Mark it done** (`mark-deleted`) once you have done them; the record becomes a marker with only the fingerprint and date, and leaves the list.
+- **Review before anything goes up** (the same endpoint) is the other by-hand step.
+The queue is only an API so far; a panel in the owner's page is next.
+
 ## Limits we must state
 - A copy in our **notification email** is not deleted by the job. Options for the owner: turn the form's notification email off and read submissions in the dashboard only (then deletion covers everything), or keep emails and delete them by hand within the chosen time.
 - We cannot recall copies others make of anything that was ever public (screenshots, archives).
 - Netlify may keep its own backups under its own practices.
 - The job that records each submission's id (`submission-created.mts`) and the delete call use Netlify's APIs as I remember them. Unverified against the current documentation; test on staging with a real submission first.
 
-## The "witnessed conversations" page (next step; not built)
-The permission, the pending copy, the withdrawal and the effect on a public copy are built. What is not: the review screen for the owner, the public page, and the listing function. Design:
-- A person at Nenya reads every pending conversation and decides whether to show it. Anonymity cannot be promised by software (names slip through; details identify), so the page says it is read first and may not be shown.
-- The page shows only records whose publication is `public`, active, and within their keeping time (`isPublic()` in `transcriptPolicy.ts`, tested). It is served with no caching, so a withdrawal takes effect at once.
-- Shown without session colors, key ids or dates; each message marked as written by the person, the AI, or the site; for a whole conversation, a "check the signature" link.
-- **Never** shown, in my recommendation: a conversation in which the site's safety check flagged a message at stop level (self-harm, abuse, danger). Publishing is the wrong default for someone in that moment, and the person may not be able to judge it. Decision for the owner.
-- A takedown route that does not need the file (an email to info@nenya.biz, answered by a person).
-- Terms and Privacy Promise changes (draft below).
+## The "witnessed conversations" page: built 2026-11-10 (API; the screens are next)
+Three safeguards, in this order (owner, 2026-11-10):
+1. **A conversation in which the site's safety check stopped a message can never be offered for publishing.** The send step shows the option as unavailable, with the reason; `/api/report` refuses it whatever the request says (`stopLevelFlagged`).
+2. **The site anonymizes automatically** (`anonymize()` in `src/lib/publicCopy.ts`): the same scrubber the coach uses is run again over every message; session colors, key id and exact dates are left out; each message is marked as written by the person, the AI, or the site (a pre-written answer or a fixed replacement sentence is the site's, never the AI's).
+3. **A person reads and edits every copy by hand before anything is shown** (`/api/witnessed-review`, owner only): list the waiting ones with the anonymized draft, approve with the reviewer's final text, or reject. Approval is refused if the text has the wrong shape or the scrubber would still replace something. Approving writes the reviewed copy to the public store and deletes the signed original from the waiting store. Softer safety flags (a message that was softened, not stopped) are shown to the reviewer as a reason to read more closely.
+
+**What the public copy is.** It is not the signed text (names were removed, so the hash no longer matches), so a stranger cannot check its signature, and the page says so. It carries the original's short fingerprint, which the person who holds the signed file can match to theirs. This corrects an earlier line in the send step that said the whole conversation could be checked by anyone.
+
+`/api/witnessed` returns only reviewed copies whose owner has not taken them back and whose keeping time has not passed (`isPublic`), never cached, showing the month and not the exact date.
+
+Taking it back (`/my-transcript`) or asking for deletion removes the public copy at once. The daily job removes it at the end of the keeping time. A takedown that does not need the file is an email to info@nenya.biz.
+
+**Not built:** the review panel in the owner's page, and the public page itself (both only call the endpoints above).
 
 ## Terms and Privacy Promise: draft wording (not applied)
 - Section 7 (reports), retention paragraph: replace "there is no automatic deletion schedule for submissions yet" with the new choices: what a person may allow, the keeping times, that we keep a small record of their choices and the transcript's fingerprint, that deletion happens at the end of the time or when they ask with the signed file, and the limits above (email copy removed by hand, no recall of public copies, Netlify's own backups).
@@ -46,7 +59,7 @@ The permission, the pending copy, the withdrawal and the effect on a public copy
 
 ## Decisions for the owner
 1. Email notifications for transcript submissions: off (dashboard only) or on with hand deletion?
-2. Never show a conversation that was flagged at stop level? (Recommended: yes.)
+2. DECIDED 2026-11-10: a conversation flagged at stop level is never offered for publishing.
 3. Keep "use for testing" at "never used to train a model", or say nothing about training?
 4. A fixed list of keeping times, or a custom date?
 5. Whether the public page lists the date a conversation happened.

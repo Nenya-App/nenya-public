@@ -54,8 +54,8 @@ ok('the earlier delete-by date stands when it is sent again with a longer keepin
 
 // ── publishing
 store.j.clear(); forwards = [];
-ok('publishing needs a clear choice of what to show', (await send({ keep: '30d', uses: ['publish'] })).status === 400 && (await send({ keep: '30d', uses: ['publish'], portions: [] })).status === 400);
-ok('a publish choice saves a waiting copy for a person to read, and nothing is public', (await send({ keep: '90d', uses: ['publish'], portions: [0, 1] })).status === 204 && rec()?.publication === 'pending-review' && !!store.j.get(pendingKey(hash))?.transcript && /only the chosen messages/.test(forwards[0].permissions));
+ok('publishing needs a clear choice of what to show', (await send({ keep: '30d', uses: ['publish'], showFor: '30d' })).status === 400 && (await send({ keep: '30d', uses: ['publish'], portions: [], showFor: '30d' })).status === 400);
+ok('a publish choice saves a waiting copy for a person to read, and nothing is public', (await send({ keep: '90d', uses: ['publish'], portions: [0, 1], showFor: '30d' })).status === 204 && rec()?.publication === 'pending-review' && !!store.j.get(pendingKey(hash))?.transcript && /only the chosen messages/.test(forwards[0].permissions));
 
 // ── taking back
 ok('a request with no genuine signed transcript is refused', (await takeBack({ signed: { ...GOOD, receipt: { ...GOOD.receipt, hash: 'f'.repeat(64) } }, deleteNow: true })).status === 400 && (await takeBack({ deleteNow: true })).status === 400);
@@ -66,7 +66,7 @@ ok('a transcript we were never sent is not found', (() => { store.j.clear(); ret
 
 // ── a failed forward leaves nothing behind
 forwardStatus = 500; forwards = [];
-ok('if forwarding fails, the new record and any waiting copy are removed', (await send({ keep: '30d', uses: ['publish'], portions: 'all' })).status === 502 && !rec() && !store.j.has(pendingKey(hash)));
+ok('if forwarding fails, the new record and any waiting copy are removed', (await send({ keep: '30d', uses: ['publish'], portions: 'all', showFor: '30d' })).status === 502 && !rec() && !store.j.has(pendingKey(hash)));
 forwardStatus = 200;
 
 // ── deletion
