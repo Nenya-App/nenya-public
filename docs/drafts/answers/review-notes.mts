@@ -24,6 +24,7 @@ export const TUTORIAL_MAP: { lesson: string; title: string; uses: string[] }[] =
   { lesson: 'Five exchanges', title: 'Making the conversation count', uses: ['n-limits', 'c-can', 'n-nvc'] },
   { lesson: 'NVC, one step at a time', title: 'Observation, feeling, need, request; and where to learn more', uses: ['n-nvc', 'n-affiliation', 'c-methods'] },
   { lesson: 'When you are angry', title: 'What happens when you bring anger here', uses: ['c-angry', 'c-feelings', 'c-stopped'] },
+  { lesson: 'Where we stand', title: 'What Nenya says about genocide, apartheid, occupation and colonization, and what it will not do', uses: ['h-genocide', 'h-apartheid', 'h-colonization', 'h-political', 'h-belief'] },
   { lesson: 'Safety', title: 'What the notices mean, and who to call', uses: ['n-notherapy', 'n-safety', 'c-stopped'] },
   { lesson: 'Cards, anywhere', title: 'Answers that appear beside a reply or in a footer, not lessons', uses: ['n-version', 'n-terms-change', 'n-languages'] },
   { lesson: 'Helping us improve it', title: 'Reports, feedback, and contact', uses: ['n-report', 'n-contact', 'n-languages', 'n-terms-change'] },

@@ -18,6 +18,7 @@ export const ABOUT_TITLES: Record<string, string> = {
   'pii-scrubbing': 'PII Scrubbing Tutorial',
   'venice-chat': 'Chat with Nenya\'s AI on Venice',
   witnessed: 'Witnessed Conversations',
+  'where-we-stand': 'Where We Stand',
   'partner-practice': 'Partner Practice (Planned)',
   structure: 'Our Structure',
   'support-us': 'Support Us',

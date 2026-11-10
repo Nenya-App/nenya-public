@@ -22,7 +22,7 @@ ok('every link to an About section names a real one', badPage.length === 0, badP
 ok('every link has a page or an address, and external addresses are the repository or https', ANSWERS.every((a) => a.links.length > 0 && a.links.every((l) => !!l.page !== !!l.href && (!l.href || /^https:\/\//.test(l.href) || l.href === '{commit_url}'))));
 
 const ids = ANSWERS.map((a) => a.id);
-ok('ids are unique and each is "n-" or "c-" by part', new Set(ids).size === ids.length && ANSWERS.every((a) => a.id.startsWith(a.part === 'nenya' ? 'n-' : 'c-')));
+ok('ids are unique and each is "n-" or "c-" by part, or "h-" for where we stand', new Set(ids).size === ids.length && ANSWERS.every((a) => (a.id.startsWith(a.part === 'nenya' ? 'n-' : 'c-') || a.id.startsWith('h-'))));
 ok('every answer has a short, a full, examples of how it is asked, a tutorial slot, a source, and a status', ANSWERS.every((a) => a.short.length > 60 && a.full.length >= 2 && a.asked.length >= 3 && a.tutorial.length > 10 && a.checks.length >= 2 && ['ready', 'owner', 'pending'].includes(a.status)));
 ok('a card is short enough to read in one glance (under 520 characters)', ANSWERS.every((a) => a.short.length < 520), ANSWERS.filter((a) => a.short.length >= 520).map((a) => `${a.id} ${a.short.length}`).join(', '));
 ok('an answer that needs the owner has a note saying what', ANSWERS.every((a) => a.status === 'ready' || (a.ownerNote ?? '').length > 60));

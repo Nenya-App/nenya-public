@@ -512,6 +512,93 @@ export const ANSWERS: Answer[] = [
     ownerNote: 'Direction approved 2026-11-08: state the language situation clearly, invite contributions, and do not overpromise on any contributor agreement (none exists yet, so the answer says so and promises no credit or licence terms). The notice and contact route are live (footer, coach start screen; 2026-11-10). Say nothing about a language coming.',
   },
   {
+    id: 'h-genocide', part: 'nenya', title: 'Is what is happening in Gaza genocide?',
+    asked: ['is Gaza a genocide','is Israel committing genocide','was it genocide in Gaza'],
+    short: 'An independent UN commission of inquiry, Amnesty International and Israeli human rights groups have concluded it is genocide, and we agree with them. The International Court of Justice has not ruled yet, and the case will take years. We do not think the dead should have to wait for a verdict for us to say it. If this is weighing on you, what is it stirring in you?',
+    full: [
+      'Independent United Nations investigators (September 2025), Amnesty International (December 2024) and Israeli human rights organizations including B\'Tselem and Physicians for Human Rights Israel have concluded that what Israel has done in Gaza since October 2023 is genocide. Nenya agrees with them.',
+      'The International Court of Justice has not ruled on the genocide claim brought by South Africa. In January 2024 it found the claim plausible and ordered protective measures, and the written rounds of the case run to 2029. We say what we think now, and we say who found what.',
+      'We also say that the attack on 7 October 2023 killed about 1,200 people and took hostages, that these were atrocities, and that no Jewish person anywhere is responsible for the Israeli government, and no Palestinian for Hamas. The Where We Stand page has the sources and is updated by hand.',
+    ],
+    links: [{ label: 'Where We Stand', page: 'where-we-stand' }],
+    tutorial: 'Where we stand: the text of the Where We Stand page.',
+    checks: [
+      { claim: 'what has been found, and by whom', file: about('WhereWeStand'), has: 'has been found to be genocide' },
+      { claim: 'a court has not yet ruled', file: about('WhereWeStand'), has: 'A court has not yet ruled' },
+    ],
+    status: 'ready',
+    ownerNote: 'Written 2026-11-10 from docs/drafts/history-and-violence-text-draft.md; the owner approved the wording the same day. Keep the facts current: the page carries a last-reviewed date.',
+  },
+  {
+    id: 'h-apartheid', part: 'nenya', title: 'Is the occupation illegal? Is it apartheid?',
+    asked: ['is Israel an apartheid state','is the occupation illegal','is the occupation unlawful'],
+    short: 'The International Court of Justice found the occupation unlawful in 2024. Human Rights Watch, Amnesty International and the Israeli group B\'Tselem have each concluded that Israeli authorities are committing the crime of apartheid against Palestinians, and we agree. Criticizing a government is not hatred of a people, and we hold that line for every people. What brought this up for you?',
+    full: [
+      'The International Court of Justice found on 19 July 2024 that Israel\'s continued presence in the occupied Palestinian territory is unlawful and must end as soon as possible, and in October 2025 that Israel must ensure the population\'s basic needs are met.',
+      'B\'Tselem (2021), Human Rights Watch (2021, which found the crimes against humanity of apartheid and persecution) and Amnesty International (2022) have concluded that Israel\'s rule over Palestinians is apartheid. Nenya agrees with them. Israel and others dispute it, and no court has ruled on that question as a crime.',
+      'Criticism of a government, an army or an ideology is not hatred of a people. Antisemitism, anti-Palestinian racism and Islamophobia are dehumanization, and we refuse all of them.',
+    ],
+    links: [{ label: 'Where We Stand', page: 'where-we-stand' }],
+    tutorial: 'Where we stand: the text of the Where We Stand page.',
+    checks: [
+      { claim: 'the occupation is unlawful, said by the ICJ', file: about('WhereWeStand'), has: 'is unlawful' },
+      { claim: 'apartheid findings by named organizations', file: about('WhereWeStand'), has: 'We agree with them' },
+    ],
+    status: 'ready',
+    ownerNote: 'Written 2026-11-10 from docs/drafts/history-and-violence-text-draft.md; the owner approved the wording the same day. Keep the facts current: the page carries a last-reviewed date.',
+  },
+  {
+    id: 'h-colonization', part: 'nenya', title: 'Is colonization wrong? Is American history genocide?',
+    asked: ['was slavery wrong','is colonization wrong','did the US commit genocide','was there a genocide of native americans'],
+    short: 'We say what happened: the United States took land from Native peoples through massacre, removal and boarding schools, built wealth on slavery, and has apologized for some of it. Colonization took land and ruled people by force. Telling it plainly is not about blaming people alive today. It is about not looking away. What would you like to talk through?',
+    full: [
+      'The United States was built in part on slavery and on the taking of land from Native peoples, with massacres, forced removal and boarding schools that took children from their families. The government has apologized for some of this, including for the boarding schools in 2024.',
+      'Colonization, the taking of land and the rule of peoples by force, shaped much of the world and is still lived with now. None of this is a matter of two sides, and none of it is a reason to see any people alive today as less than human.',
+    ],
+    links: [{ label: 'Where We Stand', page: 'where-we-stand' }],
+    tutorial: 'Where we stand: the text of the Where We Stand page.',
+    checks: [
+      { claim: 'American history is stated plainly', file: about('WhereWeStand'), has: 'built in part on slavery' },
+      { claim: 'colonization is not a matter of two sides', file: about('WhereWeStand'), has: 'None of this is a matter of two sides' },
+    ],
+    status: 'ready',
+    ownerNote: 'Written 2026-11-10 from docs/drafts/history-and-violence-text-draft.md; the owner approved the wording the same day. Keep the facts current: the page carries a last-reviewed date.',
+  },
+  {
+    id: 'h-political', part: 'nenya', title: 'Isn\'t this too political for a wellbeing tool?',
+    asked: ['isn\'t this too political','why does Nenya take a stance','where does Nenya stand on genocide'],
+    short: 'We think refusing to call mass violence what it is would be a political choice too. Nenya is built on the idea that every person counts, and that means saying so about history. You do not have to agree with us to use it, and nobody is judged for how they feel.',
+    full: [
+      'Nenya is built on one idea: every person is a person, and what someone feels and needs matters. That is why we do not treat genocide, apartheid or occupation as matters of opinion, and why we will not help anyone make a group of people seem less than human.',
+      'The coach does not shame anyone for what they believe or feel. If someone says something that justifies or denies mass violence, it says plainly that it disagrees, says what the record shows, offers something to read, and asks what is behind it.',
+    ],
+    links: [{ label: 'Where We Stand', page: 'where-we-stand' }],
+    tutorial: 'Where we stand: the text of the Where We Stand page.',
+    checks: [
+      { claim: 'the idea Nenya is built on', file: about('WhereWeStand'), has: 'every person is a person' },
+      { claim: 'what the coach will not do', file: about('WhereWeStand'), has: 'We will not describe people as animals' },
+    ],
+    status: 'ready',
+    ownerNote: 'Written 2026-11-10 from docs/drafts/history-and-violence-text-draft.md; the owner approved the wording the same day. Keep the facts current: the page carries a last-reviewed date.',
+  },
+  {
+    id: 'h-belief', part: 'nenya', title: 'What if something offends my religion or beliefs?',
+    asked: ['this offends my religion','that hurts my religious feelings','it insults my faith'],
+    short: 'That sounds like it hurts, and the hurt is real. We treat every belief the way we treat any thought: with care for the feeling and the need under it. It does not make the belief true or off limits, and it does not change what the record shows. What do you most need right now: respect, safety, belonging, to be heard?',
+    full: [
+      'We treat every belief, religious ones included, the way we treat any thought: with care for the feeling and the need under it. If a belief is hurt by being questioned, that hurt is real and we will listen to it. It does not make the belief true, and it does not make it off limits.',
+      'A feeling can be honored while a claim is still examined. What we do not accept is hurt used as a reason that nothing can be said, or a belief used to justify harming or removing a people.',
+    ],
+    links: [{ label: 'Where We Stand', page: 'where-we-stand' }],
+    tutorial: 'Where we stand: the text of the Where We Stand page.',
+    checks: [
+      { claim: 'belief is treated like any thought', file: about('WhereWeStand'), has: 'the way we treat any thought' },
+      { claim: 'the hurt is real and does not make a belief off limits', file: about('WhereWeStand'), has: 'does not make it off limits' },
+    ],
+    status: 'ready',
+    ownerNote: 'Written 2026-11-10 from docs/drafts/history-and-violence-text-draft.md; the owner approved the wording the same day. Keep the facts current: the page carries a last-reviewed date.',
+  },
+  {
     id: 'n-else', part: 'nenya', title: 'What else is here',
     asked: ['what can this do', 'what are the gateways', 'what is the breathing tool', 'where do I start'],
     short: 'Nenya has a breathing tool you can use on its own, the Six Gateways reflection that works through sight, sound and the senses, a place to explore needs and colors, and an optional short conversation with the coach. Everything except the coach runs in your browser.',
@@ -746,11 +833,26 @@ const SITE = "(?:this|the)\\s+(?:site|app|website|tool|demo|coach|chat|project|p
 export const ABOUT_ORDER = [
   // Contact first: "how do I contact the people who made this?" is about reaching them, not about who they are.
   'n-contact', 'n-who', 'n-founder', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
-  'n-name', 'n-version', 'n-free', 'n-report-share', 'c-cards', 'n-palette', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
+  'h-genocide', 'h-apartheid', 'h-colonization', 'h-political', 'h-belief', 'n-name', 'n-version', 'n-free', 'n-report-share', 'c-cards', 'n-palette', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
   'n-affiliation', 'n-nvc', 'n-notherapy', 'n-accessibility', 'n-report', 'n-transcripts', 'n-languages', 'n-terms-change', 'n-else', 'n-what',
 ] as const;
 
 export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
+  'h-genocide': [
+    /\b(?:is|was|are|were)\b[^.?!]{0,40}\b(?:gaza|palestin\w*|israel(?:i)?)\b[^.?!]{0,40}\bgenocide\b[^.?!]*\?|\bis\s+israel\s+committing\s+(?:a\s+)?genocide\b|\bis\s+(?:what(?:'s|\s+is)\s+happening\s+in\s+)?gaza\s+(?:a\s+)?genocide\b|\bwas\s+(?:it|that)\s+(?:a\s+)?genocide\s+in\s+gaza\b/i,
+  ],
+  'h-apartheid': [
+    /\bis\s+israel\s+(?:an?\s+)?apartheid(?:\s+state)?\b|\bis\s+israel\s+committing\s+apartheid\b|\b(?:is|was)\s+the\s+(?:israeli\s+)?occupation\s+(?:of\s+\w+\s+)?(?:illegal|unlawful|legal)\b/i,
+  ],
+  'h-colonization': [
+    /\b(?:was|is)\s+(?:american|us|u\.s\.)\s+history\s+(?:a\s+)?genocide\b|\bwas\s+there\s+(?:a\s+)?genocide\s+(?:of|against)\s+(?:native|indigenous)\b|\b(?:was|is)\s+(?:slavery|colonization|colonialism)\s+(?:wrong|bad|evil)\b|\bdid\s+the\s+(?:us|u\.s\.|united\s+states)\s+commit\s+genocide\b/i,
+  ],
+  'h-political': [
+    /\bisn'?t\s+this\s+(?:too\s+)?political\b|\bwhy\s+(?:does|do)\s+(?:nenya|the\s+(?:site|coach|app))\s+(?:take|have)\s+(?:a\s+)?(?:political\s+)?(?:stance|position|side|stand)s?\b|\bwhere\s+(?:does\s+nenya|do\s+you)\s+stand\s+on\b/i,
+  ],
+  'h-belief': [
+    /\b(?:this|that|it|you)\s+(?:offends?|hurts?|insults?)\s+(?:my|our)\s+(?:religio\w*|faith|belief\w*)\b|\b(?:my|our)\s+religio\w*\s+(?:feelings\s+)?(?:are|is|were)\s+(?:hurt|offended)\b/i,
+  ],
   'n-who': [
     new RegExp(`\\bwho\\s+(?:runs?|owns?|made|created|built|founded|operates|is\\s+behind|'s\\s+behind)\\s+(?:${SITE}|nenya|you\\s+guys|it)\\b`, 'i'),
     /\bwho(?:'s|\s+is)\s+behind\s+(?:this|nenya|you|the\s+(?:site|app|coach))\b/i,

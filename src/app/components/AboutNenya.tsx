@@ -45,12 +45,14 @@ type AboutSection =
   | 'pii-scrubbing'
   | 'venice-chat'
   | 'witnessed'
+  | 'where-we-stand'
   | 'partner-practice'
   | 'structure' 
   | 'support-us'
   | 'terms';
 
 import WitnessedConversations from './about/WitnessedConversations';
+import WhereWeStand from './about/WhereWeStand';
 import { aboutPath, aboutSectionFromLocation, aboutTitle } from '../../lib/aboutRoutes';
 
 export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOpenPartnerPreview }: AboutNenyaProps) {
@@ -171,6 +173,9 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOp
       )}
       {currentSection === 'venice-chat' && (
         <VeniceChat onBack={handleBackToMenu} />
+      )}
+      {currentSection === 'where-we-stand' && (
+        <WhereWeStand onBack={handleBackToMenu} />
       )}
       {currentSection === 'witnessed' && (
         <WitnessedConversations onBack={handleBackToMenu} />

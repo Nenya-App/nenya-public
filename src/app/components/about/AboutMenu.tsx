@@ -97,6 +97,12 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       icon: MessageCircle,
     },
     {
+      id: 'where-we-stand',
+      title: 'Where We Stand',
+      description: 'What we say about genocide, apartheid, occupation and colonization, and what we will not do',
+      icon: Scroll,
+    },
+    {
       id: 'witnessed',
       title: 'Witnessed Conversations',
       description: 'Conversations with the coach that people chose to share, without their names',
