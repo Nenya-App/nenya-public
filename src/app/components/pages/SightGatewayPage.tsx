@@ -32,6 +32,8 @@ interface SightGatewayPageProps {
   totalGateways: number;
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
+  /** Colors a melody made first in the Sound gateway can offer as a starting point (null if none). */
+  melodyColors?: { color1: string; color2: string } | null;
 }
 
 const generateRandomColor = () => {
@@ -97,7 +99,7 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap }: SightGatewayPageProps) {
+export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap, melodyColors }: SightGatewayPageProps) {
   const { theme } = useTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -276,7 +278,28 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   <Shuffle className="size-4" />
                   Surprise Me
                 </Button>
+                {melodyColors && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => {
+                      setColor1(melodyColors.color1);
+                      setColor2(melodyColors.color2);
+                      setColor1Name('');
+                      setColor2Name('');
+                      setGeneratedPalettes([]);
+                    }}
+                    className="gap-2"
+                  >
+                    ♪ Start from my melody&rsquo;s colors
+                  </Button>
+                )}
               </div>
+              {melodyColors && (
+                <p className="text-center text-xs text-muted-foreground">
+                  You made a melody in the Sound gateway first. Its first three notes and its last three notes can give these two colors a starting point. Changing them here never changes your melody or what was recorded about it.
+                </p>
+              )}
 
               {/* Two Color Cards Side by Side */}
               <div className="grid md:grid-cols-2 gap-6 md:gap-8">

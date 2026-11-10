@@ -498,6 +498,12 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               </Button>
             </div>
 
+            {!hasValidColors && (
+              <p className="text-center text-xs text-muted-foreground">
+                You are making this melody before choosing colors in the Sight gateway. If you visit Sight afterward, it can offer to start from your melody&rsquo;s colors. Whichever you do second starts from the first and never changes it or what was recorded about it.
+              </p>
+            )}
+
             <div className="flex items-center justify-center gap-8">
               <ColorSwatch hex={melodyColor1} label="current" muted={!melodyConnected && !melodyComplete} />
               <div

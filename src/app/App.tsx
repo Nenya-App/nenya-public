@@ -3,6 +3,7 @@ import { ThemeProvider } from './components/ThemeProvider';
 import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { aboutSectionFromLocation, SITE_TITLE } from '../lib/aboutRoutes';
+import { melodyColorsFor } from '../lib/melodySeed';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
@@ -551,6 +552,7 @@ export default function App() {
               totalGateways={selectedGateways.length}
               bodyMapData={bodyMapData}
               onUpdateBodyMap={setBodyMapData}
+              melodyColors={melodyColorsFor(gatewayData.find((g) => g.gateway === 'sound')?.data)}
             />
           )}
 
