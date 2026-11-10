@@ -45,3 +45,31 @@ The structure of the feelings and needs categories that Nenya's coach and its re
 - Where the credit appears: the About NVC page on the site (`#cnvc-credit`), and in the sources of any module that builds on the categories.
 - What this is not: Nenya is independent and is not affiliated with or endorsed by CNVC (the About NVC page says so). The permission quoted covers sharing and copying the document; our categories are an adaptation, so we have asked, or will ask, CNVC for a note confirming that extending and translating the categories is welcome.
 
+
+## color-name-list (color names for the "Suggest a name" feature)
+
+The "Suggest a name" button in the Sight gateway uses the "best of" set (5,000 names) of **color-name-list** by David Aerne, <https://github.com/meodai/color-names>, version 14.86.0 (npm `color-name-list`), shipped with the site as a separate file and loaded only when a visitor asks for a suggestion. Nothing is sent to anyone. The names are a starting point for the person's own words; the site makes no claim about what any color means.
+
+```
+MIT License
+
+Copyright (c) 2017 David Aerne
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

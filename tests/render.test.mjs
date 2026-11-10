@@ -98,6 +98,16 @@ try {
     const demo = readFileSync(new URL('../src/coach/CoachDemo.tsx', import.meta.url), 'utf8');
     ok('report sharing: the chosen text goes with every request, opens the conversation in place of the greeting, and a flag shows the notice without ending anything', /\.\.\.\(shared \? \{ context: shared\.text \} : \{\}\)/.test(demo) && /shared \? openingText\(shared\.meta\) : GREETING/.test(demo) && /contextFlag && !flag && <FlagNotice flag=\{contextFlag\}/.test(demo) && /setContextFlag\(next \? checkConversation\(\[next\.text\]\) : null\)/.test(demo) && /data\.blocked === 'context'/.test(demo));
   }
+  // Suggesting a name for a colour: offered on request, announced to screen readers, nothing loaded or sent before it is pressed.
+  {
+    const { ColorNameSuggest } = await vite.ssrLoadModule('/src/app/components/ColorNameSuggest.tsx');
+    h = render(ColorNameSuggest, { label: 'Current state', hex: '#1B4F6E', onUse: noop });
+    ok('colour names: a plain "Suggest a name" button and a polite live region for screen readers, and no suggestion until it is pressed', typeof h === 'string' && h.includes('Suggest a name') && /role="status"[^>]*aria-live="polite"[^>]*class="sr-only"|aria-live="polite"[^>]*role="status"/.test(h) && !h.includes('A name that might fit') && !h.includes('Use this name'), h.error ?? '');
+    const sight = readFileSync(new URL('../src/app/components/pages/SightGatewayPage.tsx', import.meta.url), 'utf8');
+    ok('colour names: offered for both the current-state and the wish colour, and a chosen name goes into the person\'s own words field', /<ColorNameSuggest label="Current state" hex=\{color1\} onUse=\{\(n\) => setColor1Name/.test(sight) && /<ColorNameSuggest label="Wish" hex=\{color2\} onUse=\{\(n\) => setColor2Name/.test(sight));
+    const lib = readFileSync(new URL('../src/lib/colorNames.ts', import.meta.url), 'utf8');
+    ok('colour names: the list is a separate file loaded only on request (a dynamic import), never at page load', /import\('color-name-list\/bestof'\)/.test(lib) && !/^import .*color-name-list/m.test(lib));
+  }
   // The loading screen, the tour offer and the tour.
   const { LoadingVeil } = await vite.ssrLoadModule('/src/app/components/LoadingVeil.tsx');
   h = render(LoadingVeil, { ready: false, onDone: noop });

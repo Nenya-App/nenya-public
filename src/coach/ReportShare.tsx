@@ -4,8 +4,7 @@
 import { useMemo, useState } from 'react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
-import { valarColors } from '../app/components/ValarBreathingLogo';
-import { displayNameFor } from '../lib/paletteNames';
+import { paletteOfHex } from '../app/components/paletteLookup';
 import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { buildContext, buildFragments, fragmentsFromText, type Fragment, type SharedText } from '../lib/reportFragments';
 import { MAX_SHARED_CHARS } from '../lib/reportShare';
@@ -14,13 +13,6 @@ import type { BodyMapLike, Gateway } from '../lib/reportText';
 export interface ReportInput {
   gatewayData: { gateway: Gateway; data: any }[];
   bodyMap?: BodyMapLike;
-}
-
-/** The outward name of the palette a colour belongs to, or null (a colour of the person's own). */
-export function paletteOfHex(hex: string): string | null {
-  const h = hex.toLowerCase();
-  const v = valarColors.find((p) => p.vector.some((c) => c.toLowerCase() === h));
-  return v ? displayNameFor(v.name) : null;
 }
 
 interface ReportShareProps {

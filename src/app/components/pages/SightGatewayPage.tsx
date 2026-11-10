@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { ColorNameSuggest } from '../ColorNameSuggest';
 import { Button } from '../ui/button';
 import { ArrowLeft, Shuffle, User, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
@@ -343,6 +344,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       <p className="text-xs text-muted-foreground text-right">
                         {color1Name.length}/{MAX_DESCRIPTION_LENGTH}
                       </p>
+                      <ColorNameSuggest label="Current state" hex={color1} onUse={(n) => setColor1Name(n.slice(0, MAX_DESCRIPTION_LENGTH))} />
                     </div>
 
                     {/* Light Qualities */}
@@ -444,6 +446,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       <p className="text-xs text-muted-foreground text-right">
                         {color2Name.length}/{MAX_DESCRIPTION_LENGTH}
                       </p>
+                      <ColorNameSuggest label="Wish" hex={color2} onUse={(n) => setColor2Name(n.slice(0, MAX_DESCRIPTION_LENGTH))} />
                     </div>
 
                     {/* Light Qualities */}
