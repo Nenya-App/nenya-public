@@ -12,6 +12,7 @@
 //   COACH_ENABLED        plain    "true" to accept requests
 //   COACH_IP_SECRET      secret   long random string for the per-connection daily code; without it that limit is off
 //   COACH_ARC            plain    optional, 'practice' makes the coach ask for the person's own feeling and need words (docs/coach-practice-arc-scope.md; off by default)
+//   COACH_LANE_GUARD     plain    optional, 'off' skips the lane guard (requests for images, code, writing and professional advice are then left to the model)
 //   COACH_ARC_GUARD      plain    optional, 'off' skips the practice arc's guard (naming, confirming and echoing are then left as the model wrote them)
 //   COACH_IP_TURNS       plain    optional, turns a connection may use a day (default 10, two full conversations)
 //   COACH_DAILY_CAP      plain    optional, turns the whole site may use a day (default 500)
@@ -58,6 +59,7 @@ import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
 import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCritiqueThanks, type CritiqueTarget, type Hostility } from '../../src/lib/hostility.ts';
+import { laneFor, laneReply } from '../../src/lib/laneGuard.ts';
 import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_NOTE, WORDS_ONLY_NOTE, guardedProblems, repairArc, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
@@ -428,7 +430,7 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
   const answerFirst = direct && !softened && !hostile;
   if (answerFirst) {
     parts.push(
-      'The person has asked a direct question or for options. Answer it first, in plain words, in your first two or three sentences: give one or two concrete things they can try today, or a short clear explanation. Do not open by asking about their body or feelings, and do not only reflect back. After you have answered, ' + (finalTurn ? 'close as described below.' : 'you may add one short, gentle question.') + ' This takes priority over the empathy-first and first-exchange guidance above.'
+      'The person has asked a direct question or for options. Answer it first, in plain words, in your first two or three sentences: give one or two concrete things they can try today, or a short clear explanation, in two or three sentences. Do not open by asking about their body or feelings, and do not only reflect back. After you have answered, ' + (finalTurn ? 'close as described below.' : 'you may add one short, gentle question.') + ' This takes priority over the empathy-first and first-exchange guidance above.'
     );
   }
   if (turn === 1 && !answerFirst) {
@@ -686,6 +688,19 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     const aboutHistory = [...messages, { role: 'assistant' as const, content: filled.short }];
     const aboutTicket = sign(secret, turn, Date.now(), aboutHistory, session, context, code);
     return json(200, { reply: filled.short, ticket: aboutTicket, turn, done: turn >= MAX_TURNS, card: { id: about.id, title: about.title, more: filled.full, links: filled.links }, ...(ctxFlag && turn === 1 ? { contextFlag: ctxFlag } : {}) });
+  }
+
+  // The coach's lane (src/lib/laneGuard.ts): it never makes images, files or other non-language things, does not write code, stories or other pieces, and does not give
+  // financial, medical or legal advice. The model did not hold this alone, so the site answers such a request itself, kindly, in fixed words kept in the conversation like any
+  // reply and counted as a turn. Distress and hostility come first and are never answered this way. COACH_LANE_GUARD=off turns it off, to measure the instructions alone.
+  const lane = !flag && !softened && !hostile && !about && process.env.COACH_LANE_GUARD !== 'off' ? laneFor(lastText) : null;
+  if (lane) {
+    const text = laneReply(lane, turn >= MAX_TURNS);
+    tally(`coach.turn.lane.${lane}`);
+    tally('coach.turn.answered');
+    if (turn >= MAX_TURNS) tally('coach.conversation.finished');
+    const laneTicket = sign(secret, turn, Date.now(), [...messages, { role: 'assistant' as const, content: text }], session, context, code);
+    return json(200, { reply: text, ticket: laneTicket, turn, done: turn >= MAX_TURNS, ...(ctxFlag && turn === 1 ? { contextFlag: ctxFlag } : {}) });
   }
 
   // A longer message that asks a question about Nenya inside it: the site answers that first, and the model carries on with the rest (not on the last

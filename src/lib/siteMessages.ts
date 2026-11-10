@@ -6,6 +6,7 @@
 import { detectHostility } from './hostility.ts';
 import { INFRA_FALLBACK } from './infraGuard.ts';
 import { PERSONA_FALLBACK } from './personaGuard.ts';
+import { isLaneReply } from './laneGuard.ts';
 import { openingText, parseReportHeader } from './reportShare.ts';
 import { checkConversation, explainConversation, noticeIntro, resourcesFor } from './safetyFlags.ts';
 
@@ -44,6 +45,7 @@ export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content:
   messages.forEach((m, i) => {
     if (m.role !== 'assistant') return;
     if (m.content === INFRA_FALLBACK) out.push({ kind: 'replacement', after: i, text: 'The reply above was written by the site, not by the AI. It replaced a reply that claimed something about how Nenya runs or what happens to your data, after the AI was asked once to answer again.' });
+    else if (isLaneReply(m.content)) out.push({ kind: 'replacement', after: i, text: 'The reply above was written by the site, not by the AI. It answered a request for something the coach does not do (an image or other file, a piece of code or writing, or financial, medical or legal advice).' });
     else if (m.content === PERSONA_FALLBACK) out.push({ kind: 'replacement', after: i, text: 'The reply above was written by the site, not by the AI. It replaced a reply that spoke as if the AI had a human life of its own or were not an AI, after the AI was asked once to answer again.' });
   });
   // A short educational card the site offered under a reply (only an invitation) is marked right after that reply. The server only records offers it can prove it made.
