@@ -37,12 +37,13 @@ Only images that can be shipped with the site, shown in a downloadable report an
 ## Alternative that avoids all of the license work
 Draw our own: simple SVG textures and patterns generated in code, each described exactly because we made it. No license, no downloads, tiny files, exact alt text. The cost is that they look designed rather than real. Recommend starting here for Movement and Insight, and using CC0 photographs only for Touch and Essence.
 
-## Decisions for the owner
-1. Own SVGs first (Movement, Insight) and CC0 photographs for Touch and Essence?
-2. Whether Essence gets images at all.
-3. Who reviews alt text (a blind or low-vision reader, ideally paid: it is on the to-do list).
-4. Whether the PDF includes a thumbnail or only the words.
-5. A credits page, and whether to write to any collection for permission beyond what the license says.
+## Decisions (owner, 2026-11-09)
+1. **Own SVGs first for Movement and Insight; CC0 photographs for Touch and Essence.**
+2. **Essence gets images.** The test is universality: if a set of images cannot be found that reads across cultures and tastes, that is a reason to drop it, not to force it.
+3. **The owner reviews alt text at first.** A running list of disability testing that needs doing is kept in `docs/accessibility-testing-list.md`.
+4. **A credits page** (every image's source, license and credit, fed from the data file that also feeds `ATTRIBUTIONS.md`).
+5. **Write to the collection chosen,** invite them to see their images on the site (a draft goes in the private correspondence folder once the source is picked; the owner is sourcing images now).
+6. Still open: PDF thumbnail or words only.
 
 ## Order of work
 Pick the sets and license-check each image; write the alt text and the data file; build the picker (one gateway first, Touch); tests (every image has alt text, a license and a credit; the picker is keyboard-reachable); Terms, Privacy Promise and attributions (no new data flow, so only the credits); then the other gateways.

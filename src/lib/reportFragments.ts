@@ -33,8 +33,11 @@ function colourLines(label: string, hex: string, lookup: PaletteLookup, into: { 
   return [`  ${label} colour ${hex.toUpperCase()} is a colour the person chose themselves, not from a palette.`];
 }
 
-/** The report as pieces: one per gateway that has data, and one for the body map if it was used. */
-export function buildFragments(gatewayData: { gateway: Gateway; data: any }[], bodyMap: BodyMapLike | undefined, lookup: PaletteLookup): Fragment[] {
+/** Plain words for a colour, supplied by the caller (the colour-name list is loaded on the page): a description and the nearest named colour. */
+export type ColorWords = (hex: string) => string | null;
+
+/** The report as pieces: one per gateway that has data, and one for the body map if it was used. With `words`, the colours are also described in plain words, so the model is not left to guess what a hex code looks like. */
+export function buildFragments(gatewayData: { gateway: Gateway; data: any }[], bodyMap: BodyMapLike | undefined, lookup: PaletteLookup, words?: ColorWords): Fragment[] {
   const out: Fragment[] = [];
   for (const gd of gatewayData) {
     const found = { palettes: new Set<string>(), custom: false };
@@ -44,6 +47,14 @@ export function buildFragments(gatewayData: { gateway: Gateway; data: any }[], b
       if (HEX.test(gd.data?.color2 ?? '')) lines.push(...colourLines('Wish', gd.data.color2, lookup, found));
       // A palette the person made is their own: its colours are not one of the sixteen, whatever hex they happen to share.
       if ((gd.data?.generatedPalettes ?? []).some((p: any) => p?.colors?.length)) found.custom = true;
+      if (words) {
+        const say = (label: string, hex: unknown) => { const w = typeof hex === 'string' && HEX.test(hex) ? words(hex) : null; return w ? [`  ${label} colour in plain words: ${w}.`] : []; };
+        lines.push(...say('Present', gd.data?.color1), ...say('Wish', gd.data?.color2));
+        for (const p of gd.data?.generatedPalettes ?? []) {
+          const each = (p?.colors ?? []).map((c: any) => (typeof c?.hex === 'string' && HEX.test(c.hex) ? `${c.hex.toUpperCase()} is ${words(c.hex) ?? 'a colour'}` : '')).filter(Boolean);
+          if (each.length) lines.push(`  The palette's colours in plain words: ${each.join('; ')}.`);
+        }
+      }
     }
     out.push({ id: gd.gateway, section: sectionOf(gd.gateway), title: gatewayTitles[gd.gateway], lines, palettes: [...found.palettes], custom: found.custom });
   }
@@ -98,14 +109,14 @@ export interface SharedText {
 }
 
 /** The one plain-text summary that goes to the coach: the header, the chosen pieces word for word, and a line about each palette named. */
-export function buildContext(selected: Fragment[]): SharedText {
+export function buildContext(selected: Fragment[], paletteColorWords?: (paletteName: string) => string | null): SharedText {
   const meta: ReportMeta = {
     palettes: [...new Set(selected.flatMap((f) => f.palettes))].filter((p) => p in PALETTE_INFO),
     custom: selected.some((f) => f.custom),
     sections: [...new Set(selected.map((f) => f.section))].filter((s) => (REPORT_SECTIONS as readonly string[]).includes(s)),
   };
   const body = selected.map((f) => `## ${f.title}\n${f.lines.join('\n')}`).join('\n\n');
-  const notes = meta.palettes.length ? `\n\nAbout the palettes named above (starting points, not measurements; these are rough guesses, to be offered as questions):\n${meta.palettes.map(describePalette).join('\n')}` : '';
+  const notes = meta.palettes.length ? `\n\nAbout the palettes named above (starting points, not measurements; these are rough guesses, to be offered as questions):\n${meta.palettes.map((n) => describePalette(n) + (paletteColorWords?.(n) ? ' ' + paletteColorWords(n) : '')).join('\n')}` : '';
   const text = `${headerFor(meta)}\nParts of a sensory report that the person chose to share, in their own choices and words:\n\n${body}${notes}`;
   return { text, meta, chars: text.length, fits: text.length <= MAX_SHARED_CHARS };
 }

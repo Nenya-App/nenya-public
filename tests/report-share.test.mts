@@ -86,3 +86,15 @@ ok('shared text that gives the coach instructions is left out (the page is told)
 r = await post({ messages: [{ role: 'user', content: 'I would like to talk about my week.' }], context: 'x'.repeat(MAX_SHARED_CHARS + 1) });
 ok('shared text over the limit is refused', r.status === 400);
 ok('the notes helper marks a shared flag with message -1', checkNotesFor([{ role: 'user', content: 'hello' }], flagged).some((c) => c.shared && c.message === -1));
+
+// ── colours in plain words (a dev transcript, 2026-11-09: the model described Windsurfing #2C6E9E as "blue-green" from its name)
+{
+  const words = (hex: string) => (hex.toLowerCase() === '#2c6e9e' ? 'a medium, vivid blue; the nearest named colour is Windsurfing' : null);
+  const withWords = buildFragments([{ gateway: 'sight', data: { color1: '#2C6E9E', color2: '#D01C1F', generatedPalettes: [{ source: 'device', kind: 'bridge', colors: [{ hex: '#2C6E9E', name: 'Windsurfing' }, { hex: '#D01C1F', name: 'Heroic Red' }] }] } }] as any, undefined, () => null, words);
+  const t = withWords[0].lines.join('\n');
+  ok('present colour is described in plain words with its nearest name', /Present colour in plain words: a medium, vivid blue; the nearest named colour is Windsurfing\./.test(t), t);
+  ok('a colour with no description is left undescribed, not guessed', !/Wish colour in plain words/.test(t));
+  ok('the palette colours are described in plain words', /The palette's colours in plain words: #2C6E9E is a medium/.test(t), t);
+  ok('without a word source the lines are unchanged', !/plain words/.test(buildFragments([{ gateway: 'sight', data: { color1: '#2C6E9E' } }] as any, undefined, () => null)[0].lines.join('\n')));
+  ok('palette colour words are added to the palette note', /Its colours, in words: X/.test(buildContext([{ id: 'sight', section: 'Sight', title: 'Sight', lines: ['x'], palettes: ['Sky'], custom: false }] as any, () => 'Its colours, in words: X.').text));
+}

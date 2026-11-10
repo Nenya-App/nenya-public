@@ -1,11 +1,14 @@
 // Bringing part of a reflection report to the coach, always the visitor's choice (docs/report-to-coach-scope.md): the report is listed in pieces with
 // NOTHING selected, the exact words that would be sent are shown (identifiers already replaced), and "No thanks" is as easy as "Share these".
 // A report is not needed to use the coach; with none in memory, a saved text report can be pasted instead.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { paletteOfHex } from '../app/components/paletteLookup';
 import { scrubPII, describeScrub } from '../lib/piiScrub';
+import { describePlainly, loadColorNames, suggestName, type NamedColor } from '../lib/colorNames';
+import { valarColors } from '../app/components/ValarBreathingLogo';
+import { displayNameFor } from '../lib/paletteNames';
 import { buildContext, buildFragments, fragmentsFromText, type Fragment, type SharedText } from '../lib/reportFragments';
 import { MAX_SHARED_CHARS } from '../lib/reportShare';
 import type { BodyMapLike, Gateway } from '../lib/reportText';
@@ -27,15 +30,27 @@ export function ReportShare({ report, shared, onChange, locked = false }: Report
   const [pasted, setPasted] = useState('');
   const [pastedFragments, setPastedFragments] = useState<Fragment[] | null>(null);
   const [picked, setPicked] = useState<Set<string>>(new Set()); // nothing is chosen by default
-  const own = useMemo(() => (report && (report.gatewayData.length > 0 || report.bodyMap) ? buildFragments(report.gatewayData, report.bodyMap, paletteOfHex) : []), [report]);
+  // The colour names are a lazy chunk; once loaded, colours are described in plain words (and named) in what is shared.
+  const [names, setNames] = useState<NamedColor[] | null>(null);
+  useEffect(() => { let on = true; loadColorNames().then((l) => on && setNames(l)).catch(() => {}); return () => { on = false; }; }, []);
+  const words = useMemo(() => (hex: string): string | null => {
+    const plain = describePlainly(hex);
+    const s = names ? suggestName(hex, names) : null;
+    return s ? `${plain}; the nearest named colour is ${s.name}${s.closeness === 'close' ? '' : ` (a ${s.closeness} match)`}` : plain;
+  }, [names]);
+  const paletteColorWords = useMemo(() => (paletteName: string): string | null => {
+    const v = valarColors.find((p) => displayNameFor(p.name) === paletteName);
+    return v ? `Its colours, in words: ${v.vector.map((h) => `${h.toUpperCase()} ${words(h)}`).join('; ')}.` : null;
+  }, [words]);
+  const own = useMemo(() => (report && (report.gatewayData.length > 0 || report.bodyMap) ? buildFragments(report.gatewayData, report.bodyMap, paletteOfHex, words) : []), [report, words]);
   const fragments = pastedFragments ?? own;
 
   const chosen = fragments.filter((f) => picked.has(f.id));
   const built = useMemo(() => {
-    const raw = buildContext(chosen);
+    const raw = buildContext(chosen, paletteColorWords);
     const scrubbed = scrubPII(raw.text);
     return { ...raw, text: scrubbed.text, chars: scrubbed.text.length, fits: scrubbed.text.length <= MAX_SHARED_CHARS, counts: scrubbed.counts, replaced: scrubbed.total };
-  }, [chosen.map((f) => f.id).join('|'), fragments]);
+  }, [chosen.map((f) => f.id).join('|'), fragments, paletteColorWords]);
 
   if (locked) {
     return shared ? (
