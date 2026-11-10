@@ -9,6 +9,7 @@ import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
+import { TouchSurfaceField } from '../TouchSurfaceField';
 
 interface TouchGatewayPageProps {
   onComplete: (data: any) => void;
@@ -53,6 +54,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   }, [step]);
 
   // Current state
+  const [currentSurface, setCurrentSurface] = useState<string | null>(null);
   const [currentTexture, setCurrentTexture] = useState([50]);
   const [currentTemperature, setCurrentTemperature] = useState([50]);
   const [currentPressure, setCurrentPressure] = useState([50]);
@@ -61,6 +63,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   const [currentDescription, setCurrentDescription] = useState('');
 
   // Potential state
+  const [potentialSurface, setPotentialSurface] = useState<string | null>(null);
   const [potentialTexture, setPotentialTexture] = useState([50]);
   const [potentialTemperature, setPotentialTemperature] = useState([50]);
   const [potentialPressure, setPotentialPressure] = useState([50]);
@@ -78,12 +81,14 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
 
   const handleNext = () => {
     onComplete({
+      currentSurface,
       currentTexture: currentTexture[0],
       currentTemperature: currentTemperature[0],
       currentPressure: currentPressure[0],
       currentWeight: currentWeight[0],
       currentSharpness: currentSharpness[0],
       currentDescription: currentDescription || null,
+      potentialSurface,
       potentialTexture: potentialTexture[0],
       potentialTemperature: potentialTemperature[0],
       potentialPressure: potentialPressure[0],
@@ -198,6 +203,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <CardDescription>The tactile qualities of where you are now</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <TouchSurfaceField stateName="Present" value={currentSurface} onChange={setCurrentSurface} slider={currentTexture[0]} onMatchSlider={(v) => setCurrentTexture([v])} />
+
                   <SnappingSlider
                     value={currentTexture}
                     onValueChange={setCurrentTexture}
@@ -273,6 +280,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <CardDescription>The tactile qualities of where you wish to be</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <TouchSurfaceField stateName="Wish" value={potentialSurface} onChange={setPotentialSurface} slider={potentialTexture[0]} onMatchSlider={(v) => setPotentialTexture([v])} />
+
                   <SnappingSlider
                     value={potentialTexture}
                     onValueChange={setPotentialTexture}

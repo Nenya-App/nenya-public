@@ -1,0 +1,30 @@
+// The Touch gateway's surfaces (src/lib/touchTextures.ts): every one has a picture, a credit, a link and a place; the helpers behave.
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { TOUCH_TEXTURES, TEXTURE_GROUPS, FEELS, bySmoothness, feelOf, nearestToSlider, surfaceLine, textureAlt, textureById, texturePath } from '../src/lib/touchTextures.ts';
+import { formatGatewayData } from '../src/lib/reportText.ts';
+import { ok } from './helpers.mts';
+
+ok('there are 283 surfaces', TOUCH_TEXTURES.length === 283);
+ok('ids are unique', new Set(TOUCH_TEXTURES.map((t) => t.id)).size === TOUCH_TEXTURES.length);
+ok('every surface has a title, kind, credit and an https link', TOUCH_TEXTURES.every((t) => t.title && t.kind && t.credit.includes('CC0') && /^https:\/\//.test(t.url)));
+ok('groups and feels are from the lists', TOUCH_TEXTURES.every((t) => (TEXTURE_GROUPS as readonly string[]).includes(t.group) && (FEELS as readonly string[]).includes(t.feel)));
+const missing = TOUCH_TEXTURES.filter((t) => !existsSync(`public${texturePath(t.id)}`));
+ok('every surface has its picture in public/touch-textures', missing.length === 0, missing.map((t) => t.id).join(', '));
+const notJpeg = TOUCH_TEXTURES.filter((t) => { const b = readFileSync(`public${texturePath(t.id)}`); return !(b[0] === 0xff && b[1] === 0xd8); });
+ok('every picture is a JPEG', notJpeg.length === 0, notJpeg.map((t) => t.id).join(', '));
+const big = TOUCH_TEXTURES.filter((t) => statSync(`public${texturePath(t.id)}`).size > 80_000);
+ok('no picture is over 80 KB', big.length === 0, big.map((t) => t.id).join(', '));
+const measured = TOUCH_TEXTURES.filter((t) => t.relief !== null);
+ok('most surfaces are measured, and every poly haven one is marked not measured', measured.length === 217 && TOUCH_TEXTURES.filter((t) => t.source === 'Poly Haven').every((t) => t.relief === null && t.feel === 'Not measured' && t.smooth === null));
+ok('the place on the slider is 0 to 100 for measured surfaces', measured.every((t) => t.smooth !== null && t.smooth >= 0 && t.smooth <= 100));
+ok('a rougher surface is never placed smoother than a smoother one', (() => { const m = [...measured].sort((a, b) => (a.relief as number) - (b.relief as number)); return m.every((t, i) => i === 0 || (t.smooth as number) <= (m[i - 1].smooth as number)); })());
+ok('feel labels follow the cutoffs', feelOf(null) === 'Not measured' && feelOf(0.006) === 'Flat or very smooth' && feelOf(0.1) === 'Smooth' && feelOf(0.2) === 'Lightly textured' && feelOf(0.4) === 'Textured' && feelOf(0.6) === 'Rough');
+const sorted = bySmoothness(TOUCH_TEXTURES);
+ok('smoothest first, unmeasured last', sorted[0].smooth === 100 && sorted.slice(-66).every((t) => t.smooth === null) && sorted.slice(0, 217).every((t, i) => i === 0 || (t.smooth as number) <= (sorted[i - 1].smooth as number)));
+ok('the nearest surface to the slider is close to it', nearestToSlider(100).smooth === 100 && Math.abs((nearestToSlider(0).smooth as number) - 0) <= 1 && Math.abs((nearestToSlider(50).smooth as number) - 50) <= 2);
+const t = TOUCH_TEXTURES[0];
+ok('the description for a screen reader names the surface, its kind, its color and its feel', textureAlt(t).includes(t.title) && textureAlt(t).toLowerCase().includes(t.kind.toLowerCase()) && /in color/.test(textureAlt(t)) && /feel/i.test(textureAlt(t)));
+ok('textureById finds a surface and null for nothing', textureById(t.id)?.id === t.id && textureById('nope') === undefined && textureById(null) === undefined);
+ok('the report line names the surface and its source, and is null for no surface', (surfaceLine(t.id) ?? '').includes(t.title) && (surfaceLine(t.id) ?? '').includes(t.source) && surfaceLine(null) === null && surfaceLine('nope') === null);
+const lines = formatGatewayData('touch', { currentTexture: 40, currentTemperature: 50, currentPressure: 50, currentWeight: 50, currentSurface: t.id, potentialTexture: 60, potentialTemperature: 50, potentialPressure: 50, potentialWeight: 50, potentialSurface: null });
+ok('the touch report carries the chosen surface once, for the present state only', lines.filter((l) => /Surface chosen from pictures/.test(l)).length === 1 && lines.findIndex((l) => /Surface chosen/.test(l)) < lines.findIndex((l) => /^Wish:/.test(l)));

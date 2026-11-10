@@ -81,3 +81,7 @@ If a visitor presses "Ask The Color API" in the Sight gateway, Nenya's server as
 ## Solresol (a link only)
 
 The Sound gateway links to **solresol.xyz**, a Solresol translator and player from the Machine Perception and Cognitive Robotics Laboratory at Florida Atlantic University (project page: <https://mpcrlab.com/projects/Solresol-LLM/>), for visitors who want to build a melody from words outside Nenya. It is a link only: no code, data or text from that site is copied, and nothing from Nenya is sent to it. The site states no license or terms on the pages we read; a future in-Nenya version would need their permission or a word list from public-domain sources (see `docs/solresol-scope.md`).
+
+## Touch gateway surfaces
+
+The surface pictures in the Touch gateway (`public/touch-textures/`, listed with their sources in [`src/lib/touchTexturesData.ts`](./src/lib/touchTexturesData.ts)) are photographed material textures from [ambientCG](https://ambientcg.com) and [Poly Haven](https://polyhaven.com), both of which publish their assets under CC0 1.0 (public domain). CC0 asks for no credit; we give it anyway, with a link to each original. The pictures are shrunk to 256 px and saved as JPEG. The license of each library was taken from its own statement and has not been checked by a lawyer. The measured feel labels are ours: each is the average steepness of the surface in the library's published normal map.

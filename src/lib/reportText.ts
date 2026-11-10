@@ -1,5 +1,6 @@
 // The text of a sensory report, one function per part: the review page, the downloads (text and PDF) and the coach hand-off
 // (src/lib/reportShare.ts) all use these, so what the person sees, downloads and may share is the same words.
+import { surfaceLine } from './touchTextures.ts';
 import { getNoteNames, TONAL_SYSTEM_LABELS, type TonalSystem } from './audio.ts';
 import { describePalettePlainly } from './colorSchemes.ts';
 import { shapeById } from './gatewayShapes.ts';
@@ -154,10 +155,12 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
     case 'touch':
       info.push(`Present: Texture ${data.currentTexture}/100, Temperature ${data.currentTemperature}/100`);
       info.push(`  Pressure: ${data.currentPressure}/100, Weight: ${data.currentWeight}/100`);
+      { const l = surfaceLine(data.currentSurface); if (l) info.push(`  Surface chosen from pictures: ${l}`); }
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
 
       info.push(`Wish: Texture ${data.potentialTexture}/100, Temperature ${data.potentialTemperature}/100`);
       info.push(`  Pressure: ${data.potentialPressure}/100, Weight: ${data.potentialWeight}/100`);
+      { const l = surfaceLine(data.potentialSurface); if (l) info.push(`  Surface chosen from pictures: ${l}`); }
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       break;
       
