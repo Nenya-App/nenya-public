@@ -60,9 +60,9 @@ import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
 import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCritiqueThanks, type CritiqueTarget, type Hostility } from '../../src/lib/hostility.ts';
-import { VALUES_RULE, valuesOn } from '../../src/lib/valuesRule.ts';
+import { VALUES_RULE, challengeFor, valuesOn } from '../../src/lib/valuesRule.ts';
 import { laneFor, laneReply } from '../../src/lib/laneGuard.ts';
-import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_NOTE, WORDS_ONLY_NOTE, guardedProblems, repairArc, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
+import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_MENU_NOTE, ARC_NOTE, WORDS_ONLY_NOTE, guardedProblems, repairArc, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
 import type { ModuleGroup } from '../../src/lib/coachModules.ts';
@@ -267,7 +267,7 @@ const layerKey = (): string => JSON.stringify(stanceLayers());
 function instructionsFingerprint(version: 'v1' | 'v2' = instructionsVersion()): string {
   const cacheKey = `${version}|${layerKey()}|${practiceArcOn() ? 'arc' : ''}|${valuesOn() ? 'values' : ''}`;
   if (fingerprint && fingerprint.version === cacheKey) return fingerprint.value;
-  const parts: string[] = [VALUES_RULE, ARC_NOTE, ARC_INVITE, WORDS_ONLY_NOTE, gapText({ feeling: true, need: false }), gapText({ feeling: false, need: true }), gapText({ feeling: true, need: true }), REPEAT_NOTE, CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
+  const parts: string[] = [VALUES_RULE, ARC_NOTE, ARC_MENU_NOTE, ARC_INVITE, WORDS_ONLY_NOTE, gapText({ feeling: true, need: false }), gapText({ feeling: false, need: true }), gapText({ feeling: true, need: true }), REPEAT_NOTE, CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
   for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version), systemInstruction(t, false, '', false, '', '', version, 'abuse'), systemInstruction(t, false, '', false, '', '', version, 'critique'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'project'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'nvc'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'ai'));
   if (practiceArcOn()) for (let t = 1; t <= MAX_TURNS; t++) parts.push(`arc:${t}:${arcTurnLine(t, MAX_TURNS, false)}:${arcTurnLine(t, MAX_TURNS, true)}`, ARC_CORE, ARC_CLOSE);
   // Any stance layer text that exists is part of what the coach may be given, so it is part of the fingerprint (nothing is added while none exists).
@@ -866,11 +866,16 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       tally('coach.guard.arc');
       const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
       if (left >= REPEAT_RETRY_MIN_REMAINING_MS) {
-        const again = await generate(ARC_NOTE, left);
+        const again = await generate(check(reply).some((p) => p.check === 'noMenu') ? ARC_MENU_NOTE : ARC_NOTE, left);
         if (!('failure' in again) && again.reply) reply = again.reply;
       }
       if (check(reply).length) { reply = repairArc(reply, { userTexts, wordsOnly: isWordsOnly(lastText) }); tally('coach.guard.arc.repaired'); }
     }
+  }
+  // Justifying or denying mass violence, or calling for a group to be removed (COACH_VALUES=on): make sure a plain statement of disagreement is there (src/lib/valuesRule.ts).
+  if (valuesOn() && !flag && !softened) {
+    const stand = challengeFor(lastText, reply);
+    if (stand) { reply = `${stand} ${reply}`; tally('coach.values.challenge'); }
   }
   // On a hostile turn an apology is taken out (the note asks the coach not to, and this model's habit does not always yield to it).
   if (hostile) { const cleaned = stripApologies(reply); if (cleaned !== reply) { reply = cleaned; tally('coach.turn.hostile.apology-removed'); } }

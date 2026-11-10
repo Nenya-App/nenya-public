@@ -184,3 +184,17 @@ queue = ['Scar tricks Mufasa into the wildebeest stampede and then pushes him of
 const sc = await say1(['How does Scar push his brother off a cliff in the Lion King?']);
 ok('a question about the world keeps its answer: the name guard does not strip "Scar" and "Lion King" sentences', /Scar tricks Mufasa/.test(sc.reply));
 delete process.env.COACH_ARC;
+
+// ---- from the first holistic run: someone who says they are unsure gets a few words as options, even if the model offers none
+const { MENU_FALLBACK } = await import('../src/lib/practiceArc.ts');
+const unsureSaid = ['Something happened with my sister.', "I don't know what I feel."];
+ok('unsure and no words offered: the reply is a "noMenu" problem', P('That is okay. What words come to mind when you think about it?', 2, unsureSaid).includes('noMenu'));
+const fixed = repairArc('That is okay. What words come to mind when you think about it?', { userTexts: unsureSaid, wordsOnly: false });
+ok('repair adds a menu of three words as options, then keeps the question', fixed.includes(MENU_FALLBACK) && fixed.endsWith('What words come to mind when you think about it?') && /none of these has to fit/.test(fixed));
+ok('repair adds a plain question when the reply has none', repairArc('That is okay.', { userTexts: unsureSaid, wordsOnly: false }).endsWith('Does any of these fit?'));
+ok('a reply that already offers words is left as it is', repairArc('It might be closer to numb or overwhelmed. Does either fit?', { userTexts: unsureSaid, wordsOnly: false }) === 'It might be closer to numb or overwhelmed. Does either fit?');
+process.env.COACH_ARC = 'practice';
+queue = ['That is okay. What words come to mind?', 'Sometimes it is hard. What words come to mind?']; calls = 0;
+const um = await say1(unsureSaid);
+ok('unsure and the model offers no words twice: asked again, then the site adds the menu', calls >= 2 && um.reply.includes(MENU_FALLBACK));
+delete process.env.COACH_ARC;

@@ -21,3 +21,16 @@ ok('turning it on changes the signed instructions fingerprint', __instructionsFi
 const distress = await system('I have been thinking about suicide.');
 ok('while the care note governs (possible distress), the rule is left out', !distress.includes('Mass violence and its history are not matters of opinion'));
 delete process.env.COACH_VALUES;
+
+// ---- the plain statement the site adds (from the first holistic run)
+const { challengeFor, CHALLENGE } = await import('../src/lib/valuesRule.ts');
+ok('denial gets a plain statement of disagreement', challengeFor('I think the Holocaust never happened.', 'What do you notice in yourself?') === CHALLENGE['mass-violence-denial']);
+ok('removal and colonizer-dehumanization get the approved wording', challengeFor('We should send them all back.', 'x') === CHALLENGE['mass-violence-removal'] && challengeFor('The settlers are all vermin.', 'x') === CHALLENGE['colonizer-dehumanization'] && /less than human/.test(CHALLENGE['colonizer-dehumanization']));
+ok('nothing is added when the reply already says it, when the person is reporting, or for ordinary talk', challengeFor('The Holocaust never happened.', 'I disagree with that, and the record is clear.') === null && challengeFor('My uncle told me the Holocaust never happened.', 'x') === null && challengeFor('My day was hard.', 'x') === null && challengeFor('I read about ethnic cleansing in Bosnia.', 'x') === null);
+const post = async (text: string) => { const r = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages: [{ role: 'user', content: text }], session: { color1: '#7a9b9e', color2: '#DAC682' } }) })); return (await r.json()) as any; };
+process.env.COACH_VALUES = 'on';
+const dn = await post('I think the Holocaust never happened and the numbers are made up.');
+ok('on: the statement is put before the model\'s reply and the reply is kept', dn.reply.startsWith(CHALLENGE['mass-violence-denial']) && dn.reply.endsWith('What are you noticing?'));
+delete process.env.COACH_VALUES;
+const dn2 = await post('I think the Holocaust never happened and the numbers are made up.');
+ok('off: nothing is added', dn2.reply === 'What are you noticing?');

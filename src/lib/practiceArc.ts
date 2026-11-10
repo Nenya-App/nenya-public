@@ -150,11 +150,17 @@ export function arcProblems(reply: string, o: { turn: number; max: number; userT
 
 // ---- the guard: ask once more, then repair (see the arc guard in netlify/functions/coach.mts). The model is small and sometimes names the feeling,
 // checks words the person already gave, or repeats picked words back whatever the instructions say, so the site enforces it.
-export const GUARDED: ArcProblem['check'][] = ['namesForThem', 'asksConfirm', 'echoesWords', 'noQuestion'];
+export const GUARDED: ArcProblem['check'][] = ['namesForThem', 'asksConfirm', 'echoesWords', 'noQuestion', 'noMenu'];
 export const guardedProblems = (reply: string, o: { turn: number; max: number; userTexts: string[] }): ArcProblem[] => arcProblems(reply, o).filter((p) => GUARDED.includes(p.check));
 
 export const ARC_NOTE =
   'Your last draft told the person what they feel, or asked them to confirm words they had already given, or repeated their words back. Write it again. Reflect briefly, in your own words, what they shared. Do not name any feeling or need yourself. Do not ask whether their words are right, and do not repeat their words back. End with one open question that invites the piece they have not given yet.';
+
+/** The retry note when the person said they are unsure and the reply offered no words (seen in the first holistic run). */
+export const ARC_MENU_NOTE =
+  'The person said they are unsure what they feel, and your last draft offered no words. Write it again. Reflect briefly, then offer two or three possible words as options, never as a verdict, and say that none of them has to fit or that it may be something else. Do not ask them to find the word alone.';
+/** What the site adds if the model still offers no words to someone who is unsure: three words from different families, as options. */
+export const MENU_FALLBACK = 'It might be closer to something like hurt, worried or tired, or something else entirely, and none of these has to fit.';
 
 /** What the site says when the person sent only picked words and the model would not stop repeating them. */
 export const WORDS_ONLY_SITE_REPLY =
@@ -172,6 +178,11 @@ export function gapQuestion(p: { feeling: boolean; need: boolean }): string {
 export function repairArc(reply: string, o: { userTexts: string[]; wordsOnly: boolean }): string {
   if (o.wordsOnly) return WORDS_ONLY_SITE_REPLY;
   const kept = sentences(reply).filter((x) => !NAMES_FOR_THEM.test(x) && !CONFIRMS.test(x));
-  const text = kept.join(' ').trim();
-  return /[?？]/.test(text) ? text : `${text}${text ? ' ' : ''}${gapQuestion(namedParts(o.userTexts))}`;
+  const asks = (x: string): boolean => /[?？]/.test(x);
+  const unsure = isStuck(o.userTexts[o.userTexts.length - 1] ?? '');
+  const needsMenu = unsure && matches(kept.join(' '), [...wordsOf('feeling'), ...wordsOf('need')]).length < 2;
+  const body = kept.filter((x) => !asks(x));
+  const question = kept.filter(asks).join(' ');
+  const out = [...body, ...(needsMenu ? [MENU_FALLBACK] : []), question || (needsMenu ? 'Does any of these fit?' : gapQuestion(namedParts(o.userTexts)))].join(' ').trim();
+  return out;
 }
