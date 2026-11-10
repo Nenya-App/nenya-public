@@ -43,3 +43,6 @@ The coach is not a general assistant, so "generic conversational prompts" test t
 3. Who reads the flagged replies (you, or a reviewer on the expert-input list)?
 4. Where results should live when published: a page on the site, the repository (`docs/results/`), or both.
 5. May I **download** the two sets to a folder outside the repo? (I will not download anything until you say so.)
+
+## Update 2026-11-10: built
+`src/lib/testSets.ts` (the sets, their licences and what each allows), `src/lib/promptEval.ts` (readers for each format, a seeded sample, a summary with an interval), `scripts/eval-prompts.mts` (the runner: `--sets` lists them) and `docs/results/README.md` (the rules for publishing, including using a noncommercial set privately). Nothing is downloaded; the runner reads a file you put outside the repository. It writes counts and prompt ids only into the public file, and prompts and replies into a separate private file for a person to read.
