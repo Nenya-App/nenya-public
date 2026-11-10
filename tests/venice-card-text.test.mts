@@ -11,7 +11,11 @@ const dir = join(fileURLToPath(new URL('..', import.meta.url)), 'docs', 'venice-
 const f = (n: string) => readFileSync(join(dir, n), 'utf8').trim();
 const name = f('name.txt'), description = f('description.txt'), intro = f('intro.txt'), full = f('instructions.txt'), short = f('instructions-short.txt');
 const sys = f('system-prompt.txt');
-const all = [name, description, intro, full, short, sys];
+const ctx = f('context.md'), extraction = f('extraction-prompt.txt');
+// Text the character may say or be shaped by. The person's example lines are left out of the persona check (a person may say 'my sister'), and the extraction
+// prompt is an instruction to Venice's memory tool, never shown to a visitor.
+const ctxWithoutPersonLines = ctx.split('\n').filter((l) => !l.startsWith('Person:')).join('\n');
+const all = [name, description, intro, full, short, sys, ctxWithoutPersonLines];
 
 ok('the name is Nenya and there is one line of intro', name === 'Nenya' && !intro.includes('\n'));
 ok('no named person, and nothing structured after one', all.every((t) => !/\b(?:yvette|erasmus|in the (?:voice|style) of)\b/i.test(t)));
@@ -34,3 +38,13 @@ ok('the system prompt keeps the placeholder for the Instructions exactly once, i
 ok('the system prompt does not carry over what the default said against the honest lines', !/uncensored|real person with|doesn'?t provide content warnings|won'?t be offended|none of the user'?s business|never avoids? questions|not secretive|say anything, even if/i.test(sys));
 ok('the system prompt says it is an AI, answers about itself, says I do not know, and points to crisis lines', /is an AI/.test(sys) && /about itself/.test(sys) && /I don't know/.test(sys) && /crisis lines/.test(sys) && /never diagnoses/.test(sys));
 ok('the system prompt is short (the Instructions carry the detail)', sys.length < 1800, String(sys.length));
+
+// the Context file and the extraction prompt
+ok('the context names no person and no place, only the project', !/estëlle|estelle|minnesota/i.test(ctx));
+ok('the context makes no claim about what Venice keeps or about the website\'s own protections working here', !/venice (?:does not keep|doesn't keep|never keeps|deletes|stores nothing)/i.test(ctx) && /do not run here/.test(ctx) && /do not know/.test(ctx));
+ok('the context names a person or a crisis line, and is within a modest size', /988/.test(ctx) && /findahelpline\.com/.test(ctx) && ctx.length < 6000, String(ctx.length));
+const examples = [...ctx.matchAll(/^Reply: (.+)$/gm)].map((m) => m[1]);
+ok('there are example replies, each short, with at most one question', examples.length >= 6 && examples.every((e) => e.split(/\s+/).length <= 60 && (e.match(/\?/g) ?? []).length <= 2), examples.map((e) => e.split(/\s+/).length).join(','));
+ok('no example says it is a person, promises to remember, or says I am here for you', examples.every((e) => !/I'm here for you|I will remember|I'll remember|I am a (?:real )?person|I'm a (?:real )?person/i.test(e)));
+ok('the distress example names a person and a crisis line, and asks nothing about the dark thoughts', /988/.test(examples.find((e) => /reach someone you trust/.test(e)) ?? '') && !/why|how long|plan|method/i.test(examples.find((e) => /reach someone you trust/.test(e)) ?? ''));
+ok('the extraction prompt says to save nothing personal', /Do not save any memory about the person/.test(extraction) && /name, contact details/.test(extraction));
