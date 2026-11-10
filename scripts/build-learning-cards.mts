@@ -9,7 +9,7 @@ const dir = process.argv[2];
 if (!dir) { console.error('usage: build-learning-cards.mts <folder>'); process.exit(1); }
 const approved = [];
 let skipped = 0;
-for (const f of readdirSync(dir).filter((x) => /^(prop|dehum|conn|ai)-\d\d-.*\.md$/.test(x)).sort()) {
+for (const f of readdirSync(dir).filter((x) => /^(prop|dehum|conn|ai|hist|idea|think)-\d\d-.*\.md$/.test(x)).sort()) {
   const r = parseCard(readFileSync(join(dir, f), 'utf8'));
   if (!r) { console.error(`${f}: not in the expected shape`); process.exit(1); }
   if (r.status !== 'approved') { skipped++; continue; }

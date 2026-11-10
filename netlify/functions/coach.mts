@@ -38,7 +38,7 @@ import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
 import { allCards } from '../../src/lib/learningCards.ts';
-import { offerFor } from '../../src/lib/learningOffer.ts';
+import { historyHits, offerFor } from '../../src/lib/learningOffer.ts';
 import { getMatcher } from '../../src/lib/lexiconStore.ts';
 import { match as lexiconMatch } from '../../src/lib/lexicon.ts';
 import { echoedNames, NAME_NOTE, NAME_RULE, withoutNames } from '../../src/lib/nameGuard.ts';
@@ -912,7 +912,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       const shown = Array.isArray(sentShown) ? sentShown.filter((x): x is string => typeof x === 'string' && known.has(x)).slice(0, 4) : [];
       const matcher = await getMatcher(privateStore() as unknown as Parameters<typeof getMatcher>[0]);
       const minSev = Number(process.env.COACH_LEARNING_MIN_SEVERITY);
-      const o = offerFor({ hits: matcher ? lexiconMatch(lastText, matcher) : [], text: lastText, shown, available: [...known], flagged: !!flag, abuseAtCoach: hostile === 'abuse', ...(Number.isInteger(minSev) && minSev >= 1 && minSev <= 3 ? { minSeverity: minSev } : {}) });
+      const o = offerFor({ hits: [...(matcher ? lexiconMatch(lastText, matcher) : []), ...historyHits(lastText)], text: lastText, shown, available: [...known], flagged: !!flag, abuseAtCoach: hostile === 'abuse', ...(Number.isInteger(minSev) && minSev >= 1 && minSev <= 3 ? { minSeverity: minSev } : {}) });
       if (o) { offer = { id: o.id, proof: offerProof(secret, [...messages, { role: 'assistant' as const, content: reply }], o.id) }; tally(`coach.offer.${o.because}`); }
     } catch { /* an offer is a courtesy: never let it break a reply */ }
   }
