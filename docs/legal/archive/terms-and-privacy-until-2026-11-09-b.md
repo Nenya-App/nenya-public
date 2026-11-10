@@ -1,8 +1,8 @@
 # Terms of Use & Privacy Policy: archived version
 
-**Status:** superseded on November 10, 2026 (names the two kinds of reply the site may replace with a fixed sentence, and says a signed transcript marks a replaced reply as written by the site)
+**Status:** superseded on November 9, 2026 (later the same day; this version was only ever in dev) (names the two kinds of reply the site may replace with a fixed sentence, and says a signed transcript marks a replaced reply as written by the site)
 **Effective:** November 9, 2026
-**Source:** `src/lib/legalDocument.ts` as of commit af81741, the last commit before the November 10, 2026 revision.
+**Source:** `src/lib/legalDocument.ts` as of commit af81741, the last commit before the second November 9, 2026 revision.
 
 ---
 

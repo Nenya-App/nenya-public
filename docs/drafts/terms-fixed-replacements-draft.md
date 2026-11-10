@@ -1,6 +1,6 @@
 # DRAFT: Terms wording for replies the site replaces with a fixed sentence
 
-Status: APPLIED 2026-11-10 at the owner's direction (Terms effective date November 10, 2026; transcripts mark a replaced reply with the `replacement` site-message kind). I am not a lawyer; no legal review.
+Status: APPLIED 2026-11-10 at the owner's direction (Terms effective date November 9, 2026; transcripts mark a replaced reply with the `replacement` site-message kind). I am not a lawyer; no legal review.
 
 ## Why
 Two guards can replace a model reply, after one retry, with a fixed sentence written by the site: (1) the infrastructure and data guard (`src/lib/infraGuard.ts`: a reply that claims how Nenya runs, a certification, or what happens to your data), and (2) the persona guard (`src/lib/personaGuard.ts`: a reply that invents a human life or says it is not an AI). The Terms list of site-written text (Section 21) does not yet mention them. The infrastructure guard has been in dev since before this draft; the Terms should say so before either goes to production, because the replaced reply appears as the coach's reply and in a downloaded transcript.
