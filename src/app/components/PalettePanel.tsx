@@ -58,10 +58,20 @@ export function PalettePanel({ color1, color2, value, onChange }: PalettePanelPr
     }
   };
 
-  const keep = () => {
+  // Every color is kept with its suggested name, so the report names the colors of the palette (the names were found when it was shown; any that are
+  // missing are found now).
+  const keep = async () => {
     if (!draft) return;
-    onChange({ source: draft.source, kind: draft.kind, ...(draft.base ? { base: draft.base } : {}), colors: draft.colors.map((hex) => ({ hex, ...(names[hex] ? { name: names[hex] } : {}) })) });
-    setSaid('Palette kept in your report.');
+    let all = names;
+    if (draft.colors.some((hex) => !names[hex])) {
+      try {
+        const list = await loadColorNames();
+        all = { ...names };
+        for (const hex of draft.colors) if (!all[hex]) { const s = suggestName(hex, list); if (s) all[hex] = s.name; }
+      } catch { /* the report then carries hex codes for those */ }
+    }
+    onChange({ source: draft.source, kind: draft.kind, ...(draft.base ? { base: draft.base } : {}), colors: draft.colors.map((hex) => ({ hex, ...(all[hex] ? { name: all[hex] } : {}) })) });
+    setSaid('Palette kept in your report, with the names of its colors.');
   };
 
   return (

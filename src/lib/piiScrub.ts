@@ -8,6 +8,8 @@
 // is", "my sister Maria", "Dr. Lee"), so most names will NOT be caught. Nothing
 // that uses this may claim anonymity.
 
+import { AMBIGUOUS_NAMES, GIVEN_NAMES, SAFE_SURNAMES, SURNAMES } from './givenNames.ts';
+
 export interface ScrubResult {
   text: string;
   counts: Record<string, number>;
@@ -33,7 +35,7 @@ const STREET_SUFFIX =
   '(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr|Court|Ct|Way|Place|Pl|Terrace|Ter|Circle|Cir|Highway|Hwy|Parkway|Pkwy|street|avenue|road|boulevard|lane|drive|court|place)';
 
 const RELATION =
-  '(?:wife|husband|partner|boyfriend|girlfriend|fianc[ée]e?|ex|mom|mother|dad|father|brother|sister|son|daughter|boss|manager|coworker|co-worker|friend|best friend|roommate|therapist|doctor|teacher|neighbor|landlord|cousin|aunt|uncle|grandmother|grandfather|grandma|grandpa)';
+  '(?:wife|husband|partner|boyfriend|girlfriend|fianc[ée]e?|ex|mom|mother|dad|father|brother|sister|son|daughter|boss|manager|coworker|co-worker|friend|best friend|roommate|therapist|doctor|teacher|neighbor|landlord|cousin|aunt|uncle|grandmother|grandfather|grandma|grandpa|niece|nephew|colleague|supervisor|classmate|teammate|sibling|stepmom|stepdad|stepmother|stepfather|mentor|sponsor|counselor|neighbour|client|patient|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|kid|child|baby|dog|cat)';
 
 const NAME = "[A-Z][a-z]{1,}(?:[-'][A-Z]?[a-z]+)?(?:\\s+[A-Z][a-z]{1,}){0,2}";
 
@@ -96,6 +98,47 @@ const ordered: Rule[] = [
   },
 ];
 
+
+// ── Names with no telltale phrase ────────────────────────────────────────────
+// "Maria yelled at me", "I told Jordan", "Me and Sam". Found by a list of common given names (src/lib/givenNames.ts), so a name that is not on the list is
+// missed. Words that are also names (Will, Mark, Rose, Hope...) count only when the sentence shows it is a person: after "my sister", "told", "with", or
+// beside a surname. A capitalised word right after a name is taken as its surname ("Maria Gonzalez", "Aroha Te Rangi").
+const RELATION_WORDS = new Set('wife husband partner boyfriend girlfriend ex mom mother dad father brother sister son daughter boss manager coworker friend roommate therapist doctor teacher neighbor neighbour landlord uncle aunt cousin grandma grandmother grandpa grandfather grandson granddaughter nephew niece colleague client patient pastor named called dr mr mrs ms mx prof'.split(' '));
+const PERSON_PREPS = new Set('with told tell asked ask call called saw miss missed love loved hate hated ignore ignored forgive forgave thank thanked'.split(' '));
+const CAP = /(?<![\p{L}\p{N}_])(\p{Lu}\p{Ll}+(?:-\p{Lu}\p{Ll}+)?)(?![\p{L}\p{N}_])/gu;
+const plain = (w: string): string => w.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+const STOP_CAPS = new Set('i monday tuesday wednesday thursday friday saturday sunday january february march april may june july august september october november december the a an and but or so then yes no please thank thanks honestly sometimes maybe also because when while after before since if my our your his her their we you he she they it this that these those there here what why how who'.split(' '));
+
+function scrubBareNames(input: string): { text: string; count: number } {
+  let out = '';
+  let last = 0;
+  let count = 0;
+  let prevEnd = -1; // end index of the previous token that was taken as a name
+  let chain = 0;
+  for (const m of input.matchAll(CAP)) {
+    const t = m[1];
+    const i = m.index ?? 0;
+    const low = plain(t);
+    const before = input.slice(0, i);
+    const sentenceStart = /(?:^|[.!?]["')\]]*\s+|\n\s*)$/.test(before);
+    const prevWord = (/(\p{L}+)[\s,]*$/u.exec(before)?.[1] ?? '').toLowerCase();
+    const adjacentToName = prevEnd >= 0 && /^\s$/.test(input.slice(prevEnd, i));
+    let isName = false;
+    if (AMBIGUOUS_NAMES.has(low)) isName = !sentenceStart && (RELATION_WORDS.has(prevWord) || PERSON_PREPS.has(prevWord) || adjacentToName);
+    else if (GIVEN_NAMES.has(low)) isName = true;
+    else if (SAFE_SURNAMES.has(low)) isName = !STOP_CAPS.has(low);
+    else if (SURNAMES.has(low)) isName = adjacentToName || RELATION_WORDS.has(prevWord);
+    else if (adjacentToName && chain > 0 && chain < 3 && !STOP_CAPS.has(low) && !sentenceStart) isName = true; // the rest of a full name
+    if (!isName) { chain = 0; prevEnd = -1; continue; }
+    chain = adjacentToName ? chain + 1 : 1;
+    out += input.slice(last, i) + '[NAME]';
+    last = i + t.length;
+    prevEnd = last;
+    count++;
+  }
+  return { text: out + input.slice(last), count };
+}
+
 export function scrubPII(input: string): ScrubResult {
   let text = input;
   const counts: Record<string, number> = {};
@@ -111,6 +154,9 @@ export function scrubPII(input: string): ScrubResult {
       return `[${rule.tag}]`;
     });
   }
+  // Names with no telltale phrase, last, so the telltale rules above (which leave "[NAME]" behind) have had their say.
+  const bare = scrubBareNames(text);
+  if (bare.count) { text = bare.text; counts.NAME = (counts.NAME ?? 0) + bare.count; }
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   return { text, counts, total };
 }

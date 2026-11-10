@@ -129,7 +129,7 @@ try {
     const sightPage = readFileSync(new URL('../src/app/components/pages/SightGatewayPage.tsx', import.meta.url), 'utf8');
     ok('the Sight gateway shows the body map on the page, beside the palette', /<BodyMapAvatar\s+inline/.test(sightPage) && !/setShowBodyMap/.test(sightPage));
     const pdfSrc = readFileSync(new URL('../src/lib/nenyaPdfReport.ts', import.meta.url), 'utf8');
-    ok('the PDF report draws a kept palette as colour chips with their names', /generatedPalette\?\.colors/.test(pdfSrc) && /label: `Palette \$\{i \+ 1\}`/.test(pdfSrc));
+    ok('the PDF report draws a kept palette as colour chips with their names written out in full (wrapped, not cut short)', /generatedPalette\?\.colors/.test(pdfSrc) && /label: `Palette \$\{i \+ 1\}`/.test(pdfSrc) && /caption: c\.name \?\? c\.hex/.test(pdfSrc) && /splitTextToSize\(s\.caption/.test(pdfSrc));
   }
   // The loading screen, the tour offer and the tour.
   const { LoadingVeil } = await vite.ssrLoadModule('/src/app/components/LoadingVeil.tsx');

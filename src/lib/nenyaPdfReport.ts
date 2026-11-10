@@ -39,6 +39,7 @@ function drawColorSwatches(
 ): number {
   const size = 13;
   const gap = 8;
+  let extra = 0;
   swatches.forEach((s, i) => {
     const sx = x + i * (size + gap);
     const [r, g, b] = hexToRgbTuple(s.hex);
@@ -56,10 +57,12 @@ function drawColorSwatches(
       doc.setFont('Manrope', 'normal');
       doc.setFontSize(6.5);
       doc.setTextColor(...COLORS.textMuted);
-      doc.text(s.caption, sx + size / 2, y + size + 8, { align: 'center' });
+      const wrapped: string[] = doc.splitTextToSize(s.caption, size + gap - 1).slice(0, 3);
+      wrapped.forEach((line: string, li: number) => doc.text(line, sx + size / 2, y + size + 8 + li * 3, { align: 'center' }));
+      extra = Math.max(extra, (wrapped.length - 1) * 3);
     }
   });
-  return size + 13;
+  return size + 13 + extra;
 }
 
 // A small melodic contour chart for the sound gateway's melody: each note
@@ -284,8 +287,8 @@ export async function downloadNenyaPdfReport(
       if (y + 26 > pageHeight - 26) {
         y = newContentPage();
       }
-      const short = (t?: string) => (t && t.length > 14 ? t.slice(0, 13) + '…' : t);
-      y += drawColorSwatches(doc, margin + 4, y, kept.map((c, i) => ({ hex: c.hex, label: `Palette ${i + 1}`, caption: short(c.name) ?? c.hex })));
+      // The names of the colors are written out in full under each chip (wrapped onto two lines if long), not cut short.
+      y += drawColorSwatches(doc, margin + 4, y, kept.map((c, i) => ({ hex: c.hex, label: `Palette ${i + 1}`, caption: c.name ?? c.hex })));
     }
 
     if (melody) {
