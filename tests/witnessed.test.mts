@@ -90,3 +90,12 @@ ok('a deletion the person asked for waits in a list for the owner, with what to 
 ok('only the owner can see that list or mark things done', (owner = false, (await call(review, '/api/witnessed-review', { action: 'deletions' })).status === 401 && (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).status === 401) && (owner = true));
 ok('the owner marks it deleted after doing it by hand; it leaves the list and becomes a marker', (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).json?.status === 'deleted' && store.j.get(recordKey(hash)).status === 'deleted' && (await call(review, '/api/witnessed-review', { action: 'deletions' })).json.waiting.length === 0);
 ok('something not yet due cannot be marked deleted', (await send(GOOD, { keep: '30d', uses: [] })).status === 204 && (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).status === 404);
+
+// ── the owner's panel
+import { readFileSync } from 'node:fs';
+const panel = readFileSync(new URL('../src/admin/WitnessedPanel.tsx', import.meta.url), 'utf8');
+const admin = readFileSync(new URL('../src/admin/AdminPage.tsx', import.meta.url), 'utf8');
+ok('the panel calls only the owner-only review function, and is part of the owner\'s page', (panel.match(/fetch\(/g) ?? []).length === 1 && /fetch\('\/api\/witnessed-review'/.test(panel) && /<WitnessedPanel /.test(admin));
+ok('approving is impossible until the owner says they read every message, and each message can be edited or left out', /disabled=\{busy \|\| !read\[p\.hash\]/.test(panel) && /Leave this message out/.test(panel) && /I read every message/.test(panel));
+ok('the panel says which messages the site wrote and shows softer safety flags', /The site \(not the AI\)/.test(panel) && /softFlags/.test(panel));
+ok('the panel stores nothing in the browser', !/localStorage|sessionStorage|document\.cookie/.test(panel));
