@@ -445,6 +445,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 </Card>
               </div>
 
+              <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} />
+
               <BodyMapAvatar
                 inline
                 userColors={{ color1, color2, color1Name, color2Name }}
@@ -453,8 +455,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 initialPlacements={bodyMapData.placements}
                 initialNotes={bodyMapData.notes}
               />
-
-              <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} />
 
               {/* Next Button */}
               <div className="flex justify-center pt-4">

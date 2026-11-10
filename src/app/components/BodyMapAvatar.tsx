@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { X, Download, ChevronDown, ChevronRight } from 'lucide-react';
 import { Card } from './ui/card';
 import { ValarColorPicker } from './ValarColorPicker';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { sanitizePlainText } from '../../lib/textSanitize';
 
 interface BodyPart {
@@ -61,18 +62,20 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
   const [notes, setNotes] = useState<Record<string, string>>(initialNotes);
   const [expandedPartId, setExpandedPartId] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string>(userColors?.color1 || '#DDB88C');
-  const [selectedColorName, setSelectedColorName] = useState<string | undefined>(userColors?.color1Name);
+  const [, setSelectedColorName] = useState<string | undefined>(userColors?.color1Name);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const handleBodyPartClick = (bodyPartId: string) => {
-    // Remove existing placement for this body part
-    const filtered = placements.filter(p => p.bodyPartId !== bodyPartId);
+  // Choosing a body part opens the color picker for it (a popup), so there is no going back and forth on the screen.
+  const [pickingPart, setPickingPart] = useState<string | null>(null);
 
-    // Add new placement
-    setPlacements([
-      ...filtered,
-      { bodyPartId, color: selectedColor, colorName: selectedColorName }
-    ]);
+  const handleBodyPartClick = (bodyPartId: string) => {
+    setPickingPart(bodyPartId);
+  };
+
+  const placeColor = (bodyPartId: string, color: string, colorName?: string) => {
+    setSelectedColor(color);
+    setSelectedColorName(colorName);
+    setPlacements((prev) => [...prev.filter((p) => p.bodyPartId !== bodyPartId), { bodyPartId, color, colorName }]);
   };
 
   const handleRemovePlacement = (bodyPartId: string) => {
@@ -262,8 +265,12 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
                             strokeWidth={hasNote && !placement ? 2.5 : 2}
                             strokeDasharray={hasNote && !placement ? '4 2' : undefined}
                             opacity={placement ? 0.7 : hasNote ? 0.4 : 0.2}
-                            className="cursor-pointer hover:opacity-100 transition-opacity"
+                            className="cursor-pointer hover:opacity-100 focus:opacity-100 transition-opacity"
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`${part.label}: ${placement ? `color ${placement.colorName || placement.color}. ` : 'no color yet. '}Choose a color`}
                             onClick={() => handleBodyPartClick(part.id)}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBodyPartClick(part.id); } }}
                           />
                           {placement && (
                             <text
@@ -283,24 +290,8 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
                   </svg>
                 </div>
                 <p className="text-sm text-muted-foreground mt-4 text-center">
-                  Click on any body part to place your selected color. A dashed outline means a part has a note but no color.
+                  Choose a body part to pick its color. A dashed outline means a part has a note but no color.
                 </p>
-              </Card>
-
-              {/* Color Selector -- the same Valar palette browser the Sight
-                  gateway uses, so color choice works identically here even
-                  if Sight hasn't been visited yet. Fully open-ended: every
-                  palette color plus a custom hex input, no unlock gate. */}
-              <Card className="p-6">
-                <h3 className="mb-4">Choose a Color</h3>
-                <ValarColorPicker
-                  selectedColor={selectedColor}
-                  onColorChange={(color) => {
-                    setSelectedColor(color);
-                    setSelectedColorName(undefined);
-                  }}
-                  size="sm"
-                />
               </Card>
             </div>
 
@@ -341,6 +332,9 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
                         </button>
                         {isExpanded && (
                           <div className="p-3 pt-0 space-y-2 border-t border-border">
+                            <div className="pt-2">
+                              <Button variant="outline" size="sm" onClick={() => setPickingPart(part.id)}>{placement ? 'Change color' : 'Choose a color'}</Button>
+                            </div>
                             {placement && (
                               <div className="flex items-center justify-between pt-2">
                                 <span className="text-xs text-muted-foreground">
@@ -371,13 +365,40 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
               {/* Info */}
               <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
                 <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <strong>How to use:</strong> Choose a color, then click on body parts where you feel that emotion or sensation. Expand any body part to add a short note, with or without a color. This map is shared across every gateway — open it from any of them to keep adding to the same picture.
+                  <strong>How to use:</strong> Choose a body part where you feel an emotion or sensation, then pick its color in the window that opens. Expand any body part to add a short note, with or without a color. This map is shared across every gateway — open it from any of them to keep adding to the same picture.
                 </p>
               </Card>
             </div>
           </div>
         </div>
       </div>
+
+      <Dialog open={pickingPart !== null} onOpenChange={(open) => !open && setPickingPart(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto w-[95vw] sm:w-auto">
+          <DialogHeader>
+            <DialogTitle>Choose a color for {bodyParts.find((p) => p.id === pickingPart)?.label ?? 'this body part'}</DialogTitle>
+            <DialogDescription>
+              The color is placed as you choose it. Browse the sixteen palettes or enter a color of your own, then close this window.
+            </DialogDescription>
+          </DialogHeader>
+          {userColors?.color1 && userColors?.color2 && (
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => pickingPart && placeColor(pickingPart, userColors.color1, userColors.color1Name || undefined)}>
+                <span aria-hidden className="mr-2 inline-block size-3 rounded-full border border-border" style={{ background: userColors.color1 }} />Use my current color
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => pickingPart && placeColor(pickingPart, userColors.color2, userColors.color2Name || undefined)}>
+                <span aria-hidden className="mr-2 inline-block size-3 rounded-full border border-border" style={{ background: userColors.color2 }} />Use my wish color
+              </Button>
+            </div>
+          )}
+          <ValarColorPicker
+            selectedColor={(pickingPart && getPlacementForBodyPart(pickingPart)?.color) || selectedColor}
+            onColorChange={(color) => pickingPart && placeColor(pickingPart, color)}
+            size="md"
+            onClose={() => setPickingPart(null)}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Footer */}
       <div className={inline ? 'px-4 md:px-6 pb-4' : 'border-t border-border bg-background px-4 md:px-6 py-4'}>
