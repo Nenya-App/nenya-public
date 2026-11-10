@@ -409,6 +409,14 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               ))}
             </div>
 
+            <p className="text-xs text-muted-foreground text-center">
+              Curious about building a melody from words? Solresol is a constructed language whose words are sequences of the seven notes.{' '}
+              <a href="https://solresol.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                solresol.xyz<span className="sr-only"> (opens an outside site in a new tab)</span>
+              </a>{' '}
+              (from the Machine Perception and Cognitive Robotics Laboratory at Florida Atlantic University) has a translator and player. It is a separate site with its own terms, and nothing from Nenya is sent to it.
+            </p>
+
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">{melodyConnected ? 'Connected to Sight' : 'Independent melody'}</p>
