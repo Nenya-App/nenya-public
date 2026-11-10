@@ -42,6 +42,8 @@ export function buildFragments(gatewayData: { gateway: Gateway; data: any }[], b
     if (gd.gateway === 'sight') {
       if (HEX.test(gd.data?.color1 ?? '')) lines.push(...colourLines('Present', gd.data.color1, lookup, found));
       if (HEX.test(gd.data?.color2 ?? '')) lines.push(...colourLines('Wish', gd.data.color2, lookup, found));
+      // A palette the person made is their own: its colours are not one of the sixteen, whatever hex they happen to share.
+      if (gd.data?.generatedPalette?.colors?.length) found.custom = true;
     }
     out.push({ id: gd.gateway, section: sectionOf(gd.gateway), title: gatewayTitles[gd.gateway], lines, palettes: [...found.palettes], custom: found.custom });
   }

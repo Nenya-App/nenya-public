@@ -1,6 +1,7 @@
 // The text of a sensory report, one function per part: the review page, the downloads (text and PDF) and the coach hand-off
 // (src/lib/reportShare.ts) all use these, so what the person sees, downloads and may share is the same words.
 import { getNoteNames, TONAL_SYSTEM_LABELS, type TonalSystem } from './audio.ts';
+import { describePalettePlainly } from './colorSchemes.ts';
 
 export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight';
 export interface BodyMapLike {
@@ -91,6 +92,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.color2Intensity !== undefined) {
         info.push(`  Intensity: ${data.color2Intensity}/100`);
       }
+      if (data.generatedPalette?.colors?.length) info.push(describePalettePlainly(data.generatedPalette));
       break;
 
     case 'sound':

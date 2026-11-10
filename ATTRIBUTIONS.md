@@ -73,3 +73,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## The Color API (optional palettes in the Sight gateway)
+
+If a visitor presses "Ask The Color API" in the Sight gateway, Nenya's server asks **The Color API**, <https://www.thecolorapi.com>, created by Josh Beckman, for a palette made around one color, and shows the five colors that come back, with credit on the page. The visitor's browser never reaches the service; it sees our server and the one color and the kind of palette asked for, and we store and log neither. The feature is off unless the site's `PALETTE_ENABLED` setting is on. At the time of writing the API's documentation page states no license, rate limit or terms of use; we have written to its author to ask (see the project's correspondence notes) and will update this page with what we learn. Nothing in the API's output is stored or republished beyond the visitor's own report.

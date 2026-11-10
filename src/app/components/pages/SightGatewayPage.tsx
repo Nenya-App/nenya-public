@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ColorNameSuggest } from '../ColorNameSuggest';
+import { PalettePanel } from '../PalettePanel';
+import type { GeneratedPalette } from '../../../lib/colorSchemes';
 import { Button } from '../ui/button';
 import { ArrowLeft, Shuffle, User, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
@@ -128,6 +130,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   const [color2, setColor2] = useState(theme === 'dark' ? '#FFFFFF' : '#000000');
   const [color1Name, setColor1Name] = useState('');
   const [color2Name, setColor2Name] = useState('');
+  const [generatedPalette, setGeneratedPalette] = useState<GeneratedPalette | null>(null);
   const [color1Qualities, setColor1Qualities] = useState<string[]>([]);
   const [color2Qualities, setColor2Qualities] = useState<string[]>([]);
   const [color1Intensity, setColor1Intensity] = useState(50);
@@ -149,6 +152,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
     setColor2Qualities([]);
     setColor1Intensity(50);
     setColor2Intensity(50);
+    setGeneratedPalette(null);
   };
 
   const handleNext = () => {
@@ -164,6 +168,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
       color1Intensity,
       color2Intensity,
       gradientDirection,
+      generatedPalette,
     });
   };
 
@@ -499,6 +504,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   </CardContent>
                 </Card>
               </div>
+
+              <PalettePanel color1={color1} color2={color2} value={generatedPalette} onChange={setGeneratedPalette} />
 
               {/* Next Button */}
               <div className="flex justify-center pt-4">

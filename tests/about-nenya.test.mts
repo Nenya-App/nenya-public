@@ -71,7 +71,7 @@ ok('"my friend Nenya" and "a cat called Nenya" never route', detectAboutNenya('w
 
 // which answers are live
 const live = liveAnswers().map((a) => a.id);
-ok('only answers checked and not waiting on the owner or a feature are live (33 of 34; only the languages answer waits for its notice)', live.length === 33 && ['n-languages'].every((id) => !live.includes(id)) && ['c-wrote', 'c-angry'].every((id) => live.includes(id)) && ANSWERS.filter((a) => a.status !== 'ready').every((a) => !live.includes(a.id)));
+ok('only answers checked and not waiting on the owner or a feature are live (34 of 35; only the languages answer waits for its notice)', live.length === 34 && ['n-languages'].every((id) => !live.includes(id)) && ['c-wrote', 'c-angry'].every((id) => live.includes(id)) && ANSWERS.filter((a) => a.status !== 'ready').every((a) => !live.includes(a.id)));
 ok('a live answer comes back for its question; the languages answer is recognised but not given while it waits', aboutAnswerFor('who runs this site')?.id === 'n-who' && aboutAnswerFor('how do I contact you')?.id === 'n-contact' && detectAboutNenya('who wrote that') === 'c-wrote' && aboutAnswerFor('who wrote that')?.id === 'c-wrote' && detectAboutNenya('do you speak spanish') === 'n-languages' && aboutAnswerFor('do you speak spanish') === null);
 ok('a message that is not a question about Nenya or the coach gets no answer', aboutAnswerFor('I had a rough day at work') === null && aboutAnswerFor('') === null);
 

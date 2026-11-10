@@ -54,7 +54,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         heading: 'Your Privacy & Data',
         paragraphs: [
           'Nenya is designed around ephemerality. The reflections you create here are for your personal use, and the tool does not send your sensory choices or reflections to our servers. Any outputs, such as a sensory report, are generated on your device and belong to you. Nothing from a report is sent anywhere unless you choose to bring parts of it to the optional coach (Section 21), and then it is treated like a message you type.',
-          'Three things pass through infrastructure outside your device: our web host keeps standard connection logs and produces anonymous visit statistics from them; if you choose to submit a report or message through the optional form, what you submit is sent to us; and if you choose to try the optional coach demo, what you type, and any parts of a sensory report you choose to bring to it, is sent through our server to an AI service. Part Two of this document explains each in full. A small amount of information can also stay on your device between visits, and Section 19 explains what, and how to erase it.',
+          'Four things pass through infrastructure outside your device: our web host keeps standard connection logs and produces anonymous visit statistics from them; if you choose to submit a report or message through the optional form, what you submit is sent to us; if you press “Ask The Color API” in the Sight gateway, one color is sent through our server to that service (Section 16); and if you choose to try the optional coach demo, what you type, and any parts of a sensory report you choose to bring to it, is sent through our server to an AI service. Part Two of this document explains each in full. A small amount of information can also stay on your device between visits, and Section 19 explains what, and how to erase it.',
         ],
       },
       {
@@ -158,6 +158,7 @@ export const LEGAL_PARTS: LegalPart[] = [
           'What you submit is the text of your report or message, plus an optional comment, delivered to us through Netlify Forms.',
           'We do not ask for your name or email. If you type personal information into a comment, report, or message, it becomes part of the submission, so please leave out anything you would not want us to keep. If you would like a reply to a message, you can include your email address in it; we use it only to answer you.',
           'Netlify may keep a copy of the submission under its own retention practices.',
+          'An optional palette from The Color API: in the Sight gateway, if you press “Ask The Color API,” your page sends one color, as a hex code, and the kind of palette you picked to our server, which asks The Color API (thecolorapi.com, by Josh Beckman) for a palette over a secure connection and returns the five colors. That service sees our server and the color, and nothing else: not your address, not a cookie, not anything you wrote. It is a separate service that we do not control, and its own terms apply to what it receives. We do not store or log the color or the request; we keep only a count, under a one-way daily code that is deleted within two days, so that no one can use the feature without limit. Making a palette on your device, suggesting a color name, and bridging from your current to your wish color send nothing anywhere. If you keep a palette, it goes into your report as colors of your own, marked with where it was made, and if you later choose to bring that part of your report to the coach (Section 21) it is shared like the rest.',
         ],
       },
       {
@@ -167,7 +168,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         bullets: [
           'It does not require or offer visitor accounts, and it does not create profiles or persistent identifiers for visitors. The visit statistics in Section 15 count unique visitors by connection address within a day; nothing is saved on your device for that. The only code that stands for your connection is the one-way daily code the coach demo uses for its limit (Section 21): it changes every day and is deleted within two days.',
           'It does not set cookies or use fingerprinting. Unless you turn on “Remember my settings on this device,” it does not remember your light or dark mode or anything else between visits, apart from the timestamp saved after a coach conversation ends (Section 21).',
-          'It does not send what you enter in the reflection tool to any server. The only exceptions are the form in Section 16 and the optional coach demo in Section 21 (including any parts of a report you choose to bring to it), all of which you start yourself.',
+          'It does not send what you enter in the reflection tool to any server. The only exceptions are the form and the optional palette from The Color API in Section 16, and the optional coach demo in Section 21 (including any parts of a report you choose to bring to it), all of which you start yourself.',
           'It does not sell, share, or monetize data.',
         ],
       },

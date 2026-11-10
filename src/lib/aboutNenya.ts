@@ -213,6 +213,26 @@ export const ANSWERS: Answer[] = [
     ownerNote: 'Written 2026-11-09 with the report-to-coach module (docs/report-to-coach-scope.md). Ready: the picker is on the coach start page.',
   },
   {
+    id: 'n-palette', part: 'nenya', title: 'Are my colors sent anywhere? Palettes and color names',
+    asked: ['are my colors sent anywhere', 'does the color api see my colors', 'where do the color names come from', 'how are colors named', 'is the palette maker private'],
+    short: 'Your colors stay on your device. Suggesting a name and making a palette or a bridge happen in your browser and send nothing. One optional button, "Ask The Color API," sends a single color, as a hex code, through our server to that outside service to make a palette; nothing else is sent, and we store nothing.',
+    full: [
+      'The colors you choose, and the names you give them, stay in your browser. When you ask for a name suggestion, the names come from a list of 5,000 color names that ships with this site (color-name-list, MIT license) and is loaded only when you ask. Making a palette "on my device," or a bridge from your current color to your wish color, is calculated in your browser and sends nothing anywhere.',
+      'There is one exception, and it is your choice each time. If you press "Ask The Color API" in the Sight gateway, your page sends one color, as a hex code, and the kind of palette you picked, to our server, which asks The Color API (thecolorapi.com, by Josh Beckman) over a secure connection for a palette and returns five colors. That service sees our server and the color, and nothing else: not your address, a cookie, or anything you wrote. It is separate from Nenya and its own terms apply. We do not store or log the color or the request. If the service is unavailable, the page makes the same kind of palette on your device and says so.',
+      'If you keep a palette it goes into your report as colors of your own, marked with where it was made. If you later bring that part of your report to the coach, it is shared like the rest of what you choose.',
+    ],
+    links: [{ label: 'Terms, Section 16', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
+    tutorial: 'Privacy lesson 3: staying in control (what leaves your device, and what does not).',
+    checks: [
+      { claim: 'making a palette on the device, suggesting a color name, and the bridge send nothing anywhere', file: TERMS, has: 'Making a palette on your device, suggesting a color name, and bridging from your current to your wish color send nothing anywhere' },
+      { claim: 'the optional palette sends one hex color and the kind of palette through our server to The Color API', file: TERMS, has: 'your page sends one color, as a hex code, and the kind of palette you picked to our server' },
+      { claim: 'the service sees our server and the color, and nothing else; its own terms apply', file: TERMS, has: 'its own terms apply to what it receives' },
+      { claim: 'we do not store or log the color or the request', file: TERMS, has: 'We do not store or log the color or the request' },
+    ],
+    status: 'ready',
+    ownerNote: 'Written 2026-11-09 with the color tools (docs/color-tools-scope.md). Ready once the palette function is switched on (PALETTE_ENABLED); the answer says what happens when the service is unavailable.',
+  },
+  {
     id: 'n-device', part: 'nenya', title: 'What Nenya keeps on my device, and how to erase it',
     asked: ['do you use cookies', 'what is saved on my device', 'how do I delete my data', 'what does forget me do', 'what is emergency exit'],
     short: 'Nenya sets no cookies. By default it keeps only one timestamp on your device, saved after a coach conversation ends so the free demo can rest. If you turn on "Remember my settings on this device" it also keeps your display choices. "Forget me" erases what is saved, and Emergency Exit erases everything and leaves the page.',
@@ -702,7 +722,7 @@ const SITE = "(?:this|the)\\s+(?:site|app|website|tool|demo|coach|chat|project|p
 // Highest priority first: specific questions before general ones.
 export const ABOUT_ORDER = [
   'n-who', 'n-founder', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
-  'n-name', 'n-version', 'n-contact', 'n-free', 'n-report-share', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
+  'n-name', 'n-version', 'n-contact', 'n-free', 'n-report-share', 'n-palette', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
   'n-affiliation', 'n-nvc', 'n-notherapy', 'n-accessibility', 'n-report', 'n-transcripts', 'n-languages', 'n-terms-change', 'n-else', 'n-what',
 ] as const;
 
@@ -844,6 +864,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
 // Added 2026-11-09 from the synthetic corpus (src/lib/aboutEvalCorpus.ts): more ways of asking the same questions. Each is anchored on this site, Nenya,
 // the coach or "you", or is a whole-sentence question, so a person talking about something else is left alone.
 const EXTRA_PATTERNS: Record<string, RegExp[]> = {
+  'n-palette': [/\b(?:are|is|do|does|will)\s+(?:my\s+)?colou?rs?\s+(?:sent|shared|stored|saved|kept|going)\b|\bdoes\s+the\s+colou?r\s+api\s+(?:see|get|store|keep)\b|\bwhere\s+do\s+the\s+(?:colou?r|palette)\s+names\s+come\s+from\b|\bhow\s+are\s+colou?rs\s+named\b|\bis\s+the\s+palette\s+(?:maker|generator|tool)\s+(?:private|safe)\b|\bwhat\s+is\s+the\s+colou?r\s+api\b|\bdo\s+you\s+(?:store|keep|save|log)\s+my\s+colou?rs?\b/i],
   'n-report-share': [/\b(?:can|does|will|could|would)\s+(?:the\s+coach|you)\s+(?:see|read|access|use|look\s+at)\s+(?:my\s+|the\s+)?(?:report|reflection|colou?rs|answers|results)\b|\bcan\s+i\s+(?:share|show|bring|give)\s+(?:my\s+|the\s+|a\s+)?(?:report|reflection)\s+(?:with|to)\s+(?:you|the\s+coach)\b|\bdoes\s+the\s+coach\s+see\s+what\s+i\s+(?:did|chose|picked|made)\b|\bwill\s+my\s+(?:report|reflection)\s+be\s+(?:sent|shared|seen)\b/i],
   'n-what': [/\bwhat\s+even\s+is\s+(?:this|nenya)\b|\bwhat\s+is\s+this\s+(?:site|app|website|place|tool)\s+(?:for|about)\b|\bwhat(?:'s|s)\s+this\s+(?:site|app|website|place)\s+about\b|\bwhat\s+this\s+(?:website|site|app)\s+is\s+for\b|\bexplain\s+what\s+(?:nenya|this\s+(?:site|app))\s+is\b/i],
   'n-name': [/\bis\s+nenya\s+a\s+word\b|\bstory\s+behind\s+the\s+name\b/i],
