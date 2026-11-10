@@ -136,7 +136,21 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const [ticket, setTicket] = useState<string | undefined>();
   const [draft, setDraft] = useState('');
   // The word lists: open on the first exchange, on the needs list once the coach has answered once (unless the person chose a tab themselves).
-  const [wordsOpen, setWordsOpen] = useState(true);
+  const [wordsOpen, setWordsOpen] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('nenya.words.open') !== 'no'; // a per-device convenience: folded stays folded
+    } catch {
+      return true;
+    }
+  });
+  const rememberWordsOpen = (v: boolean): void => {
+    setWordsOpen(v);
+    try {
+      localStorage.setItem('nenya.words.open', v ? 'yes' : 'no');
+    } catch {
+      /* private window or blocked storage: it just opens next time */
+    }
+  };
   const [wordsTab, setWordsTab] = useState<'feelings' | 'needs'>('feelings');
   const [tabChosen, setTabChosen] = useState(false);
   const [picked, setPicked] = useState<Picked[]>([]);
@@ -802,7 +816,9 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </label>
                   <WordPanel
                     open={wordsOpen}
-                    onToggle={setWordsOpen}
+                    onToggle={rememberWordsOpen}
+                    accent={color1}
+                    onUnpick={(p) => setPicked((cur) => cur.filter((x) => !(x.kind === p.kind && x.word === p.word)))}
                     tab={wordsTab}
                     onTab={(t) => {
                       setWordsTab(t);
