@@ -33,6 +33,10 @@ import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/abo
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
+import { allCards } from '../../src/lib/learningCards.ts';
+import { offerFor } from '../../src/lib/learningOffer.ts';
+import { getMatcher } from '../../src/lib/lexiconStore.ts';
+import { match as lexiconMatch } from '../../src/lib/lexicon.ts';
 import { echoedNames, NAME_NOTE, NAME_RULE, withoutNames } from '../../src/lib/nameGuard.ts';
 import { LEGAL_EFFECTIVE_DATE } from '../../src/lib/legalDocument.ts';
 import { scrubPII } from '../../src/lib/piiScrub.ts';
@@ -824,9 +828,23 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   if (ctxFlag && turn === 1) tally('coach.context.flagged');
   tally('coach.turn.answered');
   if (turn >= MAX_TURNS) tally('coach.conversation.finished');
+  // An offer of a short educational card, only an invitation, and only when the switch is on, a card exists (approved and built in), and nothing was flagged.
+  // COACH_LEARNING_OFFERS=on turns it on; COACH_LEARNING_MIN_SEVERITY (default 2) is the lowest list severity that counts. Nothing about it is stored.
+  let offer: { id: string } | null = null;
+  if (process.env.COACH_LEARNING_OFFERS === 'on' && allCards().length && !flag) {
+    try {
+      const known = new Set(allCards().map((c) => c.id));
+      const sentShown = (body as { shown?: unknown }).shown;
+      const shown = Array.isArray(sentShown) ? sentShown.filter((x): x is string => typeof x === 'string' && known.has(x)).slice(0, 4) : [];
+      const matcher = await getMatcher(privateStore() as unknown as Parameters<typeof getMatcher>[0]);
+      const minSev = Number(process.env.COACH_LEARNING_MIN_SEVERITY);
+      const o = offerFor({ hits: matcher ? lexiconMatch(lastText, matcher) : [], text: lastText, shown, available: [...known], flagged: !!flag, abuseAtCoach: hostile === 'abuse', ...(Number.isInteger(minSev) && minSev >= 1 && minSev <= 3 ? { minSeverity: minSev } : {}) });
+      if (o) { offer = { id: o.id }; tally(`coach.offer.${o.because}`); }
+    } catch { /* an offer is a courtesy: never let it break a reply */ }
+  }
   const history = [...messages, { role: 'assistant' as const, content: reply }];
   const ticket = sign(secret, turn, Date.now(), history, session, context, code);
-  return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}), ...(ctxFlag && turn === 1 ? { contextFlag: ctxFlag } : {}), ...(withinCard ? { card: withinCard } : {}) });
+  return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}), ...(ctxFlag && turn === 1 ? { contextFlag: ctxFlag } : {}), ...(withinCard ? { card: withinCard } : {}), ...(offer ? { offer } : {}) });
 }
 
 // Literal values on purpose: Netlify reads this block by static analysis, so it

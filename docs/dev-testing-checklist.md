@@ -44,3 +44,9 @@ Everything in sections 1 and 2 passes on staging; the Terms effective date (`LEG
 - [ ] Move one slider, type a number in another, press "Set to 50" on a third: each becomes set. "Clear (leave this one out)" puts it back to not set.
 - [ ] Finish a session without touching a slider: the review page, the text report, the PDF and the coach picker list no number for it. A slider left at 50 on purpose (set, then not moved) still appears.
 - [ ] Keyboard only: Tab to a slider and press an arrow key: it becomes set. A screen reader says "not set" for an untouched one.
+
+## Learning cards (added 2026-11-10; off by default)
+- [ ] With `COACH_LEARNING_OFFERS` unset, nothing changes anywhere.
+- [ ] After approving one card and setting the switch on staging: an abusive message aimed at the coach gets the coach's own reply and, under it, the invitation. "No thanks" closes it; "Read it" opens the card; "Back to the conversation" and "Stop here" close it; the conversation carries on either way.
+- [ ] A message that reports what someone said to you gets no invitation. A message the crisis check flags gets none.
+- [ ] The card's source link opens in a new tab; a screen reader announces the invitation and the card.

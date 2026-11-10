@@ -20,6 +20,7 @@ import { FlagNotice } from './FlagNotice';
 import { ReportShare, type ReportInput } from './ReportShare';
 import { openingText } from '../lib/reportShare';
 import type { SharedText } from '../lib/reportFragments';
+import { LearningOffer } from './LearningCard';
 import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
@@ -82,6 +83,8 @@ interface Msg {
   note?: string;
   /** Set when the site wrote this reply itself as a pre-written answer: the card shown beneath it. */
   card?: AnswerCardData;
+  /** Set when the site offered a short educational card under this reply (only an invitation: the person decides). */
+  offer?: { id: string };
 }
 
 const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content }));
@@ -241,7 +244,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...ownerHeader() },
-        body: JSON.stringify({ messages: toWire(next), session, ticket, ...(shared ? { context: shared.text } : {}), ...overridesForRequest() }),
+        body: JSON.stringify({ messages: toWire(next), session, ticket, shown: messages.flatMap((m) => (m.offer ? [m.offer.id] : [])), ...(shared ? { context: shared.text } : {}), ...overridesForRequest() }),
       });
       if (!res.ok) {
         // Say what went wrong instead of a bare "failed". The server's answer carries a code, a reason and a reference.
@@ -262,6 +265,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         contextFlag?: SafetyFlag;
         blocked?: string;
         card?: AnswerCardData;
+        offer?: { id: string };
       };
       // The server screens too. A blocked message is not part of the conversation.
       if (data.blocked === 'cap' || data.blocked === 'ip') {
@@ -279,7 +283,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         return;
       }
       if (data.contextFlag) setContextFlag(data.contextFlag);
-      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}) }] : next);
+      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}), ...(data.offer ? { offer: data.offer } : {}) }] : next);
       setTicket(data.ticket);
       touch();
       setDraft('');
@@ -674,6 +678,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     </div>
                   </div>
                   {m.card && <AnswerCard card={m.card} />}
+                  {m.offer && <LearningOffer cardId={m.offer.id} />}
                   </Fragment>
                 ))}
                 {sending && (
