@@ -76,3 +76,5 @@ The word panel is on every coach page whether or not the switch is set. The swit
 6. **Exchange 4:** one question, about a request. **Exchange 5:** no question; only your own words come back, no new feeling or need word.
 7. Start again with something that trips the check (for example abuse aimed at the coach, or a crisis phrase): the practice steps aside and the usual reply or care note is given.
 8. Open a signed transcript (My transcript page): the instructions fingerprint differs between the arc-on and arc-off runs.
+9. Pick several words from the panel and send **only** those, with nothing else typed. The coach should thank you, not repeat the words or ask whether you meant them, and offer a few ways on (what is going on; how to spend the time; a request). It should not name a feeling or need itself. This works with the arc on or off.
+10. At exchange 4 of a practice conversation, the coach may offer, as something you can decline, to wonder what the other person might be feeling and needing, with a caution that it is only if it feels okay.

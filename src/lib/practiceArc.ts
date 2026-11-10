@@ -11,6 +11,22 @@ const STUCK =
   /\b(?:i\s*(?:do not|don(?:'|’)t|dont)\s*(?:really\s*)?(?:know|have (?:the )?words)|idk|no idea|not sure|(?:i\s*)?(?:can(?:'|’)?t|cannot|can not)\s*(?:really\s*)?(?:tell|say|name|find|put)|(?:i\s*)?(?:have|got) no words|i\s*(?:have no|don(?:'|’)t have any) idea|don(?:'|’)t know what (?:i(?:'|’)m|i am|to)\s*(?:feel|need|say))\b/i;
 export const isStuck = (text: string): boolean => STUCK.test(text);
 
+/**
+ * A message that is only words picked from the page's lists ("I might be feeling apprehensive. I might need affection."), with no situation
+ * in it. Echoing these back and asking "is that what you said?" is irritating, so the coach is told what to do instead (WORDS_ONLY_NOTE).
+ */
+export function isWordsOnly(text: string): boolean {
+  let rest = text.toLowerCase().replace(/\bi might (?:be feeling|need)\b/g, ' ');
+  const all = [...wordsOf('feeling'), ...wordsOf('need')].sort((a, b) => b.length - a.length);
+  const before = rest;
+  for (const w of all) rest = rest.split(w.toLowerCase()).join(' ');
+  if (rest === before) return false; // no known word at all
+  return rest.replace(/\b(?:and|or|but|also)\b/g, ' ').replace(/[^a-z]/g, '').length === 0;
+}
+
+export const WORDS_ONLY_NOTE =
+  'The person has sent only words they picked from lists of feelings and needs, and has not said what is going on. Do not repeat their words back as a list, and do not ask whether those are the words they meant. Thank them briefly for finding words and say it gives you something to work with. Then, in one short, warm invitation, offer these ways to go on and let them choose: tell you a little of what is going on that brings these up; think about what would be a helpful way to spend this time; or work out a request they could make, of themselves or of someone else. You may add that, if they would like, they can also think about what another person in the situation might be feeling and needing, only if that feels okay, and that it is never about excusing what happened. Do not guess a situation for them, and do not name any feeling or need yourself.';
+
 /** The paragraph that replaces "reflect... name the feeling or need underneath" while the arc is on. */
 export const ARC_CORE =
   'This conversation is practice at finding words for feelings and needs, and the person should do the finding. Do not name their feeling or need for them. In your first reply, reflect briefly what happened in their own words, then invite them to try one word for what they are feeling, and say that a guess that misses is still useful. In the next, hand their word back, check it against one near word as a choice, and ask them to guess the need underneath. Then ask which need is not being met, and which need is being met, even a little. Phrase every guess as a question, never as "you feel" or "you need". The page shows them word lists, so do not list words yourself. If they only want to be heard, reflect and invite once without pushing. Ask at most one question. Do not give medical, legal, or financial advice, and do not tell the person what they must do.';
@@ -24,7 +40,7 @@ export function arcTurnLine(turn: number, max: number, stuck: boolean): string {
   if (turn === 1) lines.push('Exchange 1 of the practice: reflect what happened in their words, then invite one feeling word. Do not name the feeling.');
   else if (turn === 2) lines.push('Exchange 2 of the practice: check their feeling word, offering at most one near word as a choice, then ask them to guess the need underneath.');
   else if (turn === 3) lines.push('Exchange 3 of the practice: keep their guess as a guess ("does that fit?"), then ask which need is not being met, and which need is being met, even a little.');
-  else if (turn === max - 1) lines.push('Exchange 4 of the practice: make your one question about a request in their own words (what would help, from them or from someone else), and say they may add anything else they would still like to say. If it fits, they may guess what the other person needs, but do not ask this when the other person is hurting them or being hurt.');
+  else if (turn === max - 1) lines.push('Exchange 4 of the practice: make your one question about a request in their own words (what would help, from them or from someone else), and say they may add anything else they would still like to say. You may offer, as something they can decline, to guess what the other person might be feeling and needing. Say a caution in your own words with it: only if it feels okay, it is not about excusing what happened, and if they have been hurt or are not safe they owe no one understanding.');
   return lines.join(' ');
 }
 
@@ -37,7 +53,7 @@ const NAMES_FOR_THEM =
   /\b(?:you(?:'|’)re|you are|you must be|you seem to be|sounds like you(?:'|’)re|sounds like you are)\s+(?:really\s+)?feeling\b|(?<!\b(?:do|did|would|could|can|if|when|whether|what|how)\s)\byou(?:\s+(?:really|just))?\s+(?:feel|need)\s+(?!to\b)|\bsounds like you\s+(?:feel|need)\b/i;
 
 export interface ArcProblem {
-  check: 'namesForThem' | 'noQuestion' | 'questionOnClose' | 'wordList' | 'noMenu' | 'newWords';
+  check: 'echoesWords' | 'namesForThem' | 'noQuestion' | 'questionOnClose' | 'wordList' | 'noMenu' | 'newWords';
   detail?: string;
 }
 
@@ -53,6 +69,7 @@ const matches = (text: string, words: string[]): string[] => {
  * - the close: no question, and no feeling or need word the person did not use.
  */
 export function arcProblems(reply: string, o: { turn: number; max: number; userTexts: string[] }): ArcProblem[] {
+  const wordsOnly = o.turn < o.max && isWordsOnly(o.userTexts[o.userTexts.length - 1] ?? '');
   const out: ArcProblem[] = [];
   const all = [...wordsOf('feeling'), ...wordsOf('need')];
   const last = o.userTexts[o.userTexts.length - 1] ?? '';
@@ -66,6 +83,11 @@ export function arcProblems(reply: string, o: { turn: number; max: number; userT
     return out;
   }
   if (!/[?？]/.test(reply)) out.push({ check: 'noQuestion' });
+  if (wordsOnly) {
+    const theirs = matches(last, all);
+    if (matches(reply, theirs).length >= 2) out.push({ check: 'echoesWords', detail: 'repeats the words they sent' });
+    return out;
+  }
   if (!stuck && NAMES_FOR_THEM.test(reply)) out.push({ check: 'namesForThem' });
   if (stuck) {
     if (inReply.length < 2) out.push({ check: 'noMenu' });

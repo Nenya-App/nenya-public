@@ -12,7 +12,7 @@ delete process.env.COACH_ARC;
 let sent: any[] = [];
 (globalThis as any).fetch = async (_u: string, init: any) => { sent.push(JSON.parse(init.body).messages); return new Response(JSON.stringify({ choices: [{ message: { content: 'Thank you for telling me. What word fits closest?' } }] }), { status: 200, headers: { 'content-type': 'application/json' } }); };
 const { default: handler, __instructionsFingerprint } = await import('../netlify/functions/coach.mts');
-const { arcProblems, isStuck, practiceArcOn, arcTurnLine } = await import('../src/lib/practiceArc.ts');
+const { arcProblems, isStuck, isWordsOnly, practiceArcOn, arcTurnLine } = await import('../src/lib/practiceArc.ts');
 const { FEELINGS_MET, FEELINGS_UNMET, NEEDS, wordsOf, filterGroups, addWordToDraft, phraseFor, CNVC_CREDIT } = await import('../src/lib/feelingsNeeds.ts');
 import { ok } from './helpers.mts';
 
@@ -59,7 +59,7 @@ ok('not stuck: no menu instruction', !t1.system.includes('Offer two or three pos
 const stuck = await conv(['Something happened with my sister.', "I don't know"]);
 ok('after "I don\'t know": a menu of two or three words as options, none stated as fact', stuck.system.includes('Offer two or three possible words as options') && stuck.system.includes('Never state one word as fact about them'));
 const t4 = await conv(['a', 'b', 'c', 'd'].map((x) => `It was hard at work, part ${x}.`));
-ok('exchange 4: one question about a request, the other person\'s needs only if it fits and nobody is being hurt', t4.system.includes('Exchange 4 of the practice') && /do not ask this when the other person is hurting them or being hurt/.test(t4.system));
+ok('exchange 4: one question about a request; the other person\'s side is an option they can decline, with a caution (not a gate)', t4.system.includes('Exchange 4 of the practice') && /as something they can decline/.test(t4.system) && /they owe no one understanding/.test(t4.system) && !/do not ask this when/.test(t4.system));
 const t5 = await conv(['a', 'b', 'c', 'd', 'e'].map((x) => `It was hard at work, part ${x}.`));
 ok('exchange 5: only their own words come back, no new feeling or need word', /in their own words only/.test(t5.system) && /Add no new feeling or need word of your own/.test(t5.system) && !t5.system.includes('name the feeling or need underneath'));
 
@@ -103,3 +103,15 @@ ok('search narrows by letters or family and drops empty groups', filterGroups(FE
 ok('a picked word adds an editable sentence to the draft', addWordToDraft('', 'feeling', 'worried', 500) === 'I might be feeling worried.' && addWordToDraft('It was hard.', 'need', 'support', 500) === 'It was hard. I might need support.');
 ok('a pick that would pass the limit leaves the draft as it was', addWordToDraft('x'.repeat(490), 'feeling', 'overwhelmed', 500) === 'x'.repeat(490));
 ok('phrase for needs and feelings', phraseFor('need', 'rest/sleep') === 'I might need rest/sleep.' && phraseFor('feeling', 'hurt') === 'I might be feeling hurt.');
+
+// ---- a first message that is only picked words
+const W = 'I might be feeling apprehensive. I might need affection. I might need stability. I might need nurturing.';
+ok('only picked words: recognized', isWordsOnly(W) && isWordsOnly('I might be feeling worried.') && isWordsOnly('worried, lonely and tired'));
+ok('words with a situation are not "only words"', !isWordsOnly('I might be feeling worried. My boss ignored me today.') && !isWordsOnly('My manager ignored my idea.') && !isWordsOnly('') && !isWordsOnly('hello'));
+const wo = await systemFor([{ role: 'user', content: W }]);
+ok('only picked words: the coach is told not to echo them or ask if they meant them, to thank them and offer three ways on, and to name no word itself', wo.system.includes('Do not repeat their words back as a list') && wo.system.includes('do not ask whether those are the words they meant') && wo.system.includes('tell you a little of what is going on') && wo.system.includes('a helpful way to spend this time') && wo.system.includes('work out a request') && wo.system.includes('do not name any feeling or need yourself'));
+ok('the other person\'s side is offered only if it feels okay, and never as excusing', /only if that feels okay, and that it is never about excusing what happened/.test(wo.system));
+ok('a message with a situation does not get that note', !t1.system.includes('Do not repeat their words back as a list'));
+const echo = "It sounds like you're experiencing a mix of feelings and needs. Could apprehensive be one of the words you're using? And is affection one that matters right now?";
+ok('the echo from the real transcript is caught', P(echo, 1, [W]).includes('echoesWords'));
+ok('a good reply to picked words passes', P('Thank you for finding those words; they give us something to work with. Would you like to tell me a little of what is going on, think about how to spend this time, or work out a request?', 1, [W]).length === 0);

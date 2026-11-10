@@ -82,3 +82,7 @@ So implement the arc as a stance layer (`src/lib/stances.ts` / `stanceLayers`), 
 4. **Whether the panel opens by itself** at exchanges 1 and 2, or stays closed until the person opens it.
 5. **Exchange 4's "guess the other person's needs"**: keep, make optional, or leave to the stance work.
 6. **Order of work**: stances first (as planned for tomorrow) then this arc as a layer, or this first.
+
+## Added 2026-11-10: a first message that is only picked words
+A real test transcript showed a first message made entirely of panel sentences ("I might be feeling apprehensive. I might need affection..."), and the coach repeated the words back and asked whether those were the words used. That is irritating. Now (on every instruction version, not only with the arc): `isWordsOnly` (in `src/lib/practiceArc.ts`) spots such a message, and the coach is told (`WORDS_ONLY_NOTE`) to thank them, say the words give something to work with, and offer in one invitation three ways on: tell a little of what is going on; think about what would be a helpful way to spend the time (a lead-in to the stances); or work out a request, for themselves or someone else. It may add the perspective-taking option (see `docs/coach-lenses-scope.md`) with a caution. It names no word itself. A check (`echoesWords`) flags a reply that repeats two or more of their words.
+Exchange 4's "guess what the other person might need" is now an option they can decline, said with a caution (only if it feels okay; not excusing; no one owed understanding), not a hard rule against asking.

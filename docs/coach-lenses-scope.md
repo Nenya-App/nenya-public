@@ -119,6 +119,13 @@ The practice arc (`docs/coach-practice-arc-scope.md`) is about the person findin
 4. Who reviews the sensitive two (enemy images, protective force) before approval.
 5. The wording of the credit to the source material in public text (yours to write).
 
+## Perspective-taking (added 2026-11-10, owner's request)
+An option, in the Learn stance (and offered as a way on from the practice arc), that deliberately asks what feelings and needs **another person in the situation** might have. The practice is empathy by guessing, held loosely ("might"), and always the person's own guess first; the coach offers a short menu only after "I don't know", as in the arc.
+- **Guardrails are a caution, not a gate (owner's decision).** It is never refused outright by the site. The coach says, in its own words, *use this with caution if... because...*: only if it feels okay to think about their side; it is not about excusing what happened; and a person who has been hurt, or is not safe, owes no one understanding. The anti-abuse scope (`docs/coach-ai-directed-abuse-scope.md`) still sets what is said when abuse is described, and the distress and stop paths still come first (they never get this).
+- Not offered as a task, never as "you should see their side". Declining is fine and costs nothing.
+- The first place it appears is exchange 4 of the practice arc (an option with the caution); the Learn stance can offer it earlier, and cards 05 (enemy images) and 08 (empathy and sympathy) lead into it.
+- Check: a reply that offers it must carry the caution and must not tell the person what the other person feels as fact.
+
 ## Order, when it is picked up
 1. Decide the names, the descriptions and whether the neutral labels show.
 2. Write the Nenya stance block exactly as the coach behaves now (so v-next of the instructions has a Nenya block), then Vilya, then Narya (last, with its safety design), each with examples; run the sets.
