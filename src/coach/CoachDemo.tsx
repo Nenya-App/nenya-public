@@ -84,7 +84,7 @@ interface Msg {
   /** Set when the site wrote this reply itself as a pre-written answer: the card shown beneath it. */
   card?: AnswerCardData;
   /** Set when the site offered a short educational card under this reply (only an invitation: the person decides). */
-  offer?: { id: string };
+  offer?: { id: string; proof: string };
 }
 
 const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content }));
@@ -265,7 +265,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         contextFlag?: SafetyFlag;
         blocked?: string;
         card?: AnswerCardData;
-        offer?: { id: string };
+        offer?: { id: string; proof: string };
       };
       // The server screens too. A blocked message is not part of the conversation.
       if (data.blocked === 'cap' || data.blocked === 'ip') {
@@ -732,7 +732,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     Keep a record, or report a problem
                   </summary>
                   <div className="pt-3">
-                    <TranscriptTools messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                    <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
                   </div>
                 </details>
               )}
@@ -862,7 +862,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               {stage === 'done' && !flag && venicePanel}
 
               {stage === 'done' && (
-                <TranscriptTools messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
               )}
             </>
           )}

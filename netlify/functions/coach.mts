@@ -205,6 +205,28 @@ function signingKey() {
   }
 }
 
+/** Proof that THIS server offered card `id` under the reply that ends `history`: a keyed hash over the conversation up to and including that reply. Nobody can claim an
+ *  offer that was not made, or move one to a different conversation, because the proof covers the exact messages. */
+const offerProof = (secret: string, history: Msg[], id: string): string =>
+  createHmac('sha256', secret).update(`offer|${sha256(JSON.stringify(history.map((m) => ({ role: m.role, content: m.content }))))}|${id}`).digest('hex');
+
+/** The offers in a receipt request that this server can prove it made, with the card's title now. */
+function provenOffers(secret: string, raw: unknown, done: Msg[]): { after: number; title: string }[] {
+  if (!Array.isArray(raw)) return [];
+  const out: { after: number; title: string }[] = [];
+  for (const o of raw.slice(0, 4) as { after?: unknown; id?: unknown; proof?: unknown }[]) {
+    if (!o || !Number.isInteger(o.after) || typeof o.id !== 'string' || typeof o.proof !== 'string') continue;
+    const after = o.after as number;
+    if (after < 1 || after >= done.length || done[after].role !== 'assistant') continue;
+    const title = allCards().find((c) => c.id === o.id)?.title;
+    if (!title) continue;
+    const want = Buffer.from(offerProof(secret, done.slice(0, after + 1), o.id));
+    const got = Buffer.from(o.proof);
+    if (want.length === got.length && timingSafeEqual(want, got) && !out.some((x) => x.after === after)) out.push({ after, title });
+  }
+  return out.sort((a, b) => a.after - b.after);
+}
+
 // What the receipt says about how the conversation was produced, signed along with it. None of it identifies a person.
 interface TranscriptMeta {
   closed: boolean; // the conversation reached its final exchange
@@ -220,13 +242,13 @@ interface TranscriptMeta {
 
 // The transcript exactly as it is hashed and signed (version 3). Documented in docs/coach-transcripts.md. The key order
 // matters, because the hash is of JSON.stringify of this object, and the page writes the object out unchanged.
-const buildTranscript = (messages: Msg[], session: Session, context: string, meta: TranscriptMeta) => ({
+const buildTranscript = (messages: Msg[], session: Session, context: string, meta: TranscriptMeta, offered: { after: number; title: string }[] = []) => ({
   v: 3,
   session,
   meta,
   ...(context ? { context } : {}),
   // What the site itself showed besides the messages (greeting, safety notice, closing), rebuilt here from the same public source the page uses.
-  site: siteMessagesFor(messages, MAX_TURNS, answeredIn(messages), context),
+  site: siteMessagesFor(messages, MAX_TURNS, answeredIn(messages), context, offered),
   // Process notes: why the site's check flagged each message it flagged (present only when it flagged any).
   ...(checkNotesFor(messages, context).length ? { checks: checkNotesFor(messages, context) } : {}),
   messages: messages.map((m) => ({ role: m.role, content: m.content })),
@@ -536,7 +558,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       model: process.env.COACH_MODEL || DEFAULT_MODEL,
       instructions: instructionsFingerprint(),
     };
-    const transcript = buildTranscript(done, session, context, meta);
+    const transcript = buildTranscript(done, session, context, meta, provenOffers(secret, (body as { offers?: unknown }).offers, done));
     const hash = sha256(JSON.stringify(transcript));
     const issuedAt = new Date().toISOString();
     const signature = edSign(null, Buffer.from(`nenya-coach-transcript-v3\n${hash}\n${issuedAt}`), k.key).toString('base64');
@@ -830,7 +852,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   if (turn >= MAX_TURNS) tally('coach.conversation.finished');
   // An offer of a short educational card, only an invitation, and only when the switch is on, a card exists (approved and built in), and nothing was flagged.
   // COACH_LEARNING_OFFERS=on turns it on; COACH_LEARNING_MIN_SEVERITY (default 2) is the lowest list severity that counts. Nothing about it is stored.
-  let offer: { id: string } | null = null;
+  let offer: { id: string; proof: string } | null = null;
   if (process.env.COACH_LEARNING_OFFERS === 'on' && allCards().length && !flag) {
     try {
       const known = new Set(allCards().map((c) => c.id));
@@ -839,7 +861,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       const matcher = await getMatcher(privateStore() as unknown as Parameters<typeof getMatcher>[0]);
       const minSev = Number(process.env.COACH_LEARNING_MIN_SEVERITY);
       const o = offerFor({ hits: matcher ? lexiconMatch(lastText, matcher) : [], text: lastText, shown, available: [...known], flagged: !!flag, abuseAtCoach: hostile === 'abuse', ...(Number.isInteger(minSev) && minSev >= 1 && minSev <= 3 ? { minSeverity: minSev } : {}) });
-      if (o) { offer = { id: o.id }; tally(`coach.offer.${o.because}`); }
+      if (o) { offer = { id: o.id, proof: offerProof(secret, [...messages, { role: 'assistant' as const, content: reply }], o.id) }; tally(`coach.offer.${o.because}`); }
     } catch { /* an offer is a courtesy: never let it break a reply */ }
   }
   const history = [...messages, { role: 'assistant' as const, content: reply }];

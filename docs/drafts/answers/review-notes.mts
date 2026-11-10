@@ -20,7 +20,7 @@ export const TUTORIAL_MAP: { lesson: string; title: string; uses: string[] }[] =
   { lesson: 'Welcome', title: 'What Nenya is, and where to start', uses: ['n-what', 'n-name', 'n-else', 'n-accessibility'] },
   { lesson: 'Trust', title: 'Who is behind this, and how it is paid for', uses: ['n-who', 'n-founder', 'n-free', 'n-opensource', 'c-scam'] },
   { lesson: 'Privacy 1 to 3', title: 'What stays on your device, what the coach sees, and how to stay in control', uses: ['n-privacy', 'n-privacy-coach', 'n-report-share', 'n-palette', 'n-device', 'c-memory', 'n-transcripts'] },
-  { lesson: 'Meeting the coach', title: 'What it is, what it is not, and who wrote what you read', uses: ['c-ai', 'c-friend', 'c-can', 'c-wrote', 'n-howworks'] },
+  { lesson: 'Meeting the coach', title: 'What it is, what it is not, and who wrote what you read', uses: ['c-ai', 'c-friend', 'c-can', 'c-wrote', 'n-howworks', 'c-cards'] },
   { lesson: 'Five exchanges', title: 'Making the conversation count', uses: ['n-limits', 'c-can', 'n-nvc'] },
   { lesson: 'NVC, one step at a time', title: 'Observation, feeling, need, request; and where to learn more', uses: ['n-nvc', 'n-affiliation', 'c-methods'] },
   { lesson: 'When you are angry', title: 'What happens when you bring anger here', uses: ['c-angry', 'c-feelings', 'c-stopped'] },

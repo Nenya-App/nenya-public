@@ -20,7 +20,7 @@ export const INVITATION_TEXT =
   'If you would like the people who made Nenya to read what you thought, you can send this conversation to us with a note, using the buttons below. It is up to you, and nothing is sent unless you choose.';
 
 export interface SiteMessage {
-  kind: 'greeting' | 'closing' | 'notice' | 'invitation' | 'answer' | 'replacement';
+  kind: 'greeting' | 'closing' | 'notice' | 'invitation' | 'answer' | 'replacement' | 'offer';
   /** The index of the message this one follows; -1 means before the first message. */
   after: number;
   text: string;
@@ -33,7 +33,7 @@ export interface SiteMessage {
  * flagged (the page keeps the most recent flag on screen), the notice with its resources comes after the last message; otherwise, when all
  * the exchanges are done, the closing message does.
  */
-export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content: string }[], maxTurns: number, answered: { index: number; title: string; partial?: boolean }[] = [], context = ''): SiteMessage[] {
+export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content: string }[], maxTurns: number, answered: { index: number; title: string; partial?: boolean }[] = [], context = '', offered: { after: number; title: string }[] = []): SiteMessage[] {
   // When the person shared part of a report, the site opens with a message built from what was shared (reportShare.ts) in place of the greeting.
   const shared = context ? parseReportHeader(context) : null;
   const out: SiteMessage[] = [{ kind: 'greeting', after: -1, text: shared ? openingText(shared) : greetingText(maxTurns) }];
@@ -46,6 +46,8 @@ export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content:
     if (m.content === INFRA_FALLBACK) out.push({ kind: 'replacement', after: i, text: 'The reply above was written by the site, not by the AI. It replaced a reply that claimed something about how Nenya runs or what happens to your data, after the AI was asked once to answer again.' });
     else if (m.content === PERSONA_FALLBACK) out.push({ kind: 'replacement', after: i, text: 'The reply above was written by the site, not by the AI. It replaced a reply that spoke as if the AI had a human life of its own or were not an AI, after the AI was asked once to answer again.' });
   });
+  // A short educational card the site offered under a reply (only an invitation) is marked right after that reply. The server only records offers it can prove it made.
+  for (const o of offered) out.push({ kind: 'offer', after: o.after, text: `The site offered a short read under the reply above: \u201c${o.title}\u201d. It was written by Nenya, not by the AI, and was only an invitation.` });
   const users = messages.filter((m) => m.role === 'user').map((m) => m.content);
   let flag = null as ReturnType<typeof checkConversation>;
   for (let j = 1; j <= users.length; j++) {

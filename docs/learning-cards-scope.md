@@ -15,8 +15,8 @@ When someone's words dehumanize people, use a slur, or are abuse aimed at the AI
 1. A person opens and checks **every source address** in each card, and an expert reads each series; a counselor reads for harm; real readers check the reading level.
 2. The owner sets `status: approved` on the cards to ship, one by one, and runs the build script.
 3. A person **recalibrates the list's severities** (most slurs are marked 1 now) and the counselor and the advocate review it; the list is uploaded to the store (staging first).
-4. **Terms (Section 21) and the answers**: add the invitation and the cards to the list of words written by the site, and say that the matching is phrase matching that can be wrong in both directions. Archive the old text and set the date.
-5. **Signed transcripts**: record the offer as a site-written message, so a signed copy shows that the site offered a card and why. Not built yet; it must be before this goes to production.
+4. **Terms (Section 21) and the answers**: wording drafted in `docs/drafts/terms-learning-cards-draft.md`, and the pre-written answer `c-cards` is written and held as pending. Apply the wording, archive the old text, set the date, then switch the answer to the Terms and to ready.
+5. **Signed transcripts**: BUILT 2026-11-10. An offer carries a proof (a keyed hash over the conversation up to that reply); the page sends it back with the receipt request, and the server records an `offer` site message only for offers it can prove. Forged or moved offers are ignored.
 6. Set `COACH_LEARNING_OFFERS=on` on staging, run the scripts, read what the offers look like, then production.
 
 ## Honest limits

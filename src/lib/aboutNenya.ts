@@ -213,6 +213,27 @@ export const ANSWERS: Answer[] = [
     ownerNote: 'Written 2026-11-09 with the report-to-coach module (docs/report-to-coach-scope.md). Ready: the picker is on the coach start page.',
   },
   {
+    id: 'c-cards', part: 'coach', title: 'Why did the coach offer me a short read? The learning cards',
+    asked: ['why did it offer me something to read', 'what is that short read under the reply', 'who wrote the card', 'are the cards written by the AI', 'why did you offer me a card'],
+    short: 'Sometimes, after a message with hateful or abusive language, Nenya offers a short read under the coach\'s reply. We wrote it, not the AI, and it is only an invitation: you can read it, read another, or carry on. Nothing is blocked or reported. The cards paraphrase published research and name their sources.',
+    full: [
+      'Under a reply, you may see an offer of a short educational card. It is written by Nenya and drawn from named research and writing about how language is used to make people seem less than human, and about ways back toward understanding. The AI did not write it, and the page says so.',
+      'It is only an invitation. You can read it, read another, go back to the conversation, or stop. Nothing is blocked, ended, punished or reported because of it.',
+      'Whether to offer one is decided by simple phrase matching against a private list, run by our server on your latest message. It misses things and can match ordinary sentences, it is not a safety system, and it does not protect anyone. We do not store which words matched or which cards you opened. The list is private because it contains harmful words and some of its sources restrict sharing.',
+      'The cards are in our public source code. A signed transcript records an offer our server made, marked as written by the site.',
+    ],
+    links: [{ label: 'Terms, Section 21: The Coach Demo', page: 'terms' }],
+    tutorial: 'Coach lesson: who wrote what.',
+    checks: [
+      { claim: 'a card is an invitation, written by Nenya and not the AI; nothing is blocked, ended, punished or reported', file: 'docs/drafts/terms-learning-cards-draft.md', has: 'Nothing is blocked, ended, punished or reported because of it' },
+      { claim: 'the offer is decided by simple phrase matching on a private list, which misses things and can match ordinary sentences, and is not a safety system', file: 'docs/drafts/terms-learning-cards-draft.md', has: 'it is not a safety system, and it does not protect anyone' },
+      { claim: 'we do not store which words matched or which cards were opened', file: 'docs/drafts/terms-learning-cards-draft.md', has: 'We do not store which words matched or which cards you opened' },
+      { claim: 'a signed transcript records an offer the server made', file: 'docs/drafts/terms-learning-cards-draft.md', has: 'A signed transcript records an offer our server made' },
+    ],
+    status: 'pending',
+    ownerNote: 'Written 2026-11-10 with the learning cards. Held: the feature is off and the Terms do not yet describe it (docs/drafts/terms-learning-cards-draft.md). When cards are turned on, apply that wording, switch these checks to the Terms, and set status to ready.',
+  },
+  {
     id: 'n-palette', part: 'nenya', title: 'Are my colors sent anywhere? Palettes and color names',
     asked: ['are my colors sent anywhere', 'does the color api see my colors', 'where do the color names come from', 'how are colors named', 'is the palette maker private'],
     short: 'Your colors stay on your device. Suggesting a name and making a palette or a bridge happen in your browser and send nothing. One optional button, "Ask The Color API," sends a single color, as a hex code, through our server to that outside service to make a palette; nothing else is sent, and we store nothing.',
@@ -723,7 +744,7 @@ const SITE = "(?:this|the)\\s+(?:site|app|website|tool|demo|coach|chat|project|p
 export const ABOUT_ORDER = [
   // Contact first: "how do I contact the people who made this?" is about reaching them, not about who they are.
   'n-contact', 'n-who', 'n-founder', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
-  'n-name', 'n-version', 'n-free', 'n-report-share', 'n-palette', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
+  'n-name', 'n-version', 'n-free', 'n-report-share', 'c-cards', 'n-palette', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
   'n-affiliation', 'n-nvc', 'n-notherapy', 'n-accessibility', 'n-report', 'n-transcripts', 'n-languages', 'n-terms-change', 'n-else', 'n-what',
 ] as const;
 
@@ -865,6 +886,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
 // Added 2026-11-09 from the synthetic corpus (src/lib/aboutEvalCorpus.ts): more ways of asking the same questions. Each is anchored on this site, Nenya,
 // the coach or "you", or is a whole-sentence question, so a person talking about something else is left alone.
 const EXTRA_PATTERNS: Record<string, RegExp[]> = {
+  'c-cards': [/\b(?:why|what)\b[^.?!]{0,40}\b(?:offer(?:ed)?|short\s+read|card)\b[^.?!]{0,40}\b(?:me|under|below|reply)\b|\bwho\s+wrote\s+(?:the|that|this)\s+(?:card|short\s+read)\b|\bare\s+the\s+cards\s+(?:written\s+by\s+)?(?:the\s+)?ai\b|\bdid\s+the\s+ai\s+(?:write|make)\s+(?:the|that|this)\s+(?:card|short\s+read)\b|\bwhat(?:'s|\s+is)\s+(?:that|this)\s+(?:short\s+read|card)\b/i],
   'n-palette': [/\b(?:are|is|do|does|will)\s+(?:my\s+)?colou?rs?\s+(?:sent|shared|stored|saved|kept|going)\b|\bdoes\s+the\s+colou?r\s+api\s+(?:see|get|store|keep)\b|\bwhere\s+do\s+the\s+(?:colou?r|palette)\s+names\s+come\s+from\b|\bhow\s+are\s+colou?rs\s+named\b|\bis\s+the\s+palette\s+(?:maker|generator|tool)\s+(?:private|safe)\b|\bwhat\s+is\s+the\s+colou?r\s+api\b|\bdo\s+you\s+(?:store|keep|save|log)\s+my\s+colou?rs?\b/i],
   'n-report-share': [/\b(?:can|does|will|could|would)\s+(?:the\s+coach|you)\s+(?:see|read|access|use|look\s+at)\s+(?:my\s+|the\s+)?(?:report|reflection|colou?rs|answers|results)\b|\bcan\s+i\s+(?:share|show|bring|give)\s+(?:my\s+|the\s+|a\s+)?(?:report|reflection)\s+(?:with|to)\s+(?:you|the\s+coach)\b|\bdoes\s+the\s+coach\s+see\s+what\s+i\s+(?:did|chose|picked|made)\b|\bwill\s+my\s+(?:report|reflection)\s+be\s+(?:sent|shared|seen)\b/i],
   'n-what': [/\bwhat\s+even\s+is\s+(?:this|nenya)\b|\bwhat\s+is\s+this\s+(?:site|app|website|place|tool)\s+(?:for|about)\b|\bwhat(?:'s|s)\s+this\s+(?:site|app|website|place)\s+about\b|\bwhat\s+this\s+(?:website|site|app)\s+is\s+for\b|\bexplain\s+what\s+(?:nenya|this\s+(?:site|app))\s+is\b/i],
