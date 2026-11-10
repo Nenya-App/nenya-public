@@ -18,6 +18,7 @@ Format: what, who should test it, what to ask, status.
 | 10 | Reduced motion / high contrast / zoom to 200–400% on every page | Low-vision users | Anything lost or overlapped? | not done |
 | 11 | Plain-language read of the safety notices and Terms | People with cognitive or reading disabilities | Is it understandable at a first reading? | not done |
 | 12 | Switch / voice control | Motor-impairment users | Can the whole flow be done? | not done |
+| 13 | Word lists in the gateways (45+ words per list, "More words" under the Essence wheels, "i" buttons) | Screen-reader users; people with cognitive or reading disabilities; people with ADHD | Are long lists tiring? Are group labels announced? Is a word easy to find? (The Essence wheels are SVG wedges that respond to a click only: they need keyboard and screen-reader work, or the More words list may need to become the main way in.) | not done |
 
 Notes
 - Paid testers are preferable (testing by disabled people should be work that is paid). Budget line to be added to the funding plan.
