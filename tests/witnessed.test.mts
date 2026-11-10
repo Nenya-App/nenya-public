@@ -99,3 +99,9 @@ ok('the panel calls only the owner-only review function, and is part of the owne
 ok('approving is impossible until the owner says they read every message, and each message can be edited or left out', /disabled=\{busy \|\| !read\[p\.hash\]/.test(panel) && /Leave this message out/.test(panel) && /I read every message/.test(panel));
 ok('the panel says which messages the site wrote and shows softer safety flags', /The site \(not the AI\)/.test(panel) && /softFlags/.test(panel));
 ok('the panel stores nothing in the browser', !/localStorage|sessionStorage|document\.cookie/.test(panel));
+
+// ── the public page
+const pageSrc = readFileSync(new URL('../src/app/components/about/WitnessedConversations.tsx', import.meta.url), 'utf8');
+ok('the public page reads only the public listing, uncached, and stores nothing', (pageSrc.match(/fetch\(/g) ?? []).length === 1 && /fetch\('\/api\/witnessed', \{ cache: 'no-store' \}\)/.test(pageSrc) && !/localStorage|sessionStorage|document\.cookie/.test(pageSrc));
+ok('the page says plainly what it is not: no anonymity promise, no signature check for strangers, the AI is an AI, 988', /Software cannot\s+promise anonymity, and we do not/.test(pageSrc) && /cannot check the signature/.test(pageSrc) && /not therapy/.test(pageSrc) && /988/.test(pageSrc));
+ok('the page marks the writer of every message and says how to take one down', /Written by the site, not the AI/.test(pageSrc) && /my-transcript/.test(pageSrc) && /info@nenya\.biz/.test(pageSrc));

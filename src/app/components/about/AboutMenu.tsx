@@ -97,6 +97,12 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       icon: MessageCircle,
     },
     {
+      id: 'witnessed',
+      title: 'Witnessed Conversations',
+      description: 'Conversations with the coach that people chose to share, without their names',
+      icon: Eye,
+    },
+    {
       id: 'partner-practice',
       title: 'Partner Practice (Planned)',
       description: 'Dyadic Cells: two-person practice we hope to build, with a scripted preview',
