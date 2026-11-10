@@ -46,7 +46,7 @@ const FOOTPRINT_ROWS: ({ feature: string } & Record<FootprintId, string>)[] = [
   {
     feature: 'Data footprint',
     typical: 'Persistent cloud data retention for harvesting. Passive energy debt and privacy risk.',
-    today: 'What you enter stays on your device and is gone when you close the tab, unless you choose to remember your settings. Nenya stores no messages and logs none. Its web host keeps standard connection logs and gives us anonymous visit totals. Coach messages pass through to Venice AI, whose own policies apply.',
+    today: 'What you enter stays on your device and is gone when you close the tab, unless you choose to remember your settings. Nenya stores no messages and logs none. Its web host keeps standard connection logs and gives us anonymous visit totals. Coach messages pass through to Venice AI, whose own policies apply, and so do any parts of a report you choose to bring to the coach (nothing is shared automatically).',
     goal: 'Data stays on your device or is ephemeral by design, and minimal data ever leaves it.',
   },
 ];

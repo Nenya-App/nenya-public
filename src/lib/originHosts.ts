@@ -25,6 +25,18 @@ function toPattern(entry: string): RegExp | null {
   return new RegExp(`^${source}$`);
 }
 
+/**
+ * Why a host was refused, for the OWNER only (never shown to a visitor): whether COACH_EXTRA_HOSTS reached this deploy at all and how many
+ * entries in it were usable. Hostnames are not secret; nothing else from the settings is revealed.
+ */
+export function originHint(host: string, extraHosts?: string): string {
+  const seen = host ? `the request came from "${host}"` : 'the request carried no usable Origin header';
+  if (!extraHosts || !extraHosts.trim()) return `${seen}; COACH_EXTRA_HOSTS is empty or not set for this deploy`;
+  const entries = extraHosts.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean).slice(0, MAX_ENTRIES);
+  const usable = entries.filter((e) => toPattern(e) !== null).length;
+  return `${seen}; COACH_EXTRA_HOSTS is set with ${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}, ${usable} usable (an entry is a bare hostname: no https://, port or path), and none matches`;
+}
+
 export function hostAllowed(host: string, extraHosts?: string): boolean {
   const h = host.toLowerCase();
   if (BASE_HOSTS.has(h)) return true;

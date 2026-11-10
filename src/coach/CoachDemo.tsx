@@ -1,19 +1,27 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Play, Send } from 'lucide-react';
 import NenyaLogo from '../app/components/NenyaLogo';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { getGradientMidpoint, getReadableTextColor } from '../app/components/ColorUtils';
-import { detectFlag, type SafetyFlag } from '../lib/safetyFlags';
+import { checkConversation, type SafetyFlag } from '../lib/safetyFlags';
 import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/veniceLinks';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
 import { OWNER_KEY, OWNER_TOKEN_KEY, REST_KEY } from '../lib/deviceMemory';
+import { overridesForRequest } from '../lib/ownerPanel';
+import { readPauseEnds } from '../lib/pause';
+import PauseScreen from './PauseScreen';
 import { AppFooter } from '../app/components/AppFooter';
 import { SupportThisWork } from '../app/components/SupportThisWork';
 import { ShareNenya } from '../app/components/ShareNenya';
 import { FlagNotice } from './FlagNotice';
+import { ReportShare, type ReportInput } from './ReportShare';
+import { openingText } from '../lib/reportShare';
+import type { SharedText } from '../lib/reportFragments';
+import { AnswerCard, type AnswerCardData } from './AnswerCard';
+import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
 import { FailureNotice } from './FailureNotice';
 import { resetScroll } from '../app/components/ScrollToTop';
@@ -72,17 +80,18 @@ interface Msg {
   content: string;
   /** Page-only note, never sent anywhere. */
   note?: string;
+  /** Set when the site wrote this reply itself as a pre-written answer: the card shown beneath it. */
+  card?: AnswerCardData;
 }
 
 const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content }));
 
 type Stage = 'consent' | 'chat' | 'done';
 
-// Written by the page, not the model: no API call, not part of the signed record, not counted
-// among the exchanges. They carry the turn mechanics so the model does not spend replies on them.
-const GREETING = `Hello. We have ${MAX_TURNS} exchanges together, so let's use them well. Tell me what happened, what you are feeling, and what you need, as much or as little as feels right.`;
-const CLOSING =
-  'That is our five. Thank you for letting me listen. Whatever came up deserves more time than this, so if it is still with you, a person you trust, a journal, or a professional can carry it further. For now, one slow breath, in and out, with the breathing tool below.';
+// Written by the page, not the model: no API call, not counted among the exchanges. They carry the turn mechanics so the model does not spend replies
+// on them. A signed transcript includes the ones that were shown (src/lib/siteMessages.ts, which the server also uses).
+const GREETING = greetingText(MAX_TURNS);
+const CLOSING = CLOSING_TEXT;
 
 
 interface CoachDemoProps {
@@ -96,11 +105,13 @@ interface CoachDemoProps {
   onBreathe?: () => void;
   /** Optional link to the partner-practice demo. */
   onPartnerPractice?: () => void;
+  /** The reflection report in memory, if the visitor has made one in this visit. It is only ever offered, never read or sent unless they choose. */
+  report?: ReportInput;
 }
 
 // The conversation lives in this component's memory and closing the tab ends it. The only thing
 // written to browser storage is the finish time described above.
-export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, onPartnerPractice }: CoachDemoProps) {
+export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, onPartnerPractice, report }: CoachDemoProps) {
   const color1 = norm(colors.color1, '#7A9B9E');
   const color2 = norm(colors.color2, '#DAC682');
   const session = { color1, color2 };
@@ -109,7 +120,12 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const onGradient = getReadableTextColor(getGradientMidpoint(color1, color2));
 
   const [stage, setStage] = useState<Stage>('consent');
+  // Parts of a report the visitor chose to bring (null: none). Sent with every request once chosen, because the conversation's ticket is bound to it.
+  const [shared, setShared] = useState<SharedText | null>(null);
+  const [contextFlag, setContextFlag] = useState<SafetyFlag | null>(null);
+  const [sharedDropped, setSharedDropped] = useState(false);
   const [restEnds] = useState(readRestEnds);
+  const [pauseEnds, setPauseEnds] = useState(() => readPauseEnds());
   const hoursLeft = Math.max(1, Math.ceil((restEnds - Date.now()) / HOUR_MS));
   const [messages, setMessages] = useState<Msg[]>([]);
   const [ticket, setTicket] = useState<string | undefined>();
@@ -207,7 +223,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     const next: Msg[] = [...messages, { role: 'user', content: scrubbed.text, note }];
 
     // A clear crisis statement never leaves this device: no request is made.
-    const local = detectFlag(text);
+    // Checked against what the person has written so far, so the self-injury ladder (recurs, escalates) can see the conversation.
+    const local = checkConversation(next.filter((m) => m.role === 'user').map((m) => m.content));
     if (local?.tier === 'stop') {
       setMessages(next);
       setFlag(local);
@@ -224,7 +241,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...ownerHeader() },
-        body: JSON.stringify({ messages: toWire(next), session, ticket }),
+        body: JSON.stringify({ messages: toWire(next), session, ticket, ...(shared ? { context: shared.text } : {}), ...overridesForRequest() }),
       });
       if (!res.ok) {
         // Say what went wrong instead of a bare "failed". The server's answer carries a code, a reason and a reference.
@@ -242,18 +259,27 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         ticket?: string;
         done?: boolean;
         flag?: SafetyFlag;
+        contextFlag?: SafetyFlag;
         blocked?: string;
+        card?: AnswerCardData;
       };
       // The server screens too. A blocked message is not part of the conversation.
       if (data.blocked === 'cap' || data.blocked === 'ip') {
         setCapped(data.blocked);
         return;
       }
+      if (data.blocked === 'context') {
+        // What was shared reads like instructions to the coach: it is left out, and the visitor continues without it.
+        setShared(null);
+        setSharedDropped(true);
+        return;
+      }
       if (data.blocked) {
         setBlocked(true);
         return;
       }
-      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply }] : next);
+      if (data.contextFlag) setContextFlag(data.contextFlag);
+      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}) }] : next);
       setTicket(data.ticket);
       touch();
       setDraft('');
@@ -424,7 +450,9 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
       <main className="scroll-container flex-1 overflow-y-auto px-4 py-6 md:px-6">
         <div className="mx-auto w-full max-w-xl space-y-5">
-          {stage === 'consent' && restEnds > 0 && (
+          {stage === 'consent' && pauseEnds > 0 && <PauseScreen ends={pauseEnds} onReturn={() => setPauseEnds(0)} breatheButton={breatheButton} />}
+
+          {stage === 'consent' && pauseEnds === 0 && restEnds > 0 && (
             <section className="space-y-5" aria-labelledby="coach-title">
               <h1 id="coach-title" ref={headingRef} tabIndex={-1} className="text-2xl outline-none md:text-3xl">
                 The coach is resting for now
@@ -451,7 +479,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
             </section>
           )}
 
-          {stage === 'consent' && restEnds === 0 && (
+          {stage === 'consent' && pauseEnds === 0 && restEnds === 0 && (
             <section className="space-y-5" aria-labelledby="coach-title">
               <h1 id="coach-title" ref={headingRef} tabIndex={-1} className="text-2xl outline-none md:text-3xl">
                 A short conversation with the Nenya coach
@@ -564,7 +592,18 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   immediate danger, call your local emergency number.
                 </li>
                 <li>The full Terms of Use and Privacy Policy are in the About menu on nenya.biz.</li>
+                <li>The coach has been tested in English only. If you read and write another language and would like to help, write to info@nenya.biz.</li>
               </ul>
+              <ReportShare
+                report={report}
+                shared={shared}
+                onChange={(next) => {
+                  setShared(next);
+                  setSharedDropped(false);
+                  // The same crisis check as for a message: a flag is shown now, before anything is sent. It never ends the conversation.
+                  setContextFlag(next ? checkConversation([next.text]) : null);
+                }}
+              />
               <QuietTimeoutPicker id="coach-quiet-start" value={timeoutChoice} onChange={setTimeoutChoice} />
               <div className="flex flex-wrap items-center gap-3">
                 <Button size="lg" onClick={() => setStage('chat')} className="gap-2" style={gradientButton}>
@@ -604,10 +643,10 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               )}
 
               <div className="space-y-4" role="log" aria-live="polite" aria-label="Conversation">
-                {pageBubble(GREETING)}
+                {pageBubble(shared ? openingText(shared.meta) : GREETING)}
                 {messages.map((m, i) => (
+                  <Fragment key={i}>
                   <div
-                    key={i}
                     className={`coach-msg flex items-end gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {m.role === 'assistant' && (
@@ -634,6 +673,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       {m.note && <span className="mt-2 block text-xs italic text-muted-foreground">{m.note}</span>}
                     </div>
                   </div>
+                  {m.card && <AnswerCard card={m.card} />}
+                  </Fragment>
                 ))}
                 {sending && (
                   <div className="coach-msg flex items-end gap-2" role="status">
@@ -660,10 +701,17 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </p>
                 )}
                 {stage === 'done' && !flag && pageBubble(CLOSING)}
+                {stage === 'done' && !flag && siteMessagesFor(toWire(messages), MAX_TURNS).filter((x) => x.kind === 'invitation').map((x) => <Fragment key="invitation">{pageBubble(x.text)}</Fragment>)}
                 <div ref={endRef} />
               </div>
 
               {flag && <FlagNotice flag={flag} flaggedMessage={flaggedText} />}
+              {contextFlag && !flag && <FlagNotice flag={contextFlag} flaggedMessage="" source="report" />}
+              {sharedDropped && !shared && (
+                <p role="status" className="rounded-xl border border-border bg-card/50 p-3 text-xs text-muted-foreground">
+                  Part of what you shared reads like instructions to the coach, so it was left out. You can send your message again without it.
+                </p>
+              )}
 
               {stage === 'chat' && !timedOut && !capped && (
                 <QuietNotice state={quiet} choice={timeoutChoice} onKeepOpen={touch} onSave={() => setCopyOpen(true)} />
@@ -679,7 +727,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     Keep a record, or report a problem
                   </summary>
                   <div className="pt-3">
-                    <TranscriptTools messages={toWire(messages)} session={session} ticket={ticket} />
+                    <TranscriptTools messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
                   </div>
                 </details>
               )}
@@ -759,6 +807,15 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     className="min-h-24 resize-none"
                     style={{ borderColor: `${color1}55` }}
                   />
+                  {(() => {
+                    // A gentle nudge while typing: names and contact details are replaced before anything is sent, and the coach does not use names.
+                    const found = draft.length > 2 ? scrubPII(draft) : null;
+                    return found && found.total > 0 ? (
+                      <p className="text-xs text-muted-foreground" role="status">
+                        This looks like it has {describeScrub(found.counts)} in it. The coach does not use names or contact details, so {found.total === 1 ? 'it' : 'they'} will be replaced with {found.total === 1 ? 'a placeholder' : 'placeholders'} when you send. You can say who it was by how they relate to you instead (&ldquo;my sister&rdquo;, &ldquo;my manager&rdquo;). Names are not always caught, so please keep them out if you can.
+                      </p>
+                    ) : null;
+                  })()}
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-xs text-muted-foreground">
                       {draft.length} / {MAX_CHARS}
@@ -800,7 +857,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               {stage === 'done' && !flag && venicePanel}
 
               {stage === 'done' && (
-                <TranscriptTools messages={toWire(messages)} session={session} ticket={stopped ? undefined : ticket} />
+                <TranscriptTools messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
               )}
             </>
           )}

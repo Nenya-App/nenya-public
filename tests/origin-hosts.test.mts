@@ -1,4 +1,4 @@
-import { hostAllowed, storeNameFrom } from '../src/lib/originHosts.ts';
+import { hostAllowed, originHint, storeNameFrom } from '../src/lib/originHosts.ts';
 import { ok } from './helpers.mts';
 
 ok('production hosts are always allowed', hostAllowed('nenya.biz') && hostAllowed('www.nenya.biz') && hostAllowed('localhost') && hostAllowed('127.0.0.1'));
@@ -24,3 +24,5 @@ ok('empty or missing extra hosts add nothing', !hostAllowed('x.example.com', '')
 ok('store name defaults to coach-private', storeNameFrom(undefined) === 'coach-private' && storeNameFrom('') === 'coach-private');
 ok('a valid preview store name is used', storeNameFrom('coach-private-preview') === 'coach-private-preview');
 ok('an unsafe store name falls back', storeNameFrom('../prod') === 'coach-private' && storeNameFrom('A B') === 'coach-private' && storeNameFrom('x'.repeat(65)) === 'coach-private');
+
+ok('the owner\'s hint says whether the setting arrived, and how many entries were usable', /not set/.test(originHint('dev--x.netlify.app', undefined)) && /not set/.test(originHint('dev--x.netlify.app', '  ')) && /1 entry, 0 usable/.test(originHint('dev--x.netlify.app', 'https://dev--x.netlify.app')) && /2 entries, 2 usable/.test(originHint('a.example.com', 'b.example.com, c.example.com')) && /no usable Origin/.test(originHint('', undefined)));

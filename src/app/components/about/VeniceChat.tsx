@@ -108,7 +108,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                       <strong>PII Scrubbing Not Active</strong>
                     </div>
                     <p>
-                      In the on-site coach demo, a basic scrubber replaces common identifiers (such as emails, phone numbers, and street addresses) before a message is sent, and it misses most names. A fuller version is planned. Neither runs when you chat on Venice's site.
+                      In the on-site coach demo, a basic scrubber replaces common identifiers (such as emails, phone numbers and street addresses) and many common names before a message is sent, and the coach is told never to use or repeat a name. It still misses names it does not know, and it is not a promise of anonymity. A fuller version is planned. None of this runs when you chat on Venice's site.
                     </p>
                   </div>
                   <div>
@@ -117,7 +117,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                       <strong>Safety checks are not integrated</strong>
                     </div>
                     <p>
-                      A fuller safety system, with human review and careful resets, is planned and not built. The on-site coach demo has only a basic phrase-matching crisis check, and nothing like it runs on Venice's site. If you're in distress, please use the emergency resources in the Safety section.
+                      A fuller safety system, with human review and careful resets, is planned and not built. The on-site coach demo has a phrase-matching crisis check, a few site-written safety sentences, and simple checks on its replies (for example, against inventing a human life or describing how Nenya runs); all of it is phrase matching and can be wrong. Nothing like it runs on Venice's site. If you're in distress, please use the emergency resources in the Safety section.
                     </p>
                   </div>
                 </div>

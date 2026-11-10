@@ -76,7 +76,7 @@ const normalize = (s: string): string => s.replace(/\r\n/g, '\n').trim();
 /** Whether the readable text above the block is exactly what the signed transcript produces. */
 export function readableMatches(readableAbove: string, file: SignedFile): boolean {
   const t = file.transcript;
-  return normalize(readableAbove) === normalize(readableTranscript(t.messages, t.session, file.receipt, t.context ?? '', t.meta));
+  return normalize(readableAbove) === normalize(readableTranscript(t.messages, t.session, file.receipt, t.context ?? '', t.meta, t.site ?? [], t.checks ?? []));
 }
 
 export async function verifySigned(

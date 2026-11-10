@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ThemeProvider } from './components/ThemeProvider';
 import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
+import { aboutSectionFromLocation, SITE_TITLE } from '../lib/aboutRoutes';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
@@ -10,6 +11,7 @@ import { WelcomeTutorial, type TutorialStepId } from './components/WelcomeTutori
 import { TourOffer } from './components/TourOffer';
 import { LoadingVeil } from './components/LoadingVeil';
 import { EmergencyExitDock } from './components/EmergencyExit';
+import { BreathTonesPlayer, BreathTonesSwitch, TonesAnnouncer } from './components/BreathTonesSwitch';
 import { preloadLogoAssets } from '../lib/preload';
 import { enableUsageCounts, countEvents, countEvent, countPageView } from '../lib/usageCounts';
 import { PRESETS, sameTechnique } from '../lib/breathingPresets';
@@ -54,6 +56,8 @@ export interface UserColors {
   color1Intensity?: number;
   color2Intensity?: number;
   gradientDirection?: string;
+  /** Up to two palettes the person made in the Sight gateway and chose to keep (their own colours; see src/lib/colorSchemes.ts). */
+  generatedPalettes?: import('../lib/colorSchemes').GeneratedPalette[] | null;
 }
 
 export interface GatewayData {
@@ -64,16 +68,17 @@ export interface GatewayData {
 type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about';
 
 export default function App() {
-  // The coach page's header links back here with ?about or ?about=<section>.
+  // An address under /about (or the older /?about=<section>) opens that About page.
   const [initialAbout] = useState<string | null>(() => {
     try {
-      const p = new URLSearchParams(window.location.search);
-      return p.has('about') ? p.get('about') || '' : null;
+      return aboutSectionFromLocation(window.location.pathname, window.location.search);
     } catch {
       return null;
     }
   });
   const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : 'welcome');
+  // Arrived on a page other than the welcome page (a link to an About page): the first-visit panel then skips the breathing-rhythm choice.
+  const [arrivedElsewhere] = useState(initialAbout !== null);
   // Real navigation history instead of a single "previousScreen" value.
   // A single value can only ever answer "what screen came immediately
   // before this one" -- it breaks the moment a screen is reachable more
@@ -83,6 +88,23 @@ export default function App() {
   const [, setScreenHistory] = useState<ScreenType[]>([]);
   const [aboutSection, setAboutSection] = useState<string | undefined>(initialAbout || undefined);
   // Agreement is asked every visit unless the visitor chose "Remember on this device" and the terms are unchanged.
+  // The browser's back button from an About address to a non-About one leaves the About pages.
+  useEffect(() => {
+    const onPop = () => {
+      if (currentScreen === 'about' && aboutSectionFromLocation(window.location.pathname, window.location.search) === null) {
+        setAboutSection(undefined);
+        setCurrentScreen('welcome');
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [currentScreen]);
+  // Leaving the About pages by the app's own buttons returns the address and the title to the site's own.
+  useEffect(() => {
+    if (currentScreen === 'about') return;
+    if (aboutSectionFromLocation(window.location.pathname, '') !== null) window.history.replaceState(null, '', '/');
+    document.title = SITE_TITLE;
+  }, [currentScreen]);
   const [termsAgreed, setTermsAgreed] = useState(() => termsAcceptedFor(LEGAL_EFFECTIVE_DATE));
   
   // Gateway system state
@@ -170,7 +192,7 @@ export default function App() {
   const handleOnboardingFinish = () => {
     enableUsageCounts();
     const rhythm = PRESETS.find((p) => sameTechnique(breathingTechnique, p));
-    const rhythmName = rhythm ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
+    const rhythmName = rhythm && !arrivedElsewhere ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
     countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : [])]);
     setBreathingCounterMinimized(true);
     setEntryUnlocked(true);
@@ -392,9 +414,13 @@ export default function App() {
         show={!veilGone || !termsAgreed || tourOffered || tutorialActive}
         onEmergencyExit={() => { isEmergencyExiting.current = true; }}
       />
+      <TonesAnnouncer />
       {!veilGone && <LoadingVeil ready={assetsReady} onDone={() => setVeilGone(true)} />}
-      {!termsAgreed && veilGone && (
+      {/* Mounted under the loading screen, solid, so nothing half-drawn shows when the loading screen fades. */}
+      {!termsAgreed && (
         <OnboardingFlow
+          veilGone={veilGone}
+          skipRhythm={arrivedElsewhere}
           technique={breathingTechnique}
           onTechniqueChange={setBreathingTechnique}
           onFinish={handleOnboardingFinish}
@@ -419,6 +445,13 @@ export default function App() {
         className="size-full bg-background relative overflow-hidden flex flex-col"
         {...(!termsAgreed || tourOffered ? ({ inert: '' } as Record<string, string>) : {})}
       >
+        {/* Breathing tones: first in the reading and tab order, hidden until it has keyboard focus. */}
+        <BreathTonesSwitch variant="skip" />
+        <BreathTonesPlayer
+          active={currentScreen === 'welcome' && entryUnlocked && breathingEnabled && showBreathingCounter}
+          timing={breathingTechnique}
+          cycleStart={breathingCycleStart}
+        />
         {/* Scroll to top on screen change */}
         <ScrollToTop trigger={currentScreen} />
         
@@ -602,6 +635,7 @@ export default function App() {
           {currentScreen === 'session' && (
             <CoachDemo
               colors={interfaceColors}
+              report={gatewayData.length > 0 ? { gatewayData: gatewayData.map((gd) => ({ gateway: gd.gateway, data: gd.data })), bodyMap: bodyMapData } : undefined}
               onBack={() => navigateBack('home')}
               onBreathe={() => handleGlobalNavigation('welcome')}
               onPartnerPractice={handleNavigateToCell}

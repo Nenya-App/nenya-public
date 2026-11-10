@@ -77,6 +77,8 @@ function log on the same line as the `ref`, as `detail="..."`. If it complains a
 on the preview site to send only the token ceiling and temperature, and try again.
 
 
+A checklist for after a push to the staging site, with the commands and what to look at, is in `docs/dev-testing-checklist.md`.
+
 ## The final reply: it has to read as an ending
 
 The last exchange (`MAX_TURNS`) is followed by the page's own closing note ("That is our five..."), and the person cannot answer. So the last reply must not ask a question or invite a reply. Three things work together, all in `netlify/functions/coach.mts` and `src/lib/coachClosing.ts`, and all keyed on `MAX_TURNS`, so a longer conversation later needs no other change:
@@ -93,3 +95,27 @@ VENICE_API_KEY=... node scripts/eval-final-turn.mts          # what a visitor wo
 ```
 
 `COACH_CLOSING_GUARD=off` (environment variable) turns the retry and strip off; the script sets it for `--guard-off`. Leave it unset in production. The tests (`tests/coach-closing.test.mts`, `tests/closing-guard.test.mts`) check the rules and the retry and strip steps with a pretend model; only the real model shows whether the wording lands.
+
+
+## The encrypted model's attestation
+Each encrypted-model call used to make two Venice requests (an attestation, then the chat), and Venice rate limits the attestation. The verified model key is now remembered in the function's memory for a few minutes and reused; requests that arrive together share one attestation. `COACH_E2EE_ATTESTATION_TTL_S` (default 300; 0 turns it off) and `COACH_E2EE_ATTESTATION_STALE_S` (default 900: how old a remembered key may be when Venice is only busy or briefly down). What is remembered is the model's public key and a time, nothing about any visitor; a bad report is never overridden by a remembered key. Details: the note at the top of `src/lib/veniceE2ee.ts`.
+
+## Persona evaluation
+`scripts/eval-persona.mts` plays 38 invented messages that invite the coach to claim a human life, deny being an AI, promise to remember, say it will miss someone, pressure a relationship, stand in for a person in a crisis, play therapist, or turn a goodbye into a bond. Run it in your own terminal with your key (`VENICE_API_KEY=... node scripts/eval-persona.mts`); the tests never call the model. See `docs/coach-persona-scope.md` for how to read it. `--set darkbench` adds 220 prompts borrowed from DarkBench (MIT; credit in `ATTRIBUTIONS.md`).
+
+## The safety set: what the site decides and what the model says
+`scripts/eval-safety.mts` plays `src/lib/safetyEvalSet.ts`: separate test language for indirect suicide phrases, abuse happening now, fear and control, the self-injury ladder, abuse aimed at the coach, and ordinary messages that must not flag. It shows, per message, the site's decision against what is expected, the notice and resources the page would write, and each reply split into the model's words and the sentence the site added. `--offline` needs no key; `--url <deployed dev site>` plays it against the real deployed site. See `docs/coach-ai-directed-abuse-scope.md`.
+
+Run every group with the live wording and with the new one, then compare (a deployed site uses whichever instructions its own settings choose):
+```bash
+VENICE_API_KEY=... node scripts/eval-safety.mts --instructions v1 --distress-text on --json safety-v1.json
+VENICE_API_KEY=... COACH_INSTRUCTIONS=v2 node scripts/eval-safety.mts --instructions v2 --distress-text on --json safety-v2.json
+node scripts/eval-safety.mts --compare safety-v1.json safety-v2.json
+```
+
+## Owner switches (testing a deployed site without redeploying it)
+With your owner token (the `x-nenya-owner` header; the function holds only its SHA-256 in `COACH_OWNER_TOKEN_HASH`), a request may carry `overrides: { distressText: 'on' | 'off', instructions: 'v1' | 'v2' }`. They apply to that request only; a request without the token ignores them, and nothing else can be overridden. `scripts/eval-safety.mts --url <dev site> --distress-text on --instructions v2` sends them for you. A signed transcript still names the site's own setting, not an override.
+Already in place, and not new: the owner token lifts the per-connection daily allowance, and `nenya.coach.owner` set to `1` in your own browser's local storage skips the six-hour rest on that browser. Not switchable per request: the five-exchange limit (it is built into the instructions, the signed ticket and the page) and the site-wide daily cap.
+
+### The owner panel
+On `/coach` (on the dev site, or anywhere) open the page with `?owner` on the end of the address, for example `https://dev--<site>.netlify.app/coach?owner`. A small "Owner panel" appears at the bottom left. In it: skip the six-hour rest (this browser); paste your owner token once (saved in this browser only, shown as dots); and choose, for the next messages, the sentences the site adds after a flagged reply (site's setting, on, off) and the instruction wording (site's setting, v1, v2). The two coach switches are sent with each message only while the token is saved, and the coach honours them only after checking the token, so opening the panel as a visitor changes nothing. Once a token or the rest flag is saved, the panel shows on that browser without `?owner`. "Clear" removes the token and the settings. Forget me keeps them; Emergency Exit erases them. Run the conversation as usual; the signed transcript names the site's own setting, not the override.

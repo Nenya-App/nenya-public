@@ -47,7 +47,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                 Emotional safety requires absolute trust. You cannot be vulnerable if you fear your reflections might be data-mined, sold, or leaked. The prevailing business model of "Surveillance Capitalism"—which seeks to create an <strong>all-seeing eye</strong> that monitors and controls every aspect of human behavior for maximum profit—is fundamentally incompatible with building authentic well-being. Our architecture is a direct countermeasure to this extractive practice.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Like the <strong>palantíri of Fëanor</strong> (seeing-stones built for total surveillance) and the <strong>One Ring of Sauron</strong> (forged for absolute control), modern surveillance technologies promise connection and convenience while delivering domination and corruption. Our name—<strong>Nenya</strong>—represents a different philosophy entirely.
+                Technology built to watch and to control often promises connection and convenience while taking something in return. Our name—<strong>Nenya</strong>—points the other way: a place to rest, built to protect and never to rule.
               </p>
               {onNavigateToNamePhilosophy && (
                 <Button 
@@ -97,7 +97,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-blue-900 dark:text-blue-100">You are your Colors, Not a Product</h3>
                     <p className="text-sm text-blue-800/80 dark:text-blue-200/80">
-                      Your Hex Code identity is your only required identifier. We do not build an advertising profile on you because we see you as a person, not a commodity.
+                      There are no accounts and no profiles here, and nothing you choose in the reflection tools is sent to us. We do not build an advertising profile on you because we see you as a person, not a commodity.
                     </p>
                   </div>
                 </div>
@@ -111,7 +111,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-emerald-900 dark:text-emerald-100">On-Device Processing (The Goal)</h3>
                     <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
-                      We are engineering toward a system where your conversations with Nenya are processed directly on your own device. In that ideal state, your most private reflections never even touch our servers, making data extraction impossible. We are not there yet: the core reflection tools run entirely in your browser, but the optional coach demo sends your messages through our server to Venice AI, an outside service, and has only basic privacy protections.
+                      We are engineering toward a system where your conversations with Nenya are processed directly on your own device. In that ideal state, your most private reflections never even touch our servers, making data extraction impossible. We are not there yet. The core reflection tools run entirely in your browser. The optional coach demo sends your messages through our server to Venice AI, an outside service. We do not store them. Our server encrypts them before they go on to Venice, so Venice relays only encrypted data, but our server reads them briefly in memory to check them first, so this is not encryption all the way from your device. A sensory report stays on your device unless you choose to bring parts of it to the coach: then you see exactly the words that would go, nothing is selected for you, and what you choose travels the same way as a message and through the same safety checks. You never have to share anything from a report to use the coach. In the Sight gateway, one optional button, “Ask The Color API,” sends a single color, as a hex code, through our server to that outside service to make a palette; making a palette on your device, suggesting a color name, and everything else there send nothing.
                     </p>
                   </div>
                 </div>
@@ -125,7 +125,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-purple-900 dark:text-purple-100">Temporary, Local Storage</h3>
                     <p className="text-sm text-purple-800/80 dark:text-purple-200/80">
-                      For the app to function smoothly, your current conversation might be stored temporarily in your device's active memory (RAM). When you end your session or close the app, this local data is cleared. Think of it like a whiteboard that is wiped clean after use.
+                      What you write, draw, or choose lives only in your device's active memory while the page is open, like a whiteboard wiped clean when you close it. A small amount can stay in your browser between visits: a timestamp after a coach conversation, and, only if you turn it on, your settings. The "Forget me" button erases both, and Emergency Exit erases everything before it leaves the page.
                     </p>
                   </div>
                 </div>
@@ -170,14 +170,14 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                     The Academic Mandate: Critical Thinking and AI Use
                   </h3>
                   <p className="text-sm leading-relaxed">
-                    Nenya is a Large Language Model (LLM) and a computational tool, not a human expert. While its outputs are grounded in academic research and synthesized data, the following ethical standards must be applied by all users:
+                    The optional coach demo is written by an AI language model that has been given instructions based on Nonviolent Communication. It is a computational tool, not a human expert, and it can be wrong. The reflection tools do not use AI. The following standards apply to anyone using the coach:
                   </p>
                   <ol className="space-y-3 text-sm list-decimal list-inside">
                     <li className="leading-relaxed">
-                      <strong>AI is Not Fact:</strong> Any information, insight, or reference presented by Nenya should be treated as synthetic analysis, not established fact. We encourage users to verify critical information independently with trusted sources.
+                      <strong>AI is Not Fact:</strong> Any information, insight, or reference presented by the coach should be treated as synthetic analysis, not established fact. We encourage users to verify critical information independently with trusted sources.
                     </li>
                     <li className="leading-relaxed">
-                      <strong>Verify Bias:</strong> LLMs are trained on vast and often flawed human data, reflecting systemic biases (e.g., political, cultural, historical). The onus is on the user to apply <strong>critical thinking</strong> and <strong>self-examination</strong> to identify and work with their own internal biases, which may be reflected back by the tool.
+                      <strong>Verify Bias:</strong> Language models are trained on vast and often flawed human data, reflecting systemic biases (e.g., political, cultural, historical). The onus is on the user to apply <strong>critical thinking</strong> and <strong>self-examination</strong> to identify and work with their own internal biases, which may be reflected back by the tool.
                     </li>
                     <li className="leading-relaxed">
                       <strong>No Clinical Authority:</strong> Nenya is for reflection and practice only. It does not provide medical, legal, or therapeutic advice.
@@ -362,7 +362,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
               <Shield className="size-5 text-teal-600 dark:text-teal-500" />
               <AlertDescription className="text-teal-900 dark:text-teal-200">
                 <p className="text-sm leading-relaxed">
-                  <strong>Our Commitment:</strong> These features are being developed with input from digital rights activists, survivors of abuse, and privacy researchers. We recognize that privacy isn't just about corporate surveillance—it's also about protection from interpersonal harm, state surveillance, and coercion. Your safety is our architecture.
+                  <strong>Our Commitment:</strong> We hope to shape these features with input from digital rights activists, survivors of abuse, and privacy researchers. We recognize that privacy isn't just about corporate surveillance—it's also about protection from interpersonal harm, state surveillance, and coercion. Your safety is our architecture.
                 </p>
               </AlertDescription>
             </Alert>

@@ -1,0 +1,32 @@
+// The owner panel's settings (src/lib/ownerPanel.ts): what it keeps in the owner's browser, when it shows, and what goes in a coach request.
+const store: Record<string, string> = {};
+(globalThis as any).localStorage = { get length() { return Object.keys(store).length; }, key: (i: number) => Object.keys(store)[i] ?? null, getItem: (k: string) => (k in store ? store[k] : null), setItem: (k: string, v: string) => { store[k] = String(v); }, removeItem: (k: string) => { delete store[k]; } };
+(globalThis as any).window = { addEventListener() {}, removeEventListener() {} };
+import { ok } from './helpers.mts';
+const op = await import('../src/lib/ownerPanel.ts');
+const dm = await import('../src/lib/deviceMemory.ts');
+
+ok('a visitor sees no panel, and the address ?owner opens it', !op.panelVisible('') && !op.panelVisible('?x=1') && !op.panelVisible('?ownership=1') && op.panelVisible('?owner') && op.panelVisible('?a=1&owner=1'));
+ok('with nothing set, the settings follow the site and skip nothing', JSON.stringify(op.readSettings()) === '{"skipRest":false,"distressText":"site","instructions":"site"}');
+ok('without the owner\'s token, no switch is ever sent', (op.writeSettings({ skipRest: false, distressText: 'on', instructions: 'v2' }), JSON.stringify(op.overridesForRequest()) === '{}'));
+op.saveToken('  secret-token  ');
+ok('the token is kept trimmed, and the panel then shows by itself', store[dm.OWNER_TOKEN_KEY] === 'secret-token' && op.panelVisible(''));
+ok('with the token, the switches that are set are sent, and only those', JSON.stringify(op.overridesForRequest()) === '{"overrides":{"distressText":"on","instructions":"v2"}}');
+op.writeSettings({ skipRest: true, distressText: 'site', instructions: 'v1' });
+ok('"site\'s setting" sends nothing for that switch, and skipping the rest sets the owner flag', JSON.stringify(op.overridesForRequest()) === '{"overrides":{"instructions":"v1"}}' && store[dm.OWNER_KEY] === '1');
+op.writeSettings({ skipRest: false, distressText: 'site', instructions: 'site' });
+ok('all back to the site\'s setting leaves nothing stored and nothing sent', !(dm.OVERRIDES_KEY in store) && !(dm.OWNER_KEY in store) && JSON.stringify(op.overridesForRequest()) === '{}');
+store[dm.OVERRIDES_KEY] = '{"distressText":"yes","instructions":"v3","maxTurns":99}';
+ok('stored junk is ignored', JSON.stringify(op.readSettings()) === '{"skipRest":false,"distressText":"site","instructions":"site"}' && JSON.stringify(op.overridesForRequest()) === '{}');
+store[dm.OVERRIDES_KEY] = '{not json';
+ok('corrupt storage is tolerated', op.readSettings().distressText === 'site');
+op.writeSettings({ skipRest: true, distressText: 'off', instructions: 'site' });
+dm.wipeDevice({ keepOwner: true });
+ok('Forget me keeps the owner\'s settings', !!store[dm.OWNER_TOKEN_KEY] && !!store[dm.OVERRIDES_KEY] && store[dm.OWNER_KEY] === '1');
+dm.wipeDevice({ keepOwner: false });
+ok('Emergency Exit erases them with everything else', !store[dm.OWNER_TOKEN_KEY] && !store[dm.OVERRIDES_KEY] && !store[dm.OWNER_KEY]);
+op.saveToken('t'); op.writeSettings({ skipRest: true, distressText: 'on', instructions: 'v2' });
+op.clearOwner();
+ok('"Clear" removes the token and all the settings', Object.keys(store).length === 0);
+op.saveToken('   ');
+ok('an empty token is not saved', !(dm.OWNER_TOKEN_KEY in store));

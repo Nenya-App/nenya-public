@@ -4,13 +4,27 @@ import { BreathingPopout } from '../app/components/BreathingPopout';
 import { EmergencyExitDock } from '../app/components/EmergencyExit';
 import SessionKeyPicker from './SessionKeyPicker';
 import CoachDemo from './CoachDemo';
-import { usePref } from '../lib/deviceMemory';
+import OwnerPanel from './OwnerPanel';
+import OnboardingFlow from '../app/components/OnboardingFlow';
+import { termsAcceptedFor, usePref } from '../lib/deviceMemory';
+import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
+import { enableUsageCounts } from '../lib/usageCounts';
+
+const STEADY = { ih: 5000, hi: 0, ex: 5000, ho: 0 };
+const noop = () => undefined;
 
 // The standalone /coach address: the same header as the rest of the site, then
 // the session key (two colors and the melody they make), then the conversation.
 // Header links that belong to the main app open it; "Support Us" jumps to the
 // support section on this page.
 export default function CoachPage() {
+  // The coach is reached only after the Terms of Use & Privacy Policy are accepted, as on the main site: the same panel, opened on the terms (there is
+  // no breathing counter here, so no rhythm choice). A visitor who chose "Remember on this device" and whose agreement is for these terms is not asked again.
+  // Nothing behind the panel is mounted until then, and counting of use begins only after agreement.
+  const [agreed, setAgreed] = useState(() => termsAcceptedFor(LEGAL_EFFECTIVE_DATE));
+  useEffect(() => {
+    if (agreed) enableUsageCounts();
+  }, [agreed]);
   const [colors, setColors] = useState<{ color1: string; color2: string } | null>(null);
   // Display choices are kept only if the visitor turned on "Remember on this device".
   const [textSize, setTextSize] = usePref('textSize', 16);
@@ -40,13 +54,15 @@ export default function CoachPage() {
   }, [colors]);
 
   const goToApp = (about?: string) => {
-    window.location.href = about === undefined ? '/' : `/?about=${encodeURIComponent(about)}`;
+    window.location.href = about === undefined ? '/' : about === '' ? '/about' : `/about/${encodeURIComponent(about)}`;
   };
 
   return (
-    <div className="size-full flex flex-col bg-background">
-      {/* The header's Exit is covered while the breathing panel is open. */}
-      <EmergencyExitDock show={popoutOpen} onEmergencyExit={() => { exiting.current = true; }} />
+    <>
+      {/* First in the page, above the panel: the header's Exit is covered while the terms panel or the breathing panel is open. */}
+      <EmergencyExitDock show={popoutOpen || !agreed} onEmergencyExit={() => { exiting.current = true; }} />
+      {!agreed && <OnboardingFlow skipRhythm technique={STEADY} onTechniqueChange={noop} onFinish={() => setAgreed(true)} />}
+    <div className="size-full flex flex-col bg-background" {...(!agreed ? ({ inert: '' } as Record<string, string>) : {})}>
       <GlobalNavigation
         onNavigate={(screen) => goToApp(screen === 'about' ? '' : undefined)}
         onNavigateToAbout={(section) => {
@@ -74,12 +90,13 @@ export default function CoachPage() {
         onOpacityChange={setOpacity}
       />
       <div className="flex-1 min-h-0">
-        {!colors ? (
+        {!agreed ? null : !colors ? (
           <SessionKeyPicker onComplete={setColors} onBack={() => goToApp()} />
         ) : (
           <CoachDemo colors={colors} onBack={() => setColors(null)} />
         )}
       </div>
+      <OwnerPanel />
       <BreathingPopout
         isOpen={popoutOpen}
         onClose={() => setPopoutOpen(false)}
@@ -95,5 +112,6 @@ export default function CoachPage() {
         onTextSizeChange={setTextSize}
       />
     </div>
+    </>
   );
 }

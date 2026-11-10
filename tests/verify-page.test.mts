@@ -63,7 +63,7 @@ ok('a browser without this signature support says so, rather than calling the fi
 ok('a browser with no crypto at all says so too', (await verifySigned(FILE, { subtle: { digest: undefined } as any }).catch(() => ({ status: 'unsupported' }))).status !== 'valid');
 
 // ---- the readable copy
-const readable = readableTranscript(m, S, rc.receipt, '', rc.transcript.meta);
+const readable = readableTranscript(m, S, rc.receipt, '', rc.transcript.meta, rc.transcript.site, rc.transcript.checks);
 const txt = readableWithBlock(readable, FILE);
 ok('a readable copy ends with the marked block', txt.includes(BLOCK_BEGIN) && txt.trim().endsWith('-----END NENYA SIGNED TRANSCRIPT-----') && signedBlock(FILE).split('\n').every((l) => l.length <= 76 || l.startsWith('-----')));
 const got = extractSigned(txt);
@@ -81,7 +81,7 @@ ok('a .json file is read as it is', !!extractSigned(JSON.stringify(FILE, null, 2
 ok('text with no block and broken JSON are both refused', extractSigned('just some text') === null && extractSigned('{not json') === null);
 
 // ---- nothing is sent, counted or stored
-const source = ['src/verify/VerifyPage.tsx', 'src/verify/main.tsx', 'src/lib/verifyTranscript.ts'].map((f) => readFileSync(join(root, f), 'utf8')).join('\n');
+const source = ['src/verify/VerifyPage.tsx', 'src/verify/TranscriptChecker.tsx', 'src/verify/main.tsx', 'src/lib/verifyTranscript.ts'].map((f) => readFileSync(join(root, f), 'utf8')).join('\n');
 ok('the verifier never sends, counts or stores anything', !/fetch\(|XMLHttpRequest|sendBeacon|usageCounts|localStorage|sessionStorage|document\.cookie|WebSocket/.test(source));
 ok('the published key id in the code is the one in the public docs', readFileSync(join(root, 'docs', 'coach-transcripts.md'), 'utf8').includes('`579b407dc600fa7d`') && PUBLISHED_KEY_IDS.join() === '579b407dc600fa7d');
 ok('the verify page is in no sitemap and asks for nothing', !/verify/i.test(readFileSync(join(root, 'public', 'sitemap.xml'), 'utf8')));

@@ -5,8 +5,7 @@ import { getStore } from '@netlify/blobs';
 import { ALL_EVENTS, readRange, recentDays, type RangeStore } from '../../src/lib/counters.ts';
 import { capDay } from '../../src/lib/dailyCap.ts';
 import { getUser } from '@netlify/identity';
-import { tokenMatches } from '../../src/lib/ownerAuth.ts';
-import { hasOwnerRole } from '../../src/lib/ownerAccess.ts';
+import { ownerAllowed } from '../../src/lib/ownerGate.ts';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
 
 const ROUTE = '/api/stats';
@@ -23,19 +22,8 @@ let userOverride: (() => Promise<{ roles?: string[] } | null>) | null = null;
 export const __useUserForTests = (f: (() => Promise<{ roles?: string[] } | null>) | null): void => {
   userOverride = f;
 };
-const signedInUser = async () => {
-  try {
-    return await (userOverride ?? getUser)();
-  } catch {
-    return null;
-  }
-};
-
-// The owner token in the header, or a signed-in Identity user with the Owner role. Anything else is the same bare 401.
-const allowed = async (req: Request): Promise<boolean> => {
-  if (tokenMatches(req.headers.get('x-nenya-owner'), process.env.COACH_OWNER_TOKEN_HASH)) return true;
-  return hasOwnerRole(await signedInUser());
-};
+// The owner token in the header, or a signed-in Identity user with the Owner role (see src/lib/ownerGate.ts).
+const allowed = (req: Request): Promise<boolean> => ownerAllowed(req, (userOverride ?? getUser) as () => Promise<{ roles?: unknown } | null>);
 
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });

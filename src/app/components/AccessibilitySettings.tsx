@@ -7,6 +7,7 @@ import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
 import { useTheme } from './ThemeProvider';
 import { DeviceMemoryControls } from './DeviceMemoryControls';
+import { BreathToneStyle, BreathTonesSwitch } from './BreathTonesSwitch';
 
 const VISION_MODES: { value: string; label: string }[] = [
   { value: '', label: 'Standard' },
@@ -142,7 +143,7 @@ export function AccessibilitySettingsContent({
           <div className="flex items-center gap-2">
             <Orbit className="size-4 text-muted-foreground" />
             <Label htmlFor="orbit-toggle" className="cursor-pointer text-sm">
-              Valar Orbit
+              Palette Orbit
             </Label>
           </div>
           <Switch
@@ -173,6 +174,10 @@ export function AccessibilitySettingsContent({
           </div>
         )}
       </div>
+
+      {/* Breathing tones: the same switch that is near the top of the page and on the counter */}
+      {!compact && <BreathTonesSwitch variant="panel" />}
+      {!compact && <BreathToneStyle />}
 
       {onCounterToggle && (
       <>

@@ -50,6 +50,12 @@ export function AppFooter({ className = '' }: AppFooterProps) {
           >
             Contact: info@nenya.biz
           </a>
+          <span lang="en">
+            English only for now.{' '}
+            <a href="mailto:info@nenya.biz?subject=Translating%20Nenya" className="hover:text-foreground transition-colors underline underline-offset-2">
+              Read and write another language? We would be glad to hear from you.
+            </a>
+          </span>
           <ShareNenya />
           <ForgetMeLink />
           <a href="https://www.netlify.com" target="_blank" rel="noopener noreferrer" aria-label="Deploys by Netlify">

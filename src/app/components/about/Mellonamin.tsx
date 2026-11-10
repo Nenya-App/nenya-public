@@ -4,22 +4,14 @@ import { Shield, Heart, Leaf, Eye, Users } from 'lucide-react';
 export default function Mellonamin() {
   return (
     <div className="space-y-8">
-      {/* Header with Elvish Greeting */}
+      {/* Header */}
       <div className="text-center space-y-6 pb-8 border-b border-nenya-gold/30">
-        <p className="text-2xl md:text-3xl text-nenya-gold-dark italic font-serif">
-          "Elen síla lúmenn' omentielvo."
-        </p>
-        <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-          A star shines upon the hour of our meeting<br />
-          <span className="text-xs">(A Quenya greeting)</span>
-        </p>
-
         <div className="pt-4">
           <h1 className="text-3xl md:text-5xl bg-gradient-to-r from-nenya-gold-dark via-nenya-gold to-nenya-gold-light bg-clip-text text-transparent">
             Nenya
           </h1>
           <p className="text-xl md:text-2xl mt-2">
-            A Welcome, and a Few Things Worth Knowing
+            You may rest here
           </p>
         </div>
       </div>
@@ -27,19 +19,17 @@ export default function Mellonamin() {
       {/* Section 1: Welcome */}
       <Card className="p-6 md:p-8 border-nenya-gold/30">
         <div className="space-y-6">
-          <h2 className="text-2xl md:text-3xl">Welcome, Mellonamin</h2>
+          <h2 className="text-2xl md:text-3xl">Welcome</h2>
 
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              <strong className="text-nenya-gold-dark">Mellonamin</strong> means "my friend." That's really the whole
-              spirit of this place — a quiet space to slow down for a moment and listen to yourself, without anyone
-              watching or judging what you find.
+              This is a quiet space to slow down for a moment and listen to yourself, without anyone watching or
+              judging what you find. The name is meant as an invitation: <strong className="text-nenya-gold-dark">you may
+              rest here</strong>.
             </p>
 
             <p>
-              <span className="text-lg italic text-foreground"><strong>"Elen síla lúmenn' omentielvo"</strong></span> —
-              "a star shines upon the hour of our meeting" — is how Tolkien's Elves greeted one another. It felt right
-              here too: a small acknowledgment that arriving at this moment, however you got here, is worth pausing for.
+              Arriving at this moment, however you got here, is worth pausing for.
             </p>
 
             <p>
@@ -58,8 +48,9 @@ export default function Mellonamin() {
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
               It's hard to be honest with yourself if part of you is wondering who else might see it. So the short
-              version: nothing you do here is tracked, sold, or held onto. This isn't a policy we're promising to
-              honor — it's how the thing is actually built.
+              version: what you write, draw, or choose in the reflection tools stays on your device. It isn't sent to
+              us, it isn't sold, and it's gone when you close the tab. This isn't a policy we're promising to
+              honor — it's how the tools are built, and the code is public, so you can check.
             </p>
           </div>
 
@@ -71,7 +62,7 @@ export default function Mellonamin() {
               </h4>
               <p className="text-sm text-muted-foreground">
                 You're not asked to be anyone here beyond the colors and choices you make in the moment. There's no
-                advertising profile being built on you — there's nothing to build one from. (The optional coach demo and the contact form are the only places anything you type leaves your browser, and only if you choose to use them.)
+                advertising profile being built on you — there's nothing to build one from. (The optional coach demo and the contact form are the only places anything you type leaves your browser, and only if you choose to use them. Parts of a report you made go to the coach only if you choose to bring them, and you see exactly what would go first. One color goes to a palette service only if you press the button that says so.) Our web host keeps ordinary connection records and anonymous visit totals; the Privacy Promise and the Terms explain them.
               </p>
             </div>
 
@@ -82,7 +73,8 @@ export default function Mellonamin() {
               </h4>
               <p className="text-sm text-muted-foreground">
                 Your reflections live only for the length of your session. When you close the tab, they're gone —
-                by design, not as an afterthought.
+                by design, not as an afterthought. Only if you choose to, a few settings (such as text size) can be
+                remembered on your device, and the "Forget me" button erases them.
               </p>
             </div>
           </div>
@@ -156,7 +148,7 @@ export default function Mellonamin() {
           </h2>
 
           <p className="text-sm text-muted-foreground leading-relaxed">
-            We care about the actual, physical world this runs on too — Tolkien called it Arda. Keeping things
+            We care about the actual, physical world this runs on too. Keeping things
             private and mostly local isn't only about you; it also means this tool asks less of servers and power
             grids than most. We don't have a precise number to hand you, and we'd rather say that honestly than
             make one up.
@@ -164,13 +156,13 @@ export default function Mellonamin() {
         </div>
       </Card>
 
-      {/* Closing - Namarië */}
+      {/* Closing */}
       <Card className="p-6 md:p-8 bg-gradient-to-br from-nenya-gold/5 via-background to-nenya-gold/10 border-nenya-gold/40 text-center">
         <p className="text-2xl text-nenya-gold-dark italic font-serif">
-          Namarië.
+          Take your time.
         </p>
         <p className="text-sm text-muted-foreground mt-2">
-          (Farewell — until we meet again.)
+          You may rest here.
         </p>
       </Card>
     </div>

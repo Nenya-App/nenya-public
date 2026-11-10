@@ -4,16 +4,14 @@ import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'luc
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
-import { Checkbox } from '../ui/checkbox';
 import { Textarea } from '../ui/textarea';
-import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
+import { WordPicker } from '../WordPicker';
 interface InsightGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -24,30 +22,7 @@ interface InsightGatewayPageProps {
   onUpdateBodyMap: (data: BodyMapData) => void;
 }
 
-const patterns = [
-  'Fragmented',
-  'Linear',
-  'Branching',
-  'Circular',
-  'Layered',
-  'Web-like',
-  'Crystalline',
-  'Fractal',
-  'Spiraling',
-  'Chaotic',
-  'Unified'
-];
 
-const perspectives = [
-  'Narrow',
-  'Focused',
-  'Panoramic',
-  'Microscopic',
-  'Telescopic',
-  'Multi-faceted',
-  "Bird's Eye",
-  'Immersed'
-];
 
 const INSTRUCTION_CARDS = [
   {
@@ -252,48 +227,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                 <CardContent className="space-y-5">
                   <div className="space-y-2">
                     <Label className="text-sm">Pattern (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {patterns.map((pattern) => (
-                      <div key={pattern} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`current-pattern-${pattern}`}
-                            checked={currentPatterns.includes(pattern)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(pattern, checked as boolean, currentPatterns, setCurrentPatterns)
-                            }
-                          />
-                          <label
-                            htmlFor={`current-pattern-${pattern}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {pattern}
-                          </label>
-                        </div>
-                        <TermInfo term={pattern} category="pattern" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="current-pattern-other"
-                        checked={currentPatternOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setCurrentPatternOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="current-pattern-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={currentPatternOther}
-                          onChange={(e) => setCurrentPatternOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <WordPicker category="pattern" idPrefix="currentPatterns" selected={currentPatterns} onToggle={(t) => handleCheckboxChange(t, !currentPatterns.includes(t), currentPatterns, setCurrentPatterns)} other={{ value: currentPatternOther, onChange: setCurrentPatternOther, placeholder: "Describe..." }} />
                   </div>
 
                   <SnappingSlider
@@ -316,48 +250,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
 
                   <div className="space-y-2">
                     <Label className="text-sm">Perspective (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {perspectives.map((perspective) => (
-                      <div key={perspective} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`current-perspective-${perspective}`}
-                            checked={currentPerspectives.includes(perspective)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(perspective, checked as boolean, currentPerspectives, setCurrentPerspectives)
-                            }
-                          />
-                          <label
-                            htmlFor={`current-perspective-${perspective}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {perspective}
-                          </label>
-                        </div>
-                        <TermInfo term={perspective} category="perspective" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="current-perspective-other"
-                        checked={currentPerspectiveOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setCurrentPerspectiveOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="current-perspective-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={currentPerspectiveOther}
-                          onChange={(e) => setCurrentPerspectiveOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <WordPicker category="perspective" idPrefix="currentPerspectives" selected={currentPerspectives} onToggle={(t) => handleCheckboxChange(t, !currentPerspectives.includes(t), currentPerspectives, setCurrentPerspectives)} other={{ value: currentPerspectiveOther, onChange: setCurrentPerspectiveOther, placeholder: "Describe..." }} />
                   </div>
 
                   <div className="space-y-2">
@@ -401,48 +294,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                 <CardContent className="space-y-5">
                   <div className="space-y-2">
                     <Label className="text-sm">Pattern (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {patterns.map((pattern) => (
-                      <div key={pattern} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`potential-pattern-${pattern}`}
-                            checked={potentialPatterns.includes(pattern)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(pattern, checked as boolean, potentialPatterns, setPotentialPatterns)
-                            }
-                          />
-                          <label
-                            htmlFor={`potential-pattern-${pattern}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {pattern}
-                          </label>
-                        </div>
-                        <TermInfo term={pattern} category="pattern" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="potential-pattern-other"
-                        checked={potentialPatternOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setPotentialPatternOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="potential-pattern-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={potentialPatternOther}
-                          onChange={(e) => setPotentialPatternOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <WordPicker category="pattern" idPrefix="potentialPatterns" selected={potentialPatterns} onToggle={(t) => handleCheckboxChange(t, !potentialPatterns.includes(t), potentialPatterns, setPotentialPatterns)} other={{ value: potentialPatternOther, onChange: setPotentialPatternOther, placeholder: "Describe..." }} />
                   </div>
 
                   <SnappingSlider
@@ -465,48 +317,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
 
                   <div className="space-y-2">
                     <Label className="text-sm">Perspective (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {perspectives.map((perspective) => (
-                      <div key={perspective} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`potential-perspective-${perspective}`}
-                            checked={potentialPerspectives.includes(perspective)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(perspective, checked as boolean, potentialPerspectives, setPotentialPerspectives)
-                            }
-                          />
-                          <label
-                            htmlFor={`potential-perspective-${perspective}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {perspective}
-                          </label>
-                        </div>
-                        <TermInfo term={perspective} category="perspective" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="potential-perspective-other"
-                        checked={potentialPerspectiveOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setPotentialPerspectiveOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="potential-perspective-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={potentialPerspectiveOther}
-                          onChange={(e) => setPotentialPerspectiveOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <WordPicker category="perspective" idPrefix="potentialPerspectives" selected={potentialPerspectives} onToggle={(t) => handleCheckboxChange(t, !potentialPerspectives.includes(t), potentialPerspectives, setPotentialPerspectives)} other={{ value: potentialPerspectiveOther, onChange: setPotentialPerspectiveOther, placeholder: "Describe..." }} />
                   </div>
 
                   <div className="space-y-2">

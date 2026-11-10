@@ -84,10 +84,10 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
                 <Quote className="size-6 text-white" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg">Guided by Nienna</h3>
+                <h3 className="text-lg">Guided by compassion</h3>
                 <p className="text-sm text-muted-foreground">
-                  In Tolkien's mythology, Nienna is the Vala of grief and compassion — she does not turn away from suffering but witnesses it fully
-                  and transforms it into wisdom. This is the orientation that shapes the work: not fixing, not optimizing, but attending.
+                  The orientation that shapes the work is one of compassion for grief: not turning away from suffering but witnessing it fully
+                  and letting it become wisdom. Not fixing, not optimizing, but attending.
                 </p>
               </div>
             </div>
@@ -97,10 +97,10 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
             <h2 className="text-2xl">Philosophical Foundations</h2>
             <div className="grid md:grid-cols-3 gap-5">
               <Card className="p-5 border-nenya-accent-primary/30">
-                <h4 className="font-semibold mb-2 text-nenya-accent-warm text-sm">Tolkien's Mythology</h4>
+                <h4 className="font-semibold mb-2 text-nenya-accent-warm text-sm">Archetypes of Need</h4>
                 <p className="text-xs text-muted-foreground">
-                  The Valar provide a universal framework for human needs that transcends cultural and linguistic barriers — making emotional
-                  literacy accessible through shared imaginative language.
+                  The sixteen archetypes give a shared, imaginative vocabulary for human needs that reaches across cultural and linguistic
+                  barriers, making emotional literacy more accessible.
                 </p>
               </Card>
               <Card className="p-5 border-nenya-accent-secondary/30">

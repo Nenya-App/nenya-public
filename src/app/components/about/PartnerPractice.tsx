@@ -78,7 +78,7 @@ export default function PartnerPractice({ onBack, onOpenPreview }: PartnerPracti
             </li>
           </ul>
           <p className="text-sm text-muted-foreground">
-            How access would work, and whether any part would carry a cost, is undecided. The core tool will stay free.
+            How access would work, and whether any part would carry a cost, is undecided. The plan is for the core breathing and reflection tools to stay free.
           </p>
         </section>
 

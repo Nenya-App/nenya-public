@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
+import { ColorNameSuggest } from '../ColorNameSuggest';
+import { PalettePanel } from '../PalettePanel';
+import type { GeneratedPalette } from '../../../lib/colorSchemes';
 import { Button } from '../ui/button';
-import { ArrowLeft, Shuffle, User, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
+import { ArrowLeft, Shuffle, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { ValarColorPicker } from '../ValarColorPicker';
 import { Textarea } from '../ui/textarea';
-import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
 import { UserColors } from '../../App';
@@ -22,6 +24,7 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 
+import { WordPicker } from '../WordPicker';
 interface SightGatewayPageProps {
   onComplete: (data: UserColors & { gradientDirection?: string }) => void;
   onBack: () => void;
@@ -73,16 +76,6 @@ const hslToHex = (hsl: string): string => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
-const LIGHT_QUALITIES = [
-  'Steady',
-  'Pulsing',
-  'Flickering',
-  'Glowing',
-  'Shimmering',
-  'Radiating',
-  'Fading',
-  'Intensifying',
-];
 
 const MAX_DESCRIPTION_LENGTH = 150;
 
@@ -127,12 +120,12 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   const [color2, setColor2] = useState(theme === 'dark' ? '#FFFFFF' : '#000000');
   const [color1Name, setColor1Name] = useState('');
   const [color2Name, setColor2Name] = useState('');
+  const [generatedPalettes, setGeneratedPalettes] = useState<GeneratedPalette[]>([]);
   const [color1Qualities, setColor1Qualities] = useState<string[]>([]);
   const [color2Qualities, setColor2Qualities] = useState<string[]>([]);
   const [color1Intensity, setColor1Intensity] = useState(50);
   const [color2Intensity, setColor2Intensity] = useState(50);
   const [gradientDirection] = useState('to-right');
-  const [showBodyMap, setShowBodyMap] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<'present' | 'potential' | null>(null);
   // bodyMapData/onUpdateBodyMap come from props -- shared App-level state
   // accessible from every gateway, not local to Sight.
@@ -148,6 +141,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
     setColor2Qualities([]);
     setColor1Intensity(50);
     setColor2Intensity(50);
+    setGeneratedPalettes([]);
   };
 
   const handleNext = () => {
@@ -163,6 +157,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
       color1Intensity,
       color2Intensity,
       gradientDirection,
+      generatedPalettes: generatedPalettes.length > 0 ? generatedPalettes : null,
     });
   };
 
@@ -281,15 +276,6 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   <Shuffle className="size-4" />
                   Surprise Me
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => setShowBodyMap(true)}
-                  className="gap-2"
-                >
-                  <User className="size-4" />
-                  Map Colors to Body
-                </Button>
               </div>
 
               {/* Two Color Cards Side by Side */}
@@ -343,32 +329,13 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       <p className="text-xs text-muted-foreground text-right">
                         {color1Name.length}/{MAX_DESCRIPTION_LENGTH}
                       </p>
+                      <ColorNameSuggest label="Current state" hex={color1} onUse={(n) => setColor1Name(n.slice(0, MAX_DESCRIPTION_LENGTH))} />
                     </div>
 
                     {/* Light Qualities */}
                     <div className="space-y-2">
                       <Label className="text-sm">Quality of this light (optional)</Label>
-                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                        {LIGHT_QUALITIES.map((quality) => (
-                          <div key={quality} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`color1-${quality}`}
-                              checked={color1Qualities.includes(quality)}
-                              onCheckedChange={() => {
-                                toggleQuality(1, quality);
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <label
-                              htmlFor={`color1-${quality}`}
-                              className="text-xs cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {quality}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
+                      <WordPicker category="lightQuality" idPrefix="color1Qualities" selected={color1Qualities} onToggle={(t) => toggleQuality(1, t)} />
                     </div>
 
                     {/* Intensity Slider */}
@@ -444,32 +411,13 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       <p className="text-xs text-muted-foreground text-right">
                         {color2Name.length}/{MAX_DESCRIPTION_LENGTH}
                       </p>
+                      <ColorNameSuggest label="Wish" hex={color2} onUse={(n) => setColor2Name(n.slice(0, MAX_DESCRIPTION_LENGTH))} />
                     </div>
 
                     {/* Light Qualities */}
                     <div className="space-y-2">
                       <Label className="text-sm">Quality of this light (optional)</Label>
-                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                        {LIGHT_QUALITIES.map((quality) => (
-                          <div key={quality} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`color2-${quality}`}
-                              checked={color2Qualities.includes(quality)}
-                              onCheckedChange={() => {
-                                toggleQuality(2, quality);
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <label
-                              htmlFor={`color2-${quality}`}
-                              className="text-xs cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {quality}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
+                      <WordPicker category="lightQuality" idPrefix="color2Qualities" selected={color2Qualities} onToggle={(t) => toggleQuality(2, t)} />
                     </div>
 
                     {/* Intensity Slider */}
@@ -497,6 +445,17 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 </Card>
               </div>
 
+              <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} />
+
+              <BodyMapAvatar
+                inline
+                userColors={{ color1, color2, color1Name, color2Name }}
+                onClose={() => undefined}
+                onSave={(data) => onUpdateBodyMap(data)}
+                initialPlacements={bodyMapData.placements}
+                initialNotes={bodyMapData.notes}
+              />
+
               {/* Next Button */}
               <div className="flex justify-center pt-4">
                 <Button
@@ -516,24 +475,13 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
         <ScrollIndicator containerRef={scrollContainerRef} />
       </div>
 
-      {/* Body Map Avatar Modal */}
-      {showBodyMap && (
-        <BodyMapAvatar
-          userColors={{ color1, color2, color1Name, color2Name }}
-          onClose={() => setShowBodyMap(false)}
-          onSave={(data) => onUpdateBodyMap(data)}
-          initialPlacements={bodyMapData.placements}
-          initialNotes={bodyMapData.notes}
-        />
-      )}
-
       {/* Present Color Picker Dialog */}
       <Dialog open={activeColorPicker === 'present'} onOpenChange={(open) => !open && setActiveColorPicker(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto w-[95vw] sm:w-auto">
           <DialogHeader>
             <DialogTitle>Select Current State Color</DialogTitle>
             <DialogDescription>
-              Choose a color that represents where you are now. Browse the Valar palettes or enter a custom color below.
+              Choose a color that represents where you are now. Browse the sixteen palettes or enter a custom color below.
             </DialogDescription>
           </DialogHeader>
           <ValarColorPicker
@@ -553,7 +501,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
           <DialogHeader>
             <DialogTitle>Select Wish State Color</DialogTitle>
             <DialogDescription>
-              Choose a color for how you wish to feel. Browse the Valar palettes or enter a custom color below.
+              Choose a color for how you wish to feel. Browse the sixteen palettes or enter a custom color below.
             </DialogDescription>
           </DialogHeader>
           <ValarColorPicker

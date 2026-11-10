@@ -43,7 +43,7 @@ export default function PowerOfColor({ onBack }: PowerOfColorProps) {
                 Color: Our Oldest Survival Language
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Vision is the most dominant sense in the human brain, an evolutionary gift honed for survival. Primates are among the only placental mammals with <strong>trichromatic vision</strong>—the ability to see red, green, and blue. This capacity didn't evolve for aesthetics; it evolved for crucial survival tasks, such as detecting ripe, nutrient-rich fruits against dense green foliage. This deep, evolutionary history means that <strong>color is wired directly into our threat and reward circuitry</strong>, giving it immense, universal psychological power.
+                Vision is the most dominant sense in the human brain, an evolutionary gift honed for survival. Primates are among the only placental mammals with <strong>trichromatic vision</strong>—the ability to see red, green, and blue. This capacity didn't evolve for aesthetics; it evolved for crucial survival tasks, such as detecting ripe, nutrient-rich fruits against dense green foliage. Color matters to how many people perceive and feel, though what a color means varies from person to person and culture to culture.
               </p>
             </div>
 
@@ -69,7 +69,7 @@ export default function PowerOfColor({ onBack }: PowerOfColorProps) {
                 Mapping Your Internal State
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Color theory demonstrates that specific hues are associated with universal psychological effects, affecting mood and motivation across cultures. For example, studies show that blue light increases alertness, while red can increase energy or trigger caution in achievement contexts. Nenya uses color as a language to bypass the analytical, logical brain. When you select a color to represent a feeling, you are using the oldest, most primal part of your visual system to communicate your current internal state.
+                Research on color has found some associations with mood and attention, but they are modest and differ between people and cultures. Nenya does not use them to interpret your choices. It offers color as a language that does not need words. When you select a color to represent a feeling, you are saying something about it in a way that does not have to be explained.
               </p>
             </div>
 
@@ -81,10 +81,10 @@ export default function PowerOfColor({ onBack }: PowerOfColorProps) {
                 <div className="space-y-4">
                   <h3 className="text-violet-900 dark:text-violet-100">Color as Emotional Shorthand</h3>
                   <p className="text-sm text-violet-800/80 dark:text-violet-200/80 leading-relaxed">
-                    Your two chosen colors—your <strong>Present</strong> and your <strong>Potential</strong>—are a non-verbal poem you write for yourself. They allow you to show how you feel before you are asked to explain it. This act taps into a deeper, more intuitive part of your consciousness, setting the stage for a different kind of conversation.
+                    Your two chosen colors—your <strong>Present</strong> and your <strong>Potential</strong>—are a non-verbal poem you write for yourself. They allow you to show how you feel before you are asked to explain it. It is a way of noticing yourself before you put it into words.
                   </p>
                   <p className="text-sm text-violet-800/80 dark:text-violet-200/80 leading-relaxed">
-                    We use hex codes as your identity because your inner world is too rich and nuanced to be captured by a username. The system offers 281 trillion+ unique color combinations—a philosophical point about the infinite complexity of your emotional landscape.
+                    Your colors can be written as hex codes, short codes that name an exact color. They are not an account or an identifier: nothing here is linked to you. The tool offers more than 281 trillion possible pairs of colors, so there is room for whatever you feel.
                   </p>
                 </div>
               </div>

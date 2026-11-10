@@ -3,6 +3,7 @@ import { Download, Send } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { readableWithBlock } from '../lib/verifyTranscript';
+import { checkNotesFor, siteMessagesFor } from '../lib/siteMessages';
 import {
   downloadText,
   readableTranscript,
@@ -22,8 +23,14 @@ interface TranscriptToolsProps {
   session: SessionColors;
   /** The reflection summary the visitor chose to share, if any. */
   context?: string;
-  /** Ticket from the last reply. Absent when the conversation ended on a safety flag. */
+  /** Ticket from the last reply. Absent before the first reply. */
   ticket?: string;
+  /** The site ended the conversation by stopping the last message (it never reached the AI). The signed copy then includes that message. */
+  stopped?: boolean;
+  /** The number of exchanges in a full conversation (the greeting and closing message depend on it). */
+  maxTurns?: number;
+  /** The replies the site wrote itself as pre-written answers (index in the conversation, and the answer's title). */
+  answered?: { index: number; title: string; partial?: boolean }[];
 }
 
 type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
@@ -32,7 +39,7 @@ type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
 // our server once more (it was already there, turn by turn) so it can confirm it
 // is untouched and date it. Nothing is stored. Sharing with Nenya shows exactly
 // what would be sent first.
-export function TranscriptTools({ messages, session, context = '', ticket }: TranscriptToolsProps) {
+export function TranscriptTools({ messages, session, context = '', ticket, stopped = false, maxTurns = 5, answered = [] }: TranscriptToolsProps) {
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [signed, setSigned] = useState<SignedTranscript | null>(null);
   const signedRef = useRef<SignedTranscript | null>(null); // the latest, for handlers that run before a re-render
@@ -50,7 +57,8 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     setShare('closed');
   }, [messages.length]);
 
-  const canSign = !!ticket;
+  // A conversation stopped on its first message has no earlier exchange, so it has no ticket and needs none.
+  const canSign = stopped ? !!ticket || messages.length === 1 : !!ticket;
 
   const getReceipt = async (): Promise<Receipt | null> => {
     if (receipt) return receipt;
@@ -59,7 +67,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'receipt', messages, session, ...(context ? { context } : {}), ticket }),
+        body: JSON.stringify({ action: 'receipt', messages, session, ...(context ? { context } : {}), ticket, ...(stopped ? { stopped: true } : {}) }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { receipt: Receipt; transcript: SignedTranscript };
@@ -85,7 +93,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta);
+    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered, context), signedRef.current?.checks ?? checkNotesFor(messages, context));
     // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
     const text = r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
     downloadText(transcriptFilename(r, 'txt'), 'text/plain', text);
@@ -98,7 +106,7 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
     setShare('preview');
   };
 
-  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta);
+  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns, answered, context), signed?.checks ?? checkNotesFor(messages, context));
   const tooLong = shareText.length > MAX_SHARE_CHARS;
 
   // Only a signed transcript can be sent. The function checks the signature first, then forwards the readable text (rebuilt
@@ -124,7 +132,9 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
       <h2 className="text-lg">Keep a record or report a problem</h2>
       <p className="text-sm text-muted-foreground">
         {canSign
-          ? 'Nenya can sign and date the conversation so far so no one can alter it afterward. Nothing is stored; you keep the file. You can also send the signed transcript to us, with a note, if something went wrong.'
+          ? stopped
+            ? 'The site stopped your last message with its safety check. If you think that was a mistake, Nenya can sign and date the conversation, including the message that was stopped, so no one can alter it and the check can be shown exactly. The signed copy also shows what the site displayed and, for a flagged message, why the check flagged it. Signing sends the conversation to our server once; nothing is stored, and you keep the file. You can also send the signed transcript to us, with a note.'
+            : 'Nenya can sign and date the conversation so far so no one can alter it afterward. It also shows the words the site displayed and, if the safety check flagged a message, why. Nothing is stored; you keep the file. You can also send the signed transcript to us, with a note, if something went wrong.'
           : 'This conversation ended before it could be signed. You can still keep a readable copy.'}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -152,6 +162,9 @@ export function TranscriptTools({ messages, session, context = '', ticket }: Tra
           <p className="text-xs text-muted-foreground">
             This is exactly what Nenya would receive, together with the signed file so that we can check it was not changed. Please check it
             contains nothing you want to keep private.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Names and contact details were replaced with placeholders on your device as you wrote, but names are not always caught. What you send arrives in our email inbox, so if you see a name or detail in the text below that you do not want us to have, close this and download the transcript instead, or tell us to delete it afterward at info@nenya.biz.
           </p>
           <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-2 text-xs">{shareText}</pre>
           <label className="block space-y-1 text-xs text-muted-foreground">

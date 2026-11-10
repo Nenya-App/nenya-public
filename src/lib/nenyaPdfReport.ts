@@ -39,6 +39,7 @@ function drawColorSwatches(
 ): number {
   const size = 13;
   const gap = 8;
+  let extra = 0;
   swatches.forEach((s, i) => {
     const sx = x + i * (size + gap);
     const [r, g, b] = hexToRgbTuple(s.hex);
@@ -56,10 +57,12 @@ function drawColorSwatches(
       doc.setFont('Manrope', 'normal');
       doc.setFontSize(6.5);
       doc.setTextColor(...COLORS.textMuted);
-      doc.text(s.caption, sx + size / 2, y + size + 8, { align: 'center' });
+      const wrapped: string[] = doc.splitTextToSize(s.caption, size + gap - 1).slice(0, 3);
+      wrapped.forEach((line: string, li: number) => doc.text(line, sx + size / 2, y + size + 8 + li * 3, { align: 'center' }));
+      extra = Math.max(extra, (wrapped.length - 1) * 3);
     }
   });
-  return size + 13;
+  return size + 13 + extra;
 }
 
 // A small melodic contour chart for the sound gateway's melody: each note
@@ -248,8 +251,14 @@ export async function downloadNenyaPdfReport(
       gd.gateway === 'sound' && Array.isArray(gd.data?.melody) && gd.data.melody.some((n: number | null) => n !== null)
         ? gd.data.melody
         : null;
+    // Palettes the person kept (src/lib/colorSchemes.ts, up to two): each drawn as a row of colour chips with the names written out.
+    const keptPalettes: { colors: { hex: string; name?: string }[]; heading: string }[] = gd.gateway === 'sight' && Array.isArray(gd.data?.generatedPalettes)
+      ? gd.data.generatedPalettes
+          .map((p: any, i: number) => ({ colors: (p?.colors ?? []).filter((c: any) => /^#[0-9a-f]{6}$/i.test(c?.hex ?? '')), heading: `Palette ${gd.data.generatedPalettes.length > 1 ? i + 1 : ''}`.trim() + (p?.source === 'The Color API' ? ' (generated with The Color API)' : ' (made on the device)') }))
+          .filter((p: any) => p.colors.length)
+      : [];
     const estimatedHeight =
-      14 + dataLines.length * 5.6 + (hasColorSwatches ? 26 : 0) + (melody ? 33 : 0) + 10;
+      14 + dataLines.length * 5.6 + (hasColorSwatches ? 26 : 0) + keptPalettes.length * 32 + (melody ? 33 : 0) + 10;
 
     if (y + estimatedHeight > pageHeight - 26) {
       y = newContentPage();
@@ -276,6 +285,19 @@ export async function downloadNenyaPdfReport(
         { hex: gd.data.color2, label: 'Wish', caption: gd.data.color2Name || gd.data.color2 },
       ]);
       y += consumed;
+    }
+
+    for (const kp of keptPalettes) {
+      if (y + 32 > pageHeight - 26) {
+        y = newContentPage();
+      }
+      doc.setFont('ManropeSemiBold', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...COLORS.ink);
+      doc.text(kp.heading, margin + 4, y + 2);
+      y += 5;
+      // The names of the colors are written out in full under each chip (wrapped onto lines if long), not cut short.
+      y += drawColorSwatches(doc, margin + 4, y, kp.colors.map((c: { hex: string; name?: string }, i: number) => ({ hex: c.hex, label: `${i + 1}`, caption: c.name ?? c.hex })));
     }
 
     if (melody) {

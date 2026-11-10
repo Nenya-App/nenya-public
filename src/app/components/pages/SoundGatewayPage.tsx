@@ -4,9 +4,7 @@ import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, Link2, Unlink, U
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
-import { Checkbox } from '../ui/checkbox';
 import { Textarea } from '../ui/textarea';
-import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
@@ -25,23 +23,25 @@ import {
   getScale,
   getNoteNames,
   playNote,
-  playMelody,
   setTimbre,
+  getTimbre,
   Timbre,
 } from '../../../lib/audio';
 
+import { WordPicker } from '../WordPicker';
+import { PhraseMelody, type Active } from '../PhraseMelody';
+import { buildPhrases, movePhrase, playlist, remapScale, setMuted, setNote, type Phrase } from '../../../lib/longMelody';
+import { playSequence, renderWav, clampStep, clampVolume, DEFAULT_STEP } from '../../../lib/melodyPlayer';
 interface SoundGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
   currentIndex: number;
   totalGateways: number;
-  userColors?: { color1?: string; color2?: string };
+  userColors?: { color1?: string; color2?: string; color1Name?: string | null; color2Name?: string | null; generatedPalettes?: { colors?: { hex: string; name?: string }[]; useInSound?: boolean }[] | null };
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
 }
 
-const timbres = ['Resonant', 'Hollow', 'Bright', 'Warm', 'Metallic', 'Breathy', 'Rich', 'Thin'];
-const rhythms = ['Steady', 'Syncopated', 'Flowing', 'Staccato', 'Irregular', 'Pulsing', 'Languid', 'Urgent'];
 
 const TIMBRE_OPTIONS: { label: string; value: Timbre }[] = [
   { label: 'Soft', value: 'soft' },
@@ -183,14 +183,31 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   useEffect(() => {
     if (melodyConnected && hasValidColors) {
       setMelody(colorsToMelody(userColors!.color1!, userColors!.color2!, scale.length));
+      setPhrases((prev) => (prev.length ? prev : makePhrases(scale.length)));
     } else if (!melodyConnected) {
       setMelody(Array(6).fill(null));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [melodyConnected, scale.length]);
 
+  // The longer melody: one phrase for each color (the present and wish colors, and the palettes marked for sound). Seeded once from the Sight
+  // colors; after that the notes and the colors are separate, and changing a note never changes a color.
+  const makePhrases = (len: number): Phrase[] =>
+    buildPhrases({ hex: userColors!.color1!, name: userColors?.color1Name }, { hex: userColors!.color2!, name: userColors?.color2Name }, (userColors?.generatedPalettes ?? []) as any, len);
+  const [phrases, setPhrases] = useState<Phrase[]>(() => (hasValidColors ? makePhrases(scale.length) : []));
+  const [activeSlot, setActiveSlot] = useState<Active | null>(null);
+  const [playingSlot, setPlayingSlot] = useState<Active | null>(null);
+  const [stepSeconds, setStepSeconds] = useState(DEFAULT_STEP);
+  const [volume, setVolume] = useState(0.8);
+  const stopRef = useRef<(() => void) | null>(null);
+  const [fileNote, setFileNote] = useState('');
+  useEffect(() => () => { stopRef.current?.(); }, []);
+  const longMode = melodyConnected && hasValidColors;
+  const played = longMode ? playlist(phrases) : null;
+
   const handleSelectTonalSystem = (system: TonalSystem) => {
     if (system === tonalSystem) return;
+    if (longMode) setPhrases((prev) => remapScale(prev, scale.length, getScale(system).length));
     setTonalSystem(system);
     // Melody re-seeds automatically: the effect above reacts to scale.length,
     // re-translating from the same two colors when connected, or clearing
@@ -199,8 +216,11 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
     setHasPlayed(false);
   };
 
-  const [melodyColor1, melodyColor2] = melodyToColors(melody.map((n) => n ?? 0), scale.length);
-  const melodyComplete = melody.every((n) => n !== null);
+  const [derived1, derived2] = melodyToColors(melody.map((n) => n ?? 0), scale.length);
+  // While the melody is connected to the Sight colors, those are the colors; the notes never rewrite them. Only a melody made from silence is shown in colors derived from its notes.
+  const melodyColor1 = longMode ? userColors!.color1! : derived1;
+  const melodyColor2 = longMode ? userColors!.color2! : derived2;
+  const melodyComplete = longMode ? (played?.notes.length ?? 0) > 0 : melody.every((n) => n !== null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
   const [activeTimbre, setActiveTimbre] = useState<Timbre>('soft');
@@ -210,14 +230,47 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
   const handlePlayMelody = () => {
     if (isPlaying || !melodyComplete) return;
+    setFileNote('');
     setIsPlaying(true);
-    playMelody(melody, scale, () => {
-      setIsPlaying(false);
-      setHasPlayed(true);
+    const notes = longMode ? played!.notes : melody;
+    stopRef.current = playSequence(notes, scale, {
+      stepSeconds, volume, timbre: getTimbre(),
+      onNote: (i) => setPlayingSlot(longMode ? played!.at[i] : null),
+      onEnd: () => { setIsPlaying(false); setHasPlayed(true); setPlayingSlot(null); stopRef.current = null; },
     });
   };
 
+  const handleStop = () => { stopRef.current?.(); };
+
+  const handleDownload = async () => {
+    const notes = longMode ? played!.notes : melody;
+    setFileNote('Making the file…');
+    try {
+      const blob = await renderWav(notes, scale, { stepSeconds, volume, timbre: getTimbre() });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'nenya-melody.wav';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      setFileNote('Your melody was saved as a sound file (nenya-melody.wav). It was made on your device and went nowhere.');
+    } catch {
+      setFileNote('This browser could not make the sound file.');
+    }
+  };
+
   const handleSelectNote = (noteIndex: number) => {
+    if (longMode) {
+      // Change the chosen note of the chosen phrase, then move to the next note.
+      const target = activeSlot ?? { id: phrases[0]?.id ?? 'present', position: 0 };
+      setPhrases((prev) => setNote(prev, target.id, target.position, noteIndex));
+      const order = phrases.flatMap((p) => p.notes.map((_, position) => ({ id: p.id, position })));
+      const at = order.findIndex((o) => o.id === target.id && o.position === target.position);
+      setActiveSlot(order[at + 1] ?? null);
+      setHasPlayed(false);
+      playNote(noteIndex, scale);
+      return;
+    }
     if (melody.every((n) => n !== null)) return; // all six slots already filled
     setMelody((prev) => {
       const next = [...prev];
@@ -256,10 +309,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
     setHasPlayed(false);
     setTimeout(() => {
       setIsPlaying(true);
-      playMelody(random, scale, () => {
-        setIsPlaying(false);
-        setHasPlayed(true);
-      });
+      stopRef.current = playSequence(random, scale, { stepSeconds, volume, timbre: getTimbre(), onEnd: () => { setIsPlaying(false); setHasPlayed(true); stopRef.current = null; } });
     }, 100);
   };
 
@@ -309,7 +359,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
   const handleNext = () => {
     onComplete({
-      melody,
+      melody: longMode ? played!.notes : melody,
+      melodyPhrases: longMode ? phrases.map((p) => ({ kind: p.kind, label: p.label, hex: p.hex, notes: p.notes, muted: p.muted })) : null,
       tonalSystem,
       melodyColor1,
       melodyColor2,
@@ -412,6 +463,14 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               ))}
             </div>
 
+            <p className="text-xs text-muted-foreground text-center">
+              Curious about building a melody from words? Solresol is a constructed language whose words are sequences of the seven notes.{' '}
+              <a href="https://solresol.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                solresol.xyz<span className="sr-only"> (opens an outside site in a new tab)</span>
+              </a>{' '}
+              (from the Machine Perception and Cognitive Robotics Laboratory at Florida Atlantic University) has a translator and player. It is a separate site with its own terms, and nothing from Nenya is sent to it.
+            </p>
+
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">{melodyConnected ? 'Connected to Sight' : 'Independent melody'}</p>
@@ -448,6 +507,17 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               <ColorSwatch hex={melodyColor2} label="wish" muted={!melodyConnected && !melodyComplete} />
             </div>
 
+            {longMode ? (
+              <PhraseMelody
+                phrases={phrases}
+                noteNames={noteNames}
+                active={activeSlot}
+                playing={playingSlot}
+                onActivate={setActiveSlot}
+                onMove={(id, by) => { setPhrases((prev) => movePhrase(prev, id, by)); setHasPlayed(false); }}
+                onMute={(id, m) => { setPhrases((prev) => setMuted(prev, id, m)); setHasPlayed(false); }}
+              />
+            ) : (
             <div className="grid grid-cols-2 gap-6">
               {[0, 1].map((half) => {
                 const slots = melody.slice(half * 3, half * 3 + 3);
@@ -481,9 +551,15 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 );
               })}
             </div>
+            )}
 
             <div className="space-y-2">
-              {!melodyComplete && (
+              {longMode && (
+                <p className="text-xs text-center text-muted-foreground">
+                  {activeSlot ? 'Choose a note below to change the note you picked.' : 'Pick a note in a phrase above to change it; the colors in the Sight gateway stay as they are.'}
+                </p>
+              )}
+              {!longMode && !melodyComplete && (
                 <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Sans', sans-serif" }}>
                   Click a note {PICKER_HINT[PICKER_KIND[tonalSystem]]} for the{' '}
                   <span style={{ color: melody.findIndex((n) => n === null) < 3 ? accentCurrent : accentWish }}>
@@ -494,8 +570,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               {PICKER_KIND[tonalSystem] === 'staff' ? (
                 <MusicalStaff
                   notes={tonalSystem === 'rast' ? RAST_STAFF_NOTES : tonalSystem === 'blues' ? BLUES_STAFF_NOTES : undefined}
-                  currentSelected={melody.slice(0, 3).filter((n): n is number => n !== null)}
-                  wishSelected={melody.slice(3, 6).filter((n): n is number => n !== null)}
+                  currentSelected={longMode ? (phrases.find((p) => p.kind === 'present')?.notes ?? []) : melody.slice(0, 3).filter((n): n is number => n !== null)}
+                  wishSelected={longMode ? (phrases.find((p) => p.kind === 'wish')?.notes ?? []) : melody.slice(3, 6).filter((n): n is number => n !== null)}
                   onSelect={handleSelectNote}
                   accentCurrent={accentCurrent}
                   accentWish={accentWish}
@@ -503,8 +579,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               ) : PICKER_KIND[tonalSystem] === 'koto' ? (
                 <KotoStringDiagram
                   notes={scale}
-                  currentSelected={melody.slice(0, 3).filter((n): n is number => n !== null)}
-                  wishSelected={melody.slice(3, 6).filter((n): n is number => n !== null)}
+                  currentSelected={longMode ? (phrases.find((p) => p.kind === 'present')?.notes ?? []) : melody.slice(0, 3).filter((n): n is number => n !== null)}
+                  wishSelected={longMode ? (phrases.find((p) => p.kind === 'wish')?.notes ?? []) : melody.slice(3, 6).filter((n): n is number => n !== null)}
                   onSelect={handleSelectNote}
                   accentCurrent={accentCurrent}
                   accentWish={accentWish}
@@ -512,8 +588,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               ) : (
                 <ScaleRow
                   notes={scale}
-                  currentSelected={melody.slice(0, 3).filter((n): n is number => n !== null)}
-                  wishSelected={melody.slice(3, 6).filter((n): n is number => n !== null)}
+                  currentSelected={longMode ? (phrases.find((p) => p.kind === 'present')?.notes ?? []) : melody.slice(0, 3).filter((n): n is number => n !== null)}
+                  wishSelected={longMode ? (phrases.find((p) => p.kind === 'wish')?.notes ?? []) : melody.slice(3, 6).filter((n): n is number => n !== null)}
                   onSelect={handleSelectNote}
                   accentCurrent={accentCurrent}
                   accentWish={accentWish}
@@ -523,12 +599,19 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handleUndo} disabled={melody.every((n) => n === null)}>
-                  ← Undo
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleRandomize} disabled={isPlaying}>
-                  ♩ Randomize
-                </Button>
+                {!longMode && (
+                  <>
+                    <Button variant="outline" size="sm" onClick={handleUndo} disabled={melody.every((n) => n === null)}>
+                      ← Undo
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleRandomize} disabled={isPlaying}>
+                      ♩ Randomize
+                    </Button>
+                  </>
+                )}
+                {isPlaying && (
+                  <Button variant="outline" size="sm" onClick={handleStop}>■ Stop</Button>
+                )}
               </div>
               <Button
                 size="sm"
@@ -538,6 +621,21 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               >
                 {isPlaying ? '♩ playing…' : hasPlayed ? '▷ Play again' : '▷ Hear it'}
               </Button>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="space-y-1 text-xs text-muted-foreground">
+                <span>Pace: {stepSeconds.toFixed(2)} seconds a note{stepSeconds >= 0.8 ? ' (slow)' : stepSeconds <= 0.3 ? ' (quick)' : ''}</span>
+                <input type="range" min={0.2} max={1.2} step={0.05} value={stepSeconds} onChange={(e) => setStepSeconds(clampStep(Number(e.target.value)))} className="w-full" />
+              </label>
+              <label className="space-y-1 text-xs text-muted-foreground">
+                <span>Volume: {Math.round(volume * 100)}%</span>
+                <input type="range" min={0} max={1} step={0.05} value={volume} onChange={(e) => setVolume(clampVolume(Number(e.target.value)))} className="w-full" />
+              </label>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="outline" size="sm" onClick={handleDownload} disabled={!melodyComplete || isPlaying}>Save as a sound file</Button>
+              <p className="text-xs text-muted-foreground" role="status">{fileNote || 'The file is made on your device and is not sent anywhere.'}</p>
             </div>
 
             <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginTop: '6px', flexWrap: 'wrap' }}>
@@ -605,68 +703,12 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
                   <div className="space-y-2">
                     <Label className="text-sm">Timbre (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                      {timbres.map((timbre) => (
-                        <div key={timbre} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`ct-${timbre}`}
-                            checked={currentTimbres.includes(timbre)}
-                            onCheckedChange={(checked) => handleCheckboxChange(timbre, checked as boolean, currentTimbres, setCurrentTimbres)}
-                          />
-                          <label htmlFor={`ct-${timbre}`} className="text-xs cursor-pointer">
-                            {timbre}
-                          </label>
-                        </div>
-                      ))}
-                      <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                        <Checkbox
-                          id="ct-other"
-                          checked={currentTimbreOther.length > 0}
-                          onCheckedChange={(checked) => {
-                            if (!checked) setCurrentTimbreOther('');
-                          }}
-                        />
-                        <div className="flex-1">
-                          <label htmlFor="ct-other" className="text-xs cursor-pointer block mb-1">
-                            Other
-                          </label>
-                          <Input placeholder="Describe…" value={currentTimbreOther} onChange={(e) => setCurrentTimbreOther(e.target.value)} className="h-8 text-sm" />
-                        </div>
-                      </div>
-                    </div>
+                    <WordPicker category="timbre" idPrefix="currentTimbres" selected={currentTimbres} onToggle={(t) => handleCheckboxChange(t, !currentTimbres.includes(t), currentTimbres, setCurrentTimbres)} other={{ value: currentTimbreOther, onChange: setCurrentTimbreOther, placeholder: "Describe…" }} />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Rhythm (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                      {rhythms.map((rhythm) => (
-                        <div key={rhythm} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`cr-${rhythm}`}
-                            checked={currentRhythms.includes(rhythm)}
-                            onCheckedChange={(checked) => handleCheckboxChange(rhythm, checked as boolean, currentRhythms, setCurrentRhythms)}
-                          />
-                          <label htmlFor={`cr-${rhythm}`} className="text-xs cursor-pointer">
-                            {rhythm}
-                          </label>
-                        </div>
-                      ))}
-                      <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                        <Checkbox
-                          id="cr-other"
-                          checked={currentRhythmOther.length > 0}
-                          onCheckedChange={(checked) => {
-                            if (!checked) setCurrentRhythmOther('');
-                          }}
-                        />
-                        <div className="flex-1">
-                          <label htmlFor="cr-other" className="text-xs cursor-pointer block mb-1">
-                            Other
-                          </label>
-                          <Input placeholder="Describe…" value={currentRhythmOther} onChange={(e) => setCurrentRhythmOther(e.target.value)} className="h-8 text-sm" />
-                        </div>
-                      </div>
-                    </div>
+                    <WordPicker category="rhythm" idPrefix="currentRhythms" selected={currentRhythms} onToggle={(t) => handleCheckboxChange(t, !currentRhythms.includes(t), currentRhythms, setCurrentRhythms)} other={{ value: currentRhythmOther, onChange: setCurrentRhythmOther, placeholder: "Describe…" }} />
                   </div>
 
                   <div className="space-y-2">
@@ -694,68 +736,12 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
                   <div className="space-y-2">
                     <Label className="text-sm">Timbre (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                      {timbres.map((timbre) => (
-                        <div key={timbre} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`pt-${timbre}`}
-                            checked={potentialTimbres.includes(timbre)}
-                            onCheckedChange={(checked) => handleCheckboxChange(timbre, checked as boolean, potentialTimbres, setPotentialTimbres)}
-                          />
-                          <label htmlFor={`pt-${timbre}`} className="text-xs cursor-pointer">
-                            {timbre}
-                          </label>
-                        </div>
-                      ))}
-                      <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                        <Checkbox
-                          id="pt-other"
-                          checked={potentialTimbreOther.length > 0}
-                          onCheckedChange={(checked) => {
-                            if (!checked) setPotentialTimbreOther('');
-                          }}
-                        />
-                        <div className="flex-1">
-                          <label htmlFor="pt-other" className="text-xs cursor-pointer block mb-1">
-                            Other
-                          </label>
-                          <Input placeholder="Describe…" value={potentialTimbreOther} onChange={(e) => setPotentialTimbreOther(e.target.value)} className="h-8 text-sm" />
-                        </div>
-                      </div>
-                    </div>
+                    <WordPicker category="timbre" idPrefix="potentialTimbres" selected={potentialTimbres} onToggle={(t) => handleCheckboxChange(t, !potentialTimbres.includes(t), potentialTimbres, setPotentialTimbres)} other={{ value: potentialTimbreOther, onChange: setPotentialTimbreOther, placeholder: "Describe…" }} />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Rhythm (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                      {rhythms.map((rhythm) => (
-                        <div key={rhythm} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`pr-${rhythm}`}
-                            checked={potentialRhythms.includes(rhythm)}
-                            onCheckedChange={(checked) => handleCheckboxChange(rhythm, checked as boolean, potentialRhythms, setPotentialRhythms)}
-                          />
-                          <label htmlFor={`pr-${rhythm}`} className="text-xs cursor-pointer">
-                            {rhythm}
-                          </label>
-                        </div>
-                      ))}
-                      <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                        <Checkbox
-                          id="pr-other"
-                          checked={potentialRhythmOther.length > 0}
-                          onCheckedChange={(checked) => {
-                            if (!checked) setPotentialRhythmOther('');
-                          }}
-                        />
-                        <div className="flex-1">
-                          <label htmlFor="pr-other" className="text-xs cursor-pointer block mb-1">
-                            Other
-                          </label>
-                          <Input placeholder="Describe…" value={potentialRhythmOther} onChange={(e) => setPotentialRhythmOther(e.target.value)} className="h-8 text-sm" />
-                        </div>
-                      </div>
-                    </div>
+                    <WordPicker category="rhythm" idPrefix="potentialRhythms" selected={potentialRhythms} onToggle={(t) => handleCheckboxChange(t, !potentialRhythms.includes(t), potentialRhythms, setPotentialRhythms)} other={{ value: potentialRhythmOther, onChange: setPotentialRhythmOther, placeholder: "Describe…" }} />
                   </div>
 
                   <div className="space-y-2">

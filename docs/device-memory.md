@@ -10,7 +10,9 @@ a server, no random identifiers, and never anything a visitor writes, draws, ans
 | `nenya.remember` | `1` | Only when the visitor turns on "Remember my settings on this device" |
 | `nenya.prefs` | Theme, text size, animation and breathing choices (validated allow-list) | Only while `nenya.remember` is on |
 | `nenya.terms` | The date of the terms the visitor agreed to | Only while `nenya.remember` is on; ignored if the terms date changes |
+| `nenya.coach.pause` | A time: when the coach demo may open again after it ended a conversation for abusive language about people or groups (10 minutes) | Set automatically by the pause (not yet triggered from conversations; the owner panel can start one to test). Erased by Forget me and by Emergency Exit. Never sent |
 | `nenya.coach.owner` | `1` in the owner's own browser, to skip the rest while testing | Set by hand, see `docs/coach-testing.md` |
+| `nenya.coach.overrides` | The owner's testing switches (distress sentences on/off, instruction wording v1/v2) as JSON | Set from the owner panel (`/coach?owner`). Sent to the coach only together with the owner token, which the coach checks; kept by Forget me, erased by Emergency Exit |
 
 **Erasing it.** Turning the switch off removes `nenya.remember`, `nenya.prefs` and `nenya.terms`. "Forget me" (a button in the settings menu, and a link at the bottom of every page), after an "Are you sure?" step (Cancel is the first and default button, and Escape cancels),
 removes every key starting with `nenya` except the owner flag, then **reloads the current page at its own path** (`forgetMeAndRestart` in `deviceMemory.ts`). The
@@ -30,3 +32,9 @@ The Exit button is pinned above every overlay (loading screen, first-visit rhyth
 ## The coach's quiet timeout
 
 The person picks 10, 15 or 20 minutes of quiet, or "Leave open", before starting, and can change it in the chat. It lives only in the page's memory (nothing stored or sent). Warnings come with five minutes and one minute left, and say a copy can be saved first; closing does not count as a finished conversation (no rest is set). The choices stop at 20 minutes because the server's ticket lasts 30 minutes, so a signed copy can still be made just after closing. "Leave open" never closes the page's conversation but reminds the person at 20 minutes that the coach can only continue one that had a message in the last 30. See `src/lib/chatTimeout.ts`.
+
+
+## Breathing tones
+`breathingTones` is one more saved display setting (off by default; saved only while "Remember on this device" is on; erased by "Forget me" and Emergency Exit). It is shared by three switches, so it lives in `src/lib/deviceMemory.ts`. Nothing about it is counted or sent.
+
+`breathingSound` (harp, bowls, chord or scale; harp by default) is the style the tones are played in, kept and erased the same way.

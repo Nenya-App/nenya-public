@@ -65,13 +65,14 @@ let x = await send(GOOD, { note: '<b>The reply felt</b> off\u0007 today' });
 ok('a genuine signed transcript is accepted', x.status === 204 && forwards.length === 1);
 const f = forwards[0].fields;
 ok('it is forwarded to our own site, to the separate form for signed transcripts', forwards[0].url === 'https://nenya.biz/' && f['form-name'] === 'verified-transcript' && f['bot-field'] === '');
-ok('the readable text is rebuilt from the signed transcript, exactly as the page shows it', f.report === readableTranscript(m, S, rc.receipt, '', rc.transcript.meta));
+ok('the readable text is rebuilt from the signed transcript, exactly as the page shows it', f.report === readableTranscript(m, S, rc.receipt, '', rc.transcript.meta, rc.transcript.site, rc.transcript.checks));
 const sf = forwards[0].file;
-ok('the signed file travels as a real JSON file, not as text in the body', !!sf && sf.type === 'application/json' && JSON.parse(sf.text).receipt.hash === rc.receipt.hash && JSON.parse(sf.text).transcript.v === 3 && !('signed' in f));
+ok('the signed file travels as a real JSON file and also as text in the body, for copying', !!sf && sf.type === 'application/json' && JSON.parse(sf.text).receipt.hash === rc.receipt.hash && JSON.parse(sf.text).transcript.v === 3 && JSON.parse(f.signed).receipt.hash === rc.receipt.hash);
 ok('the file is exactly what the page would download, and is named by hash and time', !!sf && sf.text === signedJson(rc.transcript, rc.receipt) && sf.name === transcriptFilename(rc.receipt, 'json') && /^nenya-coach-transcript-[0-9a-f]{8}-\d{8}T\d{6}Z\.json$/.test(sf.name));
 ok('the note is cleaned of markup and control characters', f.comments === 'The reply felt off today');
 ok('a checked field only the function can make is attached', f.checked === createHmac('sha256', SECRET).update(`report-checked|${rc.receipt.hash}`).digest('hex'));
 ok('the key id is attached, and the receipt is found in the log', f['key-id'] === rc.receipt.keyId && /^yes \(\d{4}-\d{2}-\d{2}\)$/.test(f['issued-record']));
+ok('the hash and signing time are their own fields, so a submission can be found by them', f['receipt-hash'] === rc.receipt.hash && f['issued-at'] === rc.receipt.issuedAt);
 ok('an accepted report is counted', n('coach.report.verified') === 1 && n('coach.report.rejected') === 0);
 ok('nothing from the transcript was stored', store.keys().every((k) => !JSON.stringify(k).includes('message ')) && !store.keys().some((k) => k.startsWith('reports')));
 
@@ -128,6 +129,20 @@ ok('only POST is served', (await send(GOOD, { method: 'GET' })).status === 405);
 ok('only JSON is accepted', (await send(GOOD, { type: 'text/plain' })).status === 415);
 ok('only the public route is served', (await send(GOOD, { path: '/.netlify/functions/report' })).status === 404);
 ok('an oversized body is refused', (await send(null, { raw: JSON.stringify({ signed: GOOD, pad: 'x'.repeat(41000) }) })).status === 413);
+
+// ---- a conversation the site ended (the stopped message is signed)
+const stopRc = await coachPost({ action: 'receipt', stopped: true, messages: [{ role: 'user', content: 'I am going to kill myself tonight' }] });
+const STOP_OK = { transcript: stopRc.transcript, receipt: stopRc.receipt };
+const nBeforeStop = forwards.length;
+const stopSent = await send(STOP_OK, { note: 'The site stopped this; I think it was a mistake.' });
+ok('a genuine signed transcript of a conversation the site ended is accepted', stopSent.status === 204 && forwards.length === nBeforeStop + 1);
+ok('its readable text says the site ended it', forwards[forwards.length - 1].fields.report.includes('Ended by the site') && forwards[forwards.length - 1].fields.report === readableTranscript(stopRc.transcript.messages, S, stopRc.receipt, '', stopRc.transcript.meta, stopRc.transcript.site, stopRc.transcript.checks));
+const noEnded = JSON.parse(JSON.stringify(STOP_OK)); delete noEnded.transcript.meta.endedBy; delete noEnded.transcript.meta.stop;
+ok('an odd number of messages without the site-ended facts is refused', (await send(noEnded)).status === 400);
+const claimsEnded = JSON.parse(JSON.stringify(GOOD)); claimsEnded.transcript.meta.endedBy = 'site';
+ok('a finished conversation that claims the site ended it is refused', (await send(claimsEnded)).status === 400);
+const forgedStop = JSON.parse(JSON.stringify(STOP_OK)); forgedStop.transcript.messages[0].content = 'I am going to kill myself';
+ok('an altered stopped message breaks the signature', (await send(forgedStop)).status === 400);
 
 // ---- if our own form cannot be reached
 forwardStatus = 500;

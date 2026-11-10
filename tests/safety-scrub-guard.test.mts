@@ -4,8 +4,10 @@ import { looksLikeManipulation, neutralize } from '../src/lib/promptGuard.ts';
 import { ok } from './helpers.mts';
 
 // Crisis phrase matching
-const stop = detectFlag("I'm thinking about hurting myself.");
-ok('a clear self-harm statement is a stop-tier flag', stop?.tier === 'stop' && stop?.category === 'self-harm');
+const stop = detectFlag("I want to kill myself.");
+ok('a clear suicide statement is a stop-tier flag', stop?.tier === 'stop' && stop?.category === 'self-harm');
+const hurt = detectFlag("I'm thinking about hurting myself.");
+ok('hurting oneself on purpose is allowed on the first mention, with a push toward a person (not a stop): see crisis-self-injury', hurt?.tier === 'soften' && hurt?.category === 'self-injury');
 ok('a figure of speech is only softened', detectFlag("I'm killing myself at work with these deadlines")?.tier === 'soften');
 ok('everyday text is not flagged', detectFlag('I feel overwhelmed and tired') === null && detectFlag('My coworker talked over me again') === null);
 

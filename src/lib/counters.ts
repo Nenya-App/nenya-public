@@ -9,6 +9,11 @@ export const BLOCK_REASONS = ['manipulation', 'context', 'crisis', 'cap', 'ip'] 
 export const FIXED_EVENTS = [
   'coach.turn.sent', // a well-formed message reached the function
   'coach.turn.answered', // the message went to the model and a reply came back
+  'coach.turn.hostile.abuse', // the message was hostile toward the coach (contempt, insults, dares): the coach was told how to answer, a count and no content
+  'coach.turn.hostile.critique', // the message was sharp feedback on the coach's reply: same
+  'coach.turn.hostile.thanks-added', // the site opened a reply to critique with its thank-you
+  'coach.turn.hostile.apology-removed', // an apologising sentence was taken out of a reply to a hostile message
+  'coach.turn.distress-text', // a reply to a possible-distress message had the site's pointer to a person and a crisis line added
   'coach.conversation.started', // a first exchange was accepted
   'coach.conversation.finished', // the last exchange (the fifth) was answered
   'coach.report.verified', // a signed transcript sent to us passed the signature check
@@ -22,7 +27,7 @@ export const SCREENS = ['welcome', 'home', 'sight', 'sound', 'touch', 'essence',
 export const RHYTHM_NAMES = ['steady', 'calming', 'lively', 'deep-calm', 'box', '478'] as const;
 
 /** Counted from the browser, and only after the visitor has agreed to the terms (see src/lib/usageCounts.ts). */
-export const BROWSER_FIXED_EVENTS = ['onboarding.terms.accepted', 'tour.accepted', 'tour.declined', 'tour.completed'] as const;
+export const BROWSER_FIXED_EVENTS = ['onboarding.terms.accepted', 'tour.accepted', 'tour.declined', 'tour.completed', 'coach.pause.begun', 'coach.pause.returned.waited', 'coach.pause.returned.quiz'] as const;
 
 const under = (name: string, prefix: string, allowed: readonly string[]): boolean =>
   name.startsWith(prefix) && allowed.includes(name.slice(prefix.length));

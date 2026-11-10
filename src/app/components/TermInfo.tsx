@@ -9,6 +9,7 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import * as m from 'motion/react-m';
+import { senseDescription } from '../../lib/senseWords';
 
 interface TermInfoProps {
   term: string;
@@ -515,6 +516,9 @@ export function TermInfo({ term, category }: TermInfoProps) {
   } else {
     data = categoryOverrides[category]?.[term] ?? termData[term];
   }
+  // Words added to the lists later are described in src/lib/senseWords.ts, by category (so a word used in two lists can differ).
+  const written = senseDescription(category, term);
+  if (written) data = { description: written };
 
   if (!data) return null;
 

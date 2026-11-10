@@ -24,13 +24,18 @@ export interface ReceiptListStore {
   delete(key: string): Promise<void>;
 }
 
-/** The day a receipt hash was recorded (within the 30 days kept), or null if it is not in the log. */
-export async function receiptRecordedOn(store: ReceiptListStore, hash: string): Promise<string | null> {
+/** Like receiptRecordedOn, but a store that cannot be read throws (so the owner's lookup can say so instead of "not in the log"). */
+export async function findReceipt(store: ReceiptListStore, hash: string): Promise<string | null> {
   if (!HASH.test(hash)) return null;
+  const { blobs } = await store.list({ prefix: 'r/' });
+  const hit = blobs.map((b) => b.key).find((k) => k.endsWith(`/${hash}`));
+  return hit ? hit.split('/')[1] : null;
+}
+
+/** The day a receipt hash was recorded (within the 30 days kept), or null if it is not in the log or the log cannot be read. */
+export async function receiptRecordedOn(store: ReceiptListStore, hash: string): Promise<string | null> {
   try {
-    const { blobs } = await store.list({ prefix: 'r/' });
-    const hit = blobs.map((b) => b.key).find((k) => k.endsWith(`/${hash}`));
-    return hit ? hit.split('/')[1] : null;
+    return await findReceipt(store, hash);
   } catch {
     return null;
   }

@@ -4,6 +4,7 @@ import { OWNER_TOKEN_KEY } from '../lib/deviceMemory';
 import { downloadText } from '../lib/transcript';
 import { GROUPS, label } from './labels';
 import { csvFilename, totalsCsv } from './exportCsv';
+import TranscriptChecker, { type LookupResult } from '../verify/TranscriptChecker';
 
 // The owner's page for reading the usage totals (see docs/site-metrics-scope.md). It holds nothing but the owner's own
 // token (in this browser only) and a table of plain daily totals fetched from /api/stats. It is not linked from anywhere.
@@ -210,6 +211,19 @@ export default function AdminPage() {
     setMessage('The token was removed from this browser.');
   };
 
+  // For the transcript checker: asks our own 30-day log about a receipt. Only the 64-character hash is sent, never the conversation.
+  const lookup = async (hash: string): Promise<LookupResult> => {
+    const t = token.trim() || readToken();
+    const res = await fetch('/api/receipt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(t ? { 'x-nenya-owner': t } : {}) },
+      body: JSON.stringify({ hash }),
+      cache: 'no-store',
+    });
+    if (!res.ok) return 'error';
+    return (await res.json()) as LookupResult;
+  };
+
   const shown = (group: (typeof GROUPS)[number]) =>
     (stats?.events ?? []).filter((e) => group.match(e) && (showEmpty || (totals[e] ?? 0) > 0));
 
@@ -311,6 +325,18 @@ export default function AdminPage() {
       <p role="status" aria-live="polite" className="min-h-5 text-sm text-muted-foreground">
         {busy ? 'Reading the numbers…' : message}
       </p>
+
+      {(phase === 'in' || stats) && (
+        <section className="space-y-3" aria-label="Check a transcript">
+          <h2 className="text-xl">Check a transcript</h2>
+          <p className="text-sm text-muted-foreground">
+            Drop or paste a signed transcript (the .json file, or the readable .txt copy) to see whether it is genuine and unedited, and
+            whether this site&rsquo;s own 30-day log remembers issuing it. The file is checked here in the browser; only its fingerprint
+            (the hash) is sent for the log lookup, never the conversation.
+          </p>
+          <TranscriptChecker lookup={lookup} />
+        </section>
+      )}
 
       {stats && (
         <section className="space-y-8" aria-label="Totals">

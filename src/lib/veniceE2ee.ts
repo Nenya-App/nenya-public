@@ -16,6 +16,20 @@
 // Attestation: we check what Venice reports (verified, our nonce echoed back, a signing key present, no debug
 // flag). We do not parse the Intel TDX quote or the NVIDIA payload ourselves, so we rely on Venice's own
 // verification of the enclave.
+//
+// A short memory of the result: asking Venice for an attestation on every message hit Venice's rate limit for that step
+// (each coach turn made two requests). So the verified model key is kept in this function's memory for a few minutes
+// (COACH_E2EE_ATTESTATION_TTL_S, default 300; 0 turns it off) and reused, and simultaneous first requests share one
+// attestation. What is kept is the model's PUBLIC key and the time it was checked: nothing about any visitor or message.
+// It is never written anywhere and goes when the function instance does. Rules, so the check is not weakened:
+//  - the key is stored only after every check above has passed, and only for that model;
+//  - if a fresh attestation reports "not verified", a debug enclave, a wrong nonce or a bad key, the stored key is dropped and
+//    the request fails: a stored key is never used to get around a security failure;
+//  - if the attestation step is only rate limited, briefly down or slow (429, 5xx, no answer), a stored key up to
+//    COACH_E2EE_ATTESTATION_STALE_S old (default 900) is used instead of failing the visitor;
+//  - if a request made with a stored key is refused or cannot be read (for example the enclave's key changed), the stored key is
+//    dropped and the request is repeated once with a fresh attestation.
+
 import { createCipheriv, createDecipheriv, createECDH, hkdfSync, randomBytes } from 'node:crypto';
 
 const HKDF_INFO = Buffer.from('ecdsa_encryption');
@@ -113,7 +127,45 @@ export interface E2eeChatOptions {
   signal?: AbortSignal;
   baseUrl?: string;
   fetchImpl?: typeof fetch;
+  /** How long a verified model key is remembered (default: from the environment; see the note at the top of this file). */
+  attestation?: AttestationPolicy;
 }
+
+export interface AttestationPolicy {
+  /** How long a verified key is reused without asking again (ms). 0 turns the memory off. */
+  ttlMs: number;
+  /** How old a stored key may be and still be used when the attestation step is only rate limited or briefly down (ms). */
+  staleMs: number;
+  now: () => number;
+}
+
+const secondsFromEnv = (v: string | undefined, fallback: number): number => {
+  const n = Number(v);
+  return v !== undefined && v !== '' && Number.isFinite(n) && n >= 0 ? n : fallback;
+};
+
+/** The policy from the environment (COACH_E2EE_ATTESTATION_TTL_S and _STALE_S); a day is the most either may be. */
+export function attestationPolicyFromEnv(env: Record<string, string | undefined> = process.env): AttestationPolicy {
+  const ttl = Math.min(86400, secondsFromEnv(env.COACH_E2EE_ATTESTATION_TTL_S, 300));
+  const stale = Math.min(86400, Math.max(ttl, secondsFromEnv(env.COACH_E2EE_ATTESTATION_STALE_S, 900)));
+  return { ttlMs: ttl * 1000, staleMs: ttl === 0 ? 0 : stale * 1000, now: () => Date.now() };
+}
+
+const keyMemory = new Map<string, { key: string; at: number }>();
+const keyInFlight = new Map<string, Promise<string>>();
+/** For tests: forget every stored key. */
+export const __clearAttestationMemory = (): void => {
+  keyMemory.clear();
+  keyInFlight.clear();
+};
+/** For tests: what is remembered (the public key and when it was checked). */
+export const __attestationMemory = (): { model: string; key: string; at: number }[] => [...keyMemory].map(([model, v]) => ({ model, ...v }));
+
+/** True when the attestation step failed only because Venice was busy or unreachable, not because the report was bad. */
+const onlyBusy = (e: unknown): boolean => {
+  if (e instanceof E2eeError) return e.code === 'attestation' && e.status !== undefined && (e.status === 429 || e.status >= 500);
+  return true; // no answer at all (network, timeout)
+};
 
 /** Fetch and check the enclave's attestation; returns the key to encrypt to. */
 async function attest(o: Required<Pick<E2eeChatOptions, 'apiKey' | 'model' | 'baseUrl'>> & { fetchImpl: typeof fetch; signal?: AbortSignal }): Promise<string> {
@@ -135,11 +187,65 @@ async function attest(o: Required<Pick<E2eeChatOptions, 'apiKey' | 'model' | 'ba
   return key;
 }
 
+/** The key to encrypt to for this model: the remembered one if it is recent, else a fresh, fully checked attestation. */
+async function modelKeyFor(
+  o: { apiKey: string; model: string; baseUrl: string; fetchImpl: typeof fetch; signal?: AbortSignal },
+  policy: AttestationPolicy,
+  forceFresh = false
+): Promise<{ key: string; remembered: boolean }> {
+  const now = policy.now();
+  const hit = keyMemory.get(o.model);
+  if (!forceFresh && policy.ttlMs > 0 && hit && now - hit.at < policy.ttlMs) return { key: hit.key, remembered: true };
+  if (forceFresh) keyMemory.delete(o.model);
+  // Requests that arrive together share one attestation instead of each making their own.
+  let pending = policy.ttlMs > 0 ? keyInFlight.get(o.model) : undefined;
+  if (!pending) {
+    pending = attest({ ...o, signal: o.signal ?? AbortSignal.timeout(15000) }).then(
+      (key) => {
+        if (policy.ttlMs > 0) keyMemory.set(o.model, { key, at: policy.now() });
+        return key;
+      },
+      (e) => {
+        if (!onlyBusy(e)) keyMemory.delete(o.model); // a security failure: forget the stored key
+        throw e;
+      }
+    );
+    if (policy.ttlMs > 0) {
+      keyInFlight.set(o.model, pending);
+      const clear = () => keyInFlight.delete(o.model);
+      pending.then(clear, clear);
+    }
+  }
+  try {
+    return { key: await pending, remembered: false };
+  } catch (e) {
+    // Only when Venice was busy or unreachable, and only for a recently checked key.
+    if (policy.staleMs > 0 && hit && now - hit.at < policy.staleMs && onlyBusy(e)) return { key: hit.key, remembered: true };
+    throw e;
+  }
+}
+
 /** One encrypted chat completion. Streams internally and returns the whole decrypted reply. */
 export async function e2eeChat(opts: E2eeChatOptions): Promise<{ content: string; finishReason?: string }> {
   const fetchImpl = opts.fetchImpl ?? fetch;
   const baseUrl = opts.baseUrl ?? VENICE_BASE;
-  const modelKey = await attest({ apiKey: opts.apiKey, model: opts.model, baseUrl, fetchImpl, signal: opts.signal });
+  const policy = opts.attestation ?? attestationPolicyFromEnv();
+  const base = { apiKey: opts.apiKey, model: opts.model, baseUrl, fetchImpl, signal: opts.signal };
+  const first = await modelKeyFor(base, policy);
+  try {
+    return await chatWithKey(opts, first.key, fetchImpl, baseUrl);
+  } catch (e) {
+    // A request made with a remembered key that is refused or cannot be read may mean the enclave's key changed: forget it and
+    // try once more with a fresh attestation. (A failure with a fresh key is a real failure and is not repeated.)
+    if (first.remembered && e instanceof E2eeError && (e.code === 'status' || e.code === 'decrypt' || e.code === 'format') && !opts.signal?.aborted) {
+      const second = await modelKeyFor(base, policy, true);
+      return chatWithKey(opts, second.key, fetchImpl, baseUrl);
+    }
+    throw e;
+  }
+}
+
+async function chatWithKey(opts: E2eeChatOptions, modelKey: string, fetchImpl: typeof fetch, baseUrl: string): Promise<{ content: string; finishReason?: string }> {
 
   // A fresh key for every request, used only to read this reply.
   const client = createECDH('secp256k1');

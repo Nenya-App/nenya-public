@@ -30,7 +30,7 @@ the in-app Terms of Use for the full statement, including crisis resources.
 - **Add to Home Screen.** A header button explains how to save Nenya to a phone's
   home screen or a browser's bookmarks. This is a shortcut, not an offline app.
 - **Reading.** The About section explains the design, the Nonviolent
-  Communication approach, and the sixteen "Valar" archetypes of need that give
+  Communication approach, and the sixteen archetypes of need that give
   the colors their meaning.
 
 ## Privacy: what is and isn't true
@@ -164,7 +164,7 @@ The project is set up for Netlify:
   Netlify dashboard for the Production context, Functions scope; never commit them):
   `VENICE_API_KEY` (secret), `COACH_TICKET_SECRET` (secret), `COACH_ENABLED`
   (`true` to accept requests). Optional: `COACH_SIGNING_KEY` (secret; enables signed
-  transcripts, see the docs), `COACH_MODEL`, `COACH_CHARACTER_SLUG`.
+  transcripts, see the docs), `COACH_MODEL`, `COACH_CHARACTER_SLUG`, `COACH_E2EE_ATTESTATION_TTL_S` and `COACH_E2EE_ATTESTATION_STALE_S` (how long the encrypted model's verified key is remembered, in seconds; see `docs/coach-testing.md`).
   Changes take effect on the next deploy.
 
 ## Project layout
@@ -202,7 +202,8 @@ requires you to share your changes under the same terms.
 
 The "Nenya" name and logo are **not** covered by that license. See
 [`TRADEMARK.md`](./TRADEMARK.md) for what that does and doesn't allow. Third-party
-credits are in [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md).
+credits and licenses (including the DarkBench prompts used to test the coach) are in
+[`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md).
 
 ## Contributing
 

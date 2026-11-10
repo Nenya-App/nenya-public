@@ -14,7 +14,7 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
   const menuItems = [
     {
       id: 'mellonamin',
-      title: 'Mellonamin: Welcome Letter',
+      title: 'Welcome: You May Rest Here',
       description: 'The philosophy and practice behind Nenya',
       icon: Scroll,
     },
