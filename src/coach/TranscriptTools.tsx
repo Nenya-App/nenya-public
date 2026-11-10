@@ -163,6 +163,9 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
             This is exactly what Nenya would receive, together with the signed file so that we can check it was not changed. Please check it
             contains nothing you want to keep private.
           </p>
+          <p className="text-xs text-muted-foreground">
+            Names and contact details were replaced with placeholders on your device as you wrote, but names are not always caught. What you send arrives in our email inbox, so if you see a name or detail in the text below that you do not want us to have, close this and download the transcript instead, or tell us to delete it afterward at info@nenya.biz.
+          </p>
           <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-2 text-xs">{shareText}</pre>
           <label className="block space-y-1 text-xs text-muted-foreground">
             <span>What would you like us to know? (optional, sent with the transcript)</span>

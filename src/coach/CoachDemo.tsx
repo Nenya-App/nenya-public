@@ -807,6 +807,15 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     className="min-h-24 resize-none"
                     style={{ borderColor: `${color1}55` }}
                   />
+                  {(() => {
+                    // A gentle nudge while typing: names and contact details are replaced before anything is sent, and the coach does not use names.
+                    const found = draft.length > 2 ? scrubPII(draft) : null;
+                    return found && found.total > 0 ? (
+                      <p className="text-xs text-muted-foreground" role="status">
+                        This looks like it has {describeScrub(found.counts)} in it. The coach does not use names or contact details, so {found.total === 1 ? 'it' : 'they'} will be replaced with {found.total === 1 ? 'a placeholder' : 'placeholders'} when you send. You can say who it was by how they relate to you instead (&ldquo;my sister&rdquo;, &ldquo;my manager&rdquo;). Names are not always caught, so please keep them out if you can.
+                      </p>
+                    ) : null;
+                  })()}
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-xs text-muted-foreground">
                       {draft.length} / {MAX_CHARS}
