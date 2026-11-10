@@ -2,15 +2,17 @@
 //   {action:'list'}                       the waiting conversations, each with an automatic anonymized DRAFT to start from
 //   {action:'approve', hash, items}       the reviewer's final text; refused if it is the wrong shape or the scrubber would still replace something
 //   {action:'reject', hash}               do not show it (its waiting copy is deleted; the person's other choices stand)
-//   {action:'run-deletions'}              run the nightly deletion job now, and report whether the Netlify token is set (never its value)
+//   {action:'inbox'}                      the transcripts people sent us (read here, never by email), with their choices and notes
+//   {action:'inbox-delete', hash}         delete one now: every copy we hold, leaving only a marker
+//   {action:'run-deletions'}              run the nightly deletion job now
 // Approving writes the reviewed copy to the store the public page reads, and deletes the signed original from the waiting store (it is no longer needed).
 import { getStore } from '@netlify/blobs';
 import { getUser } from '@netlify/identity';
 import { ownerAllowed } from '../../src/lib/ownerGate.ts';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
 import { anonymize, reviewProblem, stopLevelFlagged, type PublicItem } from '../../src/lib/publicCopy.ts';
-import { expireDue } from './transcript-expiry.mts';
-import { HASH, pendingKey, publicKey, publicUntilFor, recordKey, dueForDeletion, type TranscriptRecord } from '../../src/lib/transcriptPolicy.ts';
+import { deleteEverything, expireDue } from './transcript-expiry.mts';
+import { HASH, pendingKey, publicKey, publicUntilFor, recordKey, dueForDeletion, type InboxEntry, type TranscriptRecord } from '../../src/lib/transcriptPolicy.ts';
 import type { Receipt, SignedTranscript } from '../../src/lib/transcript.ts';
 
 const ROUTE = '/api/witnessed-review';
@@ -43,31 +45,37 @@ export default async (req: Request): Promise<Response> => {
       }
       return json(200, { pending: out });
     }
-    // Deletions software could not finish: the transcript is due to go (its time passed, or the person asked), but the stored submission could not be deleted
-    // automatically, and the notification email always needs a hand. The owner does those by hand, then marks them done here.
+    // Run the nightly deletion job now (owner only): the same code as the scheduled job.
+    if (body.action === 'run-deletions') return json(200, await expireDue(now));
+    // The transcripts people sent us, read here. They hold the conversation, so they are only ever shown to the owner.
+    if (body.action === 'inbox') {
+      const { blobs } = await s.list({ prefix: 'inbox/' });
+      const items = [];
+      for (const { key } of blobs) {
+        const e = (await s.get(key, { type: 'json' })) as InboxEntry | null;
+        if (e) items.push({ hash: key.slice('inbox/'.length), ...e });
+      }
+      items.sort((a, b) => (a.receivedAt < b.receivedAt ? 1 : -1));
+      return json(200, { items });
+    }
+    // Deletions that did not go through (the store could not be reached): due, and not yet a marker. The owner can delete them here.
     if (body.action === 'deletions') {
       const { blobs } = await s.list({ prefix: 'transcript/' });
       const waiting = [];
       for (const { key } of blobs) {
         const r = (await s.get(key, { type: 'json' })) as TranscriptRecord | null;
-        if (r && dueForDeletion(r, now)) waiting.push({ hash: r.hash, receivedAt: r.receivedAt, status: r.status, keepUntil: r.keepUntil, submissionId: r.submissionId ?? null, todo: ['delete the stored submission in Netlify (Forms, verified-transcript)', 'delete the notification email copy'] });
+        if (r && dueForDeletion(r, now)) waiting.push({ hash: r.hash, receivedAt: r.receivedAt, status: r.status, keepUntil: r.keepUntil, todo: ['delete the copies we hold (the automatic deletion did not go through)'] });
       }
       return json(200, { waiting });
     }
-    // Run the nightly deletion job now (owner only). The same code as the scheduled job; it reports how many it deleted and how many still need a hand,
-    // and whether the Netlify token is set (never its value).
-    if (body.action === 'run-deletions') {
-      const r = await expireDue(now, process.env);
-      return json(200, { ...r, tokenSet: !!process.env.NETLIFY_API_TOKEN });
-    }
     const hash = typeof body.hash === 'string' ? body.hash : '';
     if (!HASH.test(hash)) return json(400, { error: 'hash' });
-    if (body.action === 'mark-deleted') {
+    if (body.action === 'mark-deleted' || body.action === 'inbox-delete') {
       const r = (await s.get(recordKey(hash), { type: 'json' })) as TranscriptRecord | null;
-      if (!r || !dueForDeletion(r, now)) return json(404, { error: 'not due' });
-      await s.delete(pendingKey(hash)); await s.delete(publicKey(hash));
-      await s.setJSON(recordKey(hash), { hash: r.hash, receivedAt: r.receivedAt, uses: [], keep: r.keep, keepUntil: r.keepUntil, status: 'deleted', publication: 'none', updatedAt: now.toISOString() } satisfies TranscriptRecord);
-      return json(200, { status: 'deleted' });
+      if (!r || r.status === 'deleted') return json(404, { error: 'not found' });
+      // "mark-deleted" is for entries that are due; "inbox-delete" is the owner deleting one early, which is always allowed.
+      if (body.action === 'mark-deleted' && !dueForDeletion(r, now)) return json(404, { error: 'not due' });
+      return (await deleteEverything(s, r, now)) ? json(200, { status: 'deleted' }) : json(503, { error: 'store' });
     }
     const rec = (await s.get(recordKey(hash), { type: 'json' })) as TranscriptRecord | null;
     if (!rec || rec.status !== 'active' || rec.publication !== 'pending-review') return json(404, { error: 'not waiting' });

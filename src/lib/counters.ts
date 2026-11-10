@@ -18,6 +18,15 @@ export const FIXED_EVENTS = [
   'coach.conversation.finished', // the last exchange (the fifth) was answered
   'coach.report.verified', // a signed transcript sent to us passed the signature check
   'coach.report.rejected', // one did not (a code, never the content)
+  'coach.report.alert-failed', // a transcript was kept but the owner's email alert could not be sent
+  'transcript.deleted', // a transcript's copies were deleted at the end of the time its owner chose
+  'transcript.needs-manual-deletion', // a deletion was due but did not go through (listed for the owner)
+  'coach.offer.slur', // an educational card was offered (counts only, by kind of language; nothing about the words)
+  'coach.offer.dehumanizing-metaphor',
+  'coach.offer.dehumanizing-phrase',
+  'coach.offer.coded-term',
+  'coach.offer.harassing-insult',
+  'coach.offer.ai-insult',
 ] as const;
 
 /** The screens a page view can be counted for (the app's own screen ids; the About pages count together as 'about'). */

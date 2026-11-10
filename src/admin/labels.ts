@@ -1,7 +1,7 @@
 // Plain names and groups for the usage totals, shared by the admin page and its spreadsheet export.
 
 export const GROUPS: { title: string; match: (e: string) => boolean }[] = [
-  { title: 'Coach demo', match: (e) => e.startsWith('coach.') },
+  { title: 'Coach demo', match: (e) => e.startsWith('coach.') || e.startsWith('transcript.') },
   { title: 'Opening and tour', match: (e) => e.startsWith('onboarding.') || e.startsWith('tour.') },
   { title: 'Screens shown', match: (e) => e.startsWith('page.view.') },
 ];
@@ -25,6 +25,15 @@ const LABELS: Record<string, string> = {
   'tour.completed': 'Tour completed',
   'coach.report.verified': 'Transcript reports accepted',
   'coach.report.rejected': 'Transcript reports refused',
+  'coach.report.alert-failed': 'Transcripts kept, email alert failed',
+  'transcript.deleted': 'Transcripts deleted at their chosen time',
+  'transcript.needs-manual-deletion': 'Deletions that did not go through',
+  'coach.offer.slur': 'Cards offered: slurs',
+  'coach.offer.dehumanizing-metaphor': 'Cards offered: dehumanizing comparisons',
+  'coach.offer.dehumanizing-phrase': 'Cards offered: dehumanizing phrases',
+  'coach.offer.coded-term': 'Cards offered: coded terms',
+  'coach.offer.harassing-insult': 'Cards offered: insults',
+  'coach.offer.ai-insult': 'Cards offered: abuse aimed at the AI',
 };
 
 export const label = (e: string): string => {

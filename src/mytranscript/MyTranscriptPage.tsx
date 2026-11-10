@@ -43,7 +43,7 @@ export default function MyTranscriptPage() {
       const j = await res.json().catch(() => ({}));
       msg = res.ok
         ? t.deleteNow
-          ? 'Done. A public copy, if there was one, is down now. Everything is marked for deletion: the stored copy is deleted within a day, and a copy in our email inbox is removed by hand.'
+          ? 'Done. Every copy we held, including any public copy, has been deleted now. Only a marker with the transcript\u2019s fingerprint and the date remains. Our notification email never held the conversation.'
           : 'Done. Those permissions are taken back, and a public copy, if you had allowed one, is down now.'
         : res.status === 404
           ? 'We have nothing on record for this transcript. It may never have been sent to us, or it has already been deleted.'

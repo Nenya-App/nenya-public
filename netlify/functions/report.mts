@@ -2,20 +2,19 @@
 // can prove before anything is forwarded: the shape, the hash, the Ed25519 signature, and that the key is one of
 // Nenya's own (the current signing key, or an earlier one listed in COACH_ACCEPTED_KEY_IDS). An unsigned or altered
 // transcript is refused with a short code. A valid one is rebuilt as readable text from the signed transcript itself
-// (so what is read is what was signed) and forwarded to a separate Netlify form, with the signed file, a `checked` field
-// only this function can produce (an HMAC of the hash under the ticket secret), and whether the receipt is in the
-// 30-day log. The transcript is seen on its way through and is never stored or logged here; what is kept is a small record of the choices the person made
-// (src/lib/transcriptPolicy.ts), keyed by the transcript's fingerprint.
+// (so what is read is what was signed), with a `checked` field only this function can produce (an HMAC of the hash under
+// the ticket secret) and whether the receipt is in the 30-day log. A valid transcript is kept in the site's private store (never in the form, never in logs or counts) together with a small record of the choices the person
+// made (src/lib/transcriptPolicy.ts), keyed by its fingerprint; the owner's notification email carries only the fingerprint and the choices.
 import { getStore } from '@netlify/blobs';
 import { createHmac } from 'node:crypto';
 import { addCount } from '../../src/lib/counters.ts';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { receiptRecordedOn } from '../../src/lib/receiptLog.ts';
-import { readableTranscript, signedJson, transcriptFilename, type Receipt, type SignedTranscript } from '../../src/lib/transcript.ts';
+import { readableTranscript, type Receipt, type SignedTranscript } from '../../src/lib/transcript.ts';
 import { sanitizePlainText } from '../../src/lib/textSanitize.ts';
 import { signedProblem } from '../../src/lib/signedCheck.ts';
 import { stopLevelFlagged } from '../../src/lib/publicCopy.ts';
-import { describeChoices, mergeResend, newRecord, parseChoices, pendingKey, recordKey, type TranscriptRecord } from '../../src/lib/transcriptPolicy.ts';
+import { describeChoices, inboxKey, mergeResend, newRecord, parseChoices, pendingKey, recordKey, type InboxEntry, type TranscriptRecord } from '../../src/lib/transcriptPolicy.ts';
 
 const ROUTE = '/api/report';
 const MAX_BODY = 40000;
@@ -101,18 +100,21 @@ export default async (req: Request): Promise<Response> => {
   }
   const checked = createHmac('sha256', secret).update(`report-checked|${receipt.hash}`).digest('hex');
 
-  // The signed file goes both as a real file (the .json it is, in the submission) and as text (so it can be copied from the
-  // email); the readable text and the facts are text fields. A multipart post, as a browser form with a file would send.
   // A small record of the choices and dates, keyed by the transcript's fingerprint (never the conversation), so the keeping time can be kept and the person can
-  // take permissions back later with the signed file. Written first: if it cannot be, nothing is forwarded, because the promise could not be kept.
+  // take permissions back later with the signed file. Written first: if it cannot be, nothing is kept, because the promise could not be kept.
   const nowDate = new Date();
   let record: TranscriptRecord = newRecord(receipt.hash, choices, nowDate);
   let previous: TranscriptRecord | null = null;
+  const permissions = (r: TranscriptRecord) => describeChoices({ uses: r.uses, keep: r.keep, ...(r.portions ? { portions: r.portions } : {}), ...(r.showFor ? { showFor: r.showFor } : {}) });
   try {
     const ps = privateStore();
     previous = (await ps.get(recordKey(receipt.hash), { type: 'json' })) as TranscriptRecord | null;
     if (previous) record = mergeResend(previous, record);
     await ps.setJSON(recordKey(receipt.hash), record);
+    // The transcript goes into our own private store (the owner reads it in the admin page), NOT into Netlify Forms: a form submission can only be deleted with an account
+    // token, and the notification email below carries no conversation. Everything we hold is deleted here, at the person's request or when their chosen time ends.
+    const entry: InboxEntry = { receivedAt: record.receivedAt, readable, signed: { transcript, receipt }, note, checked, issuedRecord: recorded ? `yes (${recorded})` : 'no record (older than 30 days, or not logged)', permissions: permissions(record), keepUntil: record.keepUntil };
+    await ps.setJSON(inboxKey(receipt.hash), entry);
     // Only if they allowed it: the signed conversation waits here for a person to read it before anything is shown (nothing is public until then).
     if (record.uses.includes('publish') && record.publication === 'pending-review') {
       await ps.setJSON(pendingKey(receipt.hash), { transcript, receipt, portions: record.portions ?? 'all', receivedAt: record.receivedAt });
@@ -121,28 +123,21 @@ export default async (req: Request): Promise<Response> => {
     return reply(503, { error: 'record' });
   }
 
+  // An alert for the owner through the separate form (Netlify emails it): the fingerprint and the person's choices only, never the conversation or the note.
   const form = new FormData();
   form.set('form-name', FORM);
   form.set('bot-field', '');
-  form.set('report', readable);
-  // The signed file again as text, so it can be copied straight from the email and pasted into /verify/.
-  form.set('signed', signedJson(transcript, receipt));
-  // The hash and signing time on their own, so a submission can be found by them (and matched to /verify/ and the 30-day log).
   form.set('receipt-hash', receipt.hash);
   form.set('issued-at', receipt.issuedAt);
-  form.set('comments', note);
-  form.set('permissions', describeChoices({ uses: record.uses, keep: record.keep }));
+  form.set('permissions', permissions(record));
   form.set('keep-until', record.keepUntil ?? 'until the person asks');
   form.set('checked', checked);
   form.set('key-id', receipt.keyId);
-  form.set('issued-record', recorded ? `yes (${recorded})` : 'no record (older than 30 days, or not logged)');
-  form.set('signed-file', new Blob([signedJson(transcript, receipt)], { type: 'application/json' }), transcriptFilename(receipt, 'json'));
   try {
     const res = await fetch(`${url.origin}/`, { method: 'POST', body: form });
     if (!res.ok) throw new Error('forward');
   } catch {
-    if (!previous) { try { await privateStore().delete(recordKey(receipt.hash)); await privateStore().delete(pendingKey(receipt.hash)); } catch { /* nothing more can be done here */ } }
-    return reply(502, { error: 'forward' });
+    await count('coach.report.alert-failed'); // the transcript is safely kept; only the email alert failed, and it is listed in the admin page
   }
   await count('coach.report.verified');
   return reply(204);

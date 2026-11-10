@@ -112,7 +112,7 @@ export function TranscriptChoices({ value, onChange, messages, publishBlocked = 
       </fieldset>
 
       <p className="text-xs text-muted-foreground">
-        <b>Taking it back later.</b> Keep the signed file you download. Showing it at nenya.biz/my-transcript lets you stop any of these uses, take a public copy down, or ask for it to be deleted. It can only ever remove permissions, never add them. Whoever holds the file can do this, so keep it as private as the conversation. We remove what we hold at once or on the day you chose; we cannot recall copies other people made, and a copy in our email inbox is removed by hand.
+        <b>Taking it back later.</b> Keep the signed file you download. Showing it at nenya.biz/my-transcript lets you stop any of these uses, take a public copy down, or ask for it to be deleted. It can only ever remove permissions, never add them. Whoever holds the file can do this, so keep it as private as the conversation. If you ask for deletion, every copy we hold is deleted at once; otherwise they are deleted on the day you chose. Our notification email carries only your choices, never the conversation. We cannot recall copies other people made of something that was public.
       </p>
     </div>
   );

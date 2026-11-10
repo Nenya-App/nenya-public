@@ -13,12 +13,16 @@ Nothing is chosen for them.
 - **How long it may stay on the public page (required if they allow publishing):** the same four choices, and never longer than the keeping time. The clock starts the day a person approves the copy, and the copy comes down by itself on that day (the daily job), even if the transcript itself is still kept. This is a separate permission, like a testimonial with an end date.
 The send button stays off until a keeping time is chosen.
 
-## What we keep
-A small record keyed by the transcript's fingerprint (hash): the choices, the dates, the stored submission's id, and a status. **No conversation** (tested). If publishing was allowed, the signed conversation also waits in a separate "pending" store for a person at Nenya to read; that copy exists only because they allowed it.
+## What we keep, and where (revised 2026-11-10: no account token, no email copy of the conversation)
+- **The inbox** (our private store, key `inbox/<fingerprint>`): the readable transcript, the signed file, the person's note, the check, and the choices. The owner reads it in the admin page ("Transcripts people sent"). It is **not** in Netlify Forms.
+- **A small record** (`transcript/<fingerprint>`): the choices, the dates and a status. No conversation.
+- **A waiting copy** (`witnessed/<fingerprint>`), only if publishing was allowed: for the owner's by-hand review. **A public copy** (`public/<fingerprint>`), only after the owner approves: anonymized and reviewed.
+- **The alert**: the owner's Netlify Forms email now carries only the fingerprint, the signing time, the key id, the choices and the check. It never carries the conversation or the note, so there is no email copy to delete.
 
 ## Self-executing parts
-- **Keeping time:** a daily job (`netlify/functions/transcript-expiry.mts`) deletes what is due: the waiting copy, and the stored form submission through Netlify's API (needs `NETLIFY_API_TOKEN` set by the owner), and leaves a marker with only the fingerprint and date. If it cannot delete the submission (no token, or its id was not recorded), it counts it as needing a hand.
-- **Taking it back:** `nenya.biz/my-transcript`. The person shows the signed file (checked on their device first). They can stop any use, take a public copy down, or ask for deletion. The effect on a public or waiting copy is immediate; deletion of the stored submission happens on the next daily run.
+- **Keeping time:** a daily job (`transcript-expiry.mts`) deletes every copy we hold when the time the person chose ends: inbox, waiting, public. It leaves a marker with only the fingerprint and the date. It needs **no account token**: the store is the site's own.
+- **Showing time:** a public copy comes down by itself when its own time ends, even while the transcript is still kept.
+- **Taking it back:** `nenya.biz/my-transcript`. The person shows the signed file (checked on their device first). They can stop any use, take a public copy down, or ask for deletion. **Asking for deletion deletes every copy at once.** If the store cannot be reached, the request is recorded and the daily job finishes it, and it is listed for the owner.
 - **Only ever narrower:** a request cannot add a use, lengthen the keeping time, or undo a deletion request. Sending the same transcript again cannot widen what was allowed or put a withdrawn copy back.
 
 ## What the signature does and does not prove
@@ -26,16 +30,17 @@ The signature proves the transcript is genuine and unchanged. Holding the file i
 
 ## What needs a person (owner, 2026-11-10)
 Software cannot finish every deletion, so the by-hand steps are explicit and listed, not left to memory:
-- **A queue of deletions waiting for a hand** (`/api/witnessed-review`, action `deletions`; owner only): every transcript that is due (its time passed, or the person asked) and has not been marked deleted. Each shows what to do: delete the stored submission in Netlify (Forms, verified-transcript) if the daily job could not, and delete the notification email copy.
+- **A queue of deletions that did not go through** (`/api/witnessed-review`, action `deletions`; owner only): every transcript that is due (its time passed, or the person asked) and still has a copy because the store could not be reached. The owner can delete the copies from the list. This is a fallback only: normally the deletion is immediate.
 - **Mark it done** (`mark-deleted`) once you have done them; the record becomes a marker with only the fingerprint and date, and leaves the list.
 - **Review before anything goes up** (the same endpoint) is the other by-hand step.
 The queue is only an API so far; a panel in the owner's page is next.
 
 ## Limits we must state
-- A copy in our **notification email** is not deleted by the job. Options for the owner: turn the form's notification email off and read submissions in the dashboard only (then deletion covers everything), or keep emails and delete them by hand within the chosen time.
 - We cannot recall copies others make of anything that was ever public (screenshots, archives).
-- Netlify may keep its own backups under its own practices.
-- The job that records each submission's id (`submission-created.mts`) and the delete call use Netlify's APIs as I remember them. Unverified against the current documentation; test on staging with a real submission first.
+- Netlify may keep its own backups of its stores under its own practices.
+- If the email alert fails, the transcript is still kept and listed in the admin page; the failure is counted.
+- The notification email carries the person's choices (not their words). The Netlify Forms entry for the alert holds the same, and holds nothing that needs deleting.
+- Nothing here uses Netlify's API or an account token. (Netlify's published API description has one sign-in scheme with no narrower scopes, so a token that could delete a form submission would have acted as the owner for everything.)
 
 ## The "witnessed conversations" page: built 2026-11-10 (API; the screens are next)
 Three safeguards, in this order (owner, 2026-11-10):
@@ -52,13 +57,13 @@ Taking it back (`/my-transcript`) or asking for deletion removes the public copy
 **Not built:** the review panel in the owner's page, and the public page itself (both only call the endpoints above).
 
 ## Terms and Privacy Promise: draft wording (not applied)
-- Section 7 (reports), retention paragraph: replace "there is no automatic deletion schedule for submissions yet" with the new choices: what a person may allow, the keeping times, that we keep a small record of their choices and the transcript's fingerprint, that deletion happens at the end of the time or when they ask with the signed file, and the limits above (email copy removed by hand, no recall of public copies, Netlify's own backups).
+- Section 7 (reports), retention paragraph: replace "there is no automatic deletion schedule for submissions yet" with the new choices: what a person may allow, the keeping times, that we keep a small record of their choices and the transcript's fingerprint, that deletion happens at the end of the time or when they ask with the signed file, and the limits above (no recall of public copies, Netlify's own backups). Also replace the claim that a submitted transcript is delivered by email: the conversation is kept in the site's private store and the email carries only the choices.
 - A new bullet in Section 21: the optional "witnessed conversations" page, that it is read before anything is shown, that names may be missed, how to take it down.
 - Privacy Promise and the pre-written answers: the same facts, in the same words. The "report" answers and the report form's own text must match.
 - Effective date bump and an archive of the outgoing text, as for any change.
 
 ## Decisions for the owner
-1. Email notifications for transcript submissions: off (dashboard only) or on with hand deletion?
+1. DECIDED 2026-11-10: transcripts live in our own store; the email is only an alert with no conversation.
 2. DECIDED 2026-11-10: a conversation flagged at stop level is never offered for publishing.
 3. Keep "use for testing" at "never used to train a model", or say nothing about training?
 4. A fixed list of keeping times, or a custom date?

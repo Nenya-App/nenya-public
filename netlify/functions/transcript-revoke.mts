@@ -1,10 +1,11 @@
 // Takes back what a person allowed us to do with a signed transcript they sent (docs/transcript-consent-scope.md). The person shows the same signed file:
 // holding it is the key. It can only reduce what was allowed (stop a use, take a public copy down, ask for deletion), never widen it. The effect on a public
-// copy is immediate: it is removed from the store the public page reads from. Deleting the stored form submission is done by the daily job
-// (transcript-expiry.mts), because it needs the owner's Netlify token; the record says it was asked for.
+// copy is immediate, and so is deletion: every copy we hold (the inbox copy, any waiting copy, any public copy) is deleted from the site's own private store at once and
+// only a marker with the fingerprint and the date remains. If the store cannot be reached, the request is recorded and the daily job (transcript-expiry.mts) finishes it.
 import { getStore } from '@netlify/blobs';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { signedProblem } from '../../src/lib/signedCheck.ts';
+import { deleteEverything } from './transcript-expiry.mts';
 import { applyRevocation, pendingKey, publicKey, recordKey, USES, type TranscriptRecord, type Use } from '../../src/lib/transcriptPolicy.ts';
 
 const ROUTE = '/api/transcript-revoke';
@@ -46,7 +47,10 @@ export default async (req: Request): Promise<Response> => {
     // A public or waiting copy goes at once when publishing is taken back or deletion is asked for.
     if (next.publication === 'withdrawn') { await s.delete(pendingKey(hash)); await s.delete(publicKey(hash)); }
   } catch { return reply(503, { error: 'store' }); }
-  return reply(200, { status: next.status, uses: next.uses, publication: next.publication });
+  // Asking for deletion deletes now. If anything cannot be deleted, the record stays "requested" and the daily job tries again.
+  let status = next.status;
+  if (deleteNow && next.status === 'deletion-requested' && (await deleteEverything(s, next, new Date()))) status = 'deleted';
+  return reply(200, { status, uses: status === 'deleted' ? [] : next.uses, publication: status === 'deleted' ? 'none' : next.publication });
 };
 
 // No rateLimit here: both of the project's code-based rate-limit rules are already used (see netlify.toml). The request must carry a transcript our own key signed, which is its own barrier.

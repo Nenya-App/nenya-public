@@ -4,7 +4,6 @@ import coach, { __useStoreForTests as coachStore } from '../netlify/functions/co
 import report, { __useStoreForTests as reportStore } from '../netlify/functions/report.mts';
 import revoke, { __useStoreForTests as revokeStore } from '../netlify/functions/transcript-revoke.mts';
 import { expireDue, __useStoreForTests as expiryStore } from '../netlify/functions/transcript-expiry.mts';
-import created, { __useStoreForTests as createdStore } from '../netlify/functions/submission-created.mts';
 import { pendingKey, recordKey, type TranscriptRecord } from '../src/lib/transcriptPolicy.ts';
 import { ok } from './helpers.mts';
 
@@ -13,10 +12,10 @@ process.env.COACH_ENABLED = 'true'; process.env.VENICE_API_KEY = 'k'; process.en
 process.env.COACH_SIGNING_KEY = mine.privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');
 delete process.env.COACH_ACCEPTED_KEY_IDS; delete process.env.COACH_EXTRA_HOSTS; delete process.env.COACH_IP_SECRET;
 
-let forwardStatus = 200; let forwards: Record<string, string>[] = []; let netlifyCalls: { url: string; method: string; auth: string }[] = []; let netlifyStatus = 204;
+let forwardStatus = 200; let forwards: Record<string, string>[] = []; let netlifyCalls = 0;
 (globalThis as any).fetch = async (url: string, init: any) => {
   if (String(url).includes('venice')) return new Response(JSON.stringify({ choices: [{ message: { content: 'That sounds heavy. Thank you for saying it.' } }] }), { status: 200 });
-  if (String(url).startsWith('https://api.netlify.com')) { netlifyCalls.push({ url: String(url), method: init.method, auth: init.headers.authorization }); return new Response(null, { status: netlifyStatus }); }
+  if (String(url).includes('api.netlify.com')) netlifyCalls++; // nothing may ever call Netlify's API
   const f: Record<string, string> = {}; for (const [k, v] of (init.body as FormData).entries()) if (typeof v === 'string') f[k] = v; forwards.push(f);
   return new Response('ok', { status: forwardStatus });
 };
@@ -28,7 +27,7 @@ const makeStore = () => {
     async list({ prefix }: { prefix: string }) { return { blobs: [...j.keys()].filter((k) => k.startsWith(prefix)).map((key) => ({ key })) }; } };
 };
 const store = makeStore();
-for (const use of [coachStore, reportStore, revokeStore, expiryStore, createdStore]) use(store);
+for (const use of [coachStore, reportStore, revokeStore, expiryStore]) use(store);
 
 const S = { color1: '#7A9B9E', color2: '#DAC682' };
 const coachPost = async (body: any) => (await coach(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ session: S, ...body }) }))).json() as Promise<any>;
@@ -64,28 +63,39 @@ const back = await takeBack({ signed: GOOD, stop: ['publish'] });
 ok('taking back publishing withdraws it and removes the waiting copy at once', back.status === 200 && back.json.publication === 'withdrawn' && !back.json.uses.includes('publish') && !store.j.has(pendingKey(hash)));
 ok('a transcript we were never sent is not found', (() => { store.j.clear(); return true; })() && (await takeBack({ signed: GOOD, deleteNow: true })).status === 404);
 
-// ── a failed forward leaves nothing behind
+// ── a failed email alert does not lose or fail the transcript
 forwardStatus = 500; forwards = [];
-ok('if forwarding fails, the new record and any waiting copy are removed', (await send({ keep: '30d', uses: ['publish'], portions: 'all', showFor: '30d' })).status === 502 && !rec() && !store.j.has(pendingKey(hash)));
+ok('if only the owner\'s email alert fails, the transcript, its record and any waiting copy are kept and the visitor is not failed', (await send({ keep: '30d', uses: ['publish'], portions: 'all', showFor: '30d' })).status === 204 && !!rec() && !!store.j.get('inbox/' + hash) && !!store.j.get(pendingKey(hash)));
+{
+  const realSet = store.setJSON.bind(store);
+  store.setJSON = async () => { throw new Error('down'); };
+  const failed = await send({ keep: '30d', uses: [] });
+  store.setJSON = realSet;
+  ok('if the store itself cannot be written, nothing is promised: the visitor is told so (503)', failed.status === 503);
+}
 forwardStatus = 200;
 
 // ── deletion
 await send({ keep: '30d', uses: ['evaluate'] });
-await created(new Request('https://nenya.biz/.netlify/functions/submission-created', { method: 'POST', body: JSON.stringify({ payload: { id: 'sub123', form_name: 'verified-transcript', data: { 'receipt-hash': hash } } }) }));
-ok('the stored submission id is recorded when Netlify reports the submission', rec()?.submissionId === 'sub123');
-await created(new Request('https://x/', { method: 'POST', body: JSON.stringify({ payload: { id: 'zzz', form_name: 'other-form', data: { 'receipt-hash': hash } } }) }));
-ok('submissions from other forms are ignored', rec()?.submissionId === 'sub123');
+ok('the conversation is in our private inbox, not in the form, and the inbox entry holds the choices in plain words', !!store.j.get('inbox/' + hash) && /after 30 days/.test(store.j.get('inbox/' + hash).permissions) && forwards.every((f) => !('report' in f) && !('signed' in f)));
 const soon = new Date(Date.now() + 40 * 86400e3);
-ok('nothing is deleted before its time', (await expireDue(new Date(), { NETLIFY_API_TOKEN: 't' })).deleted === 0 && netlifyCalls.length === 0 && rec()?.status === 'active');
-const noToken = await expireDue(soon, {});
-ok('without the owner\'s Netlify token, a due submission is counted as needing a hand, not marked deleted', noToken.deleted === 0 && noToken.manual === 1 && rec()?.status === 'active');
-const done = await expireDue(soon, { NETLIFY_API_TOKEN: 't' });
-ok('when its time has passed, the submission is deleted through the Netlify API and the record becomes a marker with no choices', done.deleted === 1 && netlifyCalls.length === 1 && netlifyCalls[0].method === 'DELETE' && netlifyCalls[0].url.endsWith('/sub123') && netlifyCalls[0].auth === 'Bearer t' && rec()?.status === 'deleted' && rec()!.uses.length === 0);
-ok('a deleted record is not deleted again', (await expireDue(soon, { NETLIFY_API_TOKEN: 't' })).deleted === 0 && netlifyCalls.length === 1);
-// asking for deletion with the signed file
+ok('nothing is deleted before its time', (await expireDue(new Date())).deleted === 0 && !!store.j.get('inbox/' + hash) && rec()?.status === 'active');
+const done = await expireDue(soon);
+ok('when its time has passed, every copy is deleted from our own store, with no token and no call to Netlify, and the record becomes a marker with no choices', done.deleted === 1 && !store.j.has('inbox/' + hash) && rec()?.status === 'deleted' && rec()!.uses.length === 0 && netlifyCalls === 0);
+ok('a deleted record is not deleted again', (await expireDue(soon)).deleted === 0);
+// asking for deletion with the signed file deletes at once
 await send({ keep: 'until-asked', uses: ['quote'] });
-store.j.set(recordKey(hash), { ...rec()!, submissionId: 'sub9' });
-ok('asking for deletion with the signed file makes it due at once, even with no end date', (await takeBack({ signed: GOOD, deleteNow: true })).json?.status === 'deletion-requested' && (await expireDue(new Date(), { NETLIFY_API_TOKEN: 't' })).deleted === 1 && rec()?.status === 'deleted');
+const gone = await takeBack({ signed: GOOD, deleteNow: true });
+ok('asking for deletion with the signed file deletes every copy now, even with no end date', gone.json?.status === 'deleted' && !store.j.has('inbox/' + hash) && rec()?.status === 'deleted' && gone.json.uses.length === 0);
+// if the store cannot delete, the request is kept and the daily job finishes it
+await send({ keep: 'until-asked', uses: ['quote'] });
+const realDelete = store.delete.bind(store); let failOnce = true;
+store.delete = async (k: string) => { if (failOnce && k.startsWith('inbox/')) { failOnce = false; throw new Error('store down'); } return realDelete(k); };
+const half = await takeBack({ signed: GOOD, deleteNow: true });
+ok('if a deletion fails, the request is recorded as requested and the copy is still there', half.json?.status === 'deletion-requested' && !!store.j.get('inbox/' + hash));
+store.delete = realDelete;
+ok('the daily job then finishes it', (await expireDue(new Date())).deleted === 1 && !store.j.has('inbox/' + hash) && rec()?.status === 'deleted');
+ok('nothing in this flow ever called Netlify\'s API', netlifyCalls === 0);
 
 // ── the screens
 import { readFileSync } from 'node:fs';
@@ -96,4 +106,4 @@ ok('the verify page still sends nothing', !/fetch\(/.test(src('src/verify/Transc
 ok('the take-back page is built, and is in no sitemap', /myTranscript: path\.resolve\(__dirname, 'my-transcript\/index\.html'\)/.test(src('vite.config.ts')) && !/my-transcript/.test(src('public/sitemap.xml')));
 const tools = src('src/coach/TranscriptTools.tsx') + src('src/coach/TranscriptChoices.tsx');
 ok('sending is not possible until a keeping time is chosen; nothing is preselected; the page where to take it back is named', /!toSend/.test(tools) && /keep: null, uses: \[\]/.test(tools) && /nenya\.biz\/my-transcript/.test(tools));
-ok('the static form lists the two new fields', /name="permissions"/.test(src('index.html')) && /name="keep-until"/.test(src('index.html')));
+ok('the static form is only the content-free alert: it has the choices but no field for the conversation or the note', /name="permissions"/.test(src('index.html')) && /name="keep-until"/.test(src('index.html')) && !/name="report"|name="signed"|name="comments"|type="file"/.test(src('index.html').slice(src('index.html').indexOf('verified-transcript'))));

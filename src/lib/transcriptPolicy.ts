@@ -96,8 +96,6 @@ export interface TranscriptRecord {
   /** How long it may stay on the public page once up, and the day it must come down (set when a person approves it). */
   showFor?: Keep;
   publicUntil?: string | null;
-  /** The id of the stored submission (set when the form submission arrives), so it can be deleted. */
-  submissionId?: string;
   updatedAt: string;
 }
 
@@ -164,3 +162,19 @@ export const pendingKey = (hash: string): string => `witnessed/${hash}`;
 
 /** Where the reviewed, anonymized copy that the public page shows is kept (never the signed original). */
 export const publicKey = (hash: string): string => `public/${hash}`;
+
+/** Where a transcript someone sent us is kept (the owner reads it in the admin page). It holds the conversation, so it is deleted when the keeping time ends, when the
+ *  person asks with the signed file, or when the owner deletes it. The notification email carries only the fingerprint and the choices, never the conversation. */
+export const inboxKey = (hash: string): string => `inbox/${hash}`;
+
+/** What the inbox keeps for one transcript. */
+export interface InboxEntry {
+  receivedAt: string;
+  readable: string;
+  signed: { transcript: unknown; receipt: unknown };
+  note: string;
+  checked: string;
+  issuedRecord: string;
+  permissions: string;
+  keepUntil: string | null;
+}

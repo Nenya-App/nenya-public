@@ -50,3 +50,18 @@ Everything in sections 1 and 2 passes on staging; the Terms effective date (`LEG
 - [ ] After approving one card and setting the switch on staging: an abusive message aimed at the coach gets the coach's own reply and, under it, the invitation. "No thanks" closes it; "Read it" opens the card; "Back to the conversation" and "Stop here" close it; the conversation carries on either way.
 - [ ] A message that reports what someone said to you gets no invitation. A message the crisis check flags gets none.
 - [ ] The card's source link opens in a new tab; a screen reader announces the invitation and the card.
+
+
+## Transcript consent, the inbox, taking it back and the witnessed page (added 2026-11-10)
+Do these on the dev site after the push has deployed. Use a test conversation. Nothing here needs a Netlify token.
+1. [ ] `/my-transcript/` shows its own page ("Change or take back what you allowed"), and `/api/witnessed` returns `{"conversations":[]}`. `/about/witnessed` shows "No conversations are shown right now."
+2. [ ] Have a five-exchange conversation, then "Report or send verified transcript". Choose nothing but a keeping time: Send is off until you pick one. Pick "Delete it after 30 days" and send.
+3. [ ] The notification email (Netlify Forms, "verified-transcript") arrives with the fingerprint and the choices only: no conversation, no note.
+4. [ ] Admin page, "Transcripts people sent": the conversation and the signed file are there, with the choices and the delete-by date.
+5. [ ] Send another with the public page allowed (whole conversation, show for 30 days). It appears in "Waiting to be read" with an anonymized draft. Edit one message, tick "I read every message", and Approve. It appears at `/about/witnessed`.
+6. [ ] A conversation where the safety check stops a message (a test crisis phrase) shows the public option as unavailable, with the reason.
+7. [ ] `/my-transcript/`: choose the signed file you downloaded, stop "show it on the page", and send. The page copy disappears at once (reload `/about/witnessed`).
+8. [ ] Same page, "Delete it", send. The page says every copy is deleted now; the inbox entry is gone from the admin page; only a marker remains. Sending that same file again says there is nothing on record.
+9. [ ] Admin page, "Run the deletion job now": it reports 0 deleted and 0 waiting when nothing is due.
+10. [ ] Send one more with "Delete it after 30 days" and check the delete-by date shown in the admin page is 30 days from today.
+11. [ ] `/verify/` still sends nothing (check the browser's network tab while you check a file).

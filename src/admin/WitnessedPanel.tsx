@@ -7,13 +7,15 @@ import type { PublicItem } from '../lib/publicCopy';
 // It only calls the owner-only function /api/witnessed-review; the server checks who is asking.
 
 interface Pending { hash: string; receivedAt: string; draft: { items: PublicItem[]; replaced: number; softFlags: string[] } }
-interface Waiting { hash: string; receivedAt: string; status: string; keepUntil: string | null; submissionId: string | null; todo: string[] }
+interface Waiting { hash: string; receivedAt: string; status: string; keepUntil: string | null; todo: string[] }
+interface Inbox { hash: string; receivedAt: string; readable: string; note: string; permissions: string; keepUntil: string | null; issuedRecord: string; signed: unknown }
 
 const WRITER: Record<PublicItem['by'], string> = { person: 'The person', ai: 'The AI', site: 'The site (not the AI)' };
 
 export default function WitnessedPanel({ getToken }: { getToken: () => string }) {
   const [pending, setPending] = useState<Pending[] | null>(null);
   const [waiting, setWaiting] = useState<Waiting[] | null>(null);
+  const [inbox, setInbox] = useState<Inbox[] | null>(null);
   const [edits, setEdits] = useState<Record<string, PublicItem[]>>({});
   const [read, setRead] = useState<Record<string, boolean>>({});
   const [note, setNote] = useState('');
@@ -31,8 +33,10 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
     try {
       const a = await post({ action: 'list' });
       const b = await post({ action: 'deletions' });
-      if (a.status === 401 || b.status === 401) return setNote('Not signed in as the owner.');
-      if (a.status !== 200 || b.status !== 200) return setNote('That could not be read just now.');
+      const c = await post({ action: 'inbox' });
+      if (a.status === 401 || b.status === 401 || c.status === 401) return setNote('Not signed in as the owner.');
+      if (a.status !== 200 || b.status !== 200 || c.status !== 200) return setNote('That could not be read just now.');
+      setInbox(c.json.items);
       setPending(a.json.pending);
       setWaiting(b.json.waiting);
       setEdits(Object.fromEntries((a.json.pending as Pending[]).map((p) => [p.hash, p.draft.items])));
@@ -57,6 +61,20 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
     }
   };
 
+  const deleteReceived = async (hash: string) => {
+    setBusy(true);
+    try {
+      const r = await post({ action: 'inbox-delete', hash });
+      if (r.status === 200) {
+        setNote('Deleted: every copy we held is gone. Only a marker with the fingerprint and the date remains.');
+        setInbox((i) => (i ?? []).filter((x) => x.hash !== hash));
+        setWaiting((w) => (w ?? []).filter((x) => x.hash !== hash));
+      } else setNote('That could not be deleted just now. Try again in a moment.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const markDeleted = async (hash: string) => {
     setBusy(true);
     try {
@@ -75,7 +93,7 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
     try {
       const r = await post({ action: 'run-deletions' });
       if (r.status !== 200) return setNote('The deletion job could not be run just now.');
-      setNote(`Ran the deletion job: ${r.json.deleted} deleted, ${r.json.manual} waiting for a hand. The Netlify token is ${r.json.tokenSet ? 'set' : 'NOT set, so nothing can be deleted automatically'}.`);
+      setNote(`Ran the deletion job: ${r.json.deleted} deleted, ${r.json.manual} still waiting.`);
       await load();
     } finally {
       setBusy(false);
@@ -96,6 +114,30 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
         <button type="button" onClick={() => void load()} disabled={busy} className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50">{pending ? 'Refresh' : 'Load'}</button>
         <p role="status" aria-live="polite" className="min-h-5 text-sm text-muted-foreground">{note}</p>
       </div>
+
+      {inbox && (
+        <div className="space-y-3">
+          <h3 className="text-lg">Transcripts people sent ({inbox.length})</h3>
+          <p className="text-sm text-muted-foreground">These hold the conversation, so they are read only here. The notification email carries just the fingerprint and the person&rsquo;s choices. Each is deleted on the day its owner chose, or sooner by you.</p>
+          {inbox.length === 0 && <p className="text-sm text-muted-foreground">Nothing has been sent.</p>}
+          {inbox.map((t) => (
+            <article key={t.hash} className="space-y-2 rounded-xl border border-border p-4 text-sm">
+              <p className="text-xs text-muted-foreground">Fingerprint {t.hash.slice(0, 12)} · received {new Date(t.receivedAt).toLocaleDateString()} · {t.keepUntil ? `deleted on ${new Date(t.keepUntil).toLocaleDateString()}` : 'kept until the person asks'} · log: {t.issuedRecord}</p>
+              <p>{t.permissions}</p>
+              {t.note && <p><span className="font-medium">Their note: </span>{t.note}</p>}
+              <details>
+                <summary className="cursor-pointer underline underline-offset-4">Read the transcript</summary>
+                <pre className="mt-2 max-h-72 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-2 text-xs">{t.readable}</pre>
+              </details>
+              <details>
+                <summary className="cursor-pointer underline underline-offset-4">The signed file (to check at /verify)</summary>
+                <textarea readOnly className="mt-2 h-32 w-full rounded-md border border-border bg-background p-2 text-xs" value={JSON.stringify(t.signed)} />
+              </details>
+              <button type="button" disabled={busy} onClick={() => void deleteReceived(t.hash)} className="rounded-md border border-border px-3 py-1.5 hover:bg-accent disabled:opacity-50">Delete now</button>
+            </article>
+          ))}
+        </div>
+      )}
 
       {pending && (
         <div className="space-y-4">
@@ -136,10 +178,9 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
             <article key={w.hash} className="space-y-2 rounded-xl border border-border p-4 text-sm">
               <p className="text-xs text-muted-foreground">
                 Fingerprint {w.hash.slice(0, 12)} · received {new Date(w.receivedAt).toLocaleDateString()} · {w.status === 'deletion-requested' ? 'the person asked for it to be deleted' : 'its keeping time has passed'}
-                {w.submissionId ? ` · submission ${w.submissionId}` : ' · submission id not recorded'}
               </p>
               <ul className="list-disc pl-5">{w.todo.map((t) => <li key={t}>{t}</li>)}</ul>
-              <button type="button" disabled={busy} onClick={() => void markDeleted(w.hash)} className="rounded-md border border-border px-3 py-1.5 hover:bg-accent disabled:opacity-50">I did these: mark deleted</button>
+              <button type="button" disabled={busy} onClick={() => void markDeleted(w.hash)} className="rounded-md border border-border px-3 py-1.5 hover:bg-accent disabled:opacity-50">Delete the copies now</button>
             </article>
           ))}
         </div>

@@ -68,7 +68,7 @@ ok('rejecting deletes the waiting copy and keeps nothing public', (await call(re
 store.j.clear();
 await send(GOOD, { keep: '30d', uses: ['publish'], portions: 'all', showFor: '30d' });
 await call(review, '/api/witnessed-review', { action: 'approve', hash, items: [{ by: 'person', text: 'A calm week.' }] });
-ok('a public copy disappears when its keeping time ends', (await call(witnessed, '/api/witnessed', undefined, 'GET')).json.conversations.length === 1 && (await expireDue(new Date(Date.now() + 40 * 86400e3), {})).manual === 1 && !store.j.has(publicKey(hash)));
+ok('a public copy disappears when its keeping time ends', (await call(witnessed, '/api/witnessed', undefined, 'GET')).json.conversations.length === 1 && (await expireDue(new Date(Date.now() + 40 * 86400e3))).deleted === 1 && !store.j.has(publicKey(hash)));
 
 // ── how long it may stay up, and what needs a hand
 store.j.clear();
@@ -78,19 +78,46 @@ await call(review, '/api/witnessed-review', { action: 'approve', hash, items: [{
 const up = store.j.get(recordKey(hash));
 ok('approving starts the clock: the day it must come down is set', up.publication === 'public' && !!up.publicUntil && up.showFor === '30d');
 const later = new Date(Date.now() + 40 * 86400e3);
-const ran = await expireDue(later, {});
+const ran = await expireDue(later);
 ok('after its showing time the public copy comes down by itself while the transcript is still kept', ran.manual === 0 && !store.j.has(publicKey(hash)) && store.j.get(recordKey(hash)).publication === 'withdrawn' && store.j.get(recordKey(hash)).status === 'active' && (await call(witnessed, '/api/witnessed', undefined, 'GET')).json.conversations.length === 0);
-// deletions that need a person
+// deletions that did not go through wait for the owner
 store.j.clear();
 await send(GOOD, { keep: '30d', uses: ['evaluate'] });
-ok('nothing waits for a person before anything is due', (await call(review, '/api/witnessed-review', { action: 'deletions' })).json.waiting.length === 0);
-await call(revoke, '/api/transcript-revoke', { signed: GOOD, deleteNow: true });
+ok('nothing waits before anything is due', (await call(review, '/api/witnessed-review', { action: 'deletions' })).json.waiting.length === 0);
+{
+  const realDelete = store.delete.bind(store);
+  store.delete = async () => { throw new Error('store down'); };
+  const r1 = await call(revoke, '/api/transcript-revoke', { signed: GOOD, deleteNow: true });
+  store.delete = realDelete;
+  ok('if the store cannot delete, the request waits as requested', r1.json?.status === 'deletion-requested');
+}
 const waiting = await call(review, '/api/witnessed-review', { action: 'deletions' });
-ok('a deletion the person asked for waits in a list for the owner, with what to do by hand', waiting.json.waiting.length === 1 && waiting.json.waiting[0].hash === hash && /notification email/.test(waiting.json.waiting[0].todo.join(' ')) && !/messages|content/.test(JSON.stringify(waiting.json)));
-ok('only the owner can see that list or mark things done', (owner = false, (await call(review, '/api/witnessed-review', { action: 'deletions' })).status === 401 && (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).status === 401) && (owner = true));
-ok('the owner marks it deleted after doing it by hand; it leaves the list and becomes a marker', (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).json?.status === 'deleted' && store.j.get(recordKey(hash)).status === 'deleted' && (await call(review, '/api/witnessed-review', { action: 'deletions' })).json.waiting.length === 0);
-ok('something not yet due cannot be marked deleted', (await send(GOOD, { keep: '30d', uses: [] })).status === 204 && (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).status === 404);
+ok('a deletion that did not go through is listed for the owner, without any conversation', waiting.json.waiting.length === 1 && waiting.json.waiting[0].hash === hash && !/messages|content/.test(JSON.stringify(waiting.json)));
+ok('only the owner can see that list or act on it', (owner = false, (await call(review, '/api/witnessed-review', { action: 'deletions' })).status === 401 && (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).status === 401 && (await call(review, '/api/witnessed-review', { action: 'inbox' })).status === 401) && (owner = true));
+ok('the owner deletes it from the list; it leaves the list and becomes a marker', (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).json?.status === 'deleted' && store.j.get(recordKey(hash)).status === 'deleted' && (await call(review, '/api/witnessed-review', { action: 'deletions' })).json.waiting.length === 0);
+ok('something not yet due cannot be marked deleted that way', (await send(GOOD, { keep: '30d', uses: [] })).status === 204 && (await call(review, '/api/witnessed-review', { action: 'mark-deleted', hash })).status === 404);
 
+// ── the inbox: the owner reads what people sent, and can delete early
+store.j.clear();
+await send(GOOD, { keep: '30d', uses: ['evaluate'] });
+const inbox = await call(review, '/api/witnessed-review', { action: 'inbox' });
+ok('the owner sees the transcripts people sent, with their choices and the readable text', inbox.status === 200 && inbox.json.items.length === 1 && inbox.json.items[0].hash === hash && /test and improve the coach/.test(inbox.json.items[0].permissions) && /about work/.test(inbox.json.items[0].readable));
+ok('the owner can delete one early: every copy goes and a marker remains', (await call(review, '/api/witnessed-review', { action: 'inbox-delete', hash })).json?.status === 'deleted' && !store.j.has('inbox/' + hash) && store.j.get(recordKey(hash)).status === 'deleted' && (await call(review, '/api/witnessed-review', { action: 'inbox' })).json.items.length === 0);
+
+// ── running the deletion job by hand
+store.j.clear();
+await send(GOOD, { keep: '30d', uses: ['evaluate'] });
+{
+  const realDelete = store.delete.bind(store);
+  store.delete = async () => { throw new Error('store down'); };
+  await call(revoke, '/api/transcript-revoke', { signed: GOOD, deleteNow: true });
+  const failing = await call(review, '/api/witnessed-review', { action: 'run-deletions' });
+  store.delete = realDelete;
+  ok('if the store is still down, the job deletes nothing and says how many are still waiting', failing.status === 200 && failing.json.deleted === 0 && failing.json.manual === 1);
+}
+const okRun = await call(review, '/api/witnessed-review', { action: 'run-deletions' });
+ok('the owner can run the deletion job now, and when the store works it finishes the job', okRun.status === 200 && okRun.json.deleted === 1 && !store.j.has('inbox/' + hash));
+ok('only the owner can run it', (owner = false, (await call(review, '/api/witnessed-review', { action: 'run-deletions' })).status === 401) && (owner = true));
 // ── the owner's panel
 import { readFileSync } from 'node:fs';
 const panel = readFileSync(new URL('../src/admin/WitnessedPanel.tsx', import.meta.url), 'utf8');
@@ -106,13 +133,5 @@ ok('the public page reads only the public listing, uncached, and stores nothing'
 ok('the page says plainly what it is not: no anonymity promise, no signature check for strangers, the AI is an AI, 988', /Software cannot\s+promise anonymity, and we do not/.test(pageSrc) && /cannot check the signature/.test(pageSrc) && /not therapy/.test(pageSrc) && /988/.test(pageSrc));
 ok('the page marks the writer of every message and says how to take one down', /Written by the site, not the AI/.test(pageSrc) && /my-transcript/.test(pageSrc) && /info@nenya\.biz/.test(pageSrc));
 
-// ── running the deletion job by hand
-store.j.clear();
-await send(GOOD, { keep: '30d', uses: ['evaluate'] });
-await call(revoke, '/api/transcript-revoke', { signed: GOOD, deleteNow: true });
-delete process.env.NETLIFY_API_TOKEN;
-const noTok = await call(review, '/api/witnessed-review', { action: 'run-deletions' });
-ok('the owner can run the deletion job now; without the token it deletes nothing, counts what waits, and says the token is not set', noTok.status === 200 && noTok.json.deleted === 0 && noTok.json.manual === 1 && noTok.json.tokenSet === false && !JSON.stringify(noTok.json).includes('Bearer'));
-ok('only the owner can run it', (owner = false, (await call(review, '/api/witnessed-review', { action: 'run-deletions' })).status === 401) && (owner = true));
 const panel2 = readFileSync(new URL('../src/admin/WitnessedPanel.tsx', import.meta.url), 'utf8');
-ok('the panel has the button and reports whether the token is set, never its value', /Run the deletion job now/.test(panel2) && /tokenSet/.test(panel2) && !/NETLIFY_API_TOKEN/.test(panel2));
+ok('the panel has the run-now button and the received-transcripts list, and no token anywhere', /Run the deletion job now/.test(panel2) && /Transcripts people sent/.test(panel2) && /Delete now/.test(panel2) && !/NETLIFY_API_TOKEN|tokenSet/.test(panel2));

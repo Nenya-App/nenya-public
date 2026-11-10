@@ -2,7 +2,7 @@
 import { createHash, createHmac, generateKeyPairSync, sign as edSign } from 'node:crypto';
 import coach, { __useStoreForTests as coachStore } from '../netlify/functions/coach.mts';
 import report, { __useStoreForTests as reportStore } from '../netlify/functions/report.mts';
-import { signedJson, transcriptFilename, readableTranscript } from '../src/lib/transcript.ts';
+import { transcriptFilename, readableTranscript } from '../src/lib/transcript.ts';
 import { eventKey } from '../src/lib/counters.ts';
 import { capDay } from '../src/lib/dailyCap.ts';
 import { ok } from './helpers.mts';
@@ -65,17 +65,18 @@ const n = (e: string) => Number(store.peek(eventKey(day, e)) ?? 0);
 let x = await send(GOOD, { note: '<b>The reply felt</b> off\u0007 today' });
 ok('a genuine signed transcript is accepted', x.status === 204 && forwards.length === 1);
 const f = forwards[0].fields;
-ok('it is forwarded to our own site, to the separate form for signed transcripts', forwards[0].url === 'https://nenya.biz/' && f['form-name'] === 'verified-transcript' && f['bot-field'] === '');
-ok('the readable text is rebuilt from the signed transcript, exactly as the page shows it', f.report === readableTranscript(m, S, rc.receipt, '', rc.transcript.meta, rc.transcript.site, rc.transcript.checks));
-const sf = forwards[0].file;
-ok('the signed file travels as a real JSON file and also as text in the body, for copying', !!sf && sf.type === 'application/json' && JSON.parse(sf.text).receipt.hash === rc.receipt.hash && JSON.parse(sf.text).transcript.v === 3 && JSON.parse(f.signed).receipt.hash === rc.receipt.hash);
-ok('the file is exactly what the page would download, and is named by hash and time', !!sf && sf.text === signedJson(rc.transcript, rc.receipt) && sf.name === transcriptFilename(rc.receipt, 'json') && /^nenya-coach-transcript-[0-9a-f]{8}-\d{8}T\d{6}Z\.json$/.test(sf.name));
-ok('the note is cleaned of markup and control characters', f.comments === 'The reply felt off today');
-ok('a checked field only the function can make is attached', f.checked === createHmac('sha256', SECRET).update(`report-checked|${rc.receipt.hash}`).digest('hex'));
-ok('the key id is attached, and the receipt is found in the log', f['key-id'] === rc.receipt.keyId && /^yes \(\d{4}-\d{2}-\d{2}\)$/.test(f['issued-record']));
-ok('the hash and signing time are their own fields, so a submission can be found by them', f['receipt-hash'] === rc.receipt.hash && f['issued-at'] === rc.receipt.issuedAt);
+const inboxOf = (hash: string): any => store.json.get('inbox/' + hash);
+const ib = inboxOf(rc.receipt.hash);
+ok('the owner is alerted through our own site\'s separate form for signed transcripts', forwards[0].url === 'https://nenya.biz/' && f['form-name'] === 'verified-transcript' && f['bot-field'] === '');
+ok('the alert carries only the fingerprint, the signing time, the key id, the choices and the check: never the conversation, the signed file or the note', Object.keys(f).sort().join() === 'bot-field,checked,form-name,issued-at,keep-until,key-id,permissions,receipt-hash' && !forwards[0].file && !JSON.stringify(f).includes('message ') && !JSON.stringify(f).includes('The reply felt'));
+ok('the conversation is kept in our private store instead, rebuilt from the signed transcript exactly as the page shows it', !!ib && ib.readable === readableTranscript(m, S, rc.receipt, '', rc.transcript.meta, rc.transcript.site, rc.transcript.checks));
+ok('the signed transcript and receipt are kept whole, and the file name is by hash and time', ib.signed.receipt.hash === rc.receipt.hash && JSON.stringify(ib.signed.transcript) === JSON.stringify(rc.transcript) && /^nenya-coach-transcript-[0-9a-f]{8}-\d{8}T\d{6}Z\.json$/.test(transcriptFilename(rc.receipt, 'json')));
+ok('the note is cleaned of markup and control characters', ib.note === 'The reply felt off today');
+ok('a checked field only the function can make is attached', f.checked === createHmac('sha256', SECRET).update(`report-checked|${rc.receipt.hash}`).digest('hex') && ib.checked === f.checked);
+ok('the key id is attached, and the receipt is found in the log', f['key-id'] === rc.receipt.keyId && /^yes \(\d{4}-\d{2}-\d{2}\)$/.test(ib.issuedRecord));
+ok('the hash and signing time are their own fields, so an alert can be matched to its transcript', f['receipt-hash'] === rc.receipt.hash && f['issued-at'] === rc.receipt.issuedAt);
 ok('an accepted report is counted', n('coach.report.verified') === 1 && n('coach.report.rejected') === 0);
-ok('nothing from the transcript was stored', store.keys().every((k) => !JSON.stringify(k).includes('message ')) && !store.keys().some((k) => k.startsWith('reports')));
+ok('nothing from the transcript is in the counters or the receipt log (only in the inbox entry)', store.keys().every((k) => !JSON.stringify(k).includes('message ')) && !store.keys().some((k) => k.startsWith('reports')));
 
 // ---- refused, each with a short code
 const refused = async (name: string, signed: any, reason: string, opts: any = {}) => {
@@ -119,8 +120,8 @@ await refused('not JSON at all', null, 'json', { raw: '{nope' });
   const pub = mine.publicKey.export({ type: 'spki', format: 'der' }).toString('base64');
   const rec = { version: 2, algorithm: 'Ed25519', keyId: createHash('sha256').update(pub).digest('hex').slice(0, 16), publicKey: pub, hash, issuedAt, signature: edSign(null, Buffer.from(`nenya-coach-transcript-v2\n${hash}\n${issuedAt}`), mine.privateKey).toString('base64') };
   const before = forwards.length; const y = await send({ transcript: old, receipt: rec });
-  ok('an older version 2 transcript is accepted', y.status === 204 && forwards.length === before + 1 && !/Conversation complete/.test(forwards[forwards.length - 1].fields.report));
-  ok('and it is marked as having no record in the log', /^no record/.test(forwards[forwards.length - 1].fields['issued-record']));
+  ok('an older version 2 transcript is accepted', y.status === 204 && forwards.length === before + 1 && !/Conversation complete/.test(inboxOf(rec.hash).readable));
+  ok('and it is marked as having no record in the log', /^no record/.test(inboxOf(rec.hash).issuedRecord));
 }
 
 // ---- the doors
@@ -137,7 +138,7 @@ const STOP_OK = { transcript: stopRc.transcript, receipt: stopRc.receipt };
 const nBeforeStop = forwards.length;
 const stopSent = await send(STOP_OK, { note: 'The site stopped this; I think it was a mistake.' });
 ok('a genuine signed transcript of a conversation the site ended is accepted', stopSent.status === 204 && forwards.length === nBeforeStop + 1);
-ok('its readable text says the site ended it', forwards[forwards.length - 1].fields.report.includes('Ended by the site') && forwards[forwards.length - 1].fields.report === readableTranscript(stopRc.transcript.messages, S, stopRc.receipt, '', stopRc.transcript.meta, stopRc.transcript.site, stopRc.transcript.checks));
+ok('its readable text says the site ended it', inboxOf(stopRc.receipt.hash).readable.includes('Ended by the site') && inboxOf(stopRc.receipt.hash).readable === readableTranscript(stopRc.transcript.messages, S, stopRc.receipt, '', stopRc.transcript.meta, stopRc.transcript.site, stopRc.transcript.checks));
 const noEnded = JSON.parse(JSON.stringify(STOP_OK)); delete noEnded.transcript.meta.endedBy; delete noEnded.transcript.meta.stop;
 ok('an odd number of messages without the site-ended facts is refused', (await send(noEnded)).status === 400);
 const claimsEnded = JSON.parse(JSON.stringify(GOOD)); claimsEnded.transcript.meta.endedBy = 'site';
@@ -149,6 +150,6 @@ ok('an altered stopped message breaks the signature', (await send(forgedStop)).s
 forwardStatus = 500;
 const vBefore = n('coach.report.verified');
 const down = await send(GOOD);
-ok('if the form cannot be reached the visitor gets a plain 502 and nothing is counted as accepted', down.status === 502 && n('coach.report.verified') === vBefore);
+ok('if only the email alert fails, the transcript is still safely kept, the visitor is not failed, and the failed alert is counted', down.status === 204 && n('coach.report.verified') === vBefore + 1 && n('coach.report.alert-failed') >= 1 && !!inboxOf(rc.receipt.hash));
 forwardStatus = 200;
 coachStore(null); reportStore(null);

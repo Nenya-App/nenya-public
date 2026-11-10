@@ -78,22 +78,17 @@
       <textarea name="comments"></textarea>
     </form>
 
-    <!-- The same, for signed coach-demo transcripts, which reach this form only through the report function
-         (netlify/functions/report.mts) after their signature has been checked. -->
-    <form name="verified-transcript" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data" hidden>
+    <!-- An alert for signed coach-demo transcripts: it reaches this form only through the report function (netlify/functions/report.mts) after their signature has been
+         checked, and carries only the fingerprint and the person's choices. The conversation itself is kept in the site's private store, never in the form. -->
+    <form name="verified-transcript" data-netlify="true" netlify-honeypot="bot-field" hidden>
       <input type="hidden" name="form-name" value="verified-transcript" />
       <input type="text" name="bot-field" />
-      <textarea name="report"></textarea>
-      <textarea name="signed"></textarea>
-      <input type="file" name="signed-file" />
       <input type="text" name="receipt-hash" />
       <input type="text" name="issued-at" />
-      <textarea name="comments"></textarea>
-      <input type="text" name="checked" />
-      <input type="text" name="key-id" />
-      <input type="text" name="issued-record" />
       <textarea name="permissions"></textarea>
       <input type="text" name="keep-until" />
+      <input type="text" name="checked" />
+      <input type="text" name="key-id" />
     </form>
 
     <script type="module" src="/src/main.tsx"></script>
