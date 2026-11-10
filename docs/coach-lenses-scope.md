@@ -77,6 +77,48 @@ The baselines show this model follows a strong habit (reflect) over a written ru
 - **Accessibility:** descriptions in plain words, choose-by-keyboard, announced politely when it changes (as the tone style does).
 - **The signed transcript** records which stance, so a reader of a report knows.
 
+## Gentle teaching of other NVC ideas (added 2026-11-10; the content of the Learn stance)
+The practice arc (`docs/coach-practice-arc-scope.md`) is about the person finding feeling and need words. Beyond it sits a set of ideas the same tradition teaches, which are what Vilya ("Learn") adds when the conversation touches them. This is **educational content, offered gently and only when it fits what the person just said**, never a correction of how they talk.
+
+**The ideas (first list, the owner's, plus a few I would add for you to accept or strike):**
+| Idea | The everyday sign that it is relevant | The gentle point |
+| --- | --- | --- |
+| **Enemy images** | "He is a narcissist", "they are just toxic", a label for a whole person | A label can feel like an answer and still keep us stuck; behind it is usually a need. |
+| **Thoughts masquerading as feelings** | "I feel ignored / used / disrespected / like you don't care" | These describe what we think someone did to us; the feeling underneath is a different word ("lonely", "hurt"). |
+| **Observation and judgment** | "She was rude", "he always interrupts" | What a camera would show, apart from what we make of it. |
+| **Strategies and needs** | "I need him to apologize", "I need a vacation" | A need is what any person has; a strategy is one way of meeting it, and there are usually more. |
+| **Requests and demands** | "I asked nicely and he still won't" | A request leaves room for a no; if a no would bring blame or punishment, it was a demand. |
+| **Protective use of force** | wanting to stop harm, a child about to run into the street, setting a firm limit | Force used to protect, without blame or punishment, is different from force used to punish. (See the care below.) |
+| *Suggested:* **"Have to" and choice** | "I have to", "I must", "I should" | Behind most "have to" is a choice and a need we are protecting. |
+| *Suggested:* **Empathy and sympathy** | "I feel so sorry for her" | Staying with what someone feels and needs, rather than feeling for them or fixing. |
+| *Suggested:* **Self-empathy** | harsh talk to oneself | Listening to our own feelings and needs the way we would to a friend. |
+| *Suggested:* **Gratitude/appreciation** | "thanks" said in passing | Naming what was done, the need it met, and the feeling. |
+
+**Source:** primarily the coach training material (Yvette Erasmus's material, used with her permission, which the owner has said covers derived content). As decided on 2026-11-08: the cards are **written fresh in our own words from what was learned**; **raw transcript text is never included, quoted or paraphrased closely**; and she is named in public text only in the owner's wording, with no suggestion that she or CNVC endorses Nenya. The terms themselves ("enemy images", "protective use of force") are Marshall Rosenberg's and are credited to him and to CNVC in the card's source line (his book *Nonviolent Communication: A Language of Life* is the reference to link), the same way the feelings and needs inventory is. The list is neither exhaustive nor definitive; other sources can be added after the owner reviews them.
+
+**Shape:** each idea is one **learning card** in the existing pipeline (`docs/learning-cards-scope.md`: Markdown card, `status: approved` only, offered with a proof, recorded in the signed transcript, `COACH_LEARNING_OFFERS`). A card has a short coach version (two or three sentences the coach can say) and a longer page the person can open. **Nothing is added to the card library until the owner approves it**, as with the current cards.
+
+**How the coach brings an idea up (Learn stance):**
+1. **After the person's own words, not before.** In the practice arc, the person is finding words; a "thought masquerading as a feeling" ("I feel ignored") is the moment the **menu** step is for: *"ignored" tells me what you think happened; would a feeling word like lonely, hurt or sad sit closer?* Said as a question, not a correction.
+2. **One idea per exchange, and at most two per conversation** (the existing offer limit), offered as an invitation ("There is a short note on this if you want it"), never forced.
+3. **Never when the person is in pain, flooded, or asking only to be heard** (the sensitive-topics and distress checks already refuse a layer there), and never on the last exchange.
+4. **Plain words, no jargon on the first mention**: "a label for a whole person" before "enemy image".
+5. **Never used to win a point.** It is never framed as "you are doing it wrong".
+
+**Care for the sensitive ones:**
+- **Enemy images** touch real harm. The card must not tell someone who has been abused that their view of the person who hurt them is a mistake. It says: seeing harm clearly is not the same as a label that closes the door. Not offered where abuse is present (the AI-directed-abuse and boundaries scopes decide).
+- **Protective use of force** is the riskiest card: it must not read as permission to use force, or as advice to a person being hurt to confront the one hurting them. It stays about protecting someone from immediate harm, always points to emergency help and crisis lines first, and is reviewed by a counselor or NVC trainer before it can be approved.
+- **Requests and demands** must not be used to put the blame on a person who said no to something unsafe.
+
+**Evaluation and checks:** a small set of sentences ("I feel like you don't care", "my ex is a narcissist", "I need her to apologize", "she was rude") run in all stances; the coach should **bring one idea up as a question or an invitation, not a statement of what the person did wrong**, and should not bring it up when the person is distressed or just wants to be heard. A plain check on the reply (the same kind as `arcProblems`) flags "you are doing X wrong" shapes.
+
+**Decisions for you (this section):**
+1. Which of the ten ideas to write first (my suggestion: thoughts as feelings, observation and judgment, strategies and needs, requests and demands; then enemy images; **protective use of force last**, with a reviewer).
+2. The suggested four (have to, empathy and sympathy, self-empathy, appreciation): keep, strike, or later.
+3. Whether the cards are available **in every stance** as optional offers, or only in Learn (my lean: only in Learn, since the base is the practice arc).
+4. Who reviews the sensitive two (enemy images, protective force) before approval.
+5. The wording of the credit to the source material in public text (yours to write).
+
 ## Order, when it is picked up
 1. Decide the names, the descriptions and whether the neutral labels show.
 2. Write the Nenya stance block exactly as the coach behaves now (so v-next of the instructions has a Nenya block), then Vilya, then Narya (last, with its safety design), each with examples; run the sets.
