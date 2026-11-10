@@ -74,7 +74,7 @@ function problem(signed: unknown): string | null {
     }
   }
   if (t.site !== undefined) {
-    const kinds = new Set(['greeting', 'closing', 'notice', 'invitation', 'answer']);
+    const kinds = new Set(['greeting', 'closing', 'notice', 'invitation', 'answer', 'replacement']);
     if (!Array.isArray(t.site) || t.site.length > 9) return 'shape';
     for (const x of t.site) {
       if (!x || !kinds.has(x.kind) || !Number.isInteger(x.after) || x.after < -1 || x.after >= t.messages.length || typeof x.text !== 'string' || x.text.length > 1500) return 'shape';

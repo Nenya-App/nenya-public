@@ -4,6 +4,8 @@
 // visitor was shown. (The sentences the server adds to a reply, and the thank-you after critical feedback, are already inside the
 // reply. The note about replaced identifiers is made by the page from the visitor's own message and is not part of this list.)
 import { detectHostility } from './hostility.ts';
+import { INFRA_FALLBACK } from './infraGuard.ts';
+import { PERSONA_FALLBACK } from './personaGuard.ts';
 import { openingText, parseReportHeader } from './reportShare.ts';
 import { checkConversation, explainConversation, noticeIntro, resourcesFor } from './safetyFlags.ts';
 
@@ -18,7 +20,7 @@ export const INVITATION_TEXT =
   'If you would like the people who made Nenya to read what you thought, you can send this conversation to us with a note, using the buttons below. It is up to you, and nothing is sent unless you choose.';
 
 export interface SiteMessage {
-  kind: 'greeting' | 'closing' | 'notice' | 'invitation' | 'answer';
+  kind: 'greeting' | 'closing' | 'notice' | 'invitation' | 'answer' | 'replacement';
   /** The index of the message this one follows; -1 means before the first message. */
   after: number;
   text: string;
@@ -37,6 +39,13 @@ export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content:
   const out: SiteMessage[] = [{ kind: 'greeting', after: -1, text: shared ? openingText(shared) : greetingText(maxTurns) }];
   // A reply the site wrote itself, as a pre-written answer to a question about Nenya, is marked as such right after it.
   for (const x of answered) out.push({ kind: 'answer', after: x.index, text: x.partial ? `The first part of the reply above was written by the site as a pre-written answer ("${x.title}"); the rest is the AI's.` : `The reply above was written by the site as a pre-written answer ("${x.title}"), not by the AI.` });
+  // A reply the site replaced with a fixed sentence (a guard in the coach: a claim about how Nenya runs or about the person's data, or an invented human life
+  // or a denial of being an AI) is marked right after it. Found by its exact words, which are in the public source code.
+  messages.forEach((m, i) => {
+    if (m.role !== 'assistant') return;
+    if (m.content === INFRA_FALLBACK) out.push({ kind: 'replacement', after: i, text: 'The reply above was written by the site, not by the AI. It replaced a reply that claimed something about how Nenya runs or what happens to your data, after the AI was asked once to answer again.' });
+    else if (m.content === PERSONA_FALLBACK) out.push({ kind: 'replacement', after: i, text: 'The reply above was written by the site, not by the AI. It replaced a reply that spoke as if the AI had a human life of its own or were not an AI, after the AI was asked once to answer again.' });
+  });
   const users = messages.filter((m) => m.role === 'user').map((m) => m.content);
   let flag = null as ReturnType<typeof checkConversation>;
   for (let j = 1; j <= users.length; j++) {

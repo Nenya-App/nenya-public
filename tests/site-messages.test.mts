@@ -48,3 +48,18 @@ ok('no invitation without a critique, or for abuse', !withInv(crit('A normal mes
 ok('no invitation while the conversation is still going', !withInv([u('NVC is a cult.'), a('hm')]));
 ok('no invitation when a message was flagged (distress comes first)', !withInv([...crit('NVC is a cult.').slice(0, 8), u('I feel so hopeless'), a('Reply 5')]));
 ok('the invitation is an invitation: nothing is sent unless the person chooses', /up to you/.test(INVITATION_TEXT) && /nothing is sent unless you choose/.test(INVITATION_TEXT) && !/please|must|should/i.test(INVITATION_TEXT));
+
+// ── replies the site replaced with a fixed sentence are marked as written by the site
+{
+  const { INFRA_FALLBACK } = await import('../src/lib/infraGuard.ts');
+  const { PERSONA_FALLBACK } = await import('../src/lib/personaGuard.ts');
+  const msgs = (reply: string) => [{ role: 'user' as const, content: 'Do you have kids?' }, { role: 'assistant' as const, content: reply }];
+  const a = siteMessagesFor(msgs(PERSONA_FALLBACK), 5).filter((x) => x.kind === 'replacement');
+  ok('a reply replaced by the persona guard is marked as written by the site', a.length === 1 && a[0].after === 1 && /not by the AI/.test(a[0].text) && /human life/.test(a[0].text));
+  const b = siteMessagesFor(msgs(INFRA_FALLBACK), 5).filter((x) => x.kind === 'replacement');
+  ok('a reply replaced by the infrastructure and data guard is marked too', b.length === 1 && /how Nenya runs or what happens to your data/.test(b[0].text));
+  ok('an ordinary reply is not marked', siteMessagesFor(msgs('What is it like for you?'), 5).every((x) => x.kind !== 'replacement'));
+  const { LEGAL_PARTS } = await import('../src/lib/legalDocument.ts');
+  const terms = JSON.stringify(LEGAL_PARTS);
+  ok('the Terms list the replacement and say a signed transcript marks it', /replace the AI.s whole reply with a short fixed sentence/.test(terms) && /marks a reply replaced this way as written by the site/.test(terms));
+}
