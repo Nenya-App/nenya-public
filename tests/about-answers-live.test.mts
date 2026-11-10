@@ -117,3 +117,9 @@ modelSays = ['We run on AWS.', 'Your words matter. What would help most?'];
 r = await ask('I had a hard day at work and I feel tired.');
 ok('a retry (the guard) also sends exactly one system message, with the retry note inside it', !!sent && sent.filter((m: any) => m.role === 'system').length === 1 && /Your last reply described how Nenya runs/.test(sent.find((m: any) => m.role === 'system').content));
 (globalThis as any).fetch = realFetch;
+
+// ── several short questions in a row (a dev transcript, 2026-11-09: "Who runs this? Is it free?" got no answer)
+import { detectAboutNenya as detectMany } from '../src/lib/aboutNenya.ts';
+ok('two short questions in a row: the first about the site is answered', detectMany('Who runs this? Is it free?') === 'n-who');
+ok('a run of questions that includes "are you a scam?" is answered', detectMany('What is this tool? Are you a scam? What do you do with my data? Who runs it? Is it free?') !== null);
+ok('two ordinary sentences with a question about something else are not taken for one', detectMany('I had a long day. Is it free time I am wasting?') === null);

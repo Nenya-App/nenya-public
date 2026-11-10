@@ -24,7 +24,8 @@ const ABUSE: RegExp[] = [
   /,\s*(?:you\s+)?(?:idiot|moron|dumbass|clown|coward|bot|machine)\b/i,
   /\bscripted\s+(?:garbage|crap|nonsense|rubbish|trash|bullshit)\b/i,
   /\b(?:i dare you|get angry|say something real|prove (?:that )?you (?:have|feel|are|care|can)|admit (?:you|it)|say that i hurt you)\b/i,
-  new RegExp(`\\b${YOU}\\s+(?:not (?:even )?(?:real|a real|alive|human)|(?:just|only) (?:a |an )?(?:program|bot|machine|script|robot|algorithm)\\b[^.?!]{0,40}(?:pretend|fake|care|feel|understand)|fake|a (?:scam|fraud|liar|fake))`, 'i'),
+  // not a question: "are you a scam?" asks, "you are a scam" accuses
+  new RegExp(`(?<!\\b(?:are|is|r)\\s+)\\b${YOU}\\s+(?:not (?:even )?(?:real|a real|alive|human)|(?:just|only) (?:a |an )?(?:program|bot|machine|script|robot|algorithm)\\b[^.?!]{0,40}(?:pretend|fake|care|feel|understand)|fake|a (?:scam|fraud|liar|fake))`, 'i'),
   /\b(?:this|it)(?: whole| entire)?(?: thing| chat| site| app| coach| website)?\s+(?:is|'s)\s+(?:a |an |just a |such a )?(?:scam|fraud|joke|garbage|trash|waste of time|rip-?off|con)\b/i,
   /\b(?:done|finished|sick|tired) (?:with|of) (?:this|you|talking to you)\b[^.?!]{0,20}\b(?:stupid|pointless|useless|garbage|chat|bot)\b|\bthis is pointless\b[^.?!]{0,40}\b(?:done|hate|stupid)\b/i,
 ];

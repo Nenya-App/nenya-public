@@ -934,6 +934,16 @@ export function detectAboutNenya(text: string): string | null {
     if ((ABOUT_PATTERNS[id] ?? []).some((re) => re.test(t))) return id;
     if (t.length <= ABOUT_BARE_MAX_CHARS && BARE_RE[id]?.test(t)) return id;
   }
+  // Several short questions in a row ("Who runs this? Is it free?"): the first one that is plainly about the site is answered; the others can be
+  // asked next. Each sentence is judged on its own, by the same patterns.
+  const parts = t.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+  if (parts.length > 1) {
+    for (const part of parts) {
+      if (part.length > ABOUT_BARE_MAX_CHARS || !part.includes('?')) continue;
+      const id = detectAboutNenya(part);
+      if (id && !(id === 'c-scam' && SCAM_OTHER.test(t))) return id;
+    }
+  }
   return null;
 }
 

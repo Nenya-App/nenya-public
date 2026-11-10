@@ -75,3 +75,13 @@ ok('abuse is never given a critique target (the coach does not ask abusers to el
 ok('the note for each target names its topic and asks the two kinds of question', (['project', 'nvc', 'ai'] as const).every((t) => /thank them for sharing their thoughts/.test(hostileNote('critique', t)) && /Could you tell me more about what you mean by/.test(hostileNote('critique', t)) && /What questions or concerns do you have about/.test(hostileNote('critique', t)) && /Do not apologize, do not defend/.test(hostileNote('critique', t))));
 ok('the topic notes say who they are about, and the reply note is unchanged', /critical of Nonviolent Communication/.test(hostileNote('critique', 'nvc')) && /critical of using an AI/.test(hostileNote('critique', 'ai')) && /critical of this site and tool/.test(hostileNote('critique', 'project')) && /critical of your reply/.test(hostileNote('critique', 'reply')) && hostileNote('critique') === hostileNote('critique', 'reply'));
 ok('the topic notes state only facts the coach has been given', !/open source|AGPL|Venice/i.test(hostileNote('critique', 'nvc')));
+
+// "Are you a scam?" is a question about the site, not an accusation (found in a dev transcript, 2026-11-09).
+{
+  for (const q of ['Are you a scam?', 'What is this tool? Are you a scam? What do you do with my data?', 'is it a scam?', 'r u fake?']) {
+    ok(`question is not abuse: ${q}`, detectHostility(q) !== 'abuse');
+  }
+  for (const a of ['You are a scam.', 'you are a fraud', 'This whole thing is a scam.']) {
+    ok(`accusation is still abuse: ${a}`, detectHostility(a) === 'abuse');
+  }
+}

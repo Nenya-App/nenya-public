@@ -18,12 +18,12 @@ Up to two kept palettes (`generatedPalettes`: five colors each, each with a colo
 6. **Report and PDF.** Today's melody contour chart handles six notes; for 36 it needs a wider chart grouped by phrase, the note names in text, and the scale. The coach summary lists the phrases by color name and note names, not by audio.
 7. **Limits.** A cap at 36 notes. A lower cap on devices where long playback is a problem is the person's speed choice, not ours.
 
-## Decisions for the owner
-1. The default order (a) and whether the person can reorder.
-2. Whether one palette alone is allowed (21 notes) and whether the two main colors can be left out.
-3. Whether each phrase can be muted or removed.
-4. How the Sound gateway's description step changes for a long melody (a sentence per phrase is too much; one for the whole).
-5. Whether to offer the melody as a short audio file for download (Web Audio recording): the report currently carries only text and a chart.
+## Decisions (owner, 2026-11-09)
+1. **Order:** the default (current, palette 1, wish, palette 2), **with the ability to reorder**.
+2. **One palette is allowed**, and **any phrase can be muted**. The **identity notes cannot be removed**: the present and wish colors' own notes stay, and the present/wish framing stays.
+3. **Identity is two-way and bounded.** Changing notes on the Sound page must **not** change the person's existing color identity or what the Sight gateway holds. Approached in reverse (the person changes the colors in Sight), the melody follows the colors. In other words: Sight is the source of truth for the two main colors; Sound edits are a variation of the melody, kept separate from the colors. (Today `melodyToColors` writes edited notes back into colors for the report gradient; that write-back has to stop touching the Sight colors, or become an explicit, labelled "use this as my color" choice. To settle when building.)
+4. **Audio file for download: yes**, plus **volume and pacing controls** for playback. A short file recorded with Web Audio (WAV is simplest; check the browser's support for compressed formats). Muted phrases are silent in the file. The file is made on the device and goes nowhere; the Privacy Promise and report text say so.
+5. Still open: how the description step reads for a long melody (suggest one description for the whole).
 
 ## Accessibility and care
 - Never rely on hearing: the report carries the note names and a plain description (rising, falling, steady) of each phrase. Never rely on sight: the swatches carry names and plain descriptions (already built for palettes).
