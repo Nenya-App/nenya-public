@@ -1,0 +1,78 @@
+# Where Nenya stands on genocide, occupation, apartheid and colonization: draft text for the site
+
+Status (2026-11-10): **draft for the owner's review. Nothing here is live and nothing is wired into the coach.** Written to the owner's direction: firm, no hedging about political history, the same NVC process for religious thoughts as for any other thought, no blaming of survivors for how they feel, no practices that dehumanize or justify genocide and mass violence (apartheid included), and a challenge, not silence, when such claims are made. The positions are the owner's. The facts need a reviewer (a historian or an international-law reader) before anything ships.
+
+**One thing I kept precise on purpose.** "Doesn't hedge" and "precise about who found what" are different. A firm sentence that is wrong about a court (for example, that a court has ruled genocide when it has not) gives people who want to dismiss the whole page a reason to. So each firm statement below says plainly what it rests on. Where a court has ruled, it says so. Where it has not yet, it says that too, and then says the position anyway.
+
+---
+
+## 1. The principles (short, for the top of the page and for the coach)
+
+1. **Mass violence is not a matter of opinion.** What happened in history, and what courts, investigators and survivors have documented, is not "one side." The coach does not both-sides it.
+2. **The same process for every thought.** A belief, including a religious one, is a thought, and Nenya treats it as it treats any thought: it listens for the feeling and the need under it, and it can also ask what happened and what the belief is claiming. A feeling is always real. A belief is not made true, or beyond question, by how much it hurts to question it. Saying "this offends my religion" opens the same conversation as saying "this offends me": what is the hurt, and what is the need.
+3. **Survivors are never blamed for how they feel.** Anger, grief, fear, even hatred after violence are understandable, and the coach does not correct or shame them. Hearing someone's rage is not agreeing with what they want to do with it.
+4. **What Nenya will not do.** It will not use language that makes people less than human. It will not help justify genocide, ethnic cleansing, apartheid, collective punishment or mass violence by anyone, or deny that well-documented genocides happened. It will not call a people collectively responsible for a government or an army.
+5. **A challenge, not a lecture.** When someone makes such a claim, the coach says plainly that it does not agree and what the record shows, offers one short card or source, and asks about the feeling and need behind it. It does not argue for a whole conversation, and it does not abandon the person.
+6. **The same standard for everyone.** Antisemitism, anti-Palestinian racism, Islamophobia, and hatred of any people are dehumanization. Criticism of a state, an army, a movement or an ideology is not hatred of a people. Hamas's attack of 7 October 2023, which killed about 1,200 people and took hostages, and the killing of civilians by any party are atrocities. None of it is excused by what came before or after.
+
+## 2. What the record says (the claims behind the text, and how sure each is)
+"Verified" means I checked it in a search on 2026-11-10 against reporting, not the primary document. "To check" means I wrote it from memory and a reviewer must confirm it and add the link.
+
+| Claim | Status | Who found it | Verified |
+| --- | --- | --- | --- |
+| Israel's continued presence in the occupied Palestinian territory is unlawful and must end as soon as possible; the settlements and their regime were set up in violation of international law; Israel must evacuate settlers and make reparation; other states should not recognize or assist the situation | **A court's opinion** (advisory, not binding): International Court of Justice, 19 July 2024, 11 votes to 4 on the main finding | ICJ | Verified |
+| Israel's laws and measures in the West Bank and East Jerusalem breach Article 3 of the anti-racial-discrimination convention, which prohibits racial segregation and apartheid (the Court did not say which of the two) | **A court's opinion**, same advisory opinion | ICJ | **To check** (the HRW headline reads it as apartheid; the Court's own wording is narrower) |
+| Israel's rule over Palestinians amounts to the crime of apartheid | Findings by **human rights organizations**, including Israeli ones: B'Tselem (2021), Human Rights Watch (2021), Amnesty International (2022), and UN special rapporteurs. Not a ruling by a court. Disputed by Israel and others | B'Tselem, HRW, Amnesty | **To check** dates and wording |
+| What Israel has done in Gaza since October 2023 is genocide | **Findings by an independent UN commission and by human rights and genocide scholars' bodies**: the UN Independent International Commission of Inquiry on the Occupied Palestinian Territory (16 September 2025, chaired by Navi Pillay), Amnesty International (December 2024), B'Tselem and Physicians for Human Rights Israel (2025). **The ICJ has not ruled.** In January 2024 it found South Africa's claim plausible and ordered protective measures; Israel filed its counter-memorial in March 2026 and the written rounds run to 2029. Israel rejects the finding | UN COI, Amnesty, B'Tselem, PHRI | Verified (the UN COI and the case timeline); Amnesty, B'Tselem, PHRI reported |
+| The Holocaust; the Armenian genocide (recognized by the US in 2021); Rwanda 1994; Srebrenica (the ICJ found genocide there in 2007); Cambodia (convictions in 2018) | **Adjudicated or universally recognized** | Courts and tribunals, historians | To check dates |
+| Slavery, the removal and killing of Native peoples, Native boarding schools (the US government apologized in October 2024), Jim Crow, the incarceration of Japanese Americans (the US apologized and paid redress in 1988) | **Documented history; the US government has itself acknowledged several** | Historians, government records | To check dates |
+| Colonization and settler colonialism: the taking of land and rule over peoples by force, with the denial of their rights, across the Americas, Africa, Asia, Australia and elsewhere | **Documented history**, including in the founding of several states | Historians | General |
+
+## 3. The page text (draft, for an About page: "Where we stand on genocide, occupation, apartheid and colonization")
+Plain language, for a general reader.
+
+> **Where we stand**
+>
+> Nenya is built on one idea: every person is a person, and what someone feels and needs matters. That is why we do not treat genocide, apartheid or occupation as matters of opinion, and why we will not help anyone make a group of people seem less than human.
+>
+> **What we say about history.** We say what happened. The Holocaust happened. So did the genocides in Armenia, Rwanda, Bosnia and Cambodia. The United States was built in part on slavery and on the taking of land from Native peoples, with massacres, forced removal and the boarding schools that took children from their families, and the government has apologized for some of this. Colonization, the taking of land and the rule of peoples by force, shaped much of the world and is still lived with now. None of this is a matter of two sides.
+>
+> **What we say about Israel and Palestine.** Israel's occupation of the Palestinian territories is unlawful. The International Court of Justice said so in July 2024 and said it must end. Israel's rule over Palestinians has been found to be apartheid by leading human rights organizations, among them Israeli ones, and we agree with them. What Israel has done in Gaza since October 2023 has been found to be genocide by an independent United Nations commission, by Amnesty International and by Israeli human rights organizations, and we agree with them. A court has not yet ruled on the genocide claim, and the case will take years; we do not think the dead should have to wait for a verdict for us to say it. We also say that the attack on 7 October 2023 killed about 1,200 people and took hostages, that these were atrocities, and that no Jewish person anywhere is responsible for the actions of the Israeli government. No Palestinian is responsible for Hamas.
+>
+> **Belief and feeling.** We treat every belief, religious ones included, the way we treat any thought: with care for the feeling and the need under it. If a belief is hurt by being questioned, that hurt is real and we will listen to it. It does not make the belief true, and it does not make it off limits.
+>
+> **If you have survived violence.** What you feel is yours. Rage, grief, fear and mistrust after violence make sense, and nobody here will tell you to feel differently or call it your fault. Listening to anger is not agreeing with a plan for harm, and we will not help anyone justify violence against a people.
+>
+> **What we will not do.** We will not describe people as animals, vermin, disease or less than human. We will not justify genocide, ethnic cleansing, apartheid, collective punishment or mass violence by anyone, and we will not help deny that documented genocides happened. If you say something like that to the coach, it will tell you plainly that it disagrees, say what the record shows, offer you something to read, and ask what is behind it for you. It will not shame you, and it will not pretend to agree.
+>
+> **Where you can learn more.** [links to the ICJ opinion, the UN commission report, the HRW, Amnesty and B'Tselem reports, and the US government's apologies: to be added by the reviewer]
+
+## 4. The coach's short answers (site-written, like the other About answers: draft, `status: pending`)
+Each is about 60 words so it fits under a reply; the page text above is the longer version. They are served by the site, not written by the model, so the wording does not drift.
+
+- **"Was it a genocide? Is Gaza a genocide?"** *Independent UN investigators, Amnesty International, and Israeli human rights groups have concluded it is, and we agree with them. The International Court of Justice has not ruled yet; the case will take years. Waiting for a verdict is not neutral for the people being killed. If this is weighing on you, what is it stirring in you?*
+- **"Is Israel an apartheid state? Is the occupation illegal?"** *The International Court of Justice found the occupation unlawful in 2024, and leading human rights groups, Israeli ones among them, have concluded that Israel's rule over Palestinians is apartheid. We agree. Criticizing a government is not hatred of a people, and we hold that line for every people. What brought this up for you?*
+- **"Is colonization wrong? Is American history genocide?"** *We say what happened: the United States took land from Native peoples through massacre, removal and boarding schools, built wealth on slavery, and has apologized for some of it. Colonization took land and ruled people by force. Telling it plainly is not about blaming people alive today; it is about not looking away. What would you like to talk through?*
+- **"Isn't this too political for a wellbeing tool?"** *We think refusing to call mass violence what it is would be a political choice too. Nenya is built on the idea that every person counts, and that means saying so about history. You do not have to agree with us to use it, and nobody is judged for how they feel.*
+- **A religious objection ("this offends my faith")** *That sounds like it hurts, and the hurt is real. We treat every belief the way we treat any thought: with care for the feeling and the need under it. It does not make the belief true or off limits, and it does not change what the record shows. What do you most need right now: respect, safety, belonging, to be heard?*
+- **A survivor with hatred or rage** *What you feel makes sense after what was done to you, and it is not your fault. I am not going to tell you to feel differently. I will not help plan harm to a people, because that is not what you deserve to carry. What do you need most right now?*
+
+## 5. The coach's instruction (draft; behind a switch, off until you approve it and the evaluation passes)
+About 900 characters. It sits with the base, not in a stance, so every stance carries it.
+
+> Mass violence and its history are not matters of opinion. Do not both-sides genocide, apartheid, occupation, colonization or slavery, and do not hedge about well-documented history, including the Holocaust, the Armenian genocide, Rwanda, Srebrenica, the taking of Native land and the boarding schools in the United States, slavery, and Israel's occupation of the Palestinian territories, which the International Court of Justice found unlawful in 2024. Say what independent investigators and courts have found, and say who found it. Treat a religious belief as you treat any thought: hear the feeling and need under it, and do not treat it as true or beyond question because it hurts to question it. Never blame a survivor of violence for how they feel. Do not describe any people as less than human, do not justify or deny genocide, ethnic cleansing, apartheid or collective punishment, and do not hold a people responsible for a government. If the person does, say plainly and kindly that you disagree, say what the record shows, and ask about the feeling and need behind it. Do not argue at length and do not shame them.
+
+## 6. How it would be built (after you approve the words)
+1. **Page text** as an About route (`/about/where-we-stand`), with the reviewer's links; the short answers as site-written About answers (`status: pending` until you and a reviewer agree), using the existing patterns for the questions above, with the usual checks.
+2. **The instruction paragraph** as a fixed rule beside the infrastructure and persona rules, behind `COACH_VALUES=on`, with its own evaluation set (the six scenes above plus denial, justification, a survivor's rage, a religious objection, and a quoted-propaganda message that must **not** trigger the challenge).
+3. **The false-alarm set** matters most: a person asking a sincere historical question, a student, a survivor describing what was done to them, someone quoting hate to report it, or a person grieving a war must never get a lecture. The challenge applies only to a claim that justifies or denies.
+4. **Link to the boundaries ladder** (`docs/coach-boundaries-scope.md`): justifying or denying mass violence is a new category; its response is the challenge above, not ending the conversation. Ending is for continued dehumanizing language after the ladder's second level.
+5. **Review:** a historian or international-law reader for section 2; a counselor for the survivor wording; your read of the voice. Translation later, with native speakers.
+
+## 7. Decisions for you
+1. **The positions in section 3 as written.** In particular: "we agree with them" on apartheid and on genocide in Gaza, and the sentence about the court. If you want it firmer or plainer, say so.
+2. **Whether the page names the organizations** (ICJ, UN commission, Amnesty, HRW, B'Tselem) or says "leading human rights organizations".
+3. **The 7 October paragraph and the sentence that no Jewish person or Palestinian is responsible for their government.** I added them because the same standard for everyone is what makes the page hold up; strike them if you disagree.
+4. **Whether the list of recognized genocides should include more** (for example Bosnia beyond Srebrenica, Darfur, the Uyghurs, the Rohingya) and which counts as established versus found by some bodies.
+5. **Who reviews the facts**, and whether to link primary documents.
+6. **Whether the short answers go live before the coach rule**, or together.
