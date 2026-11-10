@@ -27,7 +27,15 @@ export const STANCES: Record<Stance, { ring: string; element: 'Water' | 'Air' | 
 
 /** The text of each layer. Empty (null) means the stance does not exist yet and cannot be used. Nenya is the base and has none. */
 let layers: Record<Stance, string | null> = { nenya: null, vilya: null, narya: null };
-export const stanceLayers = (): Record<Stance, string | null> => layers;
+
+/**
+ * The Learn (Vilya, Air) layer, draft wording for the owner's review (docs/coach-lenses-scope.md, "Gentle teaching of other NVC ideas"). It is in use only
+ * where COACH_STANCES contains "learn" (off by default) and, like every layer, it falls back to the base on a distress flag or a sensitive topic.
+ */
+export const LEARN_LAYER =
+  'Learn: add a little teaching to the practice, one idea at a time, as an invitation and in plain words, and only when the person\'s own words show it. For example: "I feel ignored" tells a story about what someone did, and a feeling like lonely or hurt may sit under it; what happened can be said as a camera would see it, apart from what we made of it; a need is not the same as one way of meeting it; a request leaves room for a no; a label for a whole person can stand in for what we needed; behind "I have to" there is often a choice and a need. Explain in two or three sentences, give one small example, then hand it back as a question. Offer one idea in a reply, never when they only want to be heard, and never as a correction.';
+export const learnOn = (value: string | undefined = process.env.COACH_STANCES): boolean => /\blearn\b/i.test(value ?? '');
+export const stanceLayers = (): Record<Stance, string | null> => ({ ...layers, vilya: layers.vilya ?? (learnOn() ? LEARN_LAYER : null) });
 /** For tests: set layer text (it is linted first). Pass null to clear. */
 export function __setStanceLayersForTests(next: Partial<Record<Stance, string | null>> | null): void {
   if (next === null) {
@@ -49,7 +57,7 @@ export const __setEntitledForTests = (list: Stance[] | null): void => {
   entitledOverride = list;
 };
 /** Which stances this visitor may use. Today everyone has the base only; a paid tier would extend this from an account (not built). */
-export const entitledStances = (): Stance[] => entitledOverride ?? [BASE_STANCE];
+export const entitledStances = (): Stance[] => entitledOverride ?? (learnOn() ? [BASE_STANCE, 'vilya'] : [BASE_STANCE]);
 
 export type StanceReason = 'base' | 'allowed' | 'inactive' | 'not-entitled' | 'distress-flag' | 'sensitive-topic';
 
@@ -62,7 +70,7 @@ export function effectiveStance(o: {
   topics?: SensitiveTopic[];
 }): { stance: Stance; layer: string | null; reason: StanceReason } {
   const entitled = o.entitled ?? entitledStances();
-  const active = o.active ?? layers;
+  const active = o.active ?? stanceLayers();
   if (o.requested === BASE_STANCE) return { stance: BASE_STANCE, layer: null, reason: 'base' };
   if (!active[o.requested]) return { stance: BASE_STANCE, layer: null, reason: 'inactive' };
   if (!entitled.includes(o.requested)) return { stance: BASE_STANCE, layer: null, reason: 'not-entitled' };

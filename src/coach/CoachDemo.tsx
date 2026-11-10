@@ -22,6 +22,7 @@ import { openingText } from '../lib/reportShare';
 import type { SharedText } from '../lib/reportFragments';
 import { LearningOffer } from './LearningCard';
 import { WordPanel, type Picked } from './WordPanel';
+import { StancePicker } from './StancePicker';
 import { addWordToDraft } from '../lib/feelingsNeeds';
 import { namedParts } from '../lib/practiceArc';
 import { AnswerCard, type AnswerCardData } from './AnswerCard';
@@ -136,6 +137,10 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const [messages, setMessages] = useState<Msg[]>([]);
   const [ticket, setTicket] = useState<string | undefined>();
   const [draft, setDraft] = useState('');
+  // Reflect (the base) or Learn (adds a little teaching). The choice is only shown where the site has turned Learn on (VITE_COACH_STANCES=learn at build time);
+  // the server decides what actually runs and falls back to Reflect when someone is in distress or on a sensitive topic.
+  const learnAvailable = /\blearn\b/i.test(String((import.meta as { env?: Record<string, string> }).env?.VITE_COACH_STANCES ?? ''));
+  const [stance, setStance] = useState<'nenya' | 'vilya'>('nenya');
   // The word lists: open on the first exchange, on the needs list once the coach has answered once (unless the person chose a tab themselves).
   const [wordsOpen, setWordsOpen] = useState<boolean>(() => {
     try {
@@ -272,7 +277,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...ownerHeader() },
-        body: JSON.stringify({ messages: toWire(next), session, ticket, shown: messages.flatMap((m) => (m.offer ? [m.offer.id] : [])), ...(shared ? { context: shared.text } : {}), ...overridesForRequest() }),
+        body: JSON.stringify({ messages: toWire(next), session, ticket, shown: messages.flatMap((m) => (m.offer ? [m.offer.id] : [])), ...(shared ? { context: shared.text } : {}), ...(learnAvailable && stance === 'vilya' ? { stance } : {}), ...overridesForRequest() }),
       });
       if (!res.ok) {
         // Say what went wrong instead of a bare "failed". The server's answer carries a code, a reason and a reference.
@@ -636,6 +641,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   setContextFlag(next ? checkConversation([next.text]) : null);
                 }}
               />
+              {learnAvailable && <StancePicker value={stance} onChange={setStance} />}
               <QuietTimeoutPicker id="coach-quiet-start" value={timeoutChoice} onChange={setTimeoutChoice} />
               <div className="flex flex-wrap items-center gap-3">
                 <Button size="lg" onClick={() => setStage('chat')} className="gap-2" style={gradientButton}>
@@ -671,7 +677,10 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 <span>Not therapy</span>
               </div>
               {stage === 'chat' && !timedOut && (
-                <QuietTimeoutPicker id="coach-quiet-chat" compact value={timeoutChoice} onChange={(v) => { setTimeoutChoice(v); touch(); }} />
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                  {learnAvailable && <StancePicker compact value={stance} onChange={setStance} />}
+                  <QuietTimeoutPicker id="coach-quiet-chat" compact value={timeoutChoice} onChange={(v) => { setTimeoutChoice(v); touch(); }} />
+                </div>
               )}
 
               <div className="space-y-4" role="log" aria-live="polite" aria-label="Conversation">
