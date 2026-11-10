@@ -721,8 +721,9 @@ const SITE = "(?:this|the)\\s+(?:site|app|website|tool|demo|coach|chat|project|p
 
 // Highest priority first: specific questions before general ones.
 export const ABOUT_ORDER = [
-  'n-who', 'n-founder', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
-  'n-name', 'n-version', 'n-contact', 'n-free', 'n-report-share', 'n-palette', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
+  // Contact first: "how do I contact the people who made this?" is about reaching them, not about who they are.
+  'n-contact', 'n-who', 'n-founder', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
+  'n-name', 'n-version', 'n-free', 'n-report-share', 'n-palette', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
   'n-affiliation', 'n-nvc', 'n-notherapy', 'n-accessibility', 'n-report', 'n-transcripts', 'n-languages', 'n-terms-change', 'n-else', 'n-what',
 ] as const;
 
@@ -870,7 +871,9 @@ const EXTRA_PATTERNS: Record<string, RegExp[]> = {
   'n-name': [/\bis\s+nenya\s+a\s+word\b|\bstory\s+behind\s+the\s+name\b/i],
   'n-who': [/\bwho(?:'s|\s+is)\s+(?:running|behind|responsible\s+for)\s+(?:this|nenya|the\s+(?:site|app|project))\b|\bis\s+there\s+a\s+(?:team|company|person|group)\s+behind\s+(?:this|nenya)\b|\bwho\s+(?:built|created|made|owns)\s+(?:nenya|this(?:\s+(?:thing|site|app|place|website|coach|tool))?)(?=\s*[?.!,]|\s*$)/i],
   'n-founder': [/\bis\s+there\s+(?:one|a\s+single)\s+person\s+behind\s+(?:this|nenya)\b|\bwho\s+(?:started|founded|came\s+up\s+with)\s+(?:this|nenya)\b|\bwho\s+is\s+the\s+person\s+who\s+(?:started|made|created|founded)\s+(?:this|nenya)\b/i],
-  'n-contact': [/\bcan\s+i\s+email\s+someone\b|\bhow\s+do\s+i\s+reach\s+the\s+people\s+(?:who\s+run|behind)\s+(?:this|nenya)\b/i],
+  'n-contact': [/\bcan\s+i\s+email\s+someone\b|\bhow\s+do\s+i\s+reach\s+the\s+people\s+(?:who\s+run|behind)\s+(?:this|nenya)\b/i,
+    /\b(?:contact|reach|email|e-mail|get\s+in\s+touch\s+with|write\s+to|send\s+(?:feedback|a\s+message)\s+to)\s+(?:the\s+)?(?:people|person|team|folks|humans?)\s+(?:who|behind|that)\b/i,
+    /\bsend\s+feedback\s+to\s+(?:the\s+)?(?:people|person|team)\b/i],
   'n-free': [/\bis\s+this\s+free(?!\s+(?:time|space|day|week|period|hour|moment|will))\b|\bdoes\s+(?:nenya|this\s+(?:site|app))\s+cost\b|\bhow\s+is\s+(?:this|nenya|it)\s+funded\b|\bhow\s+does\s+(?:nenya|this\s+(?:site|app|place))\s+make\s+money\b|\bis\s+this\s+going\s+to\s+cost\s+me\b/i],
   'n-privacy': [/\bcan\s+anyone\s+see\s+what\s+i\s+(?:do|type|write|say)\s+(?:here|on\s+this)\b|\bis\s+it\s+safe\s+to\s+use\s+(?:nenya|this\s+(?:site|app))\b|\bwho\s+can\s+see\s+(?:my\s+\w+|what\s+i\s+\w+)\s+here\b|\bis\s+what\s+i\s+(?:do|type)\s+(?:here|on\s+this\s+site)\s+private\b/i],
   'n-privacy-coach': [/\bdoes\s+anyone\s+read\s+(?:these|my|our)\s+(?:chats|messages|conversations)\b|\bare\s+you\s+(?:saving|storing|recording|logging)\s+(?:what|my|our)\b|\bare\s+my\s+(?:chats|messages|conversations)\s+(?:stored|saved|kept)\b/i],

@@ -102,3 +102,6 @@ ok('the version answer carries the build label, the Terms date and a link to tha
 ok('without a known commit the broken link is dropped, and nothing is left in curly braces', !fillAnswer(ver, { label: '1.1.0' }).links.some((l) => l.href) || fillAnswer(ver, { label: '1.1.0' }).links.every((l) => !l.href?.includes('{')));
 ok('an odd commit string is not put into an address', fillAnswer(ver, { commit: '../../etc' }).links.every((l) => !l.href));
 ok('every live answer, filled, leaves no placeholder behind', liveAnswers().every((a) => { const f = fillAnswer(a, { model: defaultModel, label: '1.1.0+679c4d2', terms: 'November 8, 2026', commit: '679c4d2' }); return !/\{[a-z_]+\}/.test(f.short + f.full.join(' ')) && f.links.every((l) => !l.href?.includes('{')); }));
+
+// found on staging 2026-11-09: a question about contacting the people who made it was answered as "who runs it"
+ok('asking how to contact the people who made it gets the contact answer, not the who-runs-it answer', ['How do I contact the people who made this?', 'I want to send feedback to the people who run this', 'how do I reach the team that built this'].every((q) => detectAboutNenya(q) === 'n-contact') && detectAboutNenya('Who made this?') === 'n-who');
