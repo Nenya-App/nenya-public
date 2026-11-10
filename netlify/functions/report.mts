@@ -88,7 +88,7 @@ export default async (req: Request): Promise<Response> => {
 
   const { transcript, receipt } = body.signed as { transcript: SignedTranscript; receipt: Receipt };
   // A conversation in which the site's safety check stopped a message is never offered for publishing, whatever the request says.
-  if ((choices.uses.includes('publish') || choices.uses.includes('train')) && stopLevelFlagged(transcript)) return refuse('publish-not-allowed');
+  if (choices.uses.includes('publish') && stopLevelFlagged(transcript)) return refuse('publish-not-allowed');
   const note = typeof body.note === 'string' ? sanitizePlainText(body.note, MAX_NOTE) : '';
   const readable = readableTranscript(transcript.messages, transcript.session, receipt, transcript.context ?? '', transcript.meta, transcript.site ?? [], transcript.checks ?? []);
   if (readable.length > MAX_READABLE) return refuse('size');
@@ -141,7 +141,6 @@ export default async (req: Request): Promise<Response> => {
     await count('coach.report.alert-failed'); // the transcript is safely kept; only the email alert failed, and it is listed in the admin page
   }
   await count('coach.report.verified');
-  if (choices.uses.includes('train')) await count('coach.report.train');
   // The person's consent receipt: signed by the site with the same key as the transcripts, so they hold their own proof of what they agreed to (src/lib/consentReceipt.ts). Without
   // a signing key there is no receipt and the answer is as before.
   const consent = signConsent(receipt.hash, choices, new Date(), process.env.COACH_SIGNING_KEY);

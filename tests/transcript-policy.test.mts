@@ -5,7 +5,7 @@ import { ok } from './helpers.mts';
 const now = new Date('2026-11-10T12:00:00Z');
 ok('a keeping time is required; uses are optional', parseChoices({ adult: true, keep: '30d' })?.uses.length === 0 && parseChoices({ adult: true, uses: ['evaluate'] }) === null && parseChoices(null) === null && parseChoices({ adult: true, keep: 'forever' }) === null);
 ok('unknown or repeated uses are handled: unknown refuses, repeats collapse', parseChoices({ adult: true, keep: '90d', uses: ['evaluate', 'sell'] }) === null && JSON.stringify(parseChoices({ adult: true, keep: '90d', uses: ['evaluate', 'evaluate'] })?.uses) === '["evaluate"]' && parseChoices({ adult: true, keep: '1y', uses: 'evaluate' }) === null);
-ok('every keeping choice is understood (with the 18+ statement), and nothing is preselected by the library', KEEPS.every((k) => parseChoices({ adult: true, keep: k })) && USES.length === 4);
+ok('every keeping choice is understood (with the 18+ statement), and nothing is preselected by the library', KEEPS.every((k) => parseChoices({ adult: true, keep: k })) && USES.length === 3);
 ok('the delete-by date is counted from the day it was sent; "until asked" has none', keepUntil('30d', now) === '2026-12-10T12:00:00.000Z' && keepUntil('1y', now) === '2027-11-10T12:00:00.000Z' && keepUntil('until-asked', now) === null);
 ok('the choices read back in plain words, including "no other use"', /No other use/.test(describeChoices({ uses: [], keep: '30d' })) && /test and improve the coach/.test(describeChoices({ uses: ['evaluate'], keep: '90d' })) && /after 90 days/.test(describeChoices({ uses: ['evaluate'], keep: '90d' })));
 const rec = newRecord('a'.repeat(64), { uses: ['evaluate', 'quote'], keep: '30d' }, now);

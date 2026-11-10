@@ -103,8 +103,8 @@ Open each card: it has a content note, a short body, something to try, where it 
 
 ## Sending a conversation: the 18+ statement, training, and the consent receipt
 1. After a conversation, open **Report or send verified transcript**. Above the choices is a box, **Before you send anything**, with a checkbox: "I am 18 or older, and these are my own words." plus a note that younger people are welcome to use Nenya, best with a trusted adult with them or looking on, but should not send a conversation. Until it is checked, a line says "Check this to be able to send" and the Send button does nothing.
-2. The list of uses now has a fourth: **Use it to train or improve a model, from now on**, unchecked, with its own plain explanation (a person reads and edits it first; taking it back removes it from future training, and a model already trained cannot unlearn it; it is not published as a dataset).
-3. Send with training checked. After "Thank you. Your transcript was sent..." a **Consent receipt (.json)** button appears (needs `COACH_SIGNING_KEY` on dev, which the transcripts already use). Download it: it names the transcript's fingerprint, the uses, the keeping time, `adult: true`, the wording version and the time, with a signature, and contains no conversation.
-4. On `/my-transcript`, drop the signed transcript: all four uses can be stopped separately. Stopping training leaves the others.
-5. Have a conversation where the safety check stopped a message and try to send it for training or for the public page: both are refused ("not available for this conversation").
-6. In the owner page's inbox, the permissions line reads "The person confirmed they are 18 or older and that the words are their own" and lists the training choice. Nothing reads a training choice yet.
+2. The list of uses is the three it had (test and improve the coach, quote, show on the witnessed page); **there is no training choice** (none is offered: no pipeline exists and no conversation is used to train a model).
+3. Send with any choice. After "Thank you. Your transcript was sent..." a **Consent receipt (.json)** button appears (needs `COACH_SIGNING_KEY` on dev, which the transcripts already use). Download it: it names the transcript's fingerprint, the uses, the keeping time, `adult: true`, the wording version and the time, with a signature, and contains no conversation.
+4. On `/my-transcript`, drop the signed transcript: each use can be stopped separately.
+5. Have a conversation where the safety check stopped a message and try to send it for the public page: it is refused ("not available for this conversation").
+6. In the owner page's inbox, the permissions line reads "The person confirmed they are 18 or older and that the words are their own".

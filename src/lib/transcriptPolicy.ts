@@ -5,7 +5,7 @@
 // reduce what was allowed (stop a use, or ask for deletion), never widen it. Holding the file proves you have the file, not who you are; that is the honest
 // limit, and it is why revoking can only ever make things more restrictive.
 
-export const USES = ['evaluate', 'quote', 'publish', 'train'] as const;
+export const USES = ['evaluate', 'quote', 'publish'] as const;
 /** The version of the wording the person agreed to; recorded with their choices and in the consent receipt. */
 export const CONSENT_TERMS_VERSION = 'consent-2026-11-10';
 export type Use = (typeof USES)[number];
@@ -13,8 +13,7 @@ export const KEEPS = ['30d', '90d', '1y', 'until-asked'] as const;
 export type Keep = (typeof KEEPS)[number];
 
 export const USE_LABELS: Record<Use, { label: string; detail: string }> = {
-  evaluate: { label: 'Use it to test and improve the coach', detail: 'We may keep it, with names and contact details removed, among the test conversations we use to check the coach and its safety checks. It is not used to train a model unless you also choose that below.' },
-  train: { label: 'Use it to train or improve a model, from now on', detail: 'A person at Nenya first reads it and edits it by hand (names and details removed again), and may decide not to use it. Only then may it be used to train or improve a model, for training runs from now on, never a conversation the safety check stopped. Taking it back removes it from future training. A model that was already trained cannot unlearn it. We do not publish it or the model as a dataset.' },
+  evaluate: { label: 'Use it to test and improve the coach', detail: 'We may keep it, with names and contact details removed, among the test conversations we use to check the coach and its safety checks. It is never used to train a model.' },
   publish: { label: 'Show it on our "witnessed conversations" page, without your name', detail: 'The site first replaces names and contact details again, then a person at Nenya reads it and edits it by hand, and may decide not to show it. If it goes up, it shows only what you choose, each message marked as written by you, by the AI, or by the site. Because names are removed, a stranger cannot check the signature on the public copy; it carries a short fingerprint that matches your signed file. You can take it down at any time with the signed file. We cannot recall copies other people make of a public page.' },
   quote: { label: 'Quote short parts in public', detail: 'We may quote a few words from it in our documents, posts or answers, never with a name, and never the whole conversation.' },
 };
@@ -82,7 +81,7 @@ export function keepUntil(keep: Keep, from: Date): string | null {
 export function describeChoices(c: Choices): string {
   const parts = ['Read it and consider what the person wrote.', ...(c.adult ? ['The person confirmed they are 18 or older and that the words are their own.'] : [])];
   for (const u of c.uses) parts.push(USE_LABELS[u].label + '.');
-  if (!c.uses.length) parts.push('No other use: not used for testing, not quoted, not used for training.');
+  if (!c.uses.length) parts.push('No other use: not used for testing, not quoted.');
   if (c.uses.includes('publish')) parts.push((c.portions === 'all' ? 'If published, the whole conversation is shown' : 'If published, only the chosen messages are shown') + (c.showFor ? `, and it stays up ${c.showFor === 'until-asked' ? 'until I ask for it to come down' : 'for ' + { '30d': '30 days', '90d': '90 days', '1y': 'a year' }[c.showFor]}.` : '.'));
   parts.push(KEEP_LABELS[c.keep] + '.');
   return parts.join(' ');
@@ -90,8 +89,6 @@ export function describeChoices(c: Choices): string {
 
 export type Status = 'active' | 'deletion-requested' | 'deleted';
 export type Publication = 'none' | 'pending-review' | 'public' | 'withdrawn';
-/** Training: nothing is used until a person has read and edited it by hand. 'withdrawn' means it is out of future training. */
-export type Training = 'none' | 'pending-review' | 'approved' | 'withdrawn';
 /** What we keep about a transcript we were sent: its fingerprint, the choices and dates. Never the conversation itself. */
 export interface TranscriptRecord {
   hash: string;
@@ -102,8 +99,6 @@ export interface TranscriptRecord {
   status: Status;
   /** The public page, if 'publish' was allowed: waiting for a person to read it, shown, or taken down. */
   publication: Publication;
-  /** Use for training, if 'train' was allowed: waiting for a person to read it, approved for the next training run, or withdrawn. */
-  training?: Training;
   /** The person's 18-or-older statement and the wording they agreed to. */
   adult?: true;
   terms?: string;
@@ -119,7 +114,7 @@ export const recordKey = (hash: string): string => `transcript/${hash}`;
 export const HASH = /^[0-9a-f]{64}$/;
 
 export function newRecord(hash: string, c: Choices, now: Date): TranscriptRecord {
-  return { hash, receivedAt: now.toISOString(), uses: [...c.uses], keep: c.keep, keepUntil: keepUntil(c.keep, now), status: 'active', publication: c.uses.includes('publish') ? 'pending-review' : 'none', training: c.uses.includes('train') ? 'pending-review' : 'none', ...(c.adult ? { adult: true as const, terms: c.terms } : {}), ...(c.portions ? { portions: c.portions } : {}), ...(c.showFor ? { showFor: c.showFor } : {}), updatedAt: now.toISOString() };
+  return { hash, receivedAt: now.toISOString(), uses: [...c.uses], keep: c.keep, keepUntil: keepUntil(c.keep, now), status: 'active', publication: c.uses.includes('publish') ? 'pending-review' : 'none', ...(c.adult ? { adult: true as const, terms: c.terms } : {}), ...(c.portions ? { portions: c.portions } : {}), ...(c.showFor ? { showFor: c.showFor } : {}), updatedAt: now.toISOString() };
 }
 
 export interface Revocation {
@@ -136,8 +131,6 @@ export function applyRevocation(rec: TranscriptRecord, req: Revocation, now: Dat
   const next: TranscriptRecord = { ...rec, uses: rec.uses.filter((u) => !stop.has(u)), updatedAt: now.toISOString() };
   // Taking back 'publish', or asking for deletion, takes it off the public page at once (the page only ever shows records whose publication is 'public').
   if ((stop.has('publish') || req.deleteNow) && (next.publication === 'public' || next.publication === 'pending-review')) next.publication = 'withdrawn';
-  // Taking back 'train', or asking for deletion, takes it out of future training (a model already trained cannot unlearn it).
-  if ((stop.has('train') || req.deleteNow) && (next.training === 'pending-review' || next.training === 'approved')) next.training = 'withdrawn';
   if (req.deleteNow) next.status = 'deletion-requested';
   return next;
 }
@@ -155,7 +148,6 @@ export function mergeResend(existing: TranscriptRecord, incoming: TranscriptReco
     uses: existing.uses.filter((u) => incoming.uses.includes(u)),
     ...(existing.publicUntil !== undefined ? { publicUntil: existing.publicUntil } : {}),
     publication: existing.uses.includes('publish') && incoming.uses.includes('publish') ? existing.publication : existing.publication === 'public' || existing.publication === 'pending-review' ? 'withdrawn' : existing.publication,
-    training: existing.uses.includes('train') && incoming.uses.includes('train') ? existing.training : existing.training === 'pending-review' || existing.training === 'approved' ? 'withdrawn' : existing.training,
     keepUntil: earliest,
     keep: earliest === existing.keepUntil ? existing.keep : incoming.keep,
     updatedAt: incoming.updatedAt,

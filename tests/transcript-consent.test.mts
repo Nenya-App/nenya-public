@@ -109,23 +109,19 @@ const tools = src('src/coach/TranscriptTools.tsx') + src('src/coach/TranscriptCh
 ok('sending is not possible until a keeping time is chosen; nothing is preselected; the page where to take it back is named', /!toSend/.test(tools) && /keep: null, uses: \[\]/.test(tools) && /nenya\.biz\/my-transcript/.test(tools));
 ok('the static form is only the content-free alert: it has the choices but no field for the conversation or the note', /name="permissions"/.test(src('index.html')) && /name="keep-until"/.test(src('index.html')) && !/name="report"|name="signed"|name="comments"|type="file"/.test(src('index.html').slice(src('index.html').indexOf('verified-transcript'))));
 
-// ── the 18+ statement, training as a fourth choice, and the signed consent receipt (2026-11-10)
+// ── the 18+ statement and the signed consent receipt (2026-11-10). Training is not offered: no pipeline exists and no conversation is used for it.
 {
   const { verifyConsent } = await import('../src/lib/consentReceipt.ts');
-  const { CONSENT_TERMS_VERSION, parseChoices, newRecord, applyRevocation, mergeResend, describeChoices, USES } = await import('../src/lib/transcriptPolicy.ts');
+  const { CONSENT_TERMS_VERSION, parseChoices, newRecord, describeChoices, USES } = await import('../src/lib/transcriptPolicy.ts');
   const noAdult = await send({ adult: false, keep: '30d', uses: ['evaluate'] });
   ok('without "I am 18 or older, and these are my own words" nothing is accepted or kept', noAdult.status === 400);
-  const withTrain = await send({ keep: '30d', uses: ['train', 'evaluate'] });
-  const cr = withTrain.json?.consentReceipt;
-  ok('with the statement and a training choice it is accepted and a signed consent receipt comes back', withTrain.status === 200 && !!cr && cr.kind === 'nenya-consent-receipt' && cr.transcript === hash && cr.uses.includes('train') && cr.adult === true && cr.terms === CONSENT_TERMS_VERSION);
+  const accepted = await send({ keep: '30d', uses: ['evaluate', 'quote'] });
+  const cr = accepted.json?.consentReceipt;
+  ok('with the statement it is accepted and a signed consent receipt comes back', accepted.status === 200 && !!cr && cr.kind === 'nenya-consent-receipt' && cr.transcript === hash && cr.adult === true && cr.terms === CONSENT_TERMS_VERSION && cr.uses.includes('quote'));
   ok('the receipt\'s signature checks, and changing a field breaks it', verifyConsent(cr) && !verifyConsent({ ...cr, uses: ['evaluate'] }) && !verifyConsent({ ...cr, adult: false }));
   ok('the receipt holds no conversation', !JSON.stringify(cr).includes('message 1'));
-  ok('training is a fourth, separate choice', USES.length === 4 && (USES as readonly string[]).includes('train') && parseChoices({ adult: true, keep: '30d', uses: ['train'] })?.uses.join() === 'train');
-  const c = parseChoices({ adult: true, keep: '90d', uses: ['train', 'evaluate'] })!;
-  const r = newRecord('a'.repeat(64), c, new Date('2026-11-10T00:00:00Z'));
-  ok('a record with training waits for a person: nothing is used until it is read and edited by hand', r.training === 'pending-review' && r.adult === true && r.terms === CONSENT_TERMS_VERSION);
-  ok('taking training back withdraws it from future training and leaves the other uses', (() => { const n = applyRevocation(r, { stop: ['train'] }, new Date()); return n.training === 'withdrawn' && n.uses.includes('evaluate') && !n.uses.includes('train'); })());
-  ok('asking for deletion also withdraws it', applyRevocation(r, { deleteNow: true }, new Date()).training === 'withdrawn');
-  ok('sending again without training withdraws it; sending again with it keeps the state', mergeResend(r, newRecord('a'.repeat(64), parseChoices({ adult: true, keep: '90d', uses: ['evaluate'] })!, new Date())).training === 'withdrawn' && mergeResend(r, r).training === 'pending-review');
-  ok('the plain-words description says the person confirmed 18+, and that there is no other use when none was chosen', describeChoices(c).includes('18 or older') && describeChoices(parseChoices({ adult: true, keep: '30d' })!).includes('not used for training'));
+  ok('there is no training use: it is not one of the choices and a request for it is refused', USES.length === 3 && !(USES as readonly string[]).includes('train') && parseChoices({ adult: true, keep: '30d', uses: ['train'] }) === null && (await send({ keep: '30d', uses: ['train'] })).status === 400);
+  const r = newRecord('a'.repeat(64), parseChoices({ adult: true, keep: '90d', uses: ['evaluate'] })!, new Date('2026-11-10T00:00:00Z'));
+  ok('the record keeps the 18+ statement and the wording version', r.adult === true && r.terms === CONSENT_TERMS_VERSION);
+  ok('the plain-words description says the person confirmed 18+', describeChoices(parseChoices({ adult: true, keep: '30d' })!).includes('18 or older'));
 }

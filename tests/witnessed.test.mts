@@ -137,4 +137,3 @@ ok('the page marks the writer of every message and says how to take one down', /
 const panel2 = readFileSync(new URL('../src/admin/WitnessedPanel.tsx', import.meta.url), 'utf8');
 ok('the panel has the run-now button and the received-transcripts list, and no token anywhere', /Run the deletion job now/.test(panel2) && /Transcripts people sent/.test(panel2) && /Delete now/.test(panel2) && !/NETLIFY_API_TOKEN|tokenSet/.test(panel2));
 
-ok('a stopped conversation can never be sent for training either', (await send(STOPPED, { keep: '30d', uses: ['train'] })).status === 400);

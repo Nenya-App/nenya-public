@@ -59,14 +59,14 @@ export function TranscriptChoices({ value, onChange, messages, publishBlocked = 
         <legend className="font-medium">What may we do with it?</legend>
         <p className="text-xs text-muted-foreground">We will read it and consider what you wrote: that is why you are sending it. Everything else below is up to you, and nothing is checked for you.</p>
         {USES.map((u) => {
-          const blocked = (u === 'publish' || u === 'train') && publishBlocked;
+          const blocked = u === 'publish' && publishBlocked;
           return (
             <label key={u} className={`flex items-start gap-2 ${blocked ? 'opacity-60' : ''}`}>
               <input type="checkbox" className="mt-1 size-4" disabled={blocked} checked={!blocked && value.uses.includes(u)} onChange={() => toggleUse(u)} />
               <span>
                 {USE_LABELS[u].label}
                 <span className="block text-xs text-muted-foreground">
-                  {blocked ? 'Not available for this conversation. When the site\u2019s safety check stops a message, we never offer the conversation for the public page or for training, to protect you.' : USE_LABELS[u].detail}
+                  {blocked ? 'Not available for this conversation. When the site\u2019s safety check stops a message, we never offer the conversation for the public page, to protect you.' : USE_LABELS[u].detail}
                 </span>
               </span>
             </label>
