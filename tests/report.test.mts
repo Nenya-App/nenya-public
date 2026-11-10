@@ -36,7 +36,8 @@ const makeStore = () => {
   return {
     async getWithMetadata(k: string) { const x = m.get(k); return x ? { data: x.v, etag: String(x.e) } : null; },
     async set(k: string, v: string, o: any) { const x = m.get(k); if (o.onlyIfNew && x) return { modified: false }; if (o.onlyIfMatch && (!x || o.onlyIfMatch !== String(x.e))) return { modified: false }; m.set(k, { v, e: (x?.e ?? 0) + 1 }); return { modified: true }; },
-    async get() { return null; }, async list({ prefix }: { prefix: string }) { return { blobs: [...m.keys()].filter((k) => k.startsWith(prefix)).map((key) => ({ key })) }; },
+    json: new Map<string, any>(),
+    async get(k: string, o?: any) { return o?.type === 'json' ? (this.json.get(k) ?? null) : null; }, async setJSON(k: string, v: any) { this.json.set(k, JSON.parse(JSON.stringify(v))); }, async delete(k: string) { this.json.delete(k); }, async list({ prefix }: { prefix: string }) { return { blobs: [...m.keys()].filter((k) => k.startsWith(prefix)).map((key) => ({ key })) }; },
     peek: (k: string) => m.get(k)?.v, keys: () => [...m.keys()],
   };
 };
@@ -50,10 +51,10 @@ for (let t = 1; t <= 5; t++) { m.push({ role: 'user', content: `message ${t}` })
 const rc = await coachPost({ action: 'receipt', messages: m, ticket });
 const GOOD = { transcript: rc.transcript, receipt: rc.receipt };
 
-const send = async (signed: any, opts: { note?: unknown; origin?: string | null; method?: string; path?: string; raw?: string; type?: string } = {}) => {
+const send = async (signed: any, opts: { note?: unknown; choices?: unknown; origin?: string | null; method?: string; path?: string; raw?: string; type?: string } = {}) => {
   const headers: Record<string, string> = { 'content-type': opts.type ?? 'application/json' };
   if (opts.origin !== null) headers.origin = opts.origin ?? 'https://nenya.biz';
-  const res = await report(new Request(`https://nenya.biz${opts.path ?? '/api/report'}`, { method: opts.method ?? 'POST', headers, body: opts.method === 'GET' ? undefined : (opts.raw ?? JSON.stringify({ signed, note: opts.note })) }));
+  const res = await report(new Request(`https://nenya.biz${opts.path ?? '/api/report'}`, { method: opts.method ?? 'POST', headers, body: opts.method === 'GET' ? undefined : (opts.raw ?? JSON.stringify({ signed, note: opts.note, choices: 'choices' in opts ? opts.choices : { keep: '30d', uses: [] } })) }));
   const text = await res.text();
   return { status: res.status, text, json: text ? JSON.parse(text) : null };
 };

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Download, Send } from 'lucide-react';
+import { describeChoices } from '../lib/transcriptPolicy';
+import { TranscriptChoices, choicesToSend, emptyChoices, type ChoiceState } from './TranscriptChoices';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { readableWithBlock } from '../lib/verifyTranscript';
@@ -111,14 +113,17 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
 
   // Only a signed transcript can be sent. The function checks the signature first, then forwards the readable text (rebuilt
   // from the signed transcript, so it is exactly the text shown above) with the signed file.
+  const [choices, setChoices] = useState<ChoiceState>(emptyChoices());
+  const toSend = choicesToSend(choices);
+
   const sendToNenya = async () => {
-    if (tooLong || share === 'sending' || !receipt || !signedRef.current) return;
+    if (tooLong || share === 'sending' || !receipt || !signedRef.current || !toSend) return;
     setShare('sending');
     try {
       const res = await fetch('/api/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signed: { transcript: signedRef.current, receipt }, note: note.trim() }),
+        body: JSON.stringify({ signed: { transcript: signedRef.current, receipt }, note: note.trim(), choices: toSend }),
       });
       if (!res.ok) throw new Error(String(res.status));
       setShare('sent');
@@ -178,9 +183,10 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
               placeholder="For example: what felt wrong, or what you would change."
             />
           </label>
+          <TranscriptChoices value={choices} onChange={setChoices} messages={messages} />
           {tooLong && <p className="text-xs text-destructive">This is too long to send. Download it instead.</p>}
           <div className="flex items-center gap-3">
-            <Button size="sm" onClick={sendToNenya} disabled={tooLong || share === 'sending'}>
+            <Button size="sm" onClick={sendToNenya} disabled={tooLong || share === 'sending' || !toSend}>
               {share === 'sending' ? 'Sending…' : 'Send'}
             </Button>
             <button
@@ -198,7 +204,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
           )}
         </div>
       )}
-      {share === 'sent' && <p className="text-xs text-muted-foreground">Thank you. Your transcript was sent.</p>}
+      {share === 'sent' && <p className="text-xs text-muted-foreground" role="status">Thank you. Your transcript was sent{toSend ? `. You chose: ${describeChoices({ uses: toSend.uses, keep: toSend.keep, portions: toSend.portions })}` : ''}. To change or take back any of it, keep the signed file you downloaded and show it at nenya.biz/my-transcript.</p>}
     </section>
   );
 }

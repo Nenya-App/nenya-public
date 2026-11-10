@@ -1,0 +1,30 @@
+// What a person allows us to do with a verified transcript they send (src/lib/transcriptPolicy.ts).
+import { parseChoices, keepUntil, describeChoices, newRecord, applyRevocation, dueForDeletion, recordKey, USES, KEEPS } from '../src/lib/transcriptPolicy.ts';
+import { ok } from './helpers.mts';
+
+const now = new Date('2026-11-10T12:00:00Z');
+ok('a keeping time is required; uses are optional', parseChoices({ keep: '30d' })?.uses.length === 0 && parseChoices({ uses: ['evaluate'] }) === null && parseChoices(null) === null && parseChoices({ keep: 'forever' }) === null);
+ok('unknown or repeated uses are handled: unknown refuses, repeats collapse', parseChoices({ keep: '90d', uses: ['evaluate', 'sell'] }) === null && JSON.stringify(parseChoices({ keep: '90d', uses: ['evaluate', 'evaluate'] })?.uses) === '["evaluate"]' && parseChoices({ keep: '1y', uses: 'evaluate' }) === null);
+ok('every keeping choice is understood, and nothing is preselected by the library', KEEPS.every((k) => parseChoices({ keep: k })) && USES.length === 3);
+ok('the delete-by date is counted from the day it was sent; "until asked" has none', keepUntil('30d', now) === '2026-12-10T12:00:00.000Z' && keepUntil('1y', now) === '2027-11-10T12:00:00.000Z' && keepUntil('until-asked', now) === null);
+ok('the choices read back in plain words, including "no other use"', /No other use/.test(describeChoices({ uses: [], keep: '30d' })) && /test and improve the coach/.test(describeChoices({ uses: ['evaluate'], keep: '90d' })) && /after 90 days/.test(describeChoices({ uses: ['evaluate'], keep: '90d' })));
+const rec = newRecord('a'.repeat(64), { uses: ['evaluate', 'quote'], keep: '30d' }, now);
+ok('a new record holds the fingerprint, the choices and the dates, and no conversation', rec.status === 'active' && rec.keepUntil === '2026-12-10T12:00:00.000Z' && !JSON.stringify(rec).match(/messages|content|transcript"/) && recordKey(rec.hash) === `transcript/${'a'.repeat(64)}`);
+const stopped = applyRevocation(rec, { stop: ['quote'] }, now);
+ok('stopping a use removes only that use and never adds one', JSON.stringify(stopped.uses) === '["evaluate"]' && stopped.status === 'active' && JSON.stringify(applyRevocation(stopped, { stop: [] }, now).uses) === '["evaluate"]');
+const asked = applyRevocation(rec, { deleteNow: true }, now);
+ok('asking for deletion makes it due at once', asked.status === 'deletion-requested' && dueForDeletion(asked, now));
+ok('a revocation cannot lengthen the keeping time or undo a deletion request', applyRevocation(asked, { stop: [] }, now) === asked && applyRevocation(asked, { deleteNow: false }, now).status === 'deletion-requested' && stopped.keepUntil === rec.keepUntil);
+ok('a record is due only when its time has passed', !dueForDeletion(rec, now) && dueForDeletion(rec, new Date('2026-12-10T12:00:01Z')) && !dueForDeletion(newRecord('b'.repeat(64), { uses: [], keep: 'until-asked' }, now), new Date('2099-01-01T00:00:00Z')));
+ok('a deleted record is never due again', !dueForDeletion({ ...rec, status: 'deleted' }, new Date('2099-01-01T00:00:00Z')));
+
+// ── the public "witnessed conversations" permission
+import { mergeResend, isPublic } from '../src/lib/transcriptPolicy.ts';
+ok('publishing needs a clear choice of what to show', parseChoices({ keep: '30d', uses: ['publish'] }) === null && parseChoices({ keep: '30d', uses: ['publish'], portions: [] }) === null && parseChoices({ keep: '30d', uses: ['publish'], portions: 'all' })?.portions === 'all' && JSON.stringify(parseChoices({ keep: '30d', uses: ['publish'], portions: [3, 1, 1] })?.portions) === '[1,3]');
+ok('portions without publishing are refused, and bad numbers are refused', parseChoices({ keep: '30d', uses: ['evaluate'], portions: 'all' }) === null && parseChoices({ keep: '30d', uses: ['publish'], portions: [12] }) === null && parseChoices({ keep: '30d', uses: ['publish'], portions: ['a'] }) === null);
+const pub = newRecord('c'.repeat(64), { uses: ['publish'], keep: '90d', portions: [0, 1] }, now);
+ok('a publish choice starts as waiting for a person to read it, never public', pub.publication === 'pending-review' && !isPublic(pub, now) && newRecord('d'.repeat(64), { uses: [], keep: '30d' }, now).publication === 'none');
+ok('only a record a person has made public, still active and in time, is shown', isPublic({ ...pub, publication: 'public' }, now) && !isPublic({ ...pub, publication: 'public' }, new Date('2027-03-01T00:00:00Z')) && !isPublic({ ...pub, publication: 'public', status: 'deletion-requested' }, now) && !isPublic({ ...pub, publication: 'public', uses: [] }, now));
+ok('taking back publishing, or asking for deletion, withdraws it at once', applyRevocation({ ...pub, publication: 'public' }, { stop: ['publish'] }, now).publication === 'withdrawn' && applyRevocation({ ...pub, publication: 'public' }, { deleteNow: true }, now).publication === 'withdrawn' && applyRevocation(pub, { stop: ['publish'] }, now).publication === 'withdrawn' && applyRevocation({ ...pub, publication: 'public' }, { stop: ['evaluate'] }, now).publication === 'public');
+ok('sending the same transcript again cannot put a withdrawn one back or widen it', mergeResend({ ...pub, publication: 'withdrawn', uses: [] }, newRecord(pub.hash, { uses: ['publish'], keep: '1y', portions: 'all' }, now)).publication === 'withdrawn' && mergeResend({ ...pub, publication: 'public' }, newRecord(pub.hash, { uses: [], keep: '90d' }, now)).publication === 'withdrawn');
+ok('the plain-words summary says what would be shown', /whole conversation is shown/.test(describeChoices({ uses: ['publish'], keep: '30d', portions: 'all' })) && /only the chosen messages/.test(describeChoices({ uses: ['publish'], keep: '30d', portions: [0] })));
