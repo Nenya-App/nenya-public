@@ -4,17 +4,14 @@ import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'luc
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
-import { Checkbox } from '../ui/checkbox';
 import { Textarea } from '../ui/textarea';
-import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { TermInfo } from '../TermInfo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
-import { wordsOf } from '../../../lib/senseWords';
+import { WordPicker } from '../WordPicker';
 interface MovementGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -25,9 +22,7 @@ interface MovementGatewayPageProps {
   onUpdateBodyMap: (data: BodyMapData) => void;
 }
 
-const directions = wordsOf('direction');
 
-const qualities = wordsOf('quality');
 
 const INSTRUCTION_CARDS = [
   {
@@ -232,48 +227,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label className="text-sm">Direction (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {directions.map((direction) => (
-                      <div key={direction} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`current-direction-${direction}`}
-                            checked={currentDirections.includes(direction)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(direction, checked as boolean, currentDirections, setCurrentDirections)
-                            }
-                          />
-                          <label
-                            htmlFor={`current-direction-${direction}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {direction}
-                          </label>
-                        </div>
-                        <TermInfo term={direction} category="direction" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="current-direction-other"
-                        checked={currentDirectionOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setCurrentDirectionOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="current-direction-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={currentDirectionOther}
-                          onChange={(e) => setCurrentDirectionOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <WordPicker category="direction" idPrefix="currentDirections" selected={currentDirections} onToggle={(t) => handleCheckboxChange(t, !currentDirections.includes(t), currentDirections, setCurrentDirections)} other={{ value: currentDirectionOther, onChange: setCurrentDirectionOther, placeholder: "Describe..." }} />
                   </div>
 
                   <SnappingSlider
@@ -296,48 +250,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
 
                   <div className="space-y-2">
                     <Label className="text-sm">Quality (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {qualities.map((quality) => (
-                      <div key={quality} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`current-quality-${quality}`}
-                            checked={currentQualities.includes(quality)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(quality, checked as boolean, currentQualities, setCurrentQualities)
-                            }
-                          />
-                          <label
-                            htmlFor={`current-quality-${quality}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {quality}
-                          </label>
-                        </div>
-                        <TermInfo term={quality} category="quality" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="current-quality-other"
-                        checked={currentQualityOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setCurrentQualityOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="current-quality-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={currentQualityOther}
-                          onChange={(e) => setCurrentQualityOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <WordPicker category="quality" idPrefix="currentQualities" selected={currentQualities} onToggle={(t) => handleCheckboxChange(t, !currentQualities.includes(t), currentQualities, setCurrentQualities)} other={{ value: currentQualityOther, onChange: setCurrentQualityOther, placeholder: "Describe..." }} />
                   </div>
 
                   <div className="space-y-2">
@@ -380,48 +293,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label className="text-sm">Direction (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {directions.map((direction) => (
-                      <div key={direction} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`potential-direction-${direction}`}
-                            checked={potentialDirections.includes(direction)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(direction, checked as boolean, potentialDirections, setPotentialDirections)
-                            }
-                          />
-                          <label
-                            htmlFor={`potential-direction-${direction}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {direction}
-                          </label>
-                        </div>
-                        <TermInfo term={direction} category="direction" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="potential-direction-other"
-                        checked={potentialDirectionOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setPotentialDirectionOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="potential-direction-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={potentialDirectionOther}
-                          onChange={(e) => setPotentialDirectionOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <WordPicker category="direction" idPrefix="potentialDirections" selected={potentialDirections} onToggle={(t) => handleCheckboxChange(t, !potentialDirections.includes(t), potentialDirections, setPotentialDirections)} other={{ value: potentialDirectionOther, onChange: setPotentialDirectionOther, placeholder: "Describe..." }} />
                   </div>
 
                   <SnappingSlider
@@ -444,48 +316,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
 
                   <div className="space-y-2">
                     <Label className="text-sm">Quality (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                    {qualities.map((quality) => (
-                      <div key={quality} className="flex items-center justify-between space-x-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`potential-quality-${quality}`}
-                            checked={potentialQualities.includes(quality)}
-                            onCheckedChange={(checked) =>
-                              handleCheckboxChange(quality, checked as boolean, potentialQualities, setPotentialQualities)
-                            }
-                          />
-                          <label
-                            htmlFor={`potential-quality-${quality}`}
-                            className="text-xs cursor-pointer"
-                          >
-                            {quality}
-                          </label>
-                        </div>
-                        <TermInfo term={quality} category="quality" />
-                      </div>
-                    ))}
-                    <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                      <Checkbox
-                        id="potential-quality-other"
-                        checked={potentialQualityOther.length > 0}
-                        onCheckedChange={(checked) => {
-                          if (!checked) setPotentialQualityOther('');
-                        }}
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="potential-quality-other" className="text-xs cursor-pointer block mb-1">
-                          Other
-                        </label>
-                        <Input
-                          placeholder="Describe..."
-                          value={potentialQualityOther}
-                          onChange={(e) => setPotentialQualityOther(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    <WordPicker category="quality" idPrefix="potentialQualities" selected={potentialQualities} onToggle={(t) => handleCheckboxChange(t, !potentialQualities.includes(t), potentialQualities, setPotentialQualities)} other={{ value: potentialQualityOther, onChange: setPotentialQualityOther, placeholder: "Describe..." }} />
                   </div>
 
                   <div className="space-y-2">

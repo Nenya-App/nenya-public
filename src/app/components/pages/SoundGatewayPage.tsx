@@ -4,9 +4,7 @@ import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, Link2, Unlink, U
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
-import { Checkbox } from '../ui/checkbox';
 import { Textarea } from '../ui/textarea';
-import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
@@ -30,7 +28,7 @@ import {
   Timbre,
 } from '../../../lib/audio';
 
-import { wordsOf } from '../../../lib/senseWords';
+import { WordPicker } from '../WordPicker';
 interface SoundGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -41,8 +39,6 @@ interface SoundGatewayPageProps {
   onUpdateBodyMap: (data: BodyMapData) => void;
 }
 
-const timbres = wordsOf('timbre');
-const rhythms = wordsOf('rhythm');
 
 const TIMBRE_OPTIONS: { label: string; value: Timbre }[] = [
   { label: 'Soft', value: 'soft' },
@@ -606,68 +602,12 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
                   <div className="space-y-2">
                     <Label className="text-sm">Timbre (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                      {timbres.map((timbre) => (
-                        <div key={timbre} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`ct-${timbre}`}
-                            checked={currentTimbres.includes(timbre)}
-                            onCheckedChange={(checked) => handleCheckboxChange(timbre, checked as boolean, currentTimbres, setCurrentTimbres)}
-                          />
-                          <label htmlFor={`ct-${timbre}`} className="text-xs cursor-pointer">
-                            {timbre}
-                          </label>
-                        </div>
-                      ))}
-                      <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                        <Checkbox
-                          id="ct-other"
-                          checked={currentTimbreOther.length > 0}
-                          onCheckedChange={(checked) => {
-                            if (!checked) setCurrentTimbreOther('');
-                          }}
-                        />
-                        <div className="flex-1">
-                          <label htmlFor="ct-other" className="text-xs cursor-pointer block mb-1">
-                            Other
-                          </label>
-                          <Input placeholder="Describe…" value={currentTimbreOther} onChange={(e) => setCurrentTimbreOther(e.target.value)} className="h-8 text-sm" />
-                        </div>
-                      </div>
-                    </div>
+                    <WordPicker category="timbre" idPrefix="currentTimbres" selected={currentTimbres} onToggle={(t) => handleCheckboxChange(t, !currentTimbres.includes(t), currentTimbres, setCurrentTimbres)} other={{ value: currentTimbreOther, onChange: setCurrentTimbreOther, placeholder: "Describe…" }} />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Rhythm (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                      {rhythms.map((rhythm) => (
-                        <div key={rhythm} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`cr-${rhythm}`}
-                            checked={currentRhythms.includes(rhythm)}
-                            onCheckedChange={(checked) => handleCheckboxChange(rhythm, checked as boolean, currentRhythms, setCurrentRhythms)}
-                          />
-                          <label htmlFor={`cr-${rhythm}`} className="text-xs cursor-pointer">
-                            {rhythm}
-                          </label>
-                        </div>
-                      ))}
-                      <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                        <Checkbox
-                          id="cr-other"
-                          checked={currentRhythmOther.length > 0}
-                          onCheckedChange={(checked) => {
-                            if (!checked) setCurrentRhythmOther('');
-                          }}
-                        />
-                        <div className="flex-1">
-                          <label htmlFor="cr-other" className="text-xs cursor-pointer block mb-1">
-                            Other
-                          </label>
-                          <Input placeholder="Describe…" value={currentRhythmOther} onChange={(e) => setCurrentRhythmOther(e.target.value)} className="h-8 text-sm" />
-                        </div>
-                      </div>
-                    </div>
+                    <WordPicker category="rhythm" idPrefix="currentRhythms" selected={currentRhythms} onToggle={(t) => handleCheckboxChange(t, !currentRhythms.includes(t), currentRhythms, setCurrentRhythms)} other={{ value: currentRhythmOther, onChange: setCurrentRhythmOther, placeholder: "Describe…" }} />
                   </div>
 
                   <div className="space-y-2">
@@ -695,68 +635,12 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
                   <div className="space-y-2">
                     <Label className="text-sm">Timbre (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                      {timbres.map((timbre) => (
-                        <div key={timbre} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`pt-${timbre}`}
-                            checked={potentialTimbres.includes(timbre)}
-                            onCheckedChange={(checked) => handleCheckboxChange(timbre, checked as boolean, potentialTimbres, setPotentialTimbres)}
-                          />
-                          <label htmlFor={`pt-${timbre}`} className="text-xs cursor-pointer">
-                            {timbre}
-                          </label>
-                        </div>
-                      ))}
-                      <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                        <Checkbox
-                          id="pt-other"
-                          checked={potentialTimbreOther.length > 0}
-                          onCheckedChange={(checked) => {
-                            if (!checked) setPotentialTimbreOther('');
-                          }}
-                        />
-                        <div className="flex-1">
-                          <label htmlFor="pt-other" className="text-xs cursor-pointer block mb-1">
-                            Other
-                          </label>
-                          <Input placeholder="Describe…" value={potentialTimbreOther} onChange={(e) => setPotentialTimbreOther(e.target.value)} className="h-8 text-sm" />
-                        </div>
-                      </div>
-                    </div>
+                    <WordPicker category="timbre" idPrefix="potentialTimbres" selected={potentialTimbres} onToggle={(t) => handleCheckboxChange(t, !potentialTimbres.includes(t), potentialTimbres, setPotentialTimbres)} other={{ value: potentialTimbreOther, onChange: setPotentialTimbreOther, placeholder: "Describe…" }} />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Rhythm (optional)</Label>
-                    <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                      {rhythms.map((rhythm) => (
-                        <div key={rhythm} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`pr-${rhythm}`}
-                            checked={potentialRhythms.includes(rhythm)}
-                            onCheckedChange={(checked) => handleCheckboxChange(rhythm, checked as boolean, potentialRhythms, setPotentialRhythms)}
-                          />
-                          <label htmlFor={`pr-${rhythm}`} className="text-xs cursor-pointer">
-                            {rhythm}
-                          </label>
-                        </div>
-                      ))}
-                      <div className="flex items-start space-x-2 pt-2 border-t border-border">
-                        <Checkbox
-                          id="pr-other"
-                          checked={potentialRhythmOther.length > 0}
-                          onCheckedChange={(checked) => {
-                            if (!checked) setPotentialRhythmOther('');
-                          }}
-                        />
-                        <div className="flex-1">
-                          <label htmlFor="pr-other" className="text-xs cursor-pointer block mb-1">
-                            Other
-                          </label>
-                          <Input placeholder="Describe…" value={potentialRhythmOther} onChange={(e) => setPotentialRhythmOther(e.target.value)} className="h-8 text-sm" />
-                        </div>
-                      </div>
-                    </div>
+                    <WordPicker category="rhythm" idPrefix="potentialRhythms" selected={potentialRhythms} onToggle={(t) => handleCheckboxChange(t, !potentialRhythms.includes(t), potentialRhythms, setPotentialRhythms)} other={{ value: potentialRhythmOther, onChange: setPotentialRhythmOther, placeholder: "Describe…" }} />
                   </div>
 
                   <div className="space-y-2">

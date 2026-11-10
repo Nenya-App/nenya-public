@@ -4,13 +4,11 @@ import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'luc
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
 import { Textarea } from '../ui/textarea';
-import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
-import { FlavorWheel } from '../FlavorWheel';
-import { MoreWords } from '../MoreWords';
+import { WordPicker } from '../WordPicker';
 
 interface EssenceGatewayPageProps {
   onComplete: (data: any) => void;
@@ -21,32 +19,6 @@ interface EssenceGatewayPageProps {
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
 }
-
-const tastes = [
-  'Bitter',
-  'Sweet',
-  'Sour',
-  'Salty',
-  'Umami',
-  'Astringent',
-  'Pungent',
-  'Metallic'
-];
-
-const scents = [
-  'Earthy',
-  'Floral',
-  'Citrus',
-  'Woody',
-  'Smoky',
-  'Musky',
-  'Fresh',
-  'Spicy',
-  'Sweet',
-  'Sharp',
-  'Herbal',
-  'Ocean'
-];
 
 const INSTRUCTION_CARDS = [
   {
@@ -240,26 +212,12 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 <CardContent className="space-y-5">
                   <div className="space-y-2">
                     <Label className="text-sm">Taste (optional)</Label>
-                    <FlavorWheel terms={tastes} selected={currentTastes} onToggle={(t) => handleCheckboxChange(t, !currentTastes.includes(t), currentTastes, setCurrentTastes)} accentColor="#8FA98C" />
-                    <MoreWords category="taste" selected={currentTastes} onToggle={(t) => handleCheckboxChange(t, !currentTastes.includes(t), currentTastes, setCurrentTastes)} idPrefix="currentTastes" />
-                    <Input
-                      placeholder="Other taste..."
-                      value={currentTasteOther}
-                      onChange={(e) => setCurrentTasteOther(e.target.value)}
-                      className="h-8 text-sm"
-                    />
+                    <WordPicker category="taste" idPrefix="currentTastes" selected={currentTastes} onToggle={(t) => handleCheckboxChange(t, !currentTastes.includes(t), currentTastes, setCurrentTastes)} other={{ value: currentTasteOther, onChange: setCurrentTasteOther, placeholder: "Other taste..." }} />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Scent (optional)</Label>
-                    <FlavorWheel terms={scents} selected={currentScents} onToggle={(t) => handleCheckboxChange(t, !currentScents.includes(t), currentScents, setCurrentScents)} accentColor="#B79ACB" />
-                    <MoreWords category="scent" selected={currentScents} onToggle={(t) => handleCheckboxChange(t, !currentScents.includes(t), currentScents, setCurrentScents)} idPrefix="currentScents" />
-                    <Input
-                      placeholder="Other scent..."
-                      value={currentScentOther}
-                      onChange={(e) => setCurrentScentOther(e.target.value)}
-                      className="h-8 text-sm"
-                    />
+                    <WordPicker category="scent" idPrefix="currentScents" selected={currentScents} onToggle={(t) => handleCheckboxChange(t, !currentScents.includes(t), currentScents, setCurrentScents)} other={{ value: currentScentOther, onChange: setCurrentScentOther, placeholder: "Other scent..." }} />
                   </div>
 
                   <SnappingSlider
@@ -303,26 +261,12 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 <CardContent className="space-y-5">
                   <div className="space-y-2">
                     <Label className="text-sm">Taste (optional)</Label>
-                    <FlavorWheel terms={tastes} selected={potentialTastes} onToggle={(t) => handleCheckboxChange(t, !potentialTastes.includes(t), potentialTastes, setPotentialTastes)} accentColor="#8FA98C" />
-                    <MoreWords category="taste" selected={potentialTastes} onToggle={(t) => handleCheckboxChange(t, !potentialTastes.includes(t), potentialTastes, setPotentialTastes)} idPrefix="potentialTastes" />
-                    <Input
-                      placeholder="Other taste..."
-                      value={potentialTasteOther}
-                      onChange={(e) => setPotentialTasteOther(e.target.value)}
-                      className="h-8 text-sm"
-                    />
+                    <WordPicker category="taste" idPrefix="potentialTastes" selected={potentialTastes} onToggle={(t) => handleCheckboxChange(t, !potentialTastes.includes(t), potentialTastes, setPotentialTastes)} other={{ value: potentialTasteOther, onChange: setPotentialTasteOther, placeholder: "Other taste..." }} />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Scent (optional)</Label>
-                    <FlavorWheel terms={scents} selected={potentialScents} onToggle={(t) => handleCheckboxChange(t, !potentialScents.includes(t), potentialScents, setPotentialScents)} accentColor="#B79ACB" />
-                    <MoreWords category="scent" selected={potentialScents} onToggle={(t) => handleCheckboxChange(t, !potentialScents.includes(t), potentialScents, setPotentialScents)} idPrefix="potentialScents" />
-                    <Input
-                      placeholder="Other scent..."
-                      value={potentialScentOther}
-                      onChange={(e) => setPotentialScentOther(e.target.value)}
-                      className="h-8 text-sm"
-                    />
+                    <WordPicker category="scent" idPrefix="potentialScents" selected={potentialScents} onToggle={(t) => handleCheckboxChange(t, !potentialScents.includes(t), potentialScents, setPotentialScents)} other={{ value: potentialScentOther, onChange: setPotentialScentOther, placeholder: "Other scent..." }} />
                   </div>
 
                   <SnappingSlider

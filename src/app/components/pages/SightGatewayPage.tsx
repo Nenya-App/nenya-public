@@ -8,7 +8,6 @@ import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { ValarColorPicker } from '../ValarColorPicker';
 import { Textarea } from '../ui/textarea';
-import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
 import { UserColors } from '../../App';
@@ -25,7 +24,7 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 
-import { wordsOf } from '../../../lib/senseWords';
+import { WordPicker } from '../WordPicker';
 interface SightGatewayPageProps {
   onComplete: (data: UserColors & { gradientDirection?: string }) => void;
   onBack: () => void;
@@ -77,7 +76,6 @@ const hslToHex = (hsl: string): string => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
-const LIGHT_QUALITIES = wordsOf('lightQuality');
 
 const MAX_DESCRIPTION_LENGTH = 150;
 
@@ -337,27 +335,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                     {/* Light Qualities */}
                     <div className="space-y-2">
                       <Label className="text-sm">Quality of this light (optional)</Label>
-                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                        {LIGHT_QUALITIES.map((quality) => (
-                          <div key={quality} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`color1-${quality}`}
-                              checked={color1Qualities.includes(quality)}
-                              onCheckedChange={() => {
-                                toggleQuality(1, quality);
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <label
-                              htmlFor={`color1-${quality}`}
-                              className="text-xs cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {quality}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
+                      <WordPicker category="lightQuality" idPrefix="color1Qualities" selected={color1Qualities} onToggle={(t) => toggleQuality(1, t)} />
                     </div>
 
                     {/* Intensity Slider */}
@@ -439,27 +417,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                     {/* Light Qualities */}
                     <div className="space-y-2">
                       <Label className="text-sm">Quality of this light (optional)</Label>
-                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-border rounded-md p-2">
-                        {LIGHT_QUALITIES.map((quality) => (
-                          <div key={quality} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`color2-${quality}`}
-                              checked={color2Qualities.includes(quality)}
-                              onCheckedChange={() => {
-                                toggleQuality(2, quality);
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <label
-                              htmlFor={`color2-${quality}`}
-                              className="text-xs cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {quality}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
+                      <WordPicker category="lightQuality" idPrefix="color2Qualities" selected={color2Qualities} onToggle={(t) => toggleQuality(2, t)} />
                     </div>
 
                     {/* Intensity Slider */}
