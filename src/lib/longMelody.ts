@@ -1,5 +1,6 @@
 // A melody made of phrases, one phrase for each color (three notes a color): the present color, the wish color and up to two palettes the person kept
-// in the Sight gateway and marked for sound. Up to twelve phrases, 36 notes (docs/sound-from-colors-scope.md).
+// in the Sight gateway and marked for sound. A palette has five colors, usually including the one it was made around, so in practice a melody is at most
+// ten phrases (30 notes); the cap of twelve phrases (36 notes) only matters for a palette that does not contain its own seed (docs/sound-from-colors-scope.md).
 //
 // Rules (the owner, 2026-11-09/10):
 // - the present and wish phrases always stay (they can be moved and their notes changed, but not muted or taken out); any palette phrase can be muted;
@@ -41,8 +42,11 @@ export function buildPhrases(
     id, kind, label: (label ?? '').trim() || hex.toUpperCase(), hex: hex.toUpperCase(), notes: hexToMelodyIndices(hex, scaleLength), muted: false, edited: false,
   });
   const used = palettes.filter((p) => p?.useInSound && (p.colors ?? []).some((c) => HEX.test(c.hex)));
+  // A palette's five colors usually include the color it was made around (a bridge begins at the present color and ends at the wish color), and those
+  // already have their own phrases: a palette color the same as the present or wish color is not played a second time.
+  const identity = new Set([present.hex.toUpperCase(), wish.hex.toUpperCase()]);
   const fromPalette = (p: PaletteIn | undefined, n: number): Phrase[] =>
-    (p?.colors ?? []).filter((c) => HEX.test(c.hex)).map((c, i) => mk('palette', `palette${n}-${i}`, c.hex, c.name));
+    (p?.colors ?? []).filter((c) => HEX.test(c.hex) && !identity.has(c.hex.toUpperCase())).map((c, i) => mk('palette', `palette${n}-${i}`, c.hex, c.name));
   const out = [mk('present', 'present', present.hex, present.name), ...fromPalette(used[0], 1), mk('wish', 'wish', wish.hex, wish.name), ...fromPalette(used[1], 2)];
   return out.slice(0, MAX_PHRASES);
 }

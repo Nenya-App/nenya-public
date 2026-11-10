@@ -47,3 +47,13 @@ import { formatGatewayData } from '../src/lib/reportText.ts';
   ok('the report lists each phrase with its color and note values, and what is muted', /1\. Present Windsurfing #2C6E9E: \S+ \S+/.test(t) && /2\. Palette Bellflower #5D60B3: muted/.test(t), t);
   ok('a melody without phrases reads as before', !/Melody phrases/.test(formatGatewayData('sound', { currentPitch: 1, currentVolume: 1, potentialPitch: 1, potentialVolume: 1, melody: [1, 2] }).join('\n')));
 }
+
+// a palette's colors that are the present or wish color are not played twice
+{
+  const bridge = { useInSound: true, colors: [{ hex: '#2C6E9E', name: 'A' }, { hex: '#5D60B3', name: 'B' }, { hex: '#8E4BA9', name: 'C' }, { hex: '#B8327B', name: 'D' }, { hex: '#D01C1F', name: 'E' }] };
+  const b = buildPhrases({ hex: '#2c6e9e' }, { hex: '#D01C1F' }, [bridge], L);
+  ok('a bridge plays present, the three colors between, then wish (five phrases, 15 notes), not seven', b.length === 5 && b[0].kind === 'present' && b[1].label === 'B' && b[3].label === 'D' && b[4].kind === 'wish' && playlist(b).notes.length === 15);
+  const seeded = (n: number) => ({ useInSound: true, colors: [{ hex: n === 1 ? '#2C6E9E' : '#D01C1F' }, ...Array.from({ length: 4 }, (_, i) => ({ hex: `#${(n * 50 + i * 20).toString(16).padStart(2, '0')}90C0` }))] });
+  const two2 = buildPhrases({ hex: '#2C6E9E' }, { hex: '#D01C1F' }, [seeded(1), seeded(2)], L);
+  ok('two palettes that each contain their seed make ten phrases and 30 notes', two2.length === 10 && playlist(two2).notes.length === 30);
+}
