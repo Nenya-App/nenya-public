@@ -235,6 +235,11 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                 </CardHeader>
                 <CardContent className="space-y-5">
                   <div className="space-y-2">
+                    <Label id="currentPattern-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="pattern" idPrefix="currentPattern" selected={currentPatternShapes} onToggle={(id) => toggleShape(id, currentPatternShapes, setCurrentPatternShapes)} />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label className="text-sm">Pattern (optional)</Label>
                     <WordPicker category="pattern" idPrefix="currentPatterns" selected={currentPatterns} onToggle={(t) => handleCheckboxChange(t, !currentPatterns.includes(t), currentPatterns, setCurrentPatterns)} other={{ value: currentPatternOther, onChange: setCurrentPatternOther, placeholder: "Describe..." }} />
                   </div>
@@ -272,11 +277,6 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   </div>
 
                   <div className="space-y-2">
-                    <Label id="currentPattern-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
-                    <ShapePicker set="pattern" idPrefix="currentPattern" selected={currentPatternShapes} onToggle={(id) => toggleShape(id, currentPatternShapes, setCurrentPatternShapes)} />
-                  </div>
-
-                  <div className="space-y-2">
                     <Label className="text-sm">Describe the patterns (optional)</Label>
                     <Textarea
                       placeholder="Describe the patterns and perspectives..."
@@ -306,6 +306,11 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   <CardDescription>The patterns of understanding you're moving toward</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
+                  <div className="space-y-2">
+                    <Label id="potentialPattern-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="pattern" idPrefix="potentialPattern" selected={potentialPatternShapes} onToggle={(id) => toggleShape(id, potentialPatternShapes, setPotentialPatternShapes)} />
+                  </div>
+
                   <div className="space-y-2">
                     <Label className="text-sm">Pattern (optional)</Label>
                     <WordPicker category="pattern" idPrefix="potentialPatterns" selected={potentialPatterns} onToggle={(t) => handleCheckboxChange(t, !potentialPatterns.includes(t), potentialPatterns, setPotentialPatterns)} other={{ value: potentialPatternOther, onChange: setPotentialPatternOther, placeholder: "Describe..." }} />
@@ -341,11 +346,6 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                       onChange={setPotentialPatternDrawing}
                       placeholder="What shape would you rather your thinking take?"
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label id="potentialPattern-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
-                    <ShapePicker set="pattern" idPrefix="potentialPattern" selected={potentialPatternShapes} onToggle={(id) => toggleShape(id, potentialPatternShapes, setPotentialPatternShapes)} />
                   </div>
 
                   <div className="space-y-2">

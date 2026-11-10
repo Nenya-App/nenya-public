@@ -235,6 +235,11 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
+                    <Label id="currentMovement-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="movement" idPrefix="currentMovement" selected={currentMovementShapes} onToggle={(id) => toggleShape(id, currentMovementShapes, setCurrentMovementShapes)} />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label className="text-sm">Direction (optional)</Label>
                     <WordPicker category="direction" idPrefix="currentDirections" selected={currentDirections} onToggle={(t) => handleCheckboxChange(t, !currentDirections.includes(t), currentDirections, setCurrentDirections)} other={{ value: currentDirectionOther, onChange: setCurrentDirectionOther, placeholder: "Describe..." }} />
                   </div>
@@ -271,11 +276,6 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   </div>
 
                   <div className="space-y-2">
-                    <Label id="currentMovement-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
-                    <ShapePicker set="movement" idPrefix="currentMovement" selected={currentMovementShapes} onToggle={(id) => toggleShape(id, currentMovementShapes, setCurrentMovementShapes)} />
-                  </div>
-
-                  <div className="space-y-2">
                     <Label className="text-sm">Describe the movement (optional)</Label>
                     <Textarea
                       placeholder="Describe the kinesthetic qualities..."
@@ -305,6 +305,11 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   <CardDescription>The kinesthetic qualities of where you're moving toward</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label id="potentialMovement-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="movement" idPrefix="potentialMovement" selected={potentialMovementShapes} onToggle={(id) => toggleShape(id, potentialMovementShapes, setPotentialMovementShapes)} />
+                  </div>
+
                   <div className="space-y-2">
                     <Label className="text-sm">Direction (optional)</Label>
                     <WordPicker category="direction" idPrefix="potentialDirections" selected={potentialDirections} onToggle={(t) => handleCheckboxChange(t, !potentialDirections.includes(t), potentialDirections, setPotentialDirections)} other={{ value: potentialDirectionOther, onChange: setPotentialDirectionOther, placeholder: "Describe..." }} />
@@ -340,11 +345,6 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                       onChange={setPotentialMovementDrawing}
                       placeholder="Trace the shape you're moving toward instead."
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label id="potentialMovement-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
-                    <ShapePicker set="movement" idPrefix="potentialMovement" selected={potentialMovementShapes} onToggle={(id) => toggleShape(id, potentialMovementShapes, setPotentialMovementShapes)} />
                   </div>
 
                   <div className="space-y-2">
