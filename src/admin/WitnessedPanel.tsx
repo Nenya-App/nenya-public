@@ -70,6 +70,18 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
     }
   };
 
+  const runJob = async () => {
+    setBusy(true);
+    try {
+      const r = await post({ action: 'run-deletions' });
+      if (r.status !== 200) return setNote('The deletion job could not be run just now.');
+      setNote(`Ran the deletion job: ${r.json.deleted} deleted, ${r.json.manual} waiting for a hand. The Netlify token is ${r.json.tokenSet ? 'set' : 'NOT set, so nothing can be deleted automatically'}.`);
+      await load();
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const setText = (hash: string, i: number, text: string) => setEdits((e) => ({ ...e, [hash]: e[hash].map((x, k) => (k === i ? { ...x, text } : x)) }));
   const dropItem = (hash: string, i: number) => setEdits((e) => ({ ...e, [hash]: e[hash].filter((_, k) => k !== i) }));
 
@@ -118,6 +130,7 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
       {waiting && (
         <div className="space-y-3">
           <h3 className="text-lg">Deletions waiting for a hand ({waiting.length})</h3>
+          <button type="button" disabled={busy} onClick={() => void runJob()} className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50">Run the deletion job now</button>
           {waiting.length === 0 && <p className="text-sm text-muted-foreground">Nothing is waiting.</p>}
           {waiting.map((w) => (
             <article key={w.hash} className="space-y-2 rounded-xl border border-border p-4 text-sm">

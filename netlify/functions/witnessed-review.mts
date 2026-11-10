@@ -2,12 +2,14 @@
 //   {action:'list'}                       the waiting conversations, each with an automatic anonymized DRAFT to start from
 //   {action:'approve', hash, items}       the reviewer's final text; refused if it is the wrong shape or the scrubber would still replace something
 //   {action:'reject', hash}               do not show it (its waiting copy is deleted; the person's other choices stand)
+//   {action:'run-deletions'}              run the nightly deletion job now, and report whether the Netlify token is set (never its value)
 // Approving writes the reviewed copy to the store the public page reads, and deletes the signed original from the waiting store (it is no longer needed).
 import { getStore } from '@netlify/blobs';
 import { getUser } from '@netlify/identity';
 import { ownerAllowed } from '../../src/lib/ownerGate.ts';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
 import { anonymize, reviewProblem, stopLevelFlagged, type PublicItem } from '../../src/lib/publicCopy.ts';
+import { expireDue } from './transcript-expiry.mts';
 import { HASH, pendingKey, publicKey, publicUntilFor, recordKey, dueForDeletion, type TranscriptRecord } from '../../src/lib/transcriptPolicy.ts';
 import type { Receipt, SignedTranscript } from '../../src/lib/transcript.ts';
 
@@ -51,6 +53,12 @@ export default async (req: Request): Promise<Response> => {
         if (r && dueForDeletion(r, now)) waiting.push({ hash: r.hash, receivedAt: r.receivedAt, status: r.status, keepUntil: r.keepUntil, submissionId: r.submissionId ?? null, todo: ['delete the stored submission in Netlify (Forms, verified-transcript)', 'delete the notification email copy'] });
       }
       return json(200, { waiting });
+    }
+    // Run the nightly deletion job now (owner only). The same code as the scheduled job; it reports how many it deleted and how many still need a hand,
+    // and whether the Netlify token is set (never its value).
+    if (body.action === 'run-deletions') {
+      const r = await expireDue(now, process.env);
+      return json(200, { ...r, tokenSet: !!process.env.NETLIFY_API_TOKEN });
     }
     const hash = typeof body.hash === 'string' ? body.hash : '';
     if (!HASH.test(hash)) return json(400, { error: 'hash' });

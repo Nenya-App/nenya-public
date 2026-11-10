@@ -105,3 +105,14 @@ const pageSrc = readFileSync(new URL('../src/app/components/about/WitnessedConve
 ok('the public page reads only the public listing, uncached, and stores nothing', (pageSrc.match(/fetch\(/g) ?? []).length === 1 && /fetch\('\/api\/witnessed', \{ cache: 'no-store' \}\)/.test(pageSrc) && !/localStorage|sessionStorage|document\.cookie/.test(pageSrc));
 ok('the page says plainly what it is not: no anonymity promise, no signature check for strangers, the AI is an AI, 988', /Software cannot\s+promise anonymity, and we do not/.test(pageSrc) && /cannot check the signature/.test(pageSrc) && /not therapy/.test(pageSrc) && /988/.test(pageSrc));
 ok('the page marks the writer of every message and says how to take one down', /Written by the site, not the AI/.test(pageSrc) && /my-transcript/.test(pageSrc) && /info@nenya\.biz/.test(pageSrc));
+
+// ── running the deletion job by hand
+store.j.clear();
+await send(GOOD, { keep: '30d', uses: ['evaluate'] });
+await call(revoke, '/api/transcript-revoke', { signed: GOOD, deleteNow: true });
+delete process.env.NETLIFY_API_TOKEN;
+const noTok = await call(review, '/api/witnessed-review', { action: 'run-deletions' });
+ok('the owner can run the deletion job now; without the token it deletes nothing, counts what waits, and says the token is not set', noTok.status === 200 && noTok.json.deleted === 0 && noTok.json.manual === 1 && noTok.json.tokenSet === false && !JSON.stringify(noTok.json).includes('Bearer'));
+ok('only the owner can run it', (owner = false, (await call(review, '/api/witnessed-review', { action: 'run-deletions' })).status === 401) && (owner = true));
+const panel2 = readFileSync(new URL('../src/admin/WitnessedPanel.tsx', import.meta.url), 'utf8');
+ok('the panel has the button and reports whether the token is set, never its value', /Run the deletion job now/.test(panel2) && /tokenSet/.test(panel2) && !/NETLIFY_API_TOKEN/.test(panel2));
