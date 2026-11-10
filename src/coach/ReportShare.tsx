@@ -82,7 +82,7 @@ export function ReportShare({ report, shared, onChange, locked = false }: Report
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setPastedFragments(fragmentsFromText(pasted, paletteOfHex))}
+                onClick={() => setPastedFragments(fragmentsFromText(pasted, paletteOfHex, words))}
                 disabled={!pasted.trim()}
               >
                 Read it

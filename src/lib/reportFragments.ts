@@ -70,7 +70,7 @@ export function buildFragments(gatewayData: { gateway: Gateway; data: any }[], b
  * Pieces from a saved text report that the person pastes or opens (the report's own format: an upper-case title, a line of dashes, then the lines).
  * Palettes are found from the hex codes that appear. Returns [] if the text does not look like a Nenya report.
  */
-export function fragmentsFromText(text: string, lookup: PaletteLookup): Fragment[] {
+export function fragmentsFromText(text: string, lookup: PaletteLookup, words?: ColorWords): Fragment[] {
   const titles: { id: string; section: string; title: string }[] = [
     ...(Object.keys(gatewayTitles) as Gateway[]).map((g) => ({ id: g, section: sectionOf(g), title: gatewayTitles[g] })),
     { id: 'body-map', section: 'Body map', title: 'Body map' },
@@ -95,6 +95,11 @@ export function fragmentsFromText(text: string, lookup: PaletteLookup): Fragment
     for (const l of f.lines) for (const m of l.matchAll(/#[0-9a-f]{6}\b/gi)) hexes.add(m[0]);
     const found = { palettes: new Set<string>(), custom: false };
     for (const h of hexes) colourLines('', h, lookup, found);
+    // A saved report only has hex codes: describe each in plain words, so the model is not left to guess what a code looks like.
+    if (words && hexes.size) {
+      const each = [...hexes].map((h) => { const w = words(h); return w ? `${h.toUpperCase()} is ${w}` : ''; }).filter(Boolean);
+      if (each.length) f.lines.push(`  The colours above in plain words: ${each.join('; ')}.`);
+    }
     f.palettes = [...found.palettes];
     f.custom = found.custom;
   }

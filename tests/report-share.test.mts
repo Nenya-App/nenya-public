@@ -98,3 +98,10 @@ ok('the notes helper marks a shared flag with message -1', checkNotesFor([{ role
   ok('without a word source the lines are unchanged', !/plain words/.test(buildFragments([{ gateway: 'sight', data: { color1: '#2C6E9E' } }] as any, undefined, () => null)[0].lines.join('\n')));
   ok('palette colour words are added to the palette note', /Its colours, in words: X/.test(buildContext([{ id: 'sight', section: 'Sight', title: 'Sight', lines: ['x'], palettes: ['Sky'], custom: false }] as any, () => 'Its colours, in words: X.').text));
 }
+
+// a pasted saved report gets its colours described too
+{
+  const txt = 'SIGHT - CHROMESTHESIA\n---------------------\nPresent: #2C6E9E\n\nEnd of Report\n';
+  const withW = fragmentsFromText(txt, () => null, (h) => (h.toLowerCase() === '#2c6e9e' ? 'a medium blue' : null));
+  ok('a pasted report has its colours described in plain words', withW.length === 1 && /The colours above in plain words: #2C6E9E is a medium blue\./.test(withW[0].lines.join('\n')), JSON.stringify(withW));
+}
