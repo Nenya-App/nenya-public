@@ -14,6 +14,7 @@ import { join } from 'node:path';
 import { TEST_SETS, creditsFor } from '../src/lib/testSets.ts';
 import { readPrompts, sample, summarize, type Outcome } from '../src/lib/promptEval.ts';
 import { arcProblems } from '../src/lib/practiceArc.ts';
+import { detectDirectQuestion } from '../src/lib/coachIntent.ts';
 
 const args = process.argv.slice(2);
 const flag = (n: string): string | undefined => (args.includes(n) ? args[args.indexOf(n) + 1] : undefined);
@@ -47,7 +48,8 @@ for (const p of chosen) {
   });
   const j: any = await res.json().catch(() => ({}));
   const reply: string = j.reply ?? '';
-  const checks = res.ok && !j.card ? arcProblems(reply, { turn: 1, max: 5, userTexts: [p.text] }).map((c) => c.check) : [];
+  // The practice's checks do not apply to a how-to or factual question (the site answers those first) or to a site-written card.
+  const checks = res.ok && !j.card && !detectDirectQuestion(p.text) ? arcProblems(reply, { turn: 1, max: 5, userTexts: [p.text] }).map((c) => c.check) : [];
   outcomes.push({
     id: p.id, group: p.group, status: res.status, flag: j.flag ? `${j.flag.tier ?? ''}:${j.flag.category ?? ''}` : '', blocked: !!j.blocked,
     card: j.card ? String(j.card.id ?? j.card.title ?? 'card') : '', offer: j.offer ? String(j.offer.id ?? 'offer') : '', replyWords: (reply.match(/\S+/g) ?? []).length, checks,

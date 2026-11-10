@@ -97,7 +97,7 @@ export function gapText(p: { feeling: boolean; need: boolean }): string {
 
 // ---- checks (plain phrase checks, like personaChecks: they find replies worth reading, they are not proof of judgment)
 const NAMES_FOR_THEM =
-  /\b(?:you(?:'|’)re|you are|you must be|you seem to be|sounds like you(?:'|’)re|sounds like you are)\s+(?:really\s+)?feeling\b|(?<!\b(?:do|did|would|could|can|if|when|whether|what|how|help|helps|helped|let|lets|make|makes|made|get|gets|will|might)\s)\byou(?:\s+(?:really|just))?\s+(?:feel|need)\s+(?!to\b)|\bsounds like you\s+(?:feel|need)\b/i;
+  /(?<!\b(?:if|when|whether|while)\s)\b(?:you(?:'|’)re|you are|you must be|you seem to be|sounds like you(?:'|’)re|sounds like you are)\s+(?:really\s+)?feeling\b|(?<!\b(?:do|did|would|could|can|if|when|whether|what|how|help|helps|helped|let|lets|make|makes|made|get|gets|will|might)\s)\byou(?:\s+(?:really|just))?\s+(?:feel|need)\s+(?!to\b)|\bsounds like you\s+(?:feel|need)\b/i;
 
 // Questions that check words the person has already spelled out ("is that right?", "could X be one of the words you are using?", "is it also possible you feel Y?").
 const CONFIRMS = /\b(?:is that (?:right|correct|what you (?:mean|meant|feel))|did i (?:get|hear) (?:that )?right|could [\"“']?\w[\w -]*[\"”']? be one of the words|is it (?:also )?possible (?:that )?you(?:'|’)?re feeling|are you saying|is that how you feel|is that the (?:right )?word)\b/i;
