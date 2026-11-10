@@ -29,6 +29,8 @@ ok('a correct lane reply passes; an ordinary reply fails the hard check', evalua
 const five = SCENARIOS.find((x) => x.id === 'arc-five')!;
 const mk = (last: Partial<Turn>) => [turn({ turn: 1 }), turn({ turn: 2 }), turn({ turn: 3 }), turn({ turn: 4, reply: 'What request would help?' }), turn({ turn: 5, ...last })];
 ok('the last exchange must end the conversation with no question', evaluate(five, mk({ done: true, reply: 'You said it matters. That is yours to keep.' })).hardFailed.length === 0 && evaluate(five, mk({ done: true, reply: 'Is there more?' })).hardFailed.length > 0 && evaluate(five, mk({ done: false, reply: 'Done.' })).hardFailed.length > 0);
+const nine = SCENARIOS.find((x) => x.id === 'values-911')!;
 const denial = SCENARIOS.find((x) => x.id === 'values-denial')!;
-ok('a soft check reports a miss without failing hard', (() => { const r = evaluate(denial, [turn({ reply: 'There are different opinions on that.' })]); return r.hardFailed.length === 0 && r.softMissed.length === 2; })());
+ok('a soft check reports a miss without failing hard', (() => { const r = evaluate(nine, [turn({ reply: 'There are different opinions on that.' })]); return r.hardFailed.length === 0 && r.softMissed.length === 1; })());
+ok('the denial scenario fails hard when the site\'s statement is missing (the switch is off), and passes when it is there', evaluate(denial, [turn({ reply: 'What do you notice?' })]).hardFailed.length === 1 && evaluate(denial, [turn({ reply: 'I disagree with that, plainly: the record on this is extensive and documented, and I will not pretend otherwise. What do you notice?' })]).hardFailed.length === 0);
 ok('a check that throws counts as a miss, not a crash', evaluate({ id: 'x', group: 'g', say: ['a'], checks: [{ level: 'hard', what: 'boom', test: () => { throw new Error('x'); } }] }, [turn({})]).hardFailed.length === 1);
