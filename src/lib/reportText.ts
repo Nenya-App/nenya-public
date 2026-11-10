@@ -4,11 +4,18 @@ import { surfaceLine } from './touchTextures.ts';
 import { getNoteNames, TONAL_SYSTEM_LABELS, type TonalSystem } from './audio.ts';
 import { describePalettePlainly } from './colorSchemes.ts';
 import { shapeById } from './gatewayShapes.ts';
+import { isAnswered } from './optionalSlider.ts';
 
 export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight';
 export interface BodyMapLike {
   placements: { bodyPartId: string; color: string; colorName?: string }[];
   notes: Record<string, string>;
+}
+
+/** A line of slider answers, "Label: Pitch 40/100, Volume 60/100". Sliders that were never touched are left out (src/lib/optionalSlider.ts). */
+function levels(head: string, pairs: [string, unknown][]): string | null {
+  const got = pairs.filter(([, v]) => isAnswered(v)).map(([l, v]) => `${l} ${v}/100`);
+  return got.length ? `${head}${got.join(', ')}` : null;
 }
 
 /** The drawings a person chose in the Movement or Insight gateway, as plain lines: the name and the one-sentence description of each. */
@@ -89,7 +96,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.color1Qualities && data.color1Qualities.length > 0) {
         info.push(`  Quality: ${data.color1Qualities.join(', ')}`);
       }
-      if (data.color1Intensity !== undefined) {
+      if (isAnswered(data.color1Intensity)) {
         info.push(`  Intensity: ${data.color1Intensity}/100`);
       }
 
@@ -98,14 +105,14 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.color2Qualities && data.color2Qualities.length > 0) {
         info.push(`  Quality: ${data.color2Qualities.join(', ')}`);
       }
-      if (data.color2Intensity !== undefined) {
+      if (isAnswered(data.color2Intensity)) {
         info.push(`  Intensity: ${data.color2Intensity}/100`);
       }
       (data.generatedPalettes ?? []).forEach((p: any, i: number) => { if (p?.colors?.length) info.push(describePalettePlainly(p, (data.generatedPalettes ?? []).length > 1 ? i + 1 : undefined)); });
       break;
 
     case 'sound':
-      info.push(`Present: Pitch ${data.currentPitch}/100, Volume ${data.currentVolume}/100`);
+      info.push(levels('Present: ', [['Pitch', data.currentPitch], ['Volume', data.currentVolume]]) ?? 'Present:');
       if (data.currentTimbres && Array.isArray(data.currentTimbres) && data.currentTimbres.length > 0) {
         info.push(`  Timbre: ${data.currentTimbres.join(', ')}`);
       } else if (data.currentTimbre) {
@@ -120,7 +127,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.currentRhythmOther) info.push(`  Rhythm (other): ${data.currentRhythmOther}`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
 
-      info.push(`Wish: Pitch ${data.potentialPitch}/100, Volume ${data.potentialVolume}/100`);
+      info.push(levels('Wish: ', [['Pitch', data.potentialPitch], ['Volume', data.potentialVolume]]) ?? 'Wish:');
       if (data.potentialTimbres && Array.isArray(data.potentialTimbres) && data.potentialTimbres.length > 0) {
         info.push(`  Timbre: ${data.potentialTimbres.join(', ')}`);
       } else if (data.potentialTimbre) {
@@ -153,13 +160,13 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       break;
 
     case 'touch':
-      info.push(`Present: Texture ${data.currentTexture}/100, Temperature ${data.currentTemperature}/100`);
-      info.push(`  Pressure: ${data.currentPressure}/100, Weight: ${data.currentWeight}/100`);
+      info.push(levels('Present: ', [['Texture', data.currentTexture], ['Temperature', data.currentTemperature]]) ?? 'Present:');
+      { const l = levels('  ', [['Pressure', data.currentPressure], ['Weight', data.currentWeight], ['Sharpness', data.currentSharpness]]); if (l) info.push(l); }
       { const l = surfaceLine(data.currentSurface); if (l) info.push(`  Surface chosen from pictures: ${l}`); }
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
 
-      info.push(`Wish: Texture ${data.potentialTexture}/100, Temperature ${data.potentialTemperature}/100`);
-      info.push(`  Pressure: ${data.potentialPressure}/100, Weight: ${data.potentialWeight}/100`);
+      info.push(levels('Wish: ', [['Texture', data.potentialTexture], ['Temperature', data.potentialTemperature]]) ?? 'Wish:');
+      { const l = levels('  ', [['Pressure', data.potentialPressure], ['Weight', data.potentialWeight], ['Sharpness', data.potentialSharpness]]); if (l) info.push(l); }
       { const l = surfaceLine(data.potentialSurface); if (l) info.push(`  Surface chosen from pictures: ${l}`); }
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       break;
@@ -177,7 +184,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
         info.push(`  Scent: ${data.currentScent}`);
       }
       if (data.currentScentOther) info.push(`  Scent (other): ${data.currentScentOther}`);
-      if (data.currentIntensity) info.push(`  Intensity: ${data.currentIntensity}/100`);
+      if (isAnswered(data.currentIntensity)) info.push(`  Intensity: ${data.currentIntensity}/100`);
       if (data.currentDescription) info.push(`  Description: ${data.currentDescription}`);
 
       if (data.potentialTastes && Array.isArray(data.potentialTastes) && data.potentialTastes.length > 0) {
@@ -192,7 +199,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
         info.push(`  Scent: ${data.potentialScent}`);
       }
       if (data.potentialScentOther) info.push(`  Scent (other): ${data.potentialScentOther}`);
-      if (data.potentialIntensity) info.push(`  Intensity: ${data.potentialIntensity}/100`);
+      if (isAnswered(data.potentialIntensity)) info.push(`  Intensity: ${data.potentialIntensity}/100`);
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       break;
 
@@ -203,8 +210,8 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
         info.push(`Present Direction: ${data.currentDirection}`);
       }
       if (data.currentDirectionOther) info.push(`  Direction (other): ${data.currentDirectionOther}`);
-      if (data.currentEnergy) info.push(`  Energy: ${data.currentEnergy}/100`);
-      if (data.currentSpeed) info.push(`  Speed: ${data.currentSpeed}/100`);
+      if (isAnswered(data.currentEnergy)) info.push(`  Energy: ${data.currentEnergy}/100`);
+      if (isAnswered(data.currentSpeed)) info.push(`  Speed: ${data.currentSpeed}/100`);
       if (data.currentQualities && Array.isArray(data.currentQualities) && data.currentQualities.length > 0) {
         info.push(`  Quality: ${data.currentQualities.join(', ')}`);
       } else if (data.currentQuality) {
@@ -221,8 +228,8 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
         info.push(`Potential Direction: ${data.potentialDirection}`);
       }
       if (data.potentialDirectionOther) info.push(`  Direction (other): ${data.potentialDirectionOther}`);
-      if (data.potentialEnergy) info.push(`  Energy: ${data.potentialEnergy}/100`);
-      if (data.potentialSpeed) info.push(`  Speed: ${data.potentialSpeed}/100`);
+      if (isAnswered(data.potentialEnergy)) info.push(`  Energy: ${data.potentialEnergy}/100`);
+      if (isAnswered(data.potentialSpeed)) info.push(`  Speed: ${data.potentialSpeed}/100`);
       if (data.potentialQualities && Array.isArray(data.potentialQualities) && data.potentialQualities.length > 0) {
         info.push(`  Quality: ${data.potentialQualities.join(', ')}`);
       } else if (data.potentialQuality) {
@@ -241,8 +248,8 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
         info.push(`Present Pattern: ${data.currentPattern}`);
       }
       if (data.currentPatternOther) info.push(`  Pattern (other): ${data.currentPatternOther}`);
-      if (data.currentClarity) info.push(`  Clarity: ${data.currentClarity}/100`);
-      if (data.currentDepth) info.push(`  Depth: ${data.currentDepth}/100`);
+      if (isAnswered(data.currentClarity)) info.push(`  Clarity: ${data.currentClarity}/100`);
+      if (isAnswered(data.currentDepth)) info.push(`  Depth: ${data.currentDepth}/100`);
       if (data.currentPerspectives && Array.isArray(data.currentPerspectives) && data.currentPerspectives.length > 0) {
         info.push(`  Perspective: ${data.currentPerspectives.join(', ')}`);
       } else if (data.currentPerspective) {
@@ -259,8 +266,8 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
         info.push(`Potential Pattern: ${data.potentialPattern}`);
       }
       if (data.potentialPatternOther) info.push(`  Pattern (other): ${data.potentialPatternOther}`);
-      if (data.potentialClarity) info.push(`  Clarity: ${data.potentialClarity}/100`);
-      if (data.potentialDepth) info.push(`  Depth: ${data.potentialDepth}/100`);
+      if (isAnswered(data.potentialClarity)) info.push(`  Clarity: ${data.potentialClarity}/100`);
+      if (isAnswered(data.potentialDepth)) info.push(`  Depth: ${data.potentialDepth}/100`);
       if (data.potentialPerspectives && Array.isArray(data.potentialPerspectives) && data.potentialPerspectives.length > 0) {
         info.push(`  Perspective: ${data.potentialPerspectives.join(', ')}`);
       } else if (data.potentialPerspective) {

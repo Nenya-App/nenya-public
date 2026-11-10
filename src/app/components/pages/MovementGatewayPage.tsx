@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
@@ -61,8 +62,8 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [currentMovementShapes, setCurrentMovementShapes] = useState<string[]>([]);
   const [currentDirections, setCurrentDirections] = useState<string[]>([]);
   const [currentDirectionOther, setCurrentDirectionOther] = useState('');
-  const [currentEnergy, setCurrentEnergy] = useState([50]);
-  const [currentSpeed, setCurrentSpeed] = useState([50]);
+  const [currentEnergy, setCurrentEnergy] = useState(() => unsetSlider());
+  const [currentSpeed, setCurrentSpeed] = useState(() => unsetSlider());
   const [currentQualities, setCurrentQualities] = useState<string[]>([]);
   const [currentQualityOther, setCurrentQualityOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
@@ -72,8 +73,8 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [potentialMovementShapes, setPotentialMovementShapes] = useState<string[]>([]);
   const [potentialDirections, setPotentialDirections] = useState<string[]>([]);
   const [potentialDirectionOther, setPotentialDirectionOther] = useState('');
-  const [potentialEnergy, setPotentialEnergy] = useState([50]);
-  const [potentialSpeed, setPotentialSpeed] = useState([50]);
+  const [potentialEnergy, setPotentialEnergy] = useState(() => unsetSlider());
+  const [potentialSpeed, setPotentialSpeed] = useState(() => unsetSlider());
   const [potentialQualities, setPotentialQualities] = useState<string[]>([]);
   const [potentialQualityOther, setPotentialQualityOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
@@ -110,16 +111,16 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
       potentialMovementShapes: potentialMovementShapes.length > 0 ? potentialMovementShapes : null,
       currentDirections: currentDirections.length > 0 ? currentDirections : null,
       currentDirectionOther: currentDirectionOther || null,
-      currentEnergy: currentEnergy[0],
-      currentSpeed: currentSpeed[0],
+      currentEnergy: sliderValue(currentEnergy),
+      currentSpeed: sliderValue(currentSpeed),
       currentQualities: currentQualities.length > 0 ? currentQualities : null,
       currentQualityOther: currentQualityOther || null,
       currentDescription: currentDescription || null,
       currentMovementDrawing: currentMovementDrawing || null,
       potentialDirections: potentialDirections.length > 0 ? potentialDirections : null,
       potentialDirectionOther: potentialDirectionOther || null,
-      potentialEnergy: potentialEnergy[0],
-      potentialSpeed: potentialSpeed[0],
+      potentialEnergy: sliderValue(potentialEnergy),
+      potentialSpeed: sliderValue(potentialSpeed),
       potentialQualities: potentialQualities.length > 0 ? potentialQualities : null,
       potentialQualityOther: potentialQualityOther || null,
       potentialDescription: potentialDescription || null,

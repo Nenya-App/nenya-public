@@ -54,8 +54,8 @@ export interface UserColors {
   // declared here -- harmless at runtime since nothing enforces this type,
   // but it meant the interface didn't actually describe the data flowing
   // through it.
-  color1Intensity?: number;
-  color2Intensity?: number;
+  color1Intensity?: number | null;
+  color2Intensity?: number | null;
   gradientDirection?: string;
   /** Up to two palettes the person made in the Sight gateway and chose to keep (their own colours; see src/lib/colorSchemes.ts). */
   generatedPalettes?: import('../lib/colorSchemes').GeneratedPalette[] | null;

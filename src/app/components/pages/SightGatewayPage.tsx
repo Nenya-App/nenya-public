@@ -3,13 +3,14 @@ import { ColorNameSuggest } from '../ColorNameSuggest';
 import { PalettePanel } from '../PalettePanel';
 import type { GeneratedPalette } from '../../../lib/colorSchemes';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, Shuffle, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
 import { ValarColorPicker } from '../ValarColorPicker';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
-import { Slider } from '../ui/slider';
+import { SnappingSlider } from '../ui/snapping-slider';
 import { UserColors } from '../../App';
 import { useTheme } from '../ThemeProvider';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
@@ -127,8 +128,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   const [generatedPalettes, setGeneratedPalettes] = useState<GeneratedPalette[]>([]);
   const [color1Qualities, setColor1Qualities] = useState<string[]>([]);
   const [color2Qualities, setColor2Qualities] = useState<string[]>([]);
-  const [color1Intensity, setColor1Intensity] = useState(50);
-  const [color2Intensity, setColor2Intensity] = useState(50);
+  const [color1Intensity, setColor1Intensity] = useState<number[]>(() => unsetSlider());
+  const [color2Intensity, setColor2Intensity] = useState<number[]>(() => unsetSlider());
   const [gradientDirection] = useState('to-right');
   const [activeColorPicker, setActiveColorPicker] = useState<'present' | 'potential' | null>(null);
   // bodyMapData/onUpdateBodyMap come from props -- shared App-level state
@@ -143,8 +144,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
     setColor2Name('');
     setColor1Qualities([]);
     setColor2Qualities([]);
-    setColor1Intensity(50);
-    setColor2Intensity(50);
+    setColor1Intensity(unsetSlider());
+    setColor2Intensity(unsetSlider());
     setGeneratedPalettes([]);
   };
 
@@ -158,8 +159,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
       color2Random: !color2Name.trim(),
       color1Qualities: color1Qualities.length > 0 ? color1Qualities : null,
       color2Qualities: color2Qualities.length > 0 ? color2Qualities : null,
-      color1Intensity,
-      color2Intensity,
+      color1Intensity: sliderValue(color1Intensity),
+      color2Intensity: sliderValue(color2Intensity),
       gradientDirection,
       generatedPalettes: generatedPalettes.length > 0 ? generatedPalettes : null,
     });
@@ -367,27 +368,14 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       <WordPicker category="lightQuality" idPrefix="color1Qualities" selected={color1Qualities} onToggle={(t) => toggleQuality(1, t)} />
                     </div>
 
-                    {/* Intensity Slider */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="color1-intensity" className="text-sm">
-                          Intensity
-                        </Label>
-                        <span className="text-xs text-muted-foreground">
-                          {color1Intensity}
-                        </span>
-                      </div>
-                      <Slider
-                        id="color1-intensity"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={[color1Intensity]}
-                        onValueChange={(values) => setColor1Intensity(values[0])}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-full"
-                      />
-                    </div>
+                    <SnappingSlider
+                      value={color1Intensity}
+                      onValueChange={setColor1Intensity}
+                      label="Intensity"
+                      leftLabel="Faint"
+                      rightLabel="Strong"
+                      max={100}
+                    />
                   </CardContent>
                 </Card>
 
@@ -453,27 +441,14 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       <WordPicker category="lightQuality" idPrefix="color2Qualities" selected={color2Qualities} onToggle={(t) => toggleQuality(2, t)} />
                     </div>
 
-                    {/* Intensity Slider */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="color2-intensity" className="text-sm">
-                          Intensity
-                        </Label>
-                        <span className="text-xs text-muted-foreground">
-                          {color2Intensity}
-                        </span>
-                      </div>
-                      <Slider
-                        id="color2-intensity"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={[color2Intensity]}
-                        onValueChange={(values) => setColor2Intensity(values[0])}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-full"
-                      />
-                    </div>
+                    <SnappingSlider
+                      value={color2Intensity}
+                      onValueChange={setColor2Intensity}
+                      label="Intensity"
+                      leftLabel="Faint"
+                      rightLabel="Strong"
+                      max={100}
+                    />
                   </CardContent>
                 </Card>
               </div>

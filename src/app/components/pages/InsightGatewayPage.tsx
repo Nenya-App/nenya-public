@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
@@ -61,8 +62,8 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [currentPatternShapes, setCurrentPatternShapes] = useState<string[]>([]);
   const [currentPatterns, setCurrentPatterns] = useState<string[]>([]);
   const [currentPatternOther, setCurrentPatternOther] = useState('');
-  const [currentClarity, setCurrentClarity] = useState([50]);
-  const [currentDepth, setCurrentDepth] = useState([50]);
+  const [currentClarity, setCurrentClarity] = useState(() => unsetSlider());
+  const [currentDepth, setCurrentDepth] = useState(() => unsetSlider());
   const [currentPerspectives, setCurrentPerspectives] = useState<string[]>([]);
   const [currentPerspectiveOther, setCurrentPerspectiveOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
@@ -72,8 +73,8 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [potentialPatternShapes, setPotentialPatternShapes] = useState<string[]>([]);
   const [potentialPatterns, setPotentialPatterns] = useState<string[]>([]);
   const [potentialPatternOther, setPotentialPatternOther] = useState('');
-  const [potentialClarity, setPotentialClarity] = useState([50]);
-  const [potentialDepth, setPotentialDepth] = useState([50]);
+  const [potentialClarity, setPotentialClarity] = useState(() => unsetSlider());
+  const [potentialDepth, setPotentialDepth] = useState(() => unsetSlider());
   const [potentialPerspectives, setPotentialPerspectives] = useState<string[]>([]);
   const [potentialPerspectiveOther, setPotentialPerspectiveOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
@@ -110,16 +111,16 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
       potentialPatternShapes: potentialPatternShapes.length > 0 ? potentialPatternShapes : null,
       currentPatterns: currentPatterns.length > 0 ? currentPatterns : null,
       currentPatternOther: currentPatternOther || null,
-      currentClarity: currentClarity[0],
-      currentDepth: currentDepth[0],
+      currentClarity: sliderValue(currentClarity),
+      currentDepth: sliderValue(currentDepth),
       currentPerspectives: currentPerspectives.length > 0 ? currentPerspectives : null,
       currentPerspectiveOther: currentPerspectiveOther || null,
       currentDescription: currentDescription || null,
       currentPatternDrawing: currentPatternDrawing || null,
       potentialPatterns: potentialPatterns.length > 0 ? potentialPatterns : null,
       potentialPatternOther: potentialPatternOther || null,
-      potentialClarity: potentialClarity[0],
-      potentialDepth: potentialDepth[0],
+      potentialClarity: sliderValue(potentialClarity),
+      potentialDepth: sliderValue(potentialDepth),
       potentialPerspectives: potentialPerspectives.length > 0 ? potentialPerspectives : null,
       potentialPerspectiveOther: potentialPerspectiveOther || null,
       potentialDescription: potentialDescription || null,

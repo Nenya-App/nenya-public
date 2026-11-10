@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
 import NenyaLogo from '../NenyaLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
@@ -57,7 +58,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
   const [currentTasteOther, setCurrentTasteOther] = useState('');
   const [currentScents, setCurrentScents] = useState<string[]>([]);
   const [currentScentOther, setCurrentScentOther] = useState('');
-  const [currentIntensity, setCurrentIntensity] = useState([50]);
+  const [currentIntensity, setCurrentIntensity] = useState(() => unsetSlider());
   const [currentDescription, setCurrentDescription] = useState('');
 
   // Potential state
@@ -65,7 +66,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
   const [potentialTasteOther, setPotentialTasteOther] = useState('');
   const [potentialScents, setPotentialScents] = useState<string[]>([]);
   const [potentialScentOther, setPotentialScentOther] = useState('');
-  const [potentialIntensity, setPotentialIntensity] = useState([50]);
+  const [potentialIntensity, setPotentialIntensity] = useState(() => unsetSlider());
   const [potentialDescription, setPotentialDescription] = useState('');
 
   const handleCheckboxChange = (
@@ -95,13 +96,13 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
       currentTasteOther: currentTasteOther || null,
       currentScents: currentScents.length > 0 ? currentScents : null,
       currentScentOther: currentScentOther || null,
-      currentIntensity: currentIntensity[0],
+      currentIntensity: sliderValue(currentIntensity),
       currentDescription: currentDescription || null,
       potentialTastes: potentialTastes.length > 0 ? potentialTastes : null,
       potentialTasteOther: potentialTasteOther || null,
       potentialScents: potentialScents.length > 0 ? potentialScents : null,
       potentialScentOther: potentialScentOther || null,
-      potentialIntensity: potentialIntensity[0],
+      potentialIntensity: sliderValue(potentialIntensity),
       potentialDescription: potentialDescription || null
     });
   };

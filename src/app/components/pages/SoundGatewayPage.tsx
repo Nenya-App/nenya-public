@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, Link2, Unlink, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
@@ -319,8 +320,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   };
 
   // Current state
-  const [currentPitch, setCurrentPitch] = useState([50]);
-  const [currentVolume, setCurrentVolume] = useState([50]);
+  const [currentPitch, setCurrentPitch] = useState(() => unsetSlider());
+  const [currentVolume, setCurrentVolume] = useState(() => unsetSlider());
   const [currentTimbres, setCurrentTimbres] = useState<string[]>([]);
   const [currentTimbreOther, setCurrentTimbreOther] = useState('');
   const [currentRhythms, setCurrentRhythms] = useState<string[]>([]);
@@ -328,8 +329,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const [currentDescription, setCurrentDescription] = useState('');
 
   // Potential state
-  const [potentialPitch, setPotentialPitch] = useState([50]);
-  const [potentialVolume, setPotentialVolume] = useState([50]);
+  const [potentialPitch, setPotentialPitch] = useState(() => unsetSlider());
+  const [potentialVolume, setPotentialVolume] = useState(() => unsetSlider());
   const [potentialTimbres, setPotentialTimbres] = useState<string[]>([]);
   const [potentialTimbreOther, setPotentialTimbreOther] = useState('');
   const [potentialRhythms, setPotentialRhythms] = useState<string[]>([]);
@@ -365,15 +366,15 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
       melodyColor1,
       melodyColor2,
       melodyConnected,
-      currentPitch: currentPitch[0],
-      currentVolume: currentVolume[0],
+      currentPitch: sliderValue(currentPitch),
+      currentVolume: sliderValue(currentVolume),
       currentTimbres: currentTimbres.length > 0 ? currentTimbres : null,
       currentTimbreOther: currentTimbreOther || null,
       currentRhythms: currentRhythms.length > 0 ? currentRhythms : null,
       currentRhythmOther: currentRhythmOther || null,
       currentDescription: currentDescription || null,
-      potentialPitch: potentialPitch[0],
-      potentialVolume: potentialVolume[0],
+      potentialPitch: sliderValue(potentialPitch),
+      potentialVolume: sliderValue(potentialVolume),
       potentialTimbres: potentialTimbres.length > 0 ? potentialTimbres : null,
       potentialTimbreOther: potentialTimbreOther || null,
       potentialRhythms: potentialRhythms.length > 0 ? potentialRhythms : null,

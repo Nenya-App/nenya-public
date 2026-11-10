@@ -7,6 +7,7 @@ import { Input } from "./input";
 import { Button } from "./button";
 import { Label } from "./label";
 import { cn } from "./utils";
+import { isUnset, unsetSlider } from "../../../lib/optionalSlider";
 
 interface SnappingSliderProps {
   value: number[];
@@ -34,6 +35,9 @@ export function SnappingSlider({
   snapToFive = true,
 }: SnappingSliderProps) {
   const currentValue = value[0] ?? min;
+  // Not set until it is moved (src/lib/optionalSlider.ts): the handle rests in the middle, dimmed, and nothing is recorded.
+  const unset = isUnset(value);
+  const middle = Math.round((min + max) / 2);
 
   // Function to snap value to nearest 5
   const snapToNearest5 = (val: number): number => {
@@ -97,7 +101,7 @@ export function SnappingSlider({
           min={min}
           max={max}
           step={step}
-          className="flex-1 min-w-0"
+          className={cn("flex-1 min-w-0 transition-opacity", unset && "opacity-45")}
         />
         
         {/* Input with up/down buttons */}
@@ -106,7 +110,9 @@ export function SnappingSlider({
             type="number"
             min={min}
             max={max}
-            value={currentValue}
+            value={unset ? "" : currentValue}
+            placeholder={unset ? "–" : undefined}
+            aria-label={label ? `${label}: ${unset ? "not set" : currentValue}` : undefined}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             className="w-14 sm:w-16 h-9 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -138,6 +144,21 @@ export function SnappingSlider({
             </Button>
           </div>
         </div>
+      </div>
+
+      <div className="flex items-center gap-3 text-xs text-muted-foreground" role="status">
+        {unset ? (
+          <>
+            <span>Not set. Move it to set it, or skip it.</span>
+            <button type="button" className="underline underline-offset-4" onClick={() => onValueChange([middle])}>
+              Set to {middle}
+            </button>
+          </>
+        ) : (
+          <button type="button" className="underline underline-offset-4" onClick={() => onValueChange(unsetSlider(middle))}>
+            Clear (leave this one out)
+          </button>
+        )}
       </div>
 
       {/* Label indicators */}

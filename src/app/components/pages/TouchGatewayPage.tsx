@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import NenyaLogo from '../NenyaLogo';
@@ -55,20 +56,20 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
 
   // Current state
   const [currentSurface, setCurrentSurface] = useState<string | null>(null);
-  const [currentTexture, setCurrentTexture] = useState([50]);
-  const [currentTemperature, setCurrentTemperature] = useState([50]);
-  const [currentPressure, setCurrentPressure] = useState([50]);
-  const [currentWeight, setCurrentWeight] = useState([50]);
-  const [currentSharpness, setCurrentSharpness] = useState([50]);
+  const [currentTexture, setCurrentTexture] = useState(() => unsetSlider());
+  const [currentTemperature, setCurrentTemperature] = useState(() => unsetSlider());
+  const [currentPressure, setCurrentPressure] = useState(() => unsetSlider());
+  const [currentWeight, setCurrentWeight] = useState(() => unsetSlider());
+  const [currentSharpness, setCurrentSharpness] = useState(() => unsetSlider());
   const [currentDescription, setCurrentDescription] = useState('');
 
   // Potential state
   const [potentialSurface, setPotentialSurface] = useState<string | null>(null);
-  const [potentialTexture, setPotentialTexture] = useState([50]);
-  const [potentialTemperature, setPotentialTemperature] = useState([50]);
-  const [potentialPressure, setPotentialPressure] = useState([50]);
-  const [potentialWeight, setPotentialWeight] = useState([50]);
-  const [potentialSharpness, setPotentialSharpness] = useState([50]);
+  const [potentialTexture, setPotentialTexture] = useState(() => unsetSlider());
+  const [potentialTemperature, setPotentialTemperature] = useState(() => unsetSlider());
+  const [potentialPressure, setPotentialPressure] = useState(() => unsetSlider());
+  const [potentialWeight, setPotentialWeight] = useState(() => unsetSlider());
+  const [potentialSharpness, setPotentialSharpness] = useState(() => unsetSlider());
   const [potentialDescription, setPotentialDescription] = useState('');
 
   const handleNextInstructionCard = () => {
@@ -82,18 +83,18 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   const handleNext = () => {
     onComplete({
       currentSurface,
-      currentTexture: currentTexture[0],
-      currentTemperature: currentTemperature[0],
-      currentPressure: currentPressure[0],
-      currentWeight: currentWeight[0],
-      currentSharpness: currentSharpness[0],
+      currentTexture: sliderValue(currentTexture),
+      currentTemperature: sliderValue(currentTemperature),
+      currentPressure: sliderValue(currentPressure),
+      currentWeight: sliderValue(currentWeight),
+      currentSharpness: sliderValue(currentSharpness),
       currentDescription: currentDescription || null,
       potentialSurface,
-      potentialTexture: potentialTexture[0],
-      potentialTemperature: potentialTemperature[0],
-      potentialPressure: potentialPressure[0],
-      potentialWeight: potentialWeight[0],
-      potentialSharpness: potentialSharpness[0],
+      potentialTexture: sliderValue(potentialTexture),
+      potentialTemperature: sliderValue(potentialTemperature),
+      potentialPressure: sliderValue(potentialPressure),
+      potentialWeight: sliderValue(potentialWeight),
+      potentialSharpness: sliderValue(potentialSharpness),
       potentialDescription: potentialDescription || null
     });
   };

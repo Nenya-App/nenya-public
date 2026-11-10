@@ -38,3 +38,9 @@ For each run: the date, the build label shown on the staging site (the pre-writt
 
 ## 4. Before the production merge
 Everything in sections 1 and 2 passes on staging; the Terms effective date (`LEGAL_EFFECTIVE_DATE`) is the day it goes live; the production site has `COACH_DISTRESS_TEXT=on`, `COACH_SIGNING_KEY`, `COACH_INSTRUCTIONS=v2` (staging first) and the right `COACH_EXTRA_HOSTS`; a 1.1.0 release and tag are published at the merge.
+
+## Sliders start "not set" (added 2026-11-10)
+- [ ] Open each gateway. Every slider shows "Not set. Move it to set it, or skip it." with a dimmed handle and an empty number box.
+- [ ] Move one slider, type a number in another, press "Set to 50" on a third: each becomes set. "Clear (leave this one out)" puts it back to not set.
+- [ ] Finish a session without touching a slider: the review page, the text report, the PDF and the coach picker list no number for it. A slider left at 50 on purpose (set, then not moved) still appears.
+- [ ] Keyboard only: Tab to a slider and press an arrow key: it becomes set. A screen reader says "not set" for an untouched one.
