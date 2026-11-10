@@ -29,3 +29,29 @@ So the answer is a **short, plain permission statement inside the consent step, 
 
 ## Where it fits in the code (not started)
 `TranscriptChoices.tsx` (the statement above the choices, one short confirmation), the Terms section for transcripts (`docs/transcript-consent-scope.md` has the draft), and `transcriptPolicy.ts` (a terms version recorded with the choices).
+
+## Owner's direction, 2026-11-10 (and what follows from it)
+
+### 1. Training becomes a fourth, separate choice
+Decided: a person may allow their conversation to be used to train or improve a model. How to do it fairly:
+- **Its own checkbox, off by default, never bundled** with evaluate, quote or publish, with a plain line: "Use it to train or improve a model."
+- **Same safeguards as publishing, before it enters any training set:** the site anonymizes it and a person reads and edits it (names and details can be memorized by a model, which is the risk). **Never** for a conversation the safety check stopped, never without the age attestation, and never from any other source of data (the trainer's material is a separate matter).
+- **It cannot be fully undone, and the choice must say so:** taking it back removes it from future training sets, but **a model already trained cannot unlearn it.** So the permission is worded "for training runs from now on, until you take it back."
+- **A ledger, so a takedown is real:** each training set records the fingerprints of the conversations in it, so a withdrawal is honored in the next run and we can say which runs had it.
+- **Keep training internal.** Do not offer or imply publishing the data or the model as a public dataset. That would be a **fifth, separate choice** with its own consent, which we do not offer now. It also matters for the Mozilla application (the dataset and open-sharing questions).
+- **The Terms and the statement above change:** "not used to train a model" is replaced by what the fourth choice says. The Privacy Promise and the Terms must say the same.
+- **Code touched (not started):** `USES` and `USE_LABELS` in `src/lib/transcriptPolicy.ts`, `TranscriptChoices.tsx`, the alert and inbox wording, revocation (a person can stop `train` without stopping the others), and the owner page's list. The stop-level block that already hides publishing would hide training too.
+
+### 2. Age: ask, record, and let the review be a second look
+- **An ID scan is not the answer.** It would break the site's own promise (no accounts, nothing kept, no identity), it needs an outside verifier and the handling and storage of government IDs (a breach risk and a liability for a project this size), it excludes people without ID, and it still would not be certain. It would also put a wall in front of people at a hard moment.
+- **Take their word, and keep the word on record.** The standard for a service that is not aimed at children is an age statement: **"I am 18 or older, and these are my own words."** A checkbox, required to send anything at all (not only to publish or train), recorded with the choices.
+- **Where it is recorded.** The person's signed transcript is signed when the conversation ends, **before** any choice exists, so a statement made later cannot go inside it. Two honest options: (a) record it in the stored consent record and the owner's inbox only; or (b) **issue a second small signed file, a consent receipt** (the transcript's fingerprint, the choices including training, the age statement, the terms version and the time), which the person keeps and which is also the key for taking it back. **I recommend (b):** it is the person's own proof of what they agreed to, and it fits how take-back already works. It is a small new signed format and a new field in the record.
+- **The review as a second look.** The by-hand review before anything is shown or used for training should also look for signs of a minor (a school grade, "my mom said I can't", and so on) and remove the conversation if there are any. The checkbox is the promise; the review is the backstop.
+- **If the age statement is missing, or a conversation shows a minor,** the conversation is not kept for training or shown, and what was sent is deleted by the same path as a take-back.
+- **A question for the lawyer:** whether 18 is the right line for your jurisdictions, and whether the age statement must say more about guardians for people 13 to 17 (the safest answer for a coach that handles distress is to stay at 18+).
+
+### 3. What I would build, in order, on your word
+1. The fourth choice and the age statement in the consent step, the record and the inbox (and the revocation, the alert and the owner page), with tests.
+2. The consent receipt (a signed file the person keeps), and the terms version recorded.
+3. The Terms and the page wording, applied once you and a reader have read them.
+4. A review checklist for the person who edits conversations before they are shown or used (anonymize, check for a minor, remove anything identifying).
