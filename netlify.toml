@@ -32,6 +32,13 @@
   status = 200
   force = true
 
+# /cell is partner practice's own page (cell/index.html), rewritten the same way as /coach. Not a rate-limit rule.
+[[redirects]]
+  from = "/cell"
+  to = "/cell/index.html"
+  status = 200
+  force = true
+
 # Rule 1: app entry point. Caps how many fresh app loads a single IP can
 # request per minute -- the main "someone is hammering the site" vector.
 [[redirects]]
@@ -128,6 +135,19 @@
 # Not linked from anywhere, and kept out of search results as well as by the page's own robots tag.
 [[headers]]
   for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+# ── Partner practice, while it is being tested ──────────────────────────────
+[[headers]]
+  for = "/cell/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+# ── The design bench ────────────────────────────────────────────────────────
+# /bench, for tuning the logo's gem and orbits side by side. Not linked from anywhere, and kept out of search results.
+[[headers]]
+  for = "/bench/*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
 

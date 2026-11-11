@@ -3,6 +3,14 @@
 // (the sheet is ~790 KB, so it must not load for pages that never show the orbit view).
 import spriteUrl from '../assets/diamond-hex-sprite.webp';
 
+/**
+ * Which gem the site draws: the pre-rendered sprite sheet, or the live, ray-traced stone (src/lib/gemRenderer.ts).
+ * The live gem needs WebGL2; where it is missing, or its shader fails, the sprite is used instead. Tune the live gem
+ * side by side with the sprite on the /bench page before switching this.
+ */
+export const GEM_ENGINE: 'sprite' | 'live' = 'sprite';
+export type GemEngine = 'sprite' | 'live';
+
 export const SPRITE_COLS = 7;
 export const SPRITE_CELL = 288;
 /** The hexagon spans this fraction of its frame's width. */
@@ -52,4 +60,25 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
     img.onerror = () => reject(new Error('image failed to load'));
     img.src = src;
   });
+}
+
+/**
+ * Draws the stone's outline (the girdle hexagon, corners at the top and bottom) filled in solid, in a gem frame of
+ * side `side` at (x, y). The live gem uses it where the sprite's first frame was used for the outline (the glow).
+ */
+export function drawGemSilhouette(ctx: CanvasRenderingContext2D, x: number, y: number, side: number): void {
+  const r = side * GEM_HEX_RADIUS;
+  const cx = x + side / 2;
+  const cy = y + side / 2;
+  ctx.beginPath();
+  for (let k = 0; k < 6; k++) {
+    const a = Math.PI / 2 + (k * Math.PI) / 3;
+    const px = cx + Math.cos(a) * r;
+    const py = cy + Math.sin(a) * r;
+    if (k === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fillStyle = '#000';
+  ctx.fill();
 }

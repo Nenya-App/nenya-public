@@ -175,16 +175,9 @@ async function attest(o: Required<Pick<E2eeChatOptions, 'apiKey' | 'model' | 'ba
     signal: o.signal,
   });
   if (!res.ok) throw new E2eeError('attestation', { status: res.status, detail: await errorDetail(res) });
-  const a = (await res.json()) as Record<string, unknown>;
-  if (a.verified !== true) throw new E2eeError('attestation');
-  if (a.nonce !== nonce) throw new E2eeError('nonce');
-  // Best effort: refuse a report that says it came from a debug enclave. (The guide asks for this check but
-  // does not name the field, so look at the likely ones.)
-  if (a.debug === true || a.debug_mode === true || a.debuggable === true) throw new E2eeError('attestation');
-  const key = (a.signing_key ?? a.signing_public_key) as unknown;
-  if (typeof key !== 'string' || !key) throw new E2eeError('key');
-  publicKeyBytes(key); // throws on a malformed key
-  return key;
+  // Verified, our nonce echoed back, not a debug enclave (the guide asks for this check but does not name the field, so the
+  // likely ones are checked), and a well-formed key: see checkReport below.
+  return checkReport((await res.json()) as AttestationReport, nonce);
 }
 
 /** The key to encrypt to for this model: the remembered one if it is recent, else a fresh, fully checked attestation. */
@@ -302,4 +295,132 @@ async function chatWithKey(opts: E2eeChatOptions, modelKey: string, fetchImpl: t
   if (pending) handle(pending);
   if (!content) throw new E2eeError('format');
   return { content, finishReason };
+}
+
+// ── Sealed mode: the visitor's browser encrypts (docs/ghost-footprint-stack.md) ─────────────────────────────────────────
+// In sealed mode this function never sees the visitor's words. The browser asks for an attestation with its own nonce
+// (attestationFor), checks it itself (src/lib/sealedCoach.ts), and encrypts every message to the enclave's key. This
+// function then adds the system instruction, which it encrypts itself, and relays the request (sealedChat). The reply comes
+// back encrypted to the browser's one-time key, so it is passed along as the encrypted pieces it arrived in.
+
+const NONCE_HEX = /^[0-9a-f]{64}$/;
+/** The longest a single encrypted message may be (hex): 3000 characters of text at up to 4 bytes each, plus the envelope. */
+export const MAX_SEALED_HEX = (3000 * 4 + 93) * 2;
+const MAX_SEALED_RESPONSE_CHUNKS = 4000;
+
+export interface AttestationReport {
+  [field: string]: unknown;
+}
+
+/**
+ * An attestation fetched with the browser's own nonce, checked here as for the witnessed route, and returned whole so the
+ * browser can check it again. A key that passes is remembered (only the public key, as above).
+ */
+export async function attestationFor(o: { apiKey: string; model: string; nonce: string; baseUrl?: string; fetchImpl?: typeof fetch; signal?: AbortSignal; policy?: AttestationPolicy }): Promise<{ key: string; report: AttestationReport }> {
+  if (!NONCE_HEX.test(o.nonce)) throw new E2eeError('nonce');
+  const fetchImpl = o.fetchImpl ?? fetch;
+  const baseUrl = o.baseUrl ?? VENICE_BASE;
+  const res = await fetchImpl(`${baseUrl}/tee/attestation?model=${encodeURIComponent(o.model)}&nonce=${o.nonce}`, {
+    headers: { Authorization: `Bearer ${o.apiKey}` },
+    signal: o.signal ?? AbortSignal.timeout(15000),
+  });
+  if (!res.ok) throw new E2eeError('attestation', { status: res.status, detail: await errorDetail(res) });
+  const report = (await res.json()) as AttestationReport;
+  const key = checkReport(report, o.nonce);
+  const policy = o.policy ?? attestationPolicyFromEnv();
+  if (policy.ttlMs > 0) keyMemory.set(o.model, { key, at: policy.now() });
+  return { key, report };
+}
+
+/** The checks both sides run on a report. Returns the key to encrypt to. Shared with the browser (src/lib/sealedCoach.ts). */
+export function checkReport(a: AttestationReport, nonce: string): string {
+  if (a.verified !== true) throw new E2eeError('attestation');
+  if (a.nonce !== nonce) throw new E2eeError('nonce');
+  if (a.debug === true || a.debug_mode === true || a.debuggable === true) throw new E2eeError('attestation');
+  const key = (a.signing_key ?? a.signing_public_key) as unknown;
+  if (typeof key !== 'string' || !key) throw new E2eeError('key');
+  onCurve(key);
+  return key;
+}
+
+/** Throws unless the key is a real point on secp256k1 (the right length is not enough). */
+function onCurve(hex: string): void {
+  const probe = createECDH('secp256k1');
+  probe.generateKeys();
+  try {
+    probe.computeSecret(publicKeyBytes(hex));
+  } catch (e) {
+    throw e instanceof E2eeError ? e : new E2eeError('key');
+  }
+}
+
+const normKey = (hex: string): string => {
+  let h = hex.trim().toLowerCase();
+  if (h.startsWith('0x')) h = h.slice(2);
+  if (h.length === 128) h = '04' + h;
+  return h;
+};
+
+export interface SealedChatOptions {
+  apiKey: string;
+  model: string;
+  /** The enclave key the browser encrypted to. It must be the key this function has itself checked, or the request is refused. */
+  modelKey: string;
+  /** The browser's one-time public key (uncompressed secp256k1, hex): the reply is encrypted to it. */
+  clientKey: string;
+  /** Written here and encrypted here: the browser never sees it. */
+  systemText: string;
+  /** The conversation, every message already encrypted by the browser. */
+  messages: { role: 'user' | 'assistant'; content: string }[];
+  params?: Record<string, unknown>;
+  signal?: AbortSignal;
+  baseUrl?: string;
+  fetchImpl?: typeof fetch;
+  attestation?: AttestationPolicy;
+}
+
+/** One relayed request. Returns the reply as the encrypted pieces it arrived in (this function cannot read them). */
+export async function sealedChat(o: SealedChatOptions): Promise<{ chunks: string[]; finishReason?: string }> {
+  const fetchImpl = o.fetchImpl ?? fetch;
+  const baseUrl = o.baseUrl ?? VENICE_BASE;
+  onCurve(o.clientKey);
+  if (!o.messages.length || o.messages.some((m) => typeof m.content !== 'string' || m.content.length > MAX_SEALED_HEX || !looksEncrypted(m.content))) throw new E2eeError('format');
+  // Only ever encrypt our instruction to a key this function has checked itself: a page that sent its own key could
+  // otherwise read the private instruction.
+  const known = await modelKeyFor({ apiKey: o.apiKey, model: o.model, baseUrl, fetchImpl, signal: o.signal }, o.attestation ?? attestationPolicyFromEnv());
+  if (normKey(known.key) !== normKey(o.modelKey)) throw new E2eeError('key');
+  const messages = [{ role: 'system', content: encryptTo(known.key, o.systemText) }, ...o.messages];
+  const res = await fetchImpl(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    signal: o.signal,
+    headers: {
+      Authorization: `Bearer ${o.apiKey}`,
+      'Content-Type': 'application/json',
+      'X-Venice-TEE-Client-Pub-Key': normKey(o.clientKey),
+      'X-Venice-TEE-Model-Pub-Key': known.key,
+      'X-Venice-TEE-Signing-Algo': 'ecdsa',
+    },
+    body: JSON.stringify({ ...o.params, model: o.model, messages, stream: true }),
+  });
+  if (!res.ok || !res.body) throw new E2eeError('status', { status: res.status, detail: res.ok ? 'no response body' : await errorDetail(res) });
+  const chunks: string[] = [];
+  let finishReason: string | undefined;
+  const text = await res.text();
+  for (const line of text.split('\n')) {
+    if (!line.startsWith('data:')) continue;
+    const data = line.slice(5).trim();
+    if (!data || data === '[DONE]') continue;
+    try {
+      const chunk = JSON.parse(data) as { choices?: { delta?: { content?: string }; finish_reason?: string | null }[] };
+      const choice = chunk.choices?.[0];
+      if (choice?.finish_reason) finishReason = choice.finish_reason;
+      const piece = choice?.delta?.content;
+      if (piece) chunks.push(piece);
+    } catch {
+      /* a malformed chunk is skipped */
+    }
+    if (chunks.length > MAX_SEALED_RESPONSE_CHUNKS) throw new E2eeError('size');
+  }
+  if (!chunks.length) throw new E2eeError('format');
+  return { chunks, finishReason };
 }

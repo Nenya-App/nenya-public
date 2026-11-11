@@ -10,8 +10,10 @@ import nenyaLogoSmall from '../../assets/nenya-logo-small.webp';
 // Its 765-unit box is the logo's size * 0.765, with the outer ring's diameter as 1000 units.
 import petalsLayer from '../../assets/logo/petals.svg';
 import { valarColors, type BreathingTechnique } from './ValarBreathingLogo';
-import SpectralGem from './SpectralGem';
+import SpectralGem, { type GemStats, type LiveGemLook } from './SpectralGem';
 import LogoGlow from './LogoGlow';
+import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type OuterOrbitLook } from '../../lib/orbitLook';
+import { GEM_ENGINE, type GemEngine } from '../../lib/gemSprite';
 
 // Above this size, the full-resolution source is used instead -- 128px
 // covers up to ~40px CSS at 3x device pixel ratio (the largest "small"
@@ -21,17 +23,14 @@ const SMALL_LOGO_MAX_SIZE = 48;
 // The orbs are glass spheres: a colour that changes over time (animated below) with four fixed layers over it,
 // all taken from the design bench. Sizes are fractions of the logo's size; opacities are the animation's
 // low and high (the orbs pulse between them).
-const INNER_ORB_FRACTION = 0.069;
-const OUTER_ORB_FRACTION = 0.106;
-const INNER_ORB_OPACITY = [0.66, 0.8, 0.66]; // peaks at 80%
-const OUTER_ORB_OPACITY = [0.64, 0.87, 0.64];
-const ORB_FORM = 0.3; // shading toward the lower right edge
-const ORB_SHINE = 0.2; // the glass highlight, upper left
-const ORB_RIM_LIGHT = 0.69; // a bright rim on the upper left edge
-const ORB_RIM_DARK = 0.06; // a faint darkening of the whole edge
+// The defaults live in src/lib/orbitLook.ts (inner: 6.9% of the logo, opacity 66-80%; outer: opacity 64-87%), so the
+// /bench page can tune them. The glass layers: form is the shading toward the lower right edge, shine the highlight at the
+// upper left, rim light a bright rim on the upper left edge, rim dark a faint darkening of the whole edge.
+type OrbGlass = Pick<InnerOrbitLook, 'form' | 'shine' | 'rimLight' | 'rimDark'>;
 
 /** The fixed layers over an orb's changing colour. `d` is the orb's diameter in px. */
-function OrbSurface({ d }: { d: number }) {
+function OrbSurface({ d, glass = DEFAULT_INNER_ORBIT }: { d: number; glass?: OrbGlass }) {
+  const { form: ORB_FORM, shine: ORB_SHINE, rimLight: ORB_RIM_LIGHT, rimDark: ORB_RIM_DARK } = glass;
   const R = d / 2;
   const fill: React.CSSProperties = { position: 'absolute', inset: 0, borderRadius: '50%', pointerEvents: 'none' };
   const ring = 'radial-gradient(circle closest-side, transparent 86.5%, #000 87%, #000 99%, transparent 99.5%)';
@@ -88,10 +87,16 @@ interface NenyaLogoProps {
    */
   alt?: string;
   /** Overrides for the gem's shading. Used by the design preview only. */
-  gemLook?: { clarity?: number; sparkle?: number; contrast?: number; lift?: number; fieldAlpha?: number };
+  gemLook?: { clarity?: number; sparkle?: number; tint?: number; contrast?: number; lift?: number; fieldAlpha?: number };
+  /** Which gem to draw (the sprite, or the live ray-traced one). Defaults to the site-wide choice in gemSprite.ts. */
+  gemEngine?: GemEngine;
+  /** The live gem's settings. Used by the /bench page. */
+  liveGem?: LiveGemLook;
+  /** Options for the inner and outer orbits (src/lib/orbitLook.ts). Used by the /bench page. */
+  innerOrbit?: Partial<InnerOrbitLook>;
+  outerOrbit?: Partial<OuterOrbitLook>;
+  onGemStats?: (s: GemStats) => void;
 }
-
-const ORBIT_DURATION = 120; // seconds for one complete orbit
 
 export default function NenyaLogo({
   size = 80,
@@ -104,18 +109,29 @@ export default function NenyaLogo({
   glow = false,
   alt = '',
   gemLook,
+  gemEngine = GEM_ENGINE,
+  liveGem,
+  innerOrbit,
+  outerOrbit,
+  onGemStats,
 }: NenyaLogoProps) {
   const flatLogoSrc = size <= SMALL_LOGO_MAX_SIZE ? nenyaLogoSmall : nenyaLogo;
+  const inner = { ...DEFAULT_INNER_ORBIT, ...innerOrbit };
+  const outer = { ...DEFAULT_OUTER_ORBIT, ...outerOrbit };
+  const ORBIT_DURATION = inner.orbitSeconds > 0 ? inner.orbitSeconds : DEFAULT_INNER_ORBIT.orbitSeconds; // seconds for one complete orbit
+  const INNER_ORB_OPACITY = [inner.opacityLow, inner.opacityHigh, inner.opacityLow];
+  const OUTER_ORB_OPACITY = [outer.opacityLow, outer.opacityHigh, outer.opacityLow];
+  const PULSE = [1 - inner.pulse, 1 + inner.pulse, 1 - inner.pulse];
 
   // Inner orbit - tight orbit creates dense overlapping effect
-  const orbitRadius = size * 0.0625; // 37.5px for 600px logo, 12.5px for 200px logo
+  const orbitRadius = size * inner.radius; // 37.5px for 600px logo, 12.5px for 200px logo
   // The inner orbs sit inside the gem, so they are smaller than the outer ones.
-  const orbSize = Math.max(8.5, size * INNER_ORB_FRACTION);
+  const orbSize = Math.max(8.5, size * inner.orbSize);
 
   // Outer orbit - at the edge of the breathing animation (logoSize / 2)
   // Breathing animation expands to 1.4x its base size (logoSize / 1.4), so at peak it reaches logoSize diameter
-  const outerOrbitRadius = size / 2; // Half the logo size = outer edge of breathing animation
-  const outerOrbSize = Math.max(8.5, size * OUTER_ORB_FRACTION) * 0.5;
+  const outerOrbitRadius = size * outer.radius; // Half the logo size = outer edge of breathing animation
+  const outerOrbSize = Math.max(8.5, size * outer.orbSize * 2) * 0.5;
 
   // Set once, when the logo first mounts with a clock anchor, so a fresh mount starts the rotation at the
   // correct phase. Deliberately NOT recomputed when the anchor changes later: that happens when the breathing
@@ -142,7 +158,7 @@ export default function NenyaLogo({
     >
       {/* The glow, computed once as an image (see LogoGlow). */}
       {glow && showLogo && (
-        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? petalsLayer : flatLogoSrc} />
+        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? petalsLayer : flatLogoSrc} gemEngine={gemEngine} />
       )}
 
       {/* Logo image - base layer. When the Valar orbit is enabled the flat logo is
@@ -166,7 +182,7 @@ export default function NenyaLogo({
       )}
       
       {/* Orbiting Valar - only show if enabled */}
-      {showValarOrbit && (
+      {showValarOrbit && inner.show && (
         <div
           className="absolute pointer-events-none"
           style={{
@@ -176,7 +192,8 @@ export default function NenyaLogo({
             top: '50%',
             marginLeft: -orbitRadius,
             marginTop: -orbitRadius,
-            zIndex: 20,
+            zIndex: inner.layer === 'over' ? 32 : 20,
+            mixBlendMode: inner.blend === 'normal' ? undefined : inner.blend,
             willChange: 'transform',
             // Plain CSS animation rather than Motion's JS-driven `animate` --
             // animation-play-state genuinely freezes this on pause, where
@@ -193,7 +210,7 @@ export default function NenyaLogo({
             const y = Math.sin(angle) * orbitRadius;
             
             // Each orb cycles through its 6-color vector
-            const colorCycleDuration = 30; // seconds to cycle through all 6 colors
+            const colorCycleDuration = inner.colorCycle; // seconds to cycle through all 6 colors
             const colors = valar.vector;
             
             // Each orb is partly hidden by the ones after it, all the way round. Drawing order gives that for most of
@@ -232,7 +249,7 @@ export default function NenyaLogo({
                     `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
                   ],
                   opacity: INNER_ORB_OPACITY,
-                  scale: [0.95, 1.05, 0.95],
+                  scale: PULSE,
                   rotate: -360,
                 }}
                 transition={{
@@ -243,23 +260,23 @@ export default function NenyaLogo({
                     delay: index * 2,
                   },
                   opacity: {
-                    duration: 4 + (index * 0.3),
+                    duration: inner.pulseSeconds + (index * inner.pulseStep),
                     repeat: Infinity,
                     ease: "easeInOut",
                   },
                   scale: {
-                    duration: 4 + (index * 0.3),
+                    duration: inner.pulseSeconds + (index * inner.pulseStep),
                     repeat: Infinity,
                     ease: "easeInOut",
                   },
                   rotate: {
-                    duration: 120,
+                    duration: ORBIT_DURATION,
                     repeat: Infinity,
                     ease: "linear"
                   }
                 }}
               >
-                <OrbSurface d={orbSize} />
+                <OrbSurface d={orbSize} glass={inner} />
               </m.div>
             );
             if (!wrapped) return orb;
@@ -300,7 +317,7 @@ export default function NenyaLogo({
       )}
 
       {/* Outer Orbiting Valar - smaller orbs at breathing animation edge, rotating opposite direction */}
-      {showValarOrbit && (
+      {showValarOrbit && outer.show && (
         <div
           className="absolute pointer-events-none"
           style={{
@@ -395,6 +412,11 @@ export default function NenyaLogo({
           cycleStart={cycleStart}
           technique={technique}
           breathingEnabled={breathingEnabled}
+          engine={gemEngine}
+          live={liveGem}
+          orbitSeconds={inner.orbitSeconds}
+          colorCycle={inner.colorCycle}
+          onStats={onGemStats}
           {...gemLook}
         />
       )}

@@ -20,4 +20,4 @@ ok('the file name carries the date range', csvFilename(stats.days) === 'nenya-nu
 ok('every real event has a name, a group and nothing odd in its row', ALL_EVENTS.every((e) => label(e).length > 0 && groupTitle(e) !== 'Other'));
 ok('an empty range still gives a header', totalsCsv({ days: [], events: [], counts: {} }) === 'Group,Event,Name,Total\r\n');
 ok('cells with a comma, quote or line break are quoted', totalsCsv({ days: ['d'], events: ['a,"b'], counts: {} }).includes('"a,""b"'));
-ok('the groups cover the coach, the opening and the screens', GROUPS.map((g) => g.title).join() === 'Coach demo,Opening and tour,Screens shown');
+ok('the groups cover the coach, partner practice, the opening and the screens', GROUPS.map((g) => g.title).join() === 'Coach demo,Partner practice,Opening and tour,Screens shown');

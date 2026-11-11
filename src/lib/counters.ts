@@ -9,6 +9,11 @@ export const BLOCK_REASONS = ['manipulation', 'context', 'crisis', 'cap', 'ip'] 
 export const FIXED_EVENTS = [
   'coach.turn.sent', // a well-formed message reached the function
   'coach.turn.answered', // the message went to the model and a reply came back
+  'coach.sealed.attested', // sealed mode: a browser was given an attestation to check (docs/ghost-footprint-stack.md)
+  'coach.sealed.turn.sent', // sealed mode: an encrypted message reached the function (it cannot read it)
+  'coach.sealed.turn.answered', // sealed mode: the encrypted reply was passed back
+  'cell.opened', // partner practice: a two-person encrypted mailbox was opened (no content, no code)
+  'cell.report.verified', // partner practice: a reported message's franking check passed
   'coach.turn.hostile.abuse', // the message was hostile toward the coach (contempt, insults, dares): the coach was told how to answer, a count and no content
   'coach.turn.hostile.critique', // the message was sharp feedback on the coach's reply: same
   'coach.turn.hostile.thanks-added', // the site opened a reply to critique with its thank-you
