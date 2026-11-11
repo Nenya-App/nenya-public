@@ -7,7 +7,7 @@ import { DEFAULT_LIGHT, HIGH_QUALITY, LOW_QUALITY, liveGemSupported, type GemLig
 import { DEFAULT_CUT, type GemCut } from '../lib/gemCut';
 import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type OuterOrbitLook } from '../lib/orbitLook';
 import { deviceProfile } from '../lib/deviceProfile';
-import { DEFAULT_KALEIDOSCOPE, type KaleidoscopeLook } from '../lib/kaleidoscope';
+import { DEFAULT_KALEIDOSCOPE, KALEIDOSCOPE_PRESETS, type KaleidoscopeLook, type KaleidoscopePreset } from '../lib/kaleidoscope';
 
 // The gem bench: the current sprite gem and the live, ray-traced gem side by side, with every setting of the live gem
 // and of the orbits on sliders. Nothing is saved anywhere: the settings live in this page's address (after the #), so a
@@ -312,6 +312,24 @@ export default function GemBench() {
 
         <Panel title="Live gem: kaleidoscope" open onReset={() => reset('kaleidoscope')}>
           <Toggle label="Kaleidoscope" value={s.kaleidoscope.on} onChange={(v) => set('kaleidoscope', { on: v })} hint="The inside of the stone slowly re-cuts itself; the outline stays still. Held still when the device asks for reduced motion." />
+          <div className="space-y-1">
+            <span className="block text-xs">Preset</span>
+            <div className="flex flex-wrap gap-1">
+              {(Object.keys(KALEIDOSCOPE_PRESETS) as KaleidoscopePreset[]).map((name) => {
+                const p = KALEIDOSCOPE_PRESETS[name];
+                const active = (Object.keys(p) as (keyof KaleidoscopeLook)[]).every((f) => f === 'on' || s.kaleidoscope[f] === p[f]);
+                return (
+                  <button key={name} type="button" aria-pressed={active} onClick={() => set('kaleidoscope', { ...p, on: s.kaleidoscope.on })} className={`rounded border px-2 py-0.5 text-xs capitalize ${active ? 'border-[#D4AF37] text-[#D4AF37]' : 'border-border text-muted-foreground'}`}>
+                    {name}
+                  </button>
+                );
+              })}
+            </div>
+            <span className="block text-[11px] leading-snug text-muted-foreground">Each keeps the stone's structure within limits and lets the pattern move inside them. Full is the original.</span>
+          </div>
+          <Range label="Structure" value={s.kaleidoscope.structure} min={0} max={1} step={0.01} onChange={(v) => set('kaleidoscope', { structure: v })} hint="How much the overall shape may move (crown, pavilion and girdle angles). Low keeps the stone recognisably the same." />
+          <Range label="Pattern" value={s.kaleidoscope.pattern} min={0} max={1} step={0.01} onChange={(v) => set('kaleidoscope', { pattern: v })} hint="How much the star facets inside the table may move." />
+          <Range label="Sway (°)" value={s.kaleidoscope.sway} min={0} max={30} step={0.5} digits={1} onChange={(v) => set('kaleidoscope', { sway: v })} hint="How far the facets swing each way before coming back. 0 turns them without end." />
           <Range label="Depth" value={s.kaleidoscope.depth} min={0} max={1} step={0.01} onChange={(v) => set('kaleidoscope', { depth: v })} hint="How far the facet angles move. 1 is the furthest tested to keep the stone whole." />
           <Range label="Slowest wave (s)" value={s.kaleidoscope.periodS} min={10} max={600} step={5} digits={0} onChange={(v) => set('kaleidoscope', { periodS: v })} hint="Higher is slower and calmer." />
           <Range label="Turning" value={s.kaleidoscope.turn} min={0} max={1} step={0.01} onChange={(v) => set('kaleidoscope', { turn: v })} hint="The star and pavilion facets turn in opposite directions. 0 keeps only the angles moving." />
