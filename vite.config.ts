@@ -16,9 +16,29 @@ function figmaAssetResolver() {
   }
 }
 
+// Lighthouse: the main page's stylesheet blocked the first paint. On the main page only, it is fetched as a preload
+// instead (same priority, not blocking), and src/lib/deferredStyles.ts applies it from the entry script. Until then the
+// page shows only its background and the loading cover, which are styled inline, so nothing unstyled shows.
+function deferMainStylesheet() {
+  return {
+    name: 'defer-main-stylesheet',
+    apply: 'build' as const,
+    transformIndexHtml: {
+      order: 'post' as const,
+      handler(html: string, ctx: { path: string }) {
+        if (ctx.path !== '/index.html') return html
+        return html.replace(/<link rel="stylesheet"([^>]*?)href="([^"]+\.css)"([^>]*)>/g, (_m, a, href, b) =>
+          `<link rel="preload" as="style" data-deferred-style${a}href="${href}"${b}>` +
+          `<noscript><link rel="stylesheet"${a}href="${href}"${b}></noscript>`)
+      },
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     figmaAssetResolver(),
+    deferMainStylesheet(),
     // The React and Tailwind plugins are both required for Make, even if
     // Tailwind is not being actively used – do not remove them
     react(),

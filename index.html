@@ -57,7 +57,8 @@
     <meta name="twitter:description" content="A free digital sanctuary for reflection, emotional regulation, and ethical self-inquiry." />
     <meta name="twitter:image" content="https://nenya.biz/og-image.jpg" />
 
-    <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
+    <!-- The only styles the first paint needs: the page's stylesheet loads without blocking it (see vite.config.ts). -->
+    <style>html, body { height: 100%; margin: 0; } html { background: #1A1512; } #root { height: 100%; }</style>
   </head>
   <body>
     <div id="root"></div>

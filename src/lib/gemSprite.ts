@@ -8,7 +8,7 @@ import spriteUrl from '../assets/diamond-hex-sprite.webp';
  * The live gem needs WebGL2; where it is missing, or its shader fails, the sprite is used instead. Tune the live gem
  * side by side with the sprite on the /bench page before switching this.
  */
-export const GEM_ENGINE: 'sprite' | 'live' = 'sprite';
+export const GEM_ENGINE: 'sprite' | 'live' = 'live';
 export type GemEngine = 'sprite' | 'live';
 
 export const SPRITE_COLS = 7;

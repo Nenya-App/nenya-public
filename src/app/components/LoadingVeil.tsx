@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 
-// Shown over the first screen until the logo's files are ready, then faded away. It uses CSS only (no animation
-// library), because it sits in front of the whole site and must never get stuck waiting for a download.
-export const VEIL_MIN_MS = 500; // long enough that it never flashes
-export const VEIL_FADE_MS = 500;
+// Covers the first screen until the logo's files are ready, then fades away. Most visits are ready within a moment, so
+// at first it is only the plain background: nothing half-drawn shows, and no loading screen flashes. Only if the wait
+// runs past VEIL_SHOW_MS does it show its message. CSS only (no animation library), because it sits in front of the
+// whole site and must never get stuck waiting for a download.
+export const VEIL_SHOW_MS = 400; // show the message only when the wait is long enough to notice
+export const VEIL_FADE_MS = 300;
 
 interface LoadingVeilProps {
   /** True once the logo's files are loaded. */
@@ -13,40 +15,43 @@ interface LoadingVeilProps {
 }
 
 export function LoadingVeil({ ready, onDone }: LoadingVeilProps) {
-  const [minElapsed, setMinElapsed] = useState(false);
+  const [slow, setSlow] = useState(false);
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setMinElapsed(true), VEIL_MIN_MS);
+    if (ready) return;
+    const t = setTimeout(() => setSlow(true), VEIL_SHOW_MS);
     return () => clearTimeout(t);
-  }, []);
+  }, [ready]);
 
   useEffect(() => {
-    if (!ready || !minElapsed) return;
+    if (!ready) return;
     setFading(true);
     const t = setTimeout(onDone, VEIL_FADE_MS);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, minElapsed]);
+  }, [ready]);
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-0 z-[200] flex flex-col items-center justify-center gap-5 bg-background"
-      style={{ opacity: fading ? 0 : 1, transition: `opacity ${VEIL_FADE_MS}ms ease-out`, pointerEvents: fading ? 'none' : 'auto' }}
+      // Styled inline, not with the stylesheet's classes: it is on screen before the page's stylesheet has loaded.
+      style={{
+        position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'var(--background, #1A1512)',
+        opacity: fading ? 0 : 1, transition: `opacity ${VEIL_FADE_MS}ms ease-out`, pointerEvents: fading ? 'none' : 'auto',
+      }}
     >
-      <style>{`@keyframes veil-breathe{0%,100%{transform:scale(.6);opacity:.55}50%{transform:scale(1);opacity:1}}@media (prefers-reduced-motion:reduce){.veil-orb{animation:none!important}}`}</style>
-      <div
-        className="veil-orb size-16 rounded-full"
-        aria-hidden="true"
+      <p
         style={{
-          background: 'radial-gradient(circle at 35% 35%, #F3DCC4, #DDB88C 55%, rgba(221,184,140,.25))',
-          boxShadow: '0 0 24px rgba(221,184,140,.45)',
-          animation: 'veil-breathe 4s ease-in-out infinite',
+          margin: 0, fontFamily: "'Cinzel', serif", fontSize: '1rem', letterSpacing: '0.04em',
+          color: 'var(--muted-foreground, #D4C8BD)', opacity: slow ? 1 : 0, transition: 'opacity 400ms ease-in',
         }}
-      />
-      <p className="text-sm text-muted-foreground">Preparing your space…</p>
+        aria-hidden={!slow}
+      >
+        Welcome to Nenya.
+      </p>
     </div>
   );
 }

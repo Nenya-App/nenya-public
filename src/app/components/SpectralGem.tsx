@@ -69,6 +69,8 @@ const BEZEL_CANVAS = 1.12; // the bezel image is this much larger than the stone
 // two minutes (as the orbit does) and changes as the orbs' colours change. It is applied with the "color" blend,
 // which takes the hue from the wheel and keeps the stone's own light and dark, so the facets keep their structure.
 const FIELD_ALPHA = 0.9; // 0 = no colour, 1 = full colour
+// The live gem traces the orbs' colour through the stone itself, so it needs far less of the wheel than the sprite.
+const LIVE_FIELD_ALPHA = 0.25;
 const FIELD_TURN_S = 120;
 // Structure: the stone is multiplied by itself a little, which deepens its shadows and lines without darkening its
 // highlights, and the overlay layer on top is kept light.
@@ -99,7 +101,7 @@ export default function SpectralGem({
   breathingEnabled = true,
   contrast = CONTRAST,
   lift = LIFT,
-  fieldAlpha = FIELD_ALPHA,
+  fieldAlpha,
   engine = GEM_ENGINE,
   live,
   orbitSeconds = DEFAULT_INNER_ORBIT.orbitSeconds,
@@ -272,7 +274,7 @@ export default function SpectralGem({
           wheel.addColorStop(i / n, `rgb(${Math.round(col[0])},${Math.round(col[1])},${Math.round(col[2])})`);
         }
         bctx.globalCompositeOperation = 'color';
-        bctx.globalAlpha = fieldAlpha;
+        bctx.globalAlpha = fieldAlpha ?? (renderer ? LIVE_FIELD_ALPHA : FIELD_ALPHA);
         bctx.fillStyle = wheel;
         bctx.fillRect(0, 0, px, px);
       }

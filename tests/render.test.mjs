@@ -134,7 +134,14 @@ try {
   // The loading screen, the tour offer and the tour.
   const { LoadingVeil } = await vite.ssrLoadModule('/src/app/components/LoadingVeil.tsx');
   h = render(LoadingVeil, { ready: false, onDone: noop });
-  ok('loading screen: shows a status message over the page, with no inline opacity of 0 at first', typeof h === 'string' && h.includes('role="status"') && h.includes('Preparing your space') && !/opacity:\s*0(?![.\d])/.test(h.replace(/<style>[\s\S]*?<\/style>/g, '')), h.error ?? '');
+  ok('loading screen: covers the page at once (no opacity of 0 on the cover), with "Welcome to Nenya." held back until the wait is long', typeof h === 'string' && h.includes('role="status"') && h.includes('Welcome to Nenya.') && /role="status"[^>]*style="[^"]*opacity:1/.test(h) && /<p[^>]*opacity:0/.test(h) && !h.includes('Preparing your space'), h.error ?? '');
+  {
+    const veilSrc = readFileSync(new URL('../src/app/components/LoadingVeil.tsx', import.meta.url), 'utf8');
+    ok('loading screen: shows its message only after a short wait, with no minimum time on screen', /VEIL_SHOW_MS = 400/.test(veilSrc) && !/VEIL_MIN_MS/.test(veilSrc) && !/className=/.test(veilSrc));
+    const cfg = readFileSync(new URL('../vite.config.ts', import.meta.url), 'utf8');
+    const preloadSrc = readFileSync(new URL('../src/lib/preload.ts', import.meta.url), 'utf8');
+    ok('the main stylesheet does not block the first paint, and the loading cover waits for it', /rel="preload" as="style" data-deferred-style/.test(cfg) && /<noscript>/.test(cfg) && /applyDeferredStyles\(\)/.test(preloadSrc));
+  }
   const { preloadLogoAssets } = await vite.ssrLoadModule('/src/lib/preload.ts');
   ok('loading screen: the wait for the logo files always ends (no browser here, so every load fails)', (await Promise.race([preloadLogoAssets(50).then(() => 'done'), new Promise((r) => setTimeout(() => r('hung'), 2000))])) === 'done');
   ok('loading screen: waiting for the gem to draw also ends at the limit if it never does', (await Promise.race([preloadLogoAssets(50, true).then(() => 'done'), new Promise((r) => setTimeout(() => r('hung'), 2000))])) === 'done');

@@ -6,6 +6,7 @@ import flatLogo from '../assets/nenya-logo.webp';
 import smallLogo from '../assets/nenya-logo-small.webp';
 import { GEM_ENGINE, gemFirstDraw, loadGemSprite, loadImage } from './gemSprite';
 import { liveGemSupported } from './gemRenderer';
+import { applyDeferredStyles } from './deferredStyles';
 
 /** The longest the first screen is held back for the logo's files. */
 export const PRELOAD_TIMEOUT_MS = 6000;
@@ -46,7 +47,8 @@ export function startLogoDownloads(): Promise<void> {
  * gem has also drawn its first frame. Never longer than `timeoutMs`.
  */
 export function preloadLogoAssets(timeoutMs: number = PRELOAD_TIMEOUT_MS, gem = false): Promise<void> {
-  const parts: Promise<unknown>[] = [startLogoDownloads()];
+  // The page's stylesheet is applied after the first paint (src/lib/deferredStyles.ts), so it is waited for too.
+  const parts: Promise<unknown>[] = [startLogoDownloads(), applyDeferredStyles()];
   if (gem) parts.push(gemFirstDraw);
   const all = Promise.all(parts).then(() => undefined);
   return Promise.race([all, new Promise<void>((resolve) => setTimeout(resolve, timeoutMs))]);

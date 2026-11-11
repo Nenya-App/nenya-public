@@ -37,6 +37,9 @@ and a low preset for older phones); and 2D finishing. Each side reports its time
 
 ## Switching the site over
 
+Done on 2026-11-11: `GEM_ENGINE` is `'live'`, and the live gem takes 0.25 of the colour wheel by default (the sprite
+fallback keeps 0.9). The light and cut are still the bench defaults; steps 1 and 3 remain for fine-tuning.
+
 1. Tune on the bench, then copy the settings into the defaults: `DEFAULT_LIGHT` in `gemRenderer.ts`, `DEFAULT_CUT` in
    `gemCut.ts`, and the live finishing (at least `fieldAlpha`, about 0.25) where `NenyaLogo` renders `SpectralGem`.
 2. Set `GEM_ENGINE` to `'live'` in `src/lib/gemSprite.ts`. Startup then skips the sprite download where WebGL2 is
