@@ -2,6 +2,7 @@
 
 export const GROUPS: { title: string; match: (e: string) => boolean }[] = [
   { title: 'Coach demo', match: (e) => e.startsWith('coach.') || e.startsWith('transcript.') },
+  { title: 'Partner practice', match: (e) => e.startsWith('cell.') },
   { title: 'Opening and tour', match: (e) => e.startsWith('onboarding.') || e.startsWith('tour.') },
   { title: 'Screens shown', match: (e) => e.startsWith('page.view.') },
 ];
@@ -9,6 +10,11 @@ export const GROUPS: { title: string; match: (e: string) => boolean }[] = [
 const LABELS: Record<string, string> = {
   'coach.turn.sent': 'Messages sent',
   'coach.turn.answered': 'Messages answered',
+  'coach.sealed.attested': 'Sealed mode: enclave checks given to browsers',
+  'coach.sealed.turn.sent': 'Sealed mode: encrypted messages relayed',
+  'coach.sealed.turn.answered': 'Sealed mode: encrypted replies passed back',
+  'cell.opened': 'Partner practice: encrypted cells opened',
+  'cell.report.verified': 'Partner practice: reported messages verified',
   'coach.turn.hostile.abuse': 'Messages hostile toward the coach',
   'coach.turn.hostile.critique': 'Messages critical of the coach\'s reply',
   'coach.turn.hostile.thanks-added': 'Thank-yous added to replies to critique',

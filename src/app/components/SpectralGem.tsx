@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 // The bezel is a vector drawing, made in the design bench: a double hexagon (gold, and a thinner cream one just
 // outside it) with a bevel. Its box is 1.12 times the stone's frame, so the outer line is not cut off.
 import bezelSvg from '../../assets/logo/bezel.svg';
@@ -6,7 +6,35 @@ import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { allColors, valarColors } from './ValarBreathingLogo';
 import { orbColour } from '../../lib/orbColours';
 import { breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
-import { GEM_CENTRE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite, markGemDrawn } from '../../lib/gemSprite';
+import { GEM_CENTRE, GEM_ENGINE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite, markGemDrawn, type GemEngine } from '../../lib/gemSprite';
+import { GEM_LOOP_BREATHS } from '../../lib/breathClock';
+import { deviceProfile } from '../../lib/deviceProfile';
+import { HIGH_QUALITY, LOW_QUALITY, createGemRenderer, type GemLight, type GemQuality, type GemRenderer } from '../../lib/gemRenderer';
+import type { GemCut } from '../../lib/gemCut';
+import { kaleidoscopeCut, type KaleidoscopeLook } from '../../lib/kaleidoscope';
+import { DEFAULT_INNER_ORBIT } from '../../lib/orbitLook';
+
+/** The live gem's settings (see src/lib/gemRenderer.ts). All optional: the defaults are the tuned starting point. */
+export interface LiveGemLook {
+  light?: Partial<GemLight>;
+  cut?: Partial<GemCut>;
+  quality?: Partial<GemQuality>;
+  /** Draws per second (the sparkle moves slowly, so 10 to 15 is smooth). */
+  fps?: number;
+  /** How far the lights turn in one sparkle loop (three breaths), in turns. With six lights, 1/6 brings the pattern round. */
+  spin?: number;
+  /** The inside of the stone slowly re-cuts itself (src/lib/kaleidoscope.ts). Held still with reduced motion. */
+  kaleidoscope?: Partial<KaleidoscopeLook>;
+}
+
+/** What the gem reports about itself, about once a second (for the /bench page). */
+export interface GemStats {
+  engine: 'sprite' | 'live';
+  /** Average time to draw one frame, in ms. */
+  ms: number;
+  /** Why the live gem fell back to the sprite, if it did. */
+  fallback?: string;
+}
 
 interface SpectralGemProps {
   /** The logo's size (the same `size` NenyaLogo takes). */
@@ -26,6 +54,13 @@ interface SpectralGemProps {
   contrast?: number;
   lift?: number;
   fieldAlpha?: number;
+  /** Which gem to draw. The live one falls back to the sprite where it cannot run. */
+  engine?: GemEngine;
+  live?: LiveGemLook;
+  /** The inner orbit's timing, so the gem's inner colour stays with the orbs when the orbit's options change. */
+  orbitSeconds?: number;
+  colorCycle?: number;
+  onStats?: (s: GemStats) => void;
 }
 
 const BEZEL_CANVAS = 1.12; // the bezel image is this much larger than the stone's frame (the bezel.svg viewBox is the same ratio)
@@ -42,6 +77,12 @@ const CONTRAST = 0.9;
 const LIFT = 0.5;
 
 const FRAME_INTERVAL_MS = 1000 / 30; // the sparkle moves ~1.6 frames a second; 30 draws a second is plenty smooth
+const LIVE_FPS = 15;
+// Without a chosen quality, the live gem starts at the device's tier (src/lib/deviceProfile.ts) and steps down to the low
+// setting if its first frames take longer than this on average.
+const SLOW_FRAME_MS = 8;
+const TIMED_FRAMES = 12;
+const LIVE_SPIN = 1 / 6;
 
 /**
  * The gem: one pre-rendered 48-frame diamond animation, played as three breaths per loop, tinted live to
@@ -59,6 +100,11 @@ export default function SpectralGem({
   contrast = CONTRAST,
   lift = LIFT,
   fieldAlpha = FIELD_ALPHA,
+  engine = GEM_ENGINE,
+  live,
+  orbitSeconds = DEFAULT_INNER_ORBIT.orbitSeconds,
+  colorCycle = DEFAULT_INNER_ORBIT.colorCycle,
+  onStats,
 }: SpectralGemProps) {
   const bodyRef = useRef<HTMLCanvasElement>(null);
   const lightRef = useRef<HTMLCanvasElement>(null);
@@ -75,6 +121,22 @@ export default function SpectralGem({
   const { t1, t2, t3 } = breathFractions(applied.technique);
   const anchor = applied.cycleStart;
   const spriteRef = useRef<HTMLImageElement | null>(null);
+  // The live settings are read on every frame, so changing them does not restart the loop. Only a change of quality
+  // (which rebuilds the shader) does.
+  const liveRef = useRef(live);
+  liveRef.current = live;
+  const statsRef = useRef(onStats);
+  statsRef.current = onStats;
+  const timingRef = useRef({ orbitSeconds, colorCycle });
+  timingRef.current = { orbitSeconds, colorCycle };
+  // The orbit's phase is set once, when the logo mounts (NenyaLogo does not move it later), so the gem keeps the same anchor.
+  const orbitAnchor = useRef<number | null>(null);
+  if (orbitAnchor.current === null) orbitAnchor.current = cycleStart ?? mountTime.current;
+  const [steppedDown, setSteppedDown] = useState(false);
+  const autoQuality = !live?.quality;
+  const startLow = autoQuality && (steppedDown || (typeof window !== 'undefined' && deviceProfile().gem.quality === 'low'));
+  const quality: GemQuality = { ...(startLow ? LOW_QUALITY : HIGH_QUALITY), ...live?.quality };
+  const qualityKey = `${quality.bounces}|${quality.disperse}|${quality.supersample}`;
 
   useEffect(() => {
     const body = bodyRef.current;
@@ -94,6 +156,18 @@ export default function SpectralGem({
     const f = { t1, t2, t3 };
     const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     let sprite: HTMLImageElement | null = spriteRef.current;
+    let renderer: GemRenderer | null = null;
+    let fallback: string | undefined;
+    if (engine === 'live') {
+      renderer = createGemRenderer(px, quality);
+      if (!renderer) fallback = 'WebGL2 is not available here, or the shader did not build';
+    }
+    let spent = 0;
+    let frames = 0;
+    let reported = performance.now();
+    let timed = 0;
+    let timedMs = 0;
+    let warm = 0; // the first two frames may include the driver finishing the shader, so they are not timed
     let raf = 0;
     let timer: ReturnType<typeof setInterval> | 0 = 0;
     let last = 0;
@@ -105,13 +179,65 @@ export default function SpectralGem({
       octx.drawImage(sprite!, sx, sy, SPRITE_CELL, SPRITE_CELL, 0, 0, px, px);
     };
 
+    const loadSprite = () => {
+      loadGemSprite()
+        .then((img) => {
+          sprite = img;
+          spriteRef.current = img;
+          start();
+        })
+        .catch(() => {
+          // No sprite, no gem: the petals and orbit still draw.
+        });
+    };
+
+    const report = (t0: number) => {
+      const took = performance.now() - t0;
+      spent += took;
+      frames++;
+      // The first frames decide whether this device should use the low setting (only when no quality was chosen).
+      if (renderer && autoQuality && !startLow && timed < TIMED_FRAMES && ++warm > 2) {
+        timed++;
+        timedMs += took;
+        if (timed === TIMED_FRAMES && timedMs / TIMED_FRAMES > SLOW_FRAME_MS) setSteppedDown(true);
+      }
+      const now = performance.now();
+      if (statsRef.current && now - reported >= 1000) {
+        statsRef.current({ engine: renderer ? 'live' : 'sprite', ms: frames ? spent / frames : 0, ...(fallback ? { fallback } : {}) });
+        spent = 0;
+        frames = 0;
+        reported = now;
+      }
+    };
+
     const draw = (reduced: boolean) => {
-      if (!sprite) return;
+      if (renderer && renderer.lost()) {
+        // The browser took the graphics context away: carry on with the sprite.
+        renderer = null;
+        fallback = 'the graphics context was lost';
+        loadSprite();
+      }
+      if (!sprite && !renderer) return;
+      const t0 = performance.now();
       const elapsed = Date.now() - (anchor ?? mountTime.current);
       const c = gemClock(elapsed, breathMs);
       octx.clearRect(0, 0, px, px);
       octx.globalAlpha = 1;
-      if (reduced) {
+      if (renderer) {
+        const L = liveRef.current;
+        const { orbitSeconds: oS, colorCycle: cS } = timingRef.current;
+        const tSec = reduced ? 0 : (Date.now() - mountTime.current) / 1000;
+        const orbitT = (Date.now() - (orbitAnchor.current ?? mountTime.current)) / 1000;
+        const loops = reduced ? 0 : elapsed / (GEM_LOOP_BREATHS * breathMs);
+        renderer.render({
+          turn: loops * 2 * Math.PI * (L?.spin ?? LIVE_SPIN),
+          orbit: reduced ? 0 : (((orbitT / (oS > 0 ? oS : 120)) % 1) * 2 * Math.PI),
+          orbs: valarColors.map((v, j) => orbColour(v.vector, j, tSec, cS)),
+          light: L?.light,
+          cut: !reduced && L?.kaleidoscope?.on ? kaleidoscopeCut(tSec, L?.cut, L.kaleidoscope) : L?.cut,
+        });
+        octx.drawImage(renderer.canvas, 0, 0, px, px);
+      } else if (reduced) {
         drawFrame(0); // hold the first frame, no crossfade
       } else {
         drawFrame(c.f0);
@@ -137,11 +263,12 @@ export default function SpectralGem({
       // stone keeps its own light and dark.
       if (typeof bctx.createConicGradient === 'function') {
         const tSec = reduced ? 0 : (Date.now() - mountTime.current) / 1000;
-        const wheel = bctx.createConicGradient(reduced ? 0 : ((tSec / FIELD_TURN_S) % 1) * 2 * Math.PI, px / 2, px / 2);
+        const turnS = timingRef.current.orbitSeconds > 0 ? timingRef.current.orbitSeconds : FIELD_TURN_S;
+        const wheel = bctx.createConicGradient(reduced ? 0 : ((tSec / turnS) % 1) * 2 * Math.PI, px / 2, px / 2);
         const n = valarColors.length;
         for (let i = 0; i <= n; i++) {
           const j = i % n;
-          const col = orbColour(valarColors[j].vector, j, tSec);
+          const col = orbColour(valarColors[j].vector, j, tSec, timingRef.current.colorCycle);
           wheel.addColorStop(i / n, `rgb(${Math.round(col[0])},${Math.round(col[1])},${Math.round(col[2])})`);
         }
         bctx.globalCompositeOperation = 'color';
@@ -160,12 +287,14 @@ export default function SpectralGem({
       lctx.clearRect(0, 0, px, px);
       lctx.drawImage(body, 0, 0);
       markGemDrawn();
+      report(t0);
     };
 
     const tick = (now: number) => {
       raf = 0;
       if (cancelled || !visible || document.visibilityState === 'hidden') return;
-      if (now - last >= FRAME_INTERVAL_MS) {
+      const interval = renderer ? 1000 / Math.max(1, liveRef.current?.fps ?? LIVE_FPS) : FRAME_INTERVAL_MS;
+      if (now - last >= interval) {
         last = now;
         draw(false);
       }
@@ -174,7 +303,7 @@ export default function SpectralGem({
 
     const start = () => {
       stop();
-      if (!sprite || cancelled) return;
+      if ((!sprite && !renderer) || cancelled) return;
       if (reduceQuery.matches) {
         draw(true);
         timer = setInterval(() => draw(true), 1000); // only the colour changes, once per breath
@@ -202,25 +331,20 @@ export default function SpectralGem({
         : null;
     io?.observe(body);
 
-    loadGemSprite()
-      .then((img) => {
-        sprite = img;
-        spriteRef.current = img;
-        start();
-      })
-      .catch(() => {
-        // No sprite, no gem: the petals and orbit still draw.
-      });
+    if (renderer) start();
+    else loadSprite();
 
     return () => {
       cancelled = true;
       stop();
+      renderer?.dispose();
       io?.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
       reduceQuery.removeEventListener?.('change', start);
     };
     // The clock anchor and timing shape are read inside the loop, so they restart it when they change.
-  }, [gemSide, anchor, breathMs, t1, t2, t3, tint, breathingEnabled, contrast, lift, fieldAlpha]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `quality` is captured through qualityKey
+  }, [gemSide, anchor, breathMs, t1, t2, t3, tint, breathingEnabled, contrast, lift, fieldAlpha, engine, qualityKey]);
 
   const place: React.CSSProperties = {
     position: 'absolute',

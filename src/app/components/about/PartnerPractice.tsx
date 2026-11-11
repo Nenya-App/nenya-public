@@ -1,4 +1,5 @@
-import { ArrowLeft, AlertCircle, ArrowRight, Shield, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, AlertCircle, ArrowRight, Lock, Shield, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import NenyaLogo from '../NenyaLogo';
@@ -13,6 +14,18 @@ interface PartnerPracticeProps {
 // What we plan for two-person practice ("Dyadic Cells"). Nothing here is built: the
 // preview screens are scripted. This page is where that plan now lives.
 export default function PartnerPractice({ onBack, onOpenPreview }: PartnerPracticeProps) {
+  // The real, encrypted cell (/cell) is linked only while the server has it switched on (CELL_ENABLED), for testing.
+  const [cellOpen, setCellOpen] = useState(false);
+  useEffect(() => {
+    let on = true;
+    fetch('/api/cell?status', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => on && setCellOpen(j?.enabled === true))
+      .catch(() => undefined);
+    return () => {
+      on = false;
+    };
+  }, []);
   return (
     <div className="size-full overflow-auto scroll-container bg-background">
       <div className="sticky top-0 z-10 border-b border-border bg-background px-6 py-4 backdrop-blur-sm">
@@ -105,6 +118,23 @@ export default function PartnerPractice({ onBack, onOpenPreview }: PartnerPracti
             </div>
           </div>
         </Card>
+
+        {cellOpen && (
+          <Card className="border-primary/30 p-5">
+            <div className="flex items-start gap-3">
+              <Lock className="mt-0.5 size-5 shrink-0 text-primary" />
+              <div className="space-y-2">
+                <h3 className="text-base">Being tested: a real, encrypted cell</h3>
+                <p className="text-sm text-muted-foreground">
+                  An early version for two people, with messages encrypted on your devices. It has no AI help yet, and nothing is kept after the cell closes.
+                </p>
+                <a href="/cell" className="inline-flex items-center gap-1 text-sm underline underline-offset-4">
+                  Open partner practice <ArrowRight className="size-4" />
+                </a>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {onOpenPreview && (
           <div className="space-y-3 text-center">

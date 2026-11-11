@@ -26,6 +26,8 @@
 //   COACH_CHARACTER_SLUG plain    optional, overrides DEFAULT_CHARACTER_SLUG
 //   COACH_E2EE_PLAIN_HISTORY plain optional, "true" sends earlier coach replies unencrypted on the encrypted route
 //   COACH_E2EE_MINIMAL   plain    optional, "true" sends fewer sampling settings on the encrypted route (a diagnostic)
+//   COACH_SEALED         plain    optional, "on" accepts sealed mode: messages the browser encrypted itself (handleSealed below;
+//                                 needs an "e2ee-" model). Off by default.
 //   COACH_METHOD_NOTES   plain    optional, short method notes (fallback when the blob below is absent)
 // Netlify Blobs: store "coach-private", key "method-notes" holds longer private method
 // notes that are added to the system instruction. See docs/coach-method-notes.md.
@@ -52,7 +54,7 @@ import { recordReceipt } from '../../src/lib/receiptLog.ts';
 import { addConnectionTurn, allowanceReached, connectionCode, turnsFromEnv } from '../../src/lib/connectionLimit.ts';
 import { hostAllowed, originHint, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
-import { E2eeError, e2eeChat, isE2eeModel } from '../../src/lib/veniceE2ee.ts';
+import { E2eeError, MAX_SEALED_HEX, attestationFor, e2eeChat, isE2eeModel, sealedChat } from '../../src/lib/veniceE2ee.ts';
 import { aboutTheWorld, detectDirectQuestion } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
@@ -73,6 +75,9 @@ const MAX_USER_CHARS = 500;
 const MAX_ASSISTANT_CHARS = 3000;
 const MAX_REPLY_TOKENS = 600; // headroom; brevity comes from the instruction, this is only a ceiling
 const MAX_BODY_BYTES = 16000;
+// Sealed mode (docs/ghost-footprint-stack.md): the browser sends ciphertext, which is about four times the size of the text.
+const MAX_SEALED_BODY_BYTES = 160000;
+const MAX_SEALED_USER_HEX = (MAX_USER_CHARS * 4 + 93) * 2;
 const TICKET_TTL_MS = 30 * 60 * 1000;
 const VENICE_TIMEOUT_MS = 20000;
 // A second attempt is made only if there is time left in the same 20-second budget a single attempt always had (at least this
@@ -472,6 +477,137 @@ export default async (req: Request, netlify?: { ip?: string }): Promise<Response
   }
 };
 
+// ── Sealed mode ─────────────────────────────────────────────────────────────
+// The visitor's browser encrypts every message to the model's enclave (src/lib/sealedCoach.ts), so this function relays
+// words it cannot read. What it still does: the origin check and rate limit above, the same daily cap and per-connection
+// allowance as the witnessed coach, the five-exchange limit (a ticket bound to the encrypted messages), and the system
+// instruction, which it writes and encrypts itself. What it cannot do, and the page says so (src/lib/privacyModes.ts): run the
+// safety checks (the browser runs them), choose notes by what was said, or sign a transcript. Off unless COACH_SEALED=on.
+const SEALED_LABELS_HOSTILE = new Set(['', 'abuse', 'critique']);
+
+function signSealed(secret: string, completed: number, issuedAt: number, userCipher: string[], session: Session, code = '-'): string {
+  const mac = createHmac('sha256', secret)
+    .update(`sealed|${completed}|${issuedAt}|${code}|${sha256(JSON.stringify({ session, userCipher }))}`)
+    .digest('base64url');
+  return `${issuedAt}.${code}.${mac}`;
+}
+function verifySealed(secret: string, ticket: unknown, completed: number, userCipher: string[], session: Session): string | null {
+  if (typeof ticket !== 'string') return null;
+  const [issuedRaw, code, mac] = ticket.split('.');
+  const issuedAt = Number(issuedRaw);
+  if (!Number.isFinite(issuedAt) || !code || !CODE_FORM.test(code) || !mac) return null;
+  const age = Date.now() - issuedAt;
+  if (age < -60000 || age > TICKET_TTL_MS) return null;
+  const a = Buffer.from(signSealed(secret, completed, issuedAt, userCipher, session, code));
+  const b = Buffer.from(ticket);
+  return a.length === b.length && timingSafeEqual(a, b) ? code : null;
+}
+const isHex = (s: unknown, max: number): s is string => typeof s === 'string' && s.length >= 186 && s.length <= max && s.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(s);
+
+async function handleSealed(
+  req: Request,
+  netlify: { ip?: string } | undefined,
+  body: Record<string, unknown>,
+  session: Session,
+  ctx: { apiKey: string; secret: string; store: () => CounterStore | null; tally: (e: string) => void; track: (p: Promise<unknown>) => void }
+): Promise<Response> {
+  if (process.env.COACH_SEALED !== 'on') return fail(503, 'sealed-off');
+  const model = process.env.COACH_MODEL || DEFAULT_MODEL;
+  if (!isE2eeModel(model)) return fail(503, 'sealed-model');
+  if (body.context !== undefined && body.context !== '') return fail(400, 'context'); // a shared reflection is not sealed yet
+  const { apiKey, secret, store, tally, track } = ctx;
+  const upstream = (e: unknown, aborted = false) =>
+    fail(502, 'upstream', aborted ? 'timeout' : e instanceof E2eeError ? `e2ee-${e.code}${e.status ? '-' + e.status : ''}` : 'e2ee-failed', e instanceof E2eeError ? e.detail : undefined);
+
+  if (body.sealed === 'attest') {
+    const nonce = typeof body.nonce === 'string' ? body.nonce : '';
+    if (!/^[0-9a-f]{64}$/.test(nonce)) return fail(400, 'nonce');
+    try {
+      const { report } = await attestationFor({ apiKey, model, nonce });
+      tally('coach.sealed.attested');
+      return json(200, { model, report });
+    } catch (e) {
+      return upstream(e);
+    }
+  }
+  if (body.sealed !== 'turn') return fail(400, 'sealed');
+
+  // The conversation: alternating, starting and ending with the person, every message ciphertext.
+  const raw = body.messages;
+  if (!Array.isArray(raw) || raw.length < 1 || raw.length > MAX_TURNS * 2 - 1 || raw.length % 2 === 0) return fail(400, 'messages');
+  const messages: { role: Role; content: string }[] = [];
+  for (let i = 0; i < raw.length; i++) {
+    const m = raw[i] as { role?: unknown; content?: unknown };
+    const role: Role = i % 2 === 0 ? 'user' : 'assistant';
+    if (!m || m.role !== role || !isHex(m.content, role === 'user' ? MAX_SEALED_USER_HEX : MAX_SEALED_HEX)) return fail(400, 'messages');
+    messages.push({ role, content: m.content });
+  }
+  if (typeof body.modelKey !== 'string' || typeof body.clientKey !== 'string') return fail(400, 'keys');
+  const userCipher = messages.filter((m) => m.role === 'user').map((m) => m.content);
+  const turn = userCipher.length;
+  if (turn > MAX_TURNS) return fail(400, 'turns');
+
+  let code = '-';
+  if (turn > 1) {
+    const carried = verifySealed(secret, body.ticket, turn - 1, userCipher.slice(0, -1), session);
+    if (carried === null) return fail(400, 'ticket');
+    code = carried;
+  }
+  tally('coach.sealed.turn.sent');
+
+  // The same limits as the witnessed coach: the two share one budget.
+  const st = store();
+  if (st) {
+    if (turn === 1) {
+      const c = isOwner(req) ? null : connectionCode(process.env.COACH_IP_SECRET, netlify?.ip);
+      if (c) {
+        if (await allowanceReached(st, c, turnsFromEnv(process.env.COACH_IP_TURNS))) {
+          tally('coach.turn.blocked.ip');
+          return json(200, { blocked: 'ip' });
+        }
+        code = c;
+      }
+      if (!(await countTurn(st, capFromEnv(process.env.COACH_DAILY_CAP), true))) {
+        tally('coach.turn.blocked.cap');
+        return json(200, { blocked: 'cap' });
+      }
+      tally('coach.conversation.started');
+    } else {
+      track(countTurn(st, capFromEnv(process.env.COACH_DAILY_CAP), false));
+    }
+    if (code !== '-') track(addConnectionTurn(st, code));
+  }
+
+  // The browser's own checks decide these two labels; they are fixed values, never text.
+  const labels = (body.labels ?? {}) as { softened?: unknown; hostile?: unknown };
+  const softened = labels.softened === true;
+  const hostile = typeof labels.hostile === 'string' && SEALED_LABELS_HOSTILE.has(labels.hostile) ? (labels.hostile as Hostility | '') : '';
+  const notes = await notesFor([], softened, closingPhase(turn, MAX_TURNS) === 'close' ? ['move'] : []);
+  const systemText = systemInstruction(turn, softened, notes, false, '', '', instructionsVersion(), hostile, '', practiceArcOn() ? { stuck: false } : null, false, '');
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), VENICE_TIMEOUT_MS);
+  try {
+    const out = await sealedChat({
+      apiKey,
+      model,
+      modelKey: body.modelKey,
+      clientKey: body.clientKey,
+      systemText,
+      messages,
+      params: { temperature: 0.7, top_p: 0.9, repetition_penalty: 1.1, max_completion_tokens: MAX_REPLY_TOKENS },
+      signal: ctrl.signal,
+    });
+    tally('coach.sealed.turn.answered');
+    if (turn >= MAX_TURNS) tally('coach.conversation.finished');
+    return json(200, { chunks: out.chunks, finish: out.finishReason, ticket: signSealed(secret, turn, Date.now(), userCipher, session, code), turn, done: turn >= MAX_TURNS });
+  } catch (e) {
+    return upstream(e, ctrl.signal.aborted);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function handle(req: Request, netlify: { ip?: string } | undefined, track: (p: Promise<unknown>) => void): Promise<Response> {
   // A store that cannot be reached means no limits and no counts, never a locked-out visitor.
   const store = (): CounterStore | null => {
@@ -490,6 +626,11 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   // /.netlify/functions/coach address would sidestep the limit.
   const url = new URL(req.url);
   if (url.pathname !== ROUTE) return json(404, { error: 'not found' });
+  // Which privacy modes the page may offer (docs/ghost-footprint-stack.md). No secrets, nothing about the visitor.
+  if (req.method === 'GET' && url.searchParams.has('modes')) {
+    const model = process.env.COACH_MODEL || DEFAULT_MODEL;
+    return json(200, { witnessed: process.env.COACH_ENABLED === 'true', sealed: process.env.COACH_ENABLED === 'true' && process.env.COACH_SEALED === 'on' && isE2eeModel(model) });
+  }
   if (req.method === 'GET' && url.searchParams.has('key')) {
     const k = signingKey();
     return k
@@ -516,16 +657,19 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   if (!(req.headers.get('content-type') || '').includes('application/json')) return fail(415, 'type');
 
   const text = await req.text();
-  if (text.length > MAX_BODY_BYTES) return fail(413, 'size');
+  if (text.length > MAX_SEALED_BODY_BYTES) return fail(413, 'size');
   let body: { messages?: unknown; ticket?: unknown };
   try {
     body = JSON.parse(text);
   } catch {
     return fail(400, 'json');
   }
+  const sealedStep = (body as { sealed?: unknown }).sealed;
+  if (sealedStep === undefined && text.length > MAX_BODY_BYTES) return fail(413, 'size');
 
   const session = parseSession((body as { session?: unknown }).session);
   if (!session) return fail(400, 'session');
+  if (sealedStep !== undefined) return handleSealed(req, netlify, body as Record<string, unknown>, session, { apiKey, secret, store, tally, track });
   const context = parseContext((body as { context?: unknown }).context);
   if (context === null) return fail(400, 'context');
 
