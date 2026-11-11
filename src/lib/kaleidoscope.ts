@@ -17,9 +17,37 @@ export interface KaleidoscopeLook {
   periodS: number;
   /** Whether the star and pavilion facets also turn (0 = only the angles breathe). */
   turn: number;
+  /**
+   * How much the stone's structure may move, 0 to 1: the crown, pavilion and girdle angles and the table's height. These
+   * set the overall shape of the light, so keeping this low keeps the stone recognisably the same.
+   */
+  structure: number;
+  /** How much the star facets (their angle and reach) may move, 0 to 1. These make the finer pattern inside the table. */
+  pattern: number;
+  /**
+   * How far the turning sways each way, in degrees. The star and pavilion facets swing back and forth within this and
+   * return to their home position. 0 means they turn without end (the original kaleidoscope).
+   */
+  sway: number;
 }
 
-export const DEFAULT_KALEIDOSCOPE: KaleidoscopeLook = { on: true, depth: 0.6, periodS: 90, turn: 1 };
+/**
+ * Ready-made looks, from barely moving to the original. Each keeps the stone's structure within its own limits and lets
+ * the pattern move inside them. Pick one, then adjust any value on top of it.
+ */
+export const KALEIDOSCOPE_PRESETS = {
+  /** The shape holds still; only the star pattern drifts and sways a little, very slowly. */
+  calm: { on: true, depth: 0.5, periodS: 300, turn: 1, structure: 0.05, pattern: 0.5, sway: 6 },
+  /** The shape barely moves; the pattern drifts slowly within it. The site's default. */
+  gentle: { on: true, depth: 0.6, periodS: 200, turn: 1, structure: 0.15, pattern: 0.7, sway: 12 },
+  /** More visible change, still swaying round the same home cut. */
+  lively: { on: true, depth: 0.8, periodS: 120, turn: 1, structure: 0.4, pattern: 1, sway: 25 },
+  /** The original: everything moves its full range and the facets turn without end. */
+  full: { on: true, depth: 0.6, periodS: 90, turn: 1, structure: 1, pattern: 1, sway: 0 },
+} satisfies Record<string, KaleidoscopeLook>;
+export type KaleidoscopePreset = keyof typeof KALEIDOSCOPE_PRESETS;
+
+export const DEFAULT_KALEIDOSCOPE: KaleidoscopeLook = KALEIDOSCOPE_PRESETS.gentle;
 
 /** The furthest each part of the cut may move from its base value at depth 1 (degrees, or stone units). */
 export const KALEIDOSCOPE_SWING = {
@@ -30,7 +58,7 @@ export const KALEIDOSCOPE_SWING = {
   pavilion: 3.5,
   lowerGirdle: 5,
   tableZ: 0.06,
-  /** Unused as a limit: the stars and pavilion turn without end (every 60 degrees the pattern matches itself again). */
+  /** Unused as a limit (see `sway`): without a sway the facets turn without end (the pattern repeats every 60 degrees). */
   twist: 60,
 };
 
@@ -55,20 +83,25 @@ export function kaleidoscopeCut(tSec: number, base: Partial<GemCut> = {}, k: Par
   const c = { ...DEFAULT_CUT, ...base };
   const d = clamp(look.depth, 0, 1);
   const period = Math.max(10, look.periodS);
+  const st = d * clamp(look.structure, 0, 1);
+  const pt = d * clamp(look.pattern, 0, 1);
   const wave = (key: keyof typeof KALEIDOSCOPE_SWING, phase: number) => Math.sin((2 * Math.PI * tSec) / (period * RATIOS[key]) + phase);
   const S = KALEIDOSCOPE_SWING;
-  // The stars and the pavilion turn steadily, in opposite directions. The cut repeats every 60 degrees, so wrapping the
-  // angle at 60 is seamless. `turn` and `depth` set the speed: at both 1, a sixth of a turn each half period.
-  const twist = (((clamp(look.turn, 0, 1) * d * 60 * tSec) / (period * RATIOS.twist)) % 60 + 60) % 60;
+  // The stars and the pavilion turn in opposite directions. With a sway they swing back and forth within it, so they
+  // always come home. Without one they turn steadily; the cut repeats every 60 degrees, so wrapping the angle at 60 is
+  // seamless (at `turn` and `depth` both 1, a sixth of a turn each half period).
+  const tn = clamp(look.turn, 0, 1) * d;
+  const sway = clamp(look.sway, 0, 30);
+  const twist = sway > 0 ? sway * tn * wave('twist', 0.9) : (((tn * 60 * tSec) / (period * RATIOS.twist)) % 60 + 60) % 60;
   return {
     ...base,
-    crown: c.crown + S.crown * d * wave('crown', 0),
-    star: c.star + S.star * d * wave('star', 1.3),
-    starReach: clamp(c.starReach + S.starReach * d * wave('starReach', 2.1), 0.15, 0.75),
-    upperGirdle: c.upperGirdle + S.upperGirdle * d * wave('upperGirdle', 0.7),
-    pavilion: c.pavilion + S.pavilion * d * wave('pavilion', 2.9),
-    lowerGirdle: c.lowerGirdle + S.lowerGirdle * d * wave('lowerGirdle', 1.9),
-    tableZ: c.tableZ + S.tableZ * d * wave('tableZ', 0.4),
+    crown: c.crown + S.crown * st * wave('crown', 0),
+    star: c.star + S.star * pt * wave('star', 1.3),
+    starReach: clamp(c.starReach + S.starReach * pt * wave('starReach', 2.1), 0.15, 0.75),
+    upperGirdle: c.upperGirdle + S.upperGirdle * st * wave('upperGirdle', 0.7),
+    pavilion: c.pavilion + S.pavilion * st * wave('pavilion', 2.9),
+    lowerGirdle: c.lowerGirdle + S.lowerGirdle * st * wave('lowerGirdle', 1.9),
+    tableZ: c.tableZ + S.tableZ * st * wave('tableZ', 0.4),
     starTwist: c.starTwist + twist,
     pavilionTwist: c.pavilionTwist - twist,
   };

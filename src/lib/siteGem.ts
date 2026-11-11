@@ -6,13 +6,21 @@
 // kaleidoscope.
 
 import type { LiveGemLook } from '../app/components/SpectralGem';
+import { KALEIDOSCOPE_PRESETS } from './kaleidoscope';
 
 export const SITE_LIVE_GEM: LiveGemLook = {
   // The stone's light. For example, to brighten it: { exposure: 1.8, lightGain: 2.6, sky: 0.2 }.
   light: {},
   // The kaleidoscope: the inside of the stone slowly re-cuts itself. On by default. Setting `on: false` pauses it where
   // it is; it does not snap back to the plain cut.
-  kaleidoscope: { on: true, depth: 0.6, periodS: 90, turn: 1 },
+  // Presets (src/lib/kaleidoscope.ts): calm, gentle, lively, full. Each holds the stone's structure within limits and lets
+  // the pattern move inside them. Adjust on top of one, e.g. { ...KALEIDOSCOPE_PRESETS.gentle, periodS: 260 }:
+  //   structure  0-1   how much the overall shape may move (crown, pavilion, girdles)
+  //   pattern    0-1   how much the star facets may move
+  //   sway       deg   how far the facets swing each way before coming back (0 = turn without end)
+  //   periodS    s     the slowest wave; higher is slower
+  //   depth      0-1   scales everything
+  kaleidoscope: { ...KALEIDOSCOPE_PRESETS.gentle, on: true },
 };
 
 /**

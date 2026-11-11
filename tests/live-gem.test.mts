@@ -61,12 +61,13 @@ ok('the bench page is built, not indexed, and not linked from the site', /bench:
 ok('the bench saves nothing on the device', !/localStorage|sessionStorage|indexedDB/.test(src('src/bench/GemBench.tsx')));
 
 // The kaleidoscope: the cut moves over time, the stone must stay whole at every moment and at full depth.
-const { kaleidoscopeCut, DEFAULT_KALEIDOSCOPE } = await import('../src/lib/kaleidoscope.ts');
+const { kaleidoscopeCut, DEFAULT_KALEIDOSCOPE, KALEIDOSCOPE_PRESETS, KALEIDOSCOPE_SWING } = await import('../src/lib/kaleidoscope.ts');
+const FULL = KALEIDOSCOPE_PRESETS.full;
 const DEFAULT_KALEIDOSCOPE_ON = DEFAULT_KALEIDOSCOPE.on === true;
 ok('the kaleidoscope off leaves the cut unchanged', JSON.stringify(kaleidoscopeCut(37, { crown: 30 }, { on: false })) === JSON.stringify({ crown: 30 }));
 let worst = 0;
 for (let t = 0; t < 1800; t += 7.3) {
-  const q = gemPlanes(kaleidoscopeCut(t, {}, { on: true, depth: 1, periodS: 60, turn: 1 }));
+  const q = gemPlanes(kaleidoscopeCut(t, {}, { ...FULL, depth: 1, periodS: 60, turn: 1 }));
   let h = 0;
   for (let y = -0.9; y <= 0.9; y += 0.06) for (let x = -0.8; x <= 0.8; x += 0.06) {
     const a = (Math.atan2(y, x) * 180) / Math.PI;
@@ -75,10 +76,23 @@ for (let t = 0; t < 1800; t += 7.3) {
   worst = Math.max(worst, h);
 }
 ok('at full depth, at every sampled moment over half an hour, the stone covers its outline', worst === 0, `${worst} holes`);
-ok('nothing sticks out past the outline while it moves', [0, 13, 101, 777].every((t) => { const q = gemPlanes(kaleidoscopeCut(t, {}, { on: true, depth: 1 })); return Array.from({ length: 36 }, (_, k) => k * 10).every((a) => !inside(Math.cos((a * Math.PI) / 180) * (hexRadius(a) + 0.01), Math.sin((a * Math.PI) / 180) * (hexRadius(a) + 0.01), 0, q)); }));
-ok('it changes slowly: a tenth of a second moves no angle more than a fraction of a degree', (() => { const a = kaleidoscopeCut(50, {}, { on: true, depth: 1, periodS: 90 }) as any, b = kaleidoscopeCut(50.1, {}, { on: true, depth: 1, periodS: 90 }) as any; return ['crown', 'star', 'pavilion', 'upperGirdle', 'lowerGirdle'].every((k) => Math.abs(a[k] - b[k]) < 0.2) && Math.abs(a.starTwist - b.starTwist) < 0.5; })());
+ok('nothing sticks out past the outline while it moves', [0, 13, 101, 777].every((t) => { const q = gemPlanes(kaleidoscopeCut(t, {}, { ...FULL, depth: 1 })); return Array.from({ length: 36 }, (_, k) => k * 10).every((a) => !inside(Math.cos((a * Math.PI) / 180) * (hexRadius(a) + 0.01), Math.sin((a * Math.PI) / 180) * (hexRadius(a) + 0.01), 0, q)); }));
+ok('it changes slowly: a tenth of a second moves no angle more than a fraction of a degree', (() => { const a = kaleidoscopeCut(50, {}, { ...FULL, depth: 1, periodS: 90 }) as any, b = kaleidoscopeCut(50.1, {}, { ...FULL, depth: 1, periodS: 90 }) as any; return ['crown', 'star', 'pavilion', 'upperGirdle', 'lowerGirdle'].every((k) => Math.abs(a[k] - b[k]) < 0.2) && Math.abs(a.starTwist - b.starTwist) < 0.5; })());
+ok('every preset keeps the structure and the turning within its limits, at every sampled moment', Object.values(KALEIDOSCOPE_PRESETS).every((p) => {
+  const st = p.depth * p.structure + 1e-9, pt = p.depth * p.pattern + 1e-9;
+  for (let t = 0; t < 3600; t += 4.7) {
+    const c = kaleidoscopeCut(t, {}, p) as any;
+    for (const k of ['crown', 'upperGirdle', 'pavilion', 'lowerGirdle', 'tableZ'] as const) if (Math.abs(c[k] - (DEFAULT_CUT as any)[k]) > (KALEIDOSCOPE_SWING as any)[k] * st) return false;
+    if (Math.abs(c.star - DEFAULT_CUT.star) > KALEIDOSCOPE_SWING.star * pt) return false;
+    if (p.sway > 0 && Math.abs(c.starTwist - DEFAULT_CUT.starTwist) > p.sway * p.depth * p.turn + 1e-9) return false;
+  }
+  return true;
+}));
+ok('the calmer presets move less and more slowly than the original', (() => { const P = KALEIDOSCOPE_PRESETS; const reach = (p: typeof P.full) => p.depth * p.structure; return reach(P.calm) < reach(P.gentle) && reach(P.gentle) < reach(P.lively) && reach(P.lively) < reach(P.full) && P.calm.periodS > P.gentle.periodS && P.gentle.periodS > P.full.periodS && P.gentle.sway > 0; })());
+ok('the site and the bench start on the gentle preset', DEFAULT_KALEIDOSCOPE === KALEIDOSCOPE_PRESETS.gentle && /\.\.\.KALEIDOSCOPE_PRESETS\.gentle/.test(src('src/lib/siteGem.ts')));
+ok('every preset stays whole at full depth', Object.values(KALEIDOSCOPE_PRESETS).every((p) => [0, 41, 333, 1201].every((t) => { const q = gemPlanes(kaleidoscopeCut(t, {}, { ...p, depth: 1 })); for (let y = -0.9; y <= 0.9; y += 0.09) for (let x = -0.8; x <= 0.8; x += 0.09) { const a = (Math.atan2(y, x) * 180) / Math.PI; if (Math.hypot(x, y) < hexRadius(a) * 0.97 && !hits(x, y, q)) return false; } return true; })));
 ok('the turn wraps without a jump (the cut repeats every 60 degrees)', (() => { const q1 = gemPlanes({ starTwist: 0, pavilionTwist: 0 }), q2 = gemPlanes({ starTwist: 60, pavilionTwist: -60 }); const key = (p: Float32Array) => Array.from({ length: p.length / 4 }, (_, i) => Array.from(p.slice(4 * i, 4 * i + 4), (v) => v.toFixed(5)).join()).sort().join('|'); return key(q1) === key(q2); })());
 ok('reduced motion holds the kaleidoscope still', /running = !reduced && !!L\?\.kaleidoscope\?\.on/.test(src('src/app/components/SpectralGem.tsx')));
-ok('the kaleidoscope is on by default, on the site and on the bench', DEFAULT_KALEIDOSCOPE_ON && /kaleidoscope: \{ on: true/.test(src('src/lib/siteGem.ts')) && /live = SITE_LIVE_GEM/.test(src('src/app/components/SpectralGem.tsx')));
+ok('the kaleidoscope is on by default, on the site and on the bench', DEFAULT_KALEIDOSCOPE_ON && /kaleidoscope: \{ \.\.\.KALEIDOSCOPE_PRESETS\.\w+, on: true \}/.test(src('src/lib/siteGem.ts')) && /live = SITE_LIVE_GEM/.test(src('src/app/components/SpectralGem.tsx')));
 ok('turning the kaleidoscope off pauses it: its clock only runs while it is on, and the held cut is kept', /if \(running\) \{[\s\S]*?k\.t \+=/.test(src('src/app/components/SpectralGem.tsx')) && /if \(!k\.started\) return L\?\.cut;\s*return kaleidoscopeCut\(k\.t, L\?\.cut, \{ \.\.\.L\?\.kaleidoscope, on: true \}\)/.test(src('src/app/components/SpectralGem.tsx')));
 ok('the live gem takes a quarter of the colour wheel; the sprite keeps its own', /SITE_LIVE_FIELD_ALPHA = 0\.25/.test(src('src/lib/siteGem.ts')) && /fieldAlphaProp \?\? \(renderer \? SITE_LIVE_FIELD_ALPHA : FIELD_ALPHA\)/.test(src('src/app/components/SpectralGem.tsx')));
