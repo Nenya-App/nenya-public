@@ -13,6 +13,7 @@ import { HIGH_QUALITY, LOW_QUALITY, createGemRenderer, type GemLight, type GemQu
 import type { GemCut } from '../../lib/gemCut';
 import { kaleidoscopeCut, type KaleidoscopeLook } from '../../lib/kaleidoscope';
 import { DEFAULT_INNER_ORBIT } from '../../lib/orbitLook';
+import { SITE_LIVE_FIELD_ALPHA, SITE_LIVE_GEM } from '../../lib/siteGem';
 
 /** The live gem's settings (see src/lib/gemRenderer.ts). All optional: the defaults are the tuned starting point. */
 export interface LiveGemLook {
@@ -23,7 +24,10 @@ export interface LiveGemLook {
   fps?: number;
   /** How far the lights turn in one sparkle loop (three breaths), in turns. With six lights, 1/6 brings the pattern round. */
   spin?: number;
-  /** The inside of the stone slowly re-cuts itself (src/lib/kaleidoscope.ts). Held still with reduced motion. */
+  /**
+   * The inside of the stone slowly re-cuts itself (src/lib/kaleidoscope.ts). Turning it off pauses it where it is (the
+   * stone keeps its current cut); turning it on again carries on from there. Held still with reduced motion.
+   */
   kaleidoscope?: Partial<KaleidoscopeLook>;
 }
 
@@ -99,9 +103,9 @@ export default function SpectralGem({
   breathingEnabled = true,
   contrast = CONTRAST,
   lift = LIFT,
-  fieldAlpha = FIELD_ALPHA,
+  fieldAlpha: fieldAlphaProp,
   engine = GEM_ENGINE,
-  live,
+  live = SITE_LIVE_GEM,
   orbitSeconds = DEFAULT_INNER_ORBIT.orbitSeconds,
   colorCycle = DEFAULT_INNER_ORBIT.colorCycle,
   onStats,
@@ -125,6 +129,9 @@ export default function SpectralGem({
   // (which rebuilds the shader) does.
   const liveRef = useRef(live);
   liveRef.current = live;
+  // The kaleidoscope's own clock: it only runs while the kaleidoscope is on, so turning it off pauses the pattern
+  // where it is instead of snapping back to the plain cut.
+  const kaleido = useRef({ t: 0, last: 0, started: false });
   const statsRef = useRef(onStats);
   statsRef.current = onStats;
   const timingRef = useRef({ orbitSeconds, colorCycle });
@@ -210,6 +217,22 @@ export default function SpectralGem({
       }
     };
 
+    // The cut for this frame. The kaleidoscope's clock advances only while it is on and motion is allowed; when it is
+    // off (or paused for reduced motion) the stone holds the cut it had reached. Before it has ever run, the plain cut.
+    const kaleidoscopeAt = (reduced: boolean, L: LiveGemLook | undefined): Partial<GemCut> | undefined => {
+      const k = kaleido.current;
+      const now = performance.now();
+      const running = !reduced && !!L?.kaleidoscope?.on;
+      if (running) {
+        // Long gaps (the tab hidden, the gem scrolled away) do not count, so it never jumps ahead.
+        if (k.last) k.t += Math.min(now - k.last, 250) / 1000;
+        k.started = true;
+      }
+      k.last = running ? now : 0;
+      if (!k.started) return L?.cut;
+      return kaleidoscopeCut(k.t, L?.cut, { ...L?.kaleidoscope, on: true });
+    };
+
     const draw = (reduced: boolean) => {
       if (renderer && renderer.lost()) {
         // The browser took the graphics context away: carry on with the sprite.
@@ -234,7 +257,7 @@ export default function SpectralGem({
           orbit: reduced ? 0 : (((orbitT / (oS > 0 ? oS : 120)) % 1) * 2 * Math.PI),
           orbs: valarColors.map((v, j) => orbColour(v.vector, j, tSec, cS)),
           light: L?.light,
-          cut: !reduced && L?.kaleidoscope?.on ? kaleidoscopeCut(tSec, L?.cut, L.kaleidoscope) : L?.cut,
+          cut: kaleidoscopeAt(reduced, L),
         });
         octx.drawImage(renderer.canvas, 0, 0, px, px);
       } else if (reduced) {
@@ -272,7 +295,7 @@ export default function SpectralGem({
           wheel.addColorStop(i / n, `rgb(${Math.round(col[0])},${Math.round(col[1])},${Math.round(col[2])})`);
         }
         bctx.globalCompositeOperation = 'color';
-        bctx.globalAlpha = fieldAlpha;
+        bctx.globalAlpha = fieldAlphaProp ?? (renderer ? SITE_LIVE_FIELD_ALPHA : FIELD_ALPHA);
         bctx.fillStyle = wheel;
         bctx.fillRect(0, 0, px, px);
       }
@@ -344,7 +367,7 @@ export default function SpectralGem({
     };
     // The clock anchor and timing shape are read inside the loop, so they restart it when they change.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `quality` is captured through qualityKey
-  }, [gemSide, anchor, breathMs, t1, t2, t3, tint, breathingEnabled, contrast, lift, fieldAlpha, engine, qualityKey]);
+  }, [gemSide, anchor, breathMs, t1, t2, t3, tint, breathingEnabled, contrast, lift, fieldAlphaProp, engine, qualityKey]);
 
   const place: React.CSSProperties = {
     position: 'absolute',

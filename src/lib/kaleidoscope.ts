@@ -19,7 +19,7 @@ export interface KaleidoscopeLook {
   turn: number;
 }
 
-export const DEFAULT_KALEIDOSCOPE: KaleidoscopeLook = { on: false, depth: 0.6, periodS: 90, turn: 1 };
+export const DEFAULT_KALEIDOSCOPE: KaleidoscopeLook = { on: true, depth: 0.6, periodS: 90, turn: 1 };
 
 /** The furthest each part of the cut may move from its base value at depth 1 (degrees, or stone units). */
 export const KALEIDOSCOPE_SWING = {
