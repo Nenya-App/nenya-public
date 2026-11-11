@@ -143,7 +143,7 @@ export default async (req: Request): Promise<Response> => {
   await count('coach.report.verified');
   // The person's consent receipt: signed by the site with the same key as the transcripts, so they hold their own proof of what they agreed to (src/lib/consentReceipt.ts). Without
   // a signing key there is no receipt and the answer is as before.
-  const consent = signConsent(receipt.hash, choices, new Date(), process.env.COACH_SIGNING_KEY);
+  const consent = signConsent(receipt.hash, choices, new Date(), process.env.COACH_SIGNING_KEY, transcript.meta?.terms ?? null);
   return consent ? new Response(JSON.stringify({ consentReceipt: consent }), { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } }) : reply(204);
 };
 

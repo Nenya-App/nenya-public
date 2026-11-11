@@ -58,6 +58,7 @@ export function signedProblem(signed: unknown, env: Record<string, string | unde
     if (!m || typeof m.closed !== 'boolean' || !Number.isInteger(m.exchanges) || typeof m.build !== 'string' || typeof m.model !== 'string' || typeof m.instructions !== 'string') return 'shape';
     if (m.endedBy !== undefined && (m.endedBy !== 'site' || !m.stop || typeof m.stop.category !== 'string' || (m.stop.kind !== undefined && typeof m.stop.kind !== 'string') || m.closed)) return 'shape';
     if (m.stop !== undefined && m.endedBy !== 'site') return 'shape';
+    if (m.terms !== undefined && (!m.terms || typeof m.terms.terms !== 'string' || m.terms.terms.length > 60 || typeof m.terms.build !== 'string' || m.terms.build.length > 80 || typeof m.terms.agreedAt !== 'string' || !ISO.test(m.terms.agreedAt))) return 'shape';
   } else if (t.meta !== undefined) return 'shape';
   if (r.algorithm !== 'Ed25519' || typeof r.hash !== 'string' || typeof r.signature !== 'string' || typeof r.publicKey !== 'string' || typeof r.keyId !== 'string' || typeof r.issuedAt !== 'string' || !ISO.test(r.issuedAt)) return 'shape';
 

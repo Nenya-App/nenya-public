@@ -60,6 +60,7 @@ import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
 import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCritiqueThanks, type CritiqueTarget, type Hostility } from '../../src/lib/hostility.ts';
+import { termsFromOurKey } from '../../src/lib/termsReceipt.ts';
 import { VALUES_RULE, challengeFor, valuesOn } from '../../src/lib/valuesRule.ts';
 import { laneFor, laneReply } from '../../src/lib/laneGuard.ts';
 import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_MENU_NOTE, ARC_NOTE, WORDS_ONLY_NOTE, guardedProblems, repairArc, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
@@ -540,6 +541,8 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     if (stopFlag?.tier !== 'stop') return fail(400, 'not-stopped');
     const k = signingKey();
     if (!k) return fail(503, 'signing-off');
+    // The visitor's agreement to the Terms, signed by this site when they agreed (src/lib/termsReceipt.ts): copied into the signed transcript only if it is ours and valid.
+    const termsFacts = termsFromOurKey((body as { terms?: unknown }).terms, k.keyId);
     const meta: TranscriptMeta = {
       closed: false,
       exchanges: history.length / 2,
@@ -548,6 +551,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       instructions: instructionsFingerprint(),
       endedBy: 'site',
       stop: { category: stopFlag.category, ...(stopFlag.kind ? { kind: stopFlag.kind } : {}) },
+      ...(termsFacts ? { terms: termsFacts } : {}),
     };
     const transcript = buildTranscript(withStop, session, context, meta);
     const hash = sha256(JSON.stringify(transcript));
@@ -569,6 +573,8 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     if (verify(secret, body.ticket, done.length / 2, done, session, context) === null) return fail(400, 'ticket');
     const k = signingKey();
     if (!k) return fail(503, 'signing-off');
+    // The visitor's agreement to the Terms, signed by this site when they agreed (src/lib/termsReceipt.ts): copied into the signed transcript only if it is ours and valid.
+    const termsFacts = termsFromOurKey((body as { terms?: unknown }).terms, k.keyId);
     const exchanges = done.length / 2;
     const meta: TranscriptMeta = {
       closed: exchanges >= MAX_TURNS,
@@ -576,6 +582,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       build: buildId(),
       model: process.env.COACH_MODEL || DEFAULT_MODEL,
       instructions: instructionsFingerprint(),
+      ...(termsFacts ? { terms: termsFacts } : {}),
     };
     const transcript = buildTranscript(done, session, context, meta, provenOffers(secret, (body as { offers?: unknown }).offers, done));
     const hash = sha256(JSON.stringify(transcript));

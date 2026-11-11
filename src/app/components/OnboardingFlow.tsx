@@ -7,6 +7,7 @@ import { LegalDocumentBody } from './LegalDocumentBody';
 import { DownloadLegalPdfButton } from './DownloadLegalPdfButton';
 import { LEGAL_EFFECTIVE_DATE } from '../../lib/legalDocument';
 import { rememberTerms, setRemembering } from '../../lib/deviceMemory';
+import { agreeToTerms } from '../../lib/visitConsent';
 import { PRESETS, sameTechnique, type BreathingTechnique } from '../../lib/breathingPresets';
 
 export type OnboardingStep = 'rhythm' | 'terms';
@@ -100,6 +101,8 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
       setRemembering(true);
       rememberTerms(LEGAL_EFFECTIVE_DATE);
     }
+    // Held for the visit (cleared when the tab closes, on Emergency Exit or Forget me) and signed by the site; carried into anything the person later signs.
+    void agreeToTerms();
     setIsExiting(true);
     setTimeout(onFinish, 700);
   };

@@ -1,3 +1,4 @@
+import { termsReceiptForRequest } from '../lib/visitConsent';
 import { useEffect, useRef, useState } from 'react';
 import { Download, Send } from 'lucide-react';
 import { describeChoices } from '../lib/transcriptPolicy';
@@ -74,7 +75,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'receipt', messages, session, ...(offers.length ? { offers } : {}), ...(context ? { context } : {}), ticket, ...(stopped ? { stopped: true } : {}) }),
+        body: JSON.stringify({ action: 'receipt', messages, session, ...(termsReceiptForRequest() ? { terms: termsReceiptForRequest() } : {}), ...(offers.length ? { offers } : {}), ...(context ? { context } : {}), ticket, ...(stopped ? { stopped: true } : {}) }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { receipt: Receipt; transcript: SignedTranscript };

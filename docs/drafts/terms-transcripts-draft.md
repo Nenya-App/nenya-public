@@ -41,3 +41,6 @@ Check each against the code before it goes live; the counts and the allowance ar
 4. Whether the model provider's terms allow showing its replies on the public page.
 5. How this reads next to Fractured Atlas's requirements for a sponsored project.
 6. Whether a user outside the US needs different wording.
+
+## 5. Added 2026-11-10: the record of agreeing to these Terms
+Add to the Terms and the Privacy Promise: "When you agree to these Terms, our server signs a short note: the date of these Terms, the time and the version of the site. It contains no address and nothing about you, and we do not keep it. Your browser holds it for your visit and clears it when you close the tab, press Emergency Exit or choose Forget me, unless you choose to remember it on your device. If you later sign a transcript or send a conversation, the note is included, so the file shows which Terms you had agreed to and when."

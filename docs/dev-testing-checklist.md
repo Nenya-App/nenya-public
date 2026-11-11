@@ -108,3 +108,13 @@ Open each card: it has a content note, a short body, something to try, where it 
 4. On `/my-transcript`, drop the signed transcript: each use can be stopped separately.
 5. Have a conversation where the safety check stopped a message and try to send it for the public page: it is refused ("not available for this conversation").
 6. In the owner page's inbox, the permissions line reads "The person confirmed they are 18 or older and that the words are their own".
+
+## The terms agreement carried through the visit (2026-11-10)
+1. In a **new private window**, open the site at several different addresses: `/`, `/about/privacy-promise`, `/about/where-we-stand`, `/coach/`. Each shows the terms step first, before anything else. Agree on one. In the network panel there is one `POST /api/terms-agree` answering 200 with a small signed receipt (the Terms date, a time, the build, a signature: no address, nothing else).
+2. **Reload the tab:** it does not ask again (held for the visit). **Close the tab and open the site again:** it asks again.
+3. **Emergency Exit**, or **Forget me:** the next page asks again.
+4. Tick **Remember on this device** when agreeing, close the tab, reopen: it does not ask. **Forget me** clears it. Turning Remember off erases the kept copy.
+5. Have a coach conversation and download the signed transcript: the readable copy has a line "Terms agreed during this visit: the Terms of Use and Privacy Policy dated November 9, 2026, agreed on ... (site clock, build ...), signed by the site", the signed `.json` has `meta.terms`, and `/verify/` accepts it. A transcript made in a visit where the agreement was not signed (or by an older copy) has no such line and still verifies.
+6. Send a conversation: the **consent receipt** now has a `termsAgreed` block with the same time and build, covered by its signature.
+7. If the dev site has no signing key set, agreeing still works (an unsigned note held for the visit) and nothing signed mentions the agreement.
+Not covered yet: other forms on the site (feedback, any later agreement) do not copy the receipt; the verify page and `/my-transcript` have no terms step (verify sends nothing).

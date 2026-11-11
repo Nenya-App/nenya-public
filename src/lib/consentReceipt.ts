@@ -15,6 +15,8 @@ export interface ConsentReceipt {
   adult: true;
   terms: string;
   issuedAt: string;
+  /** The visitor's agreement to the site's Terms for this visit, as the site signed it and as it is in the signed transcript (or null if none was recorded). */
+  termsAgreed: { terms: string; agreedAt: string; build: string } | null;
   keyId: string;
   publicKey: string;
   signature: string;
@@ -22,17 +24,17 @@ export interface ConsentReceipt {
 
 /** The exact text that is signed: the fields in a fixed order, so it can be checked later. */
 export const consentText = (r: Omit<ConsentReceipt, 'signature'>): string =>
-  JSON.stringify([r.kind, r.v, r.transcript, [...r.uses].sort(), r.keep, r.portions ?? null, r.showFor ?? null, r.adult, r.terms, r.issuedAt, r.keyId]);
+  JSON.stringify([r.kind, r.v, r.transcript, [...r.uses].sort(), r.keep, r.portions ?? null, r.showFor ?? null, r.adult, r.terms, r.termsAgreed ? [r.termsAgreed.terms, r.termsAgreed.agreedAt, r.termsAgreed.build] : null, r.issuedAt, r.keyId]);
 
 /** Signs a consent receipt with the site's key (base64 PKCS8, the same COACH_SIGNING_KEY the transcripts use). Returns null if the key is missing or unreadable. */
-export function signConsent(transcriptHash: string, c: Choices, now: Date, keyB64: string | undefined): ConsentReceipt | null {
+export function signConsent(transcriptHash: string, c: Choices, now: Date, keyB64: string | undefined, termsAgreed: ConsentReceipt['termsAgreed'] = null): ConsentReceipt | null {
   if (!keyB64) return null;
   try {
     const key = createPrivateKey({ key: Buffer.from(keyB64, 'base64'), format: 'der', type: 'pkcs8' });
     const spki = (createPublicKey(key).export({ type: 'spki', format: 'der' }) as Buffer).toString('base64');
     const body: Omit<ConsentReceipt, 'signature'> = {
       kind: 'nenya-consent-receipt', v: 1, transcript: transcriptHash, uses: [...c.uses], keep: c.keep, ...(c.portions ? { portions: c.portions } : {}), ...(c.showFor ? { showFor: c.showFor } : {}),
-      adult: true, terms: c.terms ?? '', issuedAt: now.toISOString(), keyId: createHash('sha256').update(spki).digest('hex').slice(0, 16), publicKey: spki,
+      adult: true, terms: c.terms ?? '', termsAgreed, issuedAt: now.toISOString(), keyId: createHash('sha256').update(spki).digest('hex').slice(0, 16), publicKey: spki,
     };
     return { ...body, signature: edSign(null, Buffer.from(consentText(body)), key).toString('base64') };
   } catch {

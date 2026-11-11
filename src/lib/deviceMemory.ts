@@ -8,6 +8,8 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 //   nenya.remember     '1' only if the visitor turned on "Remember on this device".
 //   nenya.prefs        display settings, written only while nenya.remember is on.
 //   nenya.terms        the terms date the visitor agreed to, written only while nenya.remember is on.
+//   nenya.terms.receipt  the site-signed terms receipt (src/lib/termsReceipt.ts): held for the VISIT in the tab's session storage (the browser clears it when the tab closes; Emergency Exit and Forget me clear it
+//                      too), and written to this device only while nenya.remember is on. It holds the Terms' effective date, a time, a build and a signature: no address, no identifier.
 //   nenya.coach.pause  a timestamp: when the coach demo may open again after it ended a conversation (see src/lib/pause.ts). Removed by Forget me.
 //   nenya.coach.owner  '1' in the owner's own browser, to skip the coach rest while testing.
 //   nenya.coach.ownerToken  the owner's secret, to skip the per-connection limit while testing.
@@ -70,6 +72,7 @@ export function setRemembering(on: boolean) {
     remove(REMEMBER_KEY);
     remove(PREFS_KEY);
     remove(TERMS_KEY);
+    remove(TERMS_RECEIPT_KEY);
   }
   emit();
 }
@@ -199,8 +202,46 @@ export const __resetBreathingTonesForTests = (): void => {
   soundStyle = null;
 };
 
-/** Only if the visitor chose to be remembered, and only for the exact terms they agreed to. */
-export const termsAcceptedFor = (version: string) => isRemembering() && read(TERMS_KEY) === version;
+export const TERMS_RECEIPT_KEY = 'nenya.terms.receipt';
+/** What is held about the agreement: the site-signed receipt when there is one, else just the date and the page's own time (an unsigned note, never put into anything signed). */
+export interface TermsRecord {
+  terms: string;
+  at: string;
+  receipt?: unknown;
+}
+const sessionRead = (k: string): string | null => {
+  try {
+    return typeof sessionStorage === 'undefined' ? null : sessionStorage.getItem(k);
+  } catch {
+    return null;
+  }
+};
+const parseRecord = (raw: string | null): TermsRecord | null => {
+  if (!raw) return null;
+  try {
+    const r = JSON.parse(raw) as TermsRecord;
+    return r && typeof r.terms === 'string' && typeof r.at === 'string' ? r : null;
+  } catch {
+    return null;
+  }
+};
+/** The agreement held for this visit (session storage), or, if the visitor chose to be remembered, the one kept on this device. */
+export const getTermsRecord = (): TermsRecord | null => parseRecord(sessionRead(TERMS_RECEIPT_KEY)) ?? (isRemembering() ? parseRecord(read(TERMS_RECEIPT_KEY)) : null);
+/** Holds the agreement for the visit; also on this device only if the visitor turned on "Remember on this device". */
+export function holdTermsRecord(rec: TermsRecord): void {
+  const text = JSON.stringify(rec);
+  try {
+    if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(TERMS_RECEIPT_KEY, text);
+  } catch {
+    /* blocked: the agreement is simply asked again */
+  }
+  if (isRemembering()) {
+    write(TERMS_RECEIPT_KEY, text);
+    write(TERMS_KEY, rec.terms);
+  }
+}
+/** Agreement for exactly this Terms version: held for the visit, or kept on the device by choice. Session storage does not outlive the tab. */
+export const termsAcceptedFor = (version: string) => getTermsRecord()?.terms === version || (isRemembering() && read(TERMS_KEY) === version);
 export const rememberTerms = (version: string) => {
   if (isRemembering()) write(TERMS_KEY, version);
 };
@@ -228,6 +269,11 @@ export function wipeDevice({ keepOwner }: { keepOwner: boolean }) {
       if (k && k.toLowerCase().startsWith('nenya') && !(keepOwner && (k === OWNER_KEY || k === OWNER_TOKEN_KEY || k === OVERRIDES_KEY))) mine.push(k);
     }
     mine.forEach((k) => localStorage.removeItem(k));
+    try {
+      if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(TERMS_RECEIPT_KEY);
+    } catch {
+      /* nothing reachable */
+    }
   } catch {
     // Nothing reachable to erase.
   }

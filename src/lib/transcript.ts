@@ -22,6 +22,8 @@ export interface TranscriptMeta {
   /** Present only when the site ended the conversation by stopping the last message: the transcript then ends with that message. */
   endedBy?: 'site';
   stop?: { category: string; kind?: string };
+  /** Present when the visitor agreed to the Terms during this visit and the site signed that agreement: the Terms' effective date, the site's time and the build. */
+  terms?: { terms: string; agreedAt: string; build: string };
 }
 
 /** The transcript object exactly as the server hashed and signed it (version 3 has `meta`; older files, version 2, do not). */
@@ -107,6 +109,8 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
           `Version that wrote the replies: build ${meta.build}, model ${meta.model}, instructions ${meta.instructions}`
         );
       }
+      // Only when there is one: a transcript made before this existed (or without an agreement) reads exactly as it always did, so copies saved earlier still check out on the verify page.
+      if (meta.terms) lines.push(`Terms agreed during this visit: the Terms of Use and Privacy Policy dated ${meta.terms.terms}, agreed on ${meta.terms.agreedAt} (site clock, build ${meta.terms.build}), signed by the site`);
     }
     lines.push(
       `Signed by Nenya on: ${receipt.issuedAt}`,
