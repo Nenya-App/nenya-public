@@ -18,7 +18,8 @@
     "test": "node tests/run.mjs",
     "check": "npm run typecheck && npm test && npm run build",
     "predev": "node scripts/write-build-info.mjs",
-    "dev": "vite"
+    "dev": "vite",
+    "logo:render": "vite build --config scripts/logo-export.vite.config.mts && node scripts/render-logo-assets.mts"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.7",

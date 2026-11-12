@@ -183,11 +183,23 @@ export default function GemBench() {
   const [sinks] = useState(() => ({ sprite: { fn: () => {} } as Sink, live: { fn: () => {} } as Sink }));
   const [report] = useState(() => ({ sprite: (st: GemStats) => sinks.sprite.fn(st), live: (st: GemStats) => sinks.live.fn(st) }));
   const [copied, setCopied] = useState('');
+  // Each press of "Return to the plain cut" (or loading new settings) adds one; the live gem restarts its kaleidoscope from the plain cut when it changes.
+  const [restart, setRestart] = useState(0);
   const { setTheme } = useTheme();
   const supported = useMemo(() => liveGemSupported(), []);
 
   const set = <K extends Section>(k: K, patch: Partial<Settings[K]>) => setS((prev) => ({ ...prev, [k]: { ...prev[k], ...patch } }));
   const reset = (k: Section) => setS((prev) => ({ ...prev, [k]: structuredClone(DEFAULTS[k]) }));
+
+  // A new address pasted after the # (without reloading the page) loads those settings. The address writing itself back uses replaceState, which does not raise this event, so there is no loop.
+  useEffect(() => {
+    const onHash = () => {
+      setS(fromHash(location.hash));
+      setRestart((r) => r + 1);
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   // The address follows the settings (replaced, not added to the history, so Back still leaves the page).
   const hashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -225,7 +237,7 @@ export default function GemBench() {
   const O = s.outer;
   const F = s.finish;
   const bg = s.view.background === 'dark' ? '#1A1512' : '#F5EFE6';
-  const live = useMemo(() => ({ light: s.light, cut: s.cut, quality: s.motion.autoQuality ? undefined : s.quality, fps: s.motion.fps, spin: s.motion.spin, kaleidoscope: s.kaleidoscope }), [s.light, s.cut, s.quality, s.motion, s.kaleidoscope]);
+  const live = useMemo(() => ({ light: s.light, cut: s.cut, quality: s.motion.autoQuality ? undefined : s.quality, fps: s.motion.fps, spin: s.motion.spin, kaleidoscope: s.kaleidoscope, restart }), [s.light, s.cut, s.quality, s.motion, s.kaleidoscope, restart]);
   const profile = useMemo(() => deviceProfile(), []);
 
   return (
@@ -310,8 +322,9 @@ export default function GemBench() {
           <Range label="Light turn per sparkle loop (turns)" value={s.motion.spin} min={0} max={1} step={0.01} onChange={(v) => set('motion', { spin: v })} hint="One sparkle loop is three breaths, as with the sprite." />
         </Panel>
 
-        <Panel title="Live gem: kaleidoscope" open onReset={() => reset('kaleidoscope')}>
-          <Toggle label="Kaleidoscope" value={s.kaleidoscope.on} onChange={(v) => set('kaleidoscope', { on: v })} hint="The inside of the stone slowly re-cuts itself; the outline stays still. Held still when the device asks for reduced motion." />
+        <Panel title="Live gem: kaleidoscope" open onReset={() => { reset('kaleidoscope'); setRestart((r) => r + 1); }}>
+          <Toggle label="Kaleidoscope" value={s.kaleidoscope.on} onChange={(v) => set('kaleidoscope', { on: v })} hint="The inside of the stone slowly re-cuts itself; the outline stays still. Held still when the device asks for reduced motion. Turning it off pauses it where it is." />
+          <button type="button" onClick={() => { set('kaleidoscope', { on: false }); setRestart((r) => r + 1); }} className="w-full rounded border border-border px-2 py-1.5 text-xs hover:bg-muted">Return to the plain cut (and turn it off)</button>
           <div className="space-y-1">
             <span className="block text-xs">Preset</span>
             <div className="flex flex-wrap gap-1">

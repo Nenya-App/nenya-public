@@ -29,6 +29,11 @@ export interface LiveGemLook {
    * stone keeps its current cut); turning it on again carries on from there. Held still with reduced motion.
    */
   kaleidoscope?: Partial<KaleidoscopeLook>;
+  /**
+   * A counter. Each time it changes, the kaleidoscope forgets where it had got to and the stone goes back to its plain cut (the one in `cut`), where it stays until the
+   * kaleidoscope is turned on again. Turning it off alone only pauses it where it is.
+   */
+  restart?: number;
 }
 
 /** What the gem reports about itself, about once a second (for the /bench page). */
@@ -131,7 +136,7 @@ export default function SpectralGem({
   liveRef.current = live;
   // The kaleidoscope's own clock: it only runs while the kaleidoscope is on, so turning it off pauses the pattern
   // where it is instead of snapping back to the plain cut.
-  const kaleido = useRef({ t: 0, last: 0, started: false });
+  const kaleido = useRef<{ t: number; last: number; started: boolean; restart: number | undefined }>({ t: 0, last: 0, started: false, restart: undefined });
   const statsRef = useRef(onStats);
   statsRef.current = onStats;
   const timingRef = useRef({ orbitSeconds, colorCycle });
@@ -222,6 +227,12 @@ export default function SpectralGem({
     const kaleidoscopeAt = (reduced: boolean, L: LiveGemLook | undefined): Partial<GemCut> | undefined => {
       const k = kaleido.current;
       const now = performance.now();
+      if (L?.restart !== k.restart) {
+        k.restart = L?.restart;
+        k.t = 0;
+        k.last = 0;
+        k.started = false; // back to the plain cut until it is switched on again
+      }
       const running = !reduced && !!L?.kaleidoscope?.on;
       if (running) {
         // Long gaps (the tab hidden, the gem scrolled away) do not count, so it never jumps ahead.
