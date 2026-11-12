@@ -36,9 +36,20 @@ def rss_mb():
 def sigmoid(x): return 1 / (1 + np.exp(-x))
 def softmax(x): e = np.exp(x - x.max(axis=-1, keepdims=True)); return e / e.sum(axis=-1, keepdims=True)
 
-def load_models():
+def load_models(only=None):
     from transformers import AutoTokenizer
     models = {}
+    if only and 'onnx' in only.lower() and 'cardiff' in only.lower():
+        # the exported, quantized cardiffnlp model alone (scripts/export-onnx.py): memory and load time are then this model's own
+        import onnxruntime as ort
+        d = os.path.join(R, 'models/cardiffnlp-hate-latest'); f = os.path.join(R, 'models/cardiffnlp-onnx/model_int8.onnx')
+        t0 = time.time(); tok2 = AutoTokenizer.from_pretrained(d); sess = ort.InferenceSession(f, providers=['CPUExecutionProvider']); load = time.time() - t0
+        def run_c(texts):
+            enc = tok2(texts, padding=True, truncation=True, max_length=128, return_tensors='np')
+            return softmax(sess.run(None, {'input_ids': enc['input_ids'].astype('int64'), 'attention_mask': enc['attention_mask'].astype('int64')})[0])
+        cfg = json.load(open(os.path.join(d, 'config.json'))); hate_idx = [i for i, l in cfg['id2label'].items() if 'NOT' not in l.upper()][0]
+        models['cardiffnlp hate int8 (ONNX export)'] = dict(run=run_c, load=load, size=os.path.getsize(f), heads={'hate': int(hate_idx)}, kind='softmax')
+        return models
     # 1. toxic-bert, ready-made int8 ONNX (onnxruntime)
     import onnxruntime as ort
     d = os.path.join(R, 'models/xenova-toxic-bert')
@@ -91,7 +102,7 @@ def main():
     sets = {'hatecheck': hatecheck(), 'ethos': ethos()}
     verdicts = {k: json.load(open(os.path.join(R, f'results/private/verdicts-{k}.json'))) for k in sets}
     labels = ethos_labels()
-    models = load_models()
+    models = load_models(sys.argv[1] if len(sys.argv) > 1 else None)
     report = {}
     for mname, M in models.items():
         t0 = time.time()
