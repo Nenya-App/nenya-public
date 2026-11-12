@@ -21,6 +21,13 @@ export interface LexiconSource {
 }
 
 export const LEXICON_SOURCES: Record<string, LexiconSource> = {
+  'wiktionary-en': {
+    id: 'wiktionary-en', name: 'English Wiktionary: ethnic, religious and anti-LGBTQ slurs, and dysphemisms', authors: 'Wiktionary contributors', url: 'https://en.wiktionary.org',
+    licence: 'CC BY-SA 4.0', licenceStatedIn: 'Wiktionary\'s footer and terms of use (text is CC BY-SA 4.0)',
+    citation: 'English Wiktionary (https://en.wiktionary.org), category members pulled 2026-11-12 through the MediaWiki API. Text licence: CC BY-SA 4.0. Wiktionary contributors.',
+    may: { useInFreeTool: true, distribute: false }, status: 'in-use',
+    pending: ['the credit line is in ATTRIBUTIONS.md; the list stays private (ShareAlike would apply to a distributed adaptation)'],
+  },
   'hurtlex-en-1.2': {
     id: 'hurtlex-en-1.2', name: 'HurtLex, English, version 1.2', authors: 'Elisa Bassignana, Valerio Basile and Viviana Patti (built on Tullio De Mauro\'s Italian list)', url: 'https://github.com/valeriobasile/hurtlex',
     licence: 'CC BY-NC-SA 4.0', licenceStatedIn: 'the repository\'s root README (GitHub\'s licence detection returned none)',

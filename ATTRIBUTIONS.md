@@ -95,3 +95,7 @@ Nenya's private list of slurs and dehumanizing language, used only to offer a ge
 - Licence: [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/), as stated in the project's README.
 - What we changed: we use only the conservative level and some of its categories, drop entries that are ordinary words unless a nearby cue word is present, and add our own context rules and entries from other sources. The list itself is private and is not distributed, in this repository or anywhere else.
 - The authors have not endorsed Nenya. Nenya's coach is free to use, and nothing in it is sold.
+
+## Wiktionary (detection list)
+
+The same private list also draws on the **English Wiktionary** categories of ethnic, religious and anti-LGBTQ slurs and dysphemisms (<https://en.wiktionary.org>), whose text is licensed under [Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/). We read only the terms and their category names, reviewed every one by hand (many were dropped as ordinary words or names), and added our own rules. The list is private and is not distributed. Wiktionary and its contributors have not endorsed Nenya.
