@@ -4,7 +4,7 @@
 import { capDay, type CounterStore } from './dailyCap.ts';
 
 /** Why a coach turn was refused. A code, never message text. */
-export const BLOCK_REASONS = ['manipulation', 'context', 'crisis', 'cap', 'ip'] as const;
+export const BLOCK_REASONS = ['manipulation', 'context', 'crisis', 'cap', 'ip', 'form.short', 'form.unclear'] as const;
 
 export const FIXED_EVENTS = [
   'coach.turn.sent', // a well-formed message reached the function
@@ -32,6 +32,12 @@ export const FIXED_EVENTS = [
   'coach.offer.coded-term',
   'coach.offer.harassing-insult',
   'coach.offer.ai-insult',
+  // The screening model in shadow mode (docs/coach-screening-flow-scope.md): a count per band, whether the phrase matcher also acted, and how often the model could not answer in time. Counts only: no message, no score.
+  'coach.screen.unavailable',
+  'coach.screen.band.high',
+  'coach.screen.band.mid',
+  'coach.screen.band.low',
+  ...(['high', 'mid', 'low'] as const).flatMap((b) => [`coach.screen.vs-list.${b}.list`, `coach.screen.vs-list.${b}.nolist`]),
 ] as const;
 
 /** The screens a page view can be counted for (the app's own screen ids; the About pages count together as 'about'). */

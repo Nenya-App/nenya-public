@@ -22,6 +22,7 @@
     "logo:render": "vite build --config scripts/logo-export.vite.config.mts && node scripts/render-logo-assets.mts"
   },
   "dependencies": {
+    "@huggingface/tokenizers": "^0.2.0",
     "@netlify/blobs": "^11.1.7",
     "@netlify/identity": "^2.0.1",
     "@noble/curves": "^1.9.7",
@@ -40,6 +41,7 @@
     "jspdf": "4.2.1",
     "lucide-react": "0.487.0",
     "motion": "12.23.24",
+    "onnxruntime-web": "1.22.0",
     "tailwind-merge": "3.2.0",
     "tw-animate-css": "1.3.8"
   },

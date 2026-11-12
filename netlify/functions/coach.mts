@@ -44,7 +44,8 @@ import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
 import { allCards } from '../../src/lib/learningCards.ts';
-import { historyHits, offerFor } from '../../src/lib/learningOffer.ts';
+import { OFFER_MAP, historyHits, offerFor } from '../../src/lib/learningOffer.ts';
+import { askScreen } from '../../src/lib/screenClient.ts';
 import { getMatcher } from '../../src/lib/lexiconStore.ts';
 import { match as lexiconMatch } from '../../src/lib/lexicon.ts';
 import { echoedNames, NAME_NOTE, NAME_RULE, withoutNames } from '../../src/lib/nameGuard.ts';
@@ -1069,6 +1070,10 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     reply = withDistressText(ctxFlag.category, reply, MAX_ASSISTANT_CHARS, ctxFlag.kind);
     tally('coach.turn.distress-text');
   }
+  // The screening model, in SHADOW mode only (COACH_SCREEN=shadow and COACH_SCREEN_SECRET set): the latest message is sent to our own screening function while the model answers, and only the
+  // band is counted, next to whether the phrase matcher acted. Nothing about the message or the score is kept, and the reply never depends on it. Any failure or a slow answer (the first call
+  // after a cold start) is counted as unavailable and ignored (fail open). docs/coach-screening-flow-scope.md.
+  const screening = process.env.COACH_SCREEN === 'shadow' && process.env.COACH_SCREEN_SECRET && !flag ? askScreen({ origin: url.origin, secret: process.env.COACH_SCREEN_SECRET, text: lastText }) : null;
   if (ctxFlag && turn === 1) tally('coach.context.flagged');
   tally('coach.turn.answered');
   if (turn >= MAX_TURNS) tally('coach.conversation.finished');
@@ -1085,6 +1090,18 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       const o = offerFor({ hits: [...(matcher ? lexiconMatch(lastText, matcher) : []), ...historyHits(lastText)], text: lastText, shown, available: [...known], flagged: !!flag, abuseAtCoach: hostile === 'abuse', ...(Number.isInteger(minSev) && minSev >= 1 && minSev <= 3 ? { minSeverity: minSev } : {}) });
       if (o) { offer = { id: o.id, proof: offerProof(secret, [...messages, { role: 'assistant' as const, content: reply }], o.id) }; tally(`coach.offer.${o.because}`); }
     } catch { /* an offer is a courtesy: never let it break a reply */ }
+  }
+  if (screening) {
+    const sc = await screening;
+    if (!sc) tally('coach.screen.unavailable');
+    else {
+      tally(`coach.screen.band.${sc.band}`);
+      try {
+        const matcher = await getMatcher(privateStore() as unknown as Parameters<typeof getMatcher>[0]);
+        const acted = offerFor({ hits: [...(matcher ? lexiconMatch(lastText, matcher) : []), ...historyHits(lastText)], text: lastText, shown: [], available: [...new Set(Object.values(OFFER_MAP).flat())], flagged: false, abuseAtCoach: hostile === 'abuse' }) !== null;
+        tally(`coach.screen.vs-list.${sc.band}.${acted ? 'list' : 'nolist'}`);
+      } catch { /* a count is a courtesy: never let it break a reply */ }
+    }
   }
   const history = [...messages, { role: 'assistant' as const, content: reply }];
   const ticket = sign(secret, turn, Date.now(), history, session, context, code);

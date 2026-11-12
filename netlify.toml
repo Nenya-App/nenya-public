@@ -186,3 +186,8 @@
   for = "/pdf-assets/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
+
+# The screening function loads the ONNX runtime (WebAssembly) and a tokenizer from node_modules at run time: ship those packages whole instead of bundling them.
+[functions.screen]
+  external_node_modules = ["onnxruntime-web", "@huggingface/tokenizers"]
+  node_bundler = "esbuild"
