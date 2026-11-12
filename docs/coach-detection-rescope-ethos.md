@@ -80,3 +80,16 @@ Everything under "what ETHOS is" comes from its GitHub page (via a summary) and 
 - **Our test:** run the matcher over it and report, **per functionality**, the share flagged. The non-hateful functionalities should be near zero; the evasion ones show what the leet fold and spacing handling buy. Counts and case ids only.
 - **Caveats:** its notion of "hateful" includes profanity aimed at a group and implicit slights that are outside our category, so a hateful case the matcher misses is not automatically a miss for us; read the dehumanizing, threat and slur functionalities as the ones that matter. It covers seven groups, not every group our target-neutral patterns cover. Synthetic templates, so real text is messier (hence ETHOS and MetaHate).
 - **Next:** `scripts/eval-hatecheck.mts` (with the ETHOS script, one shared runner); the bar for the non-hateful functionalities is set before the first run.
+
+## 10. The evaluation runner, and its first run (2026-11-12)
+`scripts/eval-detect.mts` runs the site's real detection (the private list's matcher, the history patterns and the card-offer rule with its reporting-frame guard) over HateCheck (and ETHOS and MetaHate when they are in `datasets/`), and prints **counts only** (per functionality, with 95% intervals); `--json` writes the counts and false-alarm case numbers (no text) to `results/public/`. `--no-list` runs the history patterns alone. "Flagged" = the coach would offer a card; "any hit" = the matcher found something at all.
+
+**Bars, set before the first run:** at most **2%** of the non-hateful cases flagged overall (and any single non-hateful functionality above 5% is marked for a look).
+
+**First run, with the HurtLex-derived list exactly as prepared (not yet reviewed by the counselor and the advocate), against HateCheck:**
+- **Non-hateful: 167 of 1,165 flagged (14.3%). The bar is not met.** The list as it stands is too eager, as expected of a machine-translated, unreviewed lexicon.
+- **Where it fails:** profanity not aimed at anyone 38%; reclaimed slurs 47%; denouncing hate 32%; slur lookalikes 20%; abuse aimed at an individual 17% and at an object 14%; negated hate 10.5%. Where it holds: quoted hate 0.6% (the reporting-frame rule does its job), neutral and positive identity statements 0%.
+- **Hateful (reading only): 320 of 2,563 flagged (12.5%), any hit 53.5%.** Many "any hit" cases never reach "flagged" because of the severity floor, the cue requirement and the reporting frame; threats and implicit derogation are not caught by words at all (0% on three of those functionalities), which is the case for the model and the history patterns.
+- **What it says:** the "derogatory words" and profanity-like rows (the largest HurtLex category taken, 974 rows) are the main source of false alarms; the reviewers' pass must cut or cue them. Denouncing and reclaimed use are the contexts the reporting rule does not reach; the model is the natural second signal there.
+
+**Next:** (1) a per-entry attribution (which list rows cause the false alarms, by row number only, never printed words) so the reviewers' packet can start with the worst offenders; (2) re-run after each list change and record the result row here; (3) ETHOS and MetaHate files into `datasets/` (ETHOS is a plain download; MetaHate needs the owner's Hugging Face sign-in) and rerun.
