@@ -14,8 +14,10 @@
 // describe it as end-to-end encryption from the visitor's device.
 //
 // Attestation: we check what Venice reports (verified, our nonce echoed back, a signing key present, no debug
-// flag). We do not parse the Intel TDX quote or the NVIDIA payload ourselves, so we rely on Venice's own
-// verification of the enclave.
+// flag), and then the hardware evidence itself (src/lib/enclaveCheck.ts: Intel's signatures up to the pinned root, the
+// key and our nonce in the quote, which code runs). COACH_HARDWARE_CHECK sets what a failed hardware check does here:
+// "report" (the default) logs it and carries on with Venice's own verification, "enforce" refuses the key, "off" skips
+// it. The browser's sealed mode always enforces it, whatever this is set to.
 //
 // A short memory of the result: asking Venice for an attestation on every message hit Venice's rate limit for that step
 // (each coach turn made two requests). So the verified model key is kept in this function's memory for a few minutes
@@ -31,6 +33,7 @@
 //    dropped and the request is repeated once with a fresh attestation.
 
 import { createCipheriv, createDecipheriv, createECDH, hkdfSync, randomBytes } from 'node:crypto';
+import { checkHardware } from './enclaveCheck.ts';
 
 const HKDF_INFO = Buffer.from('ecdsa_encryption');
 const MIN_ENCRYPTED_HEX = 186; // ephemeral key (65) + nonce (12) + tag (16) = 93 bytes
@@ -137,6 +140,20 @@ export interface AttestationPolicy {
   /** How old a stored key may be and still be used when the attestation step is only rate limited or briefly down (ms). */
   staleMs: number;
   now: () => number;
+  /** What a failed hardware check does: 'report' (log, carry on; the default), 'enforce' (refuse the key) or 'off'. */
+  hardware?: HardwareMode;
+}
+
+export type HardwareMode = 'report' | 'enforce' | 'off';
+export const hardwareModeFrom = (v: string | undefined): HardwareMode => (v === 'enforce' || v === 'off' ? v : 'report');
+
+/** Runs the hardware check on a report whose basic checks passed. Throws only in 'enforce' mode. */
+async function hardwareGate(report: AttestationReport, key: string, nonce: string, mode: HardwareMode = 'report'): Promise<void> {
+  if (mode === 'off') return;
+  const hw = await checkHardware(report, key, nonce);
+  if (hw.ok === true) return;
+  if (mode === 'enforce') throw new E2eeError('attestation', { detail: 'hardware: ' + hw.failed });
+  console.warn(`coach: the enclave hardware check did not pass (${hw.failed}); carrying on with Venice's own verification (COACH_HARDWARE_CHECK=report)`);
 }
 
 const secondsFromEnv = (v: string | undefined, fallback: number): number => {
@@ -148,7 +165,7 @@ const secondsFromEnv = (v: string | undefined, fallback: number): number => {
 export function attestationPolicyFromEnv(env: Record<string, string | undefined> = process.env): AttestationPolicy {
   const ttl = Math.min(86400, secondsFromEnv(env.COACH_E2EE_ATTESTATION_TTL_S, 300));
   const stale = Math.min(86400, Math.max(ttl, secondsFromEnv(env.COACH_E2EE_ATTESTATION_STALE_S, 900)));
-  return { ttlMs: ttl * 1000, staleMs: ttl === 0 ? 0 : stale * 1000, now: () => Date.now() };
+  return { ttlMs: ttl * 1000, staleMs: ttl === 0 ? 0 : stale * 1000, now: () => Date.now(), hardware: hardwareModeFrom(env.COACH_HARDWARE_CHECK) };
 }
 
 const keyMemory = new Map<string, { key: string; at: number }>();
@@ -168,7 +185,7 @@ const onlyBusy = (e: unknown): boolean => {
 };
 
 /** Fetch and check the enclave's attestation; returns the key to encrypt to. */
-async function attest(o: Required<Pick<E2eeChatOptions, 'apiKey' | 'model' | 'baseUrl'>> & { fetchImpl: typeof fetch; signal?: AbortSignal }): Promise<string> {
+async function attest(o: Required<Pick<E2eeChatOptions, 'apiKey' | 'model' | 'baseUrl'>> & { fetchImpl: typeof fetch; signal?: AbortSignal; hardware?: HardwareMode }): Promise<string> {
   const nonce = randomBytes(32).toString('hex'); // 32 bytes, as the providers require
   const res = await o.fetchImpl(`${o.baseUrl}/tee/attestation?model=${encodeURIComponent(o.model)}&nonce=${nonce}`, {
     headers: { Authorization: `Bearer ${o.apiKey}` },
@@ -177,7 +194,10 @@ async function attest(o: Required<Pick<E2eeChatOptions, 'apiKey' | 'model' | 'ba
   if (!res.ok) throw new E2eeError('attestation', { status: res.status, detail: await errorDetail(res) });
   // Verified, our nonce echoed back, not a debug enclave (the guide asks for this check but does not name the field, so the
   // likely ones are checked), and a well-formed key: see checkReport below.
-  return checkReport((await res.json()) as AttestationReport, nonce);
+  const report = (await res.json()) as AttestationReport;
+  const key = checkReport(report, nonce);
+  await hardwareGate(report, key, nonce, o.hardware);
+  return key;
 }
 
 /** The key to encrypt to for this model: the remembered one if it is recent, else a fresh, fully checked attestation. */
@@ -193,7 +213,7 @@ async function modelKeyFor(
   // Requests that arrive together share one attestation instead of each making their own.
   let pending = policy.ttlMs > 0 ? keyInFlight.get(o.model) : undefined;
   if (!pending) {
-    pending = attest({ ...o, signal: o.signal ?? AbortSignal.timeout(15000) }).then(
+    pending = attest({ ...o, signal: o.signal ?? AbortSignal.timeout(15000), hardware: policy.hardware }).then(
       (key) => {
         if (policy.ttlMs > 0) keyMemory.set(o.model, { key, at: policy.now() });
         return key;
@@ -328,6 +348,7 @@ export async function attestationFor(o: { apiKey: string; model: string; nonce: 
   const report = (await res.json()) as AttestationReport;
   const key = checkReport(report, o.nonce);
   const policy = o.policy ?? attestationPolicyFromEnv();
+  await hardwareGate(report, key, o.nonce, policy.hardware);
   if (policy.ttlMs > 0) keyMemory.set(o.model, { key, at: policy.now() });
   return { key, report };
 }

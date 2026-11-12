@@ -28,6 +28,9 @@
 //   COACH_E2EE_MINIMAL   plain    optional, "true" sends fewer sampling settings on the encrypted route (a diagnostic)
 //   COACH_SEALED         plain    optional, "on" accepts sealed mode: messages the browser encrypted itself (handleSealed below;
 //                                 needs an "e2ee-" model). Off by default.
+//   COACH_HARDWARE_CHECK plain    optional, what a failed enclave hardware check does on this server (src/lib/enclaveCheck.ts):
+//                                 "report" (default: log it, carry on), "enforce" (refuse the key) or "off". The browser's
+//                                 sealed mode always enforces its own check.
 //   COACH_METHOD_NOTES   plain    optional, short method notes (fallback when the blob below is absent)
 // Netlify Blobs: store "coach-private", key "method-notes" holds longer private method
 // notes that are added to the system instruction. See docs/coach-method-notes.md.

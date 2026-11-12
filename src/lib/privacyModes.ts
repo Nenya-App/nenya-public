@@ -47,12 +47,12 @@ export const MODES: Record<ModeId, PrivacyMode> = {
     whoCanRead: ["The AI model's secure enclave"],
     checks: 'Crisis, identifier and instruction checks run only on your device. Nenya’s server cannot check what it cannot read.',
     canSign: false,
-    encryption: 'Encrypted on your device for the AI model’s enclave. Nenya checks the enclave report Venice provides; it does not yet check the hardware evidence itself.',
+    encryption: 'Encrypted on your device for the AI model’s enclave. Your device checks the hardware evidence itself: Intel’s signatures, that the key was made inside the enclave for this conversation, and which code it runs. It still relies on Venice for whether the firmware is up to date, for the GPU evidence’s signatures, and for whether the code is the code Venice intends.',
     footprint: 'About the same as Witnessed: the same model and limits, one extra check of the enclave, slightly larger requests.',
     limits: [
       'Nenya cannot sign a record of words it never saw, so a Sealed conversation cannot become a Witnessed Encounter.',
       'Someone who edits the page can skip the checks on their own device.',
-      'The enclave is run by Venice on attested hardware; you are trusting that hardware and Venice’s report of it.',
+      'The enclave is run by Venice on attested hardware. Your device checks Intel’s signatures on it, but you are still trusting Intel’s hardware, and Venice for the parts your device cannot check yet.',
     ],
   },
   local: {

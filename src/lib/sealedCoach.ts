@@ -3,13 +3,16 @@
 // can read them. The reply comes back encrypted to a one-time key made here, and is opened here.
 //
 // The price, stated plainly (and shown to the visitor by src/lib/privacyModes.ts): the safety checks run only on this
-// device, the relay cannot sign a transcript of words it never saw, and the enclave check below trusts Venice's own
-// verification of the hardware report (the Intel TDX / NVIDIA evidence is not parsed here yet).
+// device, and the relay cannot sign a transcript of words it never saw. The enclave check below reads the hardware evidence
+// itself (src/lib/enclaveCheck.ts): Intel's signatures up to the pinned root, the key and our nonce in the quote, no debug
+// mode, which code runs, and the GPU evidence's nonce. What it still takes from Venice: whether the firmware is up to date
+// and unrevoked, the GPU evidence's signatures, and whether the code is the code Venice intends.
 //
 // Protocol (the same as src/lib/veniceE2ee.ts on the server): secp256k1 ECDH, HKDF-SHA256 with info "ecdsa_encryption" and
 // no salt, AES-256-GCM. A message is hex of: one-time public key (65 bytes) | nonce (12) | ciphertext | tag (16).
 
 import { secp256k1 } from '@noble/curves/secp256k1';
+import { checkHardware, type HardwareFacts, type HardwareFailure } from './enclaveCheck.ts';
 import { scrubPII } from './piiScrub.ts';
 import { looksLikeManipulation, neutralize } from './promptGuard.ts';
 import { checkConversation, type SafetyFlag } from './safetyFlags.ts';
@@ -32,12 +35,15 @@ export function fromHex(h: string): Uint8Array {
 }
 const randomBytes = (n: number): Uint8Array => crypto.getRandomValues(new Uint8Array(n));
 
-export type SealedCode = 'attestation' | 'nonce' | 'key' | 'format' | 'decrypt' | 'blocked' | 'status' | 'network';
+export type SealedCode = 'attestation' | 'hardware' | 'nonce' | 'key' | 'format' | 'decrypt' | 'blocked' | 'status' | 'network';
 export class SealedError extends Error {
   code: SealedCode;
-  constructor(code: SealedCode) {
-    super('sealed ' + code);
+  /** For 'hardware': which part of the hardware check failed. */
+  failed?: HardwareFailure;
+  constructor(code: SealedCode, failed?: HardwareFailure) {
+    super('sealed ' + code + (failed ? ' ' + failed : ''));
     this.code = code;
+    if (failed) this.failed = failed;
   }
 }
 
@@ -146,6 +152,8 @@ export interface SealedCoachOptions {
   session: { color1: string; color2: string };
   endpoint?: string;
   fetchImpl?: typeof fetch;
+  /** Check the hardware evidence on this device (default true). Only tests against a fake enclave turn it off. */
+  checkHardware?: boolean;
 }
 
 /**
@@ -155,6 +163,8 @@ export interface SealedCoachOptions {
  */
 export class SealedCoach {
   private modelKey: string | null = null;
+  /** What the last hardware check found (null before one has passed, or when the check is off). */
+  hardware: HardwareFacts | null = null;
   private userCipher: string[] = [];
   private history: { role: 'user' | 'assistant'; content: string }[] = [];
   private ticket: string | undefined;
@@ -187,7 +197,18 @@ export class SealedCoach {
   async attest(): Promise<string> {
     const nonce = toHex(randomBytes(32));
     const j = await this.post({ sealed: 'attest', nonce });
-    this.modelKey = checkReport((j.report ?? {}) as Record<string, unknown>, nonce);
+    const report = (j.report ?? {}) as Record<string, unknown>;
+    const key = checkReport(report, nonce);
+    if (this.opts.checkHardware !== false) {
+      const hw = await checkHardware(report, key, nonce);
+      if (hw.ok === false) {
+        this.modelKey = null;
+        this.hardware = null;
+        throw new SealedError('hardware', hw.failed);
+      }
+      this.hardware = hw.facts;
+    }
+    this.modelKey = key;
     return this.modelKey;
   }
 

@@ -63,7 +63,7 @@ const viaRelay = async (input: any, init: any) => {
   return handler(new Request('https://nenya.biz' + input, { ...init, headers: { ...init.headers, origin: 'https://nenya.biz' } }));
 };
 __clearAttestationMemory();
-const coach = new SealedCoach({ session: SESSION, fetchImpl: viaRelay as typeof fetch });
+const coach = new SealedCoach({ session: SESSION, fetchImpl: viaRelay as typeof fetch, checkHardware: false }); // a fake enclave has no Intel quote (the real check: tests/enclave-check.test.mts)
 let last: any;
 for (let t = 1; t <= 5; t++) {
   last = await coach.send(`private words number ${t}`);
