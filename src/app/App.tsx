@@ -534,6 +534,7 @@ export default function App() {
               cycleStart={breathingCycleStart}
               onStartTutorial={handleStartTutorial}
               entryUnlocked={termsAgreed}
+              onLogoClick={() => setBreathingPopoutOpen((open) => !open)}
             />
           )}
 

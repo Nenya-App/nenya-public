@@ -21,6 +21,8 @@ interface WelcomePageProps {
   cycleStart?: number;
   onStartTutorial?: () => void;
   entryUnlocked?: boolean;
+  /** Clicking the big logo opens the same panel as the small one in the top left: breathing animation and accessibility settings. */
+  onLogoClick?: () => void;
 }
 
 export default function WelcomePage({
@@ -35,6 +37,7 @@ export default function WelcomePage({
   cycleStart,
   onStartTutorial,
   entryUnlocked = false,
+  onLogoClick,
 }: WelcomePageProps) {
   const [logoSize, setLogoSize] = useState(400);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -83,8 +86,26 @@ export default function WelcomePage({
             leaving a large empty gap above it. The outer section's own
             justify-center now centers this + the text block as one unit. */}
         <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`flex items-center justify-center transition-all duration-500`}>
-          {/* Not interactive: hovering only brightens the glow. */}
-          <div id="tutorial-logo" className="relative transition-all duration-500 nenya-logo-hover">
+          {/* Clicking the logo opens the breathing and accessibility settings, the same as the small logo in the top left (a button for the keyboard and screen readers, too). Hovering brightens the glow. */}
+          <div
+            id="tutorial-logo"
+            className={`relative transition-all duration-500 nenya-logo-hover ${onLogoClick ? 'cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring' : ''}`}
+            {...(onLogoClick
+              ? {
+                  role: 'button',
+                  tabIndex: 0,
+                  'aria-label': 'Open breathing animation and accessibility settings',
+                  title: 'Open breathing animation & accessibility settings',
+                  onClick: onLogoClick,
+                  onKeyDown: (e: React.KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onLogoClick();
+                    }
+                  },
+                }
+              : {})}
+          >
             <ValarBreathingLogo
               enabled={breathingEnabled}
               opacity={breathingOpacity}
