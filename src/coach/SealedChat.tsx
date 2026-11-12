@@ -4,6 +4,7 @@ import { Button } from '../app/components/ui/button';
 import { Card } from '../app/components/ui/card';
 import { FlagNotice } from './FlagNotice';
 import { SealedCoach, SealedError, MAX_SEALED_USER_CHARS } from '../lib/sealedCoach';
+import { RELIES_ON_VENICE } from '../lib/enclaveCheck';
 import type { SafetyFlag } from '../lib/safetyFlags';
 import { MODES } from '../lib/privacyModes';
 
@@ -19,6 +20,8 @@ const TURNS = 5;
 
 const failureText = (e: unknown): string => {
   const code = e instanceof SealedError ? e.code : 'network';
+  if (code === 'hardware')
+    return 'Your device checked the hardware evidence for the AI model’s secure enclave, and it did not pass, so nothing was sent. You can try again, or start a witnessed conversation instead.';
   if (code === 'attestation' || code === 'nonce' || code === 'key')
     return 'Your device could not confirm the AI model’s secure enclave, so nothing was sent. You can try again, or start a witnessed conversation instead.';
   if (code === 'network') return 'The message could not be sent: there was no answer. Check your connection and try again. Nothing was kept.';
@@ -100,6 +103,19 @@ export default function SealedChat({ colors, onBack }: { colors: { color1: strin
       <Card className="space-y-1 p-3 text-xs text-muted-foreground">
         <p>{MODES.sealed.checks}</p>
         <p>{MODES.sealed.limits[0]}</p>
+        {checked === 'ok' && coach.current!.hardware && (
+          <details>
+            <summary className="cursor-pointer">What your device checked</summary>
+            <ul className="mt-1 list-disc space-y-0.5 pl-5">
+              <li>The enclave&rsquo;s hardware report is signed by Intel, up to Intel&rsquo;s root certificate, which is built into this site.</li>
+              <li>The key your messages are encrypted to was made inside that machine, for this conversation.</li>
+              <li>The machine is not in debug mode.</li>
+              <li>Which code it runs. Its fingerprint is <code className="break-all">{coach.current!.hardware.composeHash.slice(0, 16)}</code>.</li>
+              {coach.current!.hardware.gpu && <li>The GPU evidence was made for this conversation.</li>}
+            </ul>
+            <p className="mt-1">Still taken on Venice&rsquo;s word: {RELIES_ON_VENICE.join('; ')}.</p>
+          </details>
+        )}
       </Card>
 
       <ol className="flex-1 space-y-3" aria-label="Conversation" aria-live="polite">

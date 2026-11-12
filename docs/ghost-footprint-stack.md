@@ -74,11 +74,34 @@ it. The screens should offer the choice per conversation and say so.
 - **Screens — built:** `src/coach/ModeChooser.tsx` (shown only when the server reports sealed mode on, via
   `/api/coach?modes`) and `src/coach/SealedChat.tsx`, which says there is no signed record or shared reflection.
 - **Terms — drafted, not applied:** `docs/drafts/terms-sealed-and-partner-draft.md`.
+- **Checking the hardware — built (2026-11-12):** `src/lib/enclaveCheck.ts`, in TypeScript with WebCrypto and
+  `@noble/hashes` (no WebAssembly, so no Content Security Policy change). Written against a real report captured from
+  Venice (`tests/fixtures/venice-attestation-2026-11-12.json`; the attestation endpoint answers without an API key).
+  - What the report holds: an Intel TDX v4 quote, the NVIDIA payload, the RTMR3 event log, the app description
+    (`app_compose`), and `report_data` laid out as the enclave key's address (Keccak-256, 20 bytes), 12 zero bytes, then
+    our 32-byte nonce. Venice serves it through Phala's dstack "private AI gateway" (`serving: aggregator`).
+  - Checked on the device: that key binding; the quote's signature; the Quoting Enclave report's hash of the
+    attestation key and its PCK signature; the PCK chain up to Intel's SGX Root CA, whose key is pinned (identical to
+    Intel's own download); certificate dates; the TD DEBUG bit; the event log replaying to RTMR3, with the
+    `compose-hash` event equal to the SHA-256 of `app_compose` (the container images and their digests); the GPU
+    evidence's nonce.
+  - Still on Venice's word: TCB status and revocation (Intel's TCB info and CRLs; Intel's v4 API answers without a
+    key, so this can be added through one of our functions); the NVIDIA evidence's signatures and measurements; and
+    whether the compose hash and MRTD are known-good, since nobody publishes that list yet.
+  - The browser's sealed coach always enforces it (a failure says so and sends nothing) and shows "What your device
+    checked". The relay runs the same check on its own attestations; `COACH_HARDWARE_CHECK` is `report` by default
+    (logs a failure, carries on), `enforce` or `off`.
+  - Tested: `tests/enclave-check.test.mts` (29 checks): the real report passes; a changed key, nonce, quote byte,
+    signature, QE report, chain, date, app description, event log or GPU nonce is each refused; a replayed report is
+    refused by the sealed coach. Five fresh live reports also passed (2 to 8 ms each).
 - **Left, in order:**
-  1. Check the Intel TDX quote and NVIDIA evidence in the browser, before the word "end-to-end" is used without
-     qualification. Open-source verifiers exist (some compiled to WebAssembly); this needs `'wasm-unsafe-eval'` in the
-     Content Security Policy.
-  2. Choosing notes by topic is not possible in sealed mode; the relay uses the general notes only.
+  1. Ask Venice the questions in `docs/drafts/venice-attestation-questions.md`, above all whether the attested gateway
+     is the machine that reads the words, or passes them on to another one.
+  2. Add the TCB status and revocation check (Intel's TCB info and CRLs, fetched through our server and checked on the
+     device against Intel's signatures), then the NVIDIA evidence's signatures.
+  3. Pin known-good compose hashes once Venice publishes them, and then decide whether to call sealed mode
+     "end-to-end" without qualification. Until then the page says what it checks and what it does not.
+  4. Choosing notes by topic is not possible in sealed mode; the relay uses the general notes only.
 
 ### 4. Partner practice channel — built, off
 - **Crypto:** `src/lib/cellCrypto.ts`, which uses only the browser's own WebCrypto, so it needs no library.

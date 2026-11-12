@@ -62,7 +62,7 @@ Neither feature saves anything on your device: no key, no code, no conversation.
 >
 > In sealed mode:
 > - the checks run only on your device, and someone who changes the page on their own device can skip them;
-> - your device relies on Venice's report that the hardware is genuine, and does not yet check the hardware's own evidence itself;
+> - your device checks the hardware's own evidence itself (that it is signed by Intel, that the encryption key was made inside it for your conversation, that it is not in a debug mode, and which software it runs), but it still relies on Venice for whether the hardware's firmware is up to date and not revoked, for the graphics processor's evidence, and for whether the software is the software Venice intends;
 > - our server cannot sign a transcript, because it never sees the words, so a sealed conversation cannot be downloaded as a signed transcript, sent to us as one, or shown on the Witnessed Encounters page;
 > - you cannot bring parts of a sensory report to a sealed conversation;
 > - the coach's general method notes are used, not notes chosen to suit what you wrote.

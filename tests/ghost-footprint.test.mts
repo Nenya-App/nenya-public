@@ -31,7 +31,7 @@ ok('the table has a row per scenario', table().split('\n').length === rows.lengt
 // Modes
 ok('only Witnessed is offered until a switch is turned on', availableModes().map((m) => m.id).join() === 'witnessed' && availableModes({ sealed: true, cell: true }).length === 3);
 ok('only modes Nenya can witness may sign', Object.values(MODES).every((m) => m.canSign === (m.id === 'witnessed')));
-ok('Witnessed is never called end-to-end; Sealed names what it does not check', /Not end-to-end/.test(MODES.witnessed.encryption) && /does not yet check the hardware evidence/.test(MODES.sealed.encryption));
+ok('Witnessed is never called end-to-end; Sealed names what it does not check', /Not end-to-end/.test(MODES.witnessed.encryption) && /still relies on Venice/.test(MODES.sealed.encryption));
 ok('the planned on-device mode admits its footprint', /highest/.test(MODES.local.footprint));
 ok('the server switches are off by default', /process\.env\.COACH_SEALED !== 'on'/.test(src('netlify/functions/coach.mts')) && /process\.env\.CELL_ENABLED !== 'true'/.test(src('netlify/functions/cell.mts')));
 ok('the new functions add no rate-limit rule (the plan allows two, both used)', !/rateLimit/.test(src('netlify/functions/cell.mts')) && !/rateLimit/.test(src('netlify/functions/cell-cleanup.mts')));
