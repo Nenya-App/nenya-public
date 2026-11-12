@@ -6,6 +6,7 @@
 //   node scripts/eval-detect.mts --no-list                # the history patterns alone (what runs when the private list is missing)
 //   node scripts/eval-detect.mts --only hatecheck | ethos | metahate
 //   node scripts/eval-detect.mts --attribute              # which list rows cause the false alarms (HateCheck): row numbers on screen; the words only in results/private/
+//   node scripts/eval-detect.mts --scenes                 # the hand-written scenes (src/lib/detectScenes.ts): each says what outcome it must get
 //   node scripts/eval-detect.mts --json name.json         # also writes counts to results/public/name.json
 // "Flagged" means the coach would OFFER a card for the message (a hit of severity 2 or more, not inside a reporting frame): the gentlest outcome the matcher can cause.
 // "Hit" means the matcher found anything at all. The bars below were set BEFORE the first run (docs/coach-detection-rescope-ethos.md) and are not to be moved to fit a result.
@@ -17,6 +18,7 @@ import { loadLexicon, parseCsv, readLexicon } from '../src/lib/lexiconLoader.ts'
 import { parseDecisions, applyDecisions } from '../src/lib/lexiconDecisions.ts';
 import { match } from '../src/lib/lexicon.ts';
 import type { Hit, Matcher } from '../src/lib/lexicon.ts';
+import { SCENES, type Outcome } from '../src/lib/detectScenes.ts';
 import type { Action } from '../src/lib/lexiconDecisions.ts';
 import { OFFER_MAP, historyHits, isFramed, negatedBefore, offerFor } from '../src/lib/learningOffer.ts';
 
@@ -131,11 +133,26 @@ const sets: [string, () => Case[] | null][] = [['hatecheck', hatecheck], ['ethos
 const out: Record<string, Result> = {};
 let allOk = true;
 for (const [name, load] of sets) {
-  if (only && only !== name) continue;
+  if ((only && only !== name) || args.includes('--scenes')) continue;
   const cases = load();
   if (!cases) { console.log(`\n(${name}: not found in ${P.datasets}; skipped)`); continue; }
   out[name] = run(name, cases);
   allOk = report(out[name]) && allOk;
+}
+
+if (args.includes('--scenes')) {
+  let ok = 0, edgeMiss = 0;
+  const fails: string[] = [];
+  for (const sc of SCENES) {
+    const v = judge(sc.text);
+    const got: Outcome | 'flagged' | 'deferred' = v.flagged ? 'flagged' : v.judgment ? 'judgment' : v.self ? 'self' : v.deferred ? 'deferred' : 'none';
+    if (got === sc.expect) { ok++; continue; }
+    if (sc.edge) edgeMiss++;
+    fails.push(`${sc.edge ? 'EDGE ' : 'FAIL '}${sc.id}: expected ${sc.expect}, got ${got}  | ${sc.text}  (${sc.why})`);
+  }
+  console.log(`\n=== scenes: ${SCENES.length} written; ${ok} got the outcome they expect; ${fails.length} did not (${edgeMiss} of them edge scenes, which are questions for the reviewers) ===`);
+  for (const f of fails) console.log('  ' + f);
+  process.exit(fails.length - edgeMiss === 0 ? 0 : 1);
 }
 
 // ---- attribution: which rows of the list make the false alarms (HateCheck's labels). Rows are numbered by their order in the list file.
