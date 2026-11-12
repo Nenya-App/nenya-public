@@ -7,6 +7,7 @@
 //   node scripts/eval-detect.mts --only hatecheck | ethos | metahate
 //   node scripts/eval-detect.mts --attribute              # which list rows cause the false alarms (HateCheck): row numbers on screen; the words only in results/private/
 //   node scripts/eval-detect.mts --scenes                 # the hand-written scenes (src/lib/detectScenes.ts): each says what outcome it must get
+//   node scripts/eval-detect.mts --ethos-labels           # ETHOS's hate comments broken down by its own labels (violence, directed or general, six categories), with the site's harm checks beside the list
 //   node scripts/eval-detect.mts --json name.json         # also writes counts to results/public/name.json
 // "Flagged" means the coach would OFFER a card for the message (a hit of severity 2 or more, not inside a reporting frame): the gentlest outcome the matcher can cause.
 // "Hit" means the matcher found anything at all. The bars below were set BEFORE the first run (docs/coach-detection-rescope-ethos.md) and are not to be moved to fit a result.
@@ -18,6 +19,7 @@ import { loadLexicon, parseCsv, readLexicon } from '../src/lib/lexiconLoader.ts'
 import { parseDecisions, applyDecisions } from '../src/lib/lexiconDecisions.ts';
 import { match } from '../src/lib/lexicon.ts';
 import type { Hit, Matcher } from '../src/lib/lexicon.ts';
+import { siteDecision } from '../src/lib/safetyEval.ts';
 import { SCENES, type Outcome } from '../src/lib/detectScenes.ts';
 import type { Action } from '../src/lib/lexiconDecisions.ts';
 import { OFFER_MAP, historyHits, isFramed, negatedBefore, offerFor } from '../src/lib/learningOffer.ts';
@@ -133,11 +135,39 @@ const sets: [string, () => Case[] | null][] = [['hatecheck', hatecheck], ['ethos
 const out: Record<string, Result> = {};
 let allOk = true;
 for (const [name, load] of sets) {
-  if ((only && only !== name) || args.includes('--scenes')) continue;
+  if ((only && only !== name) || args.includes('--scenes') || args.includes('--ethos-labels')) continue;
   const cases = load();
   if (!cases) { console.log(`\n(${name}: not found in ${P.datasets}; skipped)`); continue; }
   out[name] = run(name, cases);
   allOk = report(out[name]) && allOk;
+}
+
+if (args.includes('--ethos-labels')) {
+  const f = join(P.datasets, 'ethos', 'Ethos_Dataset_Multi_Label.csv');
+  if (!existsSync(f)) { console.error('No ETHOS multi-label file in datasets/ethos.'); process.exit(2); }
+  const names = ['violence', 'directed_vs_generalized', 'gender', 'race', 'national_origin', 'disability', 'religion', 'sexual_orientation'];
+  const rows = readFileSync(f, 'utf8').split(/\r?\n/).filter(Boolean).slice(1).map((l) => {
+    const parts = l.split(';'); const nums = parts.slice(-8).map((x) => parseFloat(x) >= 0.5);
+    return { text: parts.slice(0, -8).join(';'), L: Object.fromEntries(names.map((n, i) => [n, nums[i]])) as Record<string, boolean> };
+  });
+  const groups: [string, (r: (typeof rows)[number]) => boolean][] = [
+    ['all hate comments', () => true],
+    ...['violence'].map((n): [string, (r: (typeof rows)[number]) => boolean] => ['violence = yes', (r) => r.L[n]]),
+    ['violence = no', (r) => !r.L.violence],
+    ['aimed at a person', (r) => r.L.directed_vs_generalized], ['aimed at a group', (r) => !r.L.directed_vs_generalized],
+    ...['gender', 'race', 'national_origin', 'disability', 'religion', 'sexual_orientation'].map((n): [string, (r: (typeof rows)[number]) => boolean] => [n, (r) => r.L[n]]),
+  ];
+  const verdicts = rows.map((r) => ({ r, v: judge(r.text), site: siteDecision([r.text]) }));
+  console.log(`\n=== ETHOS hate comments by label (${rows.length} comments; a label counts at 0.5 or above; categories can overlap) ===`);
+  console.log('group                 n   list flags     judgment   to model   list anything   site harm/crisis checks   nothing at all');
+  for (const [name, pick] of groups) {
+    const g = verdicts.filter((x) => pick(x.r)); const n = g.length;
+    const c = (fn: (x: (typeof g)[number]) => boolean) => g.filter(fn).length;
+    const flagged = c((x) => x.v.flagged), judg = c((x) => x.v.judgment), mod = c((x) => x.v.deferred), any = c((x) => x.v.hit), site = c((x) => x.site !== null);
+    const none = c((x) => !x.v.flagged && !x.v.judgment && !x.v.self && !x.v.deferred && x.site === null);
+    console.log(`${name.padEnd(20)} ${String(n).padStart(4)}   ${pct(flagged, n).padStart(6)}      ${pct(judg, n).padStart(6)}    ${pct(mod, n).padStart(6)}       ${pct(any, n).padStart(6)}          ${pct(site, n).padStart(6)}              ${pct(none, n).padStart(6)}`);
+  }
+  process.exit(0);
 }
 
 if (args.includes('--scenes')) {

@@ -143,3 +143,23 @@ Downloaded to `datasets/ethos/` (binary and multi-label files, licence, README, 
 - **Non-hate: 0 of 565 flagged (0.0%, [0.0-0.7]). The bar is met on ordinary comments, with a tighter interval than HateCheck's.** 18 (3.2%) get a judgment reply and 3 (0.5%) are left to the model; any hit is 38.2% (many severity-1 rows that never act).
 - **Hate (a reading only): 19 of 433 flagged (4.4%), judgment 21 (4.8%), to the model 13 (3.0%); any hit 52.0%.** So on real comments, the list and the judgment tier together reach about 12% of what annotators called hate, and half of them contain some list word; most hate in these comments is context, not vocabulary.
 - **Reading it honestly:** the list is now conservative (it rarely flags ordinary text), and nearly all of the real-world hate it does not flag is for the model to find. Not yet done: breaking the catch down by ETHOS's labels (violence, directed or general, and the six categories) by joining the multi-label file; that is the number that shows where the model matters most (a call to violence should reach the existing harm path, not only the model).
+
+### 11b. ETHOS broken down by its own labels (`--ethos-labels`, 2026-11-12)
+Share of each group's hate comments that the **list** flags (card offer), that get a **judgment** reply, that are left **to the model**, that the **site's harm and crisis checks** stop (the existing path, run on the same text), and that get **nothing at all** from any of them. A label counts at 0.5 or above; the categories overlap.
+| Group | n | list flags | judgment | to model | site checks | nothing |
+| --- | --- | --- | --- | --- | --- | --- |
+| all hate comments | 433 | 4.4% | 4.8% | 3.0% | 0.9% | **88.0%** |
+| violence = yes | 142 | 2.8% | 4.2% | 2.1% | **2.1%** | **89.4%** |
+| violence = no | 291 | 5.2% | 5.2% | 3.4% | 0.3% | 87.3% |
+| aimed at a person | 135 | 2.2% | 6.7% | 5.2% | 1.5% | 86.7% |
+| aimed at a group | 298 | 5.4% | 4.0% | 2.0% | 0.7% | 88.6% |
+| gender | 86 | 0.0% | 2.3% | 0.0% | 1.2% | 96.5% |
+| race | 76 | 17.1% | 3.9% | 3.9% | 0.0% | 77.6% |
+| national origin | 74 | 1.4% | 4.1% | 1.4% | 0.0% | 93.2% |
+| disability | 53 | 7.5% | 1.9% | 0.0% | 3.8% | 88.7% |
+| religion | 81 | 1.2% | 11.1% | 1.2% | 0.0% | 86.4% |
+| sexual orientation | 73 | 1.4% | 2.7% | 11.0% | 1.4% | 86.3% |
+**What it says:**
+- **The biggest gap is incitement to violence.** Of the 142 comments labelled as inciting violence, the site's harm checks stop **2.1%** and the list flags 2.8%; **89.4% get nothing**. The harm path was built for a person's own intent or distress, and it does not read calls for violence against a group or a person ("they should all die") spoken to the coach. Those belong to the harm-to-others rule, which should be extended and tested on this label before any model is added (and must keep reporting, quoting and grief out: "my teacher said we should be wiped out").
+- **Gender (96.5% nothing) and national origin (93.2% nothing)** are the groups the list reaches least; the coverage work (women, immigrants) matters here. **Race** is the best covered (17.1% flagged); **sexual orientation** goes mostly to the model (11.0%), as decided; **religion** mostly gets a judgment reply.
+- **Next:** (1) a scoped, tested patterns pass for calls to violence and removal against any person or group, with the must-not-count scenes (quote, report, grief, denial of such words) written first; (2) the Wiktionary pull and reviewer additions for women and immigrants; (3) then the model bake-off, measured on these same groups.
