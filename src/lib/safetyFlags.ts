@@ -75,6 +75,8 @@ const RULES: Rule[] = [
   // ── soften: indirect or ambiguous ───────────────────────────────────────
   { category: 'self-harm', tier: 'soften', pattern: new RegExp(`\\bkill(?:ing)? myself ${FIGURATIVE_AFTER_KILL}`, 'i') },
   { category: 'self-harm', tier: 'soften', pattern: /\bsuicid(?:e|al)\b|\bself[- ]?harm\b|\boverdos(?:e|ing)\b|\b(?:hurting|harming|harm) myself\b/i },
+  // Shorthand for "kill myself": a soften (it is also said in jest), so the message reaches the coach with care, and the form check never asks the person to rewrite it (2026-11-12).
+  { category: 'self-harm', tier: 'soften', pattern: /\bkms\b/i },
   { category: 'self-harm', tier: 'soften', pattern: /\bwish i could disappear\b|\bwant to disappear\b|\bdon'?t want to be here\b/i },
   { category: 'harm-others', tier: 'soften', pattern: /\b(?:want(?:ed)? to|wanna|could|feel like) (?:kill|murder|shoot|stab|strangle|hurt|attack|beat up) (?:him|her|them|my \w+|someone|somebody|everyone)\b/i },
   { category: 'harm-others', tier: 'soften', pattern: /\bi\s+(?:want|wanna|would\s+love|'d\s+love|'d\s+like|would\s+like)\s+to\s+(?:just\s+)?(?:kill|murder|slaughter|shoot|stab|strangle|hurt|attack|beat\s+up|burn|bomb)\s+(?:all\s+of\s+them|every\s+(?:single\s+)?one\s+of\s+them|any\s+(?:one\s+)?of\s+them|them\s+all|(?:all\s+)?(?:of\s+)?(?:those|these)\s+people)\b/i },

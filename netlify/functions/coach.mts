@@ -37,6 +37,7 @@
 import { getStore } from '@netlify/blobs';
 import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes, sign as edSign, timingSafeEqual } from 'node:crypto';
 import { checkConversation, detectFlag, explainConversation } from '../../src/lib/safetyFlags.ts';
+import { checkMessageForm } from '../../src/lib/messageGate.ts';
 import { checkNotesFor, siteMessagesFor } from '../../src/lib/siteMessages.ts';
 import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/aboutNenya.ts';
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
@@ -782,6 +783,16 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   if (flag?.tier === 'stop') {
     tally('coach.turn.blocked.crisis');
     return json(200, { done: true, flag });
+  }
+
+  // A message with no words to read (too short, or a slip of the keys) is not sent on and uses no turn: the page asks the person to say it again. Only when no safety flag applies, so a crisis
+  // or distress message, however short or oddly spelled, always goes through the checks above and below. COACH_FORM_CHECK=off turns it off.
+  if (!flag && process.env.COACH_FORM_CHECK !== 'off') {
+    const problem = checkMessageForm(messages[messages.length - 1].content);
+    if (problem) {
+      tally(`coach.turn.blocked.form.${problem}`);
+      return json(200, { blocked: 'form', problem });
+    }
   }
 
   // The limits. Only a conversation's first exchange can be refused; one already under way is never cut off, but its turns

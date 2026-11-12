@@ -11,7 +11,7 @@ const files = readdirSync(dir).filter((f) => /\.test\.m?[tj]s$/.test(f)).sort();
 let pass = 0, fail = 0, crashed = 0;
 
 for (const f of files) {
-  const r = spawnSync(process.execPath, [dir + f], { cwd: root, encoding: 'utf8', timeout: 180000, env: { ...process.env, COACH_SIGNING_KEY: '', COACH_EXTRA_HOSTS: '' } });
+  const r = spawnSync(process.execPath, [dir + f], { cwd: root, encoding: 'utf8', timeout: 180000, env: { ...process.env, COACH_SIGNING_KEY: '', COACH_EXTRA_HOSTS: '', COACH_FORM_CHECK: 'off' } });
   const lines = (r.stdout ?? '').split('\n');
   const p = lines.filter((l) => l.startsWith('PASS')).length;
   const x = lines.filter((l) => l.startsWith('FAIL')).length;

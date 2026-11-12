@@ -5,6 +5,7 @@ import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { getGradientMidpoint, getReadableTextColor } from '../app/components/ColorUtils';
 import { checkConversation, type SafetyFlag } from '../lib/safetyFlags';
+import { checkMessageForm, SHORT_NOTICE, UNCLEAR_NOTICE, type FormProblem } from '../lib/messageGate';
 import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/veniceLinks';
@@ -168,6 +169,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const [sending, setSending] = useState(false);
   const [failure, setFailure] = useState<FailureInfo | null>(null);
   const [blocked, setBlocked] = useState(false);
+  // Too short or no words to read: not sent, no turn used, the draft stays (src/lib/messageGate.ts).
+  const [formProblem, setFormProblem] = useState<FormProblem | null>(null);
   // Today's free conversations are used up. Only known when a first message is sent.
   const [capped, setCapped] = useState<false | 'cap' | 'ip'>(false);
   const [signaturePlaying, setSignaturePlaying] = useState(false);
@@ -244,10 +247,18 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     const text = draft.trim();
     if (!text || sending) return;
     setBlocked(false);
+    setFormProblem(null);
 
     // A message that tries to steer the coach is not sent. The draft stays so it can be reworded.
     if (looksLikeManipulation(text)) {
       setBlocked(true);
+      return;
+    }
+
+    // Too short or no words to read: the person is asked to say it again, and nothing is sent. Never when a safety flag applies: a short or oddly spelled crisis message goes through its own checks.
+    const problem = checkMessageForm(text);
+    if (problem && !checkConversation([...messages.filter((m) => m.role === 'user').map((m) => m.content), text])) {
+      setFormProblem(problem);
       return;
     }
 
@@ -303,6 +314,10 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       // The server screens too. A blocked message is not part of the conversation.
       if (data.blocked === 'cap' || data.blocked === 'ip') {
         setCapped(data.blocked);
+        return;
+      }
+      if (data.blocked === 'form') {
+        setFormProblem((data as { problem?: string }).problem === 'short' ? 'short' : 'unclear');
         return;
       }
       if (data.blocked === 'context') {
@@ -831,6 +846,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       setDraft(e.target.value);
                       touch();
                       if (blocked) setBlocked(false);
+                      if (formProblem) setFormProblem(null);
                     }}
                     onKeyDown={(e) => {
                       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -887,6 +903,11 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   {blocked && (
                     <p role="alert" className="rounded-lg border border-amber-500/60 p-3 text-sm">
                       {MANIPULATION_NOTICE}
+                    </p>
+                  )}
+                  {formProblem && (
+                    <p role="status" className="rounded-lg border border-border p-3 text-sm">
+                      {formProblem === 'short' ? SHORT_NOTICE : UNCLEAR_NOTICE}
                     </p>
                   )}
                   {failure && <FailureNotice info={failure} turn={turn} />}
