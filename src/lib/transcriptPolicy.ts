@@ -188,4 +188,8 @@ export interface InboxEntry {
   issuedRecord: string;
   permissions: string;
   keepUntil: string | null;
+  /** Other submissions that shared messages with this one when it arrived (src/lib/overlap.ts). A flag for the owner only; it changes no permissions. */
+  overlaps?: { hash: string; sameUpTo?: number; sameMessages?: number[] }[];
+  /** Set when the overlap check could not run. */
+  overlapCheck?: 'failed';
 }

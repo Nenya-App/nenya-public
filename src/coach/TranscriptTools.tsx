@@ -1,6 +1,7 @@
 import { termsReceiptForRequest } from '../lib/visitConsent';
 import { useEffect, useRef, useState } from 'react';
-import { Download, Send } from 'lucide-react';
+import { Download, KeyRound, Send, Share2 } from 'lucide-react';
+import { CONTACT_EMAIL, REVIEW_DAYS, KEEP_KEY_PLANNED, KEEP_KEY_POLICY, KEEP_KEY_SHARE, KEEP_KEY_TITLE, KEEP_KEY_WARNING } from '../lib/keepTheKey';
 import { describeChoices } from '../lib/transcriptPolicy';
 import { cardById } from '../lib/learningCards';
 import { stopLevelFlagged } from '../lib/publicCopy';
@@ -55,6 +56,10 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
   const [busy, setBusy] = useState(false);
   const [share, setShare] = useState<Share>('closed');
   const [note, setNote] = useState('');
+  // Whether the visitor has saved a copy carrying the signature (the .json, or the readable .txt, which ends with the signed block).
+  // Either works at /my-transcript; without one they cannot change or delete what they sent there.
+  const [keptKey, setKeptKey] = useState(false);
+  const [noKeyOk, setNoKeyOk] = useState(false);
 
   // A signature covers exactly the messages that existed when it was made. If the
   // conversation moves on, the old one no longer applies.
@@ -63,6 +68,8 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setSigned(null);
     setSignNote('');
     setShare('closed');
+    setKeptKey(false);
+    setNoKeyOk(false);
   }, [messages.length]);
 
   // A conversation stopped on its first message has no earlier exchange, so it has no ticket and needs none.
@@ -94,17 +101,51 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    if (r && signedRef.current) downloadText(transcriptFilename(r, 'json'), 'application/json', signedJson(signedRef.current, r));
+    if (r && signedRef.current) {
+      downloadText(transcriptFilename(r, 'json'), 'application/json', signedJson(signedRef.current, r));
+      setKeptKey(true);
+    }
+  };
+
+  const readableText = (r: Receipt | null): string => {
+    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles), signedRef.current?.checks ?? checkNotesFor(messages, context));
+    // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
+    return r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
+  };
+
+  // "Save or send to myself": the device's own share sheet (Mail, Notes, Files, Messages...). The file goes from this device to wherever the person
+  // chooses; nothing passes through Nenya and no address is recorded. It shares the readable .txt, which ends with the signed block and so works at
+  // /my-transcript (browsers refuse to share .json files). It is built here without waiting on the network, because Safari only opens the sheet
+  // straight from a tap; the button is only shown once the transcript is signed.
+  const shareFile = (): File | null => {
+    if (!receipt || !signedRef.current || typeof File === 'undefined') return null;
+    return new File([readableText(receipt)], transcriptFilename(receipt, 'txt'), { type: 'text/plain' });
+  };
+  const canShareFile = (() => {
+    try {
+      const f = shareFile();
+      return !!f && typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof navigator.canShare === 'function' && navigator.canShare({ files: [f] });
+    } catch {
+      return false;
+    }
+  })();
+  const shareToSelf = async () => {
+    const f = shareFile();
+    if (!f) return;
+    try {
+      await navigator.share({ files: [f], title: 'My signed Nenya transcript' });
+      setKeptKey(true); // only a completed share counts; cancelling throws and changes nothing
+    } catch {
+      /* cancelled, or the device could not share: the download button is still there */
+    }
   };
 
   const downloadReadable = async () => {
     setBusy(true);
     const r = await getReceipt();
     setBusy(false);
-    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles), signedRef.current?.checks ?? checkNotesFor(messages, context));
-    // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
-    const text = r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
-    downloadText(transcriptFilename(r, 'txt'), 'text/plain', text);
+    downloadText(transcriptFilename(r, 'txt'), 'text/plain', readableText(r));
+    if (r && signedRef.current) setKeptKey(true);
   };
 
   const openShare = async () => {
@@ -124,7 +165,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
   const toSend = choicesToSend(choices);
 
   const sendToNenya = async () => {
-    if (tooLong || share === 'sending' || !receipt || !signedRef.current || !toSend) return;
+    if (tooLong || share === 'sending' || !receipt || !signedRef.current || !toSend || !(keptKey || noKeyOk)) return;
     setShare('sending');
     try {
       const res = await fetch('/api/report', {
@@ -177,6 +218,9 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
         )}
       </div>
       {signNote && <p className="text-xs text-muted-foreground">{signNote}</p>}
+      {receipt && !keptKey && share !== 'preview' && share !== 'sending' && share !== 'error' && (
+        <KeepKeyNotice onDownload={downloadSigned} onShare={canShareFile ? shareToSelf : undefined} busy={busy} />
+      )}
 
       {(share === 'preview' || share === 'sending' || share === 'error') && (
         <div className="space-y-3 rounded-lg border border-border p-3">
@@ -187,6 +231,18 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
           <p className="text-xs text-muted-foreground">
             Names and contact details were replaced with placeholders on your device as you wrote, but names are not always caught. What you send is kept in our private store, and a person at Nenya reads it there. If you see a name or detail in the text below that you do not want us to have, close this and download the transcript instead, or delete it afterward at nenya.biz/my-transcript.
           </p>
+          {keptKey ? (
+            <p className="text-xs text-muted-foreground">
+              You have downloaded the signed transcript. Keep it somewhere safe: it is what lets you change or delete what you send, at nenya.biz/my-transcript.
+            </p>
+          ) : (
+            <KeepKeyNotice onDownload={downloadSigned} onShare={canShareFile ? shareToSelf : undefined} busy={busy}>
+              <label className="flex items-start gap-2 text-xs">
+                <input type="checkbox" className="mt-0.5 size-4" checked={noKeyOk} onChange={() => setNoKeyOk((x) => !x)} />
+                <span>I understand that if I send this without keeping the signed file, I cannot use nenya.biz/my-transcript, and changing or deleting it means emailing {CONTACT_EMAIL} for a review that can take up to {REVIEW_DAYS} days.</span>
+              </label>
+            </KeepKeyNotice>
+          )}
           <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-2 text-xs">{shareText}</pre>
           <label className="block space-y-1 text-xs text-muted-foreground">
             <span>What would you like us to know? (optional, sent with the transcript)</span>
@@ -201,8 +257,9 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
           </label>
           <TranscriptChoices value={choices} onChange={setChoices} messages={messages} publishBlocked={stopLevelFlagged(signed ?? signedRef.current)} />
           {tooLong && <p className="text-xs text-destructive">This is too long to send. Download it instead.</p>}
+          {!keptKey && !noKeyOk && <p className="text-xs text-muted-foreground">To send, first download the signed transcript above, or tick the box to say you understand what happens without it.</p>}
           <div className="flex items-center gap-3">
-            <Button size="sm" onClick={sendToNenya} disabled={tooLong || share === 'sending' || !toSend}>
+            <Button size="sm" onClick={sendToNenya} disabled={tooLong || share === 'sending' || !toSend || !(keptKey || noKeyOk)}>
               {share === 'sending' ? 'Sending…' : 'Send'}
             </Button>
             <button
@@ -220,7 +277,8 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
           )}
         </div>
       )}
-      {share === 'sent' && <p className="text-xs text-muted-foreground" role="status">Thank you. Your transcript was sent{toSend ? `. You chose: ${describeChoices({ uses: toSend.uses, keep: toSend.keep, adult: true, terms: toSend.terms, portions: toSend.portions })}` : ''}. To change or take back any of it, keep the signed file you downloaded and show it at nenya.biz/my-transcript.</p>}
+      {share === 'sent' && <p className="text-xs text-muted-foreground" role="status">Thank you. Your transcript was sent{toSend ? `. You chose: ${describeChoices({ uses: toSend.uses, keep: toSend.keep, adult: true, terms: toSend.terms, portions: toSend.portions })}` : ''}. {keptKey ? ' To change or take back any of it, keep the signed file you downloaded and show it at nenya.biz/my-transcript.' : ''}</p>}
+      {share === 'sent' && !keptKey && <KeepKeyNotice onDownload={downloadSigned} onShare={canShareFile ? shareToSelf : undefined} busy={busy} />}
       {share === 'sent' && consentReceipt && (
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">Your consent receipt is a small file, signed by Nenya, that says what you agreed to and when. It is your own record, and it does not contain the conversation.</p>
@@ -231,5 +289,34 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
         </div>
       )}
     </section>
+  );
+}
+
+// The warning shown until the visitor has saved a signed copy: the file is their key to what they sent.
+function KeepKeyNotice({ onDownload, onShare, busy, children }: { onDownload: () => void; onShare?: () => void; busy: boolean; children?: React.ReactNode }) {
+  return (
+    <div role="note" aria-label={KEEP_KEY_TITLE} className="space-y-2 rounded-lg border border-amber-500/60 bg-amber-500/10 p-3 text-xs">
+      <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+        <KeyRound className="size-4 shrink-0" aria-hidden />
+        {KEEP_KEY_TITLE}
+      </p>
+      <p className="text-foreground">{KEEP_KEY_WARNING}</p>
+      <p className="text-muted-foreground">{KEEP_KEY_POLICY}</p>
+      <Button variant="outline" size="sm" onClick={onDownload} disabled={busy} className="gap-2">
+        <Download className="size-4" />
+        Download signed transcript (.json)
+      </Button>
+      {onShare && (
+        <>
+          <Button variant="outline" size="sm" onClick={onShare} disabled={busy} className="ml-2 gap-2">
+            <Share2 className="size-4" />
+            Save or send to myself
+          </Button>
+          <p className="text-muted-foreground">{KEEP_KEY_SHARE}</p>
+        </>
+      )}
+      {children}
+      <p className="text-muted-foreground">{KEEP_KEY_PLANNED}</p>
+    </div>
   );
 }

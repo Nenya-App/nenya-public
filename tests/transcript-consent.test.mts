@@ -31,8 +31,8 @@ for (const use of [coachStore, reportStore, revokeStore, expiryStore]) use(store
 
 const S = { color1: '#7A9B9E', color2: '#DAC682' };
 const coachPost = async (body: any) => (await coach(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ session: S, ...body }) }))).json() as Promise<any>;
-const m: any[] = []; let ticket: string | undefined; let r: any;
-for (let t = 1; t <= 5; t++) { m.push({ role: 'user', content: `message ${t}` }); r = await coachPost({ messages: m, ticket }); m.push({ role: 'assistant', content: r.reply }); ticket = r.ticket; }
+const m: any[] = []; let ticket: string | undefined; let r: any; let ticket2: string | undefined;
+for (let t = 1; t <= 5; t++) { m.push({ role: 'user', content: `message ${t}` }); r = await coachPost({ messages: m, ticket }); m.push({ role: 'assistant', content: r.reply }); ticket = r.ticket; if (t === 2) ticket2 = r.ticket; }
 const rc = await coachPost({ action: 'receipt', messages: m, ticket });
 const GOOD = { transcript: rc.transcript, receipt: rc.receipt };
 const hash = GOOD.receipt.hash;
@@ -107,6 +107,16 @@ ok('the verify page still sends nothing', !/fetch\(/.test(src('src/verify/Transc
 ok('the take-back page is built, and is in no sitemap', /myTranscript: path\.resolve\(__dirname, 'my-transcript\/index\.html'\)/.test(src('vite.config.ts')) && !/my-transcript/.test(src('public/sitemap.xml')));
 const tools = src('src/coach/TranscriptTools.tsx') + src('src/coach/TranscriptChoices.tsx');
 ok('sending is not possible until a keeping time is chosen; nothing is preselected; the page where to take it back is named', /!toSend/.test(tools) && /keep: null, uses: \[\]/.test(tools) && /nenya\.biz\/my-transcript/.test(tools));
+{
+  const key = await import('../src/lib/keepTheKey.ts');
+  ok('the key warning names the take-back page, the email, the 30-day review and the details needed', /nenya\.biz\/my-transcript/.test(key.KEEP_KEY_WARNING) && key.KEEP_KEY_WARNING.includes('info@nenya.biz') && key.KEEP_KEY_WARNING.includes('up to 30 days') && /what the conversation contained and when it happened/.test(key.KEEP_KEY_WARNING));
+  ok('the policy says the person makes changes themselves with the file, nothing is changed for anyone without it but by review, and permissions can only be removed', /you make any change yourself/.test(key.KEEP_KEY_POLICY) && /cannot show the matching file/.test(key.KEEP_KEY_POLICY) && /only ever be removed, never added/.test(key.KEEP_KEY_POLICY) && /we can only remove permissions or delete/.test(key.KEEP_KEY_WARNING));
+  ok('keeping transcripts on the site is labelled planned, not built', /^Planned, not built/.test(key.KEEP_KEY_PLANNED));
+  ok('sending needs a saved signed copy or an explicit acknowledgment, and saving either signed copy counts', /!\(keptKey \|\| noKeyOk\)\) return/.test(tools) && /disabled=\{[^}]*!\(keptKey \|\| noKeyOk\)\}/.test(tools) && (tools.match(/setKeptKey\(true\)/g) ?? []).length >= 2 && /<KeepKeyNotice/.test(tools));
+  ok('"save or send to myself" uses the device share sheet with the signed readable copy, only where files can be shared, and counts only a completed share', /navigator\.canShare\(\{ files: \[f\] \}\)/.test(tools) && /type: 'text\/plain'/.test(tools) && /await navigator\.share\([^)]*\);\s*setKeptKey\(true\)/.test(tools) && /onShare=\{canShareFile \? shareToSelf : undefined\}/.test(tools) && /does not pass through Nenya/.test(key.KEEP_KEY_SHARE));
+  ok('the take-back page says each signed copy of a conversation is independent', /each copy is its own submission with its own permissions/.test(page));
+  ok('the take-back page explains what to do without the file', /KEEP_KEY_POLICY/.test(page) && /mailto:\$\{CONTACT_EMAIL\}/.test(page) && /KEEP_KEY_PLANNED/.test(page));
+}
 ok('the static form is only the content-free alert: it has the choices but no field for the conversation or the note', /name="permissions"/.test(src('index.html')) && /name="keep-until"/.test(src('index.html')) && !/name="report"|name="signed"|name="comments"|type="file"/.test(src('index.html').slice(src('index.html').indexOf('verified-transcript'))));
 
 // ── the 18+ statement and the signed consent receipt (2026-11-10). Training is not offered: no pipeline exists and no conversation is used for it.
@@ -124,4 +134,23 @@ ok('the static form is only the content-free alert: it has the choices but no fi
   const r = newRecord('a'.repeat(64), parseChoices({ adult: true, keep: '90d', uses: ['evaluate'] })!, new Date('2026-11-10T00:00:00Z'));
   ok('the record keeps the 18+ statement and the wording version', r.adult === true && r.terms === CONSENT_TERMS_VERSION);
   ok('the plain-words description says the person confirmed 18+', describeChoices(parseChoices({ adult: true, keep: '30d' })!).includes('18 or older'));
+}
+
+// ── overlapping submissions: the same conversation signed partway and at the end (2026-11-12). Flagged for the owner; each stays independent.
+{
+  store.j.clear(); forwards = [];
+  const part = await coachPost({ action: 'receipt', messages: m.slice(0, 4), ticket: ticket2 });
+  const PART = { transcript: part.transcript, receipt: part.receipt };
+  const sendSigned = async (signed: any, choices: any) => (await req(report, '/api/report', { signed, choices: withAdult(choices) })).status;
+  ok('a copy signed partway has its own fingerprint', !!PART.receipt?.hash && PART.receipt.hash !== hash);
+  ok('both copies are accepted with different permissions', (await sendSigned(PART, { keep: '30d', uses: ['quote'] })) < 300 && (await sendSigned(GOOD, { keep: '1y', uses: ['evaluate'] })) < 300);
+  const later = store.j.get('inbox/' + hash);
+  ok('the later copy is flagged as the same conversation up to message 4 of the earlier one', later.overlaps?.length === 1 && later.overlaps[0].hash === PART.receipt.hash && later.overlaps[0].sameUpTo === 4);
+  const recPart = store.j.get(recordKey(PART.receipt.hash)) as TranscriptRecord;
+  ok('each keeps its own permissions and keeping time: nothing is merged or narrowed', recPart.uses.join() === 'quote' && recPart.keep === '30d' && rec()!.uses.join() === 'evaluate' && rec()!.keep === '1y');
+  ok('the index holds codes, never words', [...store.j.keys()].filter((k) => k.startsWith('overlap')).every((k) => !/message \d/.test(k + JSON.stringify(store.j.get(k)))));
+  const gone2 = await takeBack({ signed: PART, deleteNow: true });
+  ok('deleting one copy deletes only that one, and its codes with it', gone2.json?.status === 'deleted' && rec()?.status === 'active' && !!store.j.get('inbox/' + hash) && ![...store.j.keys()].some((k) => k.startsWith('overlap') && k.endsWith(PART.receipt.hash)));
+  await expireDue(new Date(Date.now() + 400 * 86400e3));
+  ok('when the other\'s time ends, its codes go too, so the index never outlives the transcripts', ![...store.j.keys()].some((k) => k.startsWith('overlap')));
 }

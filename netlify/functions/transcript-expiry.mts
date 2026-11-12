@@ -6,6 +6,7 @@
 import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
 import { addCount } from '../../src/lib/counters.ts';
+import { removeOverlap } from '../../src/lib/overlap.ts';
 import { dueForDeletion, inboxKey, pendingKey, publicExpired, publicKey, type TranscriptRecord } from '../../src/lib/transcriptPolicy.ts';
 
 let storeOverride: ReturnType<typeof getStore> | null = null;
@@ -18,6 +19,7 @@ export async function deleteEverything(s: ReturnType<typeof getStore>, rec: Tran
     await s.delete(inboxKey(rec.hash));
     await s.delete(pendingKey(rec.hash));
     await s.delete(publicKey(rec.hash));
+    await removeOverlap(s, rec.hash); // the codes that flag overlaps go with the submission
     await s.setJSON(`transcript/${rec.hash}`, { hash: rec.hash, receivedAt: rec.receivedAt, uses: [], keep: rec.keep, keepUntil: rec.keepUntil, status: 'deleted', publication: 'none', updatedAt: now.toISOString() } satisfies TranscriptRecord);
     return true;
   } catch {

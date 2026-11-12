@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { PublicItem } from '../lib/publicCopy';
+import { nearDuplicates, type NearPair, type OverlapMsg } from '../lib/nearDuplicates.ts';
 
 // The owner's side of two things (docs/transcript-consent-scope.md):
 //  1. Reading, editing and approving the anonymized copies people allowed us to show on the "witnessed conversations" page. Nothing goes up without this.
@@ -8,7 +9,12 @@ import type { PublicItem } from '../lib/publicCopy';
 
 interface Pending { hash: string; receivedAt: string; draft: { items: PublicItem[]; replaced: number; softFlags: string[] } }
 interface Waiting { hash: string; receivedAt: string; status: string; keepUntil: string | null; todo: string[] }
-interface Inbox { hash: string; receivedAt: string; readable: string; note: string; permissions: string; keepUntil: string | null; issuedRecord: string; signed: unknown }
+interface Inbox { hash: string; receivedAt: string; readable: string; note: string; permissions: string; keepUntil: string | null; issuedRecord: string; signed: unknown; overlaps?: Overlap[]; overlapCheck?: 'failed' }
+interface Overlap { hash: string; sameUpTo?: number; sameMessages?: number[] }
+
+const short = (h: string) => h.slice(0, 12);
+const overlapWords = (o: Overlap) => [o.sameUpTo ? `the same conversation up to message ${o.sameUpTo}` : '', o.sameMessages?.length ? `the same words in message${o.sameMessages.length === 1 ? '' : 's'} ${o.sameMessages.join(', ')}` : ''].filter(Boolean).join('; ');
+const messagesOf = (signed: unknown): OverlapMsg[] => { const m = (signed as { transcript?: { messages?: unknown } })?.transcript?.messages; return Array.isArray(m) ? (m as OverlapMsg[]) : []; };
 
 const WRITER: Record<PublicItem['by'], string> = { person: 'The person', ai: 'The AI', site: 'The site (not the AI)' };
 
@@ -20,6 +26,7 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
   const [read, setRead] = useState<Record<string, boolean>>({});
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
+  const [near, setNear] = useState<NearPair[] | null>(null);
 
   const post = async (body: object): Promise<{ status: number; json: any }> => {
     const t = getToken();
@@ -100,6 +107,17 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
     }
   };
 
+  // Overlaps are recorded on the later submission when it arrives; the earlier one learns of them here, from the later one's record.
+  const overlapsFor = (hash: string): { other: string; words: string; later: boolean }[] => {
+    const out: { other: string; words: string; later: boolean }[] = [];
+    for (const t of inbox ?? []) {
+      if (t.hash === hash) for (const o of t.overlaps ?? []) out.push({ other: o.hash, words: overlapWords(o), later: false });
+      else for (const o of t.overlaps ?? []) if (o.hash === hash) out.push({ other: t.hash, words: overlapWords(o) + ' (numbers are in the other submission)', later: true });
+    }
+    return out;
+  };
+  const checkNear = () => setNear(nearDuplicates((inbox ?? []).map((t) => ({ hash: t.hash, messages: messagesOf(t.signed) }))));
+
   const setText = (hash: string, i: number, text: string) => setEdits((e) => ({ ...e, [hash]: e[hash].map((x, k) => (k === i ? { ...x, text } : x)) }));
   const dropItem = (hash: string, i: number) => setEdits((e) => ({ ...e, [hash]: e[hash].filter((_, k) => k !== i) }));
 
@@ -119,11 +137,31 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
         <div className="space-y-3">
           <h3 className="text-lg">Transcripts people sent ({inbox.length})</h3>
           <p className="text-sm text-muted-foreground">These hold the conversation, so they are read only here. The notification email carries just the fingerprint and the person&rsquo;s choices. Each is deleted on the day its owner chose, or sooner by you.</p>
+          <p className="text-sm text-muted-foreground">
+            A conversation can be signed after any exchange, so one person may send copies signed at different points. Each copy is its own submission with its own permissions and its
+            own deletion. Overlaps are flagged below for your information only; nothing is merged or narrowed because of them.
+          </p>
           {inbox.length === 0 && <p className="text-sm text-muted-foreground">Nothing has been sent.</p>}
+          {inbox.length > 1 && (
+            <div className="space-y-2 rounded-xl border border-border p-3 text-sm">
+              <button type="button" onClick={checkNear} className="rounded-md border border-border px-3 py-1.5 hover:bg-accent">Look for possible near-duplicates</button>
+              <p className="text-xs text-muted-foreground">Compares the person&rsquo;s own words across the transcripts listed here, in this browser, for runs of the same six words. It only flags; it may be wrong both ways.</p>
+              {near && (near.length === 0
+                ? <p className="text-xs" role="status">No possible near-duplicates found.</p>
+                : <ul role="status" className="list-disc pl-5 text-xs">{near.map((n) => <li key={n.a + n.b}>{short(n.a)} and {short(n.b)}: {n.shared} shared run{n.shared === 1 ? '' : 's'} of words</li>)}</ul>)}
+            </div>
+          )}
           {inbox.map((t) => (
             <article key={t.hash} className="space-y-2 rounded-xl border border-border p-4 text-sm">
               <p className="text-xs text-muted-foreground">Fingerprint {t.hash.slice(0, 12)} · received {new Date(t.receivedAt).toLocaleDateString()} · {t.keepUntil ? `deleted on ${new Date(t.keepUntil).toLocaleDateString()}` : 'kept until the person asks'} · log: {t.issuedRecord}</p>
               <p>{t.permissions}</p>
+              {t.overlapCheck === 'failed' && <p className="text-xs text-muted-foreground">The overlap check could not run when this arrived.</p>}
+              {overlapsFor(t.hash).length > 0 && (
+                <div className="rounded-md border border-amber-500/60 bg-amber-500/10 p-2 text-xs">
+                  <p className="font-medium">Possible duplicate: shares messages with other submissions (each keeps its own permissions)</p>
+                  <ul className="list-disc pl-5">{overlapsFor(t.hash).map((o) => <li key={o.other}>{short(o.other)}{o.later ? ', sent later' : ', sent earlier'}: {o.words}{(inbox ?? []).some((x) => x.hash === o.other) ? '' : ' (no longer held)'}</li>)}</ul>
+                </div>
+              )}
               {t.note && <p><span className="font-medium">Their note: </span>{t.note}</p>}
               <details>
                 <summary className="cursor-pointer underline underline-offset-4">Read the transcript</summary>
@@ -149,6 +187,12 @@ export default function WitnessedPanel({ getToken }: { getToken: () => string })
                 Fingerprint {p.hash.slice(0, 12)} · received {new Date(p.receivedAt).toLocaleDateString()} · the site replaced {p.draft.replaced} more thing{p.draft.replaced === 1 ? '' : 's'} just now
                 {p.draft.softFlags.length ? ` · softer safety flags in this conversation: ${p.draft.softFlags.join(', ')} (read it closely)` : ''}
               </p>
+              {overlapsFor(p.hash).length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Some of these messages are also in {overlapsFor(p.hash).map((o) => short(o.other)).join(', ')}, which may have been sent with different permissions. Each submission is
+                  independent: this decision covers only this one. The overlap is listed under Transcripts people sent.
+                </p>
+              )}
               {(edits[p.hash] ?? []).map((it, i) => (
                 <div key={i} className="space-y-1">
                   <label className="block text-xs font-medium" htmlFor={`${p.hash}-${i}`}>{WRITER[it.by]}</label>

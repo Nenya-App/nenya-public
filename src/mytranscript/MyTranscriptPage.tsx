@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { EmergencyExitDock } from '../app/components/EmergencyExit';
 import { extractSigned, verifySigned, type SignedFile } from '../lib/verifyTranscript';
 import { USES, USE_LABELS } from '../lib/transcriptPolicy';
+import { CONTACT_EMAIL, KEEP_KEY_PLANNED, KEEP_KEY_POLICY, REVIEW_DAYS } from '../lib/keepTheKey';
 
 // Change or take back what you allowed us to do with a transcript you sent (docs/transcript-consent-scope.md). The signed file is the key: it is checked in
 // this browser first, and only when you press the button is it sent to /api/transcript-revoke. A request can only remove permissions. This page is separate
@@ -104,7 +105,17 @@ export default function MyTranscriptPage() {
         )}
 
         <footer className="space-y-2 text-sm text-muted-foreground">
+          <p>If you sent more than one signed copy of the same conversation (for example, one signed partway through and one at the end), each copy is its own submission with its own permissions. Changing or deleting one does not change the others: to change or delete each one, show each file.</p>
           <p>We cannot recall copies other people made of something that was public. Whoever holds the signed file can make this request, so keep it as private as the conversation. The file proves it is genuine; it does not prove who you are.</p>
+          <section aria-label="If you no longer have the file" className="space-y-2 rounded-lg border border-border p-3">
+            <p className="font-medium text-foreground">If you no longer have the signed file</p>
+            <p>{KEEP_KEY_POLICY}</p>
+            <p>
+              Without the file, email <a className="underline underline-offset-4" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> to ask for a review. We can then only remove permissions
+              or delete it. It can take up to {REVIEW_DAYS} days, and you will need to tell us what the conversation contained and when it happened so we can find it.
+            </p>
+            <p>{KEEP_KEY_PLANNED}</p>
+          </section>
           <p>To only check a transcript, with nothing sent anywhere, use <a className="underline underline-offset-4" href="/verify/">nenya.biz/verify</a>.</p>
         </footer>
       </main>
