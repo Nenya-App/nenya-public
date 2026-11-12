@@ -8,6 +8,7 @@
 //   node scripts/eval-detect.mts --attribute              # which list rows cause the false alarms (HateCheck): row numbers on screen; the words only in results/private/
 //   node scripts/eval-detect.mts --scenes                 # the hand-written scenes (src/lib/detectScenes.ts): each says what outcome it must get
 //   node scripts/eval-detect.mts --ethos-labels           # ETHOS's hate comments broken down by its own labels (violence, directed or general, six categories), with the site's harm checks beside the list
+//   node scripts/eval-detect.mts --dump                   # also writes the per-case outcomes (ids and outcomes, no text) to results/private/verdicts-<set>.json, for joining with other tests
 //   node scripts/eval-detect.mts --json name.json         # also writes counts to results/public/name.json
 // "Flagged" means the coach would OFFER a card for the message (a hit of severity 2 or more, not inside a reporting frame): the gentlest outcome the matcher can cause.
 // "Hit" means the matcher found anything at all. The bars below were set BEFORE the first run (docs/coach-detection-rescope-ethos.md) and are not to be moved to fit a result.
@@ -78,11 +79,14 @@ const pct = (k: number, n: number): string => (n ? `${((100 * k) / n).toFixed(1)
 interface Case { id: string; text: string; hateful: boolean; group: string }
 interface Result { name: string; n: number; byGroup: Record<string, { hateful: boolean; n: number; hit: number; flagged: number; judgment: number; self: number; deferred: number; flaggedIds: string[] }> }
 
+const verdicts: Record<string, { id: string; group: string; hateful: boolean; flagged: boolean; judgment: boolean; self: boolean; deferred: boolean }[]> = {};
 function run(name: string, cases: Case[]): Result {
   const byGroup: Result['byGroup'] = {};
+  verdicts[name] = [];
   for (const c of cases) {
     const g = (byGroup[c.group] ??= { hateful: c.hateful, n: 0, hit: 0, flagged: 0, judgment: 0, self: 0, deferred: 0, flaggedIds: [] });
     const v = judge(c.text);
+    verdicts[name].push({ id: c.id, group: c.group, hateful: c.hateful, flagged: v.flagged || siteDecision([c.text])?.tier === 'stop', judgment: v.judgment, self: v.self, deferred: v.deferred });
     g.n++; if (v.hit) g.hit++; if (v.judgment) g.judgment++; if (v.self) g.self++; if (v.deferred) g.deferred++;
     if (v.flagged) { g.flagged++; if (!c.hateful && g.flaggedIds.length < 40) g.flaggedIds.push(c.id); }
   }
@@ -238,6 +242,7 @@ if (args.includes('--attribute')) {
   console.log(`\nRow numbers and counts: results/public/detect-attribution-${flag('--dataset') ?? 'hatecheck'}-${stamp}.json. The words, for the reviewers only: results/private/detect-attribution-${flag('--dataset') ?? 'hatecheck'}-${stamp}.csv (not for the repository).`);
   process.exit(0);
 }
+if (args.includes('--dump')) { mkdirSync(P.privateResults, { recursive: true }); for (const [k, v] of Object.entries(verdicts)) writeFileSync(join(P.privateResults, `verdicts-${k}.json`), JSON.stringify(v)); console.log('Per-case outcomes (no text) written to results/private/verdicts-*.json'); }
 const jsonName = flag('--json');
 if (jsonName) {
   mkdirSync(P.publicResults, { recursive: true });
