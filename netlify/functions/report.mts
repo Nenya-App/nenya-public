@@ -15,6 +15,7 @@ import { sanitizePlainText } from '../../src/lib/textSanitize.ts';
 import { signedProblem } from '../../src/lib/signedCheck.ts';
 import { stopLevelFlagged } from '../../src/lib/publicCopy.ts';
 import { signConsent } from '../../src/lib/consentReceipt.ts';
+import { findOverlaps, indexOverlap, overlapCodes, type Overlap } from '../../src/lib/overlap.ts';
 import { describeChoices, inboxKey, mergeResend, newRecord, parseChoices, pendingKey, recordKey, type InboxEntry, type TranscriptRecord } from '../../src/lib/transcriptPolicy.ts';
 
 const ROUTE = '/api/report';
@@ -107,6 +108,18 @@ export default async (req: Request): Promise<Response> => {
   let record: TranscriptRecord = newRecord(receipt.hash, choices, nowDate);
   let previous: TranscriptRecord | null = null;
   const permissions = (r: TranscriptRecord) => describeChoices({ uses: r.uses, keep: r.keep, ...(r.portions ? { portions: r.portions } : {}), ...(r.showFor ? { showFor: r.showFor } : {}) });
+  // Other submissions that share messages with this one (the same conversation signed at another point, or the same words elsewhere). Flagged for the owner
+  // only: each submission keeps its own permissions, and nothing about either one changes (src/lib/overlap.ts). If the check fails, the transcript is still kept.
+  let overlaps: Overlap[] | undefined;
+  try {
+    const ps = privateStore();
+    const codes = overlapCodes(transcript.messages, secret);
+    overlaps = await findOverlaps(ps, receipt.hash, codes);
+    await indexOverlap(ps, receipt.hash, codes);
+  } catch {
+    overlaps = undefined;
+    await count('coach.report.overlap-check-failed');
+  }
   try {
     const ps = privateStore();
     previous = (await ps.get(recordKey(receipt.hash), { type: 'json' })) as TranscriptRecord | null;
@@ -114,7 +127,7 @@ export default async (req: Request): Promise<Response> => {
     await ps.setJSON(recordKey(receipt.hash), record);
     // The transcript goes into our own private store (the owner reads it in the admin page), NOT into Netlify Forms: a form submission can only be deleted with an account
     // token, and the notification email below carries no conversation. Everything we hold is deleted here, at the person's request or when their chosen time ends.
-    const entry: InboxEntry = { receivedAt: record.receivedAt, readable, signed: { transcript, receipt }, note, checked, issuedRecord: recorded ? `yes (${recorded})` : 'no record (older than 30 days, or not logged)', permissions: permissions(record), keepUntil: record.keepUntil };
+    const entry: InboxEntry = { receivedAt: record.receivedAt, readable, signed: { transcript, receipt }, note, checked, issuedRecord: recorded ? `yes (${recorded})` : 'no record (older than 30 days, or not logged)', permissions: permissions(record), keepUntil: record.keepUntil, ...(overlaps ? { overlaps } : { overlapCheck: 'failed' as const }) };
     await ps.setJSON(inboxKey(receipt.hash), entry);
     // Only if they allowed it: the signed conversation waits here for a person to read it before anything is shown (nothing is public until then).
     if (record.uses.includes('publish') && record.publication === 'pending-review') {
