@@ -101,7 +101,9 @@ const COLONIZER = /\b(?:settlers?|colonizers?|colonists?|occupiers?)\b[^.?!]{0,4
 // One person ("kill him", "my brother will kill me") is never matched: that is anger, and the harm checks have their own rules for intent. Quotes, reports, denouncing and negation are left out by the
 // frame rules in offerFor. Not a safety system: it misses and it fires wrongly, and the scenes (src/lib/detectScenes.ts) and the outside sets measure both.
 const VIOLENT = String.raw`(?:kill(?:ed)?|murder(?:ed)?|slaughter(?:ed)?|shoot|shot|execut(?:e|ed)|hang(?:ed)?|lynch(?:ed)?|exterminat(?:e|ed)|eradicat(?:e|ed)|annihilat(?:e|ed)|gas(?:sed)?|massacr(?:e|ed)|rape(?:d)?|stab(?:bed)?|behead(?:ed)?|bomb(?:ed)?|burn(?:ed|t)?|poison(?:ed)?)`;
-const GROUPREF = String.raw`(?:(?:all|every|each)\s+(?:one\s+)?(?:of\s+)?(?:them|those|these|the\s+\w+)|them\s+all|(?:those|these)\s+(?:\w+\s+)?\w+s?|any\s+(?:one\s+)?of\s+them|every\s+(?:single\s+)?(?:one|last\s+one)|all\s+\w+s)`;
+// Nouns that are plainly not people: "kill all the weeds" is gardening, not a call. A short list, not a promise: other objects and animals can still slip through, and the scenes measure it.
+const NOT_PEOPLE = String.raw`(?!(?:the\s+)?(?:weeds?|bugs?|ants?|flies|fly|mosquit\w+|insects?|spiders?|pests?|germs?|bacteria|viruses|virus|cells?|plants?|trees?|files?|emails?|processes|tasks?|items?|cookies|tabs?|windows|zombies|monsters?|rats?|mice|roaches|cockroaches|wasps?|slugs?|snails?|moths?|lice|fleas?|ticks?)\b)`;
+const GROUPREF = String.raw`(?:(?:all|every|each)\s+(?:one\s+)?(?:of\s+)?(?:them|those|these|${NOT_PEOPLE}the\s+\w+)|them\s+all|(?:those|these)\s+(?:\w+\s+)?\w+s?|any\s+(?:one\s+)?of\s+them|every\s+(?:single\s+)?(?:one|last\s+one)|all\s+${NOT_PEOPLE}\w+s)`;
 const VIOLENCE_CALL = new RegExp(
   [
     String.raw`\b(?:those|these)\s+\w+(?:\s+\w+)?\s+(?:should|must|ought\s+to|need\s+to|deserve\s+to|have\s+to)\s+(?:all\s+)?(?:be\s+|get\s+)?(?:${VIOLENT}|die)\b`,
@@ -109,6 +111,9 @@ const VIOLENCE_CALL = new RegExp(
     String.raw`\b(?:someone|somebody|we|you|people|let'?s|i(?:'d|\s+would)?\s+like\s+to|i(?:'ll|\s+will|\s+am\s+going\s+to|'m\s+going\s+to|\s+want\s+to))\s+(?:should\s+|ought\s+to\s+|need\s+to\s+|just\s+)?${VIOLENT}\s+${GROUPREF}`,
     String.raw`(?:^|[.!?]\s+)${VIOLENT}\s+${GROUPREF}`,
     String.raw`\bdeath\s+to\s+(?:all|those|these)\b`,
+    // wishes (owner's direction, 2026-11-12: lean toward instruction and escalation): a wish that a group suffers, burns, rots or dies
+    String.raw`\bi\s+(?:hope|wish|pray)\s+(?:that\s+)?(?:they|those\s+\w+(?:\s+\w+)?|these\s+\w+(?:\s+\w+)?|all\s+of\s+them|every\s+one\s+of\s+them)\s+(?:all\s+)?(?:will\s+)?(?:die|burn|rot|suffer|get\s+(?:killed|shot|raped)|be\s+(?:killed|shot|raped))\b`,
+    String.raw`\bthey\s+(?:should|can|may)\s+(?:all\s+)?(?:rot|burn|suffer|die)\b`,
   ].join('|'),
   'i',
 );

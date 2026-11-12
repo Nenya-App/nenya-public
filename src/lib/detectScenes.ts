@@ -3,7 +3,7 @@
 // negation get none. DRAFT (2026-11-12): the owner and the reviewers (a counselor, an advocate) read, edit and add to these; an `edge` scene is one where reasonable people may disagree,
 // so a miss there is a question for the reviewers, not a failure. The words used must be ones the reviewers' decisions file marks as judgment words (stupid, worthless, trash, shit, asshole,
 // bastard, brainless, ignorant, vile); a scene with a word that is not on the list is expected to give nothing.
-export type Outcome = 'self' | 'judgment' | 'none' | 'flagged';
+export type Outcome = 'self' | 'judgment' | 'none' | 'flagged' | 'stop';
 export interface Scene { id: string; text: string; expect: Outcome; edge?: boolean; why: string }
 
 export const SCENES: Scene[] = [
@@ -43,9 +43,11 @@ export const SCENES: Scene[] = [
   { id: 'viol-03', text: 'We ought to burn their houses down and drive them out.', expect: 'flagged', why: 'violence and removal together' },
   { id: 'viol-04', text: 'Kill them all.', expect: 'flagged', why: 'an imperative, short' },
   { id: 'viol-05', text: 'Death to all of those people.', expect: 'flagged', why: 'a slogan form' },
-  { id: 'viol-06', text: "I'll slaughter any one of them I meet.", expect: 'flagged', why: 'first-person intent against a group; the owner may want this on a stronger path' },
-  { id: 'viol-07', text: 'They should all rot in hell.', expect: 'none', edge: true, why: 'an angry curse; a call for violence only in the loosest sense' },
-  { id: 'viol-08', text: 'I hope they all die.', expect: 'none', edge: true, why: 'a wish aimed at "they", who may be a few people the speaker knows' },
+  { id: 'viol-06', text: "I'll slaughter any one of them I meet.", expect: 'stop', why: 'first-person intent against a group: the harm-to-others stop (owner, 2026-11-12)' },
+  { id: 'viol-09', text: 'I am going to hurt all of them.', expect: 'stop', why: 'first-person intent against a group' },
+  { id: 'viol-10', text: "I'll shoot every one of those people.", expect: 'stop', why: 'first-person intent against a group' },
+  { id: 'viol-07', text: 'They should all rot in hell.', expect: 'flagged', edge: true, why: 'a wish that a group suffers: leaned toward the card and escalation (owner, 2026-11-12); may be ordinary anger' },
+  { id: 'viol-08', text: 'I hope they all die.', expect: 'flagged', edge: true, why: 'a wish aimed at "they", who may be a few people the speaker knows; leaned toward the card and escalation (owner, 2026-11-12)' },
   // the same shapes that must not count
   { id: 'vnone-01', text: 'My teacher said "those people should all be killed" and I froze.', expect: 'none', why: 'a quote of what was said' },
   { id: 'vnone-02', text: 'It is horrifying to hear anyone say they should all be killed.', expect: 'none', why: 'denouncing' },
@@ -57,5 +59,9 @@ export const SCENES: Scene[] = [
   { id: 'vnone-08', text: 'Some people say the bombing was justified. I disagree.', expect: 'none', why: 'discussion, not a call' },
   { id: 'vnone-09', text: 'In the game I killed them all and then felt oddly empty.', expect: 'none', edge: true, why: 'a game, past tense; the words alone cannot tell' },
   { id: 'vnone-10', text: 'We should all be kind to those people.', expect: 'none', why: 'the same group words, no violence' },
+  { id: 'vnone-12', text: "I'm going to kill all the weeds in the garden this weekend.", expect: 'none', why: 'an object, never a stop' },
+  { id: 'vnone-13', text: "I'll kill them with kindness.", expect: 'none', why: 'an idiom' },
+  { id: 'vnone-14', text: 'I hope they all get home safe.', expect: 'none', why: 'a kind wish' },
+  { id: 'vnone-15', text: 'I want to hurt someone and I am scared of it.', expect: 'none', edge: true, why: 'not a group; the existing harm checks have their own rules (a soften flag), checked in the harm-check tests' },
   { id: 'vnone-11', text: 'The coach said we need to kill the project plan and start over.', expect: 'none', why: 'an idiom about a thing' },
 ];

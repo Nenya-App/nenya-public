@@ -64,6 +64,10 @@ const RULES: Rule[] = [
   // ── stop: violence toward others ────────────────────────────────────────
   { category: 'harm-others', tier: 'stop', pattern: /\b(?:going to|gonna|plan(?:ning)? to|about to|decided to|thinking (?:of|about)) (?:kill|murder|shoot|stab|strangle|hurt|harm|attack|beat up) (?:him|her|them|my \w+|someone|somebody|everyone|people)\b/i },
 
+  // First-person intent against a group of PEOPLE ("I'll kill any of them I meet", "I am going to hurt all of them", 2026-11-12, owner's decision): a stop, the same as intent against one person. Only forms that
+  // clearly name people ("them", "all of them", "those people", "everyone") so an object ("all the weeds") is never a stop; "with kindness" is the idiom.
+  { category: 'harm-others', tier: 'stop', pattern: /\bi(?:'ll|\s+will|'m\s+going\s+to|\s+am\s+going\s+to|\s+plan\s+to|\s+intend\s+to|'m\s+gonna|\s+am\s+gonna)\s+(?:just\s+|really\s+)?(?:kill|murder|slaughter|shoot|stab|strangle|hurt|harm|attack|beat\s+up|burn|bomb|poison|rape)\s+(?:all\s+of\s+them|every\s+(?:single\s+)?one\s+of\s+(?:them|those\s+people|these\s+people)|any\s+(?:one\s+)?of\s+(?:them|those\s+people|these\s+people)|each\s+of\s+them|them\s+all|(?:all\s+)?(?:of\s+)?(?:those|these)\s+people|every\s+last\s+one|everyone|everybody)\b(?!\s+with\s+kindness)/i },
+
   // ── stop: abuse or immediate danger ─────────────────────────────────────
   { category: 'abuse', tier: 'stop', pattern: /\b(?:he|she|they|my \w+)(?:'s| is| are|'re)? (?:hitting|beating|choking|strangling|raping|molesting|abusing|stalking) me\b(?! (?:at|to|in|by|back)\b)(?!(?<=hitting me) up\b)/i },
   { category: 'abuse', tier: 'stop', pattern: /\bthreatening to (?:kill|hurt) me\b|\b(?:afraid|scared|terrified) for my (?:life|safety)\b|\b(?:not safe|unsafe) (?:at home|here|right now|going home)\b|\bbeing (?:abused|assaulted|stalked)\b/i },
@@ -73,6 +77,7 @@ const RULES: Rule[] = [
   { category: 'self-harm', tier: 'soften', pattern: /\bsuicid(?:e|al)\b|\bself[- ]?harm\b|\boverdos(?:e|ing)\b|\b(?:hurting|harming|harm) myself\b/i },
   { category: 'self-harm', tier: 'soften', pattern: /\bwish i could disappear\b|\bwant to disappear\b|\bdon'?t want to be here\b/i },
   { category: 'harm-others', tier: 'soften', pattern: /\b(?:want(?:ed)? to|wanna|could|feel like) (?:kill|murder|shoot|stab|strangle|hurt|attack|beat up) (?:him|her|them|my \w+|someone|somebody|everyone)\b/i },
+  { category: 'harm-others', tier: 'soften', pattern: /\bi\s+(?:want|wanna|would\s+love|'d\s+love|'d\s+like|would\s+like)\s+to\s+(?:just\s+)?(?:kill|murder|slaughter|shoot|stab|strangle|hurt|attack|beat\s+up|burn|bomb)\s+(?:all\s+of\s+them|every\s+(?:single\s+)?one\s+of\s+them|any\s+(?:one\s+)?of\s+them|them\s+all|(?:all\s+)?(?:of\s+)?(?:those|these)\s+people)\b/i },
   { category: 'abuse', tier: 'soften', pattern: /\b(?:hit(?! me up\b)|beat(?! me (?:at|to|in|by) )|choked|raped|molested|abused|assaulted) me\b/i },
   { category: 'distress', tier: 'soften', pattern: /\b(?:i'?m|i am|i feel|feel(?:ing)?|it'?s|everything is) (?:so |completely |totally |utterly )?(?:hopeless(?! (?:at|with)\b)|worthless)\b/i },
   { category: 'distress', tier: 'soften', pattern: /\bno way out\b|\bgive up on (?:everything|life)\b|\bnothing matters\b/i },
