@@ -11,8 +11,10 @@ import { KALEIDOSCOPE_PRESETS } from './kaleidoscope';
 export const SITE_LIVE_GEM: LiveGemLook = {
   // The stone's light. For example, to brighten it: { exposure: 1.8, lightGain: 2.6, sky: 0.2 }.
   light: {},
-  // The kaleidoscope: the inside of the stone slowly re-cuts itself. On by default. Setting `on: false` pauses it where
-  // it is; it does not snap back to the plain cut.
+  // The cut chosen on the /bench page on 2026-11-12 (a larger table and shallower star facets than the first cut, which had read as a six-pointed star); everything not named here is the default cut.
+  cut: { crown: 33, star: 19, starReach: 0.54, upperGirdle: 41, pavilion: 41.5, tableZ: 0.24 },
+  // The kaleidoscope: the inside of the stone slowly re-cuts itself. Off by default (2026-11-12). Setting `on: false` pauses it where
+  // it is; on the /bench page "Return to the plain cut" brings the stone back to the plain cut.
   // Presets (src/lib/kaleidoscope.ts): calm, gentle, lively, full. Each holds the stone's structure within limits and lets
   // the pattern move inside them. Adjust on top of one, e.g. { ...KALEIDOSCOPE_PRESETS.gentle, periodS: 260 }:
   //   structure  0-1   how much the overall shape may move (crown, pavilion, girdles)
@@ -20,7 +22,7 @@ export const SITE_LIVE_GEM: LiveGemLook = {
   //   sway       deg   how far the facets swing each way before coming back (0 = turn without end)
   //   periodS    s     the slowest wave; higher is slower
   //   depth      0-1   scales everything
-  kaleidoscope: { ...KALEIDOSCOPE_PRESETS.gentle, on: true },
+  kaleidoscope: { ...KALEIDOSCOPE_PRESETS.gentle, on: false },
 };
 
 /**

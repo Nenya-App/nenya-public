@@ -144,7 +144,7 @@ try {
     const mainSrc = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
     // The orbit's defaults moved to src/lib/orbitLook.ts (so the /bench page can tune them); NenyaLogo pulses between them.
     const orbitSrc = readFileSync(new URL('../src/lib/orbitLook.ts', import.meta.url), 'utf8');
-    ok('inner orbs peak at 80% opacity', /opacityLow: 0\.66,\s*opacityHigh: 0\.8,/.test(orbitSrc) && /INNER_ORB_OPACITY = \[inner\.opacityLow, inner\.opacityHigh, inner\.opacityLow\]/.test(logoSrc));
+    ok('inner orbs peak at 90% opacity (the look chosen on the bench, 2026-11-12)', /opacityLow: 0\.8,\s*opacityHigh: 0\.9,/.test(orbitSrc) && /INNER_ORB_OPACITY = \[inner\.opacityLow, inner\.opacityHigh, inner\.opacityLow\]/.test(logoSrc));
     ok('the gem reports its first drawn frame, and the downloads start before the page is drawn', /markGemDrawn\(\)/.test(gemSrc) && /startLogoDownloads\(\)/.test(mainSrc));
   }
   const { TourOffer } = await vite.ssrLoadModule('/src/app/components/TourOffer.tsx');

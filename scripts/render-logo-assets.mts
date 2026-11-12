@@ -52,7 +52,7 @@ async function draw(rel: string, params: Record<string, string | number>, w: num
   await page.goto(`http://localhost:${port}/logo-export/index.html?${q}`, { waitUntil: 'networkidle0' });
   await new Promise((r) => setTimeout(r, 3500));
   try {
-    await page.screenshot({ path: out(rel), omitBackground: !params.bg });
+    await page.screenshot({ path: out(rel), omitBackground: true }); // a background comes from the page's own box, so rounded corners stay transparent
     console.log('drew', rel);
   } catch (e) {
     console.error('FAILED to draw', rel, String(e).slice(0, 200));
@@ -86,7 +86,7 @@ await ensure('repo/src/assets/nenya-logo.webp');
 execFileSync('cwebp', ['-q', '92', '-alpha_q', '100', '-m', '6', out('work/flat-768.png'), '-o', out('repo/src/assets/nenya-logo.webp')], { stdio: 'pipe' });
 resize('work/flat-768.png', 'work/flat-128.png', 128);
 execFileSync('cwebp', ['-q', '92', '-alpha_q', '100', '-m', '6', out('work/flat-128.png'), '-o', out('repo/src/assets/nenya-logo-small.webp')], { stdio: 'pipe' });
-await draw('work/fav-256.png', { size: 435, box: 256 }, 256, 256); // fills the square, so it stays readable when tiny
+await draw('work/fav-256.png', { size: 450, box: 256, bg: DARK, round: 22 }, 256, 256); // the flat logo on a rounded dark tile: readable when tiny, on a light or dark tab
 await ensure('repo/public/icons/favicon-48.png');
 resize('work/fav-256.png', 'repo/public/icons/favicon-48.png', 48);
 resize('work/fav-256.png', 'repo/public/icons/favicon-32.png', 32);
@@ -97,8 +97,8 @@ await ensure('repo/public/pdf-assets/nenya-logo.png');
 sips('-c', String(ch), String(cw), '--cropOffset', String(cy), String(cx), out('work/flat-1024.png'), '--out', out('repo/public/pdf-assets/nenya-logo.png'));
 
 // ---- 2. the orbit view on the dark ground: app icons, the maskable icon, the Apple touch icon
-await draw('work/orbit-512.png', { size: 417, box: 512, orbs: 1, bg: DARK }, 512, 512);
-await draw('work/orbit-512-maskable.png', { size: 355, box: 512, orbs: 1, bg: DARK }, 512, 512);
+await draw('work/orbit-512.png', { size: 417, box: 512, orbs: 1, vivid: 1, bg: DARK }, 512, 512);
+await draw('work/orbit-512-maskable.png', { size: 355, box: 512, orbs: 1, vivid: 1, bg: DARK }, 512, 512);
 await ensure('repo/public/icons/icon-512.png');
 sips('-s', 'format', 'png', out('work/orbit-512.png'), '--out', out('repo/public/icons/icon-512.png'));
 sips('-s', 'format', 'png', out('work/orbit-512-maskable.png'), '--out', out('repo/public/icons/icon-512-maskable.png'));
@@ -106,23 +106,23 @@ resize('work/orbit-512.png', 'repo/public/icons/icon-192.png', 192);
 resize('work/orbit-512.png', 'repo/public/icons/apple-touch-icon.png', 180);
 
 // ---- 3. the social preview image (1200 x 630)
-await draw('work/og.png', { size: 470, w: 1200, h: 630, orbs: 1, glow: 1, bg: DARK }, 1200, 630);
+await draw('work/og.png', { size: 470, w: 1200, h: 630, orbs: 1, vivid: 1, glow: 1, bg: DARK }, 1200, 630);
 await ensure('repo/public/og-image.jpg');
 sips('-s', 'format', 'jpeg', '-s', 'formatOptions', '90', out('work/og.png'), '--out', out('repo/public/og-image.jpg'));
 
 // ---- 4. print logos (10 x 10 in at 300 dpi = 3000 px), all the orbit view as before: transparent (with the glow), for light backgrounds (the drawing darkened), on the dark ground, with the glow; and PDFs
 const PR = 'assets/print/nenya-logo-10x10in-300dpi-';
-await draw(`${PR}transparent.png`, { size: 2370, box: 3000, orbs: 1, glow: 1 }, 3000, 3000);
-await draw(`${PR}transparent-for-light-backgrounds.png`, { size: 2370, box: 3000, orbs: 1, light: 1 }, 3000, 3000);
-await draw(`${PR}dark-background-clean.png`, { size: 2370, box: 3000, orbs: 1, bg: DARK }, 3000, 3000);
-await draw(`${PR}dark-background-with-glow.png`, { size: 2370, box: 3000, orbs: 1, glow: 1, bg: DARK }, 3000, 3000);
+await draw(`${PR}transparent.png`, { size: 2370, box: 3000, orbs: 1, vivid: 1, glow: 1 }, 3000, 3000);
+await draw(`${PR}badge-for-light-backgrounds.png`, { size: 2370, box: 3000, orbs: 1, vivid: 1, bg: DARK, round: 12 }, 3000, 3000); // on light backgrounds the logo is used as a dark badge
+await draw(`${PR}dark-background-clean.png`, { size: 2370, box: 3000, orbs: 1, vivid: 1, bg: DARK }, 3000, 3000);
+await draw(`${PR}dark-background-with-glow.png`, { size: 2370, box: 3000, orbs: 1, vivid: 1, glow: 1, bg: DARK }, 3000, 3000);
 for (const n of ['dark-background-clean', 'dark-background-with-glow']) {
   if (!existsSync(out(`${PR}${n}.png`))) { console.error('missing', `${PR}${n}.png`, '(no PDF)'); continue; }
   sips('-s', 'dpiWidth', '300', '-s', 'dpiHeight', '300', '-s', 'format', 'pdf', out(`${PR}${n}.png`), '--out', out(`assets/print/nenya-logo-10x10in-${n}.pdf`));
 }
 
 // ---- 5. social avatars (the ring sits inside a circular crop) and small versions for other materials
-await draw('assets/social/nenya-avatar-1080.png', { size: 770, box: 1080, orbs: 1, bg: DARK }, 1080, 1080);
+await draw('assets/social/nenya-avatar-1080.png', { size: 770, box: 1080, orbs: 1, vivid: 1, glow: 1, bg: DARK }, 1080, 1080); // with the glow, as the old avatar had
 resize('assets/social/nenya-avatar-1080.png', 'assets/social/nenya-avatar-400.png', 400);
 resize('assets/social/nenya-avatar-1080.png', 'assets/social/nenya-avatar-small.png', 256);
 await draw('assets/social/nenya-logo-transparent-500.png', { size: 500 }, 500, 500);
@@ -141,7 +141,7 @@ await draw('assets/social/nenya-logo-transparent-500.png', { size: 500 }, 500, 5
     ['PDF logo', join(root, 'public/pdf-assets/nenya-logo.png'), out('repo/public/pdf-assets/nenya-logo.png'), 240],
     ['Social preview', join(root, 'public/og-image.jpg'), out('repo/public/og-image.jpg'), 150],
     ['Print: dark, glow', join(A, 'Print Logos/nenya-logo-10x10in-300dpi-dark-background-with-glow.png'), out(`${PR}dark-background-with-glow.png`), 220],
-    ['Print: for light', join(A, 'Print Logos/nenya-logo-10x10in-300dpi-transparent-for-light-backgrounds.png'), out(`${PR}transparent-for-light-backgrounds.png`), 220],
+    ['Print: for light backgrounds (badge)', join(A, 'Print Logos/nenya-logo-10x10in-300dpi-transparent-for-light-backgrounds.png'), out(`${PR}badge-for-light-backgrounds.png`), 220],
     ['Print: transparent', join(A, 'Print Logos/nenya-logo-10x10in-300dpi-transparent.png'), out(`${PR}transparent.png`), 220],
     ['Social avatar', join(HOME, 'Desktop/Logo/Nenya Logo Contracted New Small Avatar.png'), out('assets/social/nenya-avatar-1080.png'), 200],
   ];

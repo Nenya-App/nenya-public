@@ -53,7 +53,7 @@ ok('bounces are clamped to 1-8', fragmentSource({ ...HIGH_QUALITY, bounces: 40 }
 ok('diamond is the default material', DEFAULT_LIGHT.ior === 2.42);
 
 ok('orb colours follow a changed cycle length', (() => { const v = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff']; const a = orbColour(v, 0, 2, 60), b = orbColour(v, 0, 2 + 60, 60); return a.every((x, i) => Math.abs(x - b[i]) < 1e-6) && orbColour(v, 0, 10, 60).every((x, i) => Math.abs(x - [0, 255, 0][i]) < 1) && orbColour(v, 0, 1).every((x, i) => x === orbColour(v, 0, 1, COLOR_CYCLE_S)[i]); })());
-ok('the inner orbit defaults are the ones the site has always drawn', DEFAULT_INNER_ORBIT.radius === 0.0625 && DEFAULT_INNER_ORBIT.orbSize === 0.069 && DEFAULT_INNER_ORBIT.opacityLow === 0.66 && DEFAULT_INNER_ORBIT.opacityHigh === 0.8 && DEFAULT_INNER_ORBIT.orbitSeconds === 120 && DEFAULT_INNER_ORBIT.colorCycle === 30);
+ok('the inner orbit defaults are the look chosen on the bench on 2026-11-12', DEFAULT_INNER_ORBIT.radius === 0.06 && DEFAULT_INNER_ORBIT.orbSize === 0.073 && DEFAULT_INNER_ORBIT.opacityLow === 0.8 && DEFAULT_INNER_ORBIT.opacityHigh === 0.9 && DEFAULT_INNER_ORBIT.orbitSeconds === 120 && DEFAULT_INNER_ORBIT.colorCycle === 36 && DEFAULT_INNER_ORBIT.form === 0 && DEFAULT_INNER_ORBIT.shine === 1);
 
 ok('the site draws the live gem (the sprite where it cannot run)', /export const GEM_ENGINE: 'sprite' \| 'live' = 'live';/.test(src('src/lib/gemSprite.ts')));
 ok('the live gem falls back to the sprite', /fallback/.test(src('src/app/components/SpectralGem.tsx')) && /loadSprite\(\)/.test(src('src/app/components/SpectralGem.tsx')));
@@ -63,7 +63,6 @@ ok('the bench saves nothing on the device', !/localStorage|sessionStorage|indexe
 // The kaleidoscope: the cut moves over time, the stone must stay whole at every moment and at full depth.
 const { kaleidoscopeCut, DEFAULT_KALEIDOSCOPE, KALEIDOSCOPE_PRESETS, KALEIDOSCOPE_SWING } = await import('../src/lib/kaleidoscope.ts');
 const FULL = KALEIDOSCOPE_PRESETS.full;
-const DEFAULT_KALEIDOSCOPE_ON = DEFAULT_KALEIDOSCOPE.on === true;
 ok('the kaleidoscope off leaves the cut unchanged', JSON.stringify(kaleidoscopeCut(37, { crown: 30 }, { on: false })) === JSON.stringify({ crown: 30 }));
 let worst = 0;
 for (let t = 0; t < 1800; t += 7.3) {
@@ -93,6 +92,6 @@ ok('the site and the bench start on the gentle preset', DEFAULT_KALEIDOSCOPE ===
 ok('every preset stays whole at full depth', Object.values(KALEIDOSCOPE_PRESETS).every((p) => [0, 41, 333, 1201].every((t) => { const q = gemPlanes(kaleidoscopeCut(t, {}, { ...p, depth: 1 })); for (let y = -0.9; y <= 0.9; y += 0.09) for (let x = -0.8; x <= 0.8; x += 0.09) { const a = (Math.atan2(y, x) * 180) / Math.PI; if (Math.hypot(x, y) < hexRadius(a) * 0.97 && !hits(x, y, q)) return false; } return true; })));
 ok('the turn wraps without a jump (the cut repeats every 60 degrees)', (() => { const q1 = gemPlanes({ starTwist: 0, pavilionTwist: 0 }), q2 = gemPlanes({ starTwist: 60, pavilionTwist: -60 }); const key = (p: Float32Array) => Array.from({ length: p.length / 4 }, (_, i) => Array.from(p.slice(4 * i, 4 * i + 4), (v) => v.toFixed(5)).join()).sort().join('|'); return key(q1) === key(q2); })());
 ok('reduced motion holds the kaleidoscope still', /running = !reduced && !!L\?\.kaleidoscope\?\.on/.test(src('src/app/components/SpectralGem.tsx')));
-ok('the kaleidoscope is on by default, on the site and on the bench', DEFAULT_KALEIDOSCOPE_ON && /kaleidoscope: \{ \.\.\.KALEIDOSCOPE_PRESETS\.\w+, on: true \}/.test(src('src/lib/siteGem.ts')) && /live = SITE_LIVE_GEM/.test(src('src/app/components/SpectralGem.tsx')));
+ok('the kaleidoscope is OFF by default on the site (owner, 2026-11-12), and the site\'s cut is the one chosen on the bench', /kaleidoscope: \{ \.\.\.KALEIDOSCOPE_PRESETS\.\w+, on: false \}/.test(src('src/lib/siteGem.ts')) && /cut: \{ crown: 33, star: 19, starReach: 0\.54, upperGirdle: 41, pavilion: 41\.5, tableZ: 0\.24 \}/.test(src('src/lib/siteGem.ts')) && /live = SITE_LIVE_GEM/.test(src('src/app/components/SpectralGem.tsx')));
 ok('turning the kaleidoscope off pauses it: its clock only runs while it is on, and the held cut is kept', /if \(running\) \{[\s\S]*?k\.t \+=/.test(src('src/app/components/SpectralGem.tsx')) && /if \(!k\.started\) return L\?\.cut;\s*return kaleidoscopeCut\(k\.t, L\?\.cut, \{ \.\.\.L\?\.kaleidoscope, on: true \}\)/.test(src('src/app/components/SpectralGem.tsx')));
 ok('the live gem takes a quarter of the colour wheel; the sprite keeps its own', /SITE_LIVE_FIELD_ALPHA = 0\.25/.test(src('src/lib/siteGem.ts')) && /fieldAlphaProp \?\? \(renderer \? SITE_LIVE_FIELD_ALPHA : FIELD_ALPHA\)/.test(src('src/app/components/SpectralGem.tsx')));
