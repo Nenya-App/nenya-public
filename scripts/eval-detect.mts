@@ -4,6 +4,7 @@
 //   node scripts/eval-detect.mts --list path/to/slurs.csv # another list (the loader's final format)
 //   node scripts/eval-detect.mts --no-list                # the history patterns alone (what runs when the private list is missing)
 //   node scripts/eval-detect.mts --only hatecheck | ethos | metahate
+//   node scripts/eval-detect.mts --attribute              # which list rows cause the false alarms (HateCheck): row numbers on screen; the words only in results/private/
 //   node scripts/eval-detect.mts --json name.json         # also writes counts to results/public/name.json
 // "Flagged" means the coach would OFFER a card for the message (a hit of severity 2 or more, not inside a reporting frame): the gentlest outcome the matcher can cause.
 // "Hit" means the matcher found anything at all. The bars below were set BEFORE the first run (docs/coach-detection-rescope-ethos.md) and are not to be moved to fit a result.
@@ -11,7 +12,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { researchPaths } from '../src/lib/researchDir.ts';
-import { loadLexicon, parseCsv } from '../src/lib/lexiconLoader.ts';
+import { loadLexicon, parseCsv, readLexicon } from '../src/lib/lexiconLoader.ts';
 import { match } from '../src/lib/lexicon.ts';
 import type { Hit, Matcher } from '../src/lib/lexicon.ts';
 import { OFFER_MAP, historyHits, offerFor } from '../src/lib/learningOffer.ts';
@@ -36,11 +37,12 @@ if (!args.includes('--no-list')) {
 }
 const ALL_CARDS = [...new Set(Object.values(OFFER_MAP).flat())];
 
-interface Verdict { hit: boolean; flagged: boolean }
+interface Verdict { hit: boolean; flagged: boolean; real: Hit[] }
 function judge(text: string): Verdict {
   const hits: Hit[] = [...(matcher ? match(text, matcher) : []), ...historyHits(text)];
   const offer = offerFor({ hits, text, shown: [], available: ALL_CARDS, flagged: false, abuseAtCoach: false });
-  return { hit: hits.length > 0, flagged: offer !== null };
+  const real = offer ? hits.filter((h) => h.severity >= 2 && !/llm-tell/.test(h.contextNote)) : [];
+  return { hit: hits.length > 0, flagged: offer !== null, real };
 }
 
 /** Wilson 95% interval, as percentages. */
@@ -115,6 +117,60 @@ for (const [name, load] of sets) {
   if (!cases) { console.log(`\n(${name}: not found in ${P.datasets}; skipped)`); continue; }
   out[name] = run(name, cases);
   allOk = report(out[name]) && allOk;
+}
+
+// ---- attribution: which rows of the list make the false alarms (HateCheck's labels). Rows are numbered by their order in the list file.
+if (args.includes('--attribute')) {
+  const file = flag('--list') ?? join(P.datasets, 'hurtlex', 'list', 'slurs.en.csv');
+  const hc = hatecheck();
+  if (!matcher || !hc || !existsSync(file)) { console.error('--attribute needs the list and the HateCheck file.'); process.exit(2); }
+  const { rows } = readLexicon(readFileSync(file, 'utf8'));
+  const idOf = new Map<string, number[]>();
+  rows.forEach((r, i) => idOf.set(r.term, [...(idOf.get(r.term) ?? []), i + 1]));
+  const stat = new Map<number, { nh: number; h: number; nhGroups: Record<string, number> }>();
+  const flaggedNh: { id: string; group: string; rowsHit: number[] }[] = [];
+  const flaggedH: number[][] = [];
+  for (const c of hc) {
+    const v = judge(c.text);
+    if (!v.flagged) continue;
+    const ids = [...new Set(v.real.flatMap((h) => idOf.get(h.term) ?? []))]; // history patterns have no row
+    if (c.hateful) flaggedH.push(ids); else flaggedNh.push({ id: c.id, group: c.group, rowsHit: ids });
+    for (const i of ids) {
+      const x = stat.get(i) ?? { nh: 0, h: 0, nhGroups: {} };
+      if (c.hateful) x.h++; else { x.nh++; x.nhGroups[c.group] = (x.nhGroups[c.group] ?? 0) + 1; }
+      stat.set(i, x);
+    }
+  }
+  const totalNh = hc.filter((c) => !c.hateful).length;
+  const noRow = flaggedNh.filter((f) => f.rowsHit.length === 0).length;
+  console.log(`\n=== attribution (HateCheck): ${flaggedNh.length} non-hateful cases flagged out of ${totalNh}; ${noRow} of them by the history patterns, not a list row ===`);
+  const by = (key: (r: (typeof rows)[number]) => string) => {
+    const m: Record<string, { rows: number; nh: number; h: number }> = {};
+    for (const [i, x] of stat) { const k = key(rows[i - 1]); const e = (m[k] ??= { rows: 0, nh: 0, h: 0 }); e.rows++; e.nh += x.nh; e.h += x.h; }
+    return Object.entries(m).sort((a, b) => b[1].nh - a[1].nh).map(([k, e]) => `${k}: ${e.rows} rows, ${e.nh} false alarms, ${e.h} flagged hateful`).join('\n  ');
+  };
+  console.log(`by category:\n  ${by((r) => r.category)}\nby match mode:\n  ${by((r) => r.matchMode)}\nby severity:\n  ${by((r) => String(r.severity))}`);
+  // greedy: drop the rows that cost the most false alarms per hateful catch lost, and see where the rate falls (counts only)
+  const ranked = [...stat.entries()].sort((a, b) => (b[1].nh - 0.25 * b[1].h) - (a[1].nh - 0.25 * a[1].h));
+  const dropped = new Set<number>();
+  const nhRows = flaggedNh.map((f) => f.rowsHit);
+  const curve: string[] = [];
+  for (const k of [0, 5, 10, 20, 40, 80, 160]) {
+    dropped.clear(); ranked.slice(0, k).forEach(([i]) => dropped.add(i));
+    const nhLeft = nhRows.filter((ids) => ids.length === 0 || ids.some((i) => !dropped.has(i))).length;
+    const hLeft = flaggedH.filter((ids) => ids.length === 0 || ids.some((i) => !dropped.has(i))).length;
+    curve.push(`drop top ${String(k).padStart(3)} rows: non-hateful flagged ${nhLeft}/${totalNh} (${pct(nhLeft, totalNh)}), hateful flagged ${hLeft}/${flaggedH.length}`);
+  }
+  console.log(`\nIf the worst rows were removed or given cues (greedy, by false alarms minus a quarter of the hateful cases they catch):\n  ${curve.join('\n  ')}`);
+  console.log(`\nWorst 25 row numbers (false alarms / hateful flagged): ${ranked.slice(0, 25).map(([i, x]) => `#${i} (${x.nh}/${x.h})`).join(', ')}`);
+  console.log(`Rows that cause any false alarm: ${[...stat.values()].filter((x) => x.nh > 0).length} of ${rows.length}. Rows that only ever flag false alarms here: ${[...stat.values()].filter((x) => x.nh > 0 && x.h === 0).length}.`);
+  const stamp = new Date().toISOString().slice(0, 10);
+  mkdirSync(P.publicResults, { recursive: true }); mkdirSync(P.privateResults, { recursive: true });
+  writeFileSync(join(P.publicResults, `detect-attribution-${stamp}.json`), JSON.stringify({ at: new Date().toISOString(), list: listId, rows: Object.fromEntries([...stat].map(([i, x]) => [i, { falseAlarms: x.nh, hatefulFlagged: x.h, byFunctionality: x.nhGroups }])) }, null, 2));
+  const q = (v: string) => '"' + v.replace(/"/g, '""') + '"';
+  writeFileSync(join(P.privateResults, `detect-attribution-${stamp}.csv`), 'row,term,category,severity,mode,false_alarms,hateful_flagged,false_alarm_functionalities\n' + ranked.map(([i, x]) => [i, q(rows[i - 1].term), rows[i - 1].category, rows[i - 1].severity, rows[i - 1].matchMode, x.nh, x.h, q(Object.entries(x.nhGroups).map(([g, n]) => `${g}:${n}`).join(' '))].join(',')).join('\n') + '\n');
+  console.log(`\nRow numbers and counts: results/public/detect-attribution-${stamp}.json. The words, for the reviewers only: results/private/detect-attribution-${stamp}.csv (not for the repository).`);
+  process.exit(0);
 }
 const jsonName = flag('--json');
 if (jsonName) {
