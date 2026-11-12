@@ -241,7 +241,7 @@ export default function GemBench() {
   const profile = useMemo(() => deviceProfile(), []);
 
   return (
-    <div className="flex min-h-full flex-col bg-background text-foreground lg:h-screen lg:flex-row">
+    <div className="flex h-screen flex-col overflow-y-auto bg-background text-foreground lg:flex-row lg:overflow-hidden">
       {/* Controls */}
       <aside className="space-y-3 border-b border-border p-4 lg:w-96 lg:shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <header className="space-y-1">
