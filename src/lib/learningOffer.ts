@@ -22,9 +22,10 @@ export const OFFER_MAP: Record<string, string[]> = {
   // The history cards (docs/drafts/history-and-violence-text-draft.md): found by plain phrases, not the private list (historyHits below).
   'mass-violence-denial': ['hist-02', 'hist-01'],
   'mass-violence-removal': ['hist-03', 'hist-01'],
+  'mass-violence-call': ['hist-03', 'hist-01'],
   'colonizer-dehumanization': ['hist-04', 'hist-03'],
 };
-const PRECEDENCE = ['slur', 'dehumanizing-metaphor', 'dehumanizing-phrase', 'coded-term', 'colonizer-dehumanization', 'mass-violence-removal', 'mass-violence-denial', 'harassing-insult', 'ai-insult'];
+const PRECEDENCE = ['slur', 'dehumanizing-metaphor', 'dehumanizing-phrase', 'coded-term', 'colonizer-dehumanization', 'mass-violence-removal', 'mass-violence-call', 'mass-violence-denial', 'harassing-insult', 'ai-insult'];
 
 /** The person is describing what someone else said or did to them ("he called me ..."), not using the word. */
 export const REPORTING = /\b(?:called|calls|calling|named|labell?ed|told|texted|messaged|wrote|said|says|shouted|yelled|sent)\b[^.?!]{0,30}\b(?:me|us|my|our|him|her|them)\b|\b(?:i|we)\s+(?:was|were|got|get)\s+(?:called|told|named)\b|\bwhat\s+(?:he|she|they|someone|people)\s+(?:said|called|wrote)\b|["“”][^"“”]{2,40}["“”]/i;
@@ -32,8 +33,8 @@ export const REPORTING = /\b(?:called|calls|calling|named|labell?ed|told|texted|
 /** The person is condemning, challenging or denouncing the words ("calling people that is not okay", "why would you call me that", "people saying that need to stop"), not using them. */
 export const DENOUNCING = new RegExp(
   [
-    String.raw`\b(?:calling|saying|telling|writing|threatening|wishing|believing|thinking)\b[^.?!]{0,70}\b(?:wrong|horrible|hateful|bigot\w*|racist|sexist|disgusting|despicable|unacceptable|misguided|small-minded|not\s+okay|never\s+okay|has\s+to\s+stop|have\s+to\s+stop|jail|banned|consequences|lose\s+respect|don'?t\s+expect)`,
-    String.raw`\b(?:wrong|horrible|hateful|unacceptable|not\s+okay|never\s+okay|disheartening|hurtful|bigot\w*)\b[^.?!]{0,60}\b(?:calling|saying|telling|writing|to\s+say|to\s+call|to\s+still\s+see)\b`,
+    String.raw`\b(?:calling|saying|telling|writing|threatening|wishing|believing|thinking)\b[^.?!]{0,70}\b(?:wrong|horrible|hateful|bigot\w*|racist|sexist|disgusting|despicable|unacceptable|misguided|horrif\w+|appall\w+|shocking|outrageous|small-minded|not\s+okay|never\s+okay|has\s+to\s+stop|have\s+to\s+stop|jail|banned|consequences|lose\s+respect|don'?t\s+expect)`,
+    String.raw`\b(?:wrong|horrible|horrifying|appalling|shocking|hateful|unacceptable|not\s+okay|never\s+okay|disheartening|hurtful|bigot\w*)\b[^.?!]{0,60}\b(?:calling|saying|telling|writing|to\s+say|to\s+call|to\s+hear|to\s+still\s+see|hear|say)\b`,
     String.raw`\b(?:don'?t|do\s+not|stop|never|why\s+would\s+you|how\s+(?:can|could|dare)\s+you)\b[^.?!]{0,25}\b(?:call(?:ing)?|say(?:ing)?|tell(?:ing)?)\b`,
     String.raw`\b(?:people|they|some)\s+(?:saying|calling|call(?:ing)?\s+for)\b`,
     String.raw`\bcall(?:ing)?\s+out\b`,
@@ -94,6 +95,24 @@ const DENIAL = /\b(?:holocaust|genocide|massacre|slavery|apartheid|ethnic\s+clea
 const REMOVAL = /\b(?:wipe\s+(?:them|\w+)\s+(?:all\s+)?out|wipe\s+(?:them|\w+)\s+off\s+the\s+map|(?:send|ship)\s+(?:them|\w+)\s+all\s+(?:back|home|away)|drive\s+(?:them|\w+)\s+(?:all\s+)?(?:out|into\s+the\s+sea)|into\s+the\s+sea|clear\s+(?:them|\w+)\s+(?:all\s+)?out|ethnically\s+cleanse|get\s+rid\s+of\s+(?:all|every)\s+(?:the\s+)?\w+)\b/i;
 const COLONIZER = /\b(?:settlers?|colonizers?|colonists?|occupiers?)\b[^.?!]{0,40}\b(?:are|is)\s+(?:all\s+)?(?:vermin|animals?|cockroaches|rats|parasites|a\s+cancer|subhuman|savages?|scum)\b|\b(?:kill|get\s+rid\s+of|wipe\s+out|remove)\s+(?:all\s+)?(?:the\s+)?(?:settlers|colonizers|colonists|occupiers)\b/i;
 
+
+// ---- calls for violence against a group (the violence-and-removal pass, 2026-11-12): a plain call to kill, harm or destroy "them", "those people" or "all" or "every" of a group, in the forms
+// people actually write ("those people should all be killed", "someone should shoot every one of them", "kill them all", "death to all of those people", "I'll slaughter any one of them").
+// One person ("kill him", "my brother will kill me") is never matched: that is anger, and the harm checks have their own rules for intent. Quotes, reports, denouncing and negation are left out by the
+// frame rules in offerFor. Not a safety system: it misses and it fires wrongly, and the scenes (src/lib/detectScenes.ts) and the outside sets measure both.
+const VIOLENT = String.raw`(?:kill(?:ed)?|murder(?:ed)?|slaughter(?:ed)?|shoot|shot|execut(?:e|ed)|hang(?:ed)?|lynch(?:ed)?|exterminat(?:e|ed)|eradicat(?:e|ed)|annihilat(?:e|ed)|gas(?:sed)?|massacr(?:e|ed)|rape(?:d)?|stab(?:bed)?|behead(?:ed)?|bomb(?:ed)?|burn(?:ed|t)?|poison(?:ed)?)`;
+const GROUPREF = String.raw`(?:(?:all|every|each)\s+(?:one\s+)?(?:of\s+)?(?:them|those|these|the\s+\w+)|them\s+all|(?:those|these)\s+(?:\w+\s+)?\w+s?|any\s+(?:one\s+)?of\s+them|every\s+(?:single\s+)?(?:one|last\s+one)|all\s+\w+s)`;
+const VIOLENCE_CALL = new RegExp(
+  [
+    String.raw`\b(?:those|these)\s+\w+(?:\s+\w+)?\s+(?:should|must|ought\s+to|need\s+to|deserve\s+to|have\s+to)\s+(?:all\s+)?(?:be\s+|get\s+)?(?:${VIOLENT}|die)\b`,
+    String.raw`\bthey\s+(?:should|must|ought\s+to|deserve\s+to)\s+all\s+(?:be\s+|get\s+)?(?:${VIOLENT}|die)\b|\bthey\s+all\s+(?:should|must|ought\s+to|deserve\s+to)\s+(?:be\s+|get\s+)?(?:${VIOLENT}|die)\b`,
+    String.raw`\b(?:someone|somebody|we|you|people|let'?s|i(?:'d|\s+would)?\s+like\s+to|i(?:'ll|\s+will|\s+am\s+going\s+to|'m\s+going\s+to|\s+want\s+to))\s+(?:should\s+|ought\s+to\s+|need\s+to\s+|just\s+)?${VIOLENT}\s+${GROUPREF}`,
+    String.raw`(?:^|[.!?]\s+)${VIOLENT}\s+${GROUPREF}`,
+    String.raw`\bdeath\s+to\s+(?:all|those|these)\b`,
+  ].join('|'),
+  'i',
+);
+
 /** Hits for the history cards, in the shape the offer logic reads. Empty when nothing plain is found. */
 export function historyHits(text: string): Hit[] {
   const t = text.normalize('NFKC');
@@ -103,5 +122,6 @@ export function historyHits(text: string): Hit[] {
   if ((m = COLONIZER.exec(t))) out.push(hit('colonizer-dehumanization', m));
   if ((m = REMOVAL.exec(t))) out.push(hit('mass-violence-removal', m));
   if ((m = DENIAL.exec(t))) out.push(hit('mass-violence-denial', m));
+  if ((m = VIOLENCE_CALL.exec(t))) out.push(hit('mass-violence-call', m));
   return out;
 }

@@ -175,7 +175,7 @@ if (args.includes('--scenes')) {
   const fails: string[] = [];
   for (const sc of SCENES) {
     const v = judge(sc.text);
-    const got: Outcome | 'flagged' | 'deferred' = v.flagged ? 'flagged' : v.judgment ? 'judgment' : v.self ? 'self' : v.deferred ? 'deferred' : 'none';
+    const got: Outcome | 'deferred' = v.flagged ? 'flagged' : v.judgment ? 'judgment' : v.self ? 'self' : v.deferred ? 'deferred' : 'none';
     if (got === sc.expect) { ok++; continue; }
     if (sc.edge) edgeMiss++;
     fails.push(`${sc.edge ? 'EDGE ' : 'FAIL '}${sc.id}: expected ${sc.expect}, got ${got}  | ${sc.text}  (${sc.why})`);

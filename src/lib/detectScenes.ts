@@ -3,7 +3,7 @@
 // negation get none. DRAFT (2026-11-12): the owner and the reviewers (a counselor, an advocate) read, edit and add to these; an `edge` scene is one where reasonable people may disagree,
 // so a miss there is a question for the reviewers, not a failure. The words used must be ones the reviewers' decisions file marks as judgment words (stupid, worthless, trash, shit, asshole,
 // bastard, brainless, ignorant, vile); a scene with a word that is not on the list is expected to give nothing.
-export type Outcome = 'self' | 'judgment' | 'none';
+export type Outcome = 'self' | 'judgment' | 'none' | 'flagged';
 export interface Scene { id: string; text: string; expect: Outcome; edge?: boolean; why: string }
 
 export const SCENES: Scene[] = [
@@ -37,4 +37,25 @@ export const SCENES: Scene[] = [
   { id: 'none-12', text: 'Grief is awful and I miss my mother every day.', expect: 'none', why: 'ordinary grief, no judgment word' },
   { id: 'none-13', text: 'The film critic called the sequel vile, and I agree.', expect: 'none', edge: true, why: 'a word about a thing, reported' },
   { id: 'none-14', text: 'You told me I am stupid last year, and I still hear it.', expect: 'none', edge: true, why: 'a report of what someone said, with the self-judgment inside the quote: the pain, not a new judgment' },
+  // calls for violence or removal against a group (the violence-and-removal pass, 2026-11-12): the card path, the coach holds the line. Invented, no slurs; the group is "those people" or "them".
+  { id: 'viol-01', text: 'Those people should all be killed.', expect: 'flagged', why: 'a call for killing a group, plain' },
+  { id: 'viol-02', text: 'Someone should shoot every one of them.', expect: 'flagged', why: 'a call for shooting a group' },
+  { id: 'viol-03', text: 'We ought to burn their houses down and drive them out.', expect: 'flagged', why: 'violence and removal together' },
+  { id: 'viol-04', text: 'Kill them all.', expect: 'flagged', why: 'an imperative, short' },
+  { id: 'viol-05', text: 'Death to all of those people.', expect: 'flagged', why: 'a slogan form' },
+  { id: 'viol-06', text: "I'll slaughter any one of them I meet.", expect: 'flagged', why: 'first-person intent against a group; the owner may want this on a stronger path' },
+  { id: 'viol-07', text: 'They should all rot in hell.', expect: 'none', edge: true, why: 'an angry curse; a call for violence only in the loosest sense' },
+  { id: 'viol-08', text: 'I hope they all die.', expect: 'none', edge: true, why: 'a wish aimed at "they", who may be a few people the speaker knows' },
+  // the same shapes that must not count
+  { id: 'vnone-01', text: 'My teacher said "those people should all be killed" and I froze.', expect: 'none', why: 'a quote of what was said' },
+  { id: 'vnone-02', text: 'It is horrifying to hear anyone say they should all be killed.', expect: 'none', why: 'denouncing' },
+  { id: 'vnone-03', text: 'Nobody should be killed for who they are.', expect: 'none', why: 'the opposite claim' },
+  { id: 'vnone-04', text: 'I am afraid my family will be killed in the war.', expect: 'none', why: 'fear and grief' },
+  { id: 'vnone-05', text: 'Thousands were killed in the massacre and I cannot stop thinking about it.', expect: 'none', why: 'history or news, passive' },
+  { id: 'vnone-06', text: 'My brother is going to kill me for being late.', expect: 'none', why: 'an idiom about one person' },
+  { id: 'vnone-07', text: 'I could kill him right now, he lied to me.', expect: 'none', why: 'an angry idiom about one person (the harm checks have their own rules for real intent)' },
+  { id: 'vnone-08', text: 'Some people say the bombing was justified. I disagree.', expect: 'none', why: 'discussion, not a call' },
+  { id: 'vnone-09', text: 'In the game I killed them all and then felt oddly empty.', expect: 'none', edge: true, why: 'a game, past tense; the words alone cannot tell' },
+  { id: 'vnone-10', text: 'We should all be kind to those people.', expect: 'none', why: 'the same group words, no violence' },
+  { id: 'vnone-11', text: 'The coach said we need to kill the project plan and start over.', expect: 'none', why: 'an idiom about a thing' },
 ];
