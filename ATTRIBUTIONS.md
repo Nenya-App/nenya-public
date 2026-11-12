@@ -99,3 +99,12 @@ Nenya's private list of slurs and dehumanizing language, used only to offer a ge
 ## Wiktionary (detection list)
 
 The same private list also draws on the **English Wiktionary** categories of ethnic, religious and anti-LGBTQ slurs and dysphemisms (<https://en.wiktionary.org>), whose text is licensed under [Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/). We read only the terms and their category names, reviewed every one by hand (many were dropped as ordinary words or names), and added our own rules. The list is private and is not distributed. Wiktionary and its contributors have not endorsed Nenya.
+
+## cardiffnlp/twitter-roberta-base-hate-latest (screening model)
+
+Nenya is built to screen messages to the coach with a small hate-speech classifier that runs on Nenya's own server, in memory, and keeps nothing (not yet switched on in production). The model is **cardiffnlp/twitter-roberta-base-hate-latest** (<https://huggingface.co/cardiffnlp/twitter-roberta-base-hate-latest>), a fine-tuned version of `cardiffnlp/twitter-roberta-base-2022-154m`, by the Cardiff NLP group.
+
+- Paper: Dimosthenis Antypas and Jose Camacho-Collados, "Robust Hate Speech Detection in Social Media: A Cross-Dataset Empirical Evaluation", Proceedings of the 7th Workshop on Online Abuse and Harms (WOAH), 2023. <https://aclanthology.org/2023.woah-1.25>
+- Licence: [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/), as stated on the model's page. The model was fine-tuned by its authors on 13 published hate-speech datasets, which its page lists.
+- What we changed: we converted the model to the ONNX format and quantized its weights to 8-bit integers so it fits in a small server function, and we choose our own score threshold from our own tests. We have not retrained or fine-tuned it. Its score alone never ends a conversation or reaches anyone: it can only change the tone of a reply or offer a short card, as described in the Terms.
+- The authors have not endorsed Nenya.
