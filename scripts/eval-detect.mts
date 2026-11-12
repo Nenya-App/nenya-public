@@ -117,7 +117,7 @@ function ethos(): Case[] | null {
   const f = [join(P.datasets, 'ethos', 'Ethos_Dataset_Binary.csv'), join(P.datasets, 'ethos', 'ethos_data', 'Ethos_Dataset_Binary.csv')].find(existsSync);
   if (!f) return null;
   const lines = readFileSync(f, 'utf8').split(/\r?\n/).filter(Boolean).slice(1);
-  return lines.map((l, i) => { const k = l.lastIndexOf(';'); return { id: String(i + 1), text: l.slice(0, k), hateful: parseFloat(l.slice(k + 1)) >= 0.5, group: 'all' }; });
+  return lines.map((l, i) => { const k = l.lastIndexOf(';'); return { id: String(i + 1), text: l.slice(0, k), hateful: parseFloat(l.slice(k + 1)) >= 0.5, group: parseFloat(l.slice(k + 1)) >= 0.5 ? 'hate' : 'no-hate' }; });
 }
 function metahate(): Case[] | null {
   const f = [join(P.datasets, 'metahate', 'MetaHate.tsv'), join(P.datasets, 'metahate', 'metahate.tsv')].find(existsSync);
@@ -125,7 +125,7 @@ function metahate(): Case[] | null {
   const lines = readFileSync(f, 'utf8').split(/\r?\n/).filter(Boolean);
   const head = lines[0].split('\t'), ti = head.findIndex((c) => /text|post|comment/i.test(c)), li = head.findIndex((c) => /label|hate/i.test(c)), si = head.findIndex((c) => /^dataset$|source/i.test(c));
   if (ti < 0 || li < 0) { console.error('MetaHate: could not find the text and label columns.'); return null; }
-  return lines.slice(1).map((l, i) => { const c = l.split('\t'); return { id: String(i + 1), text: c[ti] ?? '', hateful: c[li] === '1', group: si >= 0 ? `src:${c[si]}` : 'all' }; });
+  return lines.slice(1).map((l, i) => { const c = l.split('\t'); return { id: String(i + 1), text: c[ti] ?? '', hateful: c[li] === '1', group: (si >= 0 ? `src:${c[si]}:` : '') + (c[li] === '1' ? 'hate' : 'no-hate') }; });
 }
 
 console.log(`Matcher: ${matcher ? 'private list ' + listId : listId}; history patterns on; reporting-frame rule on.`);
