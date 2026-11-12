@@ -25,15 +25,17 @@ const gem = (() => {
 })();
 // ?vivid=1 makes the orbs bright and steady and lets more of their color wheel through the stone, so the static picture of the gem is as colorful as the old one (the live gem on the site keeps its own, subtler look).
 const vivid = q.get('vivid') === '1';
+// ?flat=1: the flat logo (petals, bezel, the live gem) with no outer ring. The site's flat logo is a baked picture with the old gem in it, so the static flat assets are drawn this way instead; the orbs under the stone give it its color.
+const flat = q.get('flat') === '1';
 createRoot(document.getElementById('root')!).render(
   <MotionProvider>
     <ThemeProvider defaultTheme="dark">
       <div style={{ width: boxW, height: boxH, background: bg, borderRadius: q.get('round') ? `${Number(q.get('round'))}%` : undefined, filter: q.get('light') === '1' ? 'brightness(0.55) saturate(1.35)' : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <NenyaLogo size={size} showValarOrbit={q.get('orbs') === '1'} glow={q.get('glow') === '1'} breathingEnabled={q.get('breathe') === '1'}
-          liveGem={{ light: vivid ? { below: 1.2, saturation: 1.6, ...gem.light } : gem.light, cut: gem.cut, quality: gem.quality, kaleidoscope: { ...gem.kaleidoscope, on: false, depth: 0 } } as never}
-          gemLook={(vivid ? { fieldAlpha: 0.7, ...gem.finish } : gem.finish) as never}
-          innerOrbit={(vivid ? { ...gem.inner, opacityLow: 0.95, opacityHigh: 0.95, pulse: 0 } : gem.inner) as never}
-          outerOrbit={gem.outer as never}
+        <NenyaLogo size={size} showValarOrbit={q.get('orbs') === '1' || flat} glow={q.get('glow') === '1'} breathingEnabled={q.get('breathe') === '1'}
+          liveGem={{ light: (vivid || flat) ? { below: 1.2, saturation: 1.6, ...gem.light } : gem.light, cut: gem.cut, quality: gem.quality, kaleidoscope: { ...gem.kaleidoscope, on: false, depth: 0 } } as never}
+          gemLook={((vivid || flat) ? { fieldAlpha: 0.7, ...gem.finish } : gem.finish) as never}
+          innerOrbit={((vivid || flat) ? { ...gem.inner, opacityLow: 0.95, opacityHigh: 0.95, pulse: 0 } : gem.inner) as never}
+          outerOrbit={(flat ? { ...gem.outer, show: false } : gem.outer) as never}
         />
       </div>
     </ThemeProvider>

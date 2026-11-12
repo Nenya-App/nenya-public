@@ -80,13 +80,18 @@ async function bbox(rel: string): Promise<{ x: number; y: number; w: number; h: 
 // Sizes were measured: on the page, the flat logo's petals are 0.48 of `size` wide (0.55 tall), and the orbit's ring is 1.01 of `size`. The old assets' framing is kept:
 // the in-app logo's petals are 0.56 of its canvas wide, the app icon's ring is 0.82 of the canvas, the maskable icon's 0.70, the print logos' ring 0.79.
 // ---- 1. the flat logo (petals, bezel and the live gem), transparent: the in-app logo, the small logo, the favicons, the PDF logo
-await draw('work/flat-1024.png', { size: 1024 }, 1024, 1024);
-await draw('work/flat-768.png', { size: 896, box: 768 }, 768, 768);
+// The flat logo is drawn from the live gem (flat=1). First measure how wide its petals come out, then size it to the old framing.
+await draw('work/flat-probe.png', { size: 1000, box: 1400, flat: 1 }, 1400, 1400);
+const probe = await bbox('work/flat-probe.png');
+const FR = probe.w / 1000; // petals' width as a fraction of `size`
+console.log('flat petals fraction', FR.toFixed(3));
+await draw('work/flat-1024.png', { size: Math.round(0.94 * 1024 / FR), box: 1024, flat: 1 }, 1024, 1024);
+await draw('work/flat-768.png', { size: Math.round(0.56 * 768 / FR), box: 768, flat: 1 }, 768, 768);
 await ensure('repo/src/assets/nenya-logo.webp');
 execFileSync('cwebp', ['-q', '92', '-alpha_q', '100', '-m', '6', out('work/flat-768.png'), '-o', out('repo/src/assets/nenya-logo.webp')], { stdio: 'pipe' });
 resize('work/flat-768.png', 'work/flat-128.png', 128);
 execFileSync('cwebp', ['-q', '92', '-alpha_q', '100', '-m', '6', out('work/flat-128.png'), '-o', out('repo/src/assets/nenya-logo-small.webp')], { stdio: 'pipe' });
-await draw('work/fav-256.png', { size: 450, box: 256, bg: DARK, round: 22 }, 256, 256); // the flat logo on a rounded dark tile: readable when tiny, on a light or dark tab
+await draw('work/fav-256.png', { size: Math.round(0.8 * 256 / FR), box: 256, flat: 1, bg: DARK, round: 22 }, 256, 256); // the flat logo on a rounded dark tile: readable when tiny, on a light or dark tab
 await ensure('repo/public/icons/favicon-48.png');
 resize('work/fav-256.png', 'repo/public/icons/favicon-48.png', 48);
 resize('work/fav-256.png', 'repo/public/icons/favicon-32.png', 32);
@@ -125,7 +130,7 @@ for (const n of ['dark-background-clean', 'dark-background-with-glow']) {
 await draw('assets/social/nenya-avatar-1080.png', { size: 770, box: 1080, orbs: 1, vivid: 1, glow: 1, bg: DARK }, 1080, 1080); // with the glow, as the old avatar had
 resize('assets/social/nenya-avatar-1080.png', 'assets/social/nenya-avatar-400.png', 400);
 resize('assets/social/nenya-avatar-1080.png', 'assets/social/nenya-avatar-small.png', 256);
-await draw('assets/social/nenya-logo-transparent-500.png', { size: 500 }, 500, 500);
+await draw('assets/social/nenya-logo-transparent-500.png', { size: Math.round(0.9 * 500 / FR), box: 500, flat: 1 }, 500, 500);
 
 
 // ---- the before-and-after sheet (old files in the project on the left, the new ones on the right), for looking at in Finder
