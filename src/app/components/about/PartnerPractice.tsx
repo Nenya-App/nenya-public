@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, AlertCircle, ArrowRight, Lock, Shield, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { AppFooter } from '../AppFooter';
 
 interface PartnerPracticeProps {
@@ -38,7 +38,7 @@ export default function PartnerPractice({ onBack, onOpenPreview }: PartnerPracti
       <div className="mx-auto max-w-3xl space-y-8 px-6 py-12">
         <div className="space-y-5 text-center">
           <div className="flex justify-center">
-            <NenyaLogo size={80} />
+            <PanelLogo size={80} />
           </div>
           <h1 className="text-3xl md:text-4xl">Partner Practice</h1>
           <p className="text-muted-foreground">Dyadic Cells: two people, one structured conversation</p>

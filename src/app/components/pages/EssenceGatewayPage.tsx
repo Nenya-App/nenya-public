@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
@@ -128,7 +128,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
           </Button>
           
           <div className="flex items-center gap-3">
-            <NenyaLogo size={32} />
+            <PanelLogo size={32} />
             <div className="text-center">
               <h1 className="text-lg">Essence - Atmosphere</h1>
               <p className="text-xs text-muted-foreground">

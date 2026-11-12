@@ -1,6 +1,6 @@
 import { Button } from '../ui/button';
 import { ArrowLeft, ArrowRight, Edit2, Eye, Music, Hand, Sparkles, Zap, Brain, Download, User, FileText, ExternalLink } from 'lucide-react';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { Gateway, GatewayData } from '../../App';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { BodyMapData } from '../BodyMapAvatar';
@@ -112,7 +112,7 @@ export default function GatewayReviewPage({
           </Button>
 
           <div className="flex items-center gap-3">
-            <NenyaLogo size={32} />
+            <PanelLogo size={32} />
             <div className="text-center">
               <h1 className="text-xl">Gateway Review</h1>
               <p className="text-sm text-muted-foreground">

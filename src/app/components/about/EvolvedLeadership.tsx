@@ -3,7 +3,7 @@ import { ArrowLeft, Brain, BookOpen, Heart, DollarSign, Sparkles, AlertTriangle,
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollIndicator } from '../ScrollIndicator';
@@ -34,7 +34,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
           {/* Header with Logo */}
           <BloomInstant className="text-center space-y-6">
             <div className="flex justify-center">
-              <NenyaLogo size={100} />
+              <PanelLogo size={100} />
             </div>
             <h1 className="text-4xl bg-gradient-to-r from-nenya-accent-secondary via-nenya-accent-primary to-nenya-accent-metallic bg-clip-text text-transparent">
               Evolved Leadership & The Co-evolutionary Imperative
@@ -227,7 +227,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
           <section className="space-y-6">
             <div className="text-center space-y-4">
               <div className="flex justify-center">
-                <NenyaLogo size={80} />
+                <PanelLogo size={80} />
               </div>
               <h2 className="text-3xl bg-gradient-to-r from-nenya-accent-secondary via-nenya-accent-primary to-nenya-accent-warm bg-clip-text text-transparent">
                 Nenya: The Technology that Nurtures Leadership Within

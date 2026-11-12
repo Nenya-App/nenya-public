@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowLeft, Eye, Heart, Crown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { useIsMobile } from '../useIsMobile';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
@@ -51,7 +51,7 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
           {/* Header */}
           <BloomInstant className="text-center space-y-3 md:space-y-6">
             <div className="flex justify-center mb-3 md:mb-6">
-              <NenyaLogo size={isMobile ? 70 : 120} alt={LOGO_ALT_LONG} />
+              <PanelLogo size={isMobile ? 70 : 120} alt={LOGO_ALT_LONG} />
             </div>
             
             <h1 className="text-2xl md:text-4xl lg:text-5xl bg-gradient-to-r from-foreground via-nenya-gold to-foreground bg-clip-text text-transparent px-4">

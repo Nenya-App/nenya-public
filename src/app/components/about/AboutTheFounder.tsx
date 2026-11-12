@@ -5,7 +5,7 @@ import { Card } from '../ui/card';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollIndicator } from '../ScrollIndicator';
 import { ScrollHint } from '../ScrollHint';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { BloomInstant } from '../BloomOnScroll';
 import { valarColors } from '../ValarBreathingLogo';
 import { AppFooter } from '../AppFooter';
@@ -37,7 +37,7 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
         <div className="max-w-3xl mx-auto px-6 py-12 space-y-10">
           <BloomInstant className="text-center space-y-5">
             <div className="flex justify-center">
-              <NenyaLogo size={80} />
+              <PanelLogo size={80} />
             </div>
             <h1 className="text-4xl">About the Designer</h1>
             <p className="text-lg text-muted-foreground italic max-w-xl mx-auto">

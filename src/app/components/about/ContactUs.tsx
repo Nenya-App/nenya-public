@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowLeft, Mail, MessageSquare, HelpCircle, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import { AppFooter } from '../AppFooter';
@@ -55,7 +55,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
           {/* Header */}
           <BloomInstant className="text-center space-y-6">
             <div className="flex justify-center">
-              <NenyaLogo size={100} />
+              <PanelLogo size={100} />
             </div>
             <h1 className="text-4xl">
               Contact Us

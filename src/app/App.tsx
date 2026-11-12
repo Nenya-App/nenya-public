@@ -16,6 +16,7 @@ import { BreathTonesPlayer, BreathTonesSwitch, TonesAnnouncer } from './componen
 import { preloadLogoAssets } from '../lib/preload';
 import { enableUsageCounts, countEvents, countEvent, countPageView } from '../lib/usageCounts';
 import { PRESETS, sameTechnique } from '../lib/breathingPresets';
+import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
 import { BreathingTechnique } from './components/ValarBreathingLogo';
 import OnboardingFlow from './components/OnboardingFlow';
 import WelcomePage from './components/pages/WelcomePage';
@@ -143,7 +144,9 @@ export default function App() {
   }, [breathingTechnique]);
 
   // Breathing popout state
-  const [breathingPopoutOpen, setBreathingPopoutOpen] = useState(false);
+  // Open or closed, shared with every logo that opens it (src/lib/breathingPanel.ts).
+  const breathingPopoutOpen = useBreathingPanel();
+  const setBreathingPopoutOpen = setBreathingPanel;
 
   // The logo's files (the gem sprite, the petals and bezel, the flat logo) are loaded before the first screen is
   // shown, behind a short loading screen, so the logo does not pop in piece by piece.
@@ -485,7 +488,7 @@ export default function App() {
           onCvModeChange={setColorBlindMode}
           showAnimationControls={currentScreen === 'welcome'}
           onEmergencyExit={() => { isEmergencyExiting.current = true; }}
-          onBreathingPopoutToggle={() => setBreathingPopoutOpen(!breathingPopoutOpen)}
+          onBreathingPopoutToggle={toggleBreathingPanel}
           onTutorialReplay={handleStartTutorial}
         />
 
@@ -534,7 +537,7 @@ export default function App() {
               cycleStart={breathingCycleStart}
               onStartTutorial={handleStartTutorial}
               entryUnlocked={termsAgreed}
-              onLogoClick={() => setBreathingPopoutOpen((open) => !open)}
+              onLogoClick={toggleBreathingPanel}
             />
           )}
 
@@ -696,6 +699,7 @@ export default function App() {
           cvMode={colorBlindMode}
           onCvModeChange={setColorBlindMode}
           technique={breathingTechnique}
+          onTechniqueChange={setBreathingTechnique}
           cycleStart={breathingCycleStart}
         />
       </div>

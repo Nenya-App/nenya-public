@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { Button } from './ui/button';
 import { ValarBreathingLogo, type BreathingTechnique } from './ValarBreathingLogo';
 import { breathLengthMs } from '../../lib/breathClock';
+import { PRESETS, sameTechnique } from '../../lib/breathingPresets';
 import NenyaLogo from './NenyaLogo';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
 
@@ -26,6 +27,8 @@ interface BreathingPopoutProps {
   onCvModeChange?: (mode: string) => void;
   /** The breathing technique and shared clock anchor, so the popout's ring and gem stay in phase with the counter. */
   technique?: BreathingTechnique | null;
+  /** Changing the pace from here: the same patterns as the breathing counter. */
+  onTechniqueChange?: (technique: BreathingTechnique) => void;
   cycleStart?: number;
 }
 
@@ -47,6 +50,7 @@ export function BreathingPopout({
   cvMode = '',
   onCvModeChange,
   technique = null,
+  onTechniqueChange,
   cycleStart,
 }: BreathingPopoutProps) {
   const cycleSeconds = breathLengthMs(technique) / 1000;
@@ -121,6 +125,31 @@ export function BreathingPopout({
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   {Number.isInteger(cycleSeconds) ? cycleSeconds : cycleSeconds.toFixed(1)}-second breathing cycle
                 </p>
+                {onTechniqueChange && (
+                  <div role="group" aria-label="Breathing pace" className="mt-3 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground text-center">Breathing pace</p>
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {PRESETS.map((preset) => {
+                        const active = !!technique && sameTechnique(technique, preset);
+                        return (
+                          <button
+                            key={preset.lb}
+                            type="button"
+                            aria-pressed={active}
+                            title={preset.desc}
+                            onClick={() => onTechniqueChange({ ih: preset.ih, hi: preset.hi || 0, ex: preset.ex, ho: preset.ho || 0 })}
+                            className={`rounded-full border px-3 py-1 text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${active ? 'border-primary bg-primary/15 font-medium' : 'border-border hover:bg-muted'}`}
+                          >
+                            {preset.lb}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {technique && (
+                      <p className="text-xs text-muted-foreground text-center">{PRESETS.find((p) => sameTechnique(technique, p))?.desc ?? 'Your own pace'}</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Right: Accessibility Controls */}
