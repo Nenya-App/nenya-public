@@ -17,6 +17,8 @@ export const OTHER_CUES = ['you', "you're", 'youre', 'your', 'u', 'ur', 'he', "h
 /** Words that make a judgment word about oneself ("I am so stupid", "I feel worthless", "I'm such a ..."): a separate tier, for a gentle reply to a harsh self-judgment. "I" alone is not a cue: "I love this ..." is not one. */
 export const SELF_CUES = ['am', "i'm", 'im', 'myself', 'feel', 'feeling', 'felt'];
 export const JUDGMENT_WINDOW = 3;
+/** A self-judgment can sit a little further from its cue ("I feel like such an ..."). */
+export const SELF_WINDOW = 4;
 
 export function parseDecisions(csv: string): { decisions: Map<string, Action>; problems: string[] } {
   const table = parseCsv(csv.replace(/^﻿/, ''));
@@ -60,7 +62,7 @@ export function applyDecisions(rows: LexRow[], decisions: Map<string, Action>): 
       counts.judgment++;
       const j = { ...r, target: 'individual', severity: 1 as const, matchMode: 'token_context' as const, window: JUDGMENT_WINDOW, variants, source };
       out.push({ ...j, category: 'judgment', cues: OTHER_CUES, contextNote: 'judgment' });
-      out.push({ ...j, category: 'self-judgment', cues: SELF_CUES, contextNote: 'self-judgment' });
+      out.push({ ...j, category: 'self-judgment', cues: SELF_CUES, window: SELF_WINDOW, contextNote: 'self-judgment' });
     }
   }
   return { rows: out, counts };

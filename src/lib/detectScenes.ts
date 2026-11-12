@@ -2,7 +2,7 @@
 // They check what the outside sets cannot: that ordinary, painful and angry talk to a reflective coach gets the right gentle outcome, and that the same words in a quote, a denial or a
 // negation get none. DRAFT (2026-11-12): the owner and the reviewers (a counselor, an advocate) read, edit and add to these; an `edge` scene is one where reasonable people may disagree,
 // so a miss there is a question for the reviewers, not a failure. The words used must be ones the reviewers' decisions file marks as judgment words (stupid, worthless, trash, shit, asshole,
-// bastard, brainless, ignorant, vile, despicable); a scene with a word that is not on the list is expected to give nothing.
+// bastard, brainless, ignorant, vile); a scene with a word that is not on the list is expected to give nothing.
 export type Outcome = 'self' | 'judgment' | 'none';
 export interface Scene { id: string; text: string; expect: Outcome; edge?: boolean; why: string }
 
@@ -21,7 +21,7 @@ export const SCENES: Scene[] = [
   { id: 'judg-03', text: 'They are all trash and I am done with them.', expect: 'judgment', why: 'blame of a group of people the speaker knows; "I am" near it must not turn it into a self-judgment' },
   { id: 'judg-04', text: 'I hate my roommate, he is a bastard.', expect: 'judgment', why: 'anger with a person' },
   { id: 'judg-05', text: 'Honestly I feel they are ignorant and it makes me furious.', expect: 'judgment', why: 'a self cue ("feel") and another person together: the other person wins' },
-  { id: 'judg-06', text: 'She was despicable at the meeting.', expect: 'judgment', why: 'blame of one person' },
+  { id: 'judg-06', text: 'She was vile at the meeting.', expect: 'judgment', why: 'blame of one person' },
   // the same words that must not count
   { id: 'none-01', text: 'I love this show, it is trash and I cannot stop watching.', expect: 'none', why: 'a thing, said fondly' },
   { id: 'none-02', text: 'The shit on the road made me late.', expect: 'none', why: 'a literal, nobody is judged' },
