@@ -3,7 +3,7 @@
 //   drop      the word is ordinary and no cue could rescue it: remove it
 //   slur      a slur aimed at an identity: ONE row, severity 2, flagged on its own
 //   model     a slur that is also reclaimed, a homonym or often denounced: kept, but marked "needs-model": the list alone never flags it (offerFor skips it); a model reads the context
-//   judgment  a blame or judgment word (stupid, trash, an insult): ONE row at severity 1, only when a word for a person is near. It is for a gentle reply (a card or a question
+//   judgment  a blame or judgment word (stupid, trash, an insult): at severity 1, only when a word for a person is right beside it (or, as a separate tier, when it is about oneself: "I am so stupid"). It is for a gentle reply (a card or a question
 //             about the need beneath it), never a boundary, and it is not a "slur" however HurtLex filed it
 // File format: CSV with a header, columns term, action, note. Terms the file does not mention are untouched.
 import type { LexRow } from './lexicon.ts';
@@ -12,8 +12,11 @@ import { parseCsv } from './lexiconLoader.ts';
 export type Action = 'drop' | 'slur' | 'model' | 'judgment';
 const ACTIONS: Action[] = ['drop', 'slur', 'model', 'judgment'];
 
-/** Words for a person, one of which must be near a judgment word for it to count: it has to be aimed at someone ("you are stupid"), not at a thing ("this is trash"). */
-export const PERSON_CUES = ['you', "you're", 'youre', 'your', 'u', 'ur', 'he', "he's", 'hes', 'she', "she's", 'shes', 'they', "they're", 'theyre', 'him', 'her', 'them', 'his', 'their', 'my', 'our', 'we', 'i', "i'm", 'im', 'me', 'us', 'people', 'person', 'guy', 'man', 'woman', 'boss', 'friend', 'mom', 'dad', 'husband', 'wife', 'partner'];
+/** Words for another person, one of which must be right beside a judgment word (within three words) for it to count: it has to be aimed at someone ("you are stupid", "my boss is a ...", "stupid people"). */
+export const OTHER_CUES = ['you', "you're", 'youre', 'your', 'u', 'ur', 'he', "he's", 'hes', 'she', "she's", 'shes', 'they', "they're", 'theyre', 'him', 'her', 'them', 'his', 'their', 'people', 'person', 'guy', 'man', 'woman', 'boss', 'friend', 'mom', 'dad', 'husband', 'wife', 'partner'];
+/** Words that make a judgment word about oneself ("I am so stupid", "I feel worthless", "I'm such a ..."): a separate tier, for a gentle reply to a harsh self-judgment. "I" alone is not a cue: "I love this ..." is not one. */
+export const SELF_CUES = ['am', "i'm", 'im', 'myself', 'feel', 'feeling', 'felt'];
+export const JUDGMENT_WINDOW = 3;
 
 export function parseDecisions(csv: string): { decisions: Map<string, Action>; problems: string[] } {
   const table = parseCsv(csv.replace(/^﻿/, ''));
@@ -34,6 +37,7 @@ export function parseDecisions(csv: string): { decisions: Map<string, Action>; p
 }
 
 export interface DecisionCounts { dropped: number; slur: number; model: number; judgment: number; collapsed: number }
+// A judgment decision makes two rows: category judgment (a person's word beside it) and category self-judgment (an "am", "feel" or "I'm" beside it).
 
 export function applyDecisions(rows: LexRow[], decisions: Map<string, Action>): { rows: LexRow[]; counts: DecisionCounts } {
   const counts: DecisionCounts = { dropped: 0, slur: 0, model: 0, judgment: 0, collapsed: 0 };
@@ -54,7 +58,9 @@ export function applyDecisions(rows: LexRow[], decisions: Map<string, Action>): 
       out.push({ ...base, category: 'slur', severity: 2, matchMode: 'token', cues: [], variants, source, contextNote: a === 'model' ? `${base.contextNote} needs-model`.trim() : base.contextNote });
     } else {
       counts.judgment++;
-      out.push({ ...r, category: 'judgment', target: 'individual', severity: 1, matchMode: 'token_context', cues: PERSON_CUES, variants, source, contextNote: 'judgment' });
+      const j = { ...r, target: 'individual', severity: 1 as const, matchMode: 'token_context' as const, window: JUDGMENT_WINDOW, variants, source };
+      out.push({ ...j, category: 'judgment', cues: OTHER_CUES, contextNote: 'judgment' });
+      out.push({ ...j, category: 'self-judgment', cues: SELF_CUES, contextNote: 'self-judgment' });
     }
   }
   return { rows: out, counts };

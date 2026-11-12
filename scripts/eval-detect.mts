@@ -51,15 +51,16 @@ if (!args.includes('--no-list')) {
 }
 const ALL_CARDS = [...new Set(Object.values(OFFER_MAP).flat())];
 
-interface Verdict { hit: boolean; flagged: boolean; real: Hit[]; judgment: boolean; deferred: boolean }
+interface Verdict { hit: boolean; flagged: boolean; real: Hit[]; judgment: boolean; self: boolean; deferred: boolean }
 function judge(text: string): Verdict {
   const hits: Hit[] = [...(matcher ? match(text, matcher) : []), ...historyHits(text)];
   const offer = offerFor({ hits, text, shown: [], available: ALL_CARDS, flagged: false, abuseAtCoach: false });
   const real = offer ? hits.filter((h) => h.severity >= 2 && !/llm-tell/.test(h.contextNote)) : [];
   // judgment: a blame word aimed at a person (gentle reply); deferred: a slur the list leaves to the model. Neither is "flagged".
   const judgment = !isFramed(text) && hits.some((h) => h.category === 'judgment' && !negatedBefore(text, h));
+  const self = !judgment && !isFramed(text) && hits.some((h) => h.category === 'self-judgment' && !negatedBefore(text, h));
   const deferred = hits.some((h) => /needs-model/.test(h.contextNote));
-  return { hit: hits.length > 0, flagged: offer !== null, real, judgment, deferred };
+  return { hit: hits.length > 0, flagged: offer !== null, real, judgment, self, deferred };
 }
 
 /** Wilson 95% interval, as percentages. */
@@ -71,14 +72,14 @@ function wilson(k: number, n: number): string {
 const pct = (k: number, n: number): string => (n ? `${((100 * k) / n).toFixed(1)}%` : 'n/a');
 
 interface Case { id: string; text: string; hateful: boolean; group: string }
-interface Result { name: string; n: number; byGroup: Record<string, { hateful: boolean; n: number; hit: number; flagged: number; judgment: number; deferred: number; flaggedIds: string[] }> }
+interface Result { name: string; n: number; byGroup: Record<string, { hateful: boolean; n: number; hit: number; flagged: number; judgment: number; self: number; deferred: number; flaggedIds: string[] }> }
 
 function run(name: string, cases: Case[]): Result {
   const byGroup: Result['byGroup'] = {};
   for (const c of cases) {
-    const g = (byGroup[c.group] ??= { hateful: c.hateful, n: 0, hit: 0, flagged: 0, judgment: 0, deferred: 0, flaggedIds: [] });
+    const g = (byGroup[c.group] ??= { hateful: c.hateful, n: 0, hit: 0, flagged: 0, judgment: 0, self: 0, deferred: 0, flaggedIds: [] });
     const v = judge(c.text);
-    g.n++; if (v.hit) g.hit++; if (v.judgment) g.judgment++; if (v.deferred) g.deferred++;
+    g.n++; if (v.hit) g.hit++; if (v.judgment) g.judgment++; if (v.self) g.self++; if (v.deferred) g.deferred++;
     if (v.flagged) { g.flagged++; if (!c.hateful && g.flaggedIds.length < 40) g.flaggedIds.push(c.id); }
   }
   return { name, n: cases.length, byGroup };
@@ -87,15 +88,15 @@ function run(name: string, cases: Case[]): Result {
 function report(r: Result): boolean {
   console.log(`\n=== ${r.name}: ${r.n} cases ===`);
   const rows = Object.entries(r.byGroup).sort((a, b) => Number(a[1].hateful) - Number(b[1].hateful) || a[0].localeCompare(b[0]));
-  let nhN = 0, nhF = 0, hN = 0, hF = 0, hH = 0, nhJ = 0, nhD = 0, hJ = 0, hD = 0;
+  let nhN = 0, nhF = 0, hN = 0, hF = 0, hH = 0, nhJ = 0, nhD = 0, hJ = 0, hD = 0, nhS = 0, hS = 0;
   for (const [g, x] of rows) {
-    if (x.hateful) { hN += x.n; hF += x.flagged; hH += x.hit; hJ += x.judgment; hD += x.deferred; } else { nhN += x.n; nhF += x.flagged; nhJ += x.judgment; nhD += x.deferred; }
+    if (x.hateful) { hN += x.n; hF += x.flagged; hH += x.hit; hJ += x.judgment; hD += x.deferred; hS += x.self; } else { nhN += x.n; nhF += x.flagged; nhJ += x.judgment; nhD += x.deferred; nhS += x.self; }
     const over = !x.hateful && x.n && x.flagged / x.n > BARS.perFunctionalityNote ? '  <-- above 5%' : '';
-    console.log(`${x.hateful ? 'hateful    ' : 'non-hateful'} ${g.padEnd(24)} n=${String(x.n).padStart(4)}  flagged ${pct(x.flagged, x.n).padStart(6)} [${wilson(x.flagged, x.n)}]  judgment ${pct(x.judgment, x.n).padStart(6)}  to model ${pct(x.deferred, x.n).padStart(6)}  any hit ${pct(x.hit, x.n).padStart(6)}${over}`);
+    console.log(`${x.hateful ? 'hateful    ' : 'non-hateful'} ${g.padEnd(24)} n=${String(x.n).padStart(4)}  flagged ${pct(x.flagged, x.n).padStart(6)} [${wilson(x.flagged, x.n)}]  judgment ${pct(x.judgment, x.n).padStart(6)}  self ${pct(x.self, x.n).padStart(5)}  to model ${pct(x.deferred, x.n).padStart(6)}  any hit ${pct(x.hit, x.n).padStart(6)}${over}`);
   }
   console.log(`non-hateful total: flagged ${nhF}/${nhN} = ${pct(nhF, nhN)} [${wilson(nhF, nhN)}]   (bar: at most ${100 * BARS.nonHatefulFlaggedMax}%)`);
-  console.log(`non-hateful, gentle reply only: judgment ${nhJ} (${pct(nhJ, nhN)}), left to the model ${nhD} (${pct(nhD, nhN)})`);
-  console.log(`hateful total:     flagged ${hF}/${hN} = ${pct(hF, hN)} [${wilson(hF, hN)}]   judgment ${hJ} (${pct(hJ, hN)}), to model ${hD} (${pct(hD, hN)}), any hit ${pct(hH, hN)}   (a catch rate is only a reading: the sets' notion of hate is wider than ours)`);
+  console.log(`non-hateful, gentle reply only: judgment ${nhJ} (${pct(nhJ, nhN)}), self-judgment ${nhS}, left to the model ${nhD} (${pct(nhD, nhN)})`);
+  console.log(`hateful total:     flagged ${hF}/${hN} = ${pct(hF, hN)} [${wilson(hF, hN)}]   judgment ${hJ} (${pct(hJ, hN)}), self-judgment ${hS}, to model ${hD} (${pct(hD, hN)}), any hit ${pct(hH, hN)}   (a catch rate is only a reading: the sets' notion of hate is wider than ours)`);
   const ok = nhN === 0 || nhF / nhN <= BARS.nonHatefulFlaggedMax;
   console.log(ok ? 'BAR MET' : 'BAR NOT MET');
   return ok;

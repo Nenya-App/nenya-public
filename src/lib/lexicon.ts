@@ -19,6 +19,8 @@ export interface LexRow {
   contextNote: string;
   /** For token_context rows: words that must be near. A row with no cues never matches. */
   cues: string[];
+  /** How many words either side a cue may be (default 8). A judgment word has to be right beside the person it is aimed at. */
+  window?: number;
   language: string;
   source: string;
   confidence: string;
@@ -83,10 +85,10 @@ export function match(text: string, m: Matcher): Hit[] {
   const toks = tokenize(text);
   const used = new Array(toks.length).fill(false);
   const hits: Hit[] = [];
-  const cueNear = (i: number, j: number, cues: string[]): boolean => {
+  const cueNear = (i: number, j: number, cues: string[], window = WINDOW): boolean => {
     if (!cues.length) return false;
     const set = new Set(cues.map((c) => keyOf(c)));
-    for (let k = Math.max(0, i - WINDOW); k <= Math.min(toks.length - 1, j + WINDOW); k++) {
+    for (let k = Math.max(0, i - window); k <= Math.min(toks.length - 1, j + window); k++) {
       if (k >= i && k <= j) continue;
       if (set.has(toks[k].text) || set.has(toks[k].folded)) return true;
     }
@@ -105,7 +107,7 @@ export function match(text: string, m: Matcher): Hit[] {
       for (const cand of candidates) {
         const list = m.keys.get(cand);
         if (!list) continue;
-        const ok = list.filter((c) => c.mode !== 'token_context' || cueNear(i, i + n - 1, c.row.cues));
+        const ok = list.filter((c) => c.mode !== 'token_context' || cueNear(i, i + n - 1, c.row.cues, c.row.window));
         if (!ok.length) continue;
         for (const c of ok) emit(c, slice[0].start, slice[n - 1].end);
         for (let k = i; k < i + n; k++) used[k] = true;

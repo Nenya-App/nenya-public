@@ -19,7 +19,7 @@ const { rows } = readLexicon(csv);
 const out = applyDecisions(rows, dec.decisions);
 const of = (t: string) => out.rows.filter((r) => r.term === t);
 ok('a slur decision leaves one row at severity 2', of('zorkblat').length === 1 && of('zorkblat')[0].severity === 2 && of('zorkblat')[0].category === 'slur');
-ok('a judgment decision leaves one severity-1 row that needs a person word near it', of('plimmo').length === 1 && of('plimmo')[0].severity === 1 && of('plimmo')[0].category === 'judgment' && of('plimmo')[0].matchMode === 'token_context' && of('plimmo')[0].cues.includes('you'));
+ok('a judgment decision leaves two severity-1 rows: the word of another person beside it, or a self cue beside it', of('plimmo').length === 2 && of('plimmo').every((r) => r.severity === 1 && r.matchMode === 'token_context' && r.window === 3) && of('plimmo').some((r) => r.category === 'judgment' && r.cues.includes('you')) && of('plimmo').some((r) => r.category === 'self-judgment' && r.cues.includes('am')));
 ok('a model decision keeps the row, marked needs-model', of('quuxer').length === 1 && /needs-model/.test(of('quuxer')[0].contextNote));
 ok('a drop decision removes every row of the term', of('snarfel').length === 0);
 ok('terms without a decision are untouched', of('wibbit').length === 1 && of('untouched').length === 1);
@@ -39,3 +39,9 @@ ok('denouncing the words does not offer a card', !offer('It is really not okay t
 ok('a negated word does not offer a card', !offer('They are not at all zorkblat.') && !offer('I never said they are zorkblat.'));
 ok('plain use still offers a card', offer('They are all zorkblat.') && offer('You are not welcome here, you zorkblat.'));
 ok('a negation in another clause does not hide the word', offer('I am not angry, they are zorkblat.'));
+
+const kinds = (text: string): string[] => match(text, matcher).map((h) => h.category);
+ok('a judgment word beside another person is a judgment', kinds('you are plimmo').includes('judgment') && kinds('my boss is plimmo').includes('judgment'));
+ok('a judgment word about oneself is the separate self-judgment tier', kinds('I am so plimmo').includes('self-judgment') && !kinds('I am so plimmo').includes('judgment') && kinds('I feel plimmo').includes('self-judgment'));
+ok('a first-person word alone is not enough', kinds('I love this plimmo').length === 0 && kinds('we saw the plimmo').length === 0);
+ok('a person word far from the judgment word is not enough', kinds('you went to the shop and then after a long walk back it was plimmo').length === 0);
