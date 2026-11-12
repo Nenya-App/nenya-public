@@ -74,5 +74,13 @@ Section 21 (the coach demo), the site-written-text list, and the Privacy lines: 
 5. **The "this was a mistake" button** with the optional, consented example: yes?
 6. **Who reviews synthetic scenes** (the counselor and the advocate), and when?
 
+## 8b. Owner's decisions, 2026-11-12
+1. **Calibration plus light tuning on public and synthetic data only: accepted.** Never user data. The Terms must say exactly that when the model ships (conversations are never used to train; the checker may be tuned on public and synthetic text).
+2. **Bucketed daily shadow counters: accepted.**
+3. **Fail open to the matcher: accepted.**
+4. **Bundle the model in the relay function, full size** (slim later if needed). This replaces the separate-`screen`-function recommendation. Consequences to check first (the **first build step** is a size and cold-start test with the chosen model, before anything else): the unzipped bundle must stay under the host's limit (about 250 MB (verify)), and the relay's cold start gets longer, which the fail-open budget absorbs (the first request after a cold start may go without the model). If the full model does not fit, the fallbacks are, in order: slim the model, move it to Blobs, or split into a separate function.
+5. **"This was a mistake" button with the optional consented example: yes.**
+6. **Synthetic scenes: the owner reviews them.** Beyond the owner, **contributors are invited to curate and validate** (a counselor, an advocate, and others from the community). That needs, before anyone is invited: (a) the contributor agreement (`docs/drafts/contributor-agreement-draft.md`) extended to cover this work; (b) **no user text anywhere in it**, only synthetic and public material; (c) a plain warning that the material includes hateful language and a way to stop at any time, because reading it is real work; (d) credit, if they want it, in the repository's credits; (e) the review protocol written down (who labels what, how disagreements are settled, how labels are versioned) so the benchmark does not drift. Contributors never get access to any user's message.
+
 ## 9. Not verified
 Host function size, time and memory limits; each candidate model's licence, size and speed; ToxiGen's model card and data terms; whether the model's training data allows our use. All are checks in step 2 of the order of work.
