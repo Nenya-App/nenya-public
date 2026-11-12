@@ -84,3 +84,19 @@ Section 21 (the coach demo), the site-written-text list, and the Privacy lines: 
 
 ## 9. Not verified
 Host function size, time and memory limits; each candidate model's licence, size and speed; ToxiGen's model card and data terms; whether the model's training data allows our use. All are checks in step 2 of the order of work.
+
+## 10. Model bake-off: size and licence check (2026-11-12; metadata only, nothing downloaded)
+Read from each model's Hugging Face metadata and file list (sizes in bytes as listed; "int8" sizes are listed only where a ready ONNX file exists, otherwise an estimate).
+| Model | Licence | Architecture and file | Trained on | Fit |
+| --- | --- | --- | --- | --- |
+| `tomh/toxigen_roberta` | **none stated** | RoBERTa-**large**; `pytorch_model.bin` 1,421,605,805 (1.42 GB) | ToxiGen (not stated on the page) | **Does not fit** the function (about 360 MB even at int8, estimate) and has **no licence stated**. The "full ToxiGen model" decision needs revisiting. |
+| `unitary/toxic-bert` (Detoxify "original") | **Apache-2.0** | BERT-base; `model.safetensors` 437,975,136 | Jigsaw toxic comments (Wikipedia) | Fits only quantized. **Toxicity (insults, profanity), not hate.** |
+| `Xenova/toxic-bert` (the same model as ONNX) | not stated on the page (derived from Apache-2.0) | `onnx/model_int8.onnx` **110,250,454**; `model_q4f16.onnx` 97,192,620; fp32 438,214,184 | as above | **Ready-made and small.** Confirm its licence from the base model's. |
+| `cardiffnlp/twitter-roberta-base-hate-latest` | **CC-BY-4.0** | RoBERTa-base; `pytorch_model.bin` 498,659,253 | tweets (hate datasets; not listed on the page) | Fits at int8 (about 125 MB, estimate; needs our own ONNX conversion). **Hate, not toxicity.** Clean licence. |
+| `Hate-speech-CNERG/dehatebert-mono-english` | **Apache-2.0** | BERT (large file) `pytorch_model.bin` 669,482,093 | hate datasets | Heavy; would need int8 (about 170 MB, estimate). Lower priority. |
+| `facebook/roberta-hate-speech-dynabench-r4-target` | **none stated** | RoBERTa-base; 498,657,517 | Dynamically generated hate (arXiv 2012.15761, per the tag) | Licence unstated: held until stated. |
+| `martin-ha/toxic-comment-model` | **none stated** | DistilBERT; 267,858,673 | not stated | Small, but no licence and unknown training data: not used. |
+| Detoxify `original-small` / `unbiased-small` | code Apache-2.0; **weights not stated** | ALBERT (size not stated) | Jigsaw | Possibly very small; the weights' licence must be confirmed first. |
+**Limits to remember (verify):** about 250 MB unzipped per function (Netlify, from memory); the ONNX runtime for Node adds its own size, and its package ships binaries for several platforms, so only the one needed (Linux) should be bundled; `onnxruntime-web` (WASM, about 10 MB) works in Node but is slower.
+**Shortlist for the bake-off (licences clear or derivable):** (1) `cardiffnlp/twitter-roberta-base-hate-latest` (hate, CC-BY-4.0); (2) `unitary/toxic-bert` through the Xenova ONNX int8 file (toxicity, Apache-2.0 base). **Held until a licence is stated:** ToxiGen RoBERTa (also too large), the Dynabench model, `martin-ha`, Detoxify's small weights. **A finding for the owner:** the "full ToxiGen" model is RoBERTa-large and cannot be bundled in a function; the realistic options are a base-sized hate classifier (above), an int8 ToxiGen model if its licence is clarified and it fits, or the model in Netlify Blobs with a long cold start.
+**Not yet checked:** each model card's own text (training data, intended use, limits), the Xenova licence, ToxiGen's dataset and model licences, and Netlify's current limits. **Downloads need your say-so** (filenames and sizes above).
