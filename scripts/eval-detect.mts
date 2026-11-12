@@ -188,7 +188,7 @@ if (args.includes('--scenes')) {
 // ---- attribution: which rows of the list make the false alarms (HateCheck's labels). Rows are numbered by their order in the list file.
 if (args.includes('--attribute')) {
   const file = flag('--list') ?? join(P.datasets, 'hurtlex', 'list', 'slurs.en.csv');
-  const hc = hatecheck();
+  const hc = flag('--dataset') === 'ethos' ? ethos() : hatecheck();
   if (!matcher || !hc || !existsSync(file)) { console.error('--attribute needs the list and the HateCheck file.'); process.exit(2); }
   const { rows } = readLexicon(readFileSync(file, 'utf8'));
   const idOf = new Map<string, number[]>();
@@ -232,10 +232,10 @@ if (args.includes('--attribute')) {
   console.log(`Rows that cause any false alarm: ${[...stat.values()].filter((x) => x.nh > 0).length} of ${rows.length}. Rows that only ever flag false alarms here: ${[...stat.values()].filter((x) => x.nh > 0 && x.h === 0).length}.`);
   const stamp = new Date().toISOString().slice(0, 10);
   mkdirSync(P.publicResults, { recursive: true }); mkdirSync(P.privateResults, { recursive: true });
-  writeFileSync(join(P.publicResults, `detect-attribution-${stamp}.json`), JSON.stringify({ at: new Date().toISOString(), list: listId, rows: Object.fromEntries([...stat].map(([i, x]) => [i, { falseAlarms: x.nh, hatefulFlagged: x.h, byFunctionality: x.nhGroups }])) }, null, 2));
+  writeFileSync(join(P.publicResults, `detect-attribution-${flag('--dataset') ?? 'hatecheck'}-${stamp}.json`), JSON.stringify({ at: new Date().toISOString(), list: listId, rows: Object.fromEntries([...stat].map(([i, x]) => [i, { falseAlarms: x.nh, hatefulFlagged: x.h, byFunctionality: x.nhGroups }])) }, null, 2));
   const q = (v: string) => '"' + v.replace(/"/g, '""') + '"';
-  writeFileSync(join(P.privateResults, `detect-attribution-${stamp}.csv`), 'row,term,category,severity,mode,false_alarms,hateful_flagged,false_alarm_functionalities\n' + ranked.map(([i, x]) => [i, q(rows[i - 1].term), rows[i - 1].category, rows[i - 1].severity, rows[i - 1].matchMode, x.nh, x.h, q(Object.entries(x.nhGroups).map(([g, n]) => `${g}:${n}`).join(' '))].join(',')).join('\n') + '\n');
-  console.log(`\nRow numbers and counts: results/public/detect-attribution-${stamp}.json. The words, for the reviewers only: results/private/detect-attribution-${stamp}.csv (not for the repository).`);
+  writeFileSync(join(P.privateResults, `detect-attribution-${flag('--dataset') ?? 'hatecheck'}-${stamp}.csv`), 'row,term,category,severity,mode,false_alarms,hateful_flagged,false_alarm_functionalities\n' + ranked.map(([i, x]) => [i, q(rows[i - 1].term), rows[i - 1].category, rows[i - 1].severity, rows[i - 1].matchMode, x.nh, x.h, q(Object.entries(x.nhGroups).map(([g, n]) => `${g}:${n}`).join(' '))].join(',')).join('\n') + '\n');
+  console.log(`\nRow numbers and counts: results/public/detect-attribution-${flag('--dataset') ?? 'hatecheck'}-${stamp}.json. The words, for the reviewers only: results/private/detect-attribution-${flag('--dataset') ?? 'hatecheck'}-${stamp}.csv (not for the repository).`);
   process.exit(0);
 }
 const jsonName = flag('--json');
