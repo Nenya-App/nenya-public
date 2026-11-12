@@ -32,3 +32,10 @@ ok('a judgment word aimed at a person gives a hit, but never a card offer', matc
 ok('a judgment word with no person near it gives no hit', match('plimmo', matcher).length === 0);
 ok('a needs-model row is found but never offers a card on the list alone', match('they are quuxer', matcher).length === 1 && !flagsOffer('they are quuxer'));
 ok('a dropped word matches nothing', match('snarfel', matcher).length === 0);
+
+// The frame rules (src/lib/learningOffer.ts): denouncing and negation are not use.
+const offer = (text: string): boolean => flagsOffer(text);
+ok('denouncing the words does not offer a card', !offer('It is really not okay to be calling people zorkblat.') && !offer('Why would you call me a zorkblat?') && !offer('We have to call out people saying zorkblat in our society.'));
+ok('a negated word does not offer a card', !offer('They are not at all zorkblat.') && !offer('I never said they are zorkblat.'));
+ok('plain use still offers a card', offer('They are all zorkblat.') && offer('You are not welcome here, you zorkblat.'));
+ok('a negation in another clause does not hide the word', offer('I am not angry, they are zorkblat.'));

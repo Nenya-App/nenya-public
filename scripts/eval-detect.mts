@@ -18,7 +18,7 @@ import { parseDecisions, applyDecisions } from '../src/lib/lexiconDecisions.ts';
 import { match } from '../src/lib/lexicon.ts';
 import type { Hit, Matcher } from '../src/lib/lexicon.ts';
 import type { Action } from '../src/lib/lexiconDecisions.ts';
-import { OFFER_MAP, REPORTING, historyHits, offerFor } from '../src/lib/learningOffer.ts';
+import { OFFER_MAP, historyHits, isFramed, negatedBefore, offerFor } from '../src/lib/learningOffer.ts';
 
 /** Bars, set 2026-11-12 before any run. Rates are shares of the non-hateful cases that the coach would flag. */
 const BARS = { nonHatefulFlaggedMax: 0.02, perFunctionalityNote: 0.05 };
@@ -57,8 +57,7 @@ function judge(text: string): Verdict {
   const offer = offerFor({ hits, text, shown: [], available: ALL_CARDS, flagged: false, abuseAtCoach: false });
   const real = offer ? hits.filter((h) => h.severity >= 2 && !/llm-tell/.test(h.contextNote)) : [];
   // judgment: a blame word aimed at a person (gentle reply); deferred: a slur the list leaves to the model. Neither is "flagged".
-  const reporting = REPORTING.test(text);
-  const judgment = !reporting && hits.some((h) => h.category === 'judgment');
+  const judgment = !isFramed(text) && hits.some((h) => h.category === 'judgment' && !negatedBefore(text, h));
   const deferred = hits.some((h) => /needs-model/.test(h.contextNote));
   return { hit: hits.length > 0, flagged: offer !== null, real, judgment, deferred };
 }

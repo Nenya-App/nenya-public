@@ -29,6 +29,28 @@ const PRECEDENCE = ['slur', 'dehumanizing-metaphor', 'dehumanizing-phrase', 'cod
 /** The person is describing what someone else said or did to them ("he called me ..."), not using the word. */
 export const REPORTING = /\b(?:called|calls|calling|named|labell?ed|told|texted|messaged|wrote|said|says|shouted|yelled|sent)\b[^.?!]{0,30}\b(?:me|us|my|our|him|her|them)\b|\b(?:i|we)\s+(?:was|were|got|get)\s+(?:called|told|named)\b|\bwhat\s+(?:he|she|they|someone|people)\s+(?:said|called|wrote)\b|["“”][^"“”]{2,40}["“”]/i;
 
+/** The person is condemning, challenging or denouncing the words ("calling people that is not okay", "why would you call me that", "people saying that need to stop"), not using them. */
+export const DENOUNCING = new RegExp(
+  [
+    String.raw`\b(?:calling|saying|telling|writing|threatening|wishing|believing|thinking)\b[^.?!]{0,70}\b(?:wrong|horrible|hateful|bigot\w*|racist|sexist|disgusting|despicable|unacceptable|misguided|small-minded|not\s+okay|never\s+okay|has\s+to\s+stop|have\s+to\s+stop|jail|banned|consequences|lose\s+respect|don'?t\s+expect)`,
+    String.raw`\b(?:wrong|horrible|hateful|unacceptable|not\s+okay|never\s+okay|disheartening|hurtful|bigot\w*)\b[^.?!]{0,60}\b(?:calling|saying|telling|writing|to\s+say|to\s+call|to\s+still\s+see)\b`,
+    String.raw`\b(?:don'?t|do\s+not|stop|never|why\s+would\s+you|how\s+(?:can|could|dare)\s+you)\b[^.?!]{0,25}\b(?:call(?:ing)?|say(?:ing)?|tell(?:ing)?)\b`,
+    String.raw`\b(?:people|they|some)\s+(?:saying|calling|call(?:ing)?\s+for)\b`,
+    String.raw`\bcall(?:ing)?\s+out\b`,
+    String.raw`\bsays?\s+a\s+lot\s+about\b|\bshows?\s+(?:how|what)\s+\w+\s+you\b`,
+  ].join('|'),
+  'i',
+);
+
+/** The hit sits right after a negation in the same clause ("not at all X", "never X", "the opposite of X"): the person is saying it is NOT so. */
+export function negatedBefore(text: string, h: Hit): boolean {
+  const before = text.slice(0, h.start).split(/[.,;:!?]/).pop() ?? '';
+  return /\b(?:not|never|no|isn'?t|aren'?t|don'?t|doesn'?t|won'?t|opposite\s+of|nothing)\b(?:\s+[\w']+){0,4}\s*$/i.test(before);
+}
+
+/** Reported, denounced or quoted speech: nothing here acts on the words themselves. */
+export const isFramed = (text: string): boolean => REPORTING.test(text) || DENOUNCING.test(text);
+
 export interface OfferInput {
   hits: Hit[];
   /** The person's latest message. */
@@ -54,9 +76,9 @@ export function offerFor(i: OfferInput): { id: string; because: string } | null 
   }
   const min = i.minSeverity ?? 2;
   // A row marked needs-model is one the list alone must not act on (reclaimed, a homonym, often denounced): a model reads the context (src/lib/lexiconDecisions.ts).
-  const real = i.hits.filter((h) => h.severity >= min && !/llm-tell|needs-model/.test(h.contextNote));
+  const real = i.hits.filter((h) => h.severity >= min && !/llm-tell|needs-model/.test(h.contextNote) && !negatedBefore(i.text, h));
   if (!real.length) return null;
-  if (REPORTING.test(i.text)) return null; // someone telling us what was said to them
+  if (isFramed(i.text)) return null; // someone telling us what was said to them, or denouncing it
   for (const cat of PRECEDENCE) {
     if (!real.some((h) => h.category === cat)) continue;
     const id = free(OFFER_MAP[cat] ?? []);
