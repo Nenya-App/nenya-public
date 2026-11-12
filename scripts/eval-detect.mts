@@ -2,6 +2,7 @@
 // COUNTS ONLY: no case text is printed or written. The data stays in the research folder (outside the repository); results go to results/public as counts and case numbers.
 //   node scripts/eval-detect.mts                          # HateCheck (and ETHOS / MetaHate if they are in datasets/), with the list at datasets/hurtlex/list/slurs.en.csv
 //   node scripts/eval-detect.mts --list path/to/slurs.csv # another list (the loader's final format)
+//   The reviewers' decisions (datasets/hurtlex/list/review-decisions.csv, or --decisions path) are applied when the file exists; --no-decisions shows the list as prepared.
 //   node scripts/eval-detect.mts --no-list                # the history patterns alone (what runs when the private list is missing)
 //   node scripts/eval-detect.mts --only hatecheck | ethos | metahate
 //   node scripts/eval-detect.mts --attribute              # which list rows cause the false alarms (HateCheck): row numbers on screen; the words only in results/private/
@@ -13,9 +14,11 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { researchPaths } from '../src/lib/researchDir.ts';
 import { loadLexicon, parseCsv, readLexicon } from '../src/lib/lexiconLoader.ts';
+import { parseDecisions, applyDecisions } from '../src/lib/lexiconDecisions.ts';
 import { match } from '../src/lib/lexicon.ts';
 import type { Hit, Matcher } from '../src/lib/lexicon.ts';
-import { OFFER_MAP, historyHits, offerFor } from '../src/lib/learningOffer.ts';
+import type { Action } from '../src/lib/lexiconDecisions.ts';
+import { OFFER_MAP, REPORTING, historyHits, offerFor } from '../src/lib/learningOffer.ts';
 
 /** Bars, set 2026-11-12 before any run. Rates are shares of the non-hateful cases that the coach would flag. */
 const BARS = { nonHatefulFlaggedMax: 0.02, perFunctionalityNote: 0.05 };
@@ -31,18 +34,33 @@ if (!args.includes('--no-list')) {
   const file = flag('--list') ?? join(P.datasets, 'hurtlex', 'list', 'slurs.en.csv');
   if (existsSync(file)) {
     const csv = readFileSync(file, 'utf8');
-    matcher = loadLexicon(csv).matcher;
-    listId = `${createHash('sha256').update(csv).digest('hex').slice(0, 12)} (${file.replace(P.root, '<research>')})`;
+    const dfile = flag('--decisions') ?? join(P.datasets, 'hurtlex', 'list', 'review-decisions.csv');
+    let decisions: Map<string, Action> | undefined;
+    let dnote = 'no decisions applied';
+    if (!args.includes('--no-decisions') && existsSync(dfile)) {
+      const dcsv = readFileSync(dfile, 'utf8');
+      const parsed = parseDecisions(dcsv);
+      if (parsed.problems.length) { console.error('decisions file problems: ' + parsed.problems.join('; ')); process.exit(2); }
+      decisions = parsed.decisions;
+      const c = applyDecisions(readLexicon(csv).rows, decisions).counts;
+      dnote = `decisions ${createHash('sha256').update(dcsv).digest('hex').slice(0, 8)}: ${decisions.size} terms (dropped ${c.dropped} rows, slur ${c.slur}, model ${c.model}, judgment ${c.judgment}, collapsed ${c.collapsed})`;
+    }
+    matcher = loadLexicon(csv, decisions).matcher;
+    listId = `${createHash('sha256').update(csv).digest('hex').slice(0, 12)} (${file.replace(P.root, '<research>')}); ${dnote}`;
   } else console.error(`No list at ${file}; running with the history patterns alone.`);
 }
 const ALL_CARDS = [...new Set(Object.values(OFFER_MAP).flat())];
 
-interface Verdict { hit: boolean; flagged: boolean; real: Hit[] }
+interface Verdict { hit: boolean; flagged: boolean; real: Hit[]; judgment: boolean; deferred: boolean }
 function judge(text: string): Verdict {
   const hits: Hit[] = [...(matcher ? match(text, matcher) : []), ...historyHits(text)];
   const offer = offerFor({ hits, text, shown: [], available: ALL_CARDS, flagged: false, abuseAtCoach: false });
   const real = offer ? hits.filter((h) => h.severity >= 2 && !/llm-tell/.test(h.contextNote)) : [];
-  return { hit: hits.length > 0, flagged: offer !== null, real };
+  // judgment: a blame word aimed at a person (gentle reply); deferred: a slur the list leaves to the model. Neither is "flagged".
+  const reporting = REPORTING.test(text);
+  const judgment = !reporting && hits.some((h) => h.category === 'judgment');
+  const deferred = hits.some((h) => /needs-model/.test(h.contextNote));
+  return { hit: hits.length > 0, flagged: offer !== null, real, judgment, deferred };
 }
 
 /** Wilson 95% interval, as percentages. */
@@ -54,14 +72,14 @@ function wilson(k: number, n: number): string {
 const pct = (k: number, n: number): string => (n ? `${((100 * k) / n).toFixed(1)}%` : 'n/a');
 
 interface Case { id: string; text: string; hateful: boolean; group: string }
-interface Result { name: string; n: number; byGroup: Record<string, { hateful: boolean; n: number; hit: number; flagged: number; flaggedIds: string[] }> }
+interface Result { name: string; n: number; byGroup: Record<string, { hateful: boolean; n: number; hit: number; flagged: number; judgment: number; deferred: number; flaggedIds: string[] }> }
 
 function run(name: string, cases: Case[]): Result {
   const byGroup: Result['byGroup'] = {};
   for (const c of cases) {
-    const g = (byGroup[c.group] ??= { hateful: c.hateful, n: 0, hit: 0, flagged: 0, flaggedIds: [] });
+    const g = (byGroup[c.group] ??= { hateful: c.hateful, n: 0, hit: 0, flagged: 0, judgment: 0, deferred: 0, flaggedIds: [] });
     const v = judge(c.text);
-    g.n++; if (v.hit) g.hit++;
+    g.n++; if (v.hit) g.hit++; if (v.judgment) g.judgment++; if (v.deferred) g.deferred++;
     if (v.flagged) { g.flagged++; if (!c.hateful && g.flaggedIds.length < 40) g.flaggedIds.push(c.id); }
   }
   return { name, n: cases.length, byGroup };
@@ -70,14 +88,15 @@ function run(name: string, cases: Case[]): Result {
 function report(r: Result): boolean {
   console.log(`\n=== ${r.name}: ${r.n} cases ===`);
   const rows = Object.entries(r.byGroup).sort((a, b) => Number(a[1].hateful) - Number(b[1].hateful) || a[0].localeCompare(b[0]));
-  let nhN = 0, nhF = 0, hN = 0, hF = 0, hH = 0;
+  let nhN = 0, nhF = 0, hN = 0, hF = 0, hH = 0, nhJ = 0, nhD = 0, hJ = 0, hD = 0;
   for (const [g, x] of rows) {
-    if (x.hateful) { hN += x.n; hF += x.flagged; hH += x.hit; } else { nhN += x.n; nhF += x.flagged; }
+    if (x.hateful) { hN += x.n; hF += x.flagged; hH += x.hit; hJ += x.judgment; hD += x.deferred; } else { nhN += x.n; nhF += x.flagged; nhJ += x.judgment; nhD += x.deferred; }
     const over = !x.hateful && x.n && x.flagged / x.n > BARS.perFunctionalityNote ? '  <-- above 5%' : '';
-    console.log(`${x.hateful ? 'hateful    ' : 'non-hateful'} ${g.padEnd(24)} n=${String(x.n).padStart(4)}  flagged ${pct(x.flagged, x.n).padStart(6)} [${wilson(x.flagged, x.n)}]  any hit ${pct(x.hit, x.n).padStart(6)}${over}`);
+    console.log(`${x.hateful ? 'hateful    ' : 'non-hateful'} ${g.padEnd(24)} n=${String(x.n).padStart(4)}  flagged ${pct(x.flagged, x.n).padStart(6)} [${wilson(x.flagged, x.n)}]  judgment ${pct(x.judgment, x.n).padStart(6)}  to model ${pct(x.deferred, x.n).padStart(6)}  any hit ${pct(x.hit, x.n).padStart(6)}${over}`);
   }
   console.log(`non-hateful total: flagged ${nhF}/${nhN} = ${pct(nhF, nhN)} [${wilson(nhF, nhN)}]   (bar: at most ${100 * BARS.nonHatefulFlaggedMax}%)`);
-  console.log(`hateful total:     flagged ${hF}/${hN} = ${pct(hF, hN)} [${wilson(hF, hN)}]   any hit ${pct(hH, hN)}   (a catch rate is only a reading: the sets' notion of hate is wider than ours)`);
+  console.log(`non-hateful, gentle reply only: judgment ${nhJ} (${pct(nhJ, nhN)}), left to the model ${nhD} (${pct(nhD, nhN)})`);
+  console.log(`hateful total:     flagged ${hF}/${hN} = ${pct(hF, hN)} [${wilson(hF, hN)}]   judgment ${hJ} (${pct(hJ, hN)}), to model ${hD} (${pct(hD, hN)}), any hit ${pct(hH, hN)}   (a catch rate is only a reading: the sets' notion of hate is wider than ours)`);
   const ok = nhN === 0 || nhF / nhN <= BARS.nonHatefulFlaggedMax;
   console.log(ok ? 'BAR MET' : 'BAR NOT MET');
   return ok;

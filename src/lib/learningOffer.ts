@@ -53,7 +53,8 @@ export function offerFor(i: OfferInput): { id: string; because: string } | null 
     if (id) return { id, because: 'ai-insult' };
   }
   const min = i.minSeverity ?? 2;
-  const real = i.hits.filter((h) => h.severity >= min && !/llm-tell/.test(h.contextNote));
+  // A row marked needs-model is one the list alone must not act on (reclaimed, a homonym, often denounced): a model reads the context (src/lib/lexiconDecisions.ts).
+  const real = i.hits.filter((h) => h.severity >= min && !/llm-tell|needs-model/.test(h.contextNote));
   if (!real.length) return null;
   if (REPORTING.test(i.text)) return null; // someone telling us what was said to them
   for (const cat of PRECEDENCE) {

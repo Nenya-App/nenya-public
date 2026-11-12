@@ -8,6 +8,7 @@
 //  - The ordinary words the list also holds (animals, objects, "it") are context keys only, never above severity 1, and off without cues.
 //  - Terms under three characters are dropped.
 import { compile, type LexRow, type Matcher, type MatchMode } from './lexicon.ts';
+import { applyDecisions, type Action } from './lexiconDecisions.ts';
 
 /** Ordinary, respectful words for groups of people. They must never be matchers. */
 export const NEUTRAL_IDENTITY = new Set(
@@ -116,7 +117,7 @@ export function readLexicon(csv: string): { rows: LexRow[]; report: LoadReport }
 }
 
 /** A matcher from the CSV text, and the report. */
-export function loadLexicon(csv: string): { matcher: Matcher; report: LoadReport } {
+export function loadLexicon(csv: string, decisions?: Map<string, Action>): { matcher: Matcher; report: LoadReport } {
   const { rows, report } = readLexicon(csv);
-  return { matcher: compile(rows), report };
+  return { matcher: compile(decisions ? applyDecisions(rows, decisions).rows : rows), report };
 }
