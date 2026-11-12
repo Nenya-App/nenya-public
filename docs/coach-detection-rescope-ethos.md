@@ -63,3 +63,14 @@ ETHOS tells us about **hate speech**. Our category is narrower and different: de
 
 ## 7. Not verified
 Everything under "what ETHOS is" comes from its GitHub page (via a summary) and my memory of the paper; the language, the source of the comments, the annotation method and the exact file names must be read in the repository. I did not download anything.
+
+## 8. Decisions of 2026-11-12 (owner)
+- **The matcher stays on the server.** The list stays private and is never shipped to the browser.
+- **Wiktionary's slur and derogatory-term categories are in the base**, beside HurtLex (conservative level) and our own target-neutral patterns, with source and licence recorded per row (CC BY-SA; credit goes in `ATTRIBUTIONS.md` before the list is switched on, as for HurtLex). Not yet built: a script to pull the categories (counts only), like `scripts/prepare-hurtlex.mts`.
+- **A ToxiGen model on the server, for the witnessed side only** (screening a conversation a person has chosen to send, before a human reads it for the public page). Scope, to be confirmed before building:
+  - **Role:** a flag that sends a conversation to closer human review. Never an automatic decision to show, hide or reject; never used on live coach messages.
+  - **Fit:** the witnessed flow is not interactive, so a slow start is acceptable, and it can run in a background function (longer time limit than a normal one) rather than the relay.
+  - **Size is the constraint.** A RoBERTa-base model is roughly 125 MB as an int8 ONNX file plus an ONNX runtime for Node, against Netlify's function size limits (about 250 MB unzipped, from memory; verify). It may fit; a distilled model fits more easily. The model could also be kept in Netlify Blobs and loaded at start, instead of in the bundle.
+  - **Privacy:** it runs in the function's memory; no text goes to a third party; nothing is stored. The Terms line for sending a conversation (terms-transcripts-draft, section 1) should then say a machine also screens it before a person reads it.
+  - **Licence:** check the ToxiGen model's card and the dataset's licence (I recall MIT; not verified), the conversion to ONNX, and the training-data terms. We do not train or tune it.
+  - **Evaluation:** measure it on ETHOS and the hand-written scenes first; report its false-alarm rate like the matcher's.
