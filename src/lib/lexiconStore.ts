@@ -2,9 +2,12 @@
 // minutes. Returns null if there is no list, which simply means no cards are offered for language found in the text. The list is uploaded with
 // scripts/upload-private-list.mts.
 import { loadLexicon } from './lexiconLoader.ts';
+import { parseDecisions } from './lexiconDecisions.ts';
 import type { Matcher } from './lexicon.ts';
 
 export const LEXICON_KEY = 'lexicon/en/current';
+/** The reviewers' decisions about terms in the list (drop, slur, model, judgment: src/lib/lexiconDecisions.ts), uploaded beside it. Without them the list runs as it was prepared, unreviewed. */
+export const DECISIONS_KEY = 'lexicon/en/decisions';
 const KEEP_MS = 5 * 60 * 1000;
 let cached: { at: number; matcher: Matcher | null } | null = null;
 
@@ -13,7 +16,16 @@ export async function getMatcher(store: { get(key: string, opts: { type: 'text' 
   let matcher: Matcher | null = null;
   try {
     const csv = await store.get(LEXICON_KEY, { type: 'text' });
-    if (csv) matcher = loadLexicon(csv).matcher;
+    if (csv) {
+      let decisions: ReturnType<typeof parseDecisions>['decisions'] | undefined;
+      try {
+        const d = await store.get(DECISIONS_KEY, { type: 'text' });
+        if (d) decisions = parseDecisions(d).decisions; // valid lines are applied even if one is not
+      } catch {
+        decisions = undefined;
+      }
+      matcher = loadLexicon(csv, decisions).matcher;
+    }
   } catch {
     matcher = null;
   }

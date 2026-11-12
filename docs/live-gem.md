@@ -60,5 +60,4 @@ Tests sample half an hour at full depth and confirm the stone never opens a gap.
 Cost: about 0.6 KB of extra compressed code, so the live gem is about 4.3 KB in all, against the sprite's 809 KB. The work
 per frame is the same shader, plus a few microseconds to work out the cut.
 
-To use it on the site, pass `kaleidoscope: { on: true, ... }` in the `liveGem` look where `NenyaLogo` is rendered, or make
-it a visitor setting next to the animation controls.
+On the site it is off by default, and a visitor can switch it on with **Gem Kaleidoscope** in the accessibility panel (next to the animation controls; `src/lib/deviceMemory.ts`, `useGemKaleidoscope`). The switch turns it on in addition to whatever the look says, takes effect at once, and puts the stone back to its plain cut each time it is toggled. To make it the default for everyone, change `on: false` to `on: true` in `src/lib/siteGem.ts`. The bench's own settings are never overridden by the visitor switch.

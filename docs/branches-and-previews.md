@@ -74,3 +74,17 @@ The build is pinned to Node 24 in `netlify.toml` (`NODE_VERSION`), and CI runs N
 2. Open `/coach` on the preview and send one message, then look at the function log: a start-up error would show there.
 3. Only then merge to `main`, and repeat the runtime check on the production site.
 
+## Variables and uploads for the detection and screening features (2026-11-12)
+All on the staging site only, one at a time, with a redeploy between. Nothing here is needed for the coach to answer; each is off or absent by default.
+
+| Variable or upload | Value | What it does |
+|---|---|---|
+| private list: `scripts/upload-private-list.mts <list> [store] --decisions <review-decisions.csv>` | the reviewed list and the reviewers' decisions, **both** | the matcher's list; **without `--decisions` the list runs unreviewed** |
+| `COACH_LEARNING_OFFERS` | `on` | cards offered for the list's matches (needs the list and approved cards) |
+| `COACH_SCREEN_SECRET` | a new random value, the same for the whole site | lets the relay call the screening function; without it `/api/screen` does not exist |
+| model upload: `scripts/upload-screen-model.mts [store]` | the 125 MB int8 model and tokenizer files | the screening model, in the private store |
+| `COACH_SCREEN` | `shadow` | the relay counts the model's band beside the matcher's action; never changes a reply |
+| `COACH_FORM_CHECK` | `off` | **on by default**; this turns off the "too short or unclear" check |
+| `COACH_DISTRESS_TEXT` | `on` | the distress sentences (approve the wording of `src/lib/distressText.ts` first) |
+
+The gem's kaleidoscope is a visitor setting in the accessibility panel, not a variable.

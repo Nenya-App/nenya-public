@@ -14,6 +14,7 @@ import type { GemCut } from '../../lib/gemCut';
 import { kaleidoscopeCut, type KaleidoscopeLook } from '../../lib/kaleidoscope';
 import { DEFAULT_INNER_ORBIT } from '../../lib/orbitLook';
 import { SITE_LIVE_FIELD_ALPHA, SITE_LIVE_GEM } from '../../lib/siteGem';
+import { useGemKaleidoscope } from '../../lib/deviceMemory';
 
 /** The live gem's settings (see src/lib/gemRenderer.ts). All optional: the defaults are the tuned starting point. */
 export interface LiveGemLook {
@@ -132,8 +133,10 @@ export default function SpectralGem({
   const spriteRef = useRef<HTMLImageElement | null>(null);
   // The live settings are read on every frame, so changing them does not restart the loop. Only a change of quality
   // (which rebuilds the shader) does.
+  // The visitor's switch (accessibility panel) turns the kaleidoscope on in addition to whatever the look says; a toggle either way puts the stone back to its plain cut first.
+  const visitorKaleido = useGemKaleidoscope();
   const liveRef = useRef(live);
-  liveRef.current = live;
+  liveRef.current = live ? { ...live, kaleidoscope: { ...live.kaleidoscope, on: !!live.kaleidoscope?.on || visitorKaleido }, restart: live.restart ?? (visitorKaleido ? 1 : 0) } : live;
   // The kaleidoscope's own clock: it only runs while the kaleidoscope is on, so turning it off pauses the pattern
   // where it is instead of snapping back to the plain cut.
   const kaleido = useRef<{ t: number; last: number; started: boolean; restart: number | undefined }>({ t: 0, last: 0, started: false, restart: undefined });

@@ -46,3 +46,17 @@ ok('a judgment word about oneself is the separate self-judgment tier', kinds('I 
 ok('a first-person word alone is not enough', kinds('I love this plimmo').length === 0 && kinds('we saw the plimmo').length === 0);
 ok('a person word far from the judgment word is not enough', kinds('you went to the shop and then after a long walk back it was plimmo').length === 0);
 ok('a self-judgment may sit four words from its cue', kinds('I feel like such an plimmo').includes('self-judgment'));
+
+// The list as the site loads it: the decisions uploaded beside it are applied (src/lib/lexiconStore.ts).
+import { DECISIONS_KEY, LEXICON_KEY, __forgetLexiconForTests, getMatcher } from '../src/lib/lexiconStore.ts';
+const fakeStore = (files: Record<string, string>) => ({ get: async (k: string) => files[k] ?? null });
+__forgetLexiconForTests();
+const withDec = await getMatcher(fakeStore({ [LEXICON_KEY]: csv, [DECISIONS_KEY]: 'term,action,note\n"snarfel","drop",""\n"plimmo","judgment",""\n' }), 1_000);
+ok('the site applies the uploaded decisions: a dropped word matches nothing and a judgment word needs a person beside it', !!withDec && match('snarfel', withDec).length === 0 && match('plimmo', withDec).length === 0 && match('you are plimmo', withDec).some((h) => h.category === 'judgment'));
+__forgetLexiconForTests();
+const without = await getMatcher(fakeStore({ [LEXICON_KEY]: csv }), 2_000_000);
+ok('with no decisions uploaded the list runs as prepared', !!without && match('snarfel', without).length === 1 && match('plimmo', without)[0]?.severity === 2);
+__forgetLexiconForTests();
+const broken = await getMatcher(fakeStore({ [LEXICON_KEY]: csv, [DECISIONS_KEY]: 'term,action\n"snarfel","drop"\n"plimmo","maybe"\n' }), 4_000_000);
+ok('a decisions file with one bad line still applies its good lines', !!broken && match('snarfel', broken).length === 0);
+__forgetLexiconForTests();

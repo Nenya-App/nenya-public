@@ -93,6 +93,8 @@ export interface Prefs {
   breathingSound?: string;
   colorBlindMode?: string;
   breathingTechnique?: { ih: number; hi: number; ex: number; ho: number };
+  /** The gem's kaleidoscope: the inside of the stone slowly re-cuts itself. Off unless the visitor switches it on. */
+  gemKaleidoscope?: boolean;
 }
 
 const VISION = ['', 'deuteranopia', 'protanopia', 'tritanopia', 'achromatopsia'];
@@ -109,6 +111,7 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   breathingOpacity: (v) => typeof v === 'number' && v >= 0.1 && v <= 1,
   showBreathingCounter: isBool,
   breathingTones: isBool,
+  gemKaleidoscope: isBool,
   breathingSound: (v) => v === 'harp' || v === 'bowls' || v === 'chord' || v === 'scale',
   colorBlindMode: (v) => typeof v === 'string' && VISION.includes(v),
   breathingTechnique: (v) => {
@@ -167,6 +170,30 @@ export function useBreathingTones(): boolean {
   const remembering = useRemembering();
   useEffect(() => {
     if (remembering) savePref('breathingTones', on);
+  }, [remembering, on]);
+  return on;
+}
+
+// The gem's kaleidoscope: one visitor setting (the switch is in the accessibility panel, the gem reads it), off until switched on, saved only while "Remember on this device" is on and erased by
+// "Forget me" and Emergency Exit like every other saved setting. The stone holds still when the device asks for reduced motion, whatever this says.
+let kaleidoOn: boolean | null = null;
+const kaleidoListeners = new Set<() => void>();
+const getKaleido = (): boolean => (kaleidoOn ??= loadPrefs().gemKaleidoscope === true);
+export const getGemKaleidoscope = getKaleido;
+export function setGemKaleidoscope(on: boolean): void {
+  kaleidoOn = on;
+  savePref('gemKaleidoscope', on);
+  kaleidoListeners.forEach((l) => l());
+}
+const subscribeKaleido = (l: () => void) => {
+  kaleidoListeners.add(l);
+  return () => kaleidoListeners.delete(l);
+};
+export function useGemKaleidoscope(): boolean {
+  const on = useSyncExternalStore(subscribeKaleido, getKaleido, () => false);
+  const remembering = useRemembering();
+  useEffect(() => {
+    if (remembering) savePref('gemKaleidoscope', on);
   }, [remembering, on]);
   return on;
 }
