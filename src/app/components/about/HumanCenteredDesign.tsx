@@ -48,7 +48,7 @@ export default function HumanCenteredDesign({ onBack }: HumanCenteredDesignProps
             <Card className="p-6 md:p-8 bg-muted/30 border-border">
               <div className="space-y-4 text-foreground leading-relaxed">
                 <p>
-                  <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">Human-Centered Design (HCD)</strong> is a creative problem-solving approach that starts with understanding the people you're designing for and ends with solutions tailored to meet their needs.
+                  <strong className="text-nenya-gold-text dark:text-nenya-gold-light">Human-Centered Design (HCD)</strong> is a creative problem-solving approach that starts with understanding the people you're designing for and ends with solutions tailored to meet their needs.
                 </p>
                 <p>
                   Nenya's design process is deeply rooted in HCD principles. Rather than imposing a single "right way" to begin self-reflection, we recognized that people connect with their inner experience through different sensory modalities.
@@ -58,7 +58,7 @@ export default function HumanCenteredDesign({ onBack }: HumanCenteredDesignProps
           </BloomOnScroll>
 
           <BloomOnScroll className="space-y-6">
-            <h2 className="text-2xl md:text-3xl text-nenya-gold-dark dark:text-nenya-gold-light">
+            <h2 className="text-2xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">
               HCD in Nenya's Design
             </h2>
             

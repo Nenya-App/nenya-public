@@ -58,7 +58,7 @@ export function ContactSection() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-nenya-gold/20">
-              <Mail className="size-5 text-nenya-gold" />
+              <Mail className="size-5 text-nenya-gold-text dark:text-nenya-gold" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Write to us any time</p>

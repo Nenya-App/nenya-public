@@ -190,7 +190,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                 href="https://www.cnvc.org/store/feelings-and-needs-inventory"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline underline-offset-4 hover:text-nenya-gold-dark"
+                className="underline underline-offset-4 hover:text-nenya-gold-text"
               >
                 Feelings and Needs Inventory
               </a>
@@ -208,13 +208,13 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                 <div className="space-y-3">
                   <Card className="p-4 bg-background/60 border-border/60">
                     <div className="flex items-start gap-3">
-                      <ExternalLink className="size-4 text-nenya-gold-dark mt-1 flex-shrink-0" />
+                      <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
                       <div className="space-y-1">
                         <a 
                           href="https://www.yvetteerasmus.com" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-dark transition-colors"
+                          className="hover:text-nenya-gold-text transition-colors"
                         >
                           <h4 className="text-sm">YvetteErasmus.com</h4>
                         </a>
@@ -226,13 +226,13 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                   </Card>
                   <Card className="p-4 bg-background/60 border-border/60">
                     <div className="flex items-start gap-3">
-                      <ExternalLink className="size-4 text-nenya-gold-dark mt-1 flex-shrink-0" />
+                      <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
                       <div className="space-y-1">
                         <a 
                           href="https://www.mikikashtan.org" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-dark transition-colors"
+                          className="hover:text-nenya-gold-text transition-colors"
                         >
                           <h4 className="text-sm">MikiKashtan.org</h4>
                         </a>
@@ -244,13 +244,13 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                   </Card>
                   <Card className="p-4 bg-background/60 border-border/60">
                     <div className="flex items-start gap-3">
-                      <ExternalLink className="size-4 text-nenya-gold-dark mt-1 flex-shrink-0" />
+                      <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
                       <div className="space-y-1">
                         <a 
                           href="https://empathyfactor.com/" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-dark transition-colors"
+                          className="hover:text-nenya-gold-text transition-colors"
                         >
                           <h4 className="text-sm">EmpathyFactor.com - Marie Miyashiro</h4>
                         </a>
@@ -280,7 +280,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                           href="https://www.cnvc.org" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-dark transition-colors"
+                          className="hover:text-nenya-gold-text transition-colors"
                         >
                           <h4 className="text-sm">CNVC.org (Center for Nonviolent Communication)</h4>
                         </a>
@@ -298,7 +298,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                           href="https://nvctraining.com" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-dark transition-colors"
+                          className="hover:text-nenya-gold-text transition-colors"
                         >
                           <h4 className="text-sm">NVC Academy (Online Training)</h4>
                         </a>

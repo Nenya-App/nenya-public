@@ -278,7 +278,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                 </div>
 
                 <div>
-                  <h3 className="text-nenya-gold-dark mb-3 flex items-center gap-2">
+                  <h3 className="text-nenya-gold-text mb-3 flex items-center gap-2">
                     <Sparkles className="size-5" />
                     Countering Consumption Technology
                   </h3>
@@ -291,7 +291,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                 </div>
 
                 <div className="bg-gradient-to-r from-nenya-gold/10 to-cyan-500/10 rounded-lg p-6 border border-nenya-gold/30">
-                  <h3 className="text-nenya-gold-dark mb-3">The Outcome: Collective Action Capacity</h3>
+                  <h3 className="text-nenya-gold-text mb-3">The Outcome: Collective Action Capacity</h3>
                   <p className="text-muted-foreground">
                     By mastering individual emotional capacity (Mindfulness, Empathy, Self-Compassion), the user activates the foundational skills required for the broader, necessary <strong>Collective Action</strong>—a leadership that belongs to everyone.
                   </p>
@@ -319,13 +319,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
 
                 <div className="grid gap-4">
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3713325/" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         Compassion: An Evolutionary Analysis and Empirical Review
                       </a>
@@ -334,13 +334,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://greatergood.berkeley.edu/article/item/the_compassionate_instinct" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         The Compassionate Instinct - Greater Good Science Center
                       </a>
@@ -349,13 +349,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2555428/" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         The Evolution of Empathy
                       </a>
@@ -364,13 +364,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3156028/" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         The Neural Basis of Empathy
                       </a>
@@ -379,13 +379,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://hbr.org/2017/02/emotional-intelligence-has-12-elements-which-do-you-need-to-work-on" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         Emotional Intelligence Has 12 Elements
                       </a>
@@ -394,13 +394,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3498959/" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         Social Identity and Collective Action
                       </a>
@@ -409,13 +409,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://www.gallup.com/workplace/247391/fixable-problem-costs-businesses-trillion.aspx" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         Employee Engagement & Productivity Costs
                       </a>
@@ -424,13 +424,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3498959/" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         Self-Compassion and Mental Health
                       </a>
@@ -439,13 +439,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://www.apa.org/pubs/journals/releases/psp-pspi0000018.pdf" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         Awe, the Small Self, and Prosocial Behavior
                       </a>
@@ -454,13 +454,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5575449/" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         Mindfulness and Prefrontal Cortex Function
                       </a>
@@ -469,13 +469,13 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <ExternalLink className="size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                    <ExternalLink className="size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                     <div>
                       <a 
                         href="https://www.heartmath.org/research/science-of-the-heart/heart-rate-variability/" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-nenya-gold-dark hover:underline"
+                        className="text-nenya-gold-text hover:underline"
                       >
                         Heart Rate Variability & Emotional Regulation
                       </a>

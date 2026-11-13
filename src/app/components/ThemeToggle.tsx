@@ -20,7 +20,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       {theme === 'dark' ? (
         <Sun className="size-5 text-nenya-gold" />
       ) : (
-        <Moon className="size-5 text-nenya-gold-dark" />
+        <Moon className="size-5 text-nenya-gold-text" />
       )}
     </Button>
   );

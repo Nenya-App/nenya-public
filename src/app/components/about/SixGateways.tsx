@@ -83,7 +83,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
       <div className="space-y-6">
         <button
           onClick={onBack}
-          className="text-nenya-gold-dark hover:text-nenya-gold dark:text-nenya-silver dark:hover:text-nenya-silver-light transition-colors"
+          className="text-nenya-gold-text hover:text-foreground dark:text-nenya-silver dark:hover:text-nenya-silver-light transition-colors"
         >
           ← Back to About
         </button>
@@ -100,7 +100,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
 
       {/* Philosophy */}
       <Card className="p-6 sm:p-8 bg-gradient-to-br from-nenya-gold/5 to-nenya-gold/10 border-nenya-gold/30 dark:from-nenya-silver/5 dark:to-yellow-500/10 dark:border-nenya-silver/30">
-        <h2 className="text-2xl mb-4 text-nenya-gold-dark dark:text-nenya-silver">Why Six Gateways?</h2>
+        <h2 className="text-2xl mb-4 text-nenya-gold-text dark:text-nenya-silver">Why Six Gateways?</h2>
         <div className="space-y-4 text-muted-foreground">
           <p>
             Nenya began with color—the Sight Gateway—because visual metaphor is the most universal. But as we engaged with users, we realized: <strong>not everyone processes emotions visually</strong>.
@@ -170,7 +170,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
             <strong className="text-foreground">What we hope to build:</strong> A fuller NVC+ reflection companion that works with what you enter in each gateway, running on your own device rather than in the cloud, with stronger safety and privacy protections than the demo has. None of that exists yet. We're building iteratively based on user needs and feedback.
           </p>
           <p className="text-xs italic">
-            <strong className="text-nenya-gold-dark dark:text-nenya-silver">Accessibility Note:</strong> These gateways aren't just about preference—they're about <strong>access</strong>. For blind users, the Sight Gateway is useless. For Deaf users, Sound may be secondary. We're building true multi-modal access to emotional intelligence.
+            <strong className="text-nenya-gold-text dark:text-nenya-silver">Accessibility Note:</strong> These gateways aren't just about preference—they're about <strong>access</strong>. For blind users, the Sight Gateway is useless. For Deaf users, Sound may be secondary. We're building true multi-modal access to emotional intelligence.
           </p>
         </div>
       </Card>

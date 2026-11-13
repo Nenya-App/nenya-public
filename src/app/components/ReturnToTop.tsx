@@ -22,7 +22,7 @@ export function ReturnToTop({ className = '', onClick }: ReturnToTopProps) {
         variant="outline"
         size="lg"
         onClick={handleClick}
-        className="gap-2 group hover:border-nenya-gold/50 hover:text-nenya-gold-dark dark:hover:text-nenya-gold transition-all"
+        className="gap-2 group hover:border-nenya-gold/50 hover:text-nenya-gold-text dark:hover:text-nenya-gold transition-all"
       >
         <ArrowUp className="size-4 group-hover:-translate-y-1 transition-transform" />
         Return to Top

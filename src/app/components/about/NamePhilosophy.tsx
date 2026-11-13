@@ -66,9 +66,9 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
           <BloomOnScroll className="space-y-4 md:space-y-6">
             <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6 px-2">
               <div className="p-2 md:p-3 bg-nenya-gold/20 rounded-lg">
-                <Crown className="size-5 md:size-6 text-nenya-gold-dark dark:text-nenya-gold" />
+                <Crown className="size-5 md:size-6 text-nenya-gold-text dark:text-nenya-gold" />
               </div>
-              <h2 className="text-xl md:text-3xl text-nenya-gold-dark dark:text-nenya-gold-light">The Tale of Two Makers</h2>
+              <h2 className="text-xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">The Tale of Two Makers</h2>
             </div>
 
             <Card className="p-4 md:p-8 bg-muted/50 backdrop-blur-sm border-border">
@@ -78,7 +78,7 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
                 </p>
                 
                 <p>
-                  The contrast between these two approaches isn't just mythological—it's the <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">defining choice of our technological age</strong>. Every platform, every tool, every system embodies one of these two philosophies, whether its creators realize it or not.
+                  The contrast between these two approaches isn't just mythological—it's the <strong className="text-nenya-gold-text dark:text-nenya-gold-light">defining choice of our technological age</strong>. Every platform, every tool, every system embodies one of these two philosophies, whether its creators realize it or not.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 py-4 md:py-6">
@@ -111,9 +111,9 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
                   <div className="space-y-3 md:space-y-4 p-4 md:p-6 rounded-lg bg-amber-50 dark:bg-nenya-gold/5 border border-nenya-gold/40 dark:border-nenya-gold/20">
                     <div className="flex items-center gap-3 pb-3 border-b border-nenya-gold/40 dark:border-nenya-gold/30">
                       <div className="p-2 bg-nenya-gold/30 dark:bg-nenya-gold/20 rounded-lg">
-                        <Heart className="size-4 md:size-5 text-nenya-gold-dark dark:text-nenya-gold" />
+                        <Heart className="size-4 md:size-5 text-nenya-gold-text dark:text-nenya-gold" />
                       </div>
-                      <h3 className="text-lg md:text-xl text-nenya-gold-dark dark:text-nenya-gold">Galadriel</h3>
+                      <h3 className="text-lg md:text-xl text-nenya-gold-text dark:text-nenya-gold">Galadriel</h3>
                     </div>
                     <p className="text-xs md:text-sm text-muted-foreground">
                       <strong className="text-foreground">The Guardian of Preservation</strong>
@@ -125,9 +125,9 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
                       She was no less powerful than Fëanor, no less ancient or wise. But her power was used differently: not to possess, but to <em>cultivate</em>. Not to control, but to <em>protect</em>. With Nenya, she created Lothlórien—a living sanctuary.
                     </p>
                     <p className="text-xs md:text-sm">
-                      Her mirror didn't give absolute knowledge or control. It showed possibilities, visions, potential futures—but <strong className="text-nenya-gold-dark dark:text-nenya-gold">it required wisdom to interpret</strong>. It invited reflection, not surveillance. And when the time came to let it all go, she did. She sailed into the West.
+                      Her mirror didn't give absolute knowledge or control. It showed possibilities, visions, potential futures—but <strong className="text-nenya-gold-text dark:text-nenya-gold">it required wisdom to interpret</strong>. It invited reflection, not surveillance. And when the time came to let it all go, she did. She sailed into the West.
                     </p>
-                    <p className="text-xs md:text-sm text-nenya-gold-dark dark:text-nenya-gold italic border-t border-nenya-gold/40 dark:border-nenya-gold/30 pt-3">
+                    <p className="text-xs md:text-sm text-nenya-gold-text dark:text-nenya-gold italic border-t border-nenya-gold/40 dark:border-nenya-gold/30 pt-3">
                       "Her power was not for domination, but for preservation of beauty, for understanding of sorrow, and for the healing of wounds."
                     </p>
                   </div>
@@ -139,13 +139,13 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
                     The two visions differ in kind. Nenya is organic and prismatic: warm colors, flowing forms, growth and interconnection. The Palantír is cold geometry, mechanical precision, the unblinking eye that sees all.
                   </p>
                   <p>
-                    One invites you into a garden. The other places you under surveillance. <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">This is not a metaphor. This is architecture.</strong>
+                    One invites you into a garden. The other places you under surveillance. <strong className="text-nenya-gold-text dark:text-nenya-gold-light">This is not a metaphor. This is architecture.</strong>
                   </p>
                 </div>
 
                 <div className="pt-4 md:pt-6 border-t border-border">
                   <p className="text-sm md:text-lg">
-                    Both were driven by <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">unmet needs</strong>—Fëanor's need for control over loss, Galadriel's need for preservation against decay. But their <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">strategies</strong> diverged completely.
+                    Both were driven by <strong className="text-nenya-gold-text dark:text-nenya-gold-light">unmet needs</strong>—Fëanor's need for control over loss, Galadriel's need for preservation against decay. But their <strong className="text-nenya-gold-text dark:text-nenya-gold-light">strategies</strong> diverged completely.
                   </p>
                 </div>
               </div>
@@ -158,16 +158,16 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
               <div className="space-y-4">
                 <h3 className="text-xl md:text-2xl font-medium mb-4 text-foreground">Attending or Mastering</h3>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
-                  The contrast between Fëanor and Galadriel is not a contrast of power. Both were among the most gifted minds ever to walk Middle-earth. It is a contrast of <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">orientation</strong>.
+                  The contrast between Fëanor and Galadriel is not a contrast of power. Both were among the most gifted minds ever to walk Middle-earth. It is a contrast of <strong className="text-nenya-gold-text dark:text-nenya-gold-light">orientation</strong>.
                 </p>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
                   Fëanor's tools demanded. The Palantíri transmitted sight to whoever was strong enough to dominate the stone. His creations required his permanence to have meaning — when the Silmarils were taken, nothing could release them without unmaking the total pouring that had created them.
                 </p>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
-                  Nenya could not compel. It tended. It held Lothlórien for three thousand years, and when the time came, Galadriel released it — knowing the trees would wither and the enchantment end — because what she had built was never meant to require her continuity in order to have been <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">worth building</strong>.
+                  Nenya could not compel. It tended. It held Lothlórien for three thousand years, and when the time came, Galadriel released it — knowing the trees would wither and the enchantment end — because what she had built was never meant to require her continuity in order to have been <strong className="text-nenya-gold-text dark:text-nenya-gold-light">worth building</strong>.
                 </p>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
-                  Every technology eventually answers the same question: does it operate <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">on</strong> the person using it, or <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">alongside</strong> them?
+                  Every technology eventually answers the same question: does it operate <strong className="text-nenya-gold-text dark:text-nenya-gold-light">on</strong> the person using it, or <strong className="text-nenya-gold-text dark:text-nenya-gold-light">alongside</strong> them?
                 </p>
               </div>
             </div>
@@ -178,7 +178,7 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
                   Nothing persists between sessions. No profile accumulates, and nothing you do in the reflection tools is kept or transmitted by us. The one exception is the optional coach demo, where what you type passes through our server to an outside AI service (Venice AI) and is not stored by Nenya. The aim is a design where even that cannot be retained, packaged, or sold, so that privacy is a structural fact rather than a policy a future team could change. The core tool works that way today; the coach demo does not yet.
                 </p>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
-                  The Harp of Móru, which gives this project its foundational metaphor, was made with the ground's consent. The first question asked was not "what can I make from this?" but "may I?" The distinction is not between use and non-use. It is between <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">extraction</strong> and <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">invitation</strong>.
+                  The Harp of Móru, which gives this project its foundational metaphor, was made with the ground's consent. The first question asked was not "what can I make from this?" but "may I?" The distinction is not between use and non-use. It is between <strong className="text-nenya-gold-text dark:text-nenya-gold-light">extraction</strong> and <strong className="text-nenya-gold-text dark:text-nenya-gold-light">invitation</strong>.
                 </p>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
                   The six gateways are strategies you are trying on — in NVC terms, the specific actions we take in service of what we need. They exist for the duration of a session. They belong entirely to you.

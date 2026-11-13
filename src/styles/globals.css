@@ -25,7 +25,7 @@
   --secondary-foreground: #4A4440;
   
   --muted: #F5F1ED;
-  --muted-foreground: #756F6A;
+  --muted-foreground: #5A544F;
   
   --accent: #E8C4A8;
   --accent-foreground: #4A4440;
@@ -61,13 +61,14 @@
   --nenya-gold: #DDB88C;
   --nenya-gold-light: #E8C4A8;
   --nenya-gold-dark: #C9A88A;
+  --nenya-gold-text: #75561F; /* gold for TEXT on the light page: 4.8:1 on the page, 6.8:1 on cards (the lighter golds are for fills and borders) */
   --nenya-silver: #C0C0C0;
   --nenya-silver-light: #E8E8E8;
   
   /* Text hierarchy */
   --text-primary: #4A4440;
-  --text-secondary: #756F6A;
-  --text-tertiary: #9B948E;
+  --text-secondary: #5A544F;
+  --text-tertiary: #625C57;
   
   --nenya-prism-start: #FF1493;
   --nenya-prism-mid: #FFD700;
@@ -135,6 +136,7 @@
   --nenya-gold: #DDB88C;
   --nenya-gold-light: #E8C4A8;
   --nenya-gold-dark: #C9A88A;
+  --nenya-gold-text: #C9A88A;
   --nenya-silver: #D0D0D0;
   --nenya-silver-light: #F0F0F0;
   
@@ -206,6 +208,7 @@
   --color-nenya-gold: var(--nenya-gold);
   --color-nenya-gold-light: var(--nenya-gold-light);
   --color-nenya-gold-dark: var(--nenya-gold-dark);
+  --color-nenya-gold-text: var(--nenya-gold-text);
   --color-nenya-silver: var(--nenya-silver);
   --color-nenya-silver-light: var(--nenya-silver-light);
   --color-text-primary: var(--text-primary);

@@ -48,7 +48,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
             <Card className="p-6 md:p-8 bg-muted/30 border-border">
               <div className="space-y-4 text-foreground leading-relaxed">
                 <p>
-                  <strong className="text-nenya-gold-dark dark:text-nenya-gold-light">Theory U</strong>, developed by Otto Scharmer at MIT, is a framework for transformational change that emphasizes <em>presencing</em>—connecting to your deepest source of knowing and acting from that place.
+                  <strong className="text-nenya-gold-text dark:text-nenya-gold-light">Theory U</strong>, developed by Otto Scharmer at MIT, is a framework for transformational change that emphasizes <em>presencing</em>—connecting to your deepest source of knowing and acting from that place.
                 </p>
                 <p>
                   The U-shaped journey moves through three phases: <strong>sensing</strong> (downloading and observing), <strong>presencing</strong> (connecting to source at the bottom of the U), and <strong>realizing</strong> (prototyping and performing).
@@ -58,7 +58,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
           </BloomOnScroll>
 
           <BloomOnScroll className="space-y-6">
-            <h2 className="text-2xl md:text-3xl text-nenya-gold-dark dark:text-nenya-gold-light">
+            <h2 className="text-2xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">
               The U Journey in Nenya
             </h2>
             
@@ -116,7 +116,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
           <BloomOnScroll>
             <Card className="p-6 md:p-8 bg-muted/30 border-border">
               <div className="space-y-4 text-foreground leading-relaxed">
-                <h3 className="text-xl text-nenya-gold-dark dark:text-nenya-gold-light">
+                <h3 className="text-xl text-nenya-gold-text dark:text-nenya-gold-light">
                   Why Theory U Matters for Evolved Leadership
                 </h3>
                 <p>

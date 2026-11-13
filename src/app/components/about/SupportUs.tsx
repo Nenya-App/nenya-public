@@ -32,11 +32,11 @@ export default function SupportUs({ onBack }: SupportUsProps) {
             <Card className="p-8 border-nenya-gold/30 space-y-4">
               <div className="flex justify-center">
                 <div className="size-16 rounded-full bg-nenya-gold/20 flex items-center justify-center">
-                  <Heart className="size-8 text-nenya-gold" />
+                  <Heart className="size-8 text-nenya-gold-text dark:text-nenya-gold" />
                 </div>
               </div>
               <div className="space-y-3 text-center">
-                <h2 className="text-2xl text-nenya-gold-light">What You're Supporting</h2>
+                <h2 className="text-2xl text-nenya-gold-text dark:text-nenya-gold-light">What You're Supporting</h2>
                 <p className="text-muted-foreground leading-relaxed">
                   Nenya is a hybrid work of visual art, literature, and contemplative technology — a digital sanctuary built for reflection, emotional
                   regulation, and ethical self-inquiry. The breathing interface, the color gateways, the guided reflection: each element is designed to
@@ -53,21 +53,21 @@ export default function SupportUs({ onBack }: SupportUsProps) {
             <div className="grid md:grid-cols-3 gap-5">
               <Card className="p-5 space-y-3">
                 <div className="size-10 rounded-full bg-nenya-gold/10 flex items-center justify-center">
-                  <Shield className="size-5 text-nenya-gold" />
+                  <Shield className="size-5 text-nenya-gold-text dark:text-nenya-gold" />
                 </div>
                 <h4 className="font-medium">Privacy-first</h4>
                 <p className="text-sm text-muted-foreground">No surveillance. No data mining. Your inner life stays yours.</p>
               </Card>
               <Card className="p-5 space-y-3">
                 <div className="size-10 rounded-full bg-nenya-gold/10 flex items-center justify-center">
-                  <Code className="size-5 text-nenya-gold" />
+                  <Code className="size-5 text-nenya-gold-text dark:text-nenya-gold" />
                 </div>
                 <h4 className="font-medium">Openly built</h4>
                 <p className="text-sm text-muted-foreground">Transparent development. No equity, no board seats, no approval rights granted to any funder.</p>
               </Card>
               <Card className="p-5 space-y-3">
                 <div className="size-10 rounded-full bg-nenya-gold/10 flex items-center justify-center">
-                  <Heart className="size-5 text-nenya-gold" />
+                  <Heart className="size-5 text-nenya-gold-text dark:text-nenya-gold" />
                 </div>
                 <h4 className="font-medium">Provided free</h4>
                 <p className="text-sm text-muted-foreground">The core breathing and reflection tools are provided free to every person who arrives, and the plan is to keep them that way.</p>

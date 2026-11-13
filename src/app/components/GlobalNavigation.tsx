@@ -145,7 +145,7 @@ export function GlobalNavigation({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-2 border-nenya-gold/40 hover:border-nenya-gold hover:bg-nenya-gold/10 hover:text-nenya-gold-dark text-nenya-gold-dark"
+                  className="gap-2 border-nenya-gold/40 hover:border-nenya-gold hover:bg-nenya-gold/10 hover:text-nenya-gold-text text-nenya-gold-text"
                   onClick={handleSupportUsClick}
                 >
                   <Heart className="size-4" />
@@ -316,7 +316,7 @@ export function GlobalNavigation({
                     onClick={handleSupportUsClick}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors text-left"
                   >
-                    <Heart className="size-5 text-nenya-gold-dark" />
+                    <Heart className="size-5 text-nenya-gold-text" />
                     <div className="flex-1">
                       <div className="text-sm">Support Us</div>
                       <div className="text-xs text-muted-foreground">Help keep Nenya free</div>
