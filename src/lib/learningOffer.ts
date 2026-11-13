@@ -22,10 +22,13 @@ export const OFFER_MAP: Record<string, string[]> = {
   // The history cards (docs/drafts/history-and-violence-text-draft.md): found by plain phrases, not the private list (historyHits below).
   'mass-violence-denial': ['hist-02', 'hist-01'],
   'mass-violence-removal': ['hist-03', 'hist-01'],
-  'mass-violence-call': ['hist-03', 'hist-01'],
+  'mass-violence-call': ['hist-03', 'conn-06', 'hist-01'],
+  // The judgment tiers (src/lib/lexiconDecisions.ts): blame of another person, and harsh judgment of oneself. Offered only when COACH_JUDGMENT_CARDS is on (offerFor's judgmentOffers).
+  judgment: ['idea-02', 'conn-01'],
+  'self-judgment': ['idea-09'],
   'colonizer-dehumanization': ['hist-04', 'hist-03'],
 };
-const PRECEDENCE = ['slur', 'dehumanizing-metaphor', 'dehumanizing-phrase', 'coded-term', 'colonizer-dehumanization', 'mass-violence-removal', 'mass-violence-call', 'mass-violence-denial', 'harassing-insult', 'ai-insult'];
+const PRECEDENCE = ['slur', 'dehumanizing-metaphor', 'dehumanizing-phrase', 'coded-term', 'colonizer-dehumanization', 'mass-violence-removal', 'mass-violence-call', 'mass-violence-denial', 'harassing-insult', 'judgment', 'self-judgment', 'ai-insult'];
 
 /** The person is describing what someone else said or did to them ("he called me ..."), not using the word. */
 export const REPORTING = /\b(?:called|calls|calling|named|labell?ed|told|texted|messaged|wrote|said|says|shouted|yelled|sent)\b[^.?!]{0,30}\b(?:me|us|my|our|him|her|them)\b|\b(?:i|we)\s+(?:was|were|got|get)\s+(?:called|told|named)\b|\bwhat\s+(?:he|she|they|someone|people)\s+(?:said|called|wrote)\b|["“”][^"“”]{2,40}["“”]/i;
@@ -65,6 +68,8 @@ export interface OfferInput {
   /** True if the latest message was abuse aimed at the coach (the existing hostility check). */
   abuseAtCoach: boolean;
   minSeverity?: number;
+  /** Also offer a card for the judgment tiers (blame of another person; harsh judgment of oneself), which are severity 1 and otherwise never offer one. Off unless COACH_JUDGMENT_CARDS is on. */
+  judgmentOffers?: boolean;
 }
 
 /** The card to offer, or null. */
@@ -77,7 +82,7 @@ export function offerFor(i: OfferInput): { id: string; because: string } | null 
   }
   const min = i.minSeverity ?? 2;
   // A row marked needs-model is one the list alone must not act on (reclaimed, a homonym, often denounced): a model reads the context (src/lib/lexiconDecisions.ts).
-  const real = i.hits.filter((h) => h.severity >= min && !/llm-tell|needs-model/.test(h.contextNote) && !negatedBefore(i.text, h));
+  const real = i.hits.filter((h) => (h.severity >= min || (i.judgmentOffers === true && /^(self-)?judgment$/.test(h.category))) && !/llm-tell|needs-model/.test(h.contextNote) && !negatedBefore(i.text, h));
   if (!real.length) return null;
   if (isFramed(i.text)) return null; // someone telling us what was said to them, or denouncing it
   for (const cat of PRECEDENCE) {

@@ -60,3 +60,10 @@ __forgetLexiconForTests();
 const broken = await getMatcher(fakeStore({ [LEXICON_KEY]: csv, [DECISIONS_KEY]: 'term,action\n"snarfel","drop"\n"plimmo","maybe"\n' }), 4_000_000);
 ok('a decisions file with one bad line still applies its good lines', !!broken && match('snarfel', broken).length === 0);
 __forgetLexiconForTests();
+
+// Cards for the judgment tiers: only when asked for, and the right card.
+const jOffer = (text: string, judgmentOffers: boolean) => offerFor({ hits: match(text, matcher), text, shown: [], available: ['idea-02', 'conn-01', 'idea-09', 'dehum-01'], flagged: false, abuseAtCoach: false, judgmentOffers });
+ok('a judgment of another person offers no card unless judgment cards are on', jOffer('you are plimmo', false) === null);
+ok('with judgment cards on it offers the observation-and-judgment card', jOffer('you are plimmo', true)?.id === 'idea-02');
+ok('a harsh judgment of oneself offers the self-empathy card', jOffer('I am so plimmo', true)?.id === 'idea-09');
+ok('a denounced or negated judgment still offers nothing', jOffer('it is not okay to call anyone plimmo', true) === null && jOffer('they are not plimmo', true) === null);

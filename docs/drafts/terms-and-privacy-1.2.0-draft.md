@@ -15,7 +15,7 @@ Some of the earlier drafts describe features that are **off** in production; the
 | **D. Learning cards** | `terms-learning-cards-draft.md` | Only when `COACH_LEARNING_OFFERS` is switched on (it needs the list and approved cards, so **not at this merge**). |
 | **E. Sealed mode and partner practice** | `terms-sealed-and-partner-draft.md` | Only when `COACH_SEALED` or `CELL_ENABLED` is on. |
 | **F. The pause and the way back in** | `terms-respectful-use-draft.md` | Only when the pause exists. It does not. |
-| **G. The distress sentences** | `terms-revision-2026-11-09.md` section 3 | Already described; the owner approves the wording of `src/lib/distressText.ts` before `COACH_DISTRESS_TEXT=on`. |
+| **G. The distress sentences** | `terms-revision-2026-11-09.md` section 3 | Already described. **The owner approved the wording of `src/lib/distressText.ts` as it stands on 2026-11-13**, so `COACH_DISTRESS_TEXT=on` may be set (staging first). |
 
 **Production switches stay off at the merge, so only A applies, plus the one-line checks in section 5.**
 

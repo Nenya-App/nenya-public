@@ -1,3 +1,4 @@
+// Wording APPROVED by the owner as it stands, 2026-11-13: COACH_DISTRESS_TEXT=on may be set (staging first).
 // The sentence the site adds when the crisis check flags a message as possible distress (the "soften" tier: the message still
 // reaches the coach, which is asked to answer briefly and with care). The baseline evaluation showed this model does not name a
 // person or a crisis line on its own, even when told to, so the site writes that part. It is appended to the coach's reply (it

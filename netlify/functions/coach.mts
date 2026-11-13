@@ -1098,7 +1098,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       const shown = Array.isArray(sentShown) ? sentShown.filter((x): x is string => typeof x === 'string' && known.has(x)).slice(0, 4) : [];
       const matcher = await getMatcher(privateStore() as unknown as Parameters<typeof getMatcher>[0]);
       const minSev = Number(process.env.COACH_LEARNING_MIN_SEVERITY);
-      const o = offerFor({ hits: [...(matcher ? lexiconMatch(lastText, matcher) : []), ...historyHits(lastText)], text: lastText, shown, available: [...known], flagged: !!flag, abuseAtCoach: hostile === 'abuse', ...(Number.isInteger(minSev) && minSev >= 1 && minSev <= 3 ? { minSeverity: minSev } : {}) });
+      const o = offerFor({ hits: [...(matcher ? lexiconMatch(lastText, matcher) : []), ...historyHits(lastText)], text: lastText, shown, available: [...known], flagged: !!flag, abuseAtCoach: hostile === 'abuse', judgmentOffers: process.env.COACH_JUDGMENT_CARDS === 'on', ...(Number.isInteger(minSev) && minSev >= 1 && minSev <= 3 ? { minSeverity: minSev } : {}) });
       if (o) { offer = { id: o.id, proof: offerProof(secret, [...messages, { role: 'assistant' as const, content: reply }], o.id) }; tally(`coach.offer.${o.because}`); }
     } catch { /* an offer is a courtesy: never let it break a reply */ }
   }
