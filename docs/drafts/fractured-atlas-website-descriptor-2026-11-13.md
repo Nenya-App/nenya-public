@@ -1,6 +1,6 @@
 # The Fractured Atlas website descriptor (2,500 characters or fewer)
 
-Drafted 2026-11-13 for the owner to edit and for Fractured Atlas to review. **Not published anywhere.** The text below is **2451 characters** including spaces (limit 2,500), counted by script. It replaces the older description of the project on the Fractured Atlas page and reflects how Nenya works now.
+Drafted 2026-11-13 for the owner to edit and for Fractured Atlas to review. **Not published anywhere.** The text below is **2460 characters** including spaces (limit 2,500), counted by script. It replaces the older description of the project on the Fractured Atlas page and reflects how Nenya works now.
 
 ---
 
@@ -10,7 +10,7 @@ Nenya is built on one belief: your inner world belongs only to you. It accepts n
 
 Nenya also offers an optional prototype of an AI reflective coach, using Nonviolent Communication, the practice of naming feelings and needs. It is early, it is not therapy, and it is not a substitute for a person. Messages pass through our server, which removes names and contact details and encrypts them before they reach a small AI model run by Venice AI in a private mode. We do not keep conversations, we never use them to train a model, and we keep only plain daily counts with nothing that identifies anyone. A person can download a signed copy of their own conversation, and it is theirs to keep or share.
 
-Safety is part of the design. A message that suggests a crisis is never sent to the AI: the page shows resources, including 988 in the US, and the conversation ends. When someone expresses contempt for a whole group of people or calls for harm, the coach says plainly that it does not share that view, and it does not simply mirror the feeling back. Simple checks help with this. They can be wrong, and we say so: we measure them against public test sets, publish where they fall short, and keep improving them with the help of counselors, advocates and other reviewers who work only from public or invented examples, never from anyone's conversation.
+Safety is part of the design. A message that suggests a crisis is never sent to the AI: the page shows resources, including 988 in the US, and the conversation ends. When someone expresses contempt for a whole group of people or calls for harm, the coach says plainly that it does not share that view, and it does not simply mirror the feeling back. Simple checks help with this. They can be wrong, and we say so: we measure them against public test sets, publish where they fall short, and keep improving them with the help of counselors, advocates and other reviewers who work only from public or invented examples, never from anyone's private conversations.
 
 Donations pay for the costs of running Nenya: hosting, the AI processing for the optional coach, and the review and testing that keep it safe. Nenya is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit arts service organization. Contributions are tax-deductible to the extent permitted by law, and Fractured Atlas administers them. The software and its content remain Nenya's own.
 
