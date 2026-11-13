@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { TextureCredits } from '../TextureCredits';
 import { Button } from '../ui/button';
 import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
@@ -342,6 +343,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
             </div>
 
             {/* Next Button */}
+            <TextureCredits />
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"
