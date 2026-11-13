@@ -195,7 +195,7 @@ export default function WelcomePage({
               id="tutorial-cta"
               size="lg"
               onClick={onContinue}
-              className="gap-2 text-lg px-8 py-6 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-background-elevated"
+              className="gap-2 text-lg px-8 py-6 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-primary-foreground"
             >
               Explore Your Senses
               <ArrowRight className="size-5" />

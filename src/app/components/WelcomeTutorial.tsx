@@ -301,7 +301,7 @@ export function WelcomeTutorial({ isOpen, onClose, onStepChange }: WelcomeTutori
               <Button
                 size="sm"
                 onClick={() => (isLast ? handleClose() : setStepIndex((i) => i + 1))}
-                className="gap-1 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-background-elevated"
+                className="gap-1 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-primary-foreground"
               >
                 {isLast ? 'Back to the logo' : 'Next'}
                 {!isLast && <ArrowRight className="size-3.5" />}

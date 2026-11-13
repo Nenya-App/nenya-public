@@ -50,7 +50,7 @@ export default function PowerOfColor({ onBack }: PowerOfColorProps) {
             <Card className="p-8 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-primary/30">
               <div className="flex items-start gap-6">
                 <div className="size-16 rounded-full bg-nenya-accent-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Eye className="size-8 text-nenya-accent-warm" />
+                  <Eye className="size-8 text-nenya-gold-text dark:text-nenya-accent-warm" />
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-foreground">The Visual Cortex: A Survival Superpower</h3>

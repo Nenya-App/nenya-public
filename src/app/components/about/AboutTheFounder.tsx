@@ -62,7 +62,7 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
           <Card className="p-6 border-nenya-accent-primary/30">
             <div className="flex items-start gap-4">
               <div className="size-10 rounded-full bg-nenya-accent-primary/10 flex items-center justify-center ring-2 ring-nenya-accent-primary/20 flex-shrink-0">
-                <BookOpen className="size-5 text-nenya-accent-warm" />
+                <BookOpen className="size-5 text-nenya-gold-text dark:text-nenya-accent-warm" />
               </div>
               <div className="space-y-3">
                 <h3 className="text-lg">Background</h3>
@@ -97,21 +97,21 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
             <h2 className="text-2xl">Philosophical Foundations</h2>
             <div className="grid md:grid-cols-3 gap-5">
               <Card className="p-5 border-nenya-accent-primary/30">
-                <h4 className="font-semibold mb-2 text-nenya-accent-warm text-sm">Archetypes of Need</h4>
+                <h4 className="font-semibold mb-2 text-nenya-gold-text dark:text-nenya-accent-warm text-sm">Archetypes of Need</h4>
                 <p className="text-xs text-muted-foreground">
                   The sixteen archetypes give a shared, imaginative vocabulary for human needs that reaches across cultural and linguistic
                   barriers, making emotional literacy more accessible.
                 </p>
               </Card>
               <Card className="p-5 border-nenya-accent-secondary/30">
-                <h4 className="font-semibold mb-2 text-nenya-accent-warm text-sm">Nonviolent Communication</h4>
+                <h4 className="font-semibold mb-2 text-nenya-gold-text dark:text-nenya-accent-warm text-sm">Nonviolent Communication</h4>
                 <p className="text-xs text-muted-foreground">
                   Beneath every feeling is a need. Naming those needs without blame or judgment is the foundation of genuine connection — and the
                   grounding framework for Míriel's coaching design.
                 </p>
               </Card>
               <Card className="p-5 border-nenya-accent-metallic/30">
-                <h4 className="font-semibold mb-2 text-nenya-accent-warm text-sm">Systems Thinking</h4>
+                <h4 className="font-semibold mb-2 text-nenya-gold-text dark:text-nenya-accent-warm text-sm">Systems Thinking</h4>
                 <p className="text-xs text-muted-foreground">
                   Individual emotional health and collective wellbeing are inseparable. Nenya is designed with that relationship in mind.
                 </p>

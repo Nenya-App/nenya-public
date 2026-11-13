@@ -53,7 +53,7 @@ export function SupportThisWork() {
 
         <Button
           size="lg"
-          className="gap-3 bg-nenya-gold hover:bg-nenya-gold-dark text-background-elevated px-8 py-6 text-lg w-full sm:w-auto"
+          className="gap-3 bg-nenya-gold hover:bg-nenya-gold-dark text-primary-foreground px-8 py-6 text-lg w-full sm:w-auto"
           asChild
         >
           <a

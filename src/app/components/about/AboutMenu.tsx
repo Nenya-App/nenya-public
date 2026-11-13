@@ -165,7 +165,7 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
             <Button
               variant="outline"
               onClick={onRestartDemo}
-              className="gap-2 border-nenya-accent-primary/40 hover:border-nenya-accent-warm hover:bg-nenya-accent-warm/10 hover:text-nenya-accent-warm text-sm md:text-base"
+              className="gap-2 border-nenya-accent-primary/40 hover:border-nenya-accent-warm hover:bg-nenya-accent-warm/10 hover:text-nenya-gold-text dark:hover:text-nenya-accent-warm text-sm md:text-base"
               size="sm"
             >
               <Play className="size-3 md:size-4" />

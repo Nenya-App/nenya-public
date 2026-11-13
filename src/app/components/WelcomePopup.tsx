@@ -90,7 +90,7 @@ export default function WelcomePopup({ onDismiss, initiallyOpen = true }: Welcom
                   {/* Header with icon */}
                   <div className="flex items-start gap-3 md:gap-4 pr-8">
                     <div className="p-2 sm:p-3 bg-nenya-accent-warm/20 rounded-full flex-shrink-0">
-                      <Sparkles className="size-5 sm:size-6 text-nenya-accent-warm" />
+                      <Sparkles className="size-5 sm:size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                     </div>
                     <div className="flex-1 space-y-4">
                       <h2 className="text-xl sm:text-2xl md:text-3xl">
@@ -120,7 +120,7 @@ export default function WelcomePopup({ onDismiss, initiallyOpen = true }: Welcom
                   <Button
                     onClick={handleMinimize}
                     size="lg"
-                    className="w-full bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-background-elevated shadow-md"
+                    className="w-full bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-primary-foreground shadow-md"
                   >
                     Speak, Friend, and Enter.
                   </Button>

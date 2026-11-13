@@ -137,13 +137,13 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
                     <div className="flex items-center justify-between">
                       <div className={`p-3 rounded-full ${
                         isSelected 
-                          ? 'bg-nenya-accent-warm text-background-elevated' 
+                          ? 'bg-nenya-accent-warm text-primary-foreground' 
                           : 'bg-muted text-muted-foreground'
                       }`}>
                         <Icon className="size-6" />
                       </div>
                       {isSelected && (
-                        <div className="bg-nenya-accent-warm text-background-elevated rounded-full p-1">
+                        <div className="bg-nenya-accent-warm text-primary-foreground rounded-full p-1">
                           <Check className="size-4" />
                         </div>
                       )}
@@ -153,7 +153,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
                     <div className="space-y-2">
                       <h3 className="text-xl">{gateway.name}</h3>
                       <p className="text-sm text-muted-foreground">{gateway.description}</p>
-                      <p className="text-sm italic text-nenya-accent-warm">{gateway.tagline}</p>
+                      <p className="text-sm italic text-nenya-gold-text dark:text-nenya-accent-warm">{gateway.tagline}</p>
                     </div>
                   </div>
                 </Card>
@@ -167,7 +167,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
               <Button 
                 size="lg"
                 onClick={handleContinue}
-                className="gap-2 text-lg px-8 py-6 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-background-elevated"
+                className="gap-2 text-lg px-8 py-6 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-primary-foreground"
               >
                 Begin Journey
                 {selectedGateways.length > 1 && ` (${selectedGateways.length} gateways)`}
@@ -179,7 +179,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
           <div className="mt-12 pt-8 border-t border-border/50 max-w-3xl mx-auto">
             <div className="space-y-4 text-center">
               <p className="text-base md:text-lg text-foreground">
-                <span className="text-nenya-accent-warm">There are more potential pathways through Nenya than there are atoms in the observable universe.</span>
+                <span className="text-nenya-gold-text dark:text-nenya-accent-warm">There are more potential pathways through Nenya than there are atoms in the observable universe.</span>
               </p>
               <p className="text-sm md:text-base text-muted-foreground">
                 With 6.55 × 10¹⁰⁸ unique pathways through all six gateways, each journey is statistically unique. This isn't hyperbole — it's combinatorial mathematics ensuring that your privacy and sovereignty are protected not by policy, but by mathematical necessity.

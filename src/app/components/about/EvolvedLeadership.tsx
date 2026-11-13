@@ -47,7 +47,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
           {/* AI Disclaimer */}
           <BloomOnScroll>
             <Alert className="border-nenya-accent-primary/40 bg-nenya-accent-primary/5">
-            <Sparkles className="size-4 text-nenya-accent-warm" />
+            <Sparkles className="size-4 text-nenya-gold-text dark:text-nenya-accent-warm" />
             <AlertDescription>
               <strong>Research Transparency:</strong> AI was used in the creation of this content. It is important to always double-check sources and independently validate research and findings whenever possible. All citations include accessible links for your verification.
             </AlertDescription>
@@ -66,7 +66,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
 
               <div className="grid md:grid-cols-2 gap-6">
               <Card className="p-6 border-nenya-accent-primary/30 hover:border-nenya-accent-warm nenya-hover-glow transition-all">
-                <h3 className="text-nenya-accent-warm mb-3">Co-evolutionary Leadership</h3>
+                <h3 className="text-nenya-gold-text dark:text-nenya-accent-warm mb-3">Co-evolutionary Leadership</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Leadership is not static; it is a dynamic, shared relationship that co-evolves with our social challenges. It is the practice of <strong>Shared Leadership</strong>, where collective awareness of team strengths and weaknesses is paramount.
                 </p>
@@ -76,7 +76,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
               </Card>
 
               <Card className="p-6 border-nenya-accent-primary/30 hover:border-nenya-accent-warm nenya-hover-glow transition-all">
-                <h3 className="text-nenya-accent-warm mb-3">Spiritual Universality</h3>
+                <h3 className="text-nenya-gold-text dark:text-nenya-accent-warm mb-3">Spiritual Universality</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   The practice of compassion is the most evocative emotion defining "humanity." The commitment to a compassionate alliance is an evolutionary trajectory, not a moral suggestion.
                 </p>
@@ -103,7 +103,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-primary/30">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="size-12 rounded-full bg-nenya-accent-primary/10 flex items-center justify-center ring-2 ring-nenya-accent-primary/20">
-                    <Brain className="size-6 text-nenya-accent-warm" />
+                    <Brain className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <h3 className="text-foreground">Scientific Universality</h3>
                 </div>
@@ -124,7 +124,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-secondary/30">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="size-12 rounded-full bg-nenya-accent-secondary/10 flex items-center justify-center ring-2 ring-nenya-accent-secondary/20">
-                    <BookOpen className="size-6 text-nenya-accent-warm" />
+                    <BookOpen className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <h3 className="text-foreground">Academic Universality</h3>
                 </div>
@@ -145,7 +145,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-metallic/30">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="size-12 rounded-full bg-nenya-accent-metallic/10 flex items-center justify-center ring-2 ring-nenya-accent-metallic/20">
-                    <Heart className="size-6 text-nenya-accent-warm" />
+                    <Heart className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <h3 className="text-foreground">Spiritual Universality</h3>
                 </div>
@@ -169,7 +169,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
             <div className="text-center space-y-4">
               <div className="flex justify-center">
                 <div className="size-16 rounded-full bg-nenya-accent-warm/10 flex items-center justify-center ring-2 ring-nenya-accent-warm/20">
-                  <DollarSign className="size-8 text-nenya-accent-warm" />
+                  <DollarSign className="size-8 text-nenya-gold-text dark:text-nenya-accent-warm" />
                 </div>
               </div>
               <h2 className="text-3xl text-foreground">
@@ -183,11 +183,11 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
             <div className="space-y-4">
               <Card className="p-6 border-nenya-accent-warm/30 bg-nenya-accent-warm/5">
                 <div className="flex items-start gap-4">
-                  <AlertTriangle className="size-6 text-nenya-accent-warm flex-shrink-0 mt-1" />
+                  <AlertTriangle className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm flex-shrink-0 mt-1" />
                   <div className="space-y-3 flex-1">
                     <div>
                       <h4 className="text-foreground mb-2">Disengagement Cost (Global)</h4>
-                      <p className="text-2xl text-nenya-accent-warm mb-2">$8.9 Trillion Annually</p>
+                      <p className="text-2xl text-nenya-gold-text dark:text-nenya-accent-warm mb-2">$8.9 Trillion Annually</p>
                       <p className="text-sm text-muted-foreground">
                         Gallup's 2024 State of the Global Workplace report estimates low engagement costs the global economy $8.9 trillion annually — around 9% of global GDP. The 2025 follow-up found engagement fell further in 2024, erasing an additional $438 billion in productivity.
                       </p>
@@ -199,7 +199,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
               <div className="grid md:grid-cols-2 gap-4">
                 <Card className="p-5 border-nenya-accent-secondary/30 bg-nenya-accent-secondary/5">
                   <h4 className="text-foreground mb-2">Absenteeism & Morale</h4>
-                  <p className="text-xl text-nenya-accent-warm mb-2">$550 Billion + $300 Billion</p>
+                  <p className="text-xl text-nenya-gold-text dark:text-nenya-accent-warm mb-2">$550 Billion + $300 Billion</p>
                   <p className="text-sm text-muted-foreground">
                     Low morale costs businesses $550B annually. Stress and toxic environments driven by lack of empathy contribute an additional $300B in absenteeism.
                   </p>
@@ -207,7 +207,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
 
                 <Card className="p-5 border-nenya-accent-primary/30 bg-nenya-accent-primary/5">
                   <h4 className="text-foreground mb-2">Mental Health Burden</h4>
-                  <p className="text-xl text-nenya-accent-warm mb-2">$280 Billion Annually</p>
+                  <p className="text-xl text-nenya-gold-text dark:text-nenya-accent-warm mb-2">$280 Billion Annually</p>
                   <p className="text-sm text-muted-foreground">
                     Cost of untreated mental illness. Lack of self-compassion is strongly linked to anxiety, depression, and stress.
                   </p>
@@ -240,7 +240,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
             <Card className="p-8 bg-gradient-to-br from-nenya-accent-primary/5 via-background to-nenya-accent-metallic/5 border-nenya-accent-primary/30">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-nenya-accent-warm mb-3 flex items-center gap-2">
+                  <h3 className="text-nenya-gold-text dark:text-nenya-accent-warm mb-3 flex items-center gap-2">
                     <Brain className="size-5" />
                     Neuroplasticity Intervention
                   </h3>

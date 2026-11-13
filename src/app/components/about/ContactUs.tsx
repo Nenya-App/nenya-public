@@ -71,7 +71,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
               <div className="space-y-6 text-center">
                 <div className="flex justify-center">
                   <div className="size-20 rounded-full bg-nenya-accent-primary/10 flex items-center justify-center ring-2 ring-nenya-accent-primary/20">
-                    <Mail className="size-10 text-nenya-accent-warm" />
+                    <Mail className="size-10 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                 </div>
                 <div>
@@ -81,7 +81,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
                   </p>
                   <a
                     href="mailto:info@nenya.biz"
-                    className="inline-flex items-center gap-3 text-xl text-nenya-accent-warm hover:text-nenya-accent-primary transition-colors"
+                    className="inline-flex items-center gap-3 text-xl text-nenya-gold-text dark:text-nenya-accent-warm hover:text-nenya-gold-text dark:hover:text-nenya-accent-primary transition-colors"
                   >
                     <Mail className="size-6" />
                     info@nenya.biz
@@ -102,7 +102,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
                     <Card key={index} className="p-5 border-nenya-accent-primary/20">
                       <div className="flex items-start gap-4">
                         <div className="size-10 rounded-full bg-nenya-accent-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Icon className="size-5 text-nenya-accent-warm" />
+                          <Icon className="size-5 text-nenya-gold-text dark:text-nenya-accent-warm" />
                         </div>
                         <div className="space-y-1">
                           <h4 className="font-semibold">{reason.title}</h4>
@@ -135,7 +135,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
                 </p>
                 <a
                   href="mailto:info@nenya.biz"
-                  className="inline-flex items-center gap-2 text-sm text-nenya-accent-warm hover:text-nenya-accent-primary transition-colors"
+                  className="inline-flex items-center gap-2 text-sm text-nenya-gold-text dark:text-nenya-accent-warm hover:text-nenya-gold-text dark:hover:text-nenya-accent-primary transition-colors"
                 >
                   <Mail className="size-4" />
                   info@nenya.biz
@@ -148,7 +148,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
           <BloomOnScroll>
             <div className="bg-nenya-accent-primary/5 border border-nenya-accent-primary/20 p-6 rounded-lg">
               <p className="text-sm text-center">
-                <strong className="text-nenya-accent-warm">Privacy Commitment:</strong> We respect your privacy and will never share your contact information with third parties. All correspondence is treated with confidentiality and care.
+                <strong className="text-nenya-gold-text dark:text-nenya-accent-warm">Privacy Commitment:</strong> We respect your privacy and will never share your contact information with third parties. All correspondence is treated with confidentiality and care.
               </p>
             </div>
           </BloomOnScroll>

@@ -66,7 +66,7 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
             {r.href ? (
               <a
                 href={r.href}
-                className="text-nenya-accent-warm underline underline-offset-4 hover:text-foreground"
+                className="text-nenya-gold-text dark:text-nenya-accent-warm underline underline-offset-4 hover:text-foreground"
               >
                 {r.detail}
               </a>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getReadableTextColor } from '../ColorUtils';
 import { Button } from '../ui/button';
 import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, Link2, Unlink, User } from 'lucide-react';
@@ -633,7 +634,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 size="sm"
                 onClick={handlePlayMelody}
                 disabled={!melodyComplete || isPlaying}
-                style={melodyComplete && !isPlaying ? { background: accentCurrent, color: '#fff' } : undefined}
+                style={melodyComplete && !isPlaying ? { background: accentCurrent, color: getReadableTextColor(accentCurrent) } : undefined}
               >
                 {isPlaying ? '♩ playing…' : hasPlayed ? '▷ Play again' : '▷ Hear it'}
               </Button>

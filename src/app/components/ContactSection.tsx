@@ -64,7 +64,7 @@ export function ContactSection() {
               <p className="text-sm text-muted-foreground">Write to us any time</p>
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="text-lg text-nenya-accent-warm underline-offset-4 hover:underline"
+                className="text-lg text-nenya-gold-text dark:text-nenya-accent-warm underline-offset-4 hover:underline"
               >
                 {CONTACT_EMAIL}
               </a>
@@ -109,7 +109,7 @@ export function ContactSection() {
             <Button
               type="submit"
               disabled={!message.trim() || status === 'sending'}
-              className="gap-2 bg-nenya-gold text-background-elevated hover:bg-nenya-gold-dark"
+              className="gap-2 bg-nenya-gold text-primary-foreground hover:bg-nenya-gold-dark"
             >
               <Send className="size-4" />
               {status === 'sending' ? 'Sending…' : 'Send message'}

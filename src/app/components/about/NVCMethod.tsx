@@ -52,7 +52,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-primary/30">
                 <div className="flex items-start gap-4">
                   <div className="size-12 rounded-full bg-nenya-accent-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Eye className="size-6 text-nenya-accent-warm" />
+                    <Eye className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-foreground">1. Observation</h3>
@@ -66,7 +66,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-secondary/30">
                 <div className="flex items-start gap-4">
                   <div className="size-12 rounded-full bg-nenya-accent-secondary/10 flex items-center justify-center flex-shrink-0">
-                    <Heart className="size-6 text-nenya-accent-warm" />
+                    <Heart className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-foreground">2. Feelings</h3>
@@ -80,7 +80,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-metallic/30">
                 <div className="flex items-start gap-4">
                   <div className="size-12 rounded-full bg-nenya-accent-metallic/10 flex items-center justify-center flex-shrink-0">
-                    <Lightbulb className="size-6 text-nenya-accent-warm" />
+                    <Lightbulb className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-foreground">3. Needs</h3>
@@ -94,7 +94,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-warm/30">
                 <div className="flex items-start gap-4">
                   <div className="size-12 rounded-full bg-nenya-accent-warm/10 flex items-center justify-center flex-shrink-0">
-                    <MessageCircle className="size-6 text-nenya-accent-warm" />
+                    <MessageCircle className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-foreground">4. Requests</h3>
