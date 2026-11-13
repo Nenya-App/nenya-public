@@ -108,11 +108,11 @@ const VIOLENCE_CALL = new RegExp(
   [
     String.raw`\b(?:those|these)\s+\w+(?:\s+\w+)?\s+(?:should|must|ought\s+to|need\s+to|deserve\s+to|have\s+to)\s+(?:all\s+)?(?:be\s+|get\s+)?(?:${VIOLENT}|die)\b`,
     String.raw`\bthey\s+(?:should|must|ought\s+to|deserve\s+to)\s+all\s+(?:be\s+|get\s+)?(?:${VIOLENT}|die)\b|\bthey\s+all\s+(?:should|must|ought\s+to|deserve\s+to)\s+(?:be\s+|get\s+)?(?:${VIOLENT}|die)\b`,
-    String.raw`\b(?:someone|somebody|we|you|people|let'?s|i(?:'d|\s+would)?\s+like\s+to|i(?:'ll|\s+will|\s+am\s+going\s+to|'m\s+going\s+to|\s+want\s+to))\s+(?:should\s+|ought\s+to\s+|need\s+to\s+|just\s+)?${VIOLENT}\s+${GROUPREF}`,
+    String.raw`\b(?:someone|somebody|we|you|people|let'?s|i(?:'d|\s+would)?\s+like\s+to|i(?:'ll|\s+will|\s+am\s+going\s+to|'m\s+going\s+to|\s+want\s+to))\s+(?:(?:should|ought\s+to|need\s+to|have\s+to|must)\s+)?(?:just\s+|all\s+)?${VIOLENT}\s+${GROUPREF}`,
     String.raw`(?:^|[.!?]\s+)${VIOLENT}\s+${GROUPREF}`,
     String.raw`\bdeath\s+to\s+(?:all|those|these)\b`,
     // wishes (owner's direction, 2026-11-12: lean toward instruction and escalation): a wish that a group suffers, burns, rots or dies
-    String.raw`\bi\s+(?:hope|wish|pray)\s+(?:that\s+)?(?:they|those\s+\w+(?:\s+\w+)?|these\s+\w+(?:\s+\w+)?|all\s+of\s+them|every\s+one\s+of\s+them)\s+(?:all\s+)?(?:will\s+)?(?:die|burn|rot|suffer|get\s+(?:killed|shot|raped)|be\s+(?:killed|shot|raped))\b`,
+    String.raw`\bi\s+(?:hope|wish|pray)\s+(?:that\s+)?(?:they|those\s+\w+(?:\s+\w+)?|these\s+\w+(?:\s+\w+)?|all\s+of\s+them|every\s+one\s+of\s+them)\s+(?:all\s+)?(?:would\s+|will\s+|could\s+)?(?:all\s+)?(?:die|burn|rot|suffer|get\s+(?:killed|shot|raped)|be\s+(?:killed|shot|raped))\b`,
     String.raw`\bthey\s+(?:should|can|may)\s+(?:all\s+)?(?:rot|burn|suffer|die)\b`,
   ].join('|'),
   'i',

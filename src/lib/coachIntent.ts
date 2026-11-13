@@ -36,3 +36,11 @@ export function detectDirectQuestion(text: string): boolean {
  * brother off a cliff", "why did ISIS invade Iraq"). It is answered like a how-to question, and its capitalised words are the topic, not a name that slipped through.
  */
 export const aboutTheWorld = (text: string): boolean => /\?\s*$/.test(text.trim()) && !/\b(?:i|i'm|i’m|me|my|mine|we|our|us|you|your|yours|yourself|you're|you’re|u)\b/i.test(text);
+
+/** More than one question in one message ("Is this normal? Should I tell her? What would you do?"): each is to be answered, in order, not just one of them. */
+export function countQuestions(text: string): number {
+  const marks = (text.match(/\?/g) ?? []).length;
+  return marks;
+}
+export const hasSeveralQuestions = (text: string): boolean => countQuestions(text) >= 2;
+export const MULTI_QUESTION_NOTE = 'The person has asked more than one question in this message. Answer every one of them, briefly and in the order they were asked (one or two plain sentences each), before anything else; do not choose just one, and do not answer only the last. If one is outside what you can answer, say so in a sentence and go on to the next.';

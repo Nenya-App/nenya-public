@@ -60,7 +60,7 @@ import { addConnectionTurn, allowanceReached, connectionCode, turnsFromEnv } fro
 import { hostAllowed, originHint, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
 import { E2eeError, MAX_SEALED_HEX, attestationFor, e2eeChat, isE2eeModel, sealedChat } from '../../src/lib/veniceE2ee.ts';
-import { aboutTheWorld, detectDirectQuestion } from '../../src/lib/coachIntent.ts';
+import { aboutTheWorld, detectDirectQuestion, hasSeveralQuestions, MULTI_QUESTION_NOTE } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
 import { buildLabel } from '../../src/lib/buildInfo.ts';
@@ -68,7 +68,7 @@ import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
 import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCritiqueThanks, type CritiqueTarget, type Hostility } from '../../src/lib/hostility.ts';
 import { termsFromOurKey } from '../../src/lib/termsReceipt.ts';
-import { VALUES_RULE, challengeFor, valuesOn } from '../../src/lib/valuesRule.ts';
+import { CHALLENGE_NOTE, VALUES_RULE, challengeFor, conversationChallenge, valuesOn } from '../../src/lib/valuesRule.ts';
 import { laneFor, laneReply } from '../../src/lib/laneGuard.ts';
 import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_MENU_NOTE, ARC_NOTE, WORDS_ONLY_NOTE, guardedProblems, repairArc, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
@@ -405,10 +405,10 @@ const V2_ABOUT_YOU =
 const V2_DISTRESS =
   "If anything the person says suggests hopelessness, feeling like a burden, not wanting to go on, dark thoughts, or hurting themselves, even in indirect words, treat it as distress. Respond briefly and with care, do not give advice, do not ask them to describe or explain dark or suicidal thoughts and do not ask for details about them, and in your reply name a person they trust or a crisis line (call or text 988 in the US or Canada, or findahelpline.com elsewhere). Never say 'I'm here for you' as if you could take the place of a person. For example: 'That sounds really heavy, and I'm glad you said it. I'm an AI and can't help in a crisis, so please reach someone you trust, or call or text 988.'";
 
-function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: 'v1' | 'v2' = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = '', arc: { stuck: boolean } | null = practiceArcOn() ? { stuck: false } : null, wordsOnly = false, gap = ''): string {
+function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: 'v1' | 'v2' = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = '', arc: { stuck: boolean } | null = practiceArcOn() ? { stuck: false } : null, wordsOnly = false, gap = '', challenge: 'violence' | 'contempt' | null = null, several = false): string {
   const v2 = version === 'v2';
   // The practice arc (docs/coach-practice-arc-scope.md) replaces the "name the feeling or need underneath" line, and steps aside for distress and hostility.
-  const practice = !!arc && !softened && !hostile && !direct; // a how-to question is answered first, as before
+  const practice = !!arc && !softened && !hostile && !direct && !challenge && !several; // a how-to question is answered first, as before; so is a plain statement against contempt or a call for harm, and so is every one of several questions
   const phase = closingPhase(turn, MAX_TURNS);
   const finalTurn = phase === 'close';
   const parts = [
@@ -438,10 +438,13 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
   // Hostility aimed at the coach (never when the crisis check has flagged the message: distress outranks it). The site writes no sentence for it;
   // the coach is told how to answer, and answers in its own words (src/lib/hostility.ts).
   if (hostile) parts.push(hostileNote(hostile, target));
+  // Contempt for a group, or a call to harm one, anywhere in the conversation (COACH_VALUES=on): the coach is told to say plainly where it stands instead of mirroring (src/lib/valuesRule.ts).
+  if (challenge && !softened) parts.push(CHALLENGE_NOTE[challenge]);
+  if (several && !softened) parts.push(MULTI_QUESTION_NOTE);
   // Hurting oneself on purpose: the person stays in the conversation, so the coach is told how to stay with them (src/lib/distressText.ts).
   if (softened && careNote) parts.push(careNote);
   // A direct question is answered first, even on the first exchange. Care for a possible crisis still comes first.
-  const answerFirst = direct && !softened && !hostile;
+  const answerFirst = (direct || several) && !softened && !hostile && !challenge;
   if (answerFirst) {
     parts.push(
       'The person has asked a direct question or for options. Answer it first, in plain words, in your first two or three sentences: give one or two concrete things they can try today, or a short clear explanation, in two or three sentences. Do not open by asking about their body or feelings, and do not only reflect back. After you have answered, ' + (finalTurn ? 'close as described below.' : 'you may add one short, gentle question.') + ' This takes priority over the empathy-first and first-exchange guidance above.'
@@ -844,6 +847,14 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   // checked against the Terms and the About pages, kept in the conversation like any reply and counted as a turn, with a card beneath it. Distress
   // and abuse aimed at the coach come first and are not answered this way. Only answers marked ready are used (src/lib/aboutNenya.ts).
   const lastText = messages[messages.length - 1].content;
+  // Stacked questions: every one is to be answered, in order (src/lib/coachIntent.ts). Contempt for a group or a call to harm one anywhere in the conversation (COACH_VALUES=on): the coach is told to say plainly
+  // where it stands, and the practice arc steps aside (src/lib/valuesRule.ts). Looked at over everything the person has written, which the server is sent each turn: nothing is stored.
+  const severalQ = hasSeveralQuestions(lastText);
+  let valuesMatcher: Awaited<ReturnType<typeof getMatcher>> = null;
+  if (valuesOn() && !flag) { try { valuesMatcher = await getMatcher(privateStore() as unknown as Parameters<typeof getMatcher>[0]); } catch { valuesMatcher = null; } }
+  const standing = valuesOn() && !flag ? conversationChallenge(messages.filter((m) => m.role === 'user').map((m) => m.content), valuesMatcher) : null;
+  if (standing) tally(`coach.challenge.note.${standing}`);
+  if (severalQ) tally('coach.turn.multi-question');
   // A question about the world ("how does Scar push his brother off a cliff", "why did ISIS invade Iraq") is answered, like a how-to question: it is not about the person, so the
   // practice does not turn it into "what feelings come up", and the capitalised words in it are the topic, not a name that slipped through (seen in the first XSTest run, 2026-11-10).
   const aboutTheWorldQ = aboutTheWorld(lastText);
@@ -888,7 +899,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       // One system message, not several: the encrypted route to Venice answered a request with a second system message with a 400
       // (seen on the dev site for the answer-first reply, 2026-11-09), so the context, the answer-first note and any retry note are folded into it.
       const systemText = [
-        systemInstruction(turn, softened, notes, directQ, stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '', practiceArcOn() ? { stuck: isStuck(lastText) } : null, isWordsOnly(lastText), gapText(namedParts(messages.filter((m) => m.role === 'user').map((m) => m.content)))),
+        systemInstruction(turn, softened, notes, directQ, stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '', practiceArcOn() ? { stuck: isStuck(lastText) } : null, isWordsOnly(lastText), gapText(namedParts(messages.filter((m) => m.role === 'user').map((m) => m.content))), standing, severalQ),
         ...(context ? [contextInstruction(neutralize(scrubPII(context).text))] : []),
         ...(within ? [ABOUT_FIRST_NOTE] : []),
         ...(extra ? [extra] : []),
@@ -1025,7 +1036,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   // The practice arc's guard: the coach is told not to name the person's feeling or need, not to check words they already gave and not to repeat picked
   // words back. This model does it anyway, so if it did, ask once more; if it still does, take those sentences out and add one plain question (or, for picked
   // words alone, the site's own reply). COACH_ARC_GUARD=off turns this off, to measure the instructions alone.
-  if (process.env.COACH_ARC_GUARD !== 'off' && turn < MAX_TURNS && !about && !softened && !hostile && !flag && !directQ && (practiceArcOn() || isWordsOnly(lastText))) {
+  if (process.env.COACH_ARC_GUARD !== 'off' && turn < MAX_TURNS && !about && !softened && !hostile && !flag && !directQ && !severalQ && !standing && (practiceArcOn() || isWordsOnly(lastText))) {
     const userTexts = messages.filter((m) => m.role === 'user').map((m) => m.content);
     const check = (r: string) => guardedProblems(r, { turn, max: MAX_TURNS, userTexts });
     if (check(reply).length) {
@@ -1040,7 +1051,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   }
   // Justifying or denying mass violence, or calling for a group to be removed (COACH_VALUES=on): make sure a plain statement of disagreement is there (src/lib/valuesRule.ts).
   if (valuesOn() && !flag && !softened) {
-    const stand = challengeFor(lastText, reply);
+    const stand = challengeFor(lastText, reply, valuesMatcher);
     if (stand) { reply = `${stand} ${reply}`; tally('coach.values.challenge'); }
   }
   // On a hostile turn an apology is taken out (the note asks the coach not to, and this model's habit does not always yield to it).

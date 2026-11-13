@@ -32,6 +32,11 @@ export const FIXED_EVENTS = [
   'coach.offer.coded-term',
   'coach.offer.harassing-insult',
   'coach.offer.ai-insult',
+  // The coach's own stance, counted: a plain statement added to a reply (COACH_VALUES), the steering note given while a conversation carries contempt for a group or a call to harm one, and stacked questions.
+  'coach.values.challenge',
+  'coach.challenge.note.contempt',
+  'coach.challenge.note.violence',
+  'coach.turn.multi-question',
   // The screening model in shadow mode (docs/coach-screening-flow-scope.md): a count per band, whether the phrase matcher also acted, and how often the model could not answer in time. Counts only: no message, no score.
   'coach.screen.unavailable',
   'coach.screen.band.high',
