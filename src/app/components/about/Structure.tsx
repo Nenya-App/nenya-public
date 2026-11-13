@@ -104,7 +104,7 @@ export default function Structure({ onBack }: StructureProps) {
                           Fractured Atlas Website
                         </a>
                       </Button>
-                      <Button size="sm" className="gap-2 justify-start bg-nenya-gold hover:bg-nenya-gold-dark text-background" asChild>
+                      <Button size="sm" className="gap-2 justify-start bg-nenya-gold hover:bg-nenya-gold-light text-primary-foreground" asChild>
                         <a href="https://fundraising.fracturedatlas.org/nenya" target="_blank" rel="noopener noreferrer">
                           <Heart className="size-4" />
                           Donate to Support Nenya

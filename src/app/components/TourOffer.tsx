@@ -34,7 +34,7 @@ export function TourOffer({ onAccept, onDecline }: TourOfferProps) {
           <Button variant="outline" onClick={onDecline} className="min-h-[44px]">
             Skip for now
           </Button>
-          <Button onClick={onAccept} className="min-h-[44px] bg-nenya-accent-warm text-primary-foreground hover:bg-nenya-accent-secondary">
+          <Button onClick={onAccept} className="min-h-[44px] bg-nenya-accent-warm text-primary-foreground hover:bg-nenya-gold-light">
             Show me around
           </Button>
         </div>

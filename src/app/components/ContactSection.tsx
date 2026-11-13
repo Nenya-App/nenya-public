@@ -109,7 +109,7 @@ export function ContactSection() {
             <Button
               type="submit"
               disabled={!message.trim() || status === 'sending'}
-              className="gap-2 bg-nenya-gold text-primary-foreground hover:bg-nenya-gold-dark"
+              className="gap-2 bg-nenya-gold text-primary-foreground hover:bg-nenya-gold-light"
             >
               <Send className="size-4" />
               {status === 'sending' ? 'Sending…' : 'Send message'}

@@ -167,7 +167,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
               <Button 
                 size="lg"
                 onClick={handleContinue}
-                className="gap-2 text-lg px-8 py-6 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-primary-foreground"
+                className="gap-2 text-lg px-8 py-6 bg-nenya-accent-warm hover:bg-nenya-gold-light text-primary-foreground"
               >
                 Begin Journey
                 {selectedGateways.length > 1 && ` (${selectedGateways.length} gateways)`}

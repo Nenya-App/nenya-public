@@ -89,7 +89,7 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                 </p>
               </div>
               <div className="flex flex-col items-start gap-4">
-                <Button size="lg" className="gap-3 bg-nenya-gold hover:bg-nenya-gold-dark text-background px-8" asChild>
+                <Button size="lg" className="gap-3 bg-nenya-gold hover:bg-nenya-gold-light text-primary-foreground px-8" asChild>
                   <a href="https://fundraising.fracturedatlas.org/nenya" target="_blank" rel="noopener noreferrer">
                     <Heart className="size-5" />
                     Donate via Fractured Atlas

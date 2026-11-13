@@ -120,7 +120,7 @@ export default function WelcomePopup({ onDismiss, initiallyOpen = true }: Welcom
                   <Button
                     onClick={handleMinimize}
                     size="lg"
-                    className="w-full bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-primary-foreground shadow-md"
+                    className="w-full bg-nenya-accent-warm hover:bg-nenya-gold-light text-primary-foreground shadow-md"
                   >
                     Speak, Friend, and Enter.
                   </Button>

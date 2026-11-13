@@ -148,7 +148,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
       <Button
         size="sm"
         onClick={() => goTo('terms')}
-        className="gap-1 bg-nenya-accent-warm text-primary-foreground hover:bg-nenya-accent-secondary"
+        className="gap-1 bg-nenya-accent-warm text-primary-foreground hover:bg-nenya-gold-light"
       >
         Read the terms
         <ArrowRight className="size-3.5" />
