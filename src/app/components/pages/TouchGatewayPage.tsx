@@ -379,6 +379,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
           onSave={(data) => onUpdateBodyMap(data)}
           initialPlacements={bodyMapData.placements}
           initialNotes={bodyMapData.notes}
+          initialPins={bodyMapData.pins}
         />
       )}
     </div>

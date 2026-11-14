@@ -399,6 +399,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
           onSave={(data) => onUpdateBodyMap(data)}
           initialPlacements={bodyMapData.placements}
           initialNotes={bodyMapData.notes}
+          initialPins={bodyMapData.pins}
         />
       )}
     </div>

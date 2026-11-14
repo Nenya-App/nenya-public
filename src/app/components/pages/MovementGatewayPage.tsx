@@ -398,6 +398,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
           onSave={(data) => onUpdateBodyMap(data)}
           initialPlacements={bodyMapData.placements}
           initialNotes={bodyMapData.notes}
+          initialPins={bodyMapData.pins}
         />
       )}
     </div>

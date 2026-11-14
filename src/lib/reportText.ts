@@ -5,11 +5,14 @@ import { getNoteNames, TONAL_SYSTEM_LABELS, type TonalSystem } from './audio.ts'
 import { describePalettePlainly } from './colorSchemes.ts';
 import { shapeById } from './gatewayShapes.ts';
 import { isAnswered } from './optionalSlider.ts';
+import { labelFor, type MapPin } from './bodyMapParts.ts';
 
 export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight';
 export interface BodyMapLike {
   placements: { bodyPartId: string; color: string; colorName?: string }[];
   notes: Record<string, string>;
+  /** Pins the person placed anywhere on the map (see bodyMapParts.ts). */
+  pins?: MapPin[];
 }
 
 /** A line of slider answers, "Label: Pitch 40/100, Volume 60/100". Sliders that were never touched are left out (src/lib/optionalSlider.ts). */
@@ -35,26 +38,7 @@ export const gatewayTitles: Record<Gateway, string> = {
 };
 
 // Helper function to get body part label from ID
-export const getBodyPartLabel = (bodyPartId: string): string => {
-  const labels: { [key: string]: string } = {
-    'head': 'Head',
-    'throat': 'Throat',
-    'chest': 'Chest',
-    'stomach': 'Stomach',
-    'left-shoulder': 'L. Shoulder',
-    'right-shoulder': 'R. Shoulder',
-    'left-arm': 'L. Arm',
-    'right-arm': 'R. Arm',
-    'left-hand': 'L. Hand',
-    'right-hand': 'R. Hand',
-    'pelvis': 'Pelvis',
-    'left-leg': 'L. Leg',
-    'right-leg': 'R. Leg',
-    'left-foot': 'L. Foot',
-    'right-foot': 'R. Foot',
-  };
-  return labels[bodyPartId] || bodyPartId;
-};
+export const getBodyPartLabel = (bodyPartId: string, pins: MapPin[] = []): string => labelFor(bodyPartId, pins);
 
 // The body map is shared across every gateway rather than owned by one, so
 // whether it's "used" is a property of the whole map, not any single
@@ -78,7 +62,7 @@ export const formatBodyMapLines = (bodyMapData: BodyMapLike): string[] => {
     const note = bodyMapData.notes[bodyPartId]?.trim();
     if (!placement && !note) return;
 
-    lines.push(getBodyPartLabel(bodyPartId));
+    lines.push(getBodyPartLabel(bodyPartId, bodyMapData.pins));
     lines.push(`  Color: ${placement ? placement.colorName || placement.color : 'No color chosen'}`);
     if (note) lines.push(`  Note: ${note}`);
   });
