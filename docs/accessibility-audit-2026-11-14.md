@@ -36,3 +36,9 @@ Method: **reading the source and the stylesheet, and scripts**; nothing here was
 
 ## What still needs a person (a short script)
 Keyboard only, from the top of the main page through all six gateways (Tab, Shift+Tab, Enter, Space, arrows, Escape); a screen reader (VoiceOver on this Mac: Safari) through the welcome page, one gateway and the coach; 200% zoom and a 320px window in light and dark; read the new focus outline and skip link on staging. Send me anything that is clipped, covered or unreachable.
+
+## Update, same day, after the owner's answers
+- **Borders and outlines (1.4.11): fixed.** `--border`, `--border-emphasis`, `--input` and `--switch-background` are now at least 3:1 against the page, cards, muted surfaces and field backgrounds in both themes (tested), and nothing makes a border see-through with an opacity. Cards and fields now have visibly darker edges; if that is too heavy, a separate lighter token for decorative card edges (which the standard does not require) can be added.
+- **Phones: Share and Add to Home Screen are in the menu**, no longer in the header bar, so the remaining header controls are 44px at every width (the small-screen shrink rules are gone).
+- **Drawing canvas (2.1.1, 2.5.7): rebuilt for assistive technology.** The drawing is data (strokes), not only pixels: it can be made by pointer, by keyboard (arrows, Shift for small steps, Space for the pen, Escape, Control or Command + Z), by labelled buttons for every action (including "move the cursor to" a place by name), and by adding whole shapes (line, wave, zigzag, circle, spiral, dots, arrow) at the cursor. It is described in words on the page and as the canvas's accessible name, and every change is announced in a live region. Not yet tried with VoiceOver or a switch.
+- **1.4.9 Images of text:** the owner states there are none; recorded as met on that basis (not verified by scanning the image files).

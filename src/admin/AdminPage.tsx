@@ -401,7 +401,7 @@ export default function AdminPage() {
                   </thead>
                   <tbody>
                     {rows.map((e) => (
-                      <tr key={e} className="border-b border-border/50">
+                      <tr key={e} className="border-b border-border">
                         <th scope="row" className="sticky left-0 bg-background py-2 pr-4 text-left font-normal">
                           {label(e)}
                         </th>

@@ -262,12 +262,6 @@ export function GlobalNavigation({
 
           {/* Mobile Menu Controls */}
           <div id="tutorial-header-tools-mobile" className="flex items-center gap-0.5 min-[400px]:gap-1.5">
-            {/* Share */}
-            <ShareNenya variant="icon" />
-
-            {/* Add to Home Screen */}
-            <AddToHomeScreen variant="icon" />
-
             {/* Theme Toggle */}
             <ThemeToggle />
 
@@ -276,7 +270,6 @@ export function GlobalNavigation({
               id="tutorial-menu-mobile"
               variant="ghost"
               size="icon"
-              className="max-[359px]:size-8"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >
@@ -334,6 +327,9 @@ export function GlobalNavigation({
                     </div>
                   </button>
                 ) : null}
+
+                <ShareNenya variant="menu" />
+                <AddToHomeScreen variant="menu" />
 
                 {showAnimationControls && onTutorialReplay ? (
                   <button

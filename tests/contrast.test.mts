@@ -40,6 +40,17 @@ const button = readFileSync(new URL('../src/app/components/ui/button.tsx', impor
 ok('the link button is gold TEXT (readable on the page), not the pale fill color', /link: "text-nenya-gold-text/.test(button));
 ok('in the dark theme the outline and ghost hovers use the full accent with its own text color', /dark:hover:bg-accent(?!\/)/.test(button) && !/dark:hover:bg-(accent|input)\/50/.test(button));
 ok('the destructive button is white on the destructive fill', /bg-destructive text-white/.test(button));
+// Non-text contrast (WCAG 1.4.11): the edges of controls (buttons, fields, checkboxes, switches) and cards are at least 3:1 against every surface they sit on.
+for (const [name, t] of [['light', light], ['dark', dark]] as const) {
+  for (const edge of ['border', 'border-emphasis', 'switch-background']) for (const surface of ['background', 'card', 'muted', 'input-background']) {
+    if (!t[edge] || !t[surface]) continue;
+    const r = ratio(t[edge], t[surface]);
+    ok(`${name}: ${edge} on ${surface} is at least 3:1 (non-text)`, r >= 3, r.toFixed(2));
+  }
+}
+for (const surface of ['background', 'card', 'muted']) ok(`light: the field border (input) on ${surface} is at least 3:1`, ratio(light.input, light[surface]) >= 3, ratio(light.input, light[surface]).toFixed(2));
+for (const surface of ['background', 'card', 'muted']) ok(`dark: the field border (input) on ${surface} is at least 3:1`, ratio(dark.input, dark[surface]) >= 3, ratio(dark.input, dark[surface]).toFixed(2));
+ok('no border is made see-through with an opacity (it would drop below 3:1)', !/\bborder-border\/\d+/.test([...(await import('node:fs')).readdirSync(new URL('../src/app/components', import.meta.url))].map((f) => (f.endsWith('.tsx') ? readFileSync(new URL(`../src/app/components/${f}`, import.meta.url), 'utf8') : '')).join('')));
 ok('the light page is the warm gray the contrast was measured on', light.background.toLowerCase() === '#dcd9d6');
 
 // ---- Type: headings and body text in proportion (WCAG AAA is the goal for every future design as well)

@@ -99,7 +99,7 @@ export function WordPanel({ open, onToggle, tab, onTab, picked, have, onPick, on
     </button>
   );
   return (
-    <details open={open} onToggle={(e) => onToggle((e.currentTarget as HTMLDetailsElement).open)} className="rounded-xl border border-border/70 bg-card/60 px-3 py-2">
+    <details open={open} onToggle={(e) => onToggle((e.currentTarget as HTMLDetailsElement).open)} className="rounded-xl border border-border bg-card/60 px-3 py-2">
       <summary className="cursor-pointer select-none text-sm text-muted-foreground">
         Looking for words? <span className="text-foreground">Feelings and needs</span>
         {picked.length > 0 && <span> · {picked.length} picked</span>}

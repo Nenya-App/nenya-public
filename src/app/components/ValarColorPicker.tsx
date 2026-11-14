@@ -222,7 +222,7 @@ export function ValarColorPicker({ selectedColor, onColorChange, className = '',
       </div>
 
       {/* Valar Palettes Explainer */}
-      <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/50">
+      <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border">
         <p className="text-xs text-muted-foreground leading-relaxed">
           <span className="text-foreground">The sixteen palettes:</span> Simple starting points, offered so you do not have to begin with the whole spectrum. They do not measure or diagnose anything, and no color has a fixed meaning. Choose what feels right to you, or pick any color with the custom color control above.
         </p>

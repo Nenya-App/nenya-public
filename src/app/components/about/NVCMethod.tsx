@@ -206,7 +206,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                   To deepen your understanding of the principles behind Nenya, we encourage you to explore the work of these foundational thinkers and practitioners. Their work on conflict, communication, and systems thinking directly informs the NVC+ framework.
                 </p>
                 <div className="space-y-3">
-                  <Card className="p-4 bg-background/60 border-border/60">
+                  <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
                       <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
                       <div className="space-y-1">
@@ -224,7 +224,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                       </div>
                     </div>
                   </Card>
-                  <Card className="p-4 bg-background/60 border-border/60">
+                  <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
                       <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
                       <div className="space-y-1">
@@ -242,7 +242,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                       </div>
                     </div>
                   </Card>
-                  <Card className="p-4 bg-background/60 border-border/60">
+                  <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
                       <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
                       <div className="space-y-1">
@@ -272,7 +272,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                   For authentic NVC training and certification, we recommend these trusted organizations:
                 </p>
                 <div className="space-y-3">
-                  <Card className="p-4 bg-background/60 border-border/60">
+                  <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
                       <ExternalLink className="size-4 text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0" />
                       <div className="space-y-1">
@@ -290,7 +290,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                       </div>
                     </div>
                   </Card>
-                  <Card className="p-4 bg-background/60 border-border/60">
+                  <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
                       <ExternalLink className="size-4 text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0" />
                       <div className="space-y-1">

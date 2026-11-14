@@ -35,7 +35,7 @@ export function AppFooter({ className = '' }: AppFooterProps) {
         </div>
 
         {/* Open source + hosting attribution */}
-        <div className="mt-4 pt-4 border-t border-border/50 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+        <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
           <a
             href="https://github.com/Nenya-App/nenya-public"
             target="_blank"

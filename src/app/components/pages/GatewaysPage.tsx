@@ -176,7 +176,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
           )}
           
           {/* Footer - Mathematical Pathway Information */}
-          <div className="mt-12 pt-8 border-t border-border/50 max-w-3xl mx-auto">
+          <div className="mt-12 pt-8 border-t border-border max-w-3xl mx-auto">
             <div className="space-y-4 text-center">
               <p className="text-base md:text-lg text-foreground">
                 <span className="text-nenya-gold-text dark:text-nenya-accent-warm">There are more potential pathways through Nenya than there are atoms in the observable universe.</span>

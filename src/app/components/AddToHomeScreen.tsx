@@ -37,7 +37,7 @@ function isStandalone(): boolean {
   );
 }
 
-export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | 'icon' }) {
+export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | 'icon' | 'menu' }) {
   const [open, setOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
@@ -82,8 +82,16 @@ export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | '
 
   return (
     <div className="relative">
-      {variant === 'icon' ? (
-        <Button variant="ghost" size="icon" className="max-[359px]:size-8" onClick={() => setOpen((o) => !o)} aria-label={triggerLabel} title={triggerLabel}>
+      {variant === 'menu' ? (
+        <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted">
+          <Download className="size-5" />
+          <div className="flex-1">
+            <div className="text-sm">{triggerLabel}</div>
+            <div className="text-xs text-muted-foreground">Keep Nenya close by</div>
+          </div>
+        </button>
+      ) : variant === 'icon' ? (
+        <Button variant="ghost" size="icon" onClick={() => setOpen((o) => !o)} aria-label={triggerLabel} title={triggerLabel}>
           <Download className="size-4" />
         </Button>
       ) : (

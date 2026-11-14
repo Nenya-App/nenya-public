@@ -26,9 +26,9 @@ Decided 2026-11-14 by the owner: Nenya designs to, and audits against, **WCAG 2.
 |---|---|
 | 1.4.6 Contrast, enhanced (AAA): 7:1 text, 4.5:1 large | **tested** for theme tokens and button variants (`tests/contrast.test.mts`); component-level hard-coded colors checked once by search, not guarded |
 | 1.4.8 Visual presentation (AAA): line length at most 80 characters, line spacing 1.5, paragraph spacing 1.5 times the line spacing, no justified text, user-chosen colors, resize to 200% without scrolling sideways | line height, 80-character lines and no justified text tested; user-chosen colors and 200% resize not audited |
-| 1.4.9 Images of text (AAA): none except the logo | not audited (the logo and PDF logos are exempt; check social images and any text in pictures) |
+| 1.4.9 Images of text (AAA): none except the logo | met on the owner's statement that there are none (not scanned) |
 | 1.4.10 Reflow, 1.4.12 Text spacing (AA, in 2.1) | not audited |
-| 1.4.11 Non-text contrast (AA): 3:1 for controls' boundaries and graphics that carry meaning | **known gap**: borders at about 1.1 to 1.5:1; outline buttons and some icons rely on text. To fix or accept deliberately |
+| 1.4.11 Non-text contrast (AA): 3:1 for controls' boundaries and graphics that carry meaning | **fixed 2026-11-14**: control and card borders 3:1 or more in both themes (tested); some icons not checked |
 | 1.4.13 Content on hover or focus (AA) | not audited |
 | 2.1.1, 2.1.3 Keyboard, no exception (A/AAA) | not audited (the gem, drawing canvas, body map and color pickers need a keyboard pass) |
 | 2.2.3 No timing (AAA) | met: the person can choose "Leave open"; the 30-minute ticket is an essential security limit and is stated |

@@ -72,7 +72,7 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
               </thead>
               <tbody>
                 {GROUP_RESULTS.map((r) => (
-                  <tr key={r.group} className="border-b border-border/60">
+                  <tr key={r.group} className="border-b border-border">
                     <th scope="row" className="py-2 pr-4 font-normal">{r.group}</th>
                     <td className="py-2 pr-4">{r.cases}</td>
                     <td className="py-2 pr-4">{r.caught.toFixed(0)}%</td>

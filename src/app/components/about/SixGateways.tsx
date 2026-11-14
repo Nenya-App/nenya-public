@@ -146,7 +146,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
                   <div className="space-y-3 text-sm">
                     <p className="leading-relaxed">{gateway.explanation}</p>
                     
-                    <div className="pt-2 border-t border-border/50">
+                    <div className="pt-2 border-t border-border">
                       <p className="text-xs text-muted-foreground">
                         <strong className="text-foreground">Neuroscience:</strong> {gateway.neuroscience}
                       </p>
