@@ -213,8 +213,8 @@ export interface Resource {
   href?: string;
 }
 
-const STOP_IT_NOW: Resource = { name: 'Stop It Now helpline (US)', detail: 'Call 1-888-773-8368. Free and confidential, for people who are worried about their own thoughts or behavior toward a child or anyone else, and for people worried about someone else', href: 'tel:18887738368' };
-const NCMEC: Resource = { name: 'NCMEC CyberTipline (US)', detail: 'To report sexual images of children or online exploitation: report.cybertip.org or call 1-800-843-5678', href: 'tel:18008435678' };
+const STOP_IT_NOW: Resource = { name: 'Stop It Now helpline (US)', detail: 'Call 1-888-PREVENT (1-888-773-8368). Free and confidential, for anyone concerned about child sexual abuse. It is open on weekdays, not around the clock; chat and email are also offered at stopitnow.org', href: 'tel:18887738368' };
+const NCMEC: Resource = { name: 'NCMEC CyberTipline (US)', detail: 'To report sexual images of children or online exploitation: report.cybertip.org, or call 1-800-843-5678, any time', href: 'tel:18008435678' };
 const TRAFFICKING_LINES: Resource[] = [
   { name: 'National Human Trafficking Hotline (US)', detail: 'Call 1-888-373-7888 or text 233733, any time. Confidential, for survivors, for anyone who wants out, and for anyone who wants to report', href: 'tel:18883737888' },
   { name: 'Canadian Human Trafficking Hotline', detail: 'Call 1-833-900-1010, any time. Confidential, in many languages', href: 'tel:18339001010' },
@@ -223,11 +223,11 @@ const TRAFFICKING_LINES: Resource[] = [
 const HARM_LINES: Record<string, Resource[]> = {
   admitted: [],
   graphic: [],
-  'admitted-partner': [{ name: 'National Domestic Violence Hotline (US)', detail: 'Call 1-800-799-7233 or text START to 88788, any time. For people who have been hurt, and you can also ask about programs for people who want to stop harming a partner', href: 'tel:18007997233' }],
-  'admitted-child': [{ name: 'Childhelp National Child Abuse Hotline (US)', detail: 'Call or text 1-800-422-4453, any time. For children, for the people who care about them, and for parents who are afraid of hurting a child', href: 'tel:18004224453' }],
+  'admitted-partner': [{ name: 'National Domestic Violence Hotline (US)', detail: 'Call 1-800-799-7233 or text START to 88788, any time. For people who have been hurt, and for people who are worried that their own behavior is harmful to a partner', href: 'tel:18007997233' }],
+  'admitted-child': [{ name: 'Childhelp National Child Abuse Hotline (US)', detail: 'Call or text 1-800-422-4453, any time. For children, for anyone concerned about a child, and for parents who are afraid they might hurt a child. You do not have to give your name', href: 'tel:18004224453' }],
   'admitted-child-sexual': [STOP_IT_NOW, NCMEC, { name: 'Childhelp National Child Abuse Hotline (US)', detail: 'Call or text 1-800-422-4453, any time. For a child who has been hurt, and for anyone who knows of one', href: 'tel:18004224453' }],
   'child-attraction': [STOP_IT_NOW],
-  'admitted-sexual': [STOP_IT_NOW, { name: 'RAINN National Sexual Assault Hotline (US)', detail: 'For the person who was harmed, any time: 1-800-656-4673', href: 'tel:18006564673' }],
+  'admitted-sexual': [{ name: 'RAINN National Sexual Assault Hotline (US)', detail: 'For the person who was harmed, any time: 1-800-656-4673', href: 'tel:18006564673' }],
   'admitted-trafficking': TRAFFICKING_LINES,
 };
 
@@ -274,18 +274,18 @@ const SELF_INJURY_NOTICE: Record<string, string> = {
     'It sounds like you may need medical care right now. Please call your local emergency number (911 in the US and Canada) or go to the nearest emergency room, and if you can, ask someone near you to stay with you.',
 };
 
-// What the notice says when a message admits having killed or seriously hurt someone, or describes violence graphically or as a wish. Draft wording for the owner to edit (2026-11-14).
+// What the notice says when a message admits having killed or seriously hurt someone, describes violence graphically, admits abuse, sexual harm or trafficking, or says the person is attracted to children. Wording approved by the owner 2026-11-14; the phone numbers were checked against the organizations' own pages the same day (see docs/crisis-resources-check.md).
 const HARM_NOTICE: Record<string, string> = {
   'admitted-partner':
-    "What you have written says you have hurt someone you are close to. I'm an AI, and this is beyond what I can help with. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately, and get away from the person if you can. Hurting a partner is serious, and people can stop: the numbers below include a line for people who have been hurt and who want to stop hurting a partner, and a crisis line. I'm ending our conversation here so that you can call.",
+    "What you have written says you have hurt someone you are close to. I'm an AI, and this is beyond what I can help with. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately, and get away from the person if you can. Hurting a partner is serious, and people can stop: the numbers below include a line that is also for people who are worried that their own behavior is harmful, and a crisis line. I'm ending our conversation here so that you can call.",
   'admitted-child':
     "What you have written says a child has been hurt, by you. I'm an AI, and this is beyond what I can help with. If a child is hurt or in danger right now, call your local emergency number (911 in the US and Canada) immediately. A child is not safe until the hurting stops. The numbers below include a line for parents who are afraid of hurting a child, and a crisis line. I'm ending our conversation here so that you can call.",
   'admitted-child-sexual':
-    "What you have written describes sexually harming a child, or sexual images of a child. I'm an AI, and I can't help with this, and I won't go into it. If a child is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The numbers below include a confidential line for people who want to stop, a line to report sexual images of children, and a crisis line. I'm ending our conversation here so that you can call.",
+    "What you have written describes sexually harming a child, or sexual images of a child. I'm an AI, and I can't help with this, and I won't go into it. If a child is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The numbers below include a confidential line for anyone concerned about child sexual abuse, a line to report sexual images of children, and a crisis line. I'm ending our conversation here so that you can call.",
   'child-attraction':
-    "What you wrote is about sexual thoughts about children. Having thoughts does not mean you have acted on them, and wanting help is the right step. I'm an AI, and I can't help with this. The first number below is a confidential line for people in exactly this situation. If a child is in danger right now, call your local emergency number (911 in the US and Canada). I'm ending our conversation here so that you can call.",
+    "What you wrote is about sexual thoughts about children. Having thoughts does not mean you have acted on them, and wanting help is the right step. I'm an AI, and I can't help with this. The first number below is a confidential line for anyone concerned about child sexual abuse, and it is a place to start. If a child is in danger right now, call your local emergency number (911 in the US and Canada). I'm ending our conversation here so that you can call.",
   'admitted-sexual':
-    "What you have written says you have sexually harmed someone. I'm an AI, and this is beyond what I can help with, and I won't go into it. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The numbers below include a confidential line for people who want to stop harming others, a crisis line, and a line for the person who was harmed. I'm ending our conversation here so that you can call.",
+    "What you have written says you have sexually harmed someone. I'm an AI, and this is beyond what I can help with, and I won't go into it. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The numbers below include a crisis line, which can help you through the next hours, and a line for the person who was harmed. A mental health professional can help you with what comes next. I'm ending our conversation here so that you can call.",
   'admitted-trafficking':
     "What you have written says someone is being held, forced or sold. I'm an AI, and this is beyond what I can help with, and I won't go into it. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The National Human Trafficking Hotline below is confidential and can advise anyone, including people who are involved and want to get out. I'm ending our conversation here so that you can call.",
   admitted:
