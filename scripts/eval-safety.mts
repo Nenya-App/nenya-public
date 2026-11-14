@@ -105,10 +105,10 @@ if (offline) {
     process.env.COACH_ENABLED = 'true';
     process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
     if (flag('--distress-text') === 'on') process.env.COACH_DISTRESS_TEXT = 'on';
-    if (!['v1', 'v2', undefined].includes(flag('--instructions'))) { console.error('--instructions must be v1 or v2.'); process.exit(2); }
-    if (flag('--instructions') === 'v2') process.env.COACH_INSTRUCTIONS = 'v2';
+    if (!['v1', 'v2', 'v2.1', undefined].includes(flag('--instructions'))) { console.error('--instructions must be v1, v2 or v2.1.'); process.exit(2); }
+    if (flag('--instructions') === 'v2' || flag('--instructions') === 'v2.1') process.env.COACH_INSTRUCTIONS = flag('--instructions');
     const { default: handler } = await import('../netlify/functions/coach.mts');
-    where = `the coach function in this folder, instructions ${process.env.COACH_INSTRUCTIONS === 'v2' ? 'v2 (the new wording)' : 'v1 (the live wording)'}${process.env.COACH_DISTRESS_TEXT === 'on' ? ', distress sentences ON' : ', distress sentences off'}`;
+    where = `the coach function in this folder, instructions ${process.env.COACH_INSTRUCTIONS || 'v1'}${process.env.COACH_DISTRESS_TEXT === 'on' ? ', distress sentences ON' : ', distress sentences off'}`;
     raw = async (messages, ticket) => {
       const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ...(evalContext ? { context: evalContext } : {}), ticket }) }));
       const j: any = await res.json().catch(() => ({}));

@@ -48,5 +48,5 @@ process.env.COACH_INSTRUCTIONS = 'v2';
 const soft = await systemFor([{ role: 'user', content: 'I cannot do this anymore.' }]);
 ok('when the page flags distress, v2 still adds the care note, and the care note takes priority', /The latest message may signal distress/.test(soft.system) && /The care note above takes priority/.test(soft.system));
 const script = readFileSync(join(root, 'scripts/eval-persona.mts'), 'utf8');
-ok('the evaluation script can run either wording and records which one in its results', /--instructions/.test(script) && /process\.env\.COACH_INSTRUCTIONS = 'v2'/.test(script) && /instructions, partial/.test(script));
+ok('the evaluation script can run any wording and records which one, the model and the distress switch in its results', /--instructions/.test(script) && /process\.env\.COACH_INSTRUCTIONS = instructions/.test(script) && /instructions, model:/.test(script) && /distressText:/.test(script));
 delete process.env.COACH_INSTRUCTIONS;
