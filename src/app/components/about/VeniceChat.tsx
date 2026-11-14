@@ -159,7 +159,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                 <Button
                   onClick={() => window.open(VENICE_CHARACTER_URL, '_blank', 'noopener,noreferrer')}
                   size="lg"
-                  className="gap-2 bg-purple-700 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 text-white"
+                  className="gap-2 bg-purple-800 hover:bg-purple-900 dark:bg-purple-800 dark:hover:bg-purple-900 text-white"
                 >
                   <MessageCircle className="size-5" />
                   Open Venice AI Chat Demo

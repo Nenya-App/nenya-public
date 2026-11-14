@@ -64,7 +64,7 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
             <div className="flex items-start gap-2 sm:gap-3">
               <AlertCircle className="size-4 sm:size-5 text-primary mt-0.5 flex-shrink-0" />
               <div className="space-y-1 sm:space-y-2">
-                <h4 className="text-xs sm:text-sm">What is this for?</h4>
+                <h4 className="text-sm">What is this for?</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   This form is for sending Nenya's team a report about the behavior of its AI, an error, or other feedback. The same form is planned for use in partner practice (Dyadic Cells), which is not built yet.
                 </p>

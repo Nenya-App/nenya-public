@@ -615,7 +615,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     {notes.first.map((n, i) => (
                       <span
                         key={`a${i}`}
-                        className="rounded-lg border px-2 py-1 font-mono text-[11px]"
+                        className="rounded-lg border px-2 py-1 font-mono text-xs"
                         style={{ borderColor: `${color1}99`, backgroundColor: `${color1}22` }}
                       >
                         {n}
@@ -625,7 +625,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     {notes.second.map((n, i) => (
                       <span
                         key={`b${i}`}
-                        className="rounded-lg border px-2 py-1 font-mono text-[11px]"
+                        className="rounded-lg border px-2 py-1 font-mono text-xs"
                         style={{ borderColor: `${color2}99`, backgroundColor: `${color2}22` }}
                       >
                         {n}

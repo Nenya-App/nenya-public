@@ -229,7 +229,7 @@ export function AccessibilitySettingsContent({
               onClick={() => onCvModeChange && onCvModeChange(mode.value)}
               // Colours come from the theme so the label stays readable in light and dark: plain text colour, with the
               // chosen option marked by an amber border and tint (dark amber text on light, light amber on dark).
-              className={`cursor-pointer whitespace-nowrap rounded border px-2 py-1 text-[11px] font-medium [touch-action:manipulation] ${
+              className={`cursor-pointer whitespace-nowrap rounded border px-2 py-1 text-xs font-medium [touch-action:manipulation] ${
                 cvMode === mode.value
                   ? 'border-[#9a5f00] bg-[rgba(232,160,32,0.18)] text-[#5c3800] dark:border-[rgba(232,160,32,0.8)] dark:text-[#F3C56B]'
                   : 'border-foreground/30 text-foreground hover:border-foreground/60'

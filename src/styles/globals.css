@@ -12,25 +12,25 @@
   --background: #DCD9D6;
   --background-secondary: #F5F1ED;
   --background-elevated: #FFFFFF;
-  --foreground: #4A4440;
+  --foreground: #2A2623;
   
   --card: #FFFFFF;
-  --card-foreground: #4A4440;
+  --card-foreground: #2A2623;
   --popover: #FFFFFF;
-  --popover-foreground: #4A4440;
+  --popover-foreground: #2A2623;
   
   --primary: #D4AF87;
-  --primary-foreground: #4A4440;
+  --primary-foreground: #2A2623;
   --secondary: #F5F1ED;
-  --secondary-foreground: #4A4440;
+  --secondary-foreground: #2A2623;
   
   --muted: #F5F1ED;
-  --muted-foreground: #5A544F;
+  --muted-foreground: #3C3835;
   
   --accent: #E8C4A8;
-  --accent-foreground: #4A4440;
+  --accent-foreground: #2A2623;
   
-  --destructive: #d4183d;
+  --destructive: #AE1432;
   --destructive-foreground: #ffffff;
   
   --border: #E6DFD8;
@@ -61,25 +61,25 @@
   --nenya-gold: #DDB88C;
   --nenya-gold-light: #E8C4A8;
   --nenya-gold-dark: #C9A88A;
-  --nenya-gold-text: #75561F; /* gold for TEXT on the light page: 4.8:1 on the page, 6.8:1 on cards (the lighter golds are for fills and borders) */
+  --nenya-gold-text: #493513; /* gold for TEXT on the light page: at least 7:1 on the page and on cards (AAA) (the lighter golds are for fills and borders) */
   --nenya-silver: #C0C0C0;
   --nenya-silver-light: #E8E8E8;
   
   /* Text hierarchy */
-  --text-primary: #4A4440;
-  --text-secondary: #5A544F;
-  --text-tertiary: #625C57;
+  --text-primary: #2A2623;
+  --text-secondary: #3C3835;
+  --text-tertiary: #46413E;
   
   --nenya-prism-start: #FF1493;
   --nenya-prism-mid: #FFD700;
   --nenya-prism-end: #00CED1;
   
   --sidebar: #F5F1ED;
-  --sidebar-foreground: #4A4440;
+  --sidebar-foreground: #2A2623;
   --sidebar-primary: #D4AF87;
-  --sidebar-primary-foreground: #4A4440;
+  --sidebar-primary-foreground: #2A2623;
   --sidebar-accent: #FFFFFF;
-  --sidebar-accent-foreground: #4A4440;
+  --sidebar-accent-foreground: #2A2623;
   --sidebar-border: #E6DFD8;
   --sidebar-ring: #D4AF87;
 }
@@ -143,7 +143,7 @@
   /* Text hierarchy */
   --text-primary: #FAF8F5;
   --text-secondary: #D4C8BD;
-  --text-tertiary: #9B948E;
+  --text-tertiary: #AEA8A3;
   
   --nenya-prism-start: #FF1493;
   --nenya-prism-mid: #FFD700;

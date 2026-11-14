@@ -283,7 +283,7 @@ export function GlobalNavigation({
             </Button>
 
             {/* Emergency Exit Button */}
-            <EmergencyExitButton variant="header" className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-1" onEmergencyExit={onEmergencyExit} />
+            <EmergencyExitButton variant="header" className="text-xs px-1.5 sm:px-2 py-1" onEmergencyExit={onEmergencyExit} />
           </div>
         </div>
 

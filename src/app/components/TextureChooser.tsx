@@ -80,7 +80,7 @@ export function TextureChooser({ open, onOpenChange, selected, onChoose, slider,
       >
         <img src={texturePath(t.id)} alt="" loading="lazy" decoding="async" width={128} height={128} className="aspect-square w-full rounded-md object-cover" />
         <span className="text-xs leading-tight">{t.title}</span>
-        <span className="text-[11px] leading-tight text-muted-foreground">{t.feel}</span>
+        <span className="text-xs leading-tight text-muted-foreground">{t.feel}</span>
       </button>
     );
   };

@@ -139,10 +139,10 @@ export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | '
               <div className="text-xs text-muted-foreground space-y-2">
                 <p className="flex items-center gap-1.5 flex-wrap">
                   <Bookmark className="size-3.5 shrink-0" />
-                  Press <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[10px]">Ctrl</kbd> +{' '}
-                  <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[10px]">D</kbd>
-                  {' '}(<kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[10px]">Cmd</kbd> +{' '}
-                  <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[10px]">D</kbd> on Mac) to bookmark this page.
+                  Press <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-xs">Ctrl</kbd> +{' '}
+                  <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-xs">D</kbd>
+                  {' '}(<kbd className="px-1 py-0.5 rounded border border-border bg-muted text-xs">Cmd</kbd> +{' '}
+                  <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-xs">D</kbd> on Mac) to bookmark this page.
                 </p>
                 <p>Some browsers (like Chrome or Edge) may also offer an "Install Nenya" option in the address bar or menu.</p>
               </div>

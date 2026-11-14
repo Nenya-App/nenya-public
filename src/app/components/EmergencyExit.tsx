@@ -11,7 +11,7 @@ interface EmergencyExitModalProps {
 }
 
 // Earthy emergency exit color - brown-orange-red
-const EMERGENCY_COLOR = '#B85C3C'; // Earthy terracotta/rust color
+const EMERGENCY_COLOR = '#89452D'; // Earthy terracotta/rust color
 
 // Nienna's Chromatic Sigil - The palette of mercy, compassion, and empathy
 const NIENNA_PRIMARY = '#6A5ACD'; // Slate Blue - Compassionate depth
@@ -228,7 +228,7 @@ export function EmergencyExitButton({
         `}
         style={{
           background: EMERGENCY_COLOR,
-          color: '#FFFFFF', // white on the terracotta: 4.5:1 (the gold it had was 3.4:1)
+          color: '#FFFFFF', // white on the terracotta: at least 7:1 (WCAG AAA)
           borderColor: EMERGENCY_COLOR
         }}
         aria-label="Emergency exit - Instant redirect to Wikipedia"
@@ -247,7 +247,7 @@ export function EmergencyExitButton({
         `}
         style={{
           background: EMERGENCY_COLOR,
-          color: '#FFFFFF', // white on the terracotta: 4.5:1 (the gold it had was 3.4:1)
+          color: '#FFFFFF', // white on the terracotta: at least 7:1 (WCAG AAA)
           borderColor: EMERGENCY_COLOR
         }}
         aria-label="Emergency exit information"
