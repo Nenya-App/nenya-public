@@ -56,6 +56,9 @@ const GO_ON_ENDS = '(?=\\s*(?:[.!?,;]|$|anymore|any more|any longer|much longer|
 
 // A person as the object of an admitted act ("someone", "a man", "my wife"), and the words that make a message fiction or play rather than an admission.
 const PERSON = "(?:someone|somebody|a\\s+(?:person|man|woman|boy|girl|child|kid|baby|guy|stranger)|two\\s+people|people|my\\s+(?:wife|husband|partner|mother|mom|father|dad|brother|sister|son|daughter|child|baby|friend|boss|neighbou?r|girlfriend|boyfriend|ex|roommate|coworker|teacher))\\b";
+const CHILD = "my\\s+(?:\\w+\\s+)?(?:kid|kids|child|children|son|daughter|baby|toddler|boy|girl|stepson|stepdaughter|stepchild|foster\\s+child)\\b";
+const PARTNER = "my\\s+(?:ex[- ])?(?:wife|husband|partner|girlfriend|boyfriend|spouse|fianc\\w+|significant\\s+other|ex)\\b";
+const ACCIDENT = /\b(?:by accident|accidentally|an accident|playing|baseball|softball|ball|sport|sports)\b/i;
 const FICTION = /\b(?:game|games|dream|dreamt|dreamed|nightmare|movie|film|novel|screenplay|role-?play|minecraft|fortnite|gta)\b/i;
 
 const RULES: Rule[] = [
@@ -76,14 +79,28 @@ const RULES: Rule[] = [
   // clearly name people ("them", "all of them", "those people", "everyone") so an object ("all the weeds") is never a stop; "with kindness" is the idiom.
   { category: 'harm-others', tier: 'stop', pattern: /\bi(?:'ll|\s+will|'m\s+going\s+to|\s+am\s+going\s+to|\s+plan\s+to|\s+intend\s+to|'m\s+gonna|\s+am\s+gonna)\s+(?:just\s+|really\s+)?(?:kill|murder|slaughter|shoot|stab|strangle|hurt|harm|attack|beat\s+up|burn|bomb|poison|rape)\s+(?:all\s+of\s+them|every\s+(?:single\s+)?one\s+of\s+(?:them|those\s+people|these\s+people)|any\s+(?:one\s+)?of\s+(?:them|those\s+people|these\s+people)|each\s+of\s+them|them\s+all|(?:all\s+)?(?:of\s+)?(?:those|these)\s+people|every\s+last\s+one|everyone|everybody)\b(?!\s+with\s+kindness)/i },
 
+  // ── stop: an admission of abusing a child or a partner, of sexual violence or sexual harm to a child, of trafficking or holding a person captive (2026-11-14, owner's decision).
+  // Each has its own notice and resources: emergency numbers for immediate harm, lines for people who want to stop, lines for survivors.
+  { category: 'harm-others', tier: 'stop', kind: 'admitted-child', unless: ACCIDENT, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:been\\s+)?(?:(?:often|sometimes|just|really|regularly)\\s+)?(?:hit(?:ting)?|beat(?:ing)?|beaten|slapp(?:ed|ing)|punch(?:ed|ing)|kick(?:ed|ing)|shook|shaking|burn(?:ed|ing)|burnt|chok(?:ed|ing)|starv(?:ed|ing)|abus(?:ed|ing|e)|whipp(?:ed|ing)|lock(?:ed|ing)\\s+(?:in|up)|hurt(?:ing)?\\s+(?:physically|badly))\\s+${CHILD}`, 'i') },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted-partner', unless: ACCIDENT, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:been\\s+)?(?:(?:often|sometimes|just|really|regularly)\\s+)?(?:hit(?:ting)?|beat(?:ing)?|beaten|slapp(?:ed|ing)|punch(?:ed|ing)|kick(?:ed|ing)|chok(?:ed|ing)|strangl(?:ed|ing)|abus(?:ed|ing|e)|burn(?:ed|ing)|hurt(?:ing)?\\s+(?:physically|badly))\\s+${PARTNER}`, 'i') },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted-partner', pattern: /\bi(?:'m|\s+am|\s+have\s+been|'ve\s+been)\s+(?:physically\s+|emotionally\s+|verbally\s+)?abusive\s+(?:to|toward|towards|with)\s+(?:my\s+)?(?:wife|husband|partner|girlfriend|boyfriend|spouse|fianc\w+)\b/i },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted-child-sexual', pattern: /\bi(?:'ve|\s+have)?\s+(?:been\s+)?(?:molest(?:ed|ing)\s+(?:a|an|my|the)\s+(?:\w+\s+)?(?:child|kid|boy|girl|son|daughter|niece|nephew|minor)|touch(?:ed|ing)\s+(?:a|an|my|the)\s+(?:\w+\s+)?(?:child|kid|boy|girl|son|daughter|niece|nephew)\s+(?:sexually|inappropriately)|(?:had|having)\s+sex\s+with\s+(?:a|an|my)\s+(?:\w+\s+)?(?:child|kid|minor|underage\s+\w+|\d{1,2}[- ]year[- ]old)|rap(?:ed|ing)\s+(?:a|an|my|the)\s+(?:\w+\s+)?(?:child|kid|boy|girl|minor|son|daughter)|sexually\s+abus(?:ed|ing)\s+(?:a|an|my|the)\s+(?:\w+\s+)?(?:child|kid|boy|girl|minor|son|daughter|niece|nephew)|(?:downloaded|watch(?:ed|ing)|collect(?:ed|ing)|shar(?:ed|ing)|sold|sell(?:ing)?|look(?:ed|ing)\s+at)\s+(?:child\s+porn(?:ography)?|child\s+sexual\s+abuse\s+material|csam))\b/i },
+  { category: 'harm-others', tier: 'stop', kind: 'child-attraction', pattern: /\bi(?:'m|\s+am)\s+(?:a\s+)?(?:pedophile|paedophile|attracted\s+to\s+(?:children|kids|minors|little\s+(?:girls|boys)))\b|\bi\s+(?:have|get|keep\s+having)\s+sexual\s+(?:thoughts|urges|feelings|fantasies)\s+(?:about|toward|towards)\s+(?:children|kids|minors|a\s+child|my\s+(?:\w+\s+)?(?:child|kid|son|daughter))\b/i },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted-sexual', unless: FICTION, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:(?:think\\s+i|may\\s+have|might\\s+have|probably|maybe|could\\s+have)\\s+)?(?:just\\s+|actually\\s+|really\\s+|recently\\s+)?(?:raped|molested|sexually\\s+assaulted|sexually\\s+abused|drugged\\s+and\\s+raped)\\s+${PERSON}`, 'i') },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted-trafficking', pattern: /\bi(?:'m|\s+am|\s+have\s+been|'ve\s+been)?\s*(?:been\s+)?traffick(?:ing|ed)\s+(?:people|women|girls|children|kids|boys|men|someone|workers)\b/i },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted-trafficking', unless: FICTION, pattern: /\bi(?:'ve|\s+have)?\s+(?:just\s+|really\s+)?(?:enslaved|kidnapped|abducted)\s+(?:someone|somebody|a\s+(?:person|man|woman|girl|boy|child|kid)|people|him|her|them)\b/i },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted-trafficking', unless: FICTION, pattern: /\bi(?:'m|\s+am)?\s*(?:keep(?:ing)?|hold(?:ing)?|kept|held)\s+(?:someone|somebody|a\s+(?:person|man|woman|girl|boy|child|kid)|people|him|her|them)\s+(?:captive|prisoner|locked\s+(?:in|up)|against\s+(?:his|her|their)\s+will)\b|\bi\s+(?:have|got)\s+(?:someone|somebody|a\s+(?:man|woman|girl|boy|child))\s+(?:locked|chained|tied)\s+(?:up|in)\b/i },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted-trafficking', unless: FICTION, pattern: /\bi(?:'m|\s+am)?\s*(?:forc(?:ed|ing)|mak(?:ing|e)|made)\s+(?:\w+\s+){0,2}to\s+(?:work\s+for\s+free|have\s+sex|sell\s+sex)\b|\bi\s+(?:force|forced|am\s+forcing)\s+(?:\w+\s+){0,2}into\s+(?:prostitution|sex\s+work)\b|\bi\s+(?:sold|sell|am\s+selling)\s+(?:a\s+)?(?:girl|girls|women|woman|children|kids|people|someone)\s+(?:for\s+sex|into\s+(?:prostitution|slavery))\b/i },
+
   // ── stop: an admission of having killed or seriously hurt a person, and graphic violence or violent fantasy (2026-11-14, owner's decision after a test where the coach
   // answered "I killed someone" with "that must feel incredibly heavy"). These are stopped before the AI sees them: the notice sends the person to emergency services and
   // to people (a crisis line, a mental health professional, a lawyer), and the conversation ends. A game, a story, a film or a dream is not an admission.
-  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:(?:think\\s+i|may\\s+have|might\\s+have|probably|maybe|could\\s+have)\\s+)?(?:just\\s+|actually\\s+|really\\s+|recently\\s+|accidentally\\s+)?(?:killed|murdered|stabbed|strangled|raped|molested|suffocated|poisoned|drowned|shot|choked|assaulted|beat(?:en)?\\s+(?:up|to\\s+death))\\s+${PERSON}`, 'i') },
-  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: /\bi(?:'ve|\s+have)?\s+(?:(?:think\s+i|may\s+have|might\s+have|probably|maybe|could\s+have)\s+)?(?:just\s+|actually\s+|really\s+|recently\s+|accidentally\s+)?(?:killed|murdered|stabbed|strangled|raped|molested|suffocated|poisoned|drowned)\s+(?:him|her|them)\b(?!\s+(?:with\s+(?:my|the|a)\s+(?:presentation|performance|joke|jokes|comedy|set|speech|audition|talk|pitch|cooking|outfit|dance)|at\s+the\s+|in\s+the\s+(?:game|match|round)))/i },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:(?:think\\s+i|may\\s+have|might\\s+have|probably|maybe|could\\s+have)\\s+)?(?:just\\s+|actually\\s+|really\\s+|recently\\s+|accidentally\\s+)?(?:killed|murdered|stabbed|strangled|suffocated|poisoned|drowned|shot|choked|assaulted|beat(?:en)?\\s+(?:up|to\\s+death))\\s+${PERSON}`, 'i') },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: /\bi(?:'ve|\s+have)?\s+(?:(?:think\s+i|may\s+have|might\s+have|probably|maybe|could\s+have)\s+)?(?:just\s+|actually\s+|really\s+|recently\s+|accidentally\s+)?(?:killed|murdered|stabbed|strangled|suffocated|poisoned|drowned)\s+(?:him|her|them)\b(?!\s+(?:with\s+(?:my|the|a)\s+(?:presentation|performance|joke|jokes|comedy|set|speech|audition|talk|pitch|cooking|outfit|dance)|at\s+the\s+|in\s+the\s+(?:game|match|round)))/i },
   { category: 'harm-others', tier: 'stop', kind: 'graphic', unless: FICTION, pattern: /\bi\b[^.!?\n]{0,40}\b(?:fantas(?:y|ies|ize|ise|izing|ising)|imagin(?:e|ing)|picture|picturing|daydream(?:ing)?|visuali[sz](?:e|ing)|dream(?:ing)?\s+(?:of|about))\b[^.!?\n]{0,50}\b(?:killing|murdering|torturing|stabbing|shooting|strangling|raping|mutilating|dismembering|beating|choking|burning|slitting|cutting\s+up)\b[^.!?\n]{0,30}\b(?:him|her|them|someone|somebody|everyone|people|my\s+\w+|a\s+(?:person|man|woman|child))\b/i },
   { category: 'harm-others', tier: 'stop', kind: 'graphic', unless: FICTION, pattern: /\bi\b[^.!?\n]{0,30}\b(?:want|wanna|would\s+love|'d\s+love|need|keep\s+imagining|can'?t\s+stop\s+(?:thinking\s+about|imagining))\b[^.!?\n]{0,30}\b(?:watch(?:ing)?\s+(?:him|her|them|\w+)\s+(?:suffer|bleed|die|beg|scream)|(?:torture|mutilate|dismember|disembowel|behead|decapitate|flay)\b)/i },
   { category: 'harm-others', tier: 'stop', kind: 'graphic', unless: FICTION, pattern: /\b(?:i|we)\s+(?:then\s+)?(?:slit|cut|stabbed|slashed|bashed|smashed|strangled|dismembered|buried|burned)\b[^.!?\n]{0,40}\b(?:his|her|their|the)\s+(?:throat|head|skull|body|neck|face|chest)\b/i },
+
 
   // ── stop: abuse or immediate danger ─────────────────────────────────────
   { category: 'abuse', tier: 'stop', pattern: /\b(?:he|she|they|my \w+)(?:'s| is| are|'re)? (?:hitting|beating|choking|strangling|raping|molesting|abusing|stalking) me\b(?! (?:at|to|in|by|back)\b)(?!(?<=hitting me) up\b)/i },
@@ -130,8 +147,12 @@ function detectSingleWhy(text: string): FlagExplained | null {
     for (const r of RULES) {
       const m = r.tier === tier ? r.pattern.exec(t) : null;
       if (!m) continue;
-      // A game, a film or a dream said just before the words makes them play, not an admission (only the stretch around the match counts).
-      if (r.unless && r.unless.test(t.slice(Math.max(0, m.index - 60), m.index + m[0].length))) continue;
+      // A game, a film, a dream or an accident named in the same sentence makes the words play or chance, not an admission.
+      if (r.unless) {
+        const from = Math.max(t.lastIndexOf('.', m.index), t.lastIndexOf('!', m.index), t.lastIndexOf('?', m.index)) + 1;
+        const ends = ['.', '!', '?'].map((c) => t.indexOf(c, m.index + m[0].length)).filter((i) => i >= 0);
+        if (r.unless.test(t.slice(from, ends.length ? Math.min(...ends) : t.length))) continue;
+      }
       // The older abuse rules carry no kind; borrow it from the kind rules (same tier) so the right resources are shown.
       const kind = r.kind ?? (r.category === 'abuse' ? ABUSE_CANDIDATES.find((k) => k.tier === tier && k.pattern.test(t))?.kind : undefined);
       return { flag: flagOf(r.category, tier, kind), why: { source: 'phrase', matched: cut(m[0]) } };
@@ -192,6 +213,24 @@ export interface Resource {
   href?: string;
 }
 
+const STOP_IT_NOW: Resource = { name: 'Stop It Now helpline (US)', detail: 'Call 1-888-773-8368. Free and confidential, for people who are worried about their own thoughts or behavior toward a child or anyone else, and for people worried about someone else', href: 'tel:18887738368' };
+const NCMEC: Resource = { name: 'NCMEC CyberTipline (US)', detail: 'To report sexual images of children or online exploitation: report.cybertip.org or call 1-800-843-5678', href: 'tel:18008435678' };
+const TRAFFICKING_LINES: Resource[] = [
+  { name: 'National Human Trafficking Hotline (US)', detail: 'Call 1-888-373-7888 or text 233733, any time. Confidential, for survivors, for anyone who wants out, and for anyone who wants to report', href: 'tel:18883737888' },
+  { name: 'Canadian Human Trafficking Hotline', detail: 'Call 1-833-900-1010, any time. Confidential, in many languages', href: 'tel:18339001010' },
+];
+/** For each kind of harm to others: the lines for people who want to stop, and for the people harmed. The emergency number is added in front. */
+const HARM_LINES: Record<string, Resource[]> = {
+  admitted: [],
+  graphic: [],
+  'admitted-partner': [{ name: 'National Domestic Violence Hotline (US)', detail: 'Call 1-800-799-7233 or text START to 88788, any time. For people who have been hurt, and you can also ask about programs for people who want to stop harming a partner', href: 'tel:18007997233' }],
+  'admitted-child': [{ name: 'Childhelp National Child Abuse Hotline (US)', detail: 'Call or text 1-800-422-4453, any time. For children, for the people who care about them, and for parents who are afraid of hurting a child', href: 'tel:18004224453' }],
+  'admitted-child-sexual': [STOP_IT_NOW, NCMEC, { name: 'Childhelp National Child Abuse Hotline (US)', detail: 'Call or text 1-800-422-4453, any time. For a child who has been hurt, and for anyone who knows of one', href: 'tel:18004224453' }],
+  'child-attraction': [STOP_IT_NOW],
+  'admitted-sexual': [STOP_IT_NOW, { name: 'RAINN National Sexual Assault Hotline (US)', detail: 'For the person who was harmed, any time: 1-800-656-4673', href: 'tel:18006564673' }],
+  'admitted-trafficking': TRAFFICKING_LINES,
+};
+
 /** Resources already listed elsewhere on the site (Emergency Exit, Terms), and the specific lines for abuse. */
 export function resourcesFor(category: FlagCategory, kind?: string): Resource[] {
   const list: Resource[] = [
@@ -211,8 +250,12 @@ export function resourcesFor(category: FlagCategory, kind?: string): Resource[] 
   }
   const emergency: Resource = { name: 'Immediate danger', detail: 'Call your local emergency number (911 in the US and Canada)', href: 'tel:911' };
   const outside: Resource = { name: 'Outside the US and Canada', detail: 'findahelpline.com or iasp.info/resources/Crisis_Centres' };
-  // For an admitted act or graphic violence the emergency number comes first: someone may need help now.
-  if (category === 'harm-others' && (kind === 'admitted' || kind === 'graphic')) return [emergency, ...list, outside];
+  if (category === 'abuse' && kind === 'trafficking') list.push(...TRAFFICKING_LINES);
+  // For an admitted act or graphic violence the emergency number comes first: someone may need help now. Then the lines for the kind of harm, for people who want to stop and for the people harmed.
+  if (category === 'harm-others' && kind && HARM_LINES[kind]) {
+    const first = kind === 'child-attraction' ? [...HARM_LINES[kind], emergency] : [emergency, ...HARM_LINES[kind]];
+    return [...first, ...list, outside];
+  }
   list.push(emergency, outside);
   return list;
 }
@@ -233,6 +276,18 @@ const SELF_INJURY_NOTICE: Record<string, string> = {
 
 // What the notice says when a message admits having killed or seriously hurt someone, or describes violence graphically or as a wish. Draft wording for the owner to edit (2026-11-14).
 const HARM_NOTICE: Record<string, string> = {
+  'admitted-partner':
+    "What you have written says you have hurt someone you are close to. I'm an AI, and this is beyond what I can help with. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately, and get away from the person if you can. Hurting a partner is serious, and people can stop: the numbers below include a line for people who have been hurt and who want to stop hurting a partner, and a crisis line. I'm ending our conversation here so that you can call.",
+  'admitted-child':
+    "What you have written says a child has been hurt, by you. I'm an AI, and this is beyond what I can help with. If a child is hurt or in danger right now, call your local emergency number (911 in the US and Canada) immediately. A child is not safe until the hurting stops. The numbers below include a line for parents who are afraid of hurting a child, and a crisis line. I'm ending our conversation here so that you can call.",
+  'admitted-child-sexual':
+    "What you have written describes sexually harming a child, or sexual images of a child. I'm an AI, and I can't help with this, and I won't go into it. If a child is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The numbers below include a confidential line for people who want to stop, a line to report sexual images of children, and a crisis line. I'm ending our conversation here so that you can call.",
+  'child-attraction':
+    "What you wrote is about sexual thoughts about children. Having thoughts does not mean you have acted on them, and wanting help is the right step. I'm an AI, and I can't help with this. The first number below is a confidential line for people in exactly this situation. If a child is in danger right now, call your local emergency number (911 in the US and Canada). I'm ending our conversation here so that you can call.",
+  'admitted-sexual':
+    "What you have written says you have sexually harmed someone. I'm an AI, and this is beyond what I can help with, and I won't go into it. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The numbers below include a confidential line for people who want to stop harming others, a crisis line, and a line for the person who was harmed. I'm ending our conversation here so that you can call.",
+  'admitted-trafficking':
+    "What you have written says someone is being held, forced or sold. I'm an AI, and this is beyond what I can help with, and I won't go into it. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The National Human Trafficking Hotline below is confidential and can advise anyone, including people who are involved and want to get out. I'm ending our conversation here so that you can call.",
   admitted:
     "What you have written says someone was killed or badly hurt. I'm an AI, and this is beyond what I can help with. If anyone is hurt or in danger right now, call your local emergency number (911 in the US and Canada) immediately. Please also speak with a person today: a crisis line (988 in the US and Canada) can help you through the next hours, a mental health professional can help with what you are carrying, and a lawyer can explain your rights and options. I'm ending our conversation here so that you can do that.",
   graphic:
