@@ -194,6 +194,23 @@ export async function downloadLegalPdf() {
         y += 1.5;
       });
 
+      const para = (p: string) => {
+        writeWrapped(p, { x: margin + 4, width: contentWidth - 8, size: 9.5, lineHeight: 5.2, font: 'Manrope', color: COLORS.textMuted });
+        y += 2.5;
+      };
+      if (section.after?.length) y += 1;
+      section.after?.forEach(para);
+
+      section.subsections?.forEach((sub) => {
+        ensureSpace(16);
+        doc.setFont('ManropeSemiBold', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...COLORS.ink);
+        doc.text(sub.heading, margin + 4, y);
+        y += 5.2;
+        sub.paragraphs.forEach(para);
+      });
+
       y += 4;
     });
 

@@ -61,7 +61,7 @@ ok('the invitation is an invitation: nothing is sent unless the person chooses',
   ok('an ordinary reply is not marked', siteMessagesFor(msgs('What is it like for you?'), 5).every((x) => x.kind !== 'replacement'));
   const { LEGAL_PARTS } = await import('../src/lib/legalDocument.ts');
   const terms = JSON.stringify(LEGAL_PARTS);
-  ok('the Terms list the replacement and say a signed transcript marks it', /replace the AI.s whole reply with a short fixed sentence/.test(terms) && /marks a reply replaced this way as written by the site/.test(terms));
+  ok('the Terms list the replacement and say a signed transcript marks it', /replaces the reply with a short fixed sentence/.test(terms) && /marks each pre-written answer, replaced reply/.test(terms));
 }
 
 // Edits the site made to a reply (a sentence added, sentences removed) are marked after that reply.

@@ -54,7 +54,7 @@ ok('every lesson uses real answers, and every answer is used by at least one les
 ok('the discrepancies each say where, what is said, the conflict, and a suggestion', DISCREPANCIES.length >= 6 && DISCREPANCIES.every((d) => d.where && d.says && d.but && d.suggest));
 // the discrepancies are real: what is quoted is actually in the pages
 const quoted: [string, string, string][] = [
-  ['d3', 'src/lib/legalDocument.ts', 'a mode that Venice labels'],
+  ['d3', 'src/lib/legalDocument.ts', 'in a mode Venice labels'],
   ['d5', 'src/app/components/about/VeniceChat.tsx', 'trained in NVC+ principles'],
   ['d6', 'src/app/components/about/ContactUs.tsx', '2-3 business days'],
 ];

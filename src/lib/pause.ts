@@ -32,7 +32,7 @@ export function clearPause(): void {
 /** Whole minutes left, rounded up, at least 1 while a pause lasts (this changes once a minute, so a screen reader hears it once a minute). */
 export const minutesLeft = (ends: number, now: number = Date.now()): number => Math.max(1, Math.ceil((ends - now) / MINUTE_MS));
 
-/** The note on respectful use shown before the questions: the same words as the Terms' Section 5 (DRAFT, owner to edit). */
+/** The note on respectful use shown before the questions: close to the words of the Terms' Section 3 (DRAFT, owner to edit). */
 export const RESPECTFUL_USE_NOTE: string[] = [
   'Nenya is a space for reflection: for looking at your own thoughts, feelings and needs. Strong feelings, including anger, frustration, and disagreement with Nenya or the coach, are part of being a person and are not a problem here.',
   'Please do not use Nenya, or the coach demo, to produce or share language that treats a person or a group of people as less than human, to threaten or harass anyone, or to plan harm to others. This is not what the space is for.',
