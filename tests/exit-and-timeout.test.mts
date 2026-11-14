@@ -66,3 +66,11 @@ ok('a bad time falls back to now rather than a broken name', /^nenya-coach-trans
 ok('an invite, reset, confirmation or email-change link on the front page is passed to /admin/ with its token', ['invite_token', 'recovery_token', 'confirmation_token', 'email_change_token'].every((t) => identityTarget(`#${t}=abc`) === `/admin/#${t}=abc`));
 ok('ordinary visits are left alone', identityTarget('') === null && identityTarget('#about') === null && identityTarget('#xrecovery_token=1') === null && identityTarget('?recovery_token=1') === null);
 ok('the front page loads only the tiny forwarder, not the sign-in library', src('src/main.tsx').includes('forwardIdentityLinks()') && !/@netlify\/identity/.test(src('src/admin/identityRedirect.ts')));
+
+// ---- the Back guard draws nothing: a plain script before the first paint, and a blanked page left behind
+{
+  const guard = src('public/exit-guard.js');
+  ok('every visitor page loads the guard script before its own code (the site allows no inline scripts)', ['index.html', 'coach/index.html', 'cell/index.html', 'verify/index.html', 'my-transcript/index.html'].every((f) => { const h = src(f); return h.includes('<script src="/exit-guard.js"></script>') && h.indexOf('/exit-guard.js') < h.indexOf('type="module"'); }));
+  ok('the guard hides the page and leaves after Back or from the cache, and uses the same note and address', /nenya\.exited/.test(guard) && /back_forward/.test(guard) && /visibility = 'hidden'/.test(guard) && /persisted/.test(guard) && guard.includes(EXIT_URL));
+  ok('leaving blanks the page first, so the browser\'s saved picture of it shows nothing', /visibility = 'hidden'[\s\S]*replaceChildren\(\)[\s\S]*location\.replace\(EXIT_URL\)/.test(src('src/lib/emergencyExit.ts')));
+}

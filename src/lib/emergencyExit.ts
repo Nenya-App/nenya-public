@@ -55,6 +55,14 @@ export function leaveNow(onLeaving?: () => void): void {
   } catch {
     // Without session storage the Back guard cannot work; the exit itself still does.
   }
+  // Blank this page first, so that the browser's saved picture of it (used when Back returns here from the cache) shows nothing.
+  try {
+    document.documentElement.style.visibility = 'hidden';
+    document.title = '';
+    document.body.replaceChildren();
+  } catch {
+    // Leaving matters more than blanking.
+  }
   window.location.replace(EXIT_URL);
 }
 
@@ -78,6 +86,9 @@ export function guardBackAfterExit(): void {
     }
   }
   window.addEventListener('pageshow', (e) => {
-    if (e.persisted && readNote()) window.location.replace(EXIT_URL);
+    if (e.persisted && readNote()) {
+      document.documentElement.style.visibility = 'hidden';
+      window.location.replace(EXIT_URL);
+    }
   });
 }
