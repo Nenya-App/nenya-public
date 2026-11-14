@@ -41,6 +41,10 @@ interface Rule {
   category: FlagCategory;
   tier: FlagTier;
   pattern: RegExp;
+  /** What kind within the category ("admitted", "graphic" for harm to others). */
+  kind?: string;
+  /** If this matches anywhere in the message, the rule does not apply (a game, a story, a dream). */
+  unless?: RegExp;
 }
 
 // Words after "killing myself" / "die" that make it an everyday figure of speech.
@@ -49,6 +53,10 @@ const FIGURATIVE_AFTER_KILL =
 
 // What may follow "go on" for it to be about carrying on living: the end of the sentence, or "anymore", "like this", "with this" and so on.
 const GO_ON_ENDS = '(?=\\s*(?:[.!?,;]|$|anymore|any more|any longer|much longer|like (?:this|that)|this way|living|without|alone|with (?:this|it|life|living|my life)))';
+
+// A person as the object of an admitted act ("someone", "a man", "my wife"), and the words that make a message fiction or play rather than an admission.
+const PERSON = "(?:someone|somebody|a\\s+(?:person|man|woman|boy|girl|child|kid|baby|guy|stranger)|two\\s+people|people|my\\s+(?:wife|husband|partner|mother|mom|father|dad|brother|sister|son|daughter|child|baby|friend|boss|neighbou?r|girlfriend|boyfriend|ex|roommate|coworker|teacher))\\b";
+const FICTION = /\b(?:game|games|dream|dreamt|dreamed|nightmare|movie|film|novel|screenplay|role-?play|minecraft|fortnite|gta)\b/i;
 
 const RULES: Rule[] = [
   // ── stop: suicide or self-harm ──────────────────────────────────────────
@@ -67,6 +75,15 @@ const RULES: Rule[] = [
   // First-person intent against a group of PEOPLE ("I'll kill any of them I meet", "I am going to hurt all of them", 2026-11-12, owner's decision): a stop, the same as intent against one person. Only forms that
   // clearly name people ("them", "all of them", "those people", "everyone") so an object ("all the weeds") is never a stop; "with kindness" is the idiom.
   { category: 'harm-others', tier: 'stop', pattern: /\bi(?:'ll|\s+will|'m\s+going\s+to|\s+am\s+going\s+to|\s+plan\s+to|\s+intend\s+to|'m\s+gonna|\s+am\s+gonna)\s+(?:just\s+|really\s+)?(?:kill|murder|slaughter|shoot|stab|strangle|hurt|harm|attack|beat\s+up|burn|bomb|poison|rape)\s+(?:all\s+of\s+them|every\s+(?:single\s+)?one\s+of\s+(?:them|those\s+people|these\s+people)|any\s+(?:one\s+)?of\s+(?:them|those\s+people|these\s+people)|each\s+of\s+them|them\s+all|(?:all\s+)?(?:of\s+)?(?:those|these)\s+people|every\s+last\s+one|everyone|everybody)\b(?!\s+with\s+kindness)/i },
+
+  // ── stop: an admission of having killed or seriously hurt a person, and graphic violence or violent fantasy (2026-11-14, owner's decision after a test where the coach
+  // answered "I killed someone" with "that must feel incredibly heavy"). These are stopped before the AI sees them: the notice sends the person to emergency services and
+  // to people (a crisis line, a mental health professional, a lawyer), and the conversation ends. A game, a story, a film or a dream is not an admission.
+  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:(?:think\\s+i|may\\s+have|might\\s+have|probably|maybe|could\\s+have)\\s+)?(?:just\\s+|actually\\s+|really\\s+|recently\\s+|accidentally\\s+)?(?:killed|murdered|stabbed|strangled|raped|molested|suffocated|poisoned|drowned|shot|choked|assaulted|beat(?:en)?\\s+(?:up|to\\s+death))\\s+${PERSON}`, 'i') },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: /\bi(?:'ve|\s+have)?\s+(?:(?:think\s+i|may\s+have|might\s+have|probably|maybe|could\s+have)\s+)?(?:just\s+|actually\s+|really\s+|recently\s+|accidentally\s+)?(?:killed|murdered|stabbed|strangled|raped|molested|suffocated|poisoned|drowned)\s+(?:him|her|them)\b(?!\s+(?:with\s+(?:my|the|a)\s+(?:presentation|performance|joke|jokes|comedy|set|speech|audition|talk|pitch|cooking|outfit|dance)|at\s+the\s+|in\s+the\s+(?:game|match|round)))/i },
+  { category: 'harm-others', tier: 'stop', kind: 'graphic', unless: FICTION, pattern: /\bi\b[^.!?\n]{0,40}\b(?:fantas(?:y|ies|ize|ise|izing|ising)|imagin(?:e|ing)|picture|picturing|daydream(?:ing)?|visuali[sz](?:e|ing)|dream(?:ing)?\s+(?:of|about))\b[^.!?\n]{0,50}\b(?:killing|murdering|torturing|stabbing|shooting|strangling|raping|mutilating|dismembering|beating|choking|burning|slitting|cutting\s+up)\b[^.!?\n]{0,30}\b(?:him|her|them|someone|somebody|everyone|people|my\s+\w+|a\s+(?:person|man|woman|child))\b/i },
+  { category: 'harm-others', tier: 'stop', kind: 'graphic', unless: FICTION, pattern: /\bi\b[^.!?\n]{0,30}\b(?:want|wanna|would\s+love|'d\s+love|need|keep\s+imagining|can'?t\s+stop\s+(?:thinking\s+about|imagining))\b[^.!?\n]{0,30}\b(?:watch(?:ing)?\s+(?:him|her|them|\w+)\s+(?:suffer|bleed|die|beg|scream)|(?:torture|mutilate|dismember|disembowel|behead|decapitate|flay)\b)/i },
+  { category: 'harm-others', tier: 'stop', kind: 'graphic', unless: FICTION, pattern: /\b(?:i|we)\s+(?:then\s+)?(?:slit|cut|stabbed|slashed|bashed|smashed|strangled|dismembered|buried|burned)\b[^.!?\n]{0,40}\b(?:his|her|their|the)\s+(?:throat|head|skull|body|neck|face|chest)\b/i },
 
   // ── stop: abuse or immediate danger ─────────────────────────────────────
   { category: 'abuse', tier: 'stop', pattern: /\b(?:he|she|they|my \w+)(?:'s| is| are|'re)? (?:hitting|beating|choking|strangling|raping|molesting|abusing|stalking) me\b(?! (?:at|to|in|by|back)\b)(?!(?<=hitting me) up\b)/i },
@@ -113,8 +130,10 @@ function detectSingleWhy(text: string): FlagExplained | null {
     for (const r of RULES) {
       const m = r.tier === tier ? r.pattern.exec(t) : null;
       if (!m) continue;
+      // A game, a film or a dream said just before the words makes them play, not an admission (only the stretch around the match counts).
+      if (r.unless && r.unless.test(t.slice(Math.max(0, m.index - 60), m.index + m[0].length))) continue;
       // The older abuse rules carry no kind; borrow it from the kind rules (same tier) so the right resources are shown.
-      const kind = r.category === 'abuse' ? ABUSE_CANDIDATES.find((k) => k.tier === tier && k.pattern.test(t))?.kind : undefined;
+      const kind = r.kind ?? (r.category === 'abuse' ? ABUSE_CANDIDATES.find((k) => k.tier === tier && k.pattern.test(t))?.kind : undefined);
       return { flag: flagOf(r.category, tier, kind), why: { source: 'phrase', matched: cut(m[0]) } };
     }
     for (const r of CANDIDATES) {
@@ -190,10 +209,11 @@ export function resourcesFor(category: FlagCategory, kind?: string): Resource[] 
       list.push({ name: 'RAINN National Sexual Assault Hotline (US)', detail: 'Call 1-800-656-4673, any time', href: 'tel:18006564673' });
     }
   }
-  list.push(
-    { name: 'Immediate danger', detail: 'Call your local emergency number (911 in the US and Canada)', href: 'tel:911' },
-    { name: 'Outside the US and Canada', detail: 'findahelpline.com or iasp.info/resources/Crisis_Centres' }
-  );
+  const emergency: Resource = { name: 'Immediate danger', detail: 'Call your local emergency number (911 in the US and Canada)', href: 'tel:911' };
+  const outside: Resource = { name: 'Outside the US and Canada', detail: 'findahelpline.com or iasp.info/resources/Crisis_Centres' };
+  // For an admitted act or graphic violence the emergency number comes first: someone may need help now.
+  if (category === 'harm-others' && (kind === 'admitted' || kind === 'graphic')) return [emergency, ...list, outside];
+  list.push(emergency, outside);
   return list;
 }
 
@@ -211,7 +231,16 @@ const SELF_INJURY_NOTICE: Record<string, string> = {
     'It sounds like you may need medical care right now. Please call your local emergency number (911 in the US and Canada) or go to the nearest emergency room, and if you can, ask someone near you to stay with you.',
 };
 
+// What the notice says when a message admits having killed or seriously hurt someone, or describes violence graphically or as a wish. Draft wording for the owner to edit (2026-11-14).
+const HARM_NOTICE: Record<string, string> = {
+  admitted:
+    "What you have written says someone was killed or badly hurt. I'm an AI, and this is beyond what I can help with. If anyone is hurt or in danger right now, call your local emergency number (911 in the US and Canada) immediately. Please also speak with a person today: a crisis line (988 in the US and Canada) can help you through the next hours, a mental health professional can help with what you are carrying, and a lawyer can explain your rights and options. I'm ending our conversation here so that you can do that.",
+  graphic:
+    "What you wrote describes violence in detail, or a wish to do violence. I'm an AI, and I can't help with this, and I won't go into it. If you are afraid you might act on it, or someone is in danger, call your local emergency number (911 in the US and Canada) or a crisis line (988 in the US and Canada) right now. A mental health professional is the right person to talk this through with. I'm ending our conversation here so that you can reach one.",
+};
+
 export function noticeIntro(flag: SafetyFlag): string {
+  if (flag.category === 'harm-others' && flag.kind && HARM_NOTICE[flag.kind]) return HARM_NOTICE[flag.kind];
   if (flag.category === 'self-injury' && flag.kind && SELF_INJURY_NOTICE[flag.kind]) return SELF_INJURY_NOTICE[flag.kind];
   const subject =
     flag.tier === 'stop'
