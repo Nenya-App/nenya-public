@@ -12,6 +12,10 @@ const STUCK =
   /\b(?:i\s*(?:do not|don(?:'|’)t|dont)\s*(?:really\s*)?(?:know|have (?:the )?words)|idk|no idea|not sure|(?:i\s*)?(?:can(?:'|’)?t|cannot|can not)\s*(?:really\s*)?(?:tell|say|name|find|put)|(?:i\s*)?(?:have|got) no words|i\s*(?:have no|don(?:'|’)t have any) idea|don(?:'|’)t know what (?:i(?:'|’)m|i am|to)\s*(?:feel|need|say)|what (?:am i|could i be|do i) (?:feeling|feel)|help me (?:find|name|figure|put|with the words)|give me (?:some )?(?:words|options|ideas)|what (?:word|words) (?:fit|fits|could|would))\b/i;
 export const isStuck = (text: string): boolean => STUCK.test(text);
 
+/** For the coach when the page's word list can help: point to it in one sentence rather than listing words (the list is next to the message box under "Looking for words?"). */
+export const WORDS_POINTER =
+  'The page has a list called "Feelings and needs", under "Looking for words?", next to the message box, where a person can pick words. When the person says they are unsure what they feel or need, or cannot find the words, tell them in one short sentence that it is there and may help, and do not list many words yourself. Do not mention it otherwise.';
+
 /**
  * A message that is only words picked from the page's lists ("I might be feeling apprehensive. I might need affection."), with no situation
  * in it. Echoing these back and asking "is that what you said?" is irritating, so the coach is told what to do instead (WORDS_ONLY_NOTE).

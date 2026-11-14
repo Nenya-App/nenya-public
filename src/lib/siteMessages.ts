@@ -11,7 +11,7 @@ import { openingText, parseReportHeader } from './reportShare.ts';
 import { checkConversation, explainConversation, noticeIntro, resourcesFor } from './safetyFlags.ts';
 
 export const greetingText = (maxTurns: number): string =>
-  `Hello. We have ${maxTurns} exchanges together, so let's use them well. Tell me what happened, what you are feeling, and what you need, as much or as little as feels right.`;
+  `Hello. We have ${maxTurns} exchanges together, so let's use them well. Tell me what happened, what you are feeling, and what you need, as much or as little as feels right. If you are not sure how to put it, the “Feelings and needs” list next to the message box (under “Looking for words?”) can help; it is there only if you want it.`;
 
 export const CLOSING_TEXT =
   'That is our five. Thank you for letting me listen. Whatever came up deserves more time than this, so if it is still with you, a person you trust, a journal, or a professional can carry it further. For now, one slow breath, in and out, with the breathing tool below.';

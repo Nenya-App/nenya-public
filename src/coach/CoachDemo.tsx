@@ -25,7 +25,7 @@ import { LearningOffer } from './LearningCard';
 import { WordPanel, type Picked } from './WordPanel';
 import { StancePicker } from './StancePicker';
 import { addWordToDraft } from '../lib/feelingsNeeds';
-import { namedParts } from '../lib/practiceArc';
+import { isStuck, namedParts } from '../lib/practiceArc';
 import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
@@ -274,6 +274,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     if (!text || sending) return;
     setBlocked(false);
     setFormProblem(null);
+    // The person says they are stuck for words: the feelings-and-needs list opens beside the box (for this visit only; the folded setting they chose is not changed).
+    if (isStuck(text)) setWordsOpen(true);
 
     // A message that tries to steer the coach is not sent. The draft stays so it can be reworded.
     if (looksLikeManipulation(text)) {
