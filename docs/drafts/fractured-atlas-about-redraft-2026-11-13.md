@@ -11,7 +11,7 @@ Written 2026-11-13 for the owner to edit, then to send to Fractured Atlas. **Not
 ### An independent project, built in the open
 Nenya is an independent artistic and technology project: free to use, with no accounts, no advertising and no tracking. It is built around a specific set of values: anti-extractive design, radical privacy, and the belief that your inner world belongs only to you.
 
-Its direction is set by its creator, with help. Counselors, advocates, translators and testers are invited to review and improve the work under a written contributor agreement, and what they review is public material or invented examples, never anyone's conversation. Nenya accepts no equity investors, gives no funder a board seat or an approval right, and [confirm: does not accept federal government funding].
+Its direction is set by its creator. Nenya invites counselors, advocates, trainers, translators and testers to review and improve the work, under a written contributor agreement [confirm: the agreement is still a draft], working only from public material or invented examples, never from anyone's private conversations. Nenya accepts no equity investors, gives no funder a board seat or an approval right, and [confirm: does not accept federal government funding].
 
 ### Fiscal sponsorship: Fractured Atlas
 Nenya is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit arts service organization. Fiscal sponsorship lets an independent creative project receive tax-deductible donations without forming its own nonprofit, a model long used in the arts to preserve creative autonomy while enabling public support.
@@ -52,7 +52,7 @@ info@nenya.biz. If something the coach said caused harm, tell us; we read what y
 | New or changed claim | Where it holds |
 |---|---|
 | "Free, no accounts, no ads, no tracking" | `legalDocument.ts` (Short Version and "What the Site Does Not Do"); unchanged in substance |
-| Contributors invited under an agreement, working only on public or invented material | `docs/drafts/contributor-agreement-draft.md`; `docs/coach-screening-flow-scope.md` section 8b (no user text for contributors). The agreement is a **draft, not yet in force** [confirm before saying it exists] |
+| Contributors **invited** under an agreement, working only on public or invented material. **No professional has reviewed the work yet; the text only invites it, and must not imply otherwise** | `docs/drafts/contributor-agreement-draft.md`; `docs/coach-screening-flow-scope.md` section 8b (no user text for contributors). The agreement is a **draft, not yet in force** [confirm before saying it exists] |
 | Donations through FA; what they fund | `SupportUs.tsx`, `Structure.tsx`; the list of uses is **new and unconfirmed** |
 | Reflection tools on device, nothing sent | `legalDocument.ts` Section 4; code |
 | Coach: Venice private model, server-side encryption, nothing kept, daily counts | Terms Section 21 and Part Two; `src/lib/veniceE2ee.ts`; `docs/branches-and-previews.md` |

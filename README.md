@@ -214,6 +214,13 @@ credits and licenses (including the DarkBench prompts used to test the coach) ar
 Please read [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) before opening an
 issue or pull request.
 
+**An invitation.** Nenya's safety wording, its detection of harmful language, its crisis and
+boundary responses and its learning cards have **not been reviewed by any outside professional**,
+and we would like them to be. If you are a counselor, a crisis-line worker, an advocate, a trained
+Nonviolent Communication practitioner, an accessibility specialist, a translator or a researcher
+and would like to review or improve any of it, please write to info@nenya.biz. Contributors work
+only from public or invented examples, never from anyone's private conversations.
+
 ---
 
 <a href="https://www.netlify.com">

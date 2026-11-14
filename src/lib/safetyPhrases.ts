@@ -4,7 +4,7 @@
 // Principle: a false "stop" ends someone's conversation, so a new phrase is SOFTEN (the message still reaches the coach, with care and the
 // resources) unless it states a plan, a method, an attempt, or abuse happening now with a physical or sexual verb. Phrase matching reads words,
 // not meaning: it misses euphemisms, typos and other languages, and it sometimes fires on ordinary text. Nothing may claim it catches every crisis.
-// The wording of these lists is reviewed by a person (see docs/crisis-check-scope.md).
+// The wording of these lists is the owner's own and has not been reviewed by any outside professional; review by counselors, crisis-line workers and others is invited (see docs/crisis-check-scope.md).
 
 type Tier = 'stop' | 'soften';
 export interface Rule { tier: Tier; why: string; pattern: RegExp }

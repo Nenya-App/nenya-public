@@ -98,7 +98,7 @@ Nenya's private list of slurs and dehumanizing language, used only to offer a ge
 
 ## Wiktionary (detection list)
 
-The same private list also draws on the **English Wiktionary** categories of ethnic, religious and anti-LGBTQ slurs and dysphemisms (<https://en.wiktionary.org>), whose text is licensed under [Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/). We read only the terms and their category names, reviewed every one by hand (many were dropped as ordinary words or names), and added our own rules. The list is private and is not distributed. Wiktionary and its contributors have not endorsed Nenya.
+The same private list also draws on the **English Wiktionary** categories of ethnic, religious and anti-LGBTQ slurs and dysphemisms (<https://en.wiktionary.org>), whose text is licensed under [Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/). We read only the terms and their category names, went through every one by hand (many were dropped as ordinary words or names), and added our own rules. The list is private and is not distributed. Wiktionary and its contributors have not endorsed Nenya.
 
 ## cardiffnlp/twitter-roberta-base-hate-latest (screening model)
 

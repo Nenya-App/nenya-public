@@ -259,3 +259,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) loosely. Nenya is
 - 2026-11-09 `d2d6a37` NVC page: an invitation to critical feedback; the report form names it
 - 2026-11-09 `4b030b1` Docs: image candidates from the Met and Openverse, and live search from the gateways scoped
 
+## 1.2.0 (the work on `dev` since the 1.1.0 merge; unreleased; summarized by area, not by commit)
+
+Dated 2026-11-13. About 110 commits. **Switched off until the owner turns them on:** the coach on production, the practice arc, the stance on mass violence and the new challenge, card offers, the distress sentences, the screening model, the Learn stance, sealed mode and partner cells. Nothing here has been reviewed by an outside professional; review by counselors, advocates, trainers, translators and others is invited (see "Contributing" in the repository).
+
+### Coach
+- A **language lane**: the site itself declines images, files, audio, video and documents, and kindly declines code, stories and financial, medical or legal advice; guards for claims about how Nenya runs and for invented human lives.
+- **Stacked questions** are each answered, in order, not only the last one.
+- A **message form check**: a message that is too short or too unclear to read is not sent and uses no turn; it never applies when a safety flag does (`kms` is now a soften phrase).
+- **Contempt for a group, or a call to harm one** (behind `COACH_VALUES=on`): the coach is told to say plainly where it stands instead of mirroring the feeling, the site adds one plain sentence when the model does not, and the practice arc steps aside. First-person intent to harm a group ("I'm going to hurt all of them") is now a stop, like intent against one person. Wishes that a group suffers or dies draw the card and the challenge.
+- **Judgment and self-judgment tiers** for blame words, with their own cards (behind `COACH_JUDGMENT_CARDS`); frame rules so that quoted, reported, denounced and negated words do not count.
+- A **screening model** (cardiffnlp, int8, run on our own server, 125 MB) behind a signed internal call, in **shadow mode** only (counts bands, changes nothing); `/api/screen` does not exist without its secret.
+
+### Detection and its evaluation
+- The private list is now **reviewed term by term** (1,128 decisions: drop, slur, send to the model, judgment tier), applied when the list is loaded; Wiktionary's slur categories added (credited); the list stays private and is never distributed.
+- An **evaluation runner** over public test sets (HateCheck, ETHOS), hand-written scenes, per-group and held-out checks, and a model bake-off, with the results written down in `docs/`. The measured result is stated plainly: **detection is uneven across groups** (hate about trans and disabled people is caught far less often than about Muslims, immigrants and women), and a second general model did not close it.
+
+### Terms, privacy and records
+- The Terms and Privacy Policy are updated (effective at the merge): a **signed note of your agreement** (the Terms' date, the time and the site version; nothing about you; not stored by us) held for the visit and copied into signed transcripts and consent receipts, and the form check.
+- Daily counters for the new behavior (counts only, no text).
+- Drafts, not applied: sending a conversation as a separate adult consent, sealed mode and partner practice, learning cards.
+
+### Site
+- The **logos on every page** open the breathing and accessibility panel, which now lets you **change the breathing pace**; a **Gem Kaleidoscope** switch (off by default).
+- A **new logo and icon set** drawn from the live gem, with a dark badge for light backgrounds; archived the old files.
+- **Light-mode contrast** fixed (muted text, gold text and buttons, emergency buttons, breathing counter) with a test over the theme's color pairs.
+- The **Touch gateway credit** for the surface pictures; credits for Wiktionary and the screening model in `ATTRIBUTIONS.md`.
+- Earlier in 1.2.0: the Where We Stand page, site-written answers, gateway changes (sliders start unset, Movement and Insight drawings, Touch surfaces from pictures, Sound to Sight), transcripts and consent receipts, history cards.
+
+### Tools and docs
+- `scripts/` for the evaluation, the model export, the Wiktionary pull, logo regeneration and uploads; `docs/dev-test-script.md` for a staging test round; scope and decision records for each of the above.
