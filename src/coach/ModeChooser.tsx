@@ -12,7 +12,9 @@ export default function ModeChooser({ onChoose, onBack }: { onChoose: (m: Extrac
     { mode: MODES.sealed, icon: <Lock className="size-5" aria-hidden="true" /> },
   ];
   return (
-    <div className="mx-auto max-w-3xl space-y-6 overflow-y-auto px-6 py-10">
+    // The page around it is pinned to the window (the app's global style), so this screen scrolls inside itself: it fills the space it is given and scrolls there.
+    <div className="h-full overflow-y-auto">
+    <div className="mx-auto max-w-3xl space-y-6 px-6 py-10">
       <header className="space-y-2">
         <h1 className="text-2xl">How should this conversation be kept?</h1>
         <p className="text-sm text-muted-foreground">
@@ -65,6 +67,7 @@ export default function ModeChooser({ onChoose, onBack }: { onChoose: (m: Extrac
       <Button variant="ghost" onClick={onBack}>
         ← Choose different colors
       </Button>
+    </div>
     </div>
   );
 }
