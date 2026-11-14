@@ -1045,3 +1045,7 @@ html {
 .dark { --focus-ring: #FAF8F5; }
 :focus-visible { outline: 3px solid var(--focus-ring) !important; outline-offset: 2px !important; }
 html { scroll-padding-top: 5rem; scroll-padding-bottom: 6rem; }
+
+/* WCAG 1.4.8 (AAA): a line of text is at most 80 characters wide. Centered text (short lines by design) is left alone. */
+.scroll-container p:not([class*="text-center"]),
+.scroll-container li:not([class*="text-center"]) { max-width: 80ch; }

@@ -25,26 +25,28 @@ Decided 2026-11-14 by the owner: Nenya designs to, and audits against, **WCAG 2.
 | Criterion (level) | Status |
 |---|---|
 | 1.4.6 Contrast, enhanced (AAA): 7:1 text, 4.5:1 large | **tested** for theme tokens and button variants (`tests/contrast.test.mts`); component-level hard-coded colors checked once by search, not guarded |
-| 1.4.8 Visual presentation (AAA): line length at most 80 characters, line spacing 1.5, paragraph spacing 1.5 times the line spacing, no justified text, user-chosen colors, resize to 200% without scrolling sideways | line height tested; **the rest not audited** (the About and Terms pages have long measures to check) |
+| 1.4.8 Visual presentation (AAA): line length at most 80 characters, line spacing 1.5, paragraph spacing 1.5 times the line spacing, no justified text, user-chosen colors, resize to 200% without scrolling sideways | line height, 80-character lines and no justified text tested; user-chosen colors and 200% resize not audited |
 | 1.4.9 Images of text (AAA): none except the logo | not audited (the logo and PDF logos are exempt; check social images and any text in pictures) |
 | 1.4.10 Reflow, 1.4.12 Text spacing (AA, in 2.1) | not audited |
 | 1.4.11 Non-text contrast (AA): 3:1 for controls' boundaries and graphics that carry meaning | **known gap**: borders at about 1.1 to 1.5:1; outline buttons and some icons rely on text. To fix or accept deliberately |
 | 1.4.13 Content on hover or focus (AA) | not audited |
 | 2.1.1, 2.1.3 Keyboard, no exception (A/AAA) | not audited (the gem, drawing canvas, body map and color pickers need a keyboard pass) |
-| 2.2.3 No timing (AAA) | **known gap**: the coach has a quiet timeout and a ticket lifetime (`chatTimeout.ts`); AAA asks for none, or that the person can turn it off or extend it. The reminder before it ends is the current mitigation |
+| 2.2.3 No timing (AAA) | met: the person can choose "Leave open"; the 30-minute ticket is an essential security limit and is stated |
 | 2.3.2 Three flashes (AAA), 2.3.3 Animation from interactions (AAA) | breathing and gem motion respect reduced motion (tested for the kaleidoscope); a full pass on every animation not done |
 | 2.4.8 Location, 2.4.9 Link purpose (link only), 2.4.10 Section headings (AAA) | the new gateway progress bar and About sections help; not audited page by page |
-| 2.5.5 Target size, enhanced (AAA): 44 by 44 CSS pixels | **known gap**: buttons are 36px high (`h-9`), small ones 32px, icon buttons 36px, the header Emergency Exit smaller. Raising the sizes changes the look of every control; an owner decision |
+| 2.5.5 Target size, enhanced (AAA): 44 by 44 CSS pixels | **mostly fixed 2026-11-14**: the shared button is 44px or more in every size (tested); header icon buttons still shrink under 360px wide; checkboxes, term-info icon and slider thumbs are not 44px (see the audit) |
 | 2.5.8 Target size, minimum (AA, new in 2.2): 24 by 24 | believed met (smallest controls are 32px); not measured. Small inline icon buttons (the term-info icon, size-3.5) need checking |
-| 2.4.11 Focus not obscured, minimum (AA) and 2.4.12 enhanced (AAA), new in 2.2 | **not audited**: the pinned Emergency Exit, the quick navigation at the bottom right and the header could cover a focused control |
-| 2.4.13 Focus appearance (AAA, new in 2.2): a visible indicator of at least 2px and 3:1 | **not audited**; the default ring color (`ring`) is the pale gold, about 1.45:1 on the light page, so this very likely fails in light mode |
-| 2.5.7 Dragging movements (AA, new in 2.2): a single-pointer alternative to dragging | **not audited**: the drawing canvas, body map placements and sliders |
+| 2.4.11 Focus not obscured, minimum (AA) and 2.4.12 enhanced (AAA), new in 2.2 | **fixed 2026-11-14**: scroll padding top and bottom (tested); not verified with a keyboard walk |
+| 2.4.13 Focus appearance (AAA, new in 2.2): a visible indicator of at least 2px and 3:1 | **fixed 2026-11-14**: solid 3px outline, 3:1 or more in both themes (tested) |
+| 2.5.7 Dragging movements (AA, new in 2.2): a single-pointer alternative to dragging | **body map fixed 2026-11-14** (keys and click alternatives); sliders are keyboard-operable; the drawing canvas has no alternative (open) |
 | 3.2.6 Consistent help (A, new in 2.2) | probably met (Emergency Exit and the footer contact are in the same place on every page); not audited |
 | 3.3.7 Redundant entry (A, new in 2.2) | the Present and Wish steps keep what was entered when going back and forth (tested by structure); not audited elsewhere |
 | 3.3.8 and 3.3.9 Accessible authentication, minimum (AA) and enhanced (AAA), new in 2.2 | only the owner's admin sign-in uses a password; not audited. Visitors never authenticate |
-| 3.1.3 Unusual words, 3.1.4 Abbreviations, 3.1.5 Reading level (AAA): lower secondary education or a simpler version | **not audited**; the About and Terms texts are long and in places advanced. Needs a reading-level pass and, where above it, a plain summary |
+| 3.1.3 Unusual words, 3.1.4 Abbreviations, 3.1.5 Reading level (AAA): lower secondary education or a simpler version | **audited 2026-11-14**: many About pages are grade 11 to 15; plain-language summaries proposed, not written (see the audit) |
 | 3.2.5 Change on request (AAA): no automatic context change | not audited (the Back-after-Emergency-Exit guard is deliberate and user-initiated) |
 | 3.3.5 Help, 3.3.6 Error prevention (AAA) | partly (the form check explains itself; confirmations before sending anything); not audited |
 | 4.1.2 Name, role, value; 4.1.3 Status messages (AA); 4.1.1 Parsing was removed in 2.2 | partly (progress bar, live regions, `aria-live` on Share and the stage line); not audited |
 
 **How to audit:** go through the table row by row on staging, keyboard only, with a screen reader and at 200% zoom and 320px width, in light and dark; record what fails in `docs/accessibility-audit-<date>.md`; turn each fixable failure into a test where a test can catch it.
+
+**Latest audit and what is left:** `docs/accessibility-audit-2026-11-14.md`. Source-level checks live in `tests/a11y-static.test.mts` and `tests/contrast.test.mts`.
