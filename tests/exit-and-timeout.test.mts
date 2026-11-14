@@ -33,7 +33,7 @@ ok('the pinned Exit sits above every overlay and respects the phone notch', /z-\
 ok('the coach page and the verify page carry one too', src('src/coach/CoachPage.tsx').includes('<EmergencyExitDock') && src('src/verify/VerifyPage.tsx').includes('<EmergencyExitDock show'));
 
 // ---- the quiet timeout
-ok('the choices are 10, 15 and 20 minutes plus leave open, and stop short of the ticket lifetime', JSON.stringify(TIMEOUT_CHOICES) === '[10,15,20]' && Math.max(...TIMEOUT_CHOICES) < TICKET_MINUTES && DEFAULT_TIMEOUT === 15);
+ok('the choices are 10, 15 and 20 minutes plus leave open (the default), and stop short of the ticket lifetime', JSON.stringify(TIMEOUT_CHOICES) === '[10,15,20]' && Math.max(...TIMEOUT_CHOICES) < TICKET_MINUTES && DEFAULT_TIMEOUT === 'open');
 ok('the ticket lifetime here matches the server', new RegExp(`TICKET_TTL_MS = ${TICKET_MINUTES} \\* 60 \\* 1000`).test(src('netlify/functions/coach.mts')));
 ok('nothing happens early', quietState(15, 0).kind === 'fine' && quietState(15, 9 * MIN).kind === 'fine');
 const w = quietState(15, 10 * MIN + 1);

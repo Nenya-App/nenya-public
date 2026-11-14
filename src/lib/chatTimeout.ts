@@ -8,7 +8,7 @@
 export const TICKET_MINUTES = 30; // keep in step with TICKET_TTL_MS in netlify/functions/coach.mts
 export const TIMEOUT_CHOICES = [10, 15, 20] as const;
 export type TimeoutChoice = (typeof TIMEOUT_CHOICES)[number] | 'open';
-export const DEFAULT_TIMEOUT: TimeoutChoice = 15;
+export const DEFAULT_TIMEOUT: TimeoutChoice = 'open'; // Owner's choice 2026-11-14: off by default; the person can still pick 10, 15 or 20 minutes
 
 /** Leave-open conversations get one reminder when this much quiet has passed, before the server's 30 minutes run out. */
 export const OPEN_REMINDER_MINUTES = 20;
