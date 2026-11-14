@@ -8,7 +8,7 @@ import { checkConversation, type SafetyFlag } from '../lib/safetyFlags';
 import { checkMessageForm, SHORT_NOTICE, UNCLEAR_NOTICE, type FormProblem } from '../lib/messageGate';
 import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
-import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/veniceLinks';
+import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL, VENICE_TERMS_URL, VENICE_PRIVACY_URL, VENICE_DIFFERENCES } from '../lib/veniceLinks';
 import { noteSafetyStop, veniceOfferAllowed } from '../lib/veniceOffer';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
 import { OWNER_KEY, OWNER_TOKEN_KEY, REST_KEY } from '../lib/deviceMemory';
@@ -443,7 +443,12 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       <div className="rounded-lg border border-amber-500/60 p-3 text-sm">
         <p className="mb-1 font-medium">Before you go: it is not the same as this demo.</p>
         <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-          <li>You leave Nenya. Venice AI&rsquo;s terms and privacy policy apply, not ours.</li>
+          <li>
+            You leave Nenya. Venice AI&rsquo;s{' '}
+            <a href={VENICE_TERMS_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>terms</a> and{' '}
+            <a href={VENICE_PRIVACY_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>privacy policy</a> apply,
+            not ours. {VENICE_DIFFERENCES}
+          </li>
           <li>
             Nenya&rsquo;s protections do not run there: no identifier scrubbing, no crisis check, no
             screening for attempts to steer the coach, and no five-exchange limit. Please leave out names and
@@ -675,6 +680,21 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   on or kept.
                 </li>
                 <li>Please leave out names, addresses, and other identifying details.</li>
+                <li>
+                  It is for people 13 and older, or the minimum age in your country. If you are under 18, please use it only
+                  with a parent&rsquo;s or guardian&rsquo;s consent.
+                </li>
+                <li>
+                  The replies are written by an AI model run by Venice AI. They can be wrong, incomplete or offensive, and
+                  they are not medical, legal, financial or mental health advice. Venice AI&rsquo;s own{' '}
+                  <a href={VENICE_TERMS_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>terms</a> and{' '}
+                  <a href={VENICE_PRIVACY_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>privacy policy</a>{' '}
+                  apply to what it receives.
+                </li>
+                <li>
+                  Please do not use it for anything illegal, to harm or exploit a child, to impersonate anyone or
+                  misstate your age, or through bots or scripts.
+                </li>
                 <li>
                   This is not therapy and it cannot help in a crisis. In the US, call or text 988. If you are in
                   immediate danger, call your local emergency number.

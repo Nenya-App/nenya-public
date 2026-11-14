@@ -53,7 +53,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 2,
         heading: 'Who may use Nenya',
         paragraphs: [
-          'Nenya is for people aged 13 and older, or the minimum age in your country for using online services on your own, whichever is higher. If you are younger, please use it only with a parent or guardian.',
+          'Nenya is for people aged 13 and older, or the minimum age in your country for using online services on your own, whichever is higher. If you are younger, please use it only with a parent or guardian. If you are under 18, please use the coach demo only with a parent’s or guardian’s consent.',
         ],
       },
       {
@@ -63,6 +63,7 @@ export const LEGAL_PARTS: LegalPart[] = [
           'By entering, you agree to use Nenya for personal reflection. You are responsible for your own well-being: if you feel unsettled or overwhelmed at any point, step away and return to your surroundings.',
           'Strong feelings, including anger and disagreement with Nenya or the coach, are welcome. The coach is software; it is not hurt by what you say, and hostile words aimed at it are not a reason for it to end your conversation.',
           'Please do not use Nenya to produce or share language that treats a person or a group as less than human (for example calling people animals, vermin or a disease, or wishing them gone), to threaten or harass anyone, or to plan harm. If a conversation goes that way, the coach may say plainly where it stands, turn back to your own feelings and needs, or decline to continue. These checks are simple phrase matching and can be wrong.',
+          'In the coach demo, please also do not: use it for anything illegal; produce anything that abuses or exploits a child; infringe anyone’s rights, including their privacy or the use of their name, voice or likeness; misstate your age or pretend to be someone else; use bots, scripts or automated requests; try to get around its checks or security; resell or pass on access to it; or rely on it where a wrong reply could cause death, serious injury or significant harm. Venice AI, which runs the model behind the coach, asks the same of everyone who uses its service, through us or directly.',
           'If a message suggests you may be in distress or in danger, the coach responds with care and resources, as Sections 4 and 15 describe.',
         ],
       },
@@ -99,6 +100,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         heading: 'No warranties',
         paragraphs: [
           'Nenya is free and provided “as is” and “as available.” To the fullest extent the law allows, we make no warranties of any kind, express or implied, including that the site will be uninterrupted, error-free, secure or fit for a particular purpose, and we do not promise any particular effect on your well-being.',
+          'This includes the coach demo’s replies, which are written by an AI model run by Venice AI, not by us. They can be wrong, incomplete or offensive; they are not medical, legal, financial, tax or mental health advice; and you rely on them at your own risk. We make no promise on Venice AI’s behalf about its service.',
         ],
       },
       {
@@ -106,6 +108,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         heading: 'Limitation of liability',
         paragraphs: [
           'To the fullest extent the law allows, we are not liable for indirect, incidental, special, consequential or punitive damages, or for any loss from using or being unable to use the site. Where liability cannot be excluded, our total liability to you is limited to USD $100. Nothing here limits liability that cannot lawfully be limited (in some places, for death or personal injury caused by negligence, or for fraud), or any rights you have as a consumer where you live.',
+          'To the same extent, these disclaimers and limits also protect Venice AI, which provides the model behind the coach demo, for anything arising from your use of the demo.',
         ],
       },
       {
@@ -167,7 +170,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         ],
         subsections: [
           { heading: 'Where your words go', paragraphs: [
-            'Your messages go through our server (hosted by Netlify) to Venice AI, which writes the replies. A conversation has at most five exchanges, and a message at most 500 characters. We do not store your messages or the replies and do not write them to our logs; they live in your browser tab and are gone when you close it. Venice AI handles what it receives under its own terms and privacy policy, which we do not control. The coach currently uses Qwen 2.5 7B, a small model, in a mode Venice labels “Private”: our server encrypts your message so that only Venice’s secure processing environment can read it, and Venice’s service relays only encrypted data. This is not encryption from your device: your message first reaches our server, which reads it in memory to remove identifiers, check for crisis and screen it, and does not store it. We may change the model; if we move to one without this protection, we will say so here first. Venice and Netlify may process data outside your country.',
+            'Your messages go through our server (hosted by Netlify) to Venice AI, which writes the replies. A conversation has at most five exchanges, and a message at most 500 characters. We do not store your messages or the replies and do not write them to our logs; they live in your browser tab and are gone when you close it. Venice AI handles what it receives under its own terms (https://venice.ai/legal/tos) and privacy policy (https://venice.ai/legal/privacy-policy), which we do not control. Venice AI’s terms say it does not use what it receives to train AI models and requires the model providers it works with not to either. The coach currently uses Qwen 2.5 7B, a small model, in a mode Venice labels “Private”: our server encrypts your message so that only Venice’s secure processing environment can read it, and Venice’s service relays only encrypted data. This is not encryption from your device: your message first reaches our server, which reads it in memory to remove identifiers, check for crisis and screen it, and does not store it. We may change the model; if we move to one without this protection, we will say so here first. Venice and Netlify may process data outside your country.',
           ] },
           { heading: 'Removing identifiers', paragraphs: [
             'Before a message is sent, the page replaces some common identifiers (email addresses, phone numbers, street addresses, some names) with placeholders, and our server does it again. This is not a guarantee, and most names are not caught, so please leave out names, contact details and anything else identifying.',
@@ -195,7 +198,7 @@ export const LEGAL_PARTS: LegalPart[] = [
             'To count the per-connection limit, our server reads your IP address when you send a message, mixes it (for IPv6, its network part) with the date and a secret key into a one-way code, and keeps one number under that code: how many messages the connection sent today. A conversation’s messages count against the connection that started it, so the code also travels inside the signed ticket your page holds during the conversation. Nobody without the key can turn the code back into your address, it changes every day, and it is deleted within two days. Nothing else is stored with it. If our store cannot be reached, the limit is skipped rather than blocking you. “Forget me” cannot reset it, because it is not on your device.',
           ] },
           { heading: 'Continuing on Venice', paragraphs: [
-            'When the demo ends without a safety notice, the page offers a link to continue with the same character on Venice AI’s own site. After a safety stop it does not, here or on the review page, for the rest of your visit: the emergency numbers and support lines are the next step, and none of Nenya’s checks run on Venice. The page remembers the stop only in its memory, never in storage, so nothing on your device records it. Venice AI is a separate service under its own terms and privacy policy; none of the checks above run there, and nothing from the demo is carried over. The Venice links carry Nenya’s referral code: if you sign up for a paid Pro account through them, Nenya earns $10 in Venice credits, which help pay for the demo, and you receive a $10 welcome bonus. It costs you nothing extra, and you can go to venice.ai directly instead.',
+            'When the demo ends without a safety notice, the page offers a link to continue with the same character on Venice AI’s own site. After a safety stop it does not, here or on the review page, for the rest of your visit: the emergency numbers and support lines are the next step, and none of Nenya’s checks run on Venice. The page remembers the stop only in its memory, never in storage, so nothing on your device records it. Venice AI is a separate service under its own terms and privacy policy (linked above); none of the checks above run there, and nothing from the demo is carried over. Its terms differ from ours: for example, most features need an account, anyone under 18 needs a parent’s or guardian’s consent, the service is intended for people in the United States, and disputes go to binding individual arbitration with no class actions, unless you opt out by mail within 30 days. The Venice links carry Nenya’s referral code: if you sign up for a paid Pro account through them, Nenya earns $10 in Venice credits, which help pay for the demo, and you receive a $10 welcome bonus. It costs you nothing extra, and you can go to venice.ai directly instead.',
           ] },
           { heading: 'Legal basis', paragraphs: [
             'GDPR Art. 6(1)(a): your consent, given when you start the demo after reading the notice on its first screen.',

@@ -5,7 +5,7 @@ import { Gateway, GatewayData } from '../../App';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { BodyMapData } from '../BodyMapAvatar';
 import { AppFooter } from '../AppFooter';
-import { REFERRAL_NOTE, VENICE_CHARACTER_URL } from '../../../lib/veniceLinks';
+import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_TERMS_URL, VENICE_PRIVACY_URL, VENICE_DIFFERENCES } from '../../../lib/veniceLinks';
 import { veniceOfferAllowed } from '../../../lib/veniceOffer';
 import { SubmitSensoryReportForm } from '../SubmitSensoryReportForm';
 import { formatBodyMapLines, formatGatewayData, gatewayTitles, isBodyMapUsed } from '../../../lib/reportText';
@@ -173,9 +173,11 @@ export default function GatewayReviewPage({
               {veniceOfferAllowed() && (
               <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
                 To go deeper with the same coach character, download a report above, then open it on Venice AI and attach
-                the file there. That is Venice AI&rsquo;s own service, not Nenya&rsquo;s: its terms and privacy policy
+                the file there. That is Venice AI&rsquo;s own service, not Nenya&rsquo;s: its{' '}
+                <a href={VENICE_TERMS_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">terms</a> and{' '}
+                <a href={VENICE_PRIVACY_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">privacy policy</a>{' '}
                 apply, and Nenya&rsquo;s checks (identifier scrubbing, safety notices, the five-exchange limit) do not run
-                there. Nothing is sent from this page. Please remove any names or details you would not want shared.{' '}
+                there. {VENICE_DIFFERENCES} Nothing is sent from this page. Please remove any names or details you would not want shared.{' '}
                 {REFERRAL_NOTE}
               </p>
               )}

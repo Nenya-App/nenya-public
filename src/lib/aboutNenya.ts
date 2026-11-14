@@ -184,7 +184,7 @@ export const ANSWERS: Answer[] = [
     checks: [
       { claim: 'messages go through our server (Netlify) to Venice AI; five exchanges; 500 characters', file: TERMS, has: 'A conversation has at most five exchanges, and a message at most 500 characters' },
       { claim: 'we do not store messages or replies and do not write them to logs', file: TERMS, has: 'We do not store your messages or the replies and do not write them to our logs' },
-      { claim: 'Venice handles what it receives under its own terms; may process outside your country', file: TERMS, has: 'which we do not control. The coach currently uses Qwen 2.5 7B' },
+      { claim: 'Venice handles what it receives under its own terms; may process outside your country', file: TERMS, has: 'Venice AI handles what it receives under its own terms (https://venice.ai/legal/tos)' },
       { claim: 'identifiers are replaced before sending, not a guarantee, most names not caught', file: TERMS, has: 'most names are not caught' },
       { claim: 'the code limits the model, 500 characters', file: COACH, has: 'const MAX_USER_CHARS = 500' },
     ],
