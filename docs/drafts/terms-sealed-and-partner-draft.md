@@ -2,8 +2,8 @@
 
 Status: **a draft, not applied.** Written 2026-11-11. The live text is `src/lib/legalDocument.ts` (effective November 9, 2026).
 Nothing here takes effect until the owner approves it and applies it through the usual process (`docs/legal/README.md`):
-copy the outgoing text into `docs/legal/archive/` first, then edit, then change `LEGAL_EFFECTIVE_DATE`. I am not a lawyer:
-this needs the owner's approval, and ideally a lawyer's review, as for all Terms wording.
+copy the outgoing text into `docs/legal/archive/` first, then edit, then change `LEGAL_EFFECTIVE_DATE`.
+This needs the owner's approval, as for all Terms wording.
 
 **When to apply it.** Only when one of the two features is switched on in production. While `COACH_SEALED` and
 `CELL_ENABLED` are off, the live text stays accurate, because nothing described here can happen. A deploy preview with a

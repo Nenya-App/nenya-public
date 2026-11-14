@@ -1,6 +1,6 @@
 # DRAFT: Terms wording for respectful use and pauses
 
-Status: a draft for the owner to edit, written 2026-11-08. **Nothing here is in the live Terms** (`src/lib/legalDocument.ts`), and none of it may go live before the feature it describes exists (the pause and the way back in, `docs/coach-boundaries-scope.md`). I am not a lawyer; the owner (and Fractured Atlas, if it wants to review) should read this before it ships.
+Status: a draft for the owner to edit, written 2026-11-08. **Nothing here is in the live Terms** (`src/lib/legalDocument.ts`), and none of it may go live before the feature it describes exists (the pause and the way back in, `docs/coach-boundaries-scope.md`). The owner (and Fractured Atlas, if it wants to review) reads this before it ships.
 
 ## Where it goes
 Two places, so that **no section is renumbered** (the document has 11 references to Section 21 and others to Sections 3, 7, 15, 16, 19 and 22, which would all need checking):

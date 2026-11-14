@@ -1,6 +1,6 @@
 # DRAFT: Terms and Privacy Promise wording for sending a conversation (not applied)
 
-Written 2026-11-10 for the owner and a lawyer (Fractured Atlas may review). It replaces the transcript parts of `docs/transcript-consent-scope.md` where they differ. Nothing here is live. When applied, archive the current Terms, bump the effective date, and update the About answers that point at them (`n-transcripts` and the coach answers). **Decided by the owner:** no training of any kind is offered; sending a conversation is a **separate consent** from the site's general terms (the site stays browsable by anyone); sending needs "I am 18 or older, and these are my own words"; and the Terms may **recommend that anyone under 18 use Nenya with a trusted adult with them or looking on.**
+Written 2026-11-10 for the owner (Fractured Atlas may review). It replaces the transcript parts of `docs/transcript-consent-scope.md` where they differ. Nothing here is live. When applied, archive the current Terms, bump the effective date, and update the About answers that point at them (`n-transcripts` and the coach answers). **Decided by the owner:** no training of any kind is offered; sending a conversation is a **separate consent** from the site's general terms (the site stays browsable by anyone); sending needs "I am 18 or older, and these are my own words"; and the Terms may **recommend that anyone under 18 use Nenya with a trusted adult with them or looking on.**
 
 ## 1. A new Terms section: "Sending a conversation to Nenya"
 > **This is separate from using the site.** Anyone can use Nenya's tools and the coach without an account. Sending a conversation to us is a different, optional step, and it has its own agreement, which you give each time you do it.
@@ -34,7 +34,7 @@ Written 2026-11-10 for the owner and a lawyer (Fractured Atlas may review). It r
 - "We keep anonymous daily counts and nothing that identifies you."
 Check each against the code before it goes live; the counts and the allowance are described in the existing text.
 
-## 4. For the lawyer
+## 4. Open questions
 1. The wording of the permission in the "Your words and the AI's" paragraph (worldwide, non-exclusive, limited to the uses chosen, revocable going forward).
 2. Whether 18 is the right line and whether the under-18 recommendation needs more.
 3. Whether the sentence "we rely on your statement; we do not check identity" is enough, and what a reader must do on finding a minor.

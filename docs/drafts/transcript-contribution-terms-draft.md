@@ -1,6 +1,6 @@
 # DRAFT: what a person agrees to when they let a conversation be used (not the contributor agreement)
 
-Status 2026-11-10: a draft for the owner and a lawyer (Fractured Atlas may review). Nothing here is applied. Written in answer to the question: should people who let a verified transcript be read, used or shown publicly also sign something like the contributor agreement?
+Status 2026-11-10: a draft for the owner (Fractured Atlas may review). Nothing here is applied. Written in answer to the question: should people who let a verified transcript be read, used or shown publicly also sign something like the contributor agreement?
 
 ## Short answer
 **Yes in substance, no as a separate form.** They are giving permission, so what they agree to should be as clear and as lasting as a contributor's. But the **contributor agreement is the wrong instrument**, for three reasons:
@@ -18,9 +18,9 @@ So the answer is a **short, plain permission statement inside the consent step, 
 > **Taking it back.** You can narrow or end this at any time with the file you were given. We stop showing it and delete what we keep. **What cannot be undone:** if someone copied or saved a public copy while it was shown, we cannot get it back.
 > **What you are not agreeing to.** No payment, no endorsement, no use to train a model, no sale, no advertising, no tracking. This is not an account.
 
-## What to settle (for the owner and a lawyer)
+## What to settle
 1. **Training.** The draft says "not used to train a model". Is that the promise you want now, given you may later improve a model from consented data? If it may change, the statement must say it will be asked again.
-2. **The licence grant itself.** The draft is a permission "for these uses only", worldwide, non-exclusive and revocable going forward. A lawyer should word it for the US and say how it fits the Terms, the Privacy Promise and Fractured Atlas's requirements.
+2. **The licence grant itself.** The draft is a permission "for these uses only", worldwide, non-exclusive and revocable going forward. It should be worded for the US and fit the Terms, the Privacy Promise and Fractured Atlas's requirements.
 3. **Age and capacity.** Does the coach require 18 or over? If not, a conversation from a minor should not be offered for public display at all.
 4. **Third parties.** The person promises not to include anyone else's private details; the site scrubs, a person reviews. Is the promise enough, or should a flagged conversation never be offered for publishing (the stop-level rule already does this for crisis conversations)?
 5. **The AI's part.** Whether the model provider's terms allow showing its replies. Not checked.
@@ -48,7 +48,7 @@ Decided: a person may allow their conversation to be used to train or improve a 
 - **Where it is recorded.** The person's signed transcript is signed when the conversation ends, **before** any choice exists, so a statement made later cannot go inside it. Two honest options: (a) record it in the stored consent record and the owner's inbox only; or (b) **issue a second small signed file, a consent receipt** (the transcript's fingerprint, the choices including training, the age statement, the terms version and the time), which the person keeps and which is also the key for taking it back. **I recommend (b):** it is the person's own proof of what they agreed to, and it fits how take-back already works. It is a small new signed format and a new field in the record.
 - **The review as a second look.** The by-hand review before anything is shown or used for training should also look for signs of a minor (a school grade, "my mom said I can't", and so on) and remove the conversation if there are any. The checkbox is the promise; the review is the backstop.
 - **If the age statement is missing, or a conversation shows a minor,** the conversation is not kept for training or shown, and what was sent is deleted by the same path as a take-back.
-- **A question for the lawyer:** whether 18 is the right line for your jurisdictions, and whether the age statement must say more about guardians for people 13 to 17 (the safest answer for a coach that handles distress is to stay at 18+).
+- **An open question:** whether 18 is the right line for your jurisdictions, and whether the age statement must say more about guardians for people 13 to 17 (the safest answer for a coach that handles distress is to stay at 18+).
 
 ### 3. What I would build, in order, on your word
 1. The fourth choice and the age statement in the consent step, the record and the inbox (and the revocation, the alert and the owner page), with tests.

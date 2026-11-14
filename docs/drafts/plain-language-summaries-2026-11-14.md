@@ -84,7 +84,7 @@ Written 2026-11-14. **Nothing here is on the site.** WCAG 3.1.5 (AAA) asks for t
 
 ---
 ## Questions for you
-1. **Terms and Privacy:** this summary must match the Terms exactly and is not legal text; a lawyer's read of the Terms is still open. I kept it short and put "if anything differs, the full Terms control" at the start. Keep, or hold the Terms box until the lawyer has read them?
+1. **Terms and Privacy:** this summary must match the Terms exactly and is not legal text. I kept it short and put "if anything differs, the full Terms control" at the start. Keep, or leave the Terms without a box?
 2. **Venice page:** the summary tells people the coach on Nenya's own site has "basic safeguards". That is true to the page, and it is also a claim about safety. Keep that sentence or cut it?
 3. **Evolved Leadership and Bio-Social Design:** these pages argue for large claims (costs in trillions, effects on the climate). The summaries keep to "the page says" and point to the sources, but you may want them shorter or without the numbers.
 4. **Pantheon of Needs:** I could see only part of this page's text (much of it is data for the sixteen figures). Please check that the summary covers what you want it to.

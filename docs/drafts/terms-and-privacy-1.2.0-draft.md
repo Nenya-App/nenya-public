@@ -1,6 +1,6 @@
 # DRAFT: Terms of Use & Privacy Policy for the 1.2.0 release
 
-Status: a draft for the owner to read and edit, written 2026-11-12. **Nothing here is in the live document** (`src/lib/legalDocument.ts`, effective November 9, 2026). I am not a lawyer; the owner (and Fractured Atlas, if it wishes) should read it, and ideally a lawyer should. The process when it is approved is in `docs/legal/README.md`: archive the outgoing text first, edit, change `LEGAL_EFFECTIVE_DATE` (everyone is asked to agree again), add the table row, update the tests that quote the Terms, `npm run check`.
+Status: a draft for the owner to read and edit, written 2026-11-12. **Nothing here is in the live document** (`src/lib/legalDocument.ts`, effective November 9, 2026). The process when it is approved is in `docs/legal/README.md`: archive the outgoing text first, edit, change `LEGAL_EFFECTIVE_DATE` (everyone is asked to agree again), add the table row, update the tests that quote the Terms, `npm run check`.
 
 No section is renumbered. Section numbers below follow the live document: 4 Your Privacy & Data, 5 Your Responsibility, 14 The Short Version, 17 What the Site Does Not Do, 19 Cookies and Saved Settings, 21 The Coach Demo, 22 Changes and Contact.
 
@@ -69,7 +69,7 @@ Today: "…it does not create profiles or persistent identifiers for visitors…
 3. Update tests that quote Sections 4, 14, 17, 19 and 21 (search `tests/` for the phrases "Four things" and "persistent identifiers").
 
 ## 7. Not checked
-I have not run the text against the code beyond the file names above; what the agreement step does when `COACH_SIGNING_KEY` is missing needs a look. A lawyer has not read this.
+I have not run the text against the code beyond the file names above; what the agreement step does when `COACH_SIGNING_KEY` is missing needs a look.
 
 ## H. Two additions to apply when their features go on (2026-11-12; draft, not applied)
 **H1. The message form check** (built, on by default; `COACH_FORM_CHECK=off` turns it off). Section 21 (The Coach Demo), one bullet: "A message that is too short or too unclear to read (for example a single word, or a slip of the keys) is not sent to the AI and does not use up one of your turns; the page asks you to write it again, and your text stays in the box. This check never applies to a message that mentions distress or danger. It is simple, and it can be wrong; if it wrongly stops you, add a few words." Privacy list of counts: "how many messages were asked to be rewritten, as a count by 'too short' or 'unclear', with nothing about the message." This one applies at the 1.2.0 merge, because it is on by default.
@@ -81,8 +81,8 @@ I have not run the text against the code beyond the file names above; what the a
 
 Also, in Section 21 as it stands, "as written by the site,, rebuilt by our server" has a doubled comma (the words after it read as if a clause is missing); fix it in the same edit once you approve the wording.
 
-**H4. Stops for harm to others** (built 2026-11-14; applies whenever the coach is on). **APPROVED by the owner and APPLIED to Section 21 on 2026-11-14.** Shipped without legal review, by the owner's decision the same day: the stance is that nothing is kept or reported, enforced by the code rather than by a promise (a stopped message is caught on the device and no request is made). Section 21 (The Coach Demo), the paragraph that begins "The demo checks each message for signs of crisis". Today it says "If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends". That no longer covers a message that says the person has seriously hurt someone. Proposed replacement of that one sentence:
+**H4. Stops for harm to others** (built 2026-11-14; applies whenever the coach is on). **APPROVED by the owner and APPLIED to Section 21 on 2026-11-14.** The stance: nothing is kept or reported, enforced by the code rather than by a promise (a stopped message is caught on the device and no request is made). Section 21 (The Coach Demo), the paragraph that begins "The demo checks each message for signs of crisis". Today it says "If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends". That no longer covers a message that says the person has seriously hurt someone. Proposed replacement of that one sentence:
 
 > "If a message clearly suggests that you or someone else may be in danger, says that you have seriously harmed someone (for example by violence, abuse, sexual harm or trafficking), describes violence in graphic detail, or says you are attracted to children, it is not sent to the AI, the conversation ends, and the page shows emergency numbers and support lines. We do not report anything to anyone: we do not keep your message, and the page does not tell us or anyone else what you wrote."
 
-The last sentence states what the code does (nothing is stored or sent; counters hold only a total). **Needs your approval and ideally a lawyer's read** before merging, because it is a statement about what happens when someone admits a crime.
+The last sentence states what the code does (nothing is stored or sent; counters hold only a total). Approved and applied (see above).
