@@ -1,6 +1,6 @@
-# Accessibility standard: WCAG AAA is the goal
+# Accessibility standard: WCAG 2.1, level AAA
 
-Decided 2026-11-14 by the owner: Nenya aims for **WCAG 2.2 AAA** and keeps that as the goal for every future design.
+Decided 2026-11-14 by the owner: Nenya designs to, and audits against, **WCAG 2.1 (https://www.w3.org/TR/WCAG21/) at level AAA**, for every future design. (2.1, not 2.2: the 2.2 additions are not in the standard; where they are good practice we may follow them, but an audit is against 2.1.)
 
 ## What the tests hold today (`tests/contrast.test.mts`, `tests/gateway-flow.test.mts`)
 - **Text contrast of 7:1 or more**, for every theme text color on every surface it is used on, in light and dark, large text included (so nothing depends on size).
@@ -20,3 +20,24 @@ Decided 2026-11-14 by the owner: Nenya aims for **WCAG 2.2 AAA** and keeps that 
 - **Borders and other non-text boundaries** are not held to a ratio (AAA adds nothing over AA here; AA asks 3:1 for a control's boundary when it is the only cue). Outline-style buttons rely on their text for identification.
 - **Colors the owner's own palettes produce** (the colors a visitor picks, the Valar-inspired schemes) are the visitor's and are not checked.
 - The tests read tokens and source; they do not render pages. By-eye checks of each page, in light and dark, remain with a person.
+
+## Audit checklist, by principle (WCAG 2.1 AAA). Status is honest: "tested" means a test in this repository fails if it regresses; everything else has NOT been audited yet.
+| Criterion (level) | Status |
+|---|---|
+| 1.4.6 Contrast, enhanced (AAA): 7:1 text, 4.5:1 large | **tested** for theme tokens and button variants (`tests/contrast.test.mts`); component-level hard-coded colors checked once by search, not guarded |
+| 1.4.8 Visual presentation (AAA): line length at most 80 characters, line spacing 1.5, paragraph spacing 1.5 times the line spacing, no justified text, user-chosen colors, resize to 200% without scrolling sideways | line height tested; **the rest not audited** (the About and Terms pages have long measures to check) |
+| 1.4.9 Images of text (AAA): none except the logo | not audited (the logo and PDF logos are exempt; check social images and any text in pictures) |
+| 1.4.10 Reflow, 1.4.12 Text spacing (AA, in 2.1) | not audited |
+| 1.4.11 Non-text contrast (AA): 3:1 for controls' boundaries and graphics that carry meaning | **known gap**: borders at about 1.1 to 1.5:1; outline buttons and some icons rely on text. To fix or accept deliberately |
+| 1.4.13 Content on hover or focus (AA) | not audited |
+| 2.1.1, 2.1.3 Keyboard, no exception (A/AAA) | not audited (the gem, drawing canvas, body map and color pickers need a keyboard pass) |
+| 2.2.3 No timing (AAA) | **known gap**: the coach has a quiet timeout and a ticket lifetime (`chatTimeout.ts`); AAA asks for none, or that the person can turn it off or extend it. The reminder before it ends is the current mitigation |
+| 2.3.2 Three flashes (AAA), 2.3.3 Animation from interactions (AAA) | breathing and gem motion respect reduced motion (tested for the kaleidoscope); a full pass on every animation not done |
+| 2.4.8 Location, 2.4.9 Link purpose (link only), 2.4.10 Section headings (AAA) | the new gateway progress bar and About sections help; not audited page by page |
+| 2.5.5 Target size (AAA): 44 by 44 CSS pixels | **known gap**: buttons are 36px high (`h-9`), small ones 32px, icon buttons 36px, the header Emergency Exit smaller. Raising the sizes changes the look of every control; an owner decision |
+| 3.1.3 Unusual words, 3.1.4 Abbreviations, 3.1.5 Reading level (AAA): lower secondary education or a simpler version | **not audited**; the About and Terms texts are long and in places advanced. Needs a reading-level pass and, where above it, a plain summary |
+| 3.2.5 Change on request (AAA): no automatic context change | not audited (the Back-after-Emergency-Exit guard is deliberate and user-initiated) |
+| 3.3.5 Help, 3.3.6 Error prevention (AAA) | partly (the form check explains itself; confirmations before sending anything); not audited |
+| 4.1.2 Name, role, value; 4.1.3 Status messages (AA) | partly (progress bar, live regions, `aria-live` on Share and the stage line); not audited |
+
+**How to audit:** go through the table row by row on staging, keyboard only, with a screen reader and at 200% zoom and 320px width, in light and dark; record what fails in `docs/accessibility-audit-<date>.md`; turn each fixable failure into a test where a test can catch it.
