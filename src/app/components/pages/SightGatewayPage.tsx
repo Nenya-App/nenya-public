@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
+import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStages';
+import { GatewayProgress } from '../GatewayProgress';
 import { ColorNameSuggest } from '../ColorNameSuggest';
 import { PalettePanel } from '../PalettePanel';
 import type { GeneratedPalette } from '../../../lib/colorSchemes';
@@ -107,6 +109,8 @@ const INSTRUCTION_CARDS = [
 export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap, melodyColors, melodyShared = false, soundComesLater = true }: SightGatewayPageProps) {
   const { theme } = useTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState<PairStage>('present');
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Step state: 'instructions' or 'selection'
   const [step, setStep] = useState<'instructions' | 'selection'>('instructions');
@@ -218,9 +222,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   Sight - Chromesthesia
                   <GatewaySubtitleLink href="https://en.wikipedia.org/wiki/Chromesthesia" />
                 </h1>
-                <p className="text-xs text-muted-foreground">
-                  Gateway {currentIndex + 1} of {totalGateways}
-                </p>
+                <GatewayProgress index={currentIndex} total={totalGateways} />
               </div>
             </div>
 
@@ -308,7 +310,9 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               )}
 
               {/* Two Color Cards Side by Side */}
-              <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+              <div className="mx-auto w-full max-w-2xl">
+                <StageIntro stage={stage} />
+                <StageSlot stage="present" current={stage}>
                 {/* Present State Card */}
                 <Card
                   className="transition-all hover:shadow-lg overflow-hidden"
@@ -382,6 +386,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   </CardContent>
                 </Card>
 
+                </StageSlot>
+                <StageSlot stage="wish" current={stage}>
                 {/* Potential State Card */}
                 <Card
                   className="transition-all hover:shadow-lg overflow-hidden"
@@ -454,8 +460,11 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                     />
                   </CardContent>
                 </Card>
+              </StageSlot>
               </div>
 
+              {stage === 'wish' && (
+              <>
               <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} soundComesLater={soundComesLater} />
 
               <BodyMapAvatar
@@ -467,7 +476,12 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 initialNotes={bodyMapData.notes}
               />
 
-              {/* Next Button */}
+                            </>
+              )}
+              <StageNav stage={stage} onChange={setStage} />
+
+{/* Next Button */}
+              {stage === 'wish' && (
               <div className="flex justify-center pt-4">
                 <Button
                   size="lg"
@@ -478,6 +492,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Enter Session'}
                 </Button>
               </div>
+              )}
             </div>
           )}
 

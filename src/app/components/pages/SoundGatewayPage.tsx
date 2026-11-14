@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStages';
+import { GatewayProgress } from '../GatewayProgress';
 import { getReadableTextColor } from '../ColorUtils';
 import { Button } from '../ui/button';
 import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
@@ -164,6 +166,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const [step, setStep] = useState<'instructions' | 'melody' | 'qualitative'>('instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState<PairStage>('present');
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -407,9 +411,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 Sound · Audition
                 <GatewaySubtitleLink href="https://bio.libretexts.org/Bookshelves/Human_Biology/Human_Anatomy_Lab/13:_The_Somatic_Nervous_System_(Special_Senses)/13.03:_Audition_(Hearing)" />
               </h1>
-              <p className="text-xs text-muted-foreground">
-                Gateway {currentIndex + 1} of {totalGateways}
-              </p>
+              <GatewayProgress index={currentIndex} total={totalGateways} />
             </div>
           </div>
 
@@ -701,7 +703,9 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 Open Body Map
               </Button>
             </div>
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+            <div className="mx-auto w-full max-w-2xl">
+              <StageIntro stage={stage} />
+              <StageSlot stage="present" current={stage}>
               {/* Current State Card */}
               <Card
                 style={
@@ -735,6 +739,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 </CardContent>
               </Card>
 
+              </StageSlot>
+              <StageSlot stage="wish" current={stage}>
               {/* Wish State Card */}
               <Card
                 style={
@@ -767,13 +773,17 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                   </div>
                 </CardContent>
               </Card>
+            </StageSlot>
+              <StageNav stage={stage} onChange={setStage} />
             </div>
 
+            {stage === 'wish' && (
             <div className="flex justify-center pt-4">
               <Button size="lg" onClick={handleNext} className="px-12">
                 {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
               </Button>
             </div>
+            )}
           </div>
         )}
 

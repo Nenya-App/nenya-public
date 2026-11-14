@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStages';
+import { GatewayProgress } from '../GatewayProgress';
 import { Button } from '../ui/button';
 import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
@@ -45,6 +47,8 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
   const [showBodyMap, setShowBodyMap] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState<PairStage>('present');
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -131,9 +135,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
             <PanelLogo size={32} />
             <div className="text-center">
               <h1 className="text-lg">Essence - Atmosphere</h1>
-              <p className="text-xs text-muted-foreground">
-                Gateway {currentIndex + 1} of {totalGateways}
-              </p>
+              <GatewayProgress index={currentIndex} total={totalGateways} />
             </div>
           </div>
           
@@ -192,7 +194,9 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 Open Body Map
               </Button>
             </div>
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+            <div className="mx-auto w-full max-w-2xl">
+              <StageIntro stage={stage} />
+              <StageSlot stage="present" current={stage}>
               {/* Present State Card */}
               <Card
                 className="transition-all"
@@ -242,6 +246,8 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 </CardContent>
               </Card>
 
+              </StageSlot>
+              <StageSlot stage="wish" current={stage}>
               {/* Potential State Card */}
               <Card
                 className="transition-all"
@@ -290,9 +296,12 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                   </div>
                 </CardContent>
               </Card>
+            </StageSlot>
+              <StageNav stage={stage} onChange={setStage} />
             </div>
 
             {/* Next Button */}
+            {stage === 'wish' && (
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"
@@ -303,6 +312,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
               </Button>
             </div>
+            )}
           </div>
         )}
 
