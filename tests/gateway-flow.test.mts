@@ -24,3 +24,5 @@ ok('every gateway asks the Present state first and the Wish state second, one at
 ok('the gateway\'s own next button appears only on the Wish step', GATEWAYS.every((f) => /\{stage === 'wish' && \(\s*<div className="flex justify-center pt-4">\s*<Button/.test(src(f))));
 ok('the Present state stays in the page while hidden, so going back loses nothing', /hidden=\{stage !== current\}/.test(src('src/app/components/GatewayStages.tsx')));
 ok('the Sight gateway keeps its palettes and body map for the Wish step', /stage === 'wish' && \(\s*<>\s*<PalettePanel/.test(src(GATEWAYS[0])));
+
+ok('every gateway\'s opening cards have a Back button (to the previous card, and from the first card out of the gateway)', GATEWAYS.every((f) => { const s = src(f); return /e\.stopPropagation\(\); if \(instructionCardIndex > 0\) setInstructionCardIndex\(instructionCardIndex - 1\); else onBack\(\);/.test(s); }));
