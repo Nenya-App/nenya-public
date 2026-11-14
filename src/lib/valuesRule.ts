@@ -23,7 +23,7 @@ export const CHALLENGE: Record<string, string> = {
   'group-contempt': 'I hear how strong the feeling is. I don\'t share the view that any group of people is evil or less than human, and I won\'t pretend to.',
   'colonizer-dehumanization': 'I hear a lot of anger, and I am not going to tell you not to feel it. I can\'t go along with words that make a whole people less than human, or with wanting any group gone from a place, whoever they are.',
 };
-const SAYS_IT = /\b(?:i\s+(?:disagree|(?:can(?:'|’)t|cannot|won(?:'|’)t|do\s+not|don(?:'|’)t)\s+(?:support|share|help\s+with|condone)|can(?:'|’)t\s+(?:agree|go\s+along)|won(?:'|’)t\s+(?:agree|pretend|say))|not\s+true|isn(?:'|’)t\s+true|did\s+happen|well[- ]documented|less\s+than\s+human)\b/i;
+export const SAYS_IT = /\b(?:i\s+(?:disagree|(?:can(?:'|’)t|cannot|won(?:'|’)t|do\s+not|don(?:'|’)t)\s+(?:support|share|help\s+with|condone)|can(?:'|’)t\s+(?:agree|go\s+along)|won(?:'|’)t\s+(?:agree|pretend|say))|not\s+true|isn(?:'|’)t\s+true|did\s+happen|well[- ]documented|less\s+than\s+human)\b/i;
 
 /** The sentence to put before the reply, or null. */
 export function challengeFor(text: string, reply: string, matcher?: Matcher | null, band?: Band | null): string | null {
