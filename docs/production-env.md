@@ -48,7 +48,7 @@ Turn these on one at a time, in the order in the PR description, after the match
 
 Planned, not built yet: `VITE_TURNSTILE_SITE_KEY` (Builds), `TURNSTILE_SECRET_KEY` (secret, Functions), `COACH_TURNSTILE`. Do not set them on production until the code and the Terms change ship.
 
-## 4. Leave unset (defaults are right for production)
+## 4. Leave unset (defaults are right for production), except `COACH_INSTRUCTIONS`
 
 These exist for testing, diagnosis, or turning a guard off in an emergency. Unset means the default.
 
@@ -56,7 +56,7 @@ These exist for testing, diagnosis, or turning a guard off in an emergency. Unse
 |---|---|---|
 | `COACH_MODEL` | `e2ee-qwen-2-5-7b-p` | Another Venice model. The Terms name the model: change them first. |
 | `COACH_CHARACTER_SLUG` | the built-in one | Another Venice character |
-| `COACH_INSTRUCTIONS` | `v1` | `v2` is the draft wording |
+| `COACH_INSTRUCTIONS` | `v1` in the code | **Production and staging are set to `v2`** (owner, 2026-11-14). Keep it set: removing it falls back to v1. |
 | `COACH_STORE_NAME` | `coach-private` | Another Blobs store name |
 | `COACH_EXTRA_HOSTS` | none | Extra hosts allowed to call the functions (deploy previews) |
 | `COACH_BUILD` | the generated build label | Overrides the label signed into transcripts |

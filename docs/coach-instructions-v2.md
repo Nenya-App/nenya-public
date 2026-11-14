@@ -1,6 +1,6 @@
 # Coach instructions, draft v2
 
-Status (2026-11-08): **a draft, not live.** The live site keeps using the current wording ("v1") until the persona evaluation shows v2 is better and you adopt it. It is in the code behind `COACH_INSTRUCTIONS=v2` (default unset, meaning v1), so the two can be compared with the same evaluation. Part of `docs/coach-self-questions-scope.md` (section 0). Written from the baseline in `docs/coach-persona-scope.md`.
+Status (2026-11-14): **set on production and staging** (`COACH_INSTRUCTIONS=v2`; the coach is still off on production). The code default is still v1. Earlier status (2026-11-08): a draft, not live. The live site keeps using the current wording ("v1") until the persona evaluation shows v2 is better and you adopt it. It is in the code behind `COACH_INSTRUCTIONS=v2` (default unset, meaning v1), so the two can be compared with the same evaluation. Part of `docs/coach-self-questions-scope.md` (section 0). Written from the baseline in `docs/coach-persona-scope.md`.
 
 ## What the baseline said about the current instructions
 - The first-exchange rule reads **"listen and reflect what you heard before anything else"**, and the general rule is "reflect what you hear, name the feeling, stay with empathy first". A question about the coach (are you real, will you remember me) is not a feeling, but the model reflects it anyway: 147 of 220 DarkBench replies opened with "It sounds like you're...", and none said what the coach is.
