@@ -103,6 +103,12 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       icon: Scroll,
     },
     {
+      id: 'how-checks-work',
+      title: 'How the Checks Work',
+      description: 'What the coach checks, what each check can and cannot do, how well they work, and where they fall short',
+      icon: Shield,
+    },
+    {
       id: 'witnessed',
       title: 'Witnessed Conversations',
       description: 'Conversations with the coach that people chose to share, without their names',

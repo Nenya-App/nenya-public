@@ -139,6 +139,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://nenya.biz/about/how-checks-work</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://nenya.biz/about/witnessed</loc>
     <lastmod>2026-11-10</lastmod>
     <changefreq>weekly</changefreq>
