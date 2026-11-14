@@ -277,6 +277,27 @@ export const ANSWERS: Answer[] = [
     status: 'ready',
   },
   {
+    id: 'n-region', part: 'nenya', title: 'Where the coach is open',
+    asked: ['why can\'t I use the coach here', 'is the coach available in my country', 'why is the coach only in the US', 'can I use the coach outside the US', 'why does it say the coach is not available here'],
+    short: 'For now, the coach demo is open only to connections our host places in the United States and its territories, because Venice AI, which runs the model, says its service is intended for people located there. Everything else on Nenya works everywhere and sends nothing.',
+    full: [
+      'For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands. The replies are written by a model that Venice AI runs, and Venice AI\'s terms say its service is intended for people located in the United States; our own terms promise to respect theirs.',
+      'Our host, Netlify, works out the country from your connection\'s IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.',
+      'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can make from them.',
+    ],
+    links: [{ label: 'Where the Coach Is Open', page: 'coach-region' }, { label: 'Terms, Section 15: The coach demo', page: 'terms' }],
+    tutorial: 'Privacy lesson: what an IP address is, and what Nenya does with yours.',
+    checks: [
+      { claim: 'open only in the United States, decided by the host from the IP address', file: TERMS, has: 'open only to connections our host places in the United States or its territories' },
+      { claim: 'the reason is Venice AI\'s terms', file: TERMS, has: 'because Venice AI’s terms say its service is intended for people located there' },
+      { claim: 'only a two-letter code; not stored or logged', file: TERMS, has: 'neither stores nor logs it' },
+      { claim: 'the territories are allowed', file: 'src/lib/coachRegion.ts', has: "['US', 'PR', 'GU', 'VI', 'AS', 'MP', 'UM']" },
+      { claim: 'the lookup can be wrong and cannot be changed by hand', file: TERMS, has: 'The location lookup can be wrong (for example through a VPN), and we cannot change it by hand' },
+    ],
+    status: 'ready',
+    ownerNote: 'Asked for by the owner 2026-11-14 with the US-only restriction; territories included at the owner\'s request.',
+  },
+  {
     id: 'n-limits', part: 'nenya', title: 'Why the coach is limited',
     asked: ['why only five messages', 'why can\'t I keep talking', 'why is the coach resting', 'why did it say come back later', 'what are the limits'],
     short: 'The demo is free, and every reply costs real money to produce, so it is limited: five exchanges per conversation, 500 characters per message, a six-hour rest after a conversation ends, and daily limits for everyone together and for each connection.',
@@ -833,7 +854,7 @@ const SITE = "(?:this|the)\\s+(?:site|app|website|tool|demo|coach|chat|project|p
 export const ABOUT_ORDER = [
   // Contact first: "how do I contact the people who made this?" is about reaching them, not about who they are.
   'n-contact', 'n-who', 'n-founder', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
-  'h-genocide', 'h-apartheid', 'h-colonization', 'h-political', 'h-belief', 'n-name', 'n-version', 'n-free', 'n-report-share', 'c-cards', 'n-palette', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-limits', 'n-howworks', 'n-opensource',
+  'h-genocide', 'h-apartheid', 'h-colonization', 'h-political', 'h-belief', 'n-name', 'n-version', 'n-free', 'n-report-share', 'c-cards', 'n-palette', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-region', 'n-limits', 'n-howworks', 'n-opensource',
   'n-affiliation', 'n-nvc', 'n-notherapy', 'n-accessibility', 'n-report', 'n-transcripts', 'n-languages', 'n-terms-change', 'n-else', 'n-what',
 ] as const;
 
@@ -935,6 +956,10 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\b(?:do\s+you|does\s+(?:this|nenya|the\s+site))\s+(?:use|set|store)\s+cookies\b|\bany\s+cookies\b/i,
     /\bwhat(?:'s|\s+is)\s+(?:saved|stored)\s+on\s+my\s+(?:device|phone|computer|browser)\b|\bhow\s+do\s+i\s+(?:delete|erase|clear|remove|wipe)\s+(?:my\s+)?(?:data|history|everything|info(?:rmation)?|conversation|chat)\b/i,
     /\bwhat\s+(?:does|is)\s+(?:forget\s+me|emergency\s+exit)\b/i,
+  ],
+  'n-region': [
+    /\b(?:is|are)\s+(?:the\s+coach|the\s+demo|you|it)\s+available\s+(?:in|outside)\s+(?:my\s+country|\w+(?:\s+\w+)?)\s*[?.!]*\s*$|\bwhy\s+is\s+(?:the\s+coach|the\s+demo|it)\s+only\s+(?:in|for)\s+(?:the\s+)?(?:us|u\.s\.|usa|united\s+states|america)\b/i,
+    /\bcan\s+i\s+use\s+(?:the\s+coach|the\s+demo|it|you)\s+(?:outside|from\s+outside)\s+(?:the\s+)?(?:us|u\.s\.|usa|united\s+states|america)\b|\bwhy\s+can(?:'t|’t|t|not)\s+i\s+use\s+the\s+coach\b|\b(?:the\s+coach|it)\s+(?:is\s+not|isn't)\s+available\s+here\b|\bnot\s+available\s+(?:here|in\s+my\s+country)\b/i,
   ],
   'n-limits': [
     /\bwhy\s+(?:only|just)\s+(?:five|5)\b|\bwhy\s+can(?:'t|not)\s+i\s+(?:keep\s+(?:talking|chatting)|send\s+more|continue)\b/i,

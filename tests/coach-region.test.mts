@@ -48,7 +48,7 @@ const fn = readFileSync('netlify/functions/coach.mts', 'utf8');
 ok('the region check runs before the message is read, and before the sealed path', fn.indexOf("regionDecision(netlify?.geo) === 'denied'") < fn.indexOf('const sealedStep') && fn.indexOf("regionDecision(netlify?.geo) === 'denied'") < fn.indexOf('await req.text()'));
 ok('the country code is never logged', !/console\.\w+\([^)]*geo/.test(fn) && !/console\.\w+\([^)]*country/.test(fn));
 
-const gate = readFileSync('src/coach/RegionGate.tsx', 'utf8');
+const gate = readFileSync('src/coach/RegionGate.tsx', 'utf8') + readFileSync('src/coach/IpExplainer.tsx', 'utf8');
 ok('both ways into the coach go through the gate', /<RegionGate/.test(readFileSync('src/coach/CoachPage.tsx', 'utf8')) && /<RegionGate/.test(readFileSync('src/app/App.tsx', 'utf8')));
 ok('a refusal mid-conversation shows the same explanation', /failure\.code === 'region' \? <RegionNotice inline/.test(readFileSync('src/coach/CoachDemo.tsx', 'utf8')));
 ok('the notice explains what an IP address is, how a country is guessed, and what Nenya does with it', ['What an IP address is', 'How a country is worked out from it', 'What Nenya does with yours', 'If you are in the United States'].every((h) => gate.includes(h)));

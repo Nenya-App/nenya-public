@@ -1,4 +1,4 @@
-import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Crown, User, MessageCircle, Mail, Wind } from 'lucide-react';
+import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Crown, User, MessageCircle, Mail, Wind, Globe } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import nenyaLogo from '../../../assets/nenya-logo.webp';
@@ -15,7 +15,7 @@ export const ABOUT_SECTIONS: { key: string; title: string; blurb: string; ids: s
   { key: 'nenya', title: 'About Nenya', blurb: 'What Nenya is, where the name comes from, and who makes it.', ids: ['mellonamin', 'name-philosophy', 'about-founder', 'structure', 'support-us', 'contact-us'] },
   { key: 'how', title: 'How It Works', blurb: 'The practice itself: breathing, the six gateways, color, needs and the method behind them.', ids: ['breathing-tool', 'six-gateways', 'power-of-color', 'pantheon-of-needs', 'nvc-method'] },
   { key: 'ideas', title: 'Ideas Behind It', blurb: 'The research and thinking that shaped the design.', ids: ['bio-social-design', 'evolved-leader'] },
-  { key: 'coach', title: 'The Coach and What Is Planned', blurb: 'The optional AI coach demo, how it is checked, and what we hope to build next.', ids: ['how-checks-work', 'venice-chat', 'witnessed', 'pii-scrubbing', 'partner-practice'] },
+  { key: 'coach', title: 'The Coach and What Is Planned', blurb: 'The optional AI coach demo, how it is checked, and what we hope to build next.', ids: ['how-checks-work', 'coach-region', 'venice-chat', 'witnessed', 'pii-scrubbing', 'partner-practice'] },
   { key: 'trust', title: 'Privacy, Safety and Where We Stand', blurb: 'What we collect, what we promise, and the lines we will not cross.', ids: ['privacy-promise', 'where-we-stand', 'terms'] },
 ];
 
@@ -116,6 +116,12 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       title: 'How the Checks Work',
       description: 'What the coach checks, what each check can and cannot do, how well they work, and where they fall short',
       icon: Shield,
+    },
+    {
+      id: 'coach-region',
+      title: 'Where the Coach Is Open',
+      description: 'Why the coach is open in the United States only for now, and what an IP address is',
+      icon: Globe,
     },
     {
       id: 'witnessed',

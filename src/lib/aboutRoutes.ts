@@ -20,6 +20,7 @@ export const ABOUT_TITLES: Record<string, string> = {
   witnessed: 'Witnessed Conversations',
   'where-we-stand': 'Where We Stand',
   'how-checks-work': 'How the Checks Work',
+  'coach-region': 'Where the Coach Is Open',
   'partner-practice': 'Partner Practice (Planned)',
   structure: 'Our Structure',
   'support-us': 'Support Us',
