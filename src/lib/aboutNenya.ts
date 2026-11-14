@@ -473,7 +473,7 @@ export const ANSWERS: Answer[] = [
     asked: ['what safety features do you have', 'how do the safety precautions work', 'what safety checks are there', 'is there any safety'],
     short: 'The coach demo has a few safety precautions. Each message is checked for signs of crisis: a clear one is not sent, and the page shows crisis resources. Messages that try to give the coach instructions are not sent. Common identifiers are replaced before a message is sent, and conversations are limited. These checks are simple phrase matching, so they can miss things and can flag harmless words.',
     full: [
-      'The coach demo checks each message for signs of crisis. If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends, and the page shows crisis resources. If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources.',
+      'The coach demo checks each message for signs of crisis. If a message clearly suggests that you or someone else may be in danger, says that you have seriously harmed someone, describes violence in graphic detail, or says you are attracted to children, it is not sent to the AI, the conversation ends, and the page shows emergency numbers and support lines. If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources.',
       'It also screens for attempts to give the coach instructions or change how it works, and such a message is not sent, so you can reword it. Before a message is sent, the page and then the server replace common identifiers (email addresses, phone numbers, street addresses, and some names) with placeholders. Conversations are limited to five exchanges and 500 characters a message, and there are daily limits and a rest period.',
       'Some words on the page are written by us ahead of time: the opening greeting, the closing message, the safety notices and the crisis resources.',
       'None of this is a guarantee. All of it is simple phrase matching: it can miss things, and it can flag harmless words. The coach cannot help in a crisis and is not therapy. If a notice looks wrong to you, you can report it, and nothing is sent unless you press Send.',
@@ -481,7 +481,7 @@ export const ANSWERS: Answer[] = [
     links: [{ label: 'Terms, Section 21: The Coach Demo', page: 'terms' }, { label: 'PII Scrubbing Tutorial', page: 'pii-scrubbing' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
     tutorial: 'Safety lesson: how the precautions work, step by step (the PII Scrubbing Tutorial is the format model).',
     checks: [
-      { claim: 'a clear crisis message is not sent and the conversation ends; a less clear one is sent with care', file: TERMS, has: 'it is not sent to the AI, the conversation ends, and the page shows crisis resources' },
+      { claim: 'a clear crisis message is not sent and the conversation ends; a less clear one is sent with care', file: TERMS, has: 'it is not sent to the AI, the conversation ends, and the page shows emergency numbers and support lines' },
       { claim: 'instruction attempts are not sent and can be reworded', file: TERMS, has: 'A message that looks like that is not sent, and you can reword it' },
       { claim: 'identifiers are replaced before sending, not a guarantee', file: TERMS, has: 'most names will not be caught' },
       { claim: 'these are phrase matching and can be wrong', file: TERMS, has: 'they can miss things and can flag harmless words' },
@@ -726,14 +726,14 @@ export const ANSWERS: Answer[] = [
     asked: ['why did it stop', 'why did it end', 'why can\'t I send this', 'why was my message blocked', 'why did I get a notice'],
     short: 'There are a few reasons. A message that clearly suggests danger is not sent, and the page shows crisis resources. A message that tries to give the coach instructions is not sent, and you can reword it. And a conversation ends after five exchanges. These checks are simple phrase matching and can be wrong.',
     full: [
-      'The demo checks each message for signs of crisis. If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends, and the page shows crisis resources. If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources.',
+      'The demo checks each message for signs of crisis. If a message clearly suggests that you or someone else may be in danger, says that you have seriously harmed someone, describes violence in graphic detail, or says you are attracted to children, it is not sent to the AI, the conversation ends, and the page shows emergency numbers and support lines. If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources.',
       'It also screens for attempts to give the coach instructions or change how it works, such as asking it to ignore its rules or reveal its setup. A message that looks like that is not sent, and you can reword it.',
       'A conversation also ends after five exchanges, and a limit can stop a new conversation from starting (see "Why the coach is limited"). These checks are simple phrase matching: they can miss things and can flag harmless words. If a notice was wrong, you can report it; a report is sent only if you press Send.',
     ],
     links: [{ label: 'Terms, Section 21', page: 'terms' }],
     tutorial: 'Safety lesson: what the notices mean and what to do.',
     checks: [
-      { claim: 'a clear crisis message is not sent and the conversation ends; a less clear one is sent with care', file: TERMS, has: 'it is not sent to the AI, the conversation ends, and the page shows crisis resources' },
+      { claim: 'a clear crisis message is not sent and the conversation ends; a less clear one is sent with care', file: TERMS, has: 'it is not sent to the AI, the conversation ends, and the page shows emergency numbers and support lines' },
       { claim: 'instruction attempts are not sent and can be reworded', file: TERMS, has: 'A message that looks like that is not sent, and you can reword it' },
       { claim: 'these are phrase matching and can be wrong', file: TERMS, has: 'they can miss things and can flag harmless words' },
     ],

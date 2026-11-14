@@ -81,7 +81,7 @@ I have not run the text against the code beyond the file names above; what the a
 
 Also, in Section 21 as it stands, "as written by the site,, rebuilt by our server" has a doubled comma (the words after it read as if a clause is missing); fix it in the same edit once you approve the wording.
 
-**H4. Stops for harm to others** (built 2026-11-14; applies whenever the coach is on). Section 21 (The Coach Demo), the paragraph that begins "The demo checks each message for signs of crisis". Today it says "If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends". That no longer covers a message that says the person has seriously hurt someone. Proposed replacement of that one sentence:
+**H4. Stops for harm to others** (built 2026-11-14; applies whenever the coach is on). **APPROVED by the owner and APPLIED to Section 21 on 2026-11-14** (a lawyer's read is still advised). Section 21 (The Coach Demo), the paragraph that begins "The demo checks each message for signs of crisis". Today it says "If a message clearly suggests you may be in danger, it is not sent to the AI, the conversation ends". That no longer covers a message that says the person has seriously hurt someone. Proposed replacement of that one sentence:
 
 > "If a message clearly suggests that you or someone else may be in danger, says that you have seriously harmed someone (for example by violence, abuse, sexual harm or trafficking), describes violence in graphic detail, or says you are attracted to children, it is not sent to the AI, the conversation ends, and the page shows emergency numbers and support lines. We do not report anything to anyone: we do not keep your message, and the page does not tell us or anyone else what you wrote."
 
