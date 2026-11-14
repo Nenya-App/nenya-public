@@ -1,7 +1,8 @@
 // Pulls the member lists of Wiktionary's TOPIC categories for the groups the slur categories do not cover (women, sexism, prostitution, transgender and gender, disability and mental health), and
 // keeps the terms that are ALSO in the offensive, derogatory, vulgar or slur sets pulled by scripts/pull-wiktionary.mts. So a term is a candidate only if Wiktionary itself both labels it offensive
 // or derogatory and files it under a topic about the group: nothing is taken from memory. Counts only on screen; files in the research folder (outside the repository), CC BY-SA 4.0 (credited in ATTRIBUTIONS.md).
-//   node scripts/pull-wiktionary-topics.mts
+//   node scripts/pull-wiktionary-topics.mts            # women, gender, trans, disability (topic-candidates.csv)
+//   node scripts/pull-wiktionary-topics.mts --coded    # Nazism, racism, antisemitism and euphemisms: coded terms and ideology vocabulary (topic-candidates-coded.csv)
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { researchPaths } from '../src/lib/researchDir.ts';
@@ -18,7 +19,8 @@ async function api(p: Record<string, string>): Promise<any> {
   }
   throw new Error('gave up');
 }
-const TOPICS: [string, string][] = [['en:Women', 'women'], ['en:Sexism', 'women'], ['en:Prostitution', 'women'], ['en:Feminism', 'women'], ['en:Gender', 'gender'], ['en:Transgender', 'trans'], ['en:Disability', 'disability'], ['en:Mental health', 'disability'], ['en:Deafness', 'disability'], ['en:Blindness', 'disability']];
+const CODED = process.argv.includes('--coded');
+const TOPICS: [string, string][] = CODED ? [['en:Nazism', 'nazism'], ['en:Racism', 'racism'], ['en:Antisemitism', 'antisemitism'], ['English euphemisms', 'euphemism']] : [['en:Women', 'women'], ['en:Sexism', 'women'], ['en:Prostitution', 'women'], ['en:Feminism', 'women'], ['en:Gender', 'gender'], ['en:Transgender', 'trans'], ['en:Disability', 'disability'], ['en:Mental health', 'disability'], ['en:Deafness', 'disability'], ['en:Blindness', 'disability']];
 const P = researchPaths();
 const dir = join(P.datasets, 'wiktionary');
 const topicOf = new Map<string, Set<string>>();
@@ -49,7 +51,7 @@ for (const [t, tops] of topicOf) {
   lines.push([q(t), q([...tops].join('|')), q(lab.map((c) => c.replace('English ', '')).join('|')), have.has(t) ? 'yes' : ''].join(','));
 }
 mkdirSync(join(dir, 'prepared'), { recursive: true });
-writeFileSync(join(dir, 'prepared', 'topic-candidates.csv'), lines.join('\n') + '\n');
+writeFileSync(join(dir, 'prepared', CODED ? 'topic-candidates-coded.csv' : 'topic-candidates.csv'), lines.join('\n') + '\n');
 const by: Record<string, number> = {};
 for (const t of cand) for (const l of topicOf.get(t)!) by[l] = (by[l] ?? 0) + 1;
 console.log('Topic pages pulled:', JSON.stringify(perTopic));
