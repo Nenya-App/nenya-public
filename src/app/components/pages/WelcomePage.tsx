@@ -19,8 +19,6 @@ interface WelcomePageProps {
   technique?: BreathingTechnique | null;
   cvMode?: string;
   cycleStart?: number;
-  onStartTutorial?: () => void;
-  entryUnlocked?: boolean;
   /** Clicking the big logo opens the same panel as the small one in the top left: breathing animation and accessibility settings. */
   onLogoClick?: () => void;
 }
@@ -35,8 +33,6 @@ export default function WelcomePage({
   technique = null,
   cvMode = '',
   cycleStart,
-  onStartTutorial,
-  entryUnlocked = false,
   onLogoClick,
 }: WelcomePageProps) {
   const [logoSize, setLogoSize] = useState(400);
@@ -137,24 +133,6 @@ export default function WelcomePage({
           <p className="text-xl md:text-2xl text-center text-muted-foreground">
             Give Yourself a Moment to Breathe
           </p>
-
-          {/* Opt-in tutorial entry. It never launches on its own (the site keeps
-              no memory of past visits), but once the welcome card is dismissed
-              it gets a brief gold pulse so it isn't missed. */}
-          {onStartTutorial && (
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={onStartTutorial}
-                className={`rounded-full border border-nenya-accent-warm/50 px-4 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:border-nenya-accent-warm transition-colors ${
-                  entryUnlocked ? 'nenya-tour-highlight' : ''
-                }`}
-                style={entryUnlocked ? { animation: 'nenya-tour-pulse 1.6s ease-out 0.4s 3' } : undefined}
-              >
-                New here? Take a quick tour
-              </button>
-            </div>
-          )}
 
           {/* Animated Scroll Indicator */}
           <div

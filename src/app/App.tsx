@@ -535,8 +535,6 @@ export default function App() {
               technique={breathingTechnique}
               cvMode={colorBlindMode}
               cycleStart={breathingCycleStart}
-              onStartTutorial={handleStartTutorial}
-              entryUnlocked={termsAgreed}
               onLogoClick={toggleBreathingPanel}
             />
           )}

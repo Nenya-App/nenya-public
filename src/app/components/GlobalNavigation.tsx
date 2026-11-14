@@ -131,12 +131,14 @@ export function GlobalNavigation({
               {showAnimationControls && onTutorialReplay ? (
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="sm"
+                  className="gap-2"
                   onClick={onTutorialReplay}
-                  aria-label="Replay tutorial"
-                  title="Replay tutorial"
+                  aria-label="Take a quick tour"
+                  title="Take a quick tour"
                 >
                   <HelpCircle className="size-4" />
+                  Tour
                 </Button>
               ) : null}
 
@@ -334,8 +336,8 @@ export function GlobalNavigation({
                   >
                     <HelpCircle className="size-5" />
                     <div className="flex-1">
-                      <div className="text-sm">Replay tutorial</div>
-                      <div className="text-xs text-muted-foreground">Take the quick tour again</div>
+                      <div className="text-sm">Tour</div>
+                      <div className="text-xs text-muted-foreground">Take a quick tour</div>
                     </div>
                   </button>
                 ) : null}

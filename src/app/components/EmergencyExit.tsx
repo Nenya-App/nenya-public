@@ -234,7 +234,7 @@ export function EmergencyExitButton({
         aria-label="Emergency exit - Instant redirect to Wikipedia"
       >
         <ArrowUpRight className={`${isHeader ? 'size-3' : 'size-4'} mr-1.5`} />
-        {isHeader ? 'Exit' : 'Emergency Exit'}
+        Emergency Exit
       </Button>
 
       <Button
