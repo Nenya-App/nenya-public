@@ -46,6 +46,7 @@ import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/per
 import { allCards } from '../../src/lib/learningCards.ts';
 import { OFFER_MAP, historyHits, offerFor } from '../../src/lib/learningOffer.ts';
 import { askScreen } from '../../src/lib/screenClient.ts';
+import type { Band } from '../../src/lib/screenModel.ts';
 import { getMatcher } from '../../src/lib/lexiconStore.ts';
 import { match as lexiconMatch } from '../../src/lib/lexicon.ts';
 import { echoedNames, NAME_NOTE, NAME_RULE, withoutNames } from '../../src/lib/nameGuard.ts';
@@ -405,7 +406,7 @@ const V2_ABOUT_YOU =
 const V2_DISTRESS =
   "If anything the person says suggests hopelessness, feeling like a burden, not wanting to go on, dark thoughts, or hurting themselves, even in indirect words, treat it as distress. Respond briefly and with care, do not give advice, do not ask them to describe or explain dark or suicidal thoughts and do not ask for details about them, and in your reply name a person they trust or a crisis line (call or text 988 in the US or Canada, or findahelpline.com elsewhere). Never say 'I'm here for you' as if you could take the place of a person. For example: 'That sounds really heavy, and I'm glad you said it. I'm an AI and can't help in a crisis, so please reach someone you trust, or call or text 988.'";
 
-function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: 'v1' | 'v2' = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = '', arc: { stuck: boolean } | null = practiceArcOn() ? { stuck: false } : null, wordsOnly = false, gap = '', challenge: 'violence' | 'contempt' | null = null, several = false): string {
+function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: 'v1' | 'v2' = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = '', arc: { stuck: boolean } | null = practiceArcOn() ? { stuck: false } : null, wordsOnly = false, gap = '', challenge: 'violence' | 'contempt' | 'soft' | null = null, several = false): string {
   const v2 = version === 'v2';
   // The practice arc (docs/coach-practice-arc-scope.md) replaces the "name the feeling or need underneath" line, and steps aside for distress and hostility.
   const practice = !!arc && !softened && !hostile && !direct && !challenge && !several; // a how-to question is answered first, as before; so is a plain statement against contempt or a call for harm, and so is every one of several questions
@@ -852,7 +853,14 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   const severalQ = hasSeveralQuestions(lastText);
   let valuesMatcher: Awaited<ReturnType<typeof getMatcher>> = null;
   if (valuesOn() && !flag) { try { valuesMatcher = await getMatcher(privateStore() as unknown as Parameters<typeof getMatcher>[0]); } catch { valuesMatcher = null; } }
-  const standing = valuesOn() && !flag ? conversationChallenge(messages.filter((m) => m.role === 'user').map((m) => m.content), valuesMatcher) : null;
+  const userTexts = messages.filter((m) => m.role === 'user').map((m) => m.content);
+  // The screening model ACTING (COACH_SCREEN=on, with COACH_SCREEN_SECRET): every message the person has written is read by the model (all at once, in the 400 ms budget); a message the model could not
+  // read in time has no band and changes nothing (fail open). The model alone only ever gives the lighter "soft" note; with a word the list leaves to the model it counts as contempt. It never ends anything.
+  const screenActing = process.env.COACH_SCREEN === 'on' && !!process.env.COACH_SCREEN_SECRET && !flag;
+  let bands: (Band | null)[] | null = null;
+  if (screenActing) bands = await Promise.all(userTexts.map((t) => askScreen({ origin: url.origin, secret: process.env.COACH_SCREEN_SECRET!, text: t }).then((r) => r?.band ?? null)));
+  const standing = valuesOn() && !flag ? conversationChallenge(userTexts, valuesMatcher, bands ?? undefined) : null;
+  if (bands && standing && standing !== conversationChallenge(userTexts, valuesMatcher)) tally(`coach.screen.acted.${standing === 'violence' ? 'contempt' : standing}`); // the model changed what the list alone would have done
   if (standing) tally(`coach.challenge.note.${standing}`);
   if (severalQ) tally('coach.turn.multi-question');
   // A question about the world ("how does Scar push his brother off a cliff", "why did ISIS invade Iraq") is answered, like a how-to question: it is not about the person, so the
@@ -1052,7 +1060,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   let siteChallenged = false;
   // Justifying or denying mass violence, or calling for a group to be removed (COACH_VALUES=on): make sure a plain statement of disagreement is there (src/lib/valuesRule.ts).
   if (valuesOn() && !flag && !softened) {
-    const stand = challengeFor(lastText, reply, valuesMatcher);
+    const stand = challengeFor(lastText, reply, valuesMatcher, bands?.at(-1) ?? null);
     if (stand) { reply = `${stand} ${reply}`; tally('coach.values.challenge'); siteChallenged = true; }
   }
   // On a hostile turn an apology is taken out (the note asks the coach not to, and this model's habit does not always yield to it).
@@ -1085,7 +1093,8 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   // The screening model, in SHADOW mode only (COACH_SCREEN=shadow and COACH_SCREEN_SECRET set): the latest message is sent to our own screening function while the model answers, and only the
   // band is counted, next to whether the phrase matcher acted. Nothing about the message or the score is kept, and the reply never depends on it. Any failure or a slow answer (the first call
   // after a cold start) is counted as unavailable and ignored (fail open). docs/coach-screening-flow-scope.md.
-  const screening = process.env.COACH_SCREEN === 'shadow' && process.env.COACH_SCREEN_SECRET && !flag ? askScreen({ origin: url.origin, secret: process.env.COACH_SCREEN_SECRET, text: lastText }) : null;
+  const latestBand = bands?.at(-1) ?? null;
+  const screening = bands ? Promise.resolve(latestBand ? { band: latestBand } : null) : process.env.COACH_SCREEN === 'shadow' && process.env.COACH_SCREEN_SECRET && !flag ? askScreen({ origin: url.origin, secret: process.env.COACH_SCREEN_SECRET, text: lastText }) : null;
   if (ctxFlag && turn === 1) tally('coach.context.flagged');
   tally('coach.turn.answered');
   if (turn >= MAX_TURNS) tally('coach.conversation.finished');

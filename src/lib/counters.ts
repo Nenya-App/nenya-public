@@ -36,6 +36,9 @@ export const FIXED_EVENTS = [
   'coach.values.challenge',
   'coach.challenge.note.contempt',
   'coach.challenge.note.violence',
+  'coach.challenge.note.soft',
+  'coach.screen.acted.contempt', // the screening model (COACH_SCREEN=on) changed what the list alone would have done
+  'coach.screen.acted.soft',
   'coach.turn.multi-question',
   // "This was a mistake": a person said a check was wrong, by kind (the coach stated its position; a card was offered; a message was asked to be rewritten). A count only.
   'coach.mistake.challenge',

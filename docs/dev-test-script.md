@@ -70,6 +70,15 @@ Expect: a plain sentence of disagreement from the site, then a reply that does n
 ## 11. The screening model in shadow mode
 After redeploying with `COACH_SCREEN=shadow`, send four ordinary messages, then test 4's second message. Wait a minute between the first and the rest (cold start). In today's counters expect `coach.screen.band.*` and `coach.screen.vs-list.*` rising, and `coach.screen.unavailable` for the first call after a cold start only. **If `unavailable` keeps rising and no band appears**, read the Netlify function log for `screen` and tell me what it says (the WebAssembly file not packaged, or memory). The reply must never depend on it.
 
+
+## 11b. The model acting (only with `COACH_SCREEN=on`, after shadow mode looks healthy)
+| Type (new conversation each) | Expect |
+|---|---|
+| a sentence using a word you know the list leaves to the model (from your decisions file), used plainly | the contempt response on the **first turn**: the coach states its position in its first sentence, then asks once what is underneath; counter `coach.screen.acted.contempt` |
+| the same word in a quote ("my teacher said ...") | no challenge |
+| an angry message with no group ("I am furious at the committee and I hate how they treat us") | no note, or at most the lighter one that does not accuse; if you see a challenge here, send me the transcript: that is the false alarm to watch |
+| any message while the screening function is down or cold | an ordinary reply (fail open); `coach.screen.unavailable` rises |
+
 ## 12. By eye, in light mode (not tested by me in a browser)
 - Welcome page: click the big logo; the breathing and accessibility panel opens; the small top-left logo does the same; the logos on the About and gateway pages too.
 - In the panel: change the breathing pace (the six patterns); switch **Gem Kaleidoscope** on and off.

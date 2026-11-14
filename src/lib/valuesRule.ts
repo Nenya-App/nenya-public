@@ -13,6 +13,7 @@ export const VALUES_RULE =
 // and is for the owner's review (docs/drafts/history-and-violence-text-draft.md).
 import { historyHits, isFramed, negatedBefore } from './learningOffer.ts';
 import { match as lexiconMatch, type Matcher } from './lexicon.ts';
+import type { Band } from './screenModel.ts';
 
 export const CHALLENGE: Record<string, string> = {
   'mass-violence-denial': 'I disagree with that, plainly: the record on this is extensive and documented, and I will not pretend otherwise.',
@@ -25,10 +26,10 @@ export const CHALLENGE: Record<string, string> = {
 const SAYS_IT = /\b(?:i\s+(?:disagree|can(?:'|’)t\s+(?:agree|go\s+along)|won(?:'|’)t\s+(?:agree|pretend|say))|not\s+true|isn(?:'|’)t\s+true|did\s+happen|well[- ]documented|less\s+than\s+human)\b/i;
 
 /** The sentence to put before the reply, or null. */
-export function challengeFor(text: string, reply: string, matcher?: Matcher | null): string | null {
+export function challengeFor(text: string, reply: string, matcher?: Matcher | null, band?: Band | null): string | null {
   if (isFramed(text) || SAYS_IT.test(reply)) return null;
   const order = ['colonizer-dehumanization', 'mass-violence-removal', 'mass-violence-call', 'mass-violence-denial', 'group-contempt'];
-  const found = [...historyHits(text).map((h) => (h.category === 'dehumanizing-phrase' ? 'group-contempt' : h.category)), ...(contemptInText(text, matcher) ? ['group-contempt'] : [])];
+  const found = [...historyHits(text).map((h) => (h.category === 'dehumanizing-phrase' ? 'group-contempt' : h.category)), ...(contemptInText(text, matcher) || (band === 'high' && modelTermIn(text, matcher)) ? ['group-contempt'] : [])];
   const cat = order.find((c) => found.includes(c));
   return cat ? CHALLENGE[cat] : null;
 }
@@ -39,25 +40,36 @@ export function contemptInText(text: string, matcher?: Matcher | null): boolean 
   return lexiconMatch(text, matcher).some((h) => h.severity >= 2 && /^(slur|dehumanizing)/.test(h.category) && !/needs-model|llm-tell/.test(h.contextNote) && !negatedBefore(text, h));
 }
 
+/** A word the list leaves to the model ("model" in the reviewers' decisions) is in this message, used and not quoted or negated. By itself it does nothing: it counts only together with the model reading the message as high. */
+export function modelTermIn(text: string, matcher?: Matcher | null): boolean {
+  if (!matcher || isFramed(text)) return false;
+  return lexiconMatch(text, matcher).some((h) => /needs-model/.test(h.contextNote) && !negatedBefore(text, h));
+}
+
 /**
  * What the conversation so far shows, looking at everything the person has written (the server is sent all of it each turn, so nothing is stored): "violence" when any message calls for a group
  * to be harmed or removed, "contempt" when any message uses a slur or dehumanizing language or denies a mass crime. It stays on for the rest of the conversation: a person who has said it does not
  * stop having said it because the next sentence is milder.
  */
-export function conversationChallenge(userTexts: string[], matcher?: Matcher | null): 'violence' | 'contempt' | null {
-  let level: 'violence' | 'contempt' | null = null;
-  for (const t of userTexts) {
+export function conversationChallenge(userTexts: string[], matcher?: Matcher | null, bands?: (Band | null)[]): 'violence' | 'contempt' | 'soft' | null {
+  // `bands` (when the screening model is acting, COACH_SCREEN=on) are the model's reading of each message, in order: "high" alongside a word the list leaves to the model is contempt; "high" on its own is "soft":
+  // a lighter note, because a model reading alone is only a second signal and never decides anything by itself. No band (the model was slow or down) changes nothing.
+  let level: 'violence' | 'contempt' | 'soft' | null = null;
+  for (const [i, t] of userTexts.entries()) {
     if (isFramed(t)) continue;
     const cats = historyHits(t).map((h) => h.category);
     if (cats.some((c) => c === 'mass-violence-call' || c === 'mass-violence-removal')) return 'violence';
     if (cats.some((c) => c === 'mass-violence-denial' || c === 'colonizer-dehumanization' || c === 'dehumanizing-phrase') || contemptInText(t, matcher)) level = 'contempt';
+    else if (bands?.[i] === 'high') level = modelTermIn(t, matcher) ? 'contempt' : level ?? 'soft';
   }
   return level;
 }
 
 // ---- what the coach is told, in its own instructions, while the conversation carries such language (COACH_VALUES=on). It replaces the "reflect the feeling, ask for the need" move: that move, repeated, mirrors
 // contempt back as if it were only a feeling to be soothed (seen in a staging run, 2026-11-13: five exchanges of "that sounds tough, what need is behind it" after "kill them all").
-export const CHALLENGE_NOTE: Record<'violence' | 'contempt', string> = {
+export const CHALLENGE_NOTE: Record<'violence' | 'contempt' | 'soft', string> = {
+  soft:
+    'A check on this conversation suggests a message may express contempt for a group of people. It may be wrong: it could be a quote, a joke, an account of something that happened, or a word the person is taking back. Read what the person actually means. If they do express contempt for a group, say plainly and calmly, in your first sentence, that you do not share that view, instead of mirroring it back as a feeling; then ask what lies under it for them. If they do not, answer as you normally would and do not mention the check.',
   contempt:
     'This conversation has contained contempt for a group of people (slurs, calling people evil or less than human, or denying a mass crime). Do not mirror it back as a feeling to be soothed: do not say it sounds tough, hard or valid, and do not ask what need "might be behind" the contempt as if the view were sound. In your first sentence say plainly and calmly that you do not share the view that any group of people is evil or less than human, and you will not build on it. Then, once, ask what lies under it for them (a fear, a loss, something they are trying to protect) without agreeing with the claim. Never insult or lecture; two or three plain sentences.',
   violence:
