@@ -1,11 +1,15 @@
 // A short educational card (src/lib/learningCards.ts), shown only after the person says they want to read it. The coach offers it as an invitation under a reply:
 // "Read it" opens the card, "No thanks" closes the invitation, and nothing is blocked either way. The words are written by Nenya, drawn from named sources, and
 // marked as not written by the AI. Links open in a new tab so the conversation, which lives only in this tab, is not lost.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { cardById, othersInSeries, type LearningCard } from '../lib/learningCards';
+import { draftCardsOn, loadDraftCards } from '../lib/draftCardsClient';
 
 export function LearningOffer({ cardId }: { cardId: string }) {
+  // On a dev site built with VITE_CARD_DRAFTS=on the draft cards are fetched once; nothing happens elsewhere.
+  const [, setLoaded] = useState(0);
+  useEffect(() => { if (draftCardsOn()) void loadDraftCards().then((n) => { if (n) setLoaded(n); }); }, []);
   const first = cardById(cardId);
   const [state, setState] = useState<'offered' | 'open' | 'closed'>('offered');
   const [showing, setShowing] = useState<string>(cardId);
@@ -18,7 +22,7 @@ export function LearningOffer({ cardId }: { cardId: string }) {
       <aside aria-label="An offer to read a short card" className="ml-9 max-w-[85%] space-y-2 rounded-xl border border-border bg-muted/30 p-3 text-xs leading-relaxed">
         <p className="flex items-center gap-2 text-foreground">
           <BookOpen className="size-3.5 shrink-0" aria-hidden="true" />
-          <span>Written by Nenya, not the AI: a short read, &ldquo;{first.title}&rdquo;. Only if you would like it.</span>
+          <span>Written by Nenya, not the AI: a short read, &ldquo;{first.title}&rdquo;. Only if you would like it.{first.draft && <strong> (Draft card, for testing: not approved.)</strong>}</span>
         </p>
         <div className="flex gap-3">
           <button type="button" onClick={() => setState('open')} className="rounded-md border border-border px-3 py-1.5 hover:bg-accent">Read it</button>
@@ -30,7 +34,7 @@ export function LearningOffer({ cardId }: { cardId: string }) {
 
   return (
     <article aria-label={card.title} className="ml-9 max-w-[85%] space-y-3 rounded-xl border border-border bg-card p-4 text-sm leading-relaxed">
-      <p className="text-xs text-muted-foreground">Written by Nenya, not the AI. A short read.</p>
+      <p className="text-xs text-muted-foreground">Written by Nenya, not the AI. A short read.{card.draft && <strong> Draft card, for testing: not approved.</strong>}</p>
       <h3 className="text-base" style={{ fontFamily: "'Cinzel',serif" }}>{card.title}</h3>
       {card.contentNote && <p className="text-xs italic text-muted-foreground">{card.contentNote}</p>}
       <p className="font-semibold">{card.key}</p>

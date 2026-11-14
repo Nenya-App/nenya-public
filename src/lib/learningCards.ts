@@ -20,6 +20,8 @@ export interface LearningCard {
   /** The one address the card links to, or ''. */
   url: string;
   license: string;
+  /** Set on a card that is not approved and was loaded for testing on a dev site only (COACH_CARD_DRAFTS): shown with a "draft" mark. */
+  draft?: boolean;
 }
 
 export const SERIES = ['propaganda', 'dehumanization', 'connection', 'words-aimed-at-ai', 'nvc-ideas', 'history', 'thinking'] as const;
@@ -78,7 +80,26 @@ export function cardProblems(c: LearningCard): string[] {
 export const LEARNING_CARDS: LearningCard[] = [...LEARNING_CARDS_DATA].sort((a, b) => SERIES.indexOf(a.series) - SERIES.indexOf(b.series) || a.order - b.order);
 let override: LearningCard[] | null = null;
 /** The cards in use: the approved ones, or a test's own. */
-export const allCards = (): LearningCard[] => override ?? LEARNING_CARDS;
+let extra: LearningCard[] = [];
+const bySeries = (a: LearningCard, b: LearningCard): number => SERIES.indexOf(a.series) - SERIES.indexOf(b.series) || a.order - b.order;
+/**
+ * Draft cards for TESTING on a dev site, loaded at run time from the site's private store (never from the repository, and never on production: both the coach function and the page ask for them only
+ * where COACH_CARD_DRAFTS and VITE_CARD_DRAFTS are set). Each must pass the same rules as an approved card; an approved card of the same id wins. Returns how many were added.
+ */
+export function registerExtraCards(list: unknown): number {
+  if (!Array.isArray(list)) return 0;
+  const have = new Set(LEARNING_CARDS.map((c) => c.id));
+  const ok: LearningCard[] = [];
+  for (const raw of list as LearningCard[]) {
+    if (!raw || typeof raw !== 'object' || typeof raw.id !== 'string' || have.has(raw.id) || ok.some((c) => c.id === raw.id)) continue;
+    const card: LearningCard = { id: raw.id, series: raw.series, order: Number(raw.order) || 0, title: String(raw.title ?? ''), contentNote: String(raw.contentNote ?? ''), key: String(raw.key ?? ''), body: String(raw.body ?? ''), tryIt: String(raw.tryIt ?? ''), where: String(raw.where ?? ''), more: String(raw.more ?? ''), url: String(raw.url ?? ''), license: String(raw.license ?? ''), draft: true };
+    if (cardProblems(card).length === 0) ok.push(card);
+  }
+  extra = ok.sort(bySeries);
+  return ok.length;
+}
+export const __resetExtraCardsForTests = (): void => { extra = []; };
+export const allCards = (): LearningCard[] => override ?? (extra.length ? [...LEARNING_CARDS, ...extra].sort(bySeries) : LEARNING_CARDS);
 export const __setCardsForTests = (c: LearningCard[] | null): void => { override = c; };
 export const cardById = (id: string, list: LearningCard[] = allCards()): LearningCard | undefined => list.find((c) => c.id === id);
 /** Other approved cards in the same series, after this one first, for "read another". */

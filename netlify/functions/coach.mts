@@ -43,7 +43,7 @@ import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/abo
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
-import { allCards } from '../../src/lib/learningCards.ts';
+import { allCards, registerExtraCards } from '../../src/lib/learningCards.ts';
 import { OFFER_MAP, historyHits, offerFor } from '../../src/lib/learningOffer.ts';
 import { askScreen } from '../../src/lib/screenClient.ts';
 import type { Band } from '../../src/lib/screenModel.ts';
@@ -111,6 +111,18 @@ export const __useStoreForTests = (s: unknown): void => {
   storeOverride = s as ReturnType<typeof getStore> | null;
 };
 const privateStore = () => storeOverride ?? getStore(storeNameFrom(process.env.COACH_STORE_NAME));
+
+// Draft learning cards, for TESTING on a dev site only: with COACH_CARD_DRAFTS=on the unapproved cards (written to the private store by the owner, never kept in the repository) are loaded and used like
+// approved ones, shown with a "draft" mark. Without the variable (production) nothing is read and nothing changes.
+let draftsAt = 0;
+async function ensureDraftCards(): Promise<void> {
+  if (process.env.COACH_CARD_DRAFTS !== 'on' || Date.now() - draftsAt < 5 * 60 * 1000) return;
+  draftsAt = Date.now();
+  try {
+    const text = await (privateStore() as unknown as { get(k: string, o: { type: 'text' }): Promise<string | null> }).get('cards/drafts.json', { type: 'text' });
+    if (text) registerExtraCards(JSON.parse(text));
+  } catch { /* drafts are a testing aid: never let them break a reply */ }
+}
 
 type Role = 'user' | 'assistant';
 interface Session {
@@ -664,6 +676,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   }
   if (!hostAllowed(originHost, process.env.COACH_EXTRA_HOSTS)) return fail(403, 'origin', isOwner(req) ? originHint(originHost, process.env.COACH_EXTRA_HOSTS) : undefined);
   if (!(req.headers.get('content-type') || '').includes('application/json')) return fail(415, 'type');
+  await ensureDraftCards();
 
   const text = await req.text();
   if (text.length > MAX_SEALED_BODY_BYTES) return fail(413, 'size');
