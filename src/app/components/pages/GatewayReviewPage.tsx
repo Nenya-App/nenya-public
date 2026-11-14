@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { BodyMapData } from '../BodyMapAvatar';
 import { AppFooter } from '../AppFooter';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL } from '../../../lib/veniceLinks';
+import { veniceOfferAllowed } from '../../../lib/veniceOffer';
 import { SubmitSensoryReportForm } from '../SubmitSensoryReportForm';
 import { formatBodyMapLines, formatGatewayData, gatewayTitles, isBodyMapUsed } from '../../../lib/reportText';
 // jsPDF (and the report's fonts/logo) are only needed if the visitor clicks
@@ -160,13 +161,16 @@ export default function GatewayReviewPage({
                   <Download className="size-4" />
                   Download Text Report
                 </Button>
+                {veniceOfferAllowed() && (
                 <Button variant="outline" asChild className="gap-2">
                   <a href={VENICE_CHARACTER_URL} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="size-4" />
                     Take it to Venice
                   </a>
                 </Button>
+                )}
               </div>
+              {veniceOfferAllowed() && (
               <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
                 To go deeper with the same coach character, download a report above, then open it on Venice AI and attach
                 the file there. That is Venice AI&rsquo;s own service, not Nenya&rsquo;s: its terms and privacy policy
@@ -174,6 +178,7 @@ export default function GatewayReviewPage({
                 there. Nothing is sent from this page. Please remove any names or details you would not want shared.{' '}
                 {REFERRAL_NOTE}
               </p>
+              )}
             </div>
 
             <SubmitSensoryReportForm report={generateSensoryReport()} />

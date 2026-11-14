@@ -9,6 +9,7 @@ import { checkMessageForm, SHORT_NOTICE, UNCLEAR_NOTICE, type FormProblem } from
 import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/veniceLinks';
+import { noteSafetyStop, veniceOfferAllowed } from '../lib/veniceOffer';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
 import { OWNER_KEY, OWNER_TOKEN_KEY, REST_KEY } from '../lib/deviceMemory';
 import { overridesForRequest } from '../lib/ownerPanel';
@@ -301,6 +302,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     // Checked against what the person has written so far, so the self-injury ladder (recurs, escalates) can see the conversation.
     const local = checkConversation(next.filter((m) => m.role === 'user').map((m) => m.content));
     if (local?.tier === 'stop') {
+      noteSafetyStop();
       setMessages(next);
       setFlag(local);
       setFlaggedText(scrubbed.text);
@@ -367,6 +369,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       touch();
       setDraft('');
       if (data.flag) {
+        if (data.flag.tier === 'stop') noteSafetyStop();
         setFlag(data.flag);
         setFlaggedText(scrubbed.text);
       }
@@ -388,6 +391,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   } as const;
 
   const stopped = flag?.tier === 'stop';
+  // Never offered after a safety notice in this conversation, or after a safety stop anywhere in this visit.
+  const offerVenice = !flag && veniceOfferAllowed();
   useEffect(() => {
     if (stage === 'done' && !stopped) markFinished();
   }, [stage, stopped]);
@@ -547,14 +552,14 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               </p>
               <p className="text-muted-foreground">
                 If you want to keep going, there are good places to do it that are not this page: the breathing tool
-                below, a person you trust, a journal, or a professional if it feels heavy. You can also continue with the
-                same character on Venice AI, with the differences explained there.
+                below, a person you trust, a journal, or a professional if it feels heavy.
+                {offerVenice && ' You can also continue with the same character on Venice AI, with the differences explained there.'}
               </p>
               <div className="flex flex-wrap items-center gap-4">
                 {breatheButton}
                 <ShareNenya />
               </div>
-              {venicePanel}
+              {offerVenice && venicePanel}
               <p className="text-xs text-muted-foreground">
                 Your browser remembers only the time you finished, so the demo knows to rest. Nothing is sent to Nenya.
                 The &ldquo;Forget me&rdquo; button in the settings menu or at the bottom of the page, or clearing this site&rsquo;s data in your browser, removes it.
@@ -831,8 +836,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     {capped === 'ip'
                       ? 'Shared networks count together. '
                       : 'This demo is free, and each reply costs real money, so Nenya can only offer a set number of conversations a day. Today\u2019s are taken. '}
-                    Your message was not passed on to Venice AI and was not kept. It opens again tomorrow. Until then, the breathing tool is here, or you can continue with the same character on
-                    Venice AI, with the differences explained below.
+                    Your message was not passed on to Venice AI and was not kept. It opens again tomorrow. Until then, the breathing tool is here
+                    {offerVenice ? ', or you can continue with the same character on Venice AI, with the differences explained below.' : '.'}
                   </p>
                   <div className="flex flex-wrap items-center gap-4">
                     {breatheButton}
@@ -840,7 +845,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </div>
                 </section>
               )}
-              {stage === 'chat' && capped && venicePanel}
+              {stage === 'chat' && capped && offerVenice && venicePanel}
 
               {stage === 'chat' && !capped && timedOut && (
                 <section className="space-y-3 rounded-2xl border bg-card p-5 text-sm" style={{ borderColor: `${color2}80` }} role="status">
@@ -969,7 +974,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 </section>
               )}
 
-              {stage === 'done' && !flag && venicePanel}
+              {stage === 'done' && offerVenice && venicePanel}
 
               {stage === 'done' && (
                 <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))}
