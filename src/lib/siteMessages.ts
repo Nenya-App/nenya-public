@@ -20,8 +20,15 @@ export const CLOSING_TEXT =
 export const INVITATION_TEXT =
   'If you would like the people who made Nenya to read what you thought, you can send this conversation to us with a note, using the buttons below. It is up to you, and nothing is sent unless you choose.';
 
+/** A change the site made to a reply the AI wrote: a sentence of the site's put in front of it, or sentences taken out of it. The server only records ones it can prove. */
+export interface SiteEdit { after: number; kind: 'added' | 'removed'; n: number }
+
+export const editText = (e: SiteEdit): string => e.kind === 'added'
+  ? 'The site added the opening sentence of the reply above. It is the site\u2019s own plain sentence, written by Nenya, not by the AI.'
+  : `The site removed ${e.n === 1 ? 'one sentence' : `${e.n} sentences`} from the reply above that echoed back contempt or a wish to harm a group of people. The AI wrote ${e.n === 1 ? 'it' : 'them'}; the site took ${e.n === 1 ? 'it' : 'them'} out before you saw the reply.`;
+
 export interface SiteMessage {
-  kind: 'greeting' | 'closing' | 'notice' | 'invitation' | 'answer' | 'replacement' | 'offer';
+  kind: 'greeting' | 'closing' | 'notice' | 'invitation' | 'answer' | 'replacement' | 'offer' | 'edit';
   /** The index of the message this one follows; -1 means before the first message. */
   after: number;
   text: string;
@@ -34,7 +41,7 @@ export interface SiteMessage {
  * flagged (the page keeps the most recent flag on screen), the notice with its resources comes after the last message; otherwise, when all
  * the exchanges are done, the closing message does.
  */
-export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content: string }[], maxTurns: number, answered: { index: number; title: string; partial?: boolean }[] = [], context = '', offered: { after: number; title: string }[] = []): SiteMessage[] {
+export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content: string }[], maxTurns: number, answered: { index: number; title: string; partial?: boolean }[] = [], context = '', offered: { after: number; title: string }[] = [], edited: SiteEdit[] = []): SiteMessage[] {
   // When the person shared part of a report, the site opens with a message built from what was shared (reportShare.ts) in place of the greeting.
   const shared = context ? parseReportHeader(context) : null;
   const out: SiteMessage[] = [{ kind: 'greeting', after: -1, text: shared ? openingText(shared) : greetingText(maxTurns) }];
@@ -50,6 +57,7 @@ export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content:
   });
   // A short educational card the site offered under a reply (only an invitation) is marked right after that reply. The server only records offers it can prove it made.
   for (const o of offered) out.push({ kind: 'offer', after: o.after, text: `The site offered a short read under the reply above: \u201c${o.title}\u201d. It was written by Nenya, not by the AI, and was only an invitation.` });
+  for (const e of edited) out.push({ kind: 'edit', after: e.after, text: editText(e) });
   const users = messages.filter((m) => m.role === 'user').map((m) => m.content);
   let flag = null as ReturnType<typeof checkConversation>;
   for (let j = 1; j <= users.length; j++) {

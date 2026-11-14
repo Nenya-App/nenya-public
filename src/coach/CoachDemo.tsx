@@ -114,6 +114,8 @@ interface Msg {
   offer?: { id: string; proof: string };
   /** Which of the site's checks shaped this reply ("challenge", "offer"): the page offers "This was a mistake" under it. */
   checked?: string[];
+  /** Changes the site made to this reply (a sentence added, sentences removed), with the server's proof of each; sent back only with the receipt request. */
+  edits?: { kind: 'added' | 'removed'; n: number; proof: string }[];
 }
 
 const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content }));
@@ -335,6 +337,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         card?: AnswerCardData;
         offer?: { id: string; proof: string };
         checked?: string[];
+        edits?: { kind: 'added' | 'removed'; n: number; proof: string }[];
         problem?: string;
       };
       // The server screens too. A blocked message is not part of the conversation.
@@ -357,7 +360,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         return;
       }
       if (data.contextFlag) setContextFlag(data.contextFlag);
-      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}), ...(data.offer ? { offer: data.offer } : {}), ...(data.checked?.length ? { checked: data.checked } : {}) }] : next);
+      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}), ...(data.offer ? { offer: data.offer } : {}), ...(data.checked?.length ? { checked: data.checked } : {}), ...(data.edits?.length ? { edits: data.edits } : {}) }] : next);
       setTicket(data.ticket);
       touch();
       setDraft('');
@@ -811,7 +814,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     Keep a record, or report a problem
                   </summary>
                   <div className="pt-3">
-                    <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                    <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))}
+                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
                   </div>
                 </details>
               )}
@@ -966,7 +970,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               {stage === 'done' && !flag && venicePanel}
 
               {stage === 'done' && (
-                <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))}
+                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
               )}
             </>
           )}

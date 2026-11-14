@@ -63,3 +63,14 @@ ok('the invitation is an invitation: nothing is sent unless the person chooses',
   const terms = JSON.stringify(LEGAL_PARTS);
   ok('the Terms list the replacement and say a signed transcript marks it', /replace the AI.s whole reply with a short fixed sentence/.test(terms) && /marks a reply replaced this way as written by the site/.test(terms));
 }
+
+// Edits the site made to a reply (a sentence added, sentences removed) are marked after that reply.
+{
+  const { mirrorRemovals, withoutMirroring } = await import('../src/lib/valuesRule.ts');
+  const conv = [u('I hate them'), a('Here is a reply.')];
+  const e = siteMessagesFor(conv, 5, [], '', [], [{ after: 1, kind: 'added', n: 1 }, { after: 1, kind: 'removed', n: 2 }]).filter((x) => x.kind === 'edit');
+  ok('an added sentence and removed sentences are each marked after the reply', e.length === 2 && e.every((x) => x.after === 1) && /added the opening sentence/.test(e[0].text) && /removed 2 sentences/.test(e[1].text));
+  ok('with no edits nothing is marked', siteMessagesFor(conv, 5).every((x) => x.kind !== 'edit'));
+  const r = 'I hear how angry you are. That makes sense, you hate them. What do you need?';
+  ok('the removal count matches what withoutMirroring takes out', mirrorRemovals(r) === r.split(/(?<=[.!?])\s+/).length - withoutMirroring(r).split(/(?<=[.!?])\s+/).length);
+}

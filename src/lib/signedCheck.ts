@@ -46,8 +46,8 @@ export function signedProblem(signed: unknown, env: Record<string, string | unde
     }
   }
   if (t.site !== undefined) {
-    const kinds = new Set(['greeting', 'closing', 'notice', 'invitation', 'answer', 'replacement', 'offer']);
-    if (!Array.isArray(t.site) || t.site.length > 12) return 'shape';
+    const kinds = new Set(['greeting', 'closing', 'notice', 'invitation', 'answer', 'replacement', 'offer', 'edit']);
+    if (!Array.isArray(t.site) || t.site.length > 20) return 'shape';
     for (const x of t.site) {
       if (!x || !kinds.has(x.kind) || !Number.isInteger(x.after) || x.after < -1 || x.after >= t.messages.length || typeof x.text !== 'string' || x.text.length > 1500) return 'shape';
       if (x.resources !== undefined && (!Array.isArray(x.resources) || x.resources.length > 12 || x.resources.some((r: any) => !r || typeof r.name !== 'string' || typeof r.detail !== 'string' || r.name.length > 200 || r.detail.length > 300))) return 'shape';

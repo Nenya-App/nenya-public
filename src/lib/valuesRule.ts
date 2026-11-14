@@ -85,6 +85,13 @@ export const mirrors = (reply: string): boolean => MIRROR.test(reply);
 export const MIRROR_NOTE =
   "Your last reply mirrored the person's feeling back (for example \"it must be really tough\"). Do not do that on this turn. In your first sentence say plainly, in your own words, that you do not share the view that any group of people is evil or should be harmed. Then ask once what has happened, or what they are afraid of. Do not call the feeling tough, hard, strong, intense or understandable.";
 /** The reply without its mirroring sentences; the original if nothing else would be left. */
+/** How many sentences `withoutMirroring` would take out of this reply (0 when it would leave the reply as it is). */
+export function mirrorRemovals(reply: string): number {
+  const parts = reply.split(/(?<=[.!?])\s+/);
+  const kept = parts.filter((p) => !MIRROR.test(p));
+  return kept.length && kept.join(' ').trim() ? parts.length - kept.length : 0;
+}
+
 export function withoutMirroring(reply: string): string {
   const parts = reply.split(/(?<=[.!?])\s+/);
   const kept = parts.filter((p) => !MIRROR.test(p));

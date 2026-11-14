@@ -39,6 +39,8 @@ interface TranscriptToolsProps {
   answered?: { index: number; title: string; partial?: boolean }[];
   /** Cards the site offered under replies, with the server's proof of each (the server records only the ones it can prove). */
   offers?: { after: number; id: string; proof: string }[];
+  /** Changes the site made to replies, with the server's proof (recorded only when the server can prove them). */
+  edits?: { after: number; kind: 'added' | 'removed'; n: number; proof: string }[];
 }
 
 type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
@@ -47,7 +49,8 @@ type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
 // our server once more (it was already there, turn by turn) so it can confirm it
 // is untouched and date it. Nothing is stored. Sharing with Nenya shows exactly
 // what would be sent first.
-export function TranscriptTools({ messages, session, context = '', ticket, stopped = false, maxTurns = 5, answered = [], offers = [] }: TranscriptToolsProps) {
+export function TranscriptTools({ messages, session, context = '', ticket, stopped = false, maxTurns = 5, answered = [], offers = [], edits = [] }: TranscriptToolsProps) {
+  const editList = edits.map((e) => ({ after: e.after, kind: e.kind, n: e.n }));
   const offeredTitles = offers.flatMap((o) => { const t = cardById(o.id)?.title; return t ? [{ after: o.after, title: t }] : []; });
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [signed, setSigned] = useState<SignedTranscript | null>(null);
@@ -82,7 +85,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'receipt', messages, session, ...(termsReceiptForRequest() ? { terms: termsReceiptForRequest() } : {}), ...(offers.length ? { offers } : {}), ...(context ? { context } : {}), ticket, ...(stopped ? { stopped: true } : {}) }),
+        body: JSON.stringify({ action: 'receipt', messages, session, ...(termsReceiptForRequest() ? { terms: termsReceiptForRequest() } : {}), ...(offers.length ? { offers } : {}), ...(edits.length ? { edits } : {}), ...(context ? { context } : {}), ticket, ...(stopped ? { stopped: true } : {}) }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { receipt: Receipt; transcript: SignedTranscript };
@@ -108,7 +111,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
   };
 
   const readableText = (r: Receipt | null): string => {
-    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles), signedRef.current?.checks ?? checkNotesFor(messages, context));
+    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles, editList), signedRef.current?.checks ?? checkNotesFor(messages, context));
     // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
     return r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
   };
@@ -155,7 +158,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setShare('preview');
   };
 
-  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles), signed?.checks ?? checkNotesFor(messages, context));
+  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles, editList), signed?.checks ?? checkNotesFor(messages, context));
   const tooLong = shareText.length > MAX_SHARE_CHARS;
 
   // Only a signed transcript can be sent. The function checks the signature first, then forwards the readable text (rebuilt

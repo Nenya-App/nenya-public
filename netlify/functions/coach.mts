@@ -38,7 +38,7 @@ import { getStore } from '@netlify/blobs';
 import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes, sign as edSign, timingSafeEqual } from 'node:crypto';
 import { checkConversation, detectFlag, explainConversation } from '../../src/lib/safetyFlags.ts';
 import { checkMessageForm } from '../../src/lib/messageGate.ts';
-import { checkNotesFor, siteMessagesFor } from '../../src/lib/siteMessages.ts';
+import { checkNotesFor, siteMessagesFor, type SiteEdit } from '../../src/lib/siteMessages.ts';
 import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/aboutNenya.ts';
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
@@ -69,7 +69,7 @@ import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
 import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCritiqueThanks, type CritiqueTarget, type Hostility } from '../../src/lib/hostility.ts';
 import { termsFromOurKey } from '../../src/lib/termsReceipt.ts';
-import { CHALLENGE_NOTE, MIRROR_NOTE, VALUES_RULE, challengeFor, conversationChallenge, mirrors, valuesOn, withoutMirroring } from '../../src/lib/valuesRule.ts';
+import { CHALLENGE_NOTE, MIRROR_NOTE, VALUES_RULE, challengeFor, conversationChallenge, mirrorRemovals, mirrors, valuesOn, withoutMirroring } from '../../src/lib/valuesRule.ts';
 import { laneFor, laneReply } from '../../src/lib/laneGuard.ts';
 import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_MENU_NOTE, ARC_NOTE, WORDS_ONLY_NOTE, guardedProblems, repairArc, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
@@ -241,6 +241,25 @@ function signingKey() {
 const offerProof = (secret: string, history: Msg[], id: string): string =>
   createHmac('sha256', secret).update(`offer|${sha256(JSON.stringify(history.map((m) => ({ role: m.role, content: m.content }))))}|${id}`).digest('hex');
 
+/** Proof that THIS server edited the reply that ends `history` (a sentence added, or `n` sentences removed): a keyed hash over the conversation up to and including the reply. */
+const editProof = (secret: string, history: Msg[], kind: string, n: number): string =>
+  createHmac('sha256', secret).update(`edit|${sha256(JSON.stringify(history.map((m) => ({ role: m.role, content: m.content }))))}|${kind}|${n}`).digest('hex');
+
+/** The edits in a receipt request that this server can prove it made. */
+function provenEdits(secret: string, raw: unknown, done: Msg[]): SiteEdit[] {
+  if (!Array.isArray(raw)) return [];
+  const out: SiteEdit[] = [];
+  for (const o of raw.slice(0, 10) as { after?: unknown; kind?: unknown; n?: unknown; proof?: unknown }[]) {
+    if (!o || !Number.isInteger(o.after) || (o.kind !== 'added' && o.kind !== 'removed') || !Number.isInteger(o.n) || typeof o.proof !== 'string') continue;
+    const after = o.after as number, n = o.n as number;
+    if (after < 1 || after >= done.length || done[after].role !== 'assistant' || n < 1 || n > 20) continue;
+    const want = Buffer.from(editProof(secret, done.slice(0, after + 1), o.kind, n));
+    const got = Buffer.from(o.proof);
+    if (want.length === got.length && timingSafeEqual(want, got) && !out.some((x) => x.after === after && x.kind === o.kind)) out.push({ after, kind: o.kind, n });
+  }
+  return out.sort((a, b) => a.after - b.after);
+}
+
 /** The offers in a receipt request that this server can prove it made, with the card's title now. */
 function provenOffers(secret: string, raw: unknown, done: Msg[]): { after: number; title: string }[] {
   if (!Array.isArray(raw)) return [];
@@ -273,13 +292,13 @@ interface TranscriptMeta {
 
 // The transcript exactly as it is hashed and signed (version 3). Documented in docs/coach-transcripts.md. The key order
 // matters, because the hash is of JSON.stringify of this object, and the page writes the object out unchanged.
-const buildTranscript = (messages: Msg[], session: Session, context: string, meta: TranscriptMeta, offered: { after: number; title: string }[] = []) => ({
+const buildTranscript = (messages: Msg[], session: Session, context: string, meta: TranscriptMeta, offered: { after: number; title: string }[] = [], edited: SiteEdit[] = []) => ({
   v: 3,
   session,
   meta,
   ...(context ? { context } : {}),
   // What the site itself showed besides the messages (greeting, safety notice, closing), rebuilt here from the same public source the page uses.
-  site: siteMessagesFor(messages, MAX_TURNS, answeredIn(messages), context, offered),
+  site: siteMessagesFor(messages, MAX_TURNS, answeredIn(messages), context, offered, edited),
   // Process notes: why the site's check flagged each message it flagged (present only when it flagged any).
   ...(checkNotesFor(messages, context).length ? { checks: checkNotesFor(messages, context) } : {}),
   messages: messages.map((m) => ({ role: m.role, content: m.content })),
@@ -750,7 +769,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       instructions: instructionsFingerprint(),
       ...(termsFacts ? { terms: termsFacts } : {}),
     };
-    const transcript = buildTranscript(done, session, context, meta, provenOffers(secret, (body as { offers?: unknown }).offers, done));
+    const transcript = buildTranscript(done, session, context, meta, provenOffers(secret, (body as { offers?: unknown }).offers, done), provenEdits(secret, (body as { edits?: unknown }).edits, done));
     const hash = sha256(JSON.stringify(transcript));
     const issuedAt = new Date().toISOString();
     const signature = edSign(null, Buffer.from(`nenya-coach-transcript-v3\n${hash}\n${issuedAt}`), k.key).toString('base64');
@@ -1070,6 +1089,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       if (check(reply).length) { reply = repairArc(reply, { userTexts, wordsOnly: isWordsOnly(lastText) }); tally('coach.guard.arc.repaired'); }
     }
   }
+  let removedN = 0;
   // The mirror guard (src/lib/valuesRule.ts): while the conversation carries contempt or a call to harm, a reply that mirrors the feeling back is asked for again once, then cleaned of those sentences.
   if ((standing === 'violence' || standing === 'contempt') && !flag && !softened && mirrors(reply)) {
     tally('coach.guard.mirror');
@@ -1078,7 +1098,7 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       const again = await generate(MIRROR_NOTE, left);
       if (!('failure' in again) && again.reply) reply = again.reply;
     }
-    if (mirrors(reply)) { reply = withoutMirroring(reply); tally('coach.guard.mirror.repaired'); }
+    if (mirrors(reply)) { removedN = mirrorRemovals(reply); reply = withoutMirroring(reply); tally('coach.guard.mirror.repaired'); }
   }
   let siteChallenged = false;
   // Justifying or denying mass violence, or calling for a group to be removed (COACH_VALUES=on): make sure a plain statement of disagreement is there (src/lib/valuesRule.ts).
@@ -1150,8 +1170,12 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   const history = [...messages, { role: 'assistant' as const, content: reply }];
   const ticket = sign(secret, turn, Date.now(), history, session, context, code);
   // Which of the site's checks shaped this reply, so the page can offer "This was a mistake" (src/coach and netlify/functions/mistake.mts). Kinds only; nothing about the message.
+  const edits = [
+    ...(siteChallenged ? [{ kind: 'added', n: 1, proof: editProof(secret, history, 'added', 1) }] : []),
+    ...(removedN > 0 ? [{ kind: 'removed', n: removedN, proof: editProof(secret, history, 'removed', removedN) }] : []),
+  ];
   const checked = [...(standing || siteChallenged ? ['challenge'] : []), ...(offer ? ['offer'] : [])];
-  return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}), ...(checked.length ? { checked } : {}), ...(ctxFlag && turn === 1 ? { contextFlag: ctxFlag } : {}), ...(withinCard ? { card: withinCard } : {}), ...(offer ? { offer } : {}) });
+  return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}), ...(checked.length ? { checked } : {}), ...(edits.length ? { edits } : {}), ...(ctxFlag && turn === 1 ? { contextFlag: ctxFlag } : {}), ...(withinCard ? { card: withinCard } : {}), ...(offer ? { offer } : {}) });
 }
 
 // Literal values on purpose: Netlify reads this block by static analysis, so it
