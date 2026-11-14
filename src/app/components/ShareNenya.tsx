@@ -5,8 +5,8 @@ const SITE_URL = 'https://nenya.biz';
 const SHARE_TEXT = 'Nenya: a free, private place to pause, breathe, and find words for what you feel.';
 
 interface ShareNenyaProps {
-  /** "link" is a quiet text control for footers; "button" is an outlined button. */
-  variant?: 'button' | 'link';
+  /** "link" is a quiet text control for footers; "button" is an outlined button; "header" is a small ghost button with the word "Share" and "icon" is the icon alone (for narrow headers). */
+  variant?: 'button' | 'link' | 'header' | 'icon';
 }
 
 // Invites someone else to try Nenya. Always shares the whole site, never a
@@ -27,6 +27,21 @@ export function ShareNenya({ variant = 'link' }: ShareNenyaProps) {
       // Closing the share sheet is not an error. If copying is blocked there is nothing to report.
     }
   };
+
+  if (variant === 'header' || variant === 'icon') {
+    return (
+      <button
+        type="button"
+        onClick={share}
+        className={`inline-flex items-center justify-center gap-2 rounded-md text-sm hover:bg-muted ${variant === 'icon' ? 'size-9 max-[359px]:size-8' : 'h-9 px-3'}`}
+        aria-label={copied ? 'Link copied' : 'Share Nenya with someone'}
+        title="Share Nenya with someone"
+      >
+        {copied ? <Check className="size-4" /> : <Share2 className="size-4" />}
+        {variant === 'header' && <span aria-live="polite">{copied ? 'Copied' : 'Share'}</span>}
+      </button>
+    );
+  }
 
   const base =
     variant === 'button'

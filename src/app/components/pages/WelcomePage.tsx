@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import NenyaLogo from '../NenyaLogo';
 import { ValarBreathingLogo, BreathingTechnique } from '../ValarBreathingLogo';
-import WelcomePopup from '../WelcomePopup';
+import QuickNav from '../QuickNav';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { AppFooter } from '../AppFooter';
 import { SupportThisWork } from '../SupportThisWork';
@@ -72,8 +72,8 @@ export default function WelcomePage({
 
   return (
     <div ref={scrollContainerRef} className="size-full relative overflow-y-auto snap-y snap-proximity">
-      {/* Welcome Popup */}
-      <WelcomePopup initiallyOpen={false} />
+      {/* Quick navigation, bottom right: Breathe (home), Reflect (the gateways), Coach. It replaces the welcome message the sparkle used to reopen. */}
+      <QuickNav onBreathe={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} onReflect={onContinue} />
 
       {/* First Section: Full Viewport with Large Logo */}
       <div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">

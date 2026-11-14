@@ -1,4 +1,5 @@
 import { Home, BookOpen, Menu, X, ChevronDown, Settings, HelpCircle, Heart } from 'lucide-react';
+import { ShareNenya } from './ShareNenya';
 import { Button } from './ui/button';
 import { useState } from 'react';
 import NenyaLogo from './NenyaLogo';
@@ -155,6 +156,9 @@ export function GlobalNavigation({
                 </Button>
               ) : null}
 
+              {/* Share (the whole site, never anything entered) */}
+              <ShareNenya variant="header" />
+
               {/* Add to Home Screen */}
               <AddToHomeScreen variant="icon" />
 
@@ -257,6 +261,9 @@ export function GlobalNavigation({
 
           {/* Mobile Menu Controls */}
           <div id="tutorial-header-tools-mobile" className="flex items-center gap-0.5 min-[400px]:gap-1.5">
+            {/* Share */}
+            <ShareNenya variant="icon" />
+
             {/* Add to Home Screen */}
             <AddToHomeScreen variant="icon" />
 
