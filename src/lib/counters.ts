@@ -4,7 +4,7 @@
 import { capDay, type CounterStore } from './dailyCap.ts';
 
 /** Why a coach turn was refused. A code, never message text. */
-export const BLOCK_REASONS = ['manipulation', 'context', 'crisis', 'cap', 'ip', 'form.short', 'form.unclear'] as const;
+export const BLOCK_REASONS = ['manipulation', 'context', 'crisis', 'cap', 'ip', 'form.short', 'form.unclear', 'region'] as const;
 
 export const FIXED_EVENTS = [
   'coach.turn.sent', // a well-formed message reached the function

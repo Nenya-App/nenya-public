@@ -34,6 +34,7 @@
 //   COACH_METHOD_NOTES   plain    optional, short method notes (fallback when the blob below is absent)
 // Netlify Blobs: store "coach-private", key "method-notes" holds longer private method
 // notes that are added to the system instruction. See docs/coach-method-notes.md.
+import { regionDecision, countryOf, type HostGeo } from '../../src/lib/coachRegion.ts';
 import { getStore } from '@netlify/blobs';
 import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes, sign as edSign, timingSafeEqual } from 'node:crypto';
 import { checkConversation, detectFlag, explainConversation } from '../../src/lib/safetyFlags.ts';
@@ -507,7 +508,7 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
   return parts.join(' ');
 }
 
-export default async (req: Request, netlify?: { ip?: string }): Promise<Response> => {
+export default async (req: Request, netlify?: { ip?: string; geo?: HostGeo }): Promise<Response> => {
   // Counts are written alongside the work, and all awaited before the function returns, so none is lost.
   const pending: Promise<unknown>[] = [];
   const track = (p: Promise<unknown>): void => void pending.push(p.catch(() => undefined));
@@ -547,7 +548,7 @@ const isHex = (s: unknown, max: number): s is string => typeof s === 'string' &&
 
 async function handleSealed(
   req: Request,
-  netlify: { ip?: string } | undefined,
+  netlify: { ip?: string; geo?: HostGeo } | undefined,
   body: Record<string, unknown>,
   session: Session,
   ctx: { apiKey: string; secret: string; store: () => CounterStore | null; tally: (e: string) => void; track: (p: Promise<unknown>) => void }
@@ -649,7 +650,7 @@ async function handleSealed(
   }
 }
 
-async function handle(req: Request, netlify: { ip?: string } | undefined, track: (p: Promise<unknown>) => void): Promise<Response> {
+async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | undefined, track: (p: Promise<unknown>) => void): Promise<Response> {
   // A store that cannot be reached means no limits and no counts, never a locked-out visitor.
   const store = (): CounterStore | null => {
     try {
@@ -672,6 +673,11 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
     const model = process.env.COACH_MODEL || DEFAULT_MODEL;
     return json(200, { witnessed: process.env.COACH_ENABLED === 'true', sealed: process.env.COACH_ENABLED === 'true' && process.env.COACH_SEALED === 'on' && isE2eeModel(model) });
   }
+  // Whether this connection may use the coach (src/lib/coachRegion.ts). The country code goes back only to the visitor's own page and is not stored or logged.
+  if (req.method === 'GET' && url.searchParams.has('region')) {
+    const decision = regionDecision(netlify?.geo);
+    return json(200, { allowed: decision !== 'denied', country: countryOf(netlify?.geo) });
+  }
   if (req.method === 'GET' && url.searchParams.has('key')) {
     const k = signingKey();
     return k
@@ -680,6 +686,12 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   }
   if (req.method !== 'POST') return json(405, { error: 'method' });
   if (process.env.COACH_ENABLED !== 'true') return fail(503, 'off');
+  // United States only for now (Venice AI's terms, section 20.9). Refused before anything is read: the message is not parsed, passed on, or kept,
+  // and nothing about the connection is logged; only a plain count. The owner's token passes, for testing from anywhere.
+  if (regionDecision(netlify?.geo) === 'denied' && !isOwner(req)) {
+    tally('coach.turn.blocked.region');
+    return json(403, { error: 'region' });
+  }
 
   const apiKey = process.env.VENICE_API_KEY;
   const secret = process.env.COACH_TICKET_SECRET;

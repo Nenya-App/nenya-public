@@ -36,6 +36,7 @@ const InsightGatewayPage = lazy(() => import('./components/pages/InsightGatewayP
 const SessionKeyPicker = lazy(() => import('../coach/SessionKeyPicker'));
 const GatewayReviewPage = lazy(() => import('./components/pages/GatewayReviewPage'));
 const CoachDemo = lazy(() => import('../coach/CoachDemo'));
+const RegionGate = lazy(() => import('../coach/RegionGate').then((m) => ({ default: m.RegionGate })));
 const DyadicCellCreation = lazy(() => import('./components/DyadicCellCreation'));
 const DyadicCellInterface = lazy(() => import('./components/DyadicCellInterface'));
 const AboutNenya = lazy(() => import('./components/AboutNenya'));
@@ -642,6 +643,7 @@ export default function App() {
           )}
 
           {currentScreen === 'session' && (
+            <RegionGate onBack={() => navigateBack('home')} onBreathe={() => handleGlobalNavigation('welcome')}>
             <CoachDemo
               colors={interfaceColors}
               report={gatewayData.length > 0 ? { gatewayData: gatewayData.map((gd) => ({ gateway: gd.gateway, data: gd.data })), bodyMap: bodyMapData } : undefined}
@@ -649,6 +651,7 @@ export default function App() {
               onBreathe={() => handleGlobalNavigation('welcome')}
               onPartnerPractice={handleNavigateToCell}
             />
+            </RegionGate>
           )}
           
           {currentScreen === 'cell-creation' && (

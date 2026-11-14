@@ -8,6 +8,7 @@ import CoachDemo from './CoachDemo';
 import ModeChooser from './ModeChooser';
 import SealedChat from './SealedChat';
 import OwnerPanel from './OwnerPanel';
+import { RegionGate } from './RegionGate';
 import OnboardingFlow from '../app/components/OnboardingFlow';
 import { termsAcceptedFor, usePref } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
@@ -112,7 +113,9 @@ export default function CoachPage() {
         onOpacityChange={setOpacity}
       />
       <div className="flex-1 min-h-0">
-        {!agreed ? null : !colors ? (
+        {!agreed ? null : (
+          <RegionGate onBack={() => goToApp()}>
+          {!colors ? (
           <SessionKeyPicker onComplete={setColors} onBack={() => goToApp()} />
         ) : (
           sealedOffered && mode === null ? (
@@ -122,6 +125,8 @@ export default function CoachPage() {
           ) : (
             <CoachDemo colors={colors} onBack={leave} />
           )
+        )}
+          </RegionGate>
         )}
       </div>
       <OwnerPanel />

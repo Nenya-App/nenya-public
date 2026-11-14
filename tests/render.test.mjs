@@ -82,7 +82,7 @@ try {
     {
       const coachPage = readFileSync(new URL('../src/coach/CoachPage.tsx', import.meta.url), 'utf8');
       ok('the coach page: reached only after the terms are accepted (the same panel, opened on the terms), unless the agreement was remembered for these terms', /useState\(\(\) => termsAcceptedFor\(LEGAL_EFFECTIVE_DATE\)\)/.test(coachPage) && /\{!agreed && <OnboardingFlow skipRhythm/.test(coachPage));
-      ok('the coach page: nothing behind the panel is mounted or reachable until then, the Emergency Exit stays reachable, and counting begins only after agreement', /\{!agreed \? null : !colors/.test(coachPage) && /inert: ''/.test(coachPage) && /EmergencyExitDock show=\{popoutOpen \|\| !agreed\}/.test(coachPage) && /if \(agreed\) enableUsageCounts\(\)/.test(coachPage));
+      ok('the coach page: nothing behind the panel is mounted or reachable until then, the Emergency Exit stays reachable, and counting begins only after agreement', /\{!agreed \? null : \(\s*<RegionGate/.test(coachPage) && /inert: ''/.test(coachPage) && /EmergencyExitDock show=\{popoutOpen \|\| !agreed\}/.test(coachPage) && /if \(agreed\) enableUsageCounts\(\)/.test(coachPage));
     }
     ok('first-visit panel: goes straight from the rhythm to the terms', /STEPS: OnboardingStep\[\] = \['rhythm', 'terms'\]/.test(src) && !/'counter'|'process'/.test(src));
   }

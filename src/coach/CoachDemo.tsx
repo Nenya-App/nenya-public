@@ -31,6 +31,7 @@ import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
 import { FailureNotice } from './FailureNotice';
+import { RegionNotice } from './RegionGate';
 import { resetScroll } from '../app/components/ScrollToTop';
 import { describeFailure, type FailureInfo } from '../lib/coachErrors';
 import { DEFAULT_TIMEOUT, quietState, type TimeoutChoice } from '../lib/chatTimeout';
@@ -970,7 +971,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       <MistakeButton kind="form" />
                     </p>
                   )}
-                  {failure && <FailureNotice info={failure} turn={turn} />}
+                  {failure && (failure.code === 'region' ? <RegionNotice inline country={null} /> : <FailureNotice info={failure} turn={turn} />)}
                 </form>
               )}
 
