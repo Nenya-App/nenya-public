@@ -35,13 +35,15 @@ const paceParts = (q.get('pace') ?? '').split(',').map(Number);
 const technique = paceParts.length === 4 && paceParts.every((n) => Number.isFinite(n) && n >= 0) && paceParts[0] > 0 ? { ih: paceParts[0], hi: paceParts[1], ex: paceParts[2], ho: paceParts[3] } : undefined;
 const kaleido = q.get('kaleido') === '1';
 // ?spin=N: turns of the stone per gem loop (three breaths); the site's own is 1/6. A clip that loops needs a whole number of turns (0 holds the stone's angle).
+// ?breathcolors=N: the breath tint steps through only N colours (one per breath, spread round the 96), so a loop of N breaths returns to its first color.
+const breathColors = Number(q.get('breathcolors')) >= 1 ? Math.floor(Number(q.get('breathcolors'))) : 0;
 const spin = q.get('spin') !== null && Number.isFinite(Number(q.get('spin'))) ? Number(q.get('spin')) : null;
 createRoot(document.getElementById('root')!).render(
   <MotionProvider>
     <ThemeProvider defaultTheme="dark">
       <div style={{ width: boxW, height: boxH, background: bg, borderRadius: q.get('round') ? `${Number(q.get('round'))}%` : undefined, filter: q.get('light') === '1' ? 'brightness(0.55) saturate(1.35)' : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <NenyaLogo size={size} showValarOrbit={q.get('orbs') === '1' || flat} glow={q.get('glow') === '1'} breathingEnabled={q.get('breathe') === '1'} technique={technique} cycleStart={video ? Date.now() : undefined}
-          liveGem={{ light: (vivid || flat) ? { below: 1.2, saturation: 1.6, ...gem.light } : gem.light, cut: gem.cut, quality: gem.quality, kaleidoscope: kaleido ? { ...gem.kaleidoscope, on: true, ...(loop ? { periodS: loop } : {}) } : { ...gem.kaleidoscope, on: false, depth: 0 }, ...(video ? { fps: 240 } : {}), ...(spin !== null ? { spin } : {}) } as never}
+          liveGem={{ light: (vivid || flat) ? { below: 1.2, saturation: 1.6, ...gem.light } : gem.light, cut: gem.cut, quality: gem.quality, kaleidoscope: kaleido ? { ...gem.kaleidoscope, on: true, ...(loop ? { periodS: loop } : {}) } : { ...gem.kaleidoscope, on: false, depth: 0 }, ...(video ? { fps: Number(q.get('gemfps')) > 0 ? Number(q.get('gemfps')) : 240 } : {}), ...(spin !== null ? { spin } : {}), ...(breathColors ? { breathColors } : {}) } as never}
           gemLook={((vivid || flat) ? { fieldAlpha: 0.7, ...gem.finish } : gem.finish) as never}
           innerOrbit={{ ...((vivid || flat) ? { ...gem.inner, opacityLow: 0.95, opacityHigh: 0.95, pulse: 0 } : gem.inner), ...(loop ? { orbitSeconds: loop, colorCycle: loop } : {}) } as never}
           outerOrbit={(flat ? { ...gem.outer, show: false } : gem.outer) as never}

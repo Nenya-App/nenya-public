@@ -53,11 +53,23 @@ let sent = '';
 await askScreen({ origin: 'https://x', secret, text: 'hi', fetchImpl: (async (_u: any, init: any) => { sent = String(init.headers[SCREEN_HEADER]); return new Response('{"band":"low"}'); }) as any });
 ok('the client signs its call', verifyScreenCall(secret, sent, JSON.stringify({ text: 'hi' })));
 
+// the integrity check
+import { screenFileProblems } from '../src/lib/screenModel.ts';
+import { createHash } from 'node:crypto';
+const sha = (x: string | Uint8Array) => createHash('sha256').update(x).digest('hex');
+const sample = { model: new Uint8Array([1, 2, 3]), tokenizerJson: '{"a":1}', tokenizerConfig: '{"b":2}' };
+const want = { model: sha(sample.model), tokenizerJson: sha(sample.tokenizerJson), tokenizerConfig: sha(sample.tokenizerConfig) };
+ok('files that match their hashes are accepted', (await screenFileProblems(sample, want)).length === 0);
+ok('a changed model file is named and refused', (await screenFileProblems({ ...sample, model: new Uint8Array([1, 2, 4]) }, want)).join() === 'model');
+ok('a changed tokenizer is named and refused', (await screenFileProblems({ ...sample, tokenizerJson: '{"a":2}' }, want)).join() === 'tokenizer');
+ok('an empty model is refused', (await screenFileProblems({ ...sample, model: new Uint8Array() }, want)).includes('model'));
+
 // the real model, when the files are here (not in a clean checkout)
 const R = join(process.env.NENYA_RESEARCH_DIR || join(homedir(), 'Desktop', 'Nenya Research'), 'models');
 const files = [join(R, 'cardiffnlp-onnx/model_int8.onnx'), join(R, 'cardiffnlp-hate-latest/tokenizer.json'), join(R, 'cardiffnlp-hate-latest/tokenizer_config.json')];
 if (files.every(existsSync)) {
   const { createScreener } = await import('../src/lib/screenModel.ts');
+  ok('the real files match the hashes in the code', (await screenFileProblems({ model: new Uint8Array(readFileSync(files[0])), tokenizerJson: readFileSync(files[1], 'utf8'), tokenizerConfig: readFileSync(files[2], 'utf8') })).length === 0);
   const s = await createScreener({ model: new Uint8Array(readFileSync(files[0])), tokenizerJson: readFileSync(files[1], 'utf8'), tokenizerConfig: readFileSync(files[2], 'utf8') });
   const a = await s.hate('I love everybody'), b = await s.hate('Those people should all be killed.');
   ok('the real model: a kind sentence is low and a call for killing is high', a < 0.05 && b > 0.99, `${a.toFixed(3)} ${b.toFixed(3)}`);

@@ -31,6 +31,11 @@ export interface LiveGemLook {
    */
   kaleidoscope?: Partial<KaleidoscopeLook>;
   /**
+   * How many colours the breath tint steps through, one per breath (default: all 96, so it does not repeat for 96 breaths). A clip that loops sets it to the number of breaths in the loop, so the tint
+   * returns to where it began; the colours are spread evenly round the 96.
+   */
+  breathColors?: number;
+  /**
    * A counter. Each time it changes, the kaleidoscope forgets where it had got to and the stone goes back to its plain cut (the one in `cut`), where it stays until the
    * kaleidoscope is turned on again. Turning it off alone only pauses it where it is.
    */
@@ -87,6 +92,9 @@ const CONTRAST = 0.9;
 const LIFT = 0.5;
 
 const FRAME_INTERVAL_MS = 1000 / 30; // the sparkle moves ~1.6 frames a second; 30 draws a second is plenty smooth
+/** The index of the breath tint's colour: the breath number itself, or, when the look limits the cycle to a few colours, the nth of that many spread evenly round the whole list. */
+export const tintIndex = (breath: number, colours: number | undefined, total: number): number =>
+  colours && colours >= 1 ? (breath % Math.floor(colours)) * Math.floor(total / Math.floor(colours)) : breath;
 const LIVE_FPS = 15;
 // Without a chosen quality, the live gem starts at the device's tier (src/lib/deviceProfile.ts) and steps down to the low
 // setting if its first frames take longer than this on average.
@@ -284,7 +292,7 @@ export default function SpectralGem({
           octx.globalAlpha = 1;
         }
       }
-      const [r, g, b] = gemMultiplyColor(allColors, c.idx, c.p, f, breathingEnabled ? tint : 0, !reduced);
+      const [r, g, b] = gemMultiplyColor(allColors, tintIndex(c.idx, liveRef.current?.breathColors, allColors.length), c.p, f, breathingEnabled ? tint : 0, !reduced);
       bctx.globalCompositeOperation = 'source-over';
       bctx.globalAlpha = 1;
       bctx.clearRect(0, 0, px, px);

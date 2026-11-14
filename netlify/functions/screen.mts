@@ -5,13 +5,15 @@
 import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
 import { SCREEN_HEADER, verifyScreenCall } from '../../src/lib/screenAuth.ts';
-import { SCREEN_MODEL_ID, bandOf, createScreener, type Screener } from '../../src/lib/screenModel.ts';
+import { SCREEN_FILE_HASHES, SCREEN_MODEL_ID, bandOf, createScreener, screenFileProblems, type Screener } from '../../src/lib/screenModel.ts';
 
 export const MODEL_KEYS = { model: 'screen/model_int8.onnx', tokenizerJson: 'screen/tokenizer.json', tokenizerConfig: 'screen/tokenizer_config.json' } as const;
 
 let screener: Promise<Screener> | null = null;
 let override: Screener | null = null;
+let hashesOverride: { model: string; tokenizerJson: string; tokenizerConfig: string } | null = null;
 export const __useScreenerForTests = (s: Screener | null): void => { override = s; screener = null; };
+export const __useHashesForTests = (h: { model: string; tokenizerJson: string; tokenizerConfig: string } | null): void => { hashesOverride = h; screener = null; };
 
 function load(): Promise<Screener> {
   if (override) return Promise.resolve(override);
@@ -24,7 +26,11 @@ function load(): Promise<Screener> {
         store.get(MODEL_KEYS.tokenizerConfig, { type: 'text' }),
       ]);
       if (!model || !tokenizerJson || !tokenizerConfig) throw new Error('the model is not in the store');
-      return createScreener({ model: new Uint8Array(model), tokenizerJson, tokenizerConfig });
+      const files = { model: new Uint8Array(model), tokenizerJson, tokenizerConfig };
+      // Integrity first: a file that is not exactly the reviewed one is refused, and the relay carries on without the model (fail open).
+      const bad = await screenFileProblems(files, hashesOverride ?? SCREEN_FILE_HASHES);
+      if (bad.length) throw new Error(`the stored model is not the reviewed one (${bad.join(', ')})`);
+      return createScreener(files);
     })();
     screener.catch(() => { screener = null; }); // try again on the next request
   }

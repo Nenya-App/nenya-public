@@ -7,6 +7,28 @@ export const SCREEN_BANDS = { high: 0.993, mid: 0.985 } as const;
 export type Band = 'high' | 'mid' | 'low';
 export const bandOf = (p: number): Band => (p > SCREEN_BANDS.high ? 'high' : p > SCREEN_BANDS.mid ? 'mid' : 'low');
 
+/**
+ * The files the screening model is made of, by SHA-256. The function checks every one before using it and refuses the whole model if any differs, so a damaged, swapped or tampered file in the private
+ * store is never run. A new model version is a new set of hashes in a reviewed code change, never a silent change in storage. Made by scripts/export-onnx.py (the ONNX file) and downloaded from the
+ * model's page (the tokenizer files); the same values are in docs/coach-screening-flow-scope.md.
+ */
+export const SCREEN_FILE_HASHES = {
+  model: '66062a4bcaea5b38eec5acdcd786aacfea72e28a64da2a1414f83ceb928d93ff',
+  tokenizerJson: '3045f84d35d20dfe74630b9c0f7f98d83295915f9d064d0dd9dc73b858ba4bfc',
+  tokenizerConfig: 'f64a0b9cc0e15d4c5db67d76c8bdd6bfa414c68a4f355e90116b109fe0bde972',
+} as const;
+
+/** The names of the files whose hash does not match (empty when the model is intact). */
+export async function screenFileProblems(files: { model: Uint8Array; tokenizerJson: string; tokenizerConfig: string }, expected: { model: string; tokenizerJson: string; tokenizerConfig: string } = SCREEN_FILE_HASHES): Promise<string[]> {
+  const { createHash } = await import('node:crypto');
+  const sha = (d: Uint8Array | string): string => createHash('sha256').update(d).digest('hex');
+  const bad: string[] = [];
+  if (sha(files.model) !== expected.model) bad.push('model');
+  if (sha(files.tokenizerJson) !== expected.tokenizerJson) bad.push('tokenizer');
+  if (sha(files.tokenizerConfig) !== expected.tokenizerConfig) bad.push('tokenizer config');
+  return bad;
+}
+
 export interface Screener {
   /** The model's hate probability for the text, 0 to 1. */
   hate(text: string): Promise<number>;

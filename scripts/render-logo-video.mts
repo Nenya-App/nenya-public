@@ -5,7 +5,8 @@
 //   node scripts/render-logo-video.mts --mode flat --seconds 3 --fps 15 --bg transparent --size 540 --name test
 //     --mode flat | orbit          flat: petals, bezel and the gem; orbit: with the ring of orbs
 //     --seconds N                  the length (default: one loop, see --loop)
-//     --loop                       length = one gem loop (three breaths); the orbit, the color cycle and the kaleidoscope go round exactly once, so the clip repeats without a jump
+//     --loop                       length = one gem loop (three breaths, or --loop-breaths N); the orbit, the color cycle, the kaleidoscope and the breath tint go round exactly once, so the clip repeats without a jump
+//     --loop-breaths N             breaths in the loop (default 3; the breath tint uses N colours, one per breath)
 //     --fps N                      frames per second (default 15, the rate the site draws the gem at)
 //     --bg transparent | dark | badge      transparent (alpha), the dark ground, or the dark rounded tile
 //     --spin N                     turns of the stone per loop (default 0 with --loop, so the clip repeats without a jump; the site itself turns 1/6 of a turn per loop, which does not close)
@@ -34,7 +35,8 @@ const size = Math.max(64, Math.min(2160, Number(flag('--size')) || 540));
 const fps = Math.max(1, Math.min(60, Number(flag('--fps')) || 15));
 const pace = (flag('--pace') ?? '5000,0,5000,0').split(',').map(Number);
 const breathMs = (pace[0] + (pace[1] || 0) + pace[2] + (pace[3] || 0)) || 10000;
-const loopSeconds = (3 * breathMs) / 1000; // GEM_LOOP_BREATHS = 3 (src/lib/breathClock.ts)
+const loopBreaths = Math.max(3, Math.round(Number(flag('--loop-breaths')) || 3)); // a multiple of GEM_LOOP_BREATHS = 3 (src/lib/breathClock.ts) keeps the gem's own sparkle loop whole
+const loopSeconds = (loopBreaths * breathMs) / 1000;
 const seconds = Number(flag('--seconds')) || (has('--loop') ? loopSeconds : 3);
 const bg = flag('--bg') ?? 'transparent';
 const name = (flag('--name') ?? 'logo').replace(/[^a-z0-9._-]/gi, '-');
@@ -70,16 +72,23 @@ await page.evaluateOnNewDocument(() => {
   performance.now = () => T;
   window.requestAnimationFrame = (f: FrameRequestCallback) => { cbs.set(++id, f); return id; };
   window.cancelAnimationFrame = (i: number) => { cbs.delete(i); };
+  // The page's animation library (Motion) never lets one frame advance its animations by more than 40 ms, however much time has passed: a 15 fps clip (66.7 ms a frame) would run them at 60% speed
+  // and nothing would line up with the loop. So time is advanced in pieces of at most 16 ms, each one a full animation frame, and the page is only photographed after the last.
   (window as unknown as { __step: (dt: number) => number }).__step = (dt: number) => {
-    T += dt;
-    const list = [...cbs.values()]; cbs.clear();
-    for (const f of list) { try { f(T); } catch { /* a frame's error must not stop the clip */ } }
+    let remaining = dt;
+    do {
+      const d = Math.min(remaining, 16);
+      T += d; remaining -= d;
+      const list = [...cbs.values()]; cbs.clear();
+      for (const f of list) { try { f(T); } catch { /* a frame's error must not stop the clip */ } }
+    } while (remaining > 0.001);
     for (const a of document.getAnimations()) { try { a.pause(); a.currentTime = T; } catch { /* some animations cannot be set */ } }
     return T;
   };
 });
-const params = new URLSearchParams({ size: String(Math.round(size * (mode === 'flat' ? 1.22 : 0.78))), box: String(size), video: '1', breathe: '1', pace: pace.join(','), ...(mode === 'flat' ? { flat: '1' } : { orbs: '1', vivid: '1' }), ...(has('--glow') ? { glow: '1' } : {}), ...(has('--kaleido') ? { kaleido: '1' } : {}), ...(has('--loop') ? { loop: String(loopSeconds) } : {}), ...(flag('--spin') !== undefined ? { spin: String(Number(flag('--spin'))) } : has('--loop') ? { spin: '0' } : {}), ...(bg === 'dark' ? { bg: DARK } : bg === 'badge' ? { bg: DARK, round: '12' } : {}), ...(GEM_JSON ? { s: GEM_JSON } : {}) });
-await page.goto(`http://localhost:${port}/logo-export/index.html?${params}`, { waitUntil: 'networkidle0' });
+const params = new URLSearchParams({ size: String(Math.round(size * (mode === 'flat' ? 1.22 : 0.78))), box: String(size), video: '1', gemfps: String(fps * 1.1), breathe: '1', pace: pace.join(','), ...(mode === 'flat' ? { flat: '1' } : { orbs: '1', vivid: '1' }), ...(has('--glow') ? { glow: '1' } : {}), ...(has('--kaleido') ? { kaleido: '1' } : {}), ...(has('--loop') ? { loop: String(loopSeconds), breathcolors: String(loopBreaths) } : {}), ...(flag('--spin') !== undefined ? { spin: String(Number(flag('--spin'))) } : has('--loop') ? { spin: '0' } : {}), ...(bg === 'dark' ? { bg: DARK } : bg === 'badge' ? { bg: DARK, round: '12' } : {}), ...(GEM_JSON ? { s: GEM_JSON } : {}) });
+page.on('pageerror', (e) => console.log('page error:', String(e).slice(0, 160)));
+await page.goto(`http://localhost:${port}/logo-export/index.html?${params}`, { waitUntil: 'load', timeout: 60000 });
 await new Promise((r) => setTimeout(r, 1500)); // the page's own start-up, in real time, before the clock is driven
 const step = 1000 / fps;
 console.log(`${mode}, ${size}px, ${frames} frames (${seconds}s at ${fps} fps), background ${bg}${has('--loop') ? ', loops every ' + loopSeconds + 's' : ''}`);
