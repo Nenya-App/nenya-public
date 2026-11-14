@@ -69,7 +69,7 @@ import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
 import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCritiqueThanks, type CritiqueTarget, type Hostility } from '../../src/lib/hostility.ts';
 import { termsFromOurKey } from '../../src/lib/termsReceipt.ts';
-import { CHALLENGE_NOTE, VALUES_RULE, challengeFor, conversationChallenge, valuesOn } from '../../src/lib/valuesRule.ts';
+import { CHALLENGE_NOTE, MIRROR_NOTE, VALUES_RULE, challengeFor, conversationChallenge, mirrors, valuesOn, withoutMirroring } from '../../src/lib/valuesRule.ts';
 import { laneFor, laneReply } from '../../src/lib/laneGuard.ts';
 import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_MENU_NOTE, ARC_NOTE, WORDS_ONLY_NOTE, guardedProblems, repairArc, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
@@ -1069,6 +1069,16 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       }
       if (check(reply).length) { reply = repairArc(reply, { userTexts, wordsOnly: isWordsOnly(lastText) }); tally('coach.guard.arc.repaired'); }
     }
+  }
+  // The mirror guard (src/lib/valuesRule.ts): while the conversation carries contempt or a call to harm, a reply that mirrors the feeling back is asked for again once, then cleaned of those sentences.
+  if ((standing === 'violence' || standing === 'contempt') && !flag && !softened && mirrors(reply)) {
+    tally('coach.guard.mirror');
+    const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
+    if (left >= REPEAT_RETRY_MIN_REMAINING_MS) {
+      const again = await generate(MIRROR_NOTE, left);
+      if (!('failure' in again) && again.reply) reply = again.reply;
+    }
+    if (mirrors(reply)) { reply = withoutMirroring(reply); tally('coach.guard.mirror.repaired'); }
   }
   let siteChallenged = false;
   // Justifying or denying mass violence, or calling for a group to be removed (COACH_VALUES=on): make sure a plain statement of disagreement is there (src/lib/valuesRule.ts).

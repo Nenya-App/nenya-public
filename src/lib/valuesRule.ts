@@ -23,7 +23,7 @@ export const CHALLENGE: Record<string, string> = {
   'group-contempt': 'I hear how strong the feeling is. I don\'t share the view that any group of people is evil or less than human, and I won\'t pretend to.',
   'colonizer-dehumanization': 'I hear a lot of anger, and I am not going to tell you not to feel it. I can\'t go along with words that make a whole people less than human, or with wanting any group gone from a place, whoever they are.',
 };
-const SAYS_IT = /\b(?:i\s+(?:disagree|can(?:'|’)t\s+(?:agree|go\s+along)|won(?:'|’)t\s+(?:agree|pretend|say))|not\s+true|isn(?:'|’)t\s+true|did\s+happen|well[- ]documented|less\s+than\s+human)\b/i;
+const SAYS_IT = /\b(?:i\s+(?:disagree|(?:can(?:'|’)t|cannot|won(?:'|’)t|do\s+not|don(?:'|’)t)\s+(?:support|share|help\s+with|condone)|can(?:'|’)t\s+(?:agree|go\s+along)|won(?:'|’)t\s+(?:agree|pretend|say))|not\s+true|isn(?:'|’)t\s+true|did\s+happen|well[- ]documented|less\s+than\s+human)\b/i;
 
 /** The sentence to put before the reply, or null. */
 export function challengeFor(text: string, reply: string, matcher?: Matcher | null, band?: Band | null): string | null {
@@ -76,3 +76,17 @@ export const CHALLENGE_NOTE: Record<'violence' | 'contempt' | 'soft', string> = 
     'This conversation has contained a call for a group of people to be harmed or killed, or removed. Do not mirror it back, do not call it a feeling or a thought that sounds tough, and do not ask what need is "behind" it as if it were a reasonable wish. In your first sentence say clearly and calmly that you cannot support harming or killing anyone for who they are, and that you will not help with it. Then, once, ask what has happened, or what they are afraid of, that brought them to this. Be steady, not angry; never insult them; two or three plain sentences.',
 };
 
+
+// ---- the mirror guard. The steering note tells the coach not to answer contempt or a call for harm with "that sounds tough". This model sometimes does it anyway (seen on staging, 2026-11-14: "It must be
+// really tough to have such strong feelings" after "they are all vermin"). So when the conversation carries contempt or a call to harm, a reply that mirrors is asked for again once, and if it still mirrors,
+// the mirroring sentences are taken out. The reply keeps whatever else it said. Not applied to the lighter "soft" note, where the model alone is not sure.
+const MIRROR = /\b(?:(?:it|that)\s+(?:sounds|must\s+(?:be|feel)|seems)(?:\s+like)?\s+(?:really\s+|very\s+|so\s+|a\s+lot\s+of\s+)?(?:tough|hard|difficult|painful|frustrating|intense|overwhelming)|that(?:'|’)s\s+(?:a\s+)?(?:very\s+|really\s+)?(?:strong|intense)\s+feeling|i\s+(?:understand|hear)\s+(?:that|how|this|you|those|these|your)\b|i\s+can\s+(?:only\s+)?imagine|completely\s+understandable|understandable\s+(?:that|to)|your\s+feelings\s+are\s+valid)/i;
+export const mirrors = (reply: string): boolean => MIRROR.test(reply);
+export const MIRROR_NOTE =
+  "Your last reply mirrored the person's feeling back (for example \"it must be really tough\"). Do not do that on this turn. In your first sentence say plainly, in your own words, that you do not share the view that any group of people is evil or should be harmed. Then ask once what has happened, or what they are afraid of. Do not call the feeling tough, hard, strong, intense or understandable.";
+/** The reply without its mirroring sentences; the original if nothing else would be left. */
+export function withoutMirroring(reply: string): string {
+  const parts = reply.split(/(?<=[.!?])\s+/);
+  const kept = parts.filter((p) => !MIRROR.test(p));
+  return kept.length && kept.join(' ').trim() ? kept.join(' ').trim() : reply;
+}

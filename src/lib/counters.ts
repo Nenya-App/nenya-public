@@ -37,6 +37,8 @@ export const FIXED_EVENTS = [
   'coach.challenge.note.contempt',
   'coach.challenge.note.violence',
   'coach.challenge.note.soft',
+  'coach.guard.mirror', // a reply mirrored the feeling during contempt or a call to harm and was asked for again
+  'coach.guard.mirror.repaired', // it still did, and the mirroring sentences were taken out
   'coach.screen.acted.contempt', // the screening model (COACH_SCREEN=on) changed what the list alone would have done
   'coach.screen.acted.soft',
   'coach.turn.multi-question',

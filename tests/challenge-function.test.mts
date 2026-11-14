@@ -38,6 +38,17 @@ r = await send('My week was long and my boss is a bully.');
 ok('an ordinary reply carries no check marker', r.j.checked === undefined);
 ok('an ordinary message gets neither', !VIOLENCE.test(r.system) && !CONTEMPT.test(r.system) && r.j.reply === modelSays);
 
+// the mirror guard: a model that mirrors the feeling anyway has the mirroring taken out, and the site's sentence is not doubled
+modelSays = 'It must be really tough to feel this way. What has happened that brought you to this?';
+r = await send('I think we should just kill them all.');
+ok('a reply that mirrors the feeling during a call to harm is cleaned of the mirroring sentences', !/must be really tough/.test(r.j.reply) && /What has happened that brought you to this\?/.test(r.j.reply) && /^I can't go along with wanting any group of people harmed or dead/.test(r.j.reply), r.j.reply);
+modelSays = "I can't support wanting anyone to be harmed, however strongly you feel. What has happened?";
+r = await send('I think we should just kill them all.');
+ok('when the model has already said it plainly the site does not say it again', !/^I can't go along with wanting any group/.test(r.j.reply) && /I can't support wanting anyone/.test(r.j.reply), r.j.reply);
+modelSays = 'It must be really tough to feel this way. What has happened that brought you to this?';
+r = await send('My teacher said "we should just kill them all" and I froze.');
+ok('the guard does not touch an ordinary reply to a quote', /must be really tough/.test(r.j.reply));
+modelSays = "That sounds really tough. What need might be behind it?";
 process.env.COACH_VALUES = 'off';
 r = await send('I think we should just kill them all.');
 ok('with COACH_VALUES off nothing changes (the switch is the owner\'s)', !VIOLENCE.test(r.system) && r.j.reply === modelSays);
