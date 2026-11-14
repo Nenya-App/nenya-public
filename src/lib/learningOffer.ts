@@ -97,7 +97,7 @@ export function offerFor(i: OfferInput): { id: string; because: string } | null 
 // about colonizers, settlers or occupiers (the same line in every direction). The private list handles slurs and other dehumanizing language. A person REPORTING such words (the
 // REPORTING rule in offerFor) or discussing them is not matched. Severity 2: the offer threshold.
 const DENIAL = /\b(?:holocaust|genocide|massacre|slavery|apartheid|ethnic\s+cleansing)\b[^.?!]{0,40}\b(?:never\s+happened|did(?:n'|\s*no)t\s+happen|(?:was|were|is)\s+(?:a\s+|just\s+)?(?:hoax|lie|lies|myth|fake|made\s+up|fabricated)|(?:was|were|is)\s+(?:greatly\s+|grossly\s+)?exaggerated|(?:was|were|is)\s+(?:good|fine|justified|necessary|deserved|for\s+the\s+best))\b|\b(?:there\s+was\s+no|no\s+such\s+thing\s+as\s+(?:a\s+)?)(?:holocaust|genocide|apartheid)\b|\b(?:they|those\s+people|them)\s+(?:all\s+)?deserved\s+(?:to\s+die|it|what\s+they\s+got)\b|\bhad\s+it\s+coming\b/i;
-const REMOVAL = /\b(?:wipe\s+(?:them|\w+)\s+(?:all\s+)?out|wipe\s+(?:them|\w+)\s+off\s+the\s+map|(?:send|ship)\s+(?:them|\w+)\s+all\s+(?:back|home|away)|drive\s+(?:them|\w+)\s+(?:all\s+)?(?:out|into\s+the\s+sea)|into\s+the\s+sea|clear\s+(?:them|\w+)\s+(?:all\s+)?out|ethnically\s+cleanse|get\s+rid\s+of\s+(?:all|every)\s+(?:the\s+)?\w+)\b/i;
+const REMOVAL = /\b(?:wipe\s+(?:them|\w+)\s+(?:all\s+)?out|wipe\s+(?:them|\w+)\s+off\s+the\s+map|(?:send|ship)\s+(?:them|\w+)\s+all\s+(?:back|home|away)|drive\s+(?:them|\w+)\s+(?:all\s+)?(?:out|into\s+the\s+sea)|into\s+the\s+sea|clear\s+(?:them|\w+)\s+(?:all\s+)?out|ethnically\s+cleanse|(?:should|must|need\s+to|ought\s+to)\s+(?:all\s+)?be\s+sent\s+back\s+to\s+(?:africa|where\s+they\s+came\s+from|their\s+(?:own\s+)?countr(?:y|ies)|the\s+jungle)|get\s+rid\s+of\s+(?:all|every)\s+(?:the\s+)?\w+)\b/i;
 const COLONIZER = /\b(?:settlers?|colonizers?|colonists?|occupiers?)\b[^.?!]{0,40}\b(?:are|is)\s+(?:all\s+)?(?:vermin|animals?|cockroaches|rats|parasites|a\s+cancer|subhuman|savages?|scum)\b|\b(?:kill|get\s+rid\s+of|wipe\s+out|remove)\s+(?:all\s+)?(?:the\s+)?(?:settlers|colonizers|colonists|occupiers)\b/i;
 
 
@@ -107,8 +107,8 @@ const COLONIZER = /\b(?:settlers?|colonizers?|colonists?|occupiers?)\b[^.?!]{0,4
 // frame rules in offerFor. Not a safety system: it misses and it fires wrongly, and the scenes (src/lib/detectScenes.ts) and the outside sets measure both.
 const VIOLENT = String.raw`(?:kill(?:ed)?|murder(?:ed)?|slaughter(?:ed)?|shoot|shot|execut(?:e|ed)|hang(?:ed)?|lynch(?:ed)?|exterminat(?:e|ed)|eradicat(?:e|ed)|annihilat(?:e|ed)|gas(?:sed)?|massacr(?:e|ed)|rape(?:d)?|stab(?:bed)?|behead(?:ed)?|bomb(?:ed)?|burn(?:ed|t)?|poison(?:ed)?)`;
 // Nouns that are plainly not people: "kill all the weeds" is gardening, not a call. A short list, not a promise: other objects and animals can still slip through, and the scenes measure it.
-const NOT_PEOPLE = String.raw`(?!(?:the\s+)?(?:weeds?|bugs?|ants?|flies|fly|mosquit\w+|insects?|spiders?|pests?|germs?|bacteria|viruses|virus|cells?|plants?|trees?|files?|emails?|processes|tasks?|items?|cookies|tabs?|windows|zombies|monsters?|rats?|mice|roaches|cockroaches|wasps?|slugs?|snails?|moths?|lice|fleas?|ticks?)\b)`;
-const GROUPREF = String.raw`(?:(?:all|every|each)\s+(?:one\s+)?(?:of\s+)?(?:them|those|these|${NOT_PEOPLE}the\s+\w+)|them\s+all|(?:those|these)\s+(?:\w+\s+)?\w+s?|any\s+(?:one\s+)?of\s+them|every\s+(?:single\s+)?(?:one|last\s+one)|all\s+${NOT_PEOPLE}\w+s)`;
+const NOT_PEOPLE = String.raw`(?!(?:the\s+|those\s+|these\s+)?(?:weeds?|balloons?|pictures?|photos?|posters?|books?|boxes|bugs?|ants?|flies|fly|mosquit\w+|insects?|spiders?|pests?|germs?|bacteria|viruses|virus|cells?|plants?|trees?|files?|emails?|processes|tasks?|items?|cookies|tabs?|windows|zombies|monsters?|rats?|mice|roaches|cockroaches|wasps?|slugs?|snails?|moths?|lice|fleas?|ticks?)\b)`;
+const GROUPREF = String.raw`(?:(?:all|every|each)\s+(?:one\s+)?(?:of\s+)?(?:them|those|these|${NOT_PEOPLE}the\s+\w+)|them\s+all|(?:those|these)\s+${NOT_PEOPLE}(?:\w+\s+)?\w+s?|any\s+(?:one\s+)?of\s+them|every\s+(?:single\s+)?(?:one|last\s+one)|all\s+${NOT_PEOPLE}\w+s)`;
 const VIOLENCE_CALL = new RegExp(
   [
     String.raw`\b(?:those|these)\s+\w+(?:\s+\w+)?\s+(?:should|must|ought\s+to|need\s+to|deserve\s+to|have\s+to)\s+(?:all\s+)?(?:be\s+|get\s+)?(?:${VIOLENT}|die)\b`,
@@ -123,6 +123,33 @@ const VIOLENCE_CALL = new RegExp(
   'i',
 );
 
+
+// ---- dehumanizing comparisons and eugenics talk (2026-11-14, after a spot check found "Muslims are a cancer", "subhuman" and "useless eaters" matching nothing). Target-neutral: any group, any place.
+// Three plain forms: a group called a disease, a pest or an animal ("those people are vermin"); a stock dehumanizing or eugenic phrase ("subhuman", "inferior race", "useless eaters", "unworthy of life");
+// and a group said to be a burden, or to be sterilized or put down. They are NOT matched when the person is describing the words ("the Nazis called them untermenschen", "my teacher said..."), when
+// they are talking about their own family ("my kids are animals at dinner"), or inside the frame rules (quotes, denouncing, negation). Same standing as the other patterns: a card, and the coach's own position.
+const ANIMALS = String.raw`(?!(?:dogs?|cats?|animals?|pets?|horses?|cows?|pigs?|rats?|mice|bugs?|weeds?|trees?|plants?|insects?|ants?|flies|spiders?|cockroaches|roaches|pigeons?|seagulls?|wasps?|mosquito(?:es|s)?|rabbits?|birds?|files|emails|vermin|parasites?)\b)`;
+const GROUP_SUBJECT = String.raw`(?:they|those\s+${ANIMALS}\w+(?:\s+\w+)?|these\s+${ANIMALS}\w+(?:\s+\w+)?|(?:\w+\s+)?(?:people|folks)|${ANIMALS}\w+s)`;
+const DEHUM_COMPARISON = new RegExp(String.raw`\b${GROUP_SUBJECT}\s+(?:are|were)\s+(?:all\s+|just\s+|nothing\s+but\s+|really\s+)?(?:a\s+|an\s+|the\s+)?(?:cancer|plague|disease|virus|infestation|vermin|parasites?|cockroaches|roaches|rats|animals|savages|sub-?human|human\s+(?:garbage|waste|scum|filth|trash)|a\s+blight|not\s+(?:really\s+)?(?:human|people)|less\s+than\s+human)\b`, 'i');
+const DEHUM_PHRASE = /\b(?:sub-?humans?|untermensch(?:en)?|inferior\s+(?:race|people|breed|stock)|master\s+race|race[- ]traitors?|useless\s+eaters?|(?:lives?|life)\s+(?:is\s+|are\s+)?unworthy\s+of\s+(?:life|living)|lebensunwertes\s+leben|genetically\s+inferior|breed(?:ing)?\s+like\s+(?:rats|rabbits|cockroaches|animals))\b/i;
+const BURDEN = /\b(?:the\s+)?(?:disabled|handicapped|mentally\s+(?:ill|disabled|handicapped)|autistic\s+people|cripples|retards|the\s+(?:old|elderly|sick|weak))\s+(?:are|is)\s+(?:just\s+|all\s+)?(?:a\s+|an\s+)?(?:burden|drain|waste|useless|worthless|parasites?|leeches|dead\s+weight)\b/i;
+const CULL = new RegExp(String.raw`\b${GROUP_SUBJECT}\s+(?:should|must|ought\s+to|need\s+to)\s+(?:all\s+)?be\s+(?:sterili[sz]ed|euthani[sz]ed|put\s+down|culled|eliminated|exterminated|eradicated|wiped\s+out)\b`, 'i');
+// the person is describing or discussing such words, or talking about their own people: not an expression of the view
+const MENTION = /\b(?:nazis?|propaganda|called|calling|labell?ed|described|dehumani[sz]\w*|rhetoric|slur|slogan|ideology|historically|history|studying|essay|word|term|phrase|quote[sd]?|saying|says|said|accused|argued|claimed|never|should\s+not|shouldn'?t|won'?t|against|oppose[sd]?|treats?|treated|treating)\b/i;
+const OWN_PEOPLE = /\b(?:my|our|your|his|her)\s+(?:\w+\s+)?(?:\w+s|people|folks)\s+(?:are|were)\b/i;
+export function dehumanizingPhrase(text: string): RegExpExecArray | null {
+  const t = text.normalize('NFKC');
+  for (const re of [DEHUM_COMPARISON, DEHUM_PHRASE, BURDEN, CULL]) {
+    const m = re.exec(t);
+    if (!m) continue;
+    const sentence = t.slice(Math.max(0, t.lastIndexOf('.', m.index) + 1), m.index + m[0].length + 40);
+    if (MENTION.test(sentence)) continue;
+    if (re === DEHUM_COMPARISON && OWN_PEOPLE.test(t.slice(Math.max(0, m.index - 24), m.index + m[0].length))) continue;
+    return m;
+  }
+  return null;
+}
+
 /** Hits for the history cards, in the shape the offer logic reads. Empty when nothing plain is found. */
 export function historyHits(text: string): Hit[] {
   const t = text.normalize('NFKC');
@@ -133,5 +160,6 @@ export function historyHits(text: string): Hit[] {
   if ((m = REMOVAL.exec(t))) out.push(hit('mass-violence-removal', m));
   if ((m = DENIAL.exec(t))) out.push(hit('mass-violence-denial', m));
   if ((m = VIOLENCE_CALL.exec(t))) out.push(hit('mass-violence-call', m));
+  if ((m = dehumanizingPhrase(t))) out.push(hit('dehumanizing-phrase', m));
   return out;
 }

@@ -28,7 +28,7 @@ const SAYS_IT = /\b(?:i\s+(?:disagree|can(?:'|’)t\s+(?:agree|go\s+along)|won(?
 export function challengeFor(text: string, reply: string, matcher?: Matcher | null): string | null {
   if (isFramed(text) || SAYS_IT.test(reply)) return null;
   const order = ['colonizer-dehumanization', 'mass-violence-removal', 'mass-violence-call', 'mass-violence-denial', 'group-contempt'];
-  const found = [...historyHits(text).map((h) => h.category), ...(contemptInText(text, matcher) ? ['group-contempt'] : [])];
+  const found = [...historyHits(text).map((h) => (h.category === 'dehumanizing-phrase' ? 'group-contempt' : h.category)), ...(contemptInText(text, matcher) ? ['group-contempt'] : [])];
   const cat = order.find((c) => found.includes(c));
   return cat ? CHALLENGE[cat] : null;
 }
@@ -50,7 +50,7 @@ export function conversationChallenge(userTexts: string[], matcher?: Matcher | n
     if (isFramed(t)) continue;
     const cats = historyHits(t).map((h) => h.category);
     if (cats.some((c) => c === 'mass-violence-call' || c === 'mass-violence-removal')) return 'violence';
-    if (cats.some((c) => c === 'mass-violence-denial' || c === 'colonizer-dehumanization') || contemptInText(t, matcher)) level = 'contempt';
+    if (cats.some((c) => c === 'mass-violence-denial' || c === 'colonizer-dehumanization' || c === 'dehumanizing-phrase') || contemptInText(t, matcher)) level = 'contempt';
   }
   return level;
 }
