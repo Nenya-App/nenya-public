@@ -1,6 +1,6 @@
-# Accessibility standard: WCAG 2.1, level AAA
+# Accessibility standard: WCAG 2.2, level AAA
 
-Decided 2026-11-14 by the owner: Nenya designs to, and audits against, **WCAG 2.1 (https://www.w3.org/TR/WCAG21/) at level AAA**, for every future design. (2.1, not 2.2: the 2.2 additions are not in the standard; where they are good practice we may follow them, but an audit is against 2.1.)
+Decided 2026-11-14 by the owner: Nenya designs to, and audits against, **WCAG 2.2 (https://www.w3.org/TR/WCAG22/) at level AAA**, for every future design. (An earlier line in this file said 2.1; the owner corrected it to 2.2 the same day.)
 
 ## What the tests hold today (`tests/contrast.test.mts`, `tests/gateway-flow.test.mts`)
 - **Text contrast of 7:1 or more**, for every theme text color on every surface it is used on, in light and dark, large text included (so nothing depends on size).
@@ -21,7 +21,7 @@ Decided 2026-11-14 by the owner: Nenya designs to, and audits against, **WCAG 2.
 - **Colors the owner's own palettes produce** (the colors a visitor picks, the Valar-inspired schemes) are the visitor's and are not checked.
 - The tests read tokens and source; they do not render pages. By-eye checks of each page, in light and dark, remain with a person.
 
-## Audit checklist, by principle (WCAG 2.1 AAA). Status is honest: "tested" means a test in this repository fails if it regresses; everything else has NOT been audited yet.
+## Audit checklist, by principle (WCAG 2.2 AAA). Status is honest: "tested" means a test in this repository fails if it regresses; everything else has NOT been audited yet.
 | Criterion (level) | Status |
 |---|---|
 | 1.4.6 Contrast, enhanced (AAA): 7:1 text, 4.5:1 large | **tested** for theme tokens and button variants (`tests/contrast.test.mts`); component-level hard-coded colors checked once by search, not guarded |
@@ -34,10 +34,17 @@ Decided 2026-11-14 by the owner: Nenya designs to, and audits against, **WCAG 2.
 | 2.2.3 No timing (AAA) | **known gap**: the coach has a quiet timeout and a ticket lifetime (`chatTimeout.ts`); AAA asks for none, or that the person can turn it off or extend it. The reminder before it ends is the current mitigation |
 | 2.3.2 Three flashes (AAA), 2.3.3 Animation from interactions (AAA) | breathing and gem motion respect reduced motion (tested for the kaleidoscope); a full pass on every animation not done |
 | 2.4.8 Location, 2.4.9 Link purpose (link only), 2.4.10 Section headings (AAA) | the new gateway progress bar and About sections help; not audited page by page |
-| 2.5.5 Target size (AAA): 44 by 44 CSS pixels | **known gap**: buttons are 36px high (`h-9`), small ones 32px, icon buttons 36px, the header Emergency Exit smaller. Raising the sizes changes the look of every control; an owner decision |
+| 2.5.5 Target size, enhanced (AAA): 44 by 44 CSS pixels | **known gap**: buttons are 36px high (`h-9`), small ones 32px, icon buttons 36px, the header Emergency Exit smaller. Raising the sizes changes the look of every control; an owner decision |
+| 2.5.8 Target size, minimum (AA, new in 2.2): 24 by 24 | believed met (smallest controls are 32px); not measured. Small inline icon buttons (the term-info icon, size-3.5) need checking |
+| 2.4.11 Focus not obscured, minimum (AA) and 2.4.12 enhanced (AAA), new in 2.2 | **not audited**: the pinned Emergency Exit, the quick navigation at the bottom right and the header could cover a focused control |
+| 2.4.13 Focus appearance (AAA, new in 2.2): a visible indicator of at least 2px and 3:1 | **not audited**; the default ring color (`ring`) is the pale gold, about 1.45:1 on the light page, so this very likely fails in light mode |
+| 2.5.7 Dragging movements (AA, new in 2.2): a single-pointer alternative to dragging | **not audited**: the drawing canvas, body map placements and sliders |
+| 3.2.6 Consistent help (A, new in 2.2) | probably met (Emergency Exit and the footer contact are in the same place on every page); not audited |
+| 3.3.7 Redundant entry (A, new in 2.2) | the Present and Wish steps keep what was entered when going back and forth (tested by structure); not audited elsewhere |
+| 3.3.8 and 3.3.9 Accessible authentication, minimum (AA) and enhanced (AAA), new in 2.2 | only the owner's admin sign-in uses a password; not audited. Visitors never authenticate |
 | 3.1.3 Unusual words, 3.1.4 Abbreviations, 3.1.5 Reading level (AAA): lower secondary education or a simpler version | **not audited**; the About and Terms texts are long and in places advanced. Needs a reading-level pass and, where above it, a plain summary |
 | 3.2.5 Change on request (AAA): no automatic context change | not audited (the Back-after-Emergency-Exit guard is deliberate and user-initiated) |
 | 3.3.5 Help, 3.3.6 Error prevention (AAA) | partly (the form check explains itself; confirmations before sending anything); not audited |
-| 4.1.2 Name, role, value; 4.1.3 Status messages (AA) | partly (progress bar, live regions, `aria-live` on Share and the stage line); not audited |
+| 4.1.2 Name, role, value; 4.1.3 Status messages (AA); 4.1.1 Parsing was removed in 2.2 | partly (progress bar, live regions, `aria-live` on Share and the stage line); not audited |
 
 **How to audit:** go through the table row by row on staging, keyboard only, with a screen reader and at 200% zoom and 320px width, in light and dark; record what fails in `docs/accessibility-audit-<date>.md`; turn each fixable failure into a test where a test can catch it.
