@@ -27,14 +27,23 @@ const gem = (() => {
 const vivid = q.get('vivid') === '1';
 // ?flat=1: the flat logo (petals, bezel, the live gem) with no outer ring. The site's flat logo is a baked picture with the old gem in it, so the static flat assets are drawn this way instead; the orbs under the stone give it its color.
 const flat = q.get('flat') === '1';
+// ?video=1 is for scripts/render-logo-video.mts, which drives the page's clock itself, one frame at a time: the gem is drawn on every animation frame, the stone is not held still. ?kaleido=1 turns the
+// kaleidoscope on; ?pace=ih,hi,ex,ho (milliseconds) sets the breathing pace; ?loop=30 (seconds) makes the orbit, the color cycle and the kaleidoscope go round exactly once in that time, so a clip of that length loops.
+const video = q.get('video') === '1';
+const loop = Number(q.get('loop')) > 0 ? Number(q.get('loop')) : 0;
+const paceParts = (q.get('pace') ?? '').split(',').map(Number);
+const technique = paceParts.length === 4 && paceParts.every((n) => Number.isFinite(n) && n >= 0) && paceParts[0] > 0 ? { ih: paceParts[0], hi: paceParts[1], ex: paceParts[2], ho: paceParts[3] } : undefined;
+const kaleido = q.get('kaleido') === '1';
+// ?spin=N: turns of the stone per gem loop (three breaths); the site's own is 1/6. A clip that loops needs a whole number of turns (0 holds the stone's angle).
+const spin = q.get('spin') !== null && Number.isFinite(Number(q.get('spin'))) ? Number(q.get('spin')) : null;
 createRoot(document.getElementById('root')!).render(
   <MotionProvider>
     <ThemeProvider defaultTheme="dark">
       <div style={{ width: boxW, height: boxH, background: bg, borderRadius: q.get('round') ? `${Number(q.get('round'))}%` : undefined, filter: q.get('light') === '1' ? 'brightness(0.55) saturate(1.35)' : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <NenyaLogo size={size} showValarOrbit={q.get('orbs') === '1' || flat} glow={q.get('glow') === '1'} breathingEnabled={q.get('breathe') === '1'}
-          liveGem={{ light: (vivid || flat) ? { below: 1.2, saturation: 1.6, ...gem.light } : gem.light, cut: gem.cut, quality: gem.quality, kaleidoscope: { ...gem.kaleidoscope, on: false, depth: 0 } } as never}
+        <NenyaLogo size={size} showValarOrbit={q.get('orbs') === '1' || flat} glow={q.get('glow') === '1'} breathingEnabled={q.get('breathe') === '1'} technique={technique} cycleStart={video ? Date.now() : undefined}
+          liveGem={{ light: (vivid || flat) ? { below: 1.2, saturation: 1.6, ...gem.light } : gem.light, cut: gem.cut, quality: gem.quality, kaleidoscope: kaleido ? { ...gem.kaleidoscope, on: true, ...(loop ? { periodS: loop } : {}) } : { ...gem.kaleidoscope, on: false, depth: 0 }, ...(video ? { fps: 240 } : {}), ...(spin !== null ? { spin } : {}) } as never}
           gemLook={((vivid || flat) ? { fieldAlpha: 0.7, ...gem.finish } : gem.finish) as never}
-          innerOrbit={((vivid || flat) ? { ...gem.inner, opacityLow: 0.95, opacityHigh: 0.95, pulse: 0 } : gem.inner) as never}
+          innerOrbit={{ ...((vivid || flat) ? { ...gem.inner, opacityLow: 0.95, opacityHigh: 0.95, pulse: 0 } : gem.inner), ...(loop ? { orbitSeconds: loop, colorCycle: loop } : {}) } as never}
           outerOrbit={(flat ? { ...gem.outer, show: false } : gem.outer) as never}
         />
       </div>
