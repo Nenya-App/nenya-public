@@ -27,6 +27,7 @@ process.env.COACH_VALUES = 'on';
 let r = await send('I think we should just kill them all.');
 ok('a call to kill a group: the coach is told to say plainly where it stands, not to mirror', VIOLENCE.test(r.system) && /Do not mirror it back/.test(r.system));
 ok('and the site puts a plain sentence first when the model does not say it', /^I can't go along with wanting any group of people harmed or dead/.test(r.j.reply), r.j.reply);
+ok('the reply says which check shaped it, so the page can offer "This was a mistake"', Array.isArray(r.j.checked) && r.j.checked.includes('challenge'));
 r = await send('They are evil and I wish they would all die.');
 ok('a wish that a group dies gets the same', VIOLENCE.test(r.system));
 r = await send('My teacher said "we should just kill them all" and I froze.');
@@ -34,6 +35,7 @@ ok('a quote of what someone said gets neither the note nor the sentence', !VIOLE
 r = await send('It is horrifying to hear anyone say they should all be killed.');
 ok('denouncing such words gets neither', !VIOLENCE.test(r.system) && r.j.reply === modelSays);
 r = await send('My week was long and my boss is a bully.');
+ok('an ordinary reply carries no check marker', r.j.checked === undefined);
 ok('an ordinary message gets neither', !VIOLENCE.test(r.system) && !CONTEMPT.test(r.system) && r.j.reply === modelSays);
 
 process.env.COACH_VALUES = 'off';

@@ -37,6 +37,10 @@ export const FIXED_EVENTS = [
   'coach.challenge.note.contempt',
   'coach.challenge.note.violence',
   'coach.turn.multi-question',
+  // "This was a mistake": a person said a check was wrong, by kind (the coach stated its position; a card was offered; a message was asked to be rewritten). A count only.
+  'coach.mistake.challenge',
+  'coach.mistake.offer',
+  'coach.mistake.form',
   // The screening model in shadow mode (docs/coach-screening-flow-scope.md): a count per band, whether the phrase matcher also acted, and how often the model could not answer in time. Counts only: no message, no score.
   'coach.screen.unavailable',
   'coach.screen.band.high',

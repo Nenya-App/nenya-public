@@ -81,6 +81,28 @@ const markFinished = () => {
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const norm = (c: string | undefined, fallback: string) => (c && HEX.test(c) ? c.toUpperCase() : fallback);
 
+/** "This was a mistake": counts one thing by kind (src/netlify/functions/mistake.mts); nothing about the message is sent. */
+function MistakeButton({ kind }: { kind: 'challenge' | 'offer' | 'form' }) {
+  const [state, setState] = useState<'idle' | 'sent' | 'failed'>('idle');
+  const send = async () => {
+    try {
+      const res = await fetch('/api/mistake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind }) });
+      setState(res.ok ? 'sent' : 'failed');
+    } catch {
+      setState('failed');
+    }
+  };
+  if (state === 'sent') return <span className="block px-2 pt-1 text-xs text-muted-foreground" role="status">Thank you. That was counted. Nothing about your message was sent.</span>;
+  return (
+    <span className="block px-2 pt-1">
+      <button type="button" onClick={send} className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        This was a mistake
+      </button>
+      {state === 'failed' && <span className="ml-2 text-xs text-muted-foreground" role="status">That did not go through. You can try again.</span>}
+    </span>
+  );
+}
+
 interface Msg {
   role: 'user' | 'assistant';
   content: string;
@@ -90,6 +112,8 @@ interface Msg {
   card?: AnswerCardData;
   /** Set when the site offered a short educational card under this reply (only an invitation: the person decides). */
   offer?: { id: string; proof: string };
+  /** Which of the site's checks shaped this reply ("challenge", "offer"): the page offers "This was a mistake" under it. */
+  checked?: string[];
 }
 
 const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content }));
@@ -310,6 +334,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         blocked?: string;
         card?: AnswerCardData;
         offer?: { id: string; proof: string };
+        checked?: string[];
+        problem?: string;
       };
       // The server screens too. A blocked message is not part of the conversation.
       if (data.blocked === 'cap' || data.blocked === 'ip') {
@@ -331,7 +357,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         return;
       }
       if (data.contextFlag) setContextFlag(data.contextFlag);
-      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}), ...(data.offer ? { offer: data.offer } : {}) }] : next);
+      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}), ...(data.offer ? { offer: data.offer } : {}), ...(data.checked?.length ? { checked: data.checked } : {}) }] : next);
       setTicket(data.ticket);
       touch();
       setDraft('');
@@ -731,6 +757,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </div>
                   {m.card && <AnswerCard card={m.card} />}
                   {m.offer && <LearningOffer cardId={m.offer.id} />}
+                  {m.checked && m.checked.length > 0 && <MistakeButton kind={m.checked.includes('challenge') ? 'challenge' : 'offer'} />}
                   </Fragment>
                 ))}
                 {sending && (
@@ -908,6 +935,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   {formProblem && (
                     <p role="status" className="rounded-lg border border-border p-3 text-sm">
                       {formProblem === 'short' ? SHORT_NOTICE : UNCLEAR_NOTICE}
+                      {' '}
+                      <MistakeButton kind="form" />
                     </p>
                   )}
                   {failure && <FailureNotice info={failure} turn={turn} />}

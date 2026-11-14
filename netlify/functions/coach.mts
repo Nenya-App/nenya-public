@@ -1049,10 +1049,11 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
       if (check(reply).length) { reply = repairArc(reply, { userTexts, wordsOnly: isWordsOnly(lastText) }); tally('coach.guard.arc.repaired'); }
     }
   }
+  let siteChallenged = false;
   // Justifying or denying mass violence, or calling for a group to be removed (COACH_VALUES=on): make sure a plain statement of disagreement is there (src/lib/valuesRule.ts).
   if (valuesOn() && !flag && !softened) {
     const stand = challengeFor(lastText, reply, valuesMatcher);
-    if (stand) { reply = `${stand} ${reply}`; tally('coach.values.challenge'); }
+    if (stand) { reply = `${stand} ${reply}`; tally('coach.values.challenge'); siteChallenged = true; }
   }
   // On a hostile turn an apology is taken out (the note asks the coach not to, and this model's habit does not always yield to it).
   if (hostile) { const cleaned = stripApologies(reply); if (cleaned !== reply) { reply = cleaned; tally('coach.turn.hostile.apology-removed'); } }
@@ -1116,7 +1117,9 @@ async function handle(req: Request, netlify: { ip?: string } | undefined, track:
   }
   const history = [...messages, { role: 'assistant' as const, content: reply }];
   const ticket = sign(secret, turn, Date.now(), history, session, context, code);
-  return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}), ...(ctxFlag && turn === 1 ? { contextFlag: ctxFlag } : {}), ...(withinCard ? { card: withinCard } : {}), ...(offer ? { offer } : {}) });
+  // Which of the site's checks shaped this reply, so the page can offer "This was a mistake" (src/coach and netlify/functions/mistake.mts). Kinds only; nothing about the message.
+  const checked = [...(standing || siteChallenged ? ['challenge'] : []), ...(offer ? ['offer'] : [])];
+  return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}), ...(checked.length ? { checked } : {}), ...(ctxFlag && turn === 1 ? { contextFlag: ctxFlag } : {}), ...(withinCard ? { card: withinCard } : {}), ...(offer ? { offer } : {}) });
 }
 
 // Literal values on purpose: Netlify reads this block by static analysis, so it
