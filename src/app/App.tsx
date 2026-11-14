@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import SkipLink from './components/SkipLink';
 import { ThemeProvider } from './components/ThemeProvider';
 import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
@@ -413,6 +414,7 @@ export default function App() {
 
   return (
     <ThemeProvider defaultTheme="dark">
+      <SkipLink />
       {/* First in the page, above every overlay: the header's Exit is out of reach behind the loading screen, the first-visit panel and the tour. */}
       <EmergencyExitDock
         show={!veilGone || !termsAgreed || tourOffered || tutorialActive}
@@ -522,7 +524,7 @@ export default function App() {
         )}
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-hidden">
+        <div id="main-content" role="main" tabIndex={-1} className="flex-1 overflow-hidden outline-none">
           <Suspense fallback={null}>
           {currentScreen === 'welcome' && (
             <WelcomePage

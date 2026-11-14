@@ -183,6 +183,7 @@ export function GlobalNavigation({
                   <>
                     {/* Backdrop to close menu when clicking outside */}
                     <div 
+                      aria-hidden="true"
                       className="fixed inset-0 z-40" 
                       onClick={() => setMenuOpen(false)}
                     />
@@ -292,6 +293,7 @@ export function GlobalNavigation({
           <>
             {/* Backdrop */}
             <div 
+              aria-hidden="true"
               className="fixed inset-0 top-[calc(3.5rem+env(safe-area-inset-top))] bg-black/20 z-40" 
               onClick={() => setMenuOpen(false)}
             />

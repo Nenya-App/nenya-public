@@ -33,7 +33,7 @@ export function ShareNenya({ variant = 'link' }: ShareNenyaProps) {
       <button
         type="button"
         onClick={share}
-        className={`inline-flex items-center justify-center gap-2 rounded-md text-sm hover:bg-muted ${variant === 'icon' ? 'size-9 max-[359px]:size-8' : 'h-9 px-3'}`}
+        className={`inline-flex items-center justify-center gap-2 rounded-md text-sm hover:bg-muted ${variant === 'icon' ? 'size-11 max-[359px]:size-10' : 'h-11 px-3'}`}
         aria-label={copied ? 'Link copied' : 'Share Nenya with someone'}
         title="Share Nenya with someone"
       >

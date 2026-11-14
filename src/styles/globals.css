@@ -1039,3 +1039,9 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .onb-fade-in, .onb-card-in, .onb-step-in { animation: none; }
 }
+
+/* WCAG 2.2 AAA, 2.4.13 Focus Appearance: every focused control gets a solid 3px outline (at least 3:1 against the page in both themes) with a 2px gap, and a keyboard-focused control is never hidden behind the fixed header, dock or quick navigation (2.4.11, 2.4.12). */
+:root { --focus-ring: #2A2623; }
+.dark { --focus-ring: #FAF8F5; }
+:focus-visible { outline: 3px solid var(--focus-ring) !important; outline-offset: 2px !important; }
+html { scroll-padding-top: 5rem; scroll-padding-bottom: 6rem; }

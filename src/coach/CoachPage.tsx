@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import SkipLink from '../app/components/SkipLink';
 import { GlobalNavigation } from '../app/components/GlobalNavigation';
 import { BreathingPopout } from '../app/components/BreathingPopout';
 import { EmergencyExitDock } from '../app/components/EmergencyExit';
@@ -79,6 +80,7 @@ export default function CoachPage() {
 
   return (
     <>
+      <SkipLink />
       {/* First in the page, above the panel: the header's Exit is covered while the terms panel or the breathing panel is open. */}
       <EmergencyExitDock show={popoutOpen || !agreed} onEmergencyExit={() => { exiting.current = true; }} />
       {!agreed && <OnboardingFlow skipRhythm technique={STEADY} onTechniqueChange={noop} onFinish={() => setAgreed(true)} />}

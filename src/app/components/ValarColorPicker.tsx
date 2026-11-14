@@ -201,6 +201,7 @@ export function ValarColorPicker({ selectedColor, onColorChange, className = '',
         />
         <input
           type="text"
+          aria-label="Custom color as a hex code, for example #000000"
           value={customColor}
           onChange={(e) => setCustomColor(e.target.value)}
           placeholder="#000000"

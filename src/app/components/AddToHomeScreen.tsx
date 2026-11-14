@@ -96,7 +96,7 @@ export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | '
       {open && (
         <>
           {/* Backdrop to close when clicking outside, matching the header's other dropdowns */}
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
           <div className="fixed inset-x-3 top-[calc(3.5rem+env(safe-area-inset-top)+0.5rem)] max-h-[calc(100dvh-6rem)] overflow-y-auto md:absolute md:inset-x-auto md:right-0 md:top-full md:mt-2 md:w-80 md:max-h-none bg-background border border-border rounded-lg shadow-lg z-50 p-4 space-y-3">
             <div>

@@ -529,7 +529,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         </span>
       </header>
 
-      <main className="scroll-container flex-1 overflow-y-auto px-4 py-6 md:px-6">
+      <main id="main-content" tabIndex={-1} className="scroll-container flex-1 overflow-y-auto px-4 py-6 outline-none md:px-6">
         <div className="mx-auto w-full max-w-xl space-y-5">
           {stage === 'consent' && pauseEnds > 0 && <PauseScreen ends={pauseEnds} onReturn={() => setPauseEnds(0)} breatheButton={breatheButton} />}
 

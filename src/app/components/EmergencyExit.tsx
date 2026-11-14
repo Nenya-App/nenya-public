@@ -49,6 +49,7 @@ function EmergencyExitModal({ isOpen, onClose, onLeaving }: EmergencyExitModalPr
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
       {/* Dark overlay */}
       <div 
+        aria-hidden="true"
         className="fixed inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       />
@@ -240,7 +241,7 @@ export function EmergencyExitButton({
       <Button
         onClick={() => setInfoModalOpen(true)}
         className={`
-          ${isHeader ? 'p-1 size-6' : 'p-1.5 size-7'}
+          ${isHeader ? 'p-1 size-8 min-[400px]:size-11' : 'p-1.5 size-11'}
           rounded-full
           border shadow-sm hover:shadow-md
           transition-all duration-200
