@@ -10,7 +10,7 @@ const link = 'underline underline-offset-2';
 
 export default function HowChecksWork({ onBack }: { onBack: () => void }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="size-full overflow-auto scroll-container bg-background">
       <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
         <Button variant="ghost" onClick={onBack} className="gap-2">
           <ArrowLeft className="size-4" /> Back

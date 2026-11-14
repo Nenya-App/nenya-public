@@ -17,7 +17,7 @@ const L = ({ href, children }: { href: string; children: string }) => (
 
 export default function WhereWeStand({ onBack }: { onBack: () => void }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="size-full overflow-auto scroll-container bg-background">
       <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
         <Button variant="ghost" onClick={onBack} className="gap-2">
           <ArrowLeft className="size-4" /> Back
