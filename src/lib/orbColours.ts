@@ -8,10 +8,12 @@ export const ORB_DELAY_S = 2;
 
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
-export function orbColour(vector: string[], index: number, tSec: number): [number, number, number] {
+/** `cycleS` is how long one orb takes through its six colours (the orbit's options can change it from 30). */
+export function orbColour(vector: string[], index: number, tSec: number, cycleS = COLOR_CYCLE_S): [number, number, number] {
   const n = vector.length;
-  const seg = COLOR_CYCLE_S / n;
-  const t = (((tSec - index * ORB_DELAY_S) % COLOR_CYCLE_S) + COLOR_CYCLE_S) % COLOR_CYCLE_S;
+  const cycle = cycleS > 0 ? cycleS : COLOR_CYCLE_S;
+  const seg = cycle / n;
+  const t = (((tSec - index * ORB_DELAY_S) % cycle) + cycle) % cycle;
   const k = Math.floor(t / seg) % n;
   const f = easeInOut((t - k * seg) / seg);
   const a = hexToRgb(vector[k]);

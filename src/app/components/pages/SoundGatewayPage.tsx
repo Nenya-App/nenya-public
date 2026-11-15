@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStages';
+import { GatewayProgress } from '../GatewayProgress';
+import { getReadableTextColor } from '../ColorUtils';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, Link2, Unlink, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
@@ -40,6 +44,8 @@ interface SoundGatewayPageProps {
   userColors?: { color1?: string; color2?: string; color1Name?: string | null; color2Name?: string | null; generatedPalettes?: { colors?: { hex: string; name?: string }[]; useInSound?: boolean }[] | null };
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
+  /** Whether the Sight gateway is still to come in this session (so the melody's colors can be brought to it). */
+  sightComesLater?: boolean;
 }
 
 
@@ -152,7 +158,7 @@ function ColorSwatch({ hex, label, muted }: { hex: string; label: string; muted:
   );
 }
 
-export default function SoundGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: SoundGatewayPageProps) {
+export default function SoundGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap, sightComesLater = true }: SoundGatewayPageProps) {
   const hasValidColors = !!userColors?.color1 && !!userColors?.color2 && isValidHex(userColors.color1) && isValidHex(userColors.color2);
   const [showBodyMap, setShowBodyMap] = useState(false);
 
@@ -160,6 +166,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const [step, setStep] = useState<'instructions' | 'melody' | 'qualitative'>('instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState<PairStage>('present');
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -175,6 +183,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
   // Melody state
   const [melodyConnected, setMelodyConnected] = useState(hasValidColors);
+  // Sound first: should the melody's two colors be where the Sight gateway starts? Checked unless the person unchecks it.
+  const [bringToSight, setBringToSight] = useState(true);
   const seedMelody = useCallback(
     () => (hasValidColors && melodyConnected ? colorsToMelody(userColors!.color1!, userColors!.color2!, scale.length) : Array(6).fill(null)),
     [hasValidColors, melodyConnected, userColors, scale.length]
@@ -319,8 +329,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   };
 
   // Current state
-  const [currentPitch, setCurrentPitch] = useState([50]);
-  const [currentVolume, setCurrentVolume] = useState([50]);
+  const [currentPitch, setCurrentPitch] = useState(() => unsetSlider());
+  const [currentVolume, setCurrentVolume] = useState(() => unsetSlider());
   const [currentTimbres, setCurrentTimbres] = useState<string[]>([]);
   const [currentTimbreOther, setCurrentTimbreOther] = useState('');
   const [currentRhythms, setCurrentRhythms] = useState<string[]>([]);
@@ -328,8 +338,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const [currentDescription, setCurrentDescription] = useState('');
 
   // Potential state
-  const [potentialPitch, setPotentialPitch] = useState([50]);
-  const [potentialVolume, setPotentialVolume] = useState([50]);
+  const [potentialPitch, setPotentialPitch] = useState(() => unsetSlider());
+  const [potentialVolume, setPotentialVolume] = useState(() => unsetSlider());
   const [potentialTimbres, setPotentialTimbres] = useState<string[]>([]);
   const [potentialTimbreOther, setPotentialTimbreOther] = useState('');
   const [potentialRhythms, setPotentialRhythms] = useState<string[]>([]);
@@ -365,15 +375,17 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
       melodyColor1,
       melodyColor2,
       melodyConnected,
-      currentPitch: currentPitch[0],
-      currentVolume: currentVolume[0],
+      // Only meaningful when the melody was made before Sight: then it says whether Sight should start from the melody's colors.
+      bringToSight: !hasValidColors && sightComesLater && bringToSight,
+      currentPitch: sliderValue(currentPitch),
+      currentVolume: sliderValue(currentVolume),
       currentTimbres: currentTimbres.length > 0 ? currentTimbres : null,
       currentTimbreOther: currentTimbreOther || null,
       currentRhythms: currentRhythms.length > 0 ? currentRhythms : null,
       currentRhythmOther: currentRhythmOther || null,
       currentDescription: currentDescription || null,
-      potentialPitch: potentialPitch[0],
-      potentialVolume: potentialVolume[0],
+      potentialPitch: sliderValue(potentialPitch),
+      potentialVolume: sliderValue(potentialVolume),
       potentialTimbres: potentialTimbres.length > 0 ? potentialTimbres : null,
       potentialTimbreOther: potentialTimbreOther || null,
       potentialRhythms: potentialRhythms.length > 0 ? potentialRhythms : null,
@@ -393,15 +405,13 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
           </Button>
 
           <div className="flex items-center gap-3">
-            <NenyaLogo size={32} />
+            <PanelLogo size={32} />
             <div className="text-center">
               <h1 className="text-lg">
                 Sound · Audition
                 <GatewaySubtitleLink href="https://bio.libretexts.org/Bookshelves/Human_Biology/Human_Anatomy_Lab/13:_The_Somatic_Nervous_System_(Special_Senses)/13.03:_Audition_(Hearing)" />
               </h1>
-              <p className="text-xs text-muted-foreground">
-                Gateway {currentIndex + 1} of {totalGateways}
-              </p>
+              <GatewayProgress index={currentIndex} total={totalGateways} />
             </div>
           </div>
 
@@ -422,9 +432,12 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">{INSTRUCTION_CARDS[instructionCardIndex].detail}</p>
                   <div className="flex items-center justify-between pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      {instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
+                        <ArrowLeft className="size-4" /> Back
+                      </Button>
+                      <p className="text-sm text-muted-foreground">{instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}</p>
+                    </div>
                     <Button variant="ghost" className="gap-2">
                       {instructionCardIndex < INSTRUCTION_CARDS.length - 1 ? (
                         <>
@@ -471,32 +484,41 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               (from the Machine Perception and Cognitive Robotics Laboratory at Florida Atlantic University) has a translator and player. It is a separate site with its own terms, and nothing from Nenya is sent to it.
             </p>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{melodyConnected ? 'Connected to Sight' : 'Independent melody'}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {melodyConnected ? 'Your colors shape the melody. Adjust freely.' : 'Composing from silence. Colors and melody are separate.'}
-                </p>
+            {hasValidColors ? (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">{melodyConnected ? 'Connected to Sight' : 'Independent melody'}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {melodyConnected ? 'Your colors shape the melody. Adjust freely.' : 'Composing from silence. Colors and melody are separate.'}
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setMelodyConnected((c) => !c)} className="gap-2 shrink-0">
+                  {melodyConnected ? (
+                    <>
+                      <Link2 className="size-3.5" /> Connected
+                    </>
+                  ) : (
+                    <>
+                      <Unlink className="size-3.5" /> Disconnected
+                    </>
+                  )}
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setMelodyConnected((c) => !c)}
-                className="gap-2 shrink-0"
-                disabled={!hasValidColors}
-                title={hasValidColors ? undefined : 'Visit the Sight gateway first to enable connection'}
-              >
-                {melodyConnected ? (
-                  <>
-                    <Link2 className="size-3.5" /> Connected
-                  </>
-                ) : (
-                  <>
-                    <Unlink className="size-3.5" /> Disconnected
-                  </>
-                )}
-              </Button>
-            </div>
+            ) : (
+              sightComesLater && (
+                <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-foreground">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={bringToSight} onChange={(e) => setBringToSight(e.target.checked)} className="size-4" />
+                    Bring this to the Sight gateway?
+                  </label>
+                  <p className="text-muted-foreground">
+                    {bringToSight
+                      ? 'The two colors your melody makes will be where Sight starts, instead of plain black or white. You can change them there. Nothing you do in Sight changes your melody.'
+                      : 'Sight will start from its usual plain colors. Your melody stays as it is.'}
+                  </p>
+                </div>
+              )
+            )}
 
             <div className="flex items-center justify-center gap-8">
               <ColorSwatch hex={melodyColor1} label="current" muted={!melodyConnected && !melodyComplete} />
@@ -617,7 +639,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 size="sm"
                 onClick={handlePlayMelody}
                 disabled={!melodyComplete || isPlaying}
-                style={melodyComplete && !isPlaying ? { background: accentCurrent, color: '#fff' } : undefined}
+                style={melodyComplete && !isPlaying ? { background: accentCurrent, color: getReadableTextColor(accentCurrent) } : undefined}
               >
                 {isPlaying ? '♩ playing…' : hasPlayed ? '▷ Play again' : '▷ Hear it'}
               </Button>
@@ -684,7 +706,9 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 Open Body Map
               </Button>
             </div>
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+            <div className="mx-auto w-full max-w-2xl">
+              <StageIntro stage={stage} />
+              <StageSlot stage="present" current={stage}>
               {/* Current State Card */}
               <Card
                 style={
@@ -718,6 +742,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 </CardContent>
               </Card>
 
+              </StageSlot>
+              <StageSlot stage="wish" current={stage}>
               {/* Wish State Card */}
               <Card
                 style={
@@ -750,13 +776,17 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                   </div>
                 </CardContent>
               </Card>
+            </StageSlot>
+              <StageNav stage={stage} onChange={setStage} />
             </div>
 
+            {stage === 'wish' && (
             <div className="flex justify-center pt-4">
               <Button size="lg" onClick={handleNext} className="px-12">
                 {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
               </Button>
             </div>
+            )}
           </div>
         )}
 
@@ -770,6 +800,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
           onSave={(data) => onUpdateBodyMap(data)}
           initialPlacements={bodyMapData.placements}
           initialNotes={bodyMapData.notes}
+          initialPins={bodyMapData.pins}
         />
       )}
     </div>

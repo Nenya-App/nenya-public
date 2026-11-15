@@ -35,7 +35,7 @@ export function AnswerCard({ card }: { card: AnswerCardData }) {
         <ul className="flex flex-wrap gap-x-4 gap-y-1">
           {links.map((l) => (
             <li key={l.href + l.label}>
-              <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-nenya-accent-warm underline underline-offset-4 hover:text-foreground">
+              <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-nenya-gold-text dark:text-nenya-accent-warm underline underline-offset-4 hover:text-foreground">
                 {l.label}
                 <span className="sr-only"> (opens in a new tab)</span>
               </a>

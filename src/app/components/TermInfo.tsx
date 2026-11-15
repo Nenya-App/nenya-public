@@ -566,7 +566,7 @@ export function TermInfo({ term, category }: TermInfoProps) {
                 href={learnMoreUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                className="inline-flex items-center gap-1.5 text-sm text-nenya-gold-text underline-offset-4 hover:underline"
               >
                 Learn more
                 <ExternalLink className="size-3.5" />

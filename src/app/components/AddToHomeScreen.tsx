@@ -37,7 +37,7 @@ function isStandalone(): boolean {
   );
 }
 
-export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | 'icon' }) {
+export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | 'icon' | 'menu' }) {
   const [open, setOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
@@ -82,8 +82,16 @@ export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | '
 
   return (
     <div className="relative">
-      {variant === 'icon' ? (
-        <Button variant="ghost" size="icon" className="max-[359px]:size-8" onClick={() => setOpen((o) => !o)} aria-label={triggerLabel} title={triggerLabel}>
+      {variant === 'menu' ? (
+        <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted">
+          <Download className="size-5" />
+          <div className="flex-1">
+            <div className="text-sm">{triggerLabel}</div>
+            <div className="text-xs text-muted-foreground">Keep Nenya close by</div>
+          </div>
+        </button>
+      ) : variant === 'icon' ? (
+        <Button variant="ghost" size="icon" onClick={() => setOpen((o) => !o)} aria-label={triggerLabel} title={triggerLabel}>
           <Download className="size-4" />
         </Button>
       ) : (
@@ -96,7 +104,7 @@ export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | '
       {open && (
         <>
           {/* Backdrop to close when clicking outside, matching the header's other dropdowns */}
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
           <div className="fixed inset-x-3 top-[calc(3.5rem+env(safe-area-inset-top)+0.5rem)] max-h-[calc(100dvh-6rem)] overflow-y-auto md:absolute md:inset-x-auto md:right-0 md:top-full md:mt-2 md:w-80 md:max-h-none bg-background border border-border rounded-lg shadow-lg z-50 p-4 space-y-3">
             <div>
@@ -139,10 +147,10 @@ export function AddToHomeScreen({ variant = 'button' }: { variant?: 'button' | '
               <div className="text-xs text-muted-foreground space-y-2">
                 <p className="flex items-center gap-1.5 flex-wrap">
                   <Bookmark className="size-3.5 shrink-0" />
-                  Press <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[10px]">Ctrl</kbd> +{' '}
-                  <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[10px]">D</kbd>
-                  {' '}(<kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[10px]">Cmd</kbd> +{' '}
-                  <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[10px]">D</kbd> on Mac) to bookmark this page.
+                  Press <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-xs">Ctrl</kbd> +{' '}
+                  <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-xs">D</kbd>
+                  {' '}(<kbd className="px-1 py-0.5 rounded border border-border bg-muted text-xs">Cmd</kbd> +{' '}
+                  <kbd className="px-1 py-0.5 rounded border border-border bg-muted text-xs">D</kbd> on Mac) to bookmark this page.
                 </p>
                 <p>Some browsers (like Chrome or Edge) may also offer an "Install Nenya" option in the address bar or menu.</p>
               </div>

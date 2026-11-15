@@ -44,11 +44,19 @@ type AboutSection =
   | 'privacy-promise'
   | 'pii-scrubbing'
   | 'venice-chat'
+  | 'witnessed'
+  | 'where-we-stand'
+  | 'how-checks-work'
+  | 'coach-region'
   | 'partner-practice'
   | 'structure' 
   | 'support-us'
   | 'terms';
 
+import WitnessedConversations from './about/WitnessedConversations';
+import WhereWeStand from './about/WhereWeStand';
+import HowChecksWork from './about/HowChecksWork';
+import CoachRegion from './about/CoachRegion';
 import { aboutPath, aboutSectionFromLocation, aboutTitle } from '../../lib/aboutRoutes';
 
 export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOpenPartnerPreview }: AboutNenyaProps) {
@@ -169,6 +177,18 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOp
       )}
       {currentSection === 'venice-chat' && (
         <VeniceChat onBack={handleBackToMenu} />
+      )}
+      {currentSection === 'where-we-stand' && (
+        <WhereWeStand onBack={handleBackToMenu} />
+      )}
+      {currentSection === 'how-checks-work' && (
+        <HowChecksWork onBack={handleBackToMenu} />
+      )}
+      {currentSection === 'coach-region' && (
+        <CoachRegion onBack={handleBackToMenu} onOpenTerms={() => setCurrentSection('terms')} />
+      )}
+      {currentSection === 'witnessed' && (
+        <WitnessedConversations onBack={handleBackToMenu} />
       )}
       {currentSection === 'structure' && (
         <Structure onBack={handleBackToMenu} />

@@ -7,6 +7,7 @@ import { LegalDocumentBody } from './LegalDocumentBody';
 import { DownloadLegalPdfButton } from './DownloadLegalPdfButton';
 import { LEGAL_EFFECTIVE_DATE } from '../../lib/legalDocument';
 import { rememberTerms, setRemembering } from '../../lib/deviceMemory';
+import { agreeToTerms } from '../../lib/visitConsent';
 import { PRESETS, sameTechnique, type BreathingTechnique } from '../../lib/breathingPresets';
 
 export type OnboardingStep = 'rhythm' | 'terms';
@@ -100,6 +101,8 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
       setRemembering(true);
       rememberTerms(LEGAL_EFFECTIVE_DATE);
     }
+    // Held for the visit (cleared when the tab closes, on Emergency Exit or Forget me) and signed by the site; carried into anything the person later signs.
+    void agreeToTerms();
     setIsExiting(true);
     setTimeout(onFinish, 700);
   };
@@ -125,7 +128,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
       >
         <span
           className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-sm ${
-            selected ? 'border-nenya-accent-warm text-nenya-accent-warm' : 'border-border text-muted-foreground'
+            selected ? 'border-nenya-accent-warm text-nenya-gold-text dark:text-nenya-accent-warm' : 'border-border text-muted-foreground'
           }`}
         >
           {lb}
@@ -134,7 +137,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
           <span className="block text-sm">{info.name}</span>
           <span className="block text-xs leading-snug text-muted-foreground">{info.blurb}</span>
         </span>
-        {selected && <Check className="size-4 shrink-0 text-nenya-accent-warm" />}
+        {selected && <Check className="size-4 shrink-0 text-nenya-gold-text dark:text-nenya-accent-warm" />}
       </button>
     );
   };
@@ -145,7 +148,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
       <Button
         size="sm"
         onClick={() => goTo('terms')}
-        className="gap-1 bg-nenya-accent-warm text-background-elevated hover:bg-nenya-accent-secondary"
+        className="gap-1 bg-nenya-accent-warm text-primary-foreground hover:bg-nenya-gold-light"
       >
         Read the terms
         <ArrowRight className="size-3.5" />

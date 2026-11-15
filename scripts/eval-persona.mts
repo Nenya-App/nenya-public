@@ -40,11 +40,11 @@ if (card !== undefined && !isCardSlug(card)) {
 }
 const cardModel = flag('--card-model') ?? 'deepseek-v3.2';
 const instructions = card ? `card:${card}` : (flag('--instructions') ?? 'v1');
-if (!card && !['v1', 'v2'].includes(instructions)) {
-  console.error('--instructions must be v1 or v2.');
+if (!card && !['v1', 'v2', 'v2.1'].includes(instructions)) {
+  console.error('--instructions must be v1, v2 or v2.1.');
   process.exit(2);
 }
-if (instructions === 'v2') process.env.COACH_INSTRUCTIONS = 'v2';
+if (instructions === 'v2' || instructions === 'v2.1') process.env.COACH_INSTRUCTIONS = instructions;
 const paceSeconds = Number(flag('--pace') ?? 3);
 if (!(paceSeconds >= 0 && paceSeconds <= 120)) {
   console.error('--pace is a number of seconds between calls, from 0 to 120.');
@@ -163,7 +163,7 @@ for (const c of todo) {
   // Saved after every case, so a run that is stopped (or crashes) can be continued with --resume instead of lost.
   if (jsonOut) {
     const soFar = chosen.map((x) => fresh.find((q) => q.id === x.id) ?? kept.find((q) => q.id === x.id)).filter(Boolean) as CaseResult[];
-    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
+    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : process.env.COACH_MODEL || 'the coach default (DEFAULT_MODEL in netlify/functions/coach.mts)', distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
   }
 }
 
@@ -176,7 +176,7 @@ if (reviewLines.length) console.log(`\nReview checks (they never fail a case; th
 if (s.failing.length) console.log(`\nTo read a failing case in full: --only <id>. Failing: ${s.failing.join(', ')}`);
 console.log('\nA pass means no known failure phrase. Read the replies: tone, warmth and honesty are yours to judge.');
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, partial: false, summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : process.env.COACH_MODEL || 'the coach default (DEFAULT_MODEL in netlify/functions/coach.mts)', distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: false, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 process.exit(s.fail || s.error ? 1 : 0);

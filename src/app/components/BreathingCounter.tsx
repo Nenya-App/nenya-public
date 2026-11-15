@@ -110,7 +110,7 @@ export function BreathingCounter({
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
-              color: 'rgba(232,160,32,0.55)',
+              color: 'rgba(232,160,32,0.85)',
             }}
           >
             <X size={13} />
@@ -132,7 +132,7 @@ export function BreathingCounter({
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
-              color: 'rgba(232,160,32,0.55)',
+              color: 'rgba(232,160,32,0.85)',
             }}
           >
             {minimized ? <Square size={11} /> : <Minus size={13} />}
@@ -158,7 +158,7 @@ export function BreathingCounter({
             fontSize: '11px',
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
-            color: 'rgba(232,160,32,0.7)',
+            color: 'rgba(232,160,32,0.9)',
             fontFamily: "'Manrope',sans-serif",
           }}
         >
@@ -176,7 +176,7 @@ export function BreathingCounter({
             fontSize: '11px',
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
-            color: 'rgba(232,160,32,0.55)',
+            color: 'rgba(232,160,32,0.85)',
             fontFamily: "'Manrope',sans-serif",
             marginBottom: '5px',
           }}
@@ -200,7 +200,7 @@ export function BreathingCounter({
           <div
             style={{
               fontSize: '14px',
-              color: 'rgba(232,160,32,0.7)',
+              color: 'rgba(232,160,32,0.9)',
               fontFamily: "'Manrope',sans-serif",
               letterSpacing: '0.08em',
             }}
@@ -255,7 +255,7 @@ export function BreathingCounter({
                   >
                     {preset.lb}
                   </span>
-                  <span style={{ fontSize: '10px', color: 'rgba(232,160,32,0.4)', fontFamily: "'Manrope',sans-serif" }}>
+                  <span style={{ fontSize: '10px', color: 'rgba(232,160,32,0.75)', fontFamily: "'Manrope',sans-serif" }}>
                     {preset.lb === 'Box' ? '4·4·4·4' : preset.lb === '4-7-8' ? 'no hold-out' : ''}
                   </span>
                 </div>

@@ -433,7 +433,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
                     {showingRawText.has(message.id) && message.rawText ? message.rawText : message.text}
                   </div>
                   {message.rawText && (
-                    <div className="mt-2 pt-2 border-t border-current/20 flex items-center gap-1 text-xs opacity-70">
+                    <div className="mt-2 pt-2 border-t border-current/20 flex items-center gap-1 text-xs">
                       {showingRawText.has(message.id) ? (
                         <>
                           <EyeOff className="size-3" />
@@ -469,7 +469,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
             </div>
 
             <div className="bg-card rounded-lg p-4 border border-border">
-              <h4 className="text-xs mb-2">Facilitation Guide</h4>
+              <h4 className="text-sm mb-2">Facilitation Guide</h4>
               <ul className="text-xs text-muted-foreground space-y-2">
                 <li>• Take turns sharing and listening</li>
                 <li>• Reflect back what you heard</li>
@@ -480,7 +480,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
             </div>
 
             <div className="bg-card rounded-lg p-4 border border-border">
-              <h4 className="text-xs mb-2 flex items-center gap-1">
+              <h4 className="text-sm mb-2 flex items-center gap-1">
                 <Sparkles className="size-3" />
                 AI Translation
               </h4>
@@ -490,7 +490,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
             </div>
 
             <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
-              <h4 className="text-xs mb-2 text-amber-900 dark:text-amber-100">Professional Use Only</h4>
+              <h4 className="text-sm mb-2 text-amber-900 dark:text-amber-100">Professional Use Only</h4>
               <p className="text-xs text-amber-900 dark:text-amber-100 leading-relaxed">
                 Partner practice is planned for use by therapists and other professionals, and it is not built. What you see is a scripted mock-up. <strong>It is not a replacement for professional help.</strong> If you need support, consult a qualified mental health professional.
               </p>

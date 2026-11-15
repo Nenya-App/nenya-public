@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStages';
+import { GatewayProgress } from '../GatewayProgress';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
@@ -44,6 +47,8 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
   const [showBodyMap, setShowBodyMap] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState<PairStage>('present');
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -57,7 +62,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
   const [currentTasteOther, setCurrentTasteOther] = useState('');
   const [currentScents, setCurrentScents] = useState<string[]>([]);
   const [currentScentOther, setCurrentScentOther] = useState('');
-  const [currentIntensity, setCurrentIntensity] = useState([50]);
+  const [currentIntensity, setCurrentIntensity] = useState(() => unsetSlider());
   const [currentDescription, setCurrentDescription] = useState('');
 
   // Potential state
@@ -65,7 +70,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
   const [potentialTasteOther, setPotentialTasteOther] = useState('');
   const [potentialScents, setPotentialScents] = useState<string[]>([]);
   const [potentialScentOther, setPotentialScentOther] = useState('');
-  const [potentialIntensity, setPotentialIntensity] = useState([50]);
+  const [potentialIntensity, setPotentialIntensity] = useState(() => unsetSlider());
   const [potentialDescription, setPotentialDescription] = useState('');
 
   const handleCheckboxChange = (
@@ -95,13 +100,13 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
       currentTasteOther: currentTasteOther || null,
       currentScents: currentScents.length > 0 ? currentScents : null,
       currentScentOther: currentScentOther || null,
-      currentIntensity: currentIntensity[0],
+      currentIntensity: sliderValue(currentIntensity),
       currentDescription: currentDescription || null,
       potentialTastes: potentialTastes.length > 0 ? potentialTastes : null,
       potentialTasteOther: potentialTasteOther || null,
       potentialScents: potentialScents.length > 0 ? potentialScents : null,
       potentialScentOther: potentialScentOther || null,
-      potentialIntensity: potentialIntensity[0],
+      potentialIntensity: sliderValue(potentialIntensity),
       potentialDescription: potentialDescription || null
     });
   };
@@ -127,12 +132,10 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
           </Button>
           
           <div className="flex items-center gap-3">
-            <NenyaLogo size={32} />
+            <PanelLogo size={32} />
             <div className="text-center">
               <h1 className="text-lg">Essence - Atmosphere</h1>
-              <p className="text-xs text-muted-foreground">
-                Gateway {currentIndex + 1} of {totalGateways}
-              </p>
+              <GatewayProgress index={currentIndex} total={totalGateways} />
             </div>
           </div>
           
@@ -163,9 +166,12 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                     {INSTRUCTION_CARDS[instructionCardIndex].detail}
                   </p>
                   <div className="flex items-center justify-between pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      {instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
+                        <ArrowLeft className="size-4" /> Back
+                      </Button>
+                      <p className="text-sm text-muted-foreground">{instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}</p>
+                    </div>
                     <Button variant="ghost" className="gap-2">
                       {instructionCardIndex < INSTRUCTION_CARDS.length - 1 ? (
                         <>
@@ -191,7 +197,9 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 Open Body Map
               </Button>
             </div>
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+            <div className="mx-auto w-full max-w-2xl">
+              <StageIntro stage={stage} />
+              <StageSlot stage="present" current={stage}>
               {/* Present State Card */}
               <Card
                 className="transition-all"
@@ -241,6 +249,8 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 </CardContent>
               </Card>
 
+              </StageSlot>
+              <StageSlot stage="wish" current={stage}>
               {/* Potential State Card */}
               <Card
                 className="transition-all"
@@ -289,9 +299,12 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                   </div>
                 </CardContent>
               </Card>
+            </StageSlot>
+              <StageNav stage={stage} onChange={setStage} />
             </div>
 
             {/* Next Button */}
+            {stage === 'wish' && (
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"
@@ -302,6 +315,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
               </Button>
             </div>
+            )}
           </div>
         )}
 
@@ -315,6 +329,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
           onSave={(data) => onUpdateBodyMap(data)}
           initialPlacements={bodyMapData.placements}
           initialNotes={bodyMapData.notes}
+          initialPins={bodyMapData.pins}
         />
       )}
     </div>

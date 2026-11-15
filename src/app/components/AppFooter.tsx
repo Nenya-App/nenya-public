@@ -1,4 +1,4 @@
-import NenyaLogo from './NenyaLogo';
+import PanelLogo from './PanelLogo';
 import { EmergencyExitButton } from './EmergencyExit';
 import { ShareNenya } from './ShareNenya';
 import { ForgetMeLink } from './DeviceMemoryControls';
@@ -20,7 +20,7 @@ export function AppFooter({ className = '' }: AppFooterProps) {
 
           {/* Logo and tagline (Center on mobile, Left on desktop after exit button) */}
           <div className="flex items-center gap-3 order-2 md:order-2">
-            <NenyaLogo size={32} />
+            <PanelLogo size={32} />
             <div className="flex flex-col">
               <span className="text-sm font-medium">Nenya</span>
               <span className="text-xs text-muted-foreground">A mirror for your inner world</span>
@@ -35,7 +35,7 @@ export function AppFooter({ className = '' }: AppFooterProps) {
         </div>
 
         {/* Open source + hosting attribution */}
-        <div className="mt-4 pt-4 border-t border-border/50 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+        <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
           <a
             href="https://github.com/Nenya-App/nenya-public"
             target="_blank"

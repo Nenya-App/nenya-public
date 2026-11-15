@@ -5,8 +5,8 @@ const SITE_URL = 'https://nenya.biz';
 const SHARE_TEXT = 'Nenya: a free, private place to pause, breathe, and find words for what you feel.';
 
 interface ShareNenyaProps {
-  /** "link" is a quiet text control for footers; "button" is an outlined button. */
-  variant?: 'button' | 'link';
+  /** "link" is a quiet text control for footers; "button" is an outlined button; "header" is a small ghost button with the word "Share" and "icon" is the icon alone (for narrow headers). */
+  variant?: 'button' | 'link' | 'header' | 'icon' | 'menu';
 }
 
 // Invites someone else to try Nenya. Always shares the whole site, never a
@@ -27,6 +27,33 @@ export function ShareNenya({ variant = 'link' }: ShareNenyaProps) {
       // Closing the share sheet is not an error. If copying is blocked there is nothing to report.
     }
   };
+
+  if (variant === 'menu') {
+    return (
+      <button type="button" onClick={share} className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted">
+        {copied ? <Check className="size-5" /> : <Share2 className="size-5" />}
+        <div className="flex-1">
+          <div className="text-sm" aria-live="polite">{copied ? 'Link copied' : 'Share Nenya'}</div>
+          <div className="text-xs text-muted-foreground">Send the site to someone</div>
+        </div>
+      </button>
+    );
+  }
+
+  if (variant === 'header' || variant === 'icon') {
+    return (
+      <button
+        type="button"
+        onClick={share}
+        className={`inline-flex items-center justify-center gap-2 rounded-md text-sm hover:bg-muted ${variant === 'icon' ? 'size-11' : 'h-11 px-3'}`}
+        aria-label={copied ? 'Link copied' : 'Share Nenya with someone'}
+        title="Share Nenya with someone"
+      >
+        {copied ? <Check className="size-4" /> : <Share2 className="size-4" />}
+        {variant === 'header' && <span aria-live="polite">{copied ? 'Copied' : 'Share'}</span>}
+      </button>
+    );
+  }
 
   const base =
     variant === 'button'

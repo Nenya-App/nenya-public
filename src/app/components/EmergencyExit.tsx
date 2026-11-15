@@ -11,8 +11,7 @@ interface EmergencyExitModalProps {
 }
 
 // Earthy emergency exit color - brown-orange-red
-const EMERGENCY_COLOR = '#B85C3C'; // Earthy terracotta/rust color
-const EMERGENCY_YELLOW = '#FFDB58';
+const EMERGENCY_COLOR = '#89452D'; // Earthy terracotta/rust color
 
 // Nienna's Chromatic Sigil - The palette of mercy, compassion, and empathy
 const NIENNA_PRIMARY = '#6A5ACD'; // Slate Blue - Compassionate depth
@@ -50,6 +49,7 @@ function EmergencyExitModal({ isOpen, onClose, onLeaving }: EmergencyExitModalPr
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
       {/* Dark overlay */}
       <div 
+        aria-hidden="true"
         className="fixed inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       />
@@ -173,7 +173,7 @@ function EmergencyExitModal({ isOpen, onClose, onLeaving }: EmergencyExitModalPr
               className="w-full font-semibold hover:opacity-90"
               style={{
                 background: '#CC0000',
-                color: '#FFDB58',
+                color: '#FFFFFF',
                 borderColor: '#CC0000'
               }}
               size="lg"
@@ -229,26 +229,26 @@ export function EmergencyExitButton({
         `}
         style={{
           background: EMERGENCY_COLOR,
-          color: EMERGENCY_YELLOW,
+          color: '#FFFFFF', // white on the terracotta: at least 7:1 (WCAG AAA)
           borderColor: EMERGENCY_COLOR
         }}
         aria-label="Emergency exit - Instant redirect to Wikipedia"
       >
         <ArrowUpRight className={`${isHeader ? 'size-3' : 'size-4'} mr-1.5`} />
-        {isHeader ? 'Exit' : 'Emergency Exit'}
+        Emergency Exit
       </Button>
 
       <Button
         onClick={() => setInfoModalOpen(true)}
         className={`
-          ${isHeader ? 'p-1 size-6' : 'p-1.5 size-7'}
+          ${isHeader ? 'p-1 size-8 min-[400px]:size-11' : 'p-1.5 size-11'}
           rounded-full
           border shadow-sm hover:shadow-md
           transition-all duration-200
         `}
         style={{
           background: EMERGENCY_COLOR,
-          color: EMERGENCY_YELLOW,
+          color: '#FFFFFF', // white on the terracotta: at least 7:1 (WCAG AAA)
           borderColor: EMERGENCY_COLOR
         }}
         aria-label="Emergency exit information"

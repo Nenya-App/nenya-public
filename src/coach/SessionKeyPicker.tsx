@@ -96,7 +96,7 @@ export default function SessionKeyPicker({ onComplete, onBack }: SessionKeyPicke
   const chip = (n: string, color: string, i: number) => (
     <span
       key={`${color}${i}`}
-      className="rounded-lg border px-2 py-1 font-mono text-[11px]"
+      className="rounded-lg border px-2 py-1 font-mono text-xs"
       style={{ borderColor: `${color}99`, backgroundColor: `${color}22` }}
     >
       {n}
@@ -117,7 +117,7 @@ export default function SessionKeyPicker({ onComplete, onBack }: SessionKeyPicke
         <div className="w-20" />
       </header>
 
-      <main className="scroll-container flex-1 overflow-y-auto px-4 py-8 md:px-6">
+      <main id="main-content" tabIndex={-1} className="scroll-container flex-1 overflow-y-auto px-4 py-8 outline-none md:px-6">
         <div className="mx-auto w-full max-w-xl space-y-7">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Before the coach</p>

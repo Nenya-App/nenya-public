@@ -1,4 +1,4 @@
-import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Crown, User, MessageCircle, Mail, Wind } from 'lucide-react';
+import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Crown, User, MessageCircle, Mail, Wind, Globe } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import nenyaLogo from '../../../assets/nenya-logo.webp';
@@ -9,6 +9,15 @@ interface AboutMenuProps {
   onRestartDemo?: () => void;
   onNavigateToSection: (section: string) => void;
 }
+
+/** The About page's sections, in order, and which entries each holds. */
+export const ABOUT_SECTIONS: { key: string; title: string; blurb: string; ids: string[] }[] = [
+  { key: 'nenya', title: 'About Nenya', blurb: 'What Nenya is, where the name comes from, and who makes it.', ids: ['mellonamin', 'name-philosophy', 'about-founder', 'structure', 'support-us', 'contact-us'] },
+  { key: 'how', title: 'How It Works', blurb: 'The practice itself: breathing, the six gateways, color, needs and the method behind them.', ids: ['breathing-tool', 'six-gateways', 'power-of-color', 'pantheon-of-needs', 'nvc-method'] },
+  { key: 'ideas', title: 'Ideas Behind It', blurb: 'The research and thinking that shaped the design.', ids: ['bio-social-design', 'evolved-leader'] },
+  { key: 'coach', title: 'The Coach and What Is Planned', blurb: 'The optional AI coach demo, how it is checked, and what we hope to build next.', ids: ['how-checks-work', 'coach-region', 'venice-chat', 'witnessed', 'pii-scrubbing', 'partner-practice'] },
+  { key: 'trust', title: 'Privacy, Safety and Where We Stand', blurb: 'What we collect, what we promise, and the lines we will not cross.', ids: ['privacy-promise', 'where-we-stand', 'terms'] },
+];
 
 export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }: AboutMenuProps) {
   const menuItems = [
@@ -97,6 +106,30 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       icon: MessageCircle,
     },
     {
+      id: 'where-we-stand',
+      title: 'Where We Stand',
+      description: 'What we say about genocide, apartheid, occupation and colonization, and what we will not do',
+      icon: Scroll,
+    },
+    {
+      id: 'how-checks-work',
+      title: 'How the Checks Work',
+      description: 'What the coach checks, what each check can and cannot do, how well they work, and where they fall short',
+      icon: Shield,
+    },
+    {
+      id: 'coach-region',
+      title: 'Where the Coach Is Open',
+      description: 'Why the coach is open in the United States only for now, and what an IP address is',
+      icon: Globe,
+    },
+    {
+      id: 'witnessed',
+      title: 'Witnessed Conversations',
+      description: 'Conversations with the coach that people chose to share, without their names',
+      icon: Eye,
+    },
+    {
       id: 'partner-practice',
       title: 'Partner Practice (Planned)',
       description: 'Dyadic Cells: two-person practice we hope to build, with a scripted preview',
@@ -121,6 +154,9 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       icon: FileText,
     },
   ];
+
+  // The page is grouped into sections; every entry above belongs to exactly one (tests/about-sections.test.mts checks this).
+  const sections = ABOUT_SECTIONS.map((sec) => ({ ...sec, items: sec.ids.map((id) => menuItems.find((m) => m.id === id)!) }));
 
   return (
     <div className="flex size-full flex-col bg-background relative">
@@ -153,7 +189,7 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
             <Button
               variant="outline"
               onClick={onRestartDemo}
-              className="gap-2 border-nenya-accent-primary/40 hover:border-nenya-accent-warm hover:bg-nenya-accent-warm/10 hover:text-nenya-accent-warm text-sm md:text-base"
+              className="gap-2 border-nenya-accent-primary/40 hover:border-nenya-accent-warm hover:bg-nenya-accent-warm/10 hover:text-nenya-gold-text dark:hover:text-nenya-accent-warm text-sm md:text-base"
               size="sm"
             >
               <Play className="size-3 md:size-4" />
@@ -164,29 +200,45 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
         </div>
       </div>
 
-      {/* Menu Grid */}
+      {/* Sections */}
       <div className="flex-1 overflow-auto p-6 relative z-10 scroll-container">
-        <div className="mx-auto max-w-3xl grid gap-4 sm:grid-cols-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Card
-                key={item.id}
-                className="cursor-pointer transition-all hover:border-primary/50 hover:shadow-md"
-                onClick={() => onNavigateToSection(item.id)}
-              >
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <Icon className="size-5 text-primary shrink-0" />
-                    <span>{item.title}</span>
-                  </CardTitle>
-                  <CardDescription className="pt-2">
-                    {item.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            );
-          })}
+        <nav aria-label="Sections of this page" className="mx-auto mb-8 flex max-w-3xl flex-wrap justify-center gap-2">
+          {sections.map((sec) => (
+            <a key={sec.key} href={`#about-${sec.key}`} onClick={(e) => { e.preventDefault(); document.getElementById(`about-${sec.key}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+              className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
+              {sec.title}
+            </a>
+          ))}
+        </nav>
+        <div className="mx-auto max-w-3xl space-y-12">
+          {sections.map((sec) => (
+            <section key={sec.key} id={`about-${sec.key}`} aria-labelledby={`about-${sec.key}-title`} className="scroll-mt-4">
+              <h2 id={`about-${sec.key}-title`} className="text-xl md:text-2xl">{sec.title}</h2>
+              <p className="mt-1 mb-4 text-sm text-muted-foreground">{sec.blurb}</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {sec.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Card
+                      key={item.id}
+                      className="cursor-pointer transition-all hover:border-primary/50 hover:shadow-md"
+                      onClick={() => onNavigateToSection(item.id)}
+                    >
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-3">
+                          <Icon className="size-5 text-primary shrink-0" />
+                          <span>{item.title}</span>
+                        </CardTitle>
+                        <CardDescription className="pt-2">
+                          {item.description}
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
         </div>
 
         <AppFooter />

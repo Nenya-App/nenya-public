@@ -32,9 +32,9 @@ export default function Structure({ onBack }: StructureProps) {
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-6 px-2">
               <div className="p-3 bg-nenya-gold/20 rounded-lg">
-                <Heart className="size-6 text-nenya-gold-dark dark:text-nenya-gold" />
+                <Heart className="size-6 text-nenya-gold-text dark:text-nenya-gold" />
               </div>
-              <h2 className="text-2xl md:text-3xl text-nenya-gold-dark dark:text-nenya-gold-light">A Private Artistic Project</h2>
+              <h2 className="text-2xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">A Private Artistic Project</h2>
             </div>
             <Card className="p-6 md:p-8 bg-muted/50 border-border">
               <div className="space-y-4 text-foreground leading-relaxed text-sm md:text-base">
@@ -58,9 +58,9 @@ export default function Structure({ onBack }: StructureProps) {
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-6 px-2">
               <div className="p-3 bg-nenya-gold/20 rounded-lg">
-                <Shield className="size-6 text-nenya-gold-dark dark:text-nenya-gold" />
+                <Shield className="size-6 text-nenya-gold-text dark:text-nenya-gold" />
               </div>
-              <h2 className="text-2xl md:text-3xl text-nenya-gold-dark dark:text-nenya-gold-light">Fiscal Sponsorship: Fractured Atlas</h2>
+              <h2 className="text-2xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">Fiscal Sponsorship: Fractured Atlas</h2>
             </div>
             <Card className="p-6 md:p-8 border-border">
               <div className="space-y-6">
@@ -71,28 +71,28 @@ export default function Structure({ onBack }: StructureProps) {
                 </p>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Card className="p-5 bg-card border-nenya-gold/30">
-                    <h3 className="text-base md:text-lg text-nenya-gold-dark dark:text-nenya-gold-light mb-3">What This Means</h3>
+                    <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold-light mb-3">What This Means</h3>
                     <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
                       <li className="flex gap-2">
-                        <Shield className="size-3 md:size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                        <Shield className="size-3 md:size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                         <span>Donations are tax-deductible to the extent permitted by law</span>
                       </li>
                       <li className="flex gap-2">
-                        <Shield className="size-3 md:size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                        <Shield className="size-3 md:size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                         <span>Fractured Atlas handles financial administration and accountability</span>
                       </li>
                       <li className="flex gap-2">
-                        <Shield className="size-3 md:size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                        <Shield className="size-3 md:size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                         <span>Nenya retains full creative and directional independence</span>
                       </li>
                       <li className="flex gap-2">
-                        <Shield className="size-3 md:size-4 text-nenya-gold-dark flex-shrink-0 mt-0.5" />
+                        <Shield className="size-3 md:size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
                         <span>No equity, no board seats, no approval rights conveyed to any funder</span>
                       </li>
                     </ul>
                   </Card>
                   <Card className="p-5 bg-card border-nenya-gold/30">
-                    <h3 className="text-base md:text-lg text-nenya-gold-dark dark:text-nenya-gold-light mb-3">Fractured Atlas</h3>
+                    <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold-light mb-3">Fractured Atlas</h3>
                     <p className="text-xs md:text-sm text-muted-foreground mb-4">
                       A leading 501(c)(3) arts service organization supporting thousands of independent artists and projects across the US since
                       1998.
@@ -104,7 +104,7 @@ export default function Structure({ onBack }: StructureProps) {
                           Fractured Atlas Website
                         </a>
                       </Button>
-                      <Button size="sm" className="gap-2 justify-start bg-nenya-gold hover:bg-nenya-gold-dark text-background" asChild>
+                      <Button size="sm" className="gap-2 justify-start bg-nenya-gold hover:bg-nenya-gold-light text-primary-foreground" asChild>
                         <a href="https://fundraising.fracturedatlas.org/nenya" target="_blank" rel="noopener noreferrer">
                           <Heart className="size-4" />
                           Donate to Support Nenya
@@ -128,9 +128,9 @@ export default function Structure({ onBack }: StructureProps) {
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-6 px-2">
               <div className="p-3 bg-nenya-gold/20 rounded-lg">
-                <Sparkles className="size-6 text-nenya-gold-dark dark:text-nenya-gold" />
+                <Sparkles className="size-6 text-nenya-gold-text dark:text-nenya-gold" />
               </div>
-              <h2 className="text-2xl md:text-3xl text-nenya-gold-dark dark:text-nenya-gold-light">Why This Approach</h2>
+              <h2 className="text-2xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">Why This Approach</h2>
             </div>
             <Card className="p-6 md:p-8 bg-muted/50 border-border">
               <div className="space-y-4">
@@ -156,9 +156,9 @@ export default function Structure({ onBack }: StructureProps) {
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-6 px-2">
               <div className="p-3 bg-nenya-gold/20 rounded-lg">
-                <Heart className="size-6 text-nenya-gold-dark dark:text-nenya-gold" />
+                <Heart className="size-6 text-nenya-gold-text dark:text-nenya-gold" />
               </div>
-              <h2 className="text-2xl md:text-3xl text-nenya-gold-dark dark:text-nenya-gold-light">Core Commitments</h2>
+              <h2 className="text-2xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">Core Commitments</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <Card className="p-5 bg-gradient-to-br from-background-secondary to-background">
@@ -186,9 +186,9 @@ export default function Structure({ onBack }: StructureProps) {
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-6 px-2">
               <div className="p-3 bg-nenya-gold/20 rounded-lg">
-                <Code className="size-6 text-nenya-gold-dark dark:text-nenya-gold" />
+                <Code className="size-6 text-nenya-gold-text dark:text-nenya-gold" />
               </div>
-              <h2 className="text-2xl md:text-3xl text-nenya-gold-dark dark:text-nenya-gold-light">Open Source</h2>
+              <h2 className="text-2xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">Open Source</h2>
             </div>
             <Card className="p-6 md:p-8 bg-muted/50 border-border">
               <div className="space-y-4 text-sm md:text-base text-foreground leading-relaxed">
@@ -198,13 +198,13 @@ export default function Structure({ onBack }: StructureProps) {
                     href="https://github.com/Nenya-App/nenya-public/blob/main/LICENSE"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline underline-offset-2 hover:text-nenya-gold-dark dark:hover:text-nenya-gold transition-colors"
+                    className="underline underline-offset-2 hover:text-nenya-gold-text dark:hover:text-nenya-gold transition-colors"
                   >
                     GNU Affero General Public License v3.0
                   </a>
                   . Every claim about what the site’s code does — that nothing you enter is tracked, and that nothing is stored by Nenya between
                   sessions — is something you can verify yourself by reading the code, not just something you have
-                  to take our word for. The web host’s connection logs and visit totals sit outside the code; Section 15 of the terms describes them.
+                  to take our word for. The web host’s connection logs and visit totals sit outside the code; Section 13 of the terms describes them.
                 </p>
                 <p className="text-muted-foreground text-xs md:text-sm">
                   The Nenya name and logo are reserved separately from the code license — see the repository's{' '}

@@ -1,4 +1,5 @@
 import { Home, BookOpen, Menu, X, ChevronDown, Settings, HelpCircle, Heart } from 'lucide-react';
+import { ShareNenya } from './ShareNenya';
 import { Button } from './ui/button';
 import { useState } from 'react';
 import NenyaLogo from './NenyaLogo';
@@ -131,12 +132,14 @@ export function GlobalNavigation({
               {showAnimationControls && onTutorialReplay ? (
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="sm"
+                  className="gap-2"
                   onClick={onTutorialReplay}
-                  aria-label="Replay tutorial"
-                  title="Replay tutorial"
+                  aria-label="Take a quick tour"
+                  title="Take a quick tour"
                 >
                   <HelpCircle className="size-4" />
+                  Tour
                 </Button>
               ) : null}
 
@@ -145,13 +148,16 @@ export function GlobalNavigation({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-2 border-nenya-gold/40 hover:border-nenya-gold hover:bg-nenya-gold/10 hover:text-nenya-gold-dark text-nenya-gold-dark"
+                  className="gap-2 border-nenya-gold/40 hover:border-nenya-gold hover:bg-nenya-gold/10 hover:text-nenya-gold-text text-nenya-gold-text"
                   onClick={handleSupportUsClick}
                 >
                   <Heart className="size-4" />
                   Support Us
                 </Button>
               ) : null}
+
+              {/* Share (the whole site, never anything entered) */}
+              <ShareNenya variant="header" />
 
               {/* Add to Home Screen */}
               <AddToHomeScreen variant="icon" />
@@ -177,6 +183,7 @@ export function GlobalNavigation({
                   <>
                     {/* Backdrop to close menu when clicking outside */}
                     <div 
+                      aria-hidden="true"
                       className="fixed inset-0 z-40" 
                       onClick={() => setMenuOpen(false)}
                     />
@@ -255,9 +262,6 @@ export function GlobalNavigation({
 
           {/* Mobile Menu Controls */}
           <div id="tutorial-header-tools-mobile" className="flex items-center gap-0.5 min-[400px]:gap-1.5">
-            {/* Add to Home Screen */}
-            <AddToHomeScreen variant="icon" />
-
             {/* Theme Toggle */}
             <ThemeToggle />
 
@@ -266,7 +270,6 @@ export function GlobalNavigation({
               id="tutorial-menu-mobile"
               variant="ghost"
               size="icon"
-              className="max-[359px]:size-8"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >
@@ -274,7 +277,7 @@ export function GlobalNavigation({
             </Button>
 
             {/* Emergency Exit Button */}
-            <EmergencyExitButton variant="header" className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-1" onEmergencyExit={onEmergencyExit} />
+            <EmergencyExitButton variant="header" className="text-xs px-1.5 sm:px-2 py-1" onEmergencyExit={onEmergencyExit} />
           </div>
         </div>
 
@@ -283,6 +286,7 @@ export function GlobalNavigation({
           <>
             {/* Backdrop */}
             <div 
+              aria-hidden="true"
               className="fixed inset-0 top-[calc(3.5rem+env(safe-area-inset-top))] bg-black/20 z-40" 
               onClick={() => setMenuOpen(false)}
             />
@@ -316,13 +320,16 @@ export function GlobalNavigation({
                     onClick={handleSupportUsClick}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors text-left"
                   >
-                    <Heart className="size-5 text-nenya-gold-dark" />
+                    <Heart className="size-5 text-nenya-gold-text" />
                     <div className="flex-1">
                       <div className="text-sm">Support Us</div>
                       <div className="text-xs text-muted-foreground">Help keep Nenya free</div>
                     </div>
                   </button>
                 ) : null}
+
+                <ShareNenya variant="menu" />
+                <AddToHomeScreen variant="menu" />
 
                 {showAnimationControls && onTutorialReplay ? (
                   <button
@@ -334,8 +341,8 @@ export function GlobalNavigation({
                   >
                     <HelpCircle className="size-5" />
                     <div className="flex-1">
-                      <div className="text-sm">Replay tutorial</div>
-                      <div className="text-xs text-muted-foreground">Take the quick tour again</div>
+                      <div className="text-sm">Tour</div>
+                      <div className="text-xs text-muted-foreground">Take a quick tour</div>
                     </div>
                   </button>
                 ) : null}

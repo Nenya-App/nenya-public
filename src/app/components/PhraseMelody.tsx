@@ -31,10 +31,10 @@ export function PhraseMelody({ phrases, noteNames, active, playing, onActivate, 
               {p.label.toUpperCase() !== p.hex && <p className="text-xs text-muted-foreground">{p.hex}</p>}
             </div>
             <div className="flex shrink-0 items-center gap-1">
-              <button type="button" className="rounded-md border border-border p-1.5 disabled:opacity-30" disabled={i === 0} onClick={() => onMove(p.id, -1)} aria-label={`Move phrase ${i + 1}, ${p.label}, earlier`}><ArrowUp className="size-3.5" /></button>
-              <button type="button" className="rounded-md border border-border p-1.5 disabled:opacity-30" disabled={i === phrases.length - 1} onClick={() => onMove(p.id, 1)} aria-label={`Move phrase ${i + 1}, ${p.label}, later`}><ArrowDown className="size-3.5" /></button>
+              <button type="button" className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-md border border-border p-1.5 disabled:opacity-30" disabled={i === 0} onClick={() => onMove(p.id, -1)} aria-label={`Move phrase ${i + 1}, ${p.label}, earlier`}><ArrowUp className="size-3.5" /></button>
+              <button type="button" className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-md border border-border p-1.5 disabled:opacity-30" disabled={i === phrases.length - 1} onClick={() => onMove(p.id, 1)} aria-label={`Move phrase ${i + 1}, ${p.label}, later`}><ArrowDown className="size-3.5" /></button>
               {canMute(p) ? (
-                <button type="button" className="rounded-md border border-border p-1.5" aria-pressed={p.muted} onClick={() => onMute(p.id, !p.muted)} aria-label={p.muted ? `Unmute phrase ${i + 1}, ${p.label}` : `Mute phrase ${i + 1}, ${p.label}`}>
+                <button type="button" className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-md border border-border p-1.5" aria-pressed={p.muted} onClick={() => onMute(p.id, !p.muted)} aria-label={p.muted ? `Unmute phrase ${i + 1}, ${p.label}` : `Mute phrase ${i + 1}, ${p.label}`}>
                   {p.muted ? <VolumeX className="size-3.5" /> : <Volume2 className="size-3.5" />}
                 </button>
               ) : (

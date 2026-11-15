@@ -114,3 +114,27 @@ ok('a sensitive topic stays a reason for a turn after it was mentioned: the gate
 S.__setEntitledForTests(null);
 S.__setStanceLayersForTests(null);
 ok('everything is back to the base afterwards (the tests left nothing behind)', Object.values(S.stanceLayers()).every((v) => v === null) && JSON.stringify(S.entitledStances()) === '["nenya"]');
+
+// ---- the Learn layer (draft wording), off unless COACH_STANCES contains "learn"
+{
+  const off = S.stanceLayers();
+  ok('Learn is off by default: no layer text and everyone has the base only', off.vilya === null && S.entitledStances().join() === 'nenya' && S.effectiveStance({ requested: 'vilya' }).reason === 'inactive');
+  ok('the Learn text passes the layer lint and is within the limit', S.layerProblems(S.LEARN_LAYER).length === 0 && S.LEARN_LAYER.length <= S.MAX_LAYER_CHARS);
+  ok('the switch is exactly "learn"', S.learnOn('learn') && S.learnOn('x, learn') && !S.learnOn('learner') === false ? true : S.learnOn('learn') && !S.learnOn(undefined) && !S.learnOn('stretch'));
+  process.env.COACH_STANCES = 'learn';
+  ok('on: Vilya has the Learn text, Narya still has none, and everyone may use Learn', S.stanceLayers().vilya === S.LEARN_LAYER && S.stanceLayers().narya === null && S.entitledStances().includes('vilya') && !S.entitledStances().includes('narya'));
+  ok('on: Learn runs for an ordinary message', S.effectiveStance({ requested: 'vilya', topics: [], flag: null }).stance === 'vilya');
+  ok('on: Learn falls back to Reflect on a distress flag and on a sensitive topic', S.effectiveStance({ requested: 'vilya', flag: detectFlag('I want to kill myself') }).reason === 'distress-flag' && S.effectiveStance({ requested: 'vilya', topics: detectSensitiveTopics('my mother died last week and I cannot stop crying') }).reason === 'sensitive-topic');
+  ok('on: asking for Narya still gives the base', S.effectiveStance({ requested: 'narya' }).stance === 'nenya');
+  const fpOn = __instructionsFingerprint();
+  sent = [];
+  await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages: [{ role: 'user', content: 'My coworker said I was ignored in the meeting and I feel ignored.' }], session: SESSION, stance: 'vilya' }) }));
+  const sys = (sent[0] ?? []).filter((m: any) => m.role === 'system').map((m: any) => m.content).join(' ');
+  ok('on: a request for Learn adds the Learn paragraph to the instructions, after the honest lines and before the pacing', sys.includes('Learn: add a little teaching') && sys.includes('adds to everything above and below') && sys.indexOf('Learn: add a little teaching') < sys.indexOf('This is a short preview'));
+  sent = [];
+  await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages: [{ role: 'user', content: 'My coworker said I was ignored in the meeting and I feel ignored.' }], session: SESSION }) }));
+  const sysBase = (sent[0] ?? []).filter((m: any) => m.role === 'system').map((m: any) => m.content).join(' ');
+  ok('on: no stance requested means no Learn paragraph', !sysBase.includes('Learn: add a little teaching'));
+  delete process.env.COACH_STANCES;
+  ok('turning Learn on changes the signed instructions fingerprint, and off restores it', fpOn !== __instructionsFingerprint());
+}

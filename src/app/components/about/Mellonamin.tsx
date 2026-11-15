@@ -24,7 +24,7 @@ export default function Mellonamin() {
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
               This is a quiet space to slow down for a moment and listen to yourself, without anyone watching or
-              judging what you find. The name is meant as an invitation: <strong className="text-nenya-gold-dark">you may
+              judging what you find. The name is meant as an invitation: <strong className="text-nenya-gold-text">you may
               rest here</strong>.
             </p>
 
@@ -93,7 +93,7 @@ export default function Mellonamin() {
 
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              Underneath the colors and the breathing, this is built on <strong className="text-nenya-gold-dark">Nonviolent
+              Underneath the colors and the breathing, this is built on <strong className="text-nenya-gold-text">Nonviolent
               Communication</strong> — a way of paying attention to feelings and needs without rushing to judge them.
               The question isn't "what's wrong with you," it's "what's alive in you right now."
             </p>
@@ -101,7 +101,7 @@ export default function Mellonamin() {
 
           <div className="bg-gradient-to-br from-background-secondary to-background p-6 rounded-lg border border-nenya-accent-primary/20 space-y-4">
             <h3 className="text-xl flex items-center gap-2">
-              <Heart className="size-5 text-nenya-gold-dark" />
+              <Heart className="size-5 text-nenya-gold-text" />
               Four Simple Shifts
             </h3>
 
@@ -127,7 +127,7 @@ export default function Mellonamin() {
 
           <div className="bg-gradient-to-br from-background-secondary to-background p-6 rounded-lg border border-nenya-accent-secondary/20 space-y-3">
             <h3 className="text-xl flex items-center gap-2">
-              <Users className="size-5 text-nenya-gold-dark" />
+              <Users className="size-5 text-nenya-gold-text" />
               Beyond just you
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -158,7 +158,7 @@ export default function Mellonamin() {
 
       {/* Closing */}
       <Card className="p-6 md:p-8 bg-gradient-to-br from-nenya-gold/5 via-background to-nenya-gold/10 border-nenya-gold/40 text-center">
-        <p className="text-2xl text-nenya-gold-dark italic font-serif">
+        <p className="text-2xl text-nenya-gold-text italic font-serif">
           Take your time.
         </p>
         <p className="text-sm text-muted-foreground mt-2">

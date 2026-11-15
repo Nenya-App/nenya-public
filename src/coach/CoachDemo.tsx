@@ -5,9 +5,11 @@ import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { getGradientMidpoint, getReadableTextColor } from '../app/components/ColorUtils';
 import { checkConversation, type SafetyFlag } from '../lib/safetyFlags';
+import { checkMessageForm, SHORT_NOTICE, UNCLEAR_NOTICE, type FormProblem } from '../lib/messageGate';
 import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
-import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../lib/veniceLinks';
+import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL, VENICE_TERMS_URL, VENICE_PRIVACY_URL, VENICE_DIFFERENCES } from '../lib/veniceLinks';
+import { noteSafetyStop, veniceOfferAllowed } from '../lib/veniceOffer';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
 import { OWNER_KEY, OWNER_TOKEN_KEY, REST_KEY } from '../lib/deviceMemory';
 import { overridesForRequest } from '../lib/ownerPanel';
@@ -20,10 +22,16 @@ import { FlagNotice } from './FlagNotice';
 import { ReportShare, type ReportInput } from './ReportShare';
 import { openingText } from '../lib/reportShare';
 import type { SharedText } from '../lib/reportFragments';
+import { LearningOffer } from './LearningCard';
+import { WordPanel, type Picked } from './WordPanel';
+import { StancePicker } from './StancePicker';
+import { addWordToDraft } from '../lib/feelingsNeeds';
+import { isStuck, namedParts } from '../lib/practiceArc';
 import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
 import { FailureNotice } from './FailureNotice';
+import { RegionNotice } from './RegionGate';
 import { resetScroll } from '../app/components/ScrollToTop';
 import { describeFailure, type FailureInfo } from '../lib/coachErrors';
 import { DEFAULT_TIMEOUT, quietState, type TimeoutChoice } from '../lib/chatTimeout';
@@ -75,6 +83,28 @@ const markFinished = () => {
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const norm = (c: string | undefined, fallback: string) => (c && HEX.test(c) ? c.toUpperCase() : fallback);
 
+/** "This was a mistake": counts one thing by kind (src/netlify/functions/mistake.mts); nothing about the message is sent. */
+function MistakeButton({ kind }: { kind: 'challenge' | 'offer' | 'form' }) {
+  const [state, setState] = useState<'idle' | 'sent' | 'failed'>('idle');
+  const send = async () => {
+    try {
+      const res = await fetch('/api/mistake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind }) });
+      setState(res.ok ? 'sent' : 'failed');
+    } catch {
+      setState('failed');
+    }
+  };
+  if (state === 'sent') return <span className="block px-2 pt-1 text-xs text-muted-foreground" role="status">Thank you. That was counted. Nothing about your message was sent.</span>;
+  return (
+    <span className="block px-2 pt-1">
+      <button type="button" onClick={send} className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        This was a mistake
+      </button>
+      {state === 'failed' && <span className="ml-2 text-xs text-muted-foreground" role="status">That did not go through. You can try again.</span>}
+    </span>
+  );
+}
+
 interface Msg {
   role: 'user' | 'assistant';
   content: string;
@@ -82,6 +112,12 @@ interface Msg {
   note?: string;
   /** Set when the site wrote this reply itself as a pre-written answer: the card shown beneath it. */
   card?: AnswerCardData;
+  /** Set when the site offered a short educational card under this reply (only an invitation: the person decides). */
+  offer?: { id: string; proof: string };
+  /** Which of the site's checks shaped this reply ("challenge", "offer"): the page offers "This was a mistake" under it. */
+  checked?: string[];
+  /** Changes the site made to this reply (a sentence added, sentences removed), with the server's proof of each; sent back only with the receipt request. */
+  edits?: { kind: 'added' | 'removed'; n: number; proof: string }[];
 }
 
 const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content }));
@@ -130,9 +166,39 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const [messages, setMessages] = useState<Msg[]>([]);
   const [ticket, setTicket] = useState<string | undefined>();
   const [draft, setDraft] = useState('');
+  // Reflect (the base) or Learn (adds a little teaching). The choice is only shown where the site has turned Learn on (VITE_COACH_STANCES=learn at build time);
+  // the server decides what actually runs and falls back to Reflect when someone is in distress or on a sensitive topic.
+  const learnAvailable = /\blearn\b/i.test(String((import.meta as { env?: Record<string, string> }).env?.VITE_COACH_STANCES ?? ''));
+  const [stance, setStance] = useState<'nenya' | 'vilya'>('nenya');
+  // The word lists: open on the first exchange, on the needs list once the coach has answered once (unless the person chose a tab themselves).
+  const [wordsOpen, setWordsOpen] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('nenya.words.open') !== 'no'; // a per-device convenience: folded stays folded
+    } catch {
+      return true;
+    }
+  });
+  const rememberWordsOpen = (v: boolean): void => {
+    setWordsOpen(v);
+    try {
+      localStorage.setItem('nenya.words.open', v ? 'yes' : 'no');
+    } catch {
+      /* private window or blocked storage: it just opens next time */
+    }
+  };
+  const [wordsTab, setWordsTab] = useState<'feelings' | 'needs'>('feelings');
+  const [tabChosen, setTabChosen] = useState(false);
+  const [picked, setPicked] = useState<Picked[]>([]);
+  const pickWord = (p: Picked): void => {
+    const on = picked.some((x) => x.kind === p.kind && x.word === p.word);
+    setPicked(on ? picked.filter((x) => !(x.kind === p.kind && x.word === p.word)) : [...picked, p]);
+    if (!on) setDraft((d) => addWordToDraft(d, p.kind, p.word, MAX_CHARS));
+  };
   const [sending, setSending] = useState(false);
   const [failure, setFailure] = useState<FailureInfo | null>(null);
   const [blocked, setBlocked] = useState(false);
+  // Too short or no words to read: not sent, no turn used, the draft stays (src/lib/messageGate.ts).
+  const [formProblem, setFormProblem] = useState<FormProblem | null>(null);
   // Today's free conversations are used up. Only known when a first message is sent.
   const [capped, setCapped] = useState<false | 'cap' | 'ip'>(false);
   const [signaturePlaying, setSignaturePlaying] = useState(false);
@@ -157,7 +223,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
   useEffect(() => {
     onActiveChange?.(messages.length > 0);
-  }, [messages.length, onActiveChange]);
+    if (messages.length >= 2 && !tabChosen) setWordsTab(namedParts(messages.filter((m) => m.role === 'user').map((m) => m.content)).feeling ? 'needs' : 'feelings');
+  }, [messages, onActiveChange, tabChosen]);
 
   // Quiet time only counts while the page is waiting on the person: it pauses while a reply is on its way.
   const quiet = quietState(timeoutChoice, sending ? 0 : now - activeAt);
@@ -208,10 +275,20 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     const text = draft.trim();
     if (!text || sending) return;
     setBlocked(false);
+    setFormProblem(null);
+    // The person says they are stuck for words: the feelings-and-needs list opens beside the box (for this visit only; the folded setting they chose is not changed).
+    if (isStuck(text)) setWordsOpen(true);
 
     // A message that tries to steer the coach is not sent. The draft stays so it can be reworded.
     if (looksLikeManipulation(text)) {
       setBlocked(true);
+      return;
+    }
+
+    // Too short or no words to read: the person is asked to say it again, and nothing is sent. Never when a safety flag applies: a short or oddly spelled crisis message goes through its own checks.
+    const problem = checkMessageForm(text);
+    if (problem && !checkConversation([...messages.filter((m) => m.role === 'user').map((m) => m.content), text])) {
+      setFormProblem(problem);
       return;
     }
 
@@ -226,6 +303,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     // Checked against what the person has written so far, so the self-injury ladder (recurs, escalates) can see the conversation.
     const local = checkConversation(next.filter((m) => m.role === 'user').map((m) => m.content));
     if (local?.tier === 'stop') {
+      noteSafetyStop();
       setMessages(next);
       setFlag(local);
       setFlaggedText(scrubbed.text);
@@ -241,7 +319,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...ownerHeader() },
-        body: JSON.stringify({ messages: toWire(next), session, ticket, ...(shared ? { context: shared.text } : {}), ...overridesForRequest() }),
+        body: JSON.stringify({ messages: toWire(next), session, ticket, shown: messages.flatMap((m) => (m.offer ? [m.offer.id] : [])), ...(shared ? { context: shared.text } : {}), ...(learnAvailable && stance === 'vilya' ? { stance } : {}), ...overridesForRequest() }),
       });
       if (!res.ok) {
         // Say what went wrong instead of a bare "failed". The server's answer carries a code, a reason and a reference.
@@ -262,10 +340,18 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         contextFlag?: SafetyFlag;
         blocked?: string;
         card?: AnswerCardData;
+        offer?: { id: string; proof: string };
+        checked?: string[];
+        edits?: { kind: 'added' | 'removed'; n: number; proof: string }[];
+        problem?: string;
       };
       // The server screens too. A blocked message is not part of the conversation.
       if (data.blocked === 'cap' || data.blocked === 'ip') {
         setCapped(data.blocked);
+        return;
+      }
+      if (data.blocked === 'form') {
+        setFormProblem((data as { problem?: string }).problem === 'short' ? 'short' : 'unclear');
         return;
       }
       if (data.blocked === 'context') {
@@ -279,11 +365,12 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         return;
       }
       if (data.contextFlag) setContextFlag(data.contextFlag);
-      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}) }] : next);
+      setMessages(data.reply ? [...next, { role: 'assistant', content: data.reply, ...(data.card ? { card: data.card } : {}), ...(data.offer ? { offer: data.offer } : {}), ...(data.checked?.length ? { checked: data.checked } : {}), ...(data.edits?.length ? { edits: data.edits } : {}) }] : next);
       setTicket(data.ticket);
       touch();
       setDraft('');
       if (data.flag) {
+        if (data.flag.tier === 'stop') noteSafetyStop();
         setFlag(data.flag);
         setFlaggedText(scrubbed.text);
       }
@@ -305,6 +392,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   } as const;
 
   const stopped = flag?.tier === 'stop';
+  // Never offered after a safety notice in this conversation, or after a safety stop anywhere in this visit.
+  const offerVenice = !flag && veniceOfferAllowed();
   useEffect(() => {
     if (stage === 'done' && !stopped) markFinished();
   }, [stage, stopped]);
@@ -355,7 +444,12 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       <div className="rounded-lg border border-amber-500/60 p-3 text-sm">
         <p className="mb-1 font-medium">Before you go: it is not the same as this demo.</p>
         <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-          <li>You leave Nenya. Venice AI&rsquo;s terms and privacy policy apply, not ours.</li>
+          <li>
+            You leave Nenya. Venice AI&rsquo;s{' '}
+            <a href={VENICE_TERMS_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>terms</a> and{' '}
+            <a href={VENICE_PRIVACY_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>privacy policy</a> apply,
+            not ours. {VENICE_DIFFERENCES}
+          </li>
           <li>
             Nenya&rsquo;s protections do not run there: no identifier scrubbing, no crisis check, no
             screening for attempts to steer the coach, and no five-exchange limit. Please leave out names and
@@ -448,7 +542,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         </span>
       </header>
 
-      <main className="scroll-container flex-1 overflow-y-auto px-4 py-6 md:px-6">
+      <main id="main-content" tabIndex={-1} className="scroll-container flex-1 overflow-y-auto px-4 py-6 outline-none md:px-6">
         <div className="mx-auto w-full max-w-xl space-y-5">
           {stage === 'consent' && pauseEnds > 0 && <PauseScreen ends={pauseEnds} onReturn={() => setPauseEnds(0)} breatheButton={breatheButton} />}
 
@@ -464,14 +558,14 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
               </p>
               <p className="text-muted-foreground">
                 If you want to keep going, there are good places to do it that are not this page: the breathing tool
-                below, a person you trust, a journal, or a professional if it feels heavy. You can also continue with the
-                same character on Venice AI, with the differences explained there.
+                below, a person you trust, a journal, or a professional if it feels heavy.
+                {offerVenice && ' You can also continue with the same character on Venice AI, with the differences explained there.'}
               </p>
               <div className="flex flex-wrap items-center gap-4">
                 {breatheButton}
                 <ShareNenya />
               </div>
-              {venicePanel}
+              {offerVenice && venicePanel}
               <p className="text-xs text-muted-foreground">
                 Your browser remembers only the time you finished, so the demo knows to rest. Nothing is sent to Nenya.
                 The &ldquo;Forget me&rdquo; button in the settings menu or at the bottom of the page, or clearing this site&rsquo;s data in your browser, removes it.
@@ -534,7 +628,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     {notes.first.map((n, i) => (
                       <span
                         key={`a${i}`}
-                        className="rounded-lg border px-2 py-1 font-mono text-[11px]"
+                        className="rounded-lg border px-2 py-1 font-mono text-xs"
                         style={{ borderColor: `${color1}99`, backgroundColor: `${color1}22` }}
                       >
                         {n}
@@ -544,7 +638,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     {notes.second.map((n, i) => (
                       <span
                         key={`b${i}`}
-                        className="rounded-lg border px-2 py-1 font-mono text-[11px]"
+                        className="rounded-lg border px-2 py-1 font-mono text-xs"
                         style={{ borderColor: `${color2}99`, backgroundColor: `${color2}22` }}
                       >
                         {n}
@@ -588,6 +682,21 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 </li>
                 <li>Please leave out names, addresses, and other identifying details.</li>
                 <li>
+                  It is for people 13 and older, or the minimum age in your country. If you are under 18, please use it only
+                  with a parent&rsquo;s or guardian&rsquo;s consent.
+                </li>
+                <li>
+                  The replies are written by an AI model run by Venice AI. They can be wrong, incomplete or offensive, and
+                  they are not medical, legal, financial or mental health advice. Venice AI&rsquo;s own{' '}
+                  <a href={VENICE_TERMS_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>terms</a> and{' '}
+                  <a href={VENICE_PRIVACY_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>privacy policy</a>{' '}
+                  apply to what it receives.
+                </li>
+                <li>
+                  Please do not use it for anything illegal, to harm or exploit a child, to impersonate anyone or
+                  misstate your age, or through bots or scripts.
+                </li>
+                <li>
                   This is not therapy and it cannot help in a crisis. In the US, call or text 988. If you are in
                   immediate danger, call your local emergency number.
                 </li>
@@ -604,6 +713,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   setContextFlag(next ? checkConversation([next.text]) : null);
                 }}
               />
+              {learnAvailable && <StancePicker value={stance} onChange={setStance} />}
               <QuietTimeoutPicker id="coach-quiet-start" value={timeoutChoice} onChange={setTimeoutChoice} />
               <div className="flex flex-wrap items-center gap-3">
                 <Button size="lg" onClick={() => setStage('chat')} className="gap-2" style={gradientButton}>
@@ -639,7 +749,10 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 <span>Not therapy</span>
               </div>
               {stage === 'chat' && !timedOut && (
-                <QuietTimeoutPicker id="coach-quiet-chat" compact value={timeoutChoice} onChange={(v) => { setTimeoutChoice(v); touch(); }} />
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                  {learnAvailable && <StancePicker compact value={stance} onChange={setStance} />}
+                  <QuietTimeoutPicker id="coach-quiet-chat" compact value={timeoutChoice} onChange={(v) => { setTimeoutChoice(v); touch(); }} />
+                </div>
               )}
 
               <div className="space-y-4" role="log" aria-live="polite" aria-label="Conversation">
@@ -674,6 +787,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     </div>
                   </div>
                   {m.card && <AnswerCard card={m.card} />}
+                  {m.offer && <LearningOffer cardId={m.offer.id} />}
+                  {m.checked && m.checked.length > 0 && <MistakeButton kind={m.checked.includes('challenge') ? 'challenge' : 'offer'} />}
                   </Fragment>
                 ))}
                 {sending && (
@@ -727,7 +842,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     Keep a record, or report a problem
                   </summary>
                   <div className="pt-3">
-                    <TranscriptTools messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                    <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))}
+                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
                   </div>
                 </details>
               )}
@@ -741,8 +857,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     {capped === 'ip'
                       ? 'Shared networks count together. '
                       : 'This demo is free, and each reply costs real money, so Nenya can only offer a set number of conversations a day. Today\u2019s are taken. '}
-                    Your message was not passed on to Venice AI and was not kept. It opens again tomorrow. Until then, the breathing tool is here, or you can continue with the same character on
-                    Venice AI, with the differences explained below.
+                    Your message was not passed on to Venice AI and was not kept. It opens again tomorrow. Until then, the breathing tool is here
+                    {offerVenice ? ', or you can continue with the same character on Venice AI, with the differences explained below.' : '.'}
                   </p>
                   <div className="flex flex-wrap items-center gap-4">
                     {breatheButton}
@@ -750,7 +866,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </div>
                 </section>
               )}
-              {stage === 'chat' && capped && venicePanel}
+              {stage === 'chat' && capped && offerVenice && venicePanel}
 
               {stage === 'chat' && !capped && timedOut && (
                 <section className="space-y-3 rounded-2xl border bg-card p-5 text-sm" style={{ borderColor: `${color2}80` }} role="status">
@@ -789,6 +905,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       setDraft(e.target.value);
                       touch();
                       if (blocked) setBlocked(false);
+                      if (formProblem) setFormProblem(null);
                     }}
                     onKeyDown={(e) => {
                       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -825,12 +942,36 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       Send
                     </Button>
                   </div>
+                  {/* From the second exchange on: the first one is in their own words, to show they can do it without an aid. */}
+                  {messages.length >= 2 && (
+                  <WordPanel
+                    open={wordsOpen}
+                    onToggle={rememberWordsOpen}
+                    accent={color1}
+                    onUnpick={(p) => setPicked((cur) => cur.filter((x) => !(x.kind === p.kind && x.word === p.word)))}
+                    tab={wordsTab}
+                    onTab={(t) => {
+                      setWordsTab(t);
+                      setTabChosen(true);
+                    }}
+                    picked={picked}
+                    have={{ feeling: picked.some((x) => x.kind === 'feeling') || namedParts([...messages.filter((m) => m.role === 'user').map((m) => m.content), draft]).feeling, need: picked.some((x) => x.kind === 'need') || namedParts([...messages.filter((m) => m.role === 'user').map((m) => m.content), draft]).need }}
+                    onPick={pickWord}
+                  />
+                  )}
                   {blocked && (
                     <p role="alert" className="rounded-lg border border-amber-500/60 p-3 text-sm">
                       {MANIPULATION_NOTICE}
                     </p>
                   )}
-                  {failure && <FailureNotice info={failure} turn={turn} />}
+                  {formProblem && (
+                    <p role="status" className="rounded-lg border border-border p-3 text-sm">
+                      {formProblem === 'short' ? SHORT_NOTICE : UNCLEAR_NOTICE}
+                      {' '}
+                      <MistakeButton kind="form" />
+                    </p>
+                  )}
+                  {failure && (failure.code === 'region' ? <RegionNotice inline country={null} /> : <FailureNotice info={failure} turn={turn} />)}
                 </form>
               )}
 
@@ -854,10 +995,11 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 </section>
               )}
 
-              {stage === 'done' && !flag && venicePanel}
+              {stage === 'done' && offerVenice && venicePanel}
 
               {stage === 'done' && (
-                <TranscriptTools messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))}
+                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
               )}
             </>
           )}

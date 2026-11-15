@@ -1,4 +1,4 @@
-import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL } from '../../../lib/veniceLinks';
+import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL, VENICE_TERMS_URL, VENICE_PRIVACY_URL, VENICE_DIFFERENCES } from '../../../lib/veniceLinks';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { MessageCircle, ExternalLink, AlertTriangle, Shield, Waves } from 'lucide-react';
@@ -88,7 +88,10 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                   Encrypted & Private
                 </h3>
                 <p className="text-sm text-purple-800 dark:text-purple-200">
-                  Venice AI describes its own privacy practices in its terms and privacy policy, which apply here and which Nenya does not control. This is an outside service, separate from Nenya.
+                  Venice AI describes its own privacy practices in its{' '}
+                  <a href={VENICE_TERMS_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">terms</a> and{' '}
+                  <a href={VENICE_PRIVACY_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">privacy policy</a>,
+                  which apply here and which Nenya does not control. This is an outside service, separate from Nenya. {VENICE_DIFFERENCES}
                 </p>
               </Card>
             </div>
@@ -159,7 +162,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                 <Button
                   onClick={() => window.open(VENICE_CHARACTER_URL, '_blank', 'noopener,noreferrer')}
                   size="lg"
-                  className="gap-2 bg-purple-700 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-500 text-white"
+                  className="gap-2 bg-purple-800 hover:bg-purple-900 dark:bg-purple-800 dark:hover:bg-purple-900 text-white"
                 >
                   <MessageCircle className="size-5" />
                   Open Venice AI Chat Demo

@@ -5,6 +5,7 @@ import { downloadText } from '../lib/transcript';
 import { GROUPS, label } from './labels';
 import { csvFilename, totalsCsv } from './exportCsv';
 import TranscriptChecker, { type LookupResult } from '../verify/TranscriptChecker';
+import WitnessedPanel from './WitnessedPanel';
 
 // The owner's page for reading the usage totals (see docs/site-metrics-scope.md). It holds nothing but the owner's own
 // token (in this browser only) and a table of plain daily totals fetched from /api/stats. It is not linked from anywhere.
@@ -338,6 +339,8 @@ export default function AdminPage() {
         </section>
       )}
 
+      {(phase === 'in' || stats) && <WitnessedPanel getToken={() => token.trim() || readToken()} />}
+
       {stats && (
         <section className="space-y-8" aria-label="Totals">
           <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
@@ -398,7 +401,7 @@ export default function AdminPage() {
                   </thead>
                   <tbody>
                     {rows.map((e) => (
-                      <tr key={e} className="border-b border-border/50">
+                      <tr key={e} className="border-b border-border">
                         <th scope="row" className="sticky left-0 bg-background py-2 pr-4 text-left font-normal">
                           {label(e)}
                         </th>

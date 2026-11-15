@@ -4,6 +4,8 @@
 // the real Cinzel/Manrope/Cormorant Garamond font files (self-hosted for
 // the web app already) are fetched and embedded, along with the actual
 // logo mark, so the document reads as an artifact of the app itself.
+import { chosenShapeIds, shapeById } from './gatewayShapes';
+import { shapeToPng } from './shapeImages';
 import type { Gateway, GatewayData } from '../app/App';
 import type { BodyMapData } from '../app/components/BodyMapAvatar';
 import { getNoteNames, TonalSystem } from './audio';
@@ -244,6 +246,16 @@ export async function downloadNenyaPdfReport(
   // ---------------------------------------------------------------
   let y = newContentPage();
 
+  // The drawings chosen in the Movement and Insight gateways, as pictures for the report (made here from their code; any that fail are left out).
+  const shapePngs = new Map<string, string>();
+  for (const gd of gatewayData) {
+    for (const id of chosenShapeIds(gd.gateway, gd.data)) {
+      const sh = shapeById(id);
+      if (!sh || shapePngs.has(id)) continue;
+      try { shapePngs.set(id, await shapeToPng(sh)); } catch { /* left out */ }
+    }
+  }
+
   gatewayData.forEach((gd) => {
     const dataLines = formatGatewayData(gd.gateway, gd.data);
     const hasColorSwatches = gd.gateway === 'sight' && !!gd.data?.color1 && !!gd.data?.color2;
@@ -315,6 +327,28 @@ export async function downloadNenyaPdfReport(
         gd.data.tonalSystem ?? 'western'
       );
       y += consumed;
+    }
+
+    // The drawings this person chose: small pictures with their names under them.
+    const chosen = chosenShapeIds(gd.gateway, gd.data).filter((id) => shapePngs.has(id));
+    if (chosen.length) {
+      if (y + 30 > pageHeight - 26) {
+        y = newContentPage();
+      }
+      chosen.forEach((id, i) => {
+        const x = margin + 4 + i * 30;
+        try {
+          doc.setDrawColor(...COLORS.gold);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(x, y, 24, 24, 2, 2);
+          doc.addImage(shapePngs.get(id)!, 'PNG', x + 1, y + 1, 22, 22);
+        } catch { /* skip a picture that will not draw */ }
+        doc.setFont('Manrope', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(...COLORS.textMuted);
+        doc.text(shapeById(id)!.label, x + 12, y + 28, { align: 'center' });
+      });
+      y += 33;
     }
 
     dataLines.forEach((line) => {

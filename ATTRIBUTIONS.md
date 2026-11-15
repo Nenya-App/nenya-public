@@ -81,3 +81,30 @@ If a visitor presses "Ask The Color API" in the Sight gateway, Nenya's server as
 ## Solresol (a link only)
 
 The Sound gateway links to **solresol.xyz**, a Solresol translator and player from the Machine Perception and Cognitive Robotics Laboratory at Florida Atlantic University (project page: <https://mpcrlab.com/projects/Solresol-LLM/>), for visitors who want to build a melody from words outside Nenya. It is a link only: no code, data or text from that site is copied, and nothing from Nenya is sent to it. The site states no license or terms on the pages we read; a future in-Nenya version would need their permission or a word list from public-domain sources (see `docs/solresol-scope.md`).
+
+## Touch gateway surfaces
+
+The surface pictures in the Touch gateway (`public/touch-textures/`, listed with their sources in [`src/lib/touchTexturesData.ts`](./src/lib/touchTexturesData.ts)) are photographed material textures from [ambientCG](https://ambientcg.com) and [Poly Haven](https://polyhaven.com), both of which publish their assets under CC0 1.0 (public domain). CC0 asks for no credit; we give it anyway, with a link to each original. The pictures are shrunk to 256 px and saved as JPEG. The license of each library was taken from its own statement and has not been checked by a lawyer. The measured feel labels are ours: each is the average steepness of the surface in the library's published normal map.
+
+## HurtLex (detection list)
+
+Nenya's private list of slurs and dehumanizing language, used only to offer a gentle educational card and never to block or report anyone, is built partly from **HurtLex**, English version 1.2, conservative level only.
+
+- Source: <https://github.com/valeriobasile/hurtlex>
+- Paper: Elisa Bassignana, Valerio Basile and Viviana Patti, "Hurtlex: A Multilingual Lexicon of Words to Hurt", CLiC-it 2018.
+- Licence: [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/), as stated in the project's README.
+- What we changed: we use only the conservative level and some of its categories, drop entries that are ordinary words unless a nearby cue word is present, and add our own context rules and entries from other sources. The list itself is private and is not distributed, in this repository or anywhere else.
+- The authors have not endorsed Nenya. Nenya's coach is free to use, and nothing in it is sold.
+
+## Wiktionary (detection list)
+
+The same private list also draws on the **English Wiktionary** categories of ethnic, religious and anti-LGBTQ slurs and dysphemisms (<https://en.wiktionary.org>), whose text is licensed under [Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/). We read only the terms and their category names, went through every one by hand (many were dropped as ordinary words or names), and added our own rules. The list is private and is not distributed. Wiktionary and its contributors have not endorsed Nenya.
+
+## cardiffnlp/twitter-roberta-base-hate-latest (screening model)
+
+Nenya is built to screen messages to the coach with a small hate-speech classifier that runs on Nenya's own server, in memory, and keeps nothing (not yet switched on in production). The model is **cardiffnlp/twitter-roberta-base-hate-latest** (<https://huggingface.co/cardiffnlp/twitter-roberta-base-hate-latest>), a fine-tuned version of `cardiffnlp/twitter-roberta-base-2022-154m`, by the Cardiff NLP group.
+
+- Paper: Dimosthenis Antypas and Jose Camacho-Collados, "Robust Hate Speech Detection in Social Media: A Cross-Dataset Empirical Evaluation", Proceedings of the 7th Workshop on Online Abuse and Harms (WOAH), 2023. <https://aclanthology.org/2023.woah-1.25>
+- Licence: [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/), as stated on the model's page. The model was fine-tuned by its authors on 13 published hate-speech datasets, which its page lists.
+- What we changed: we converted the model to the ONNX format and quantized its weights to 8-bit integers so it fits in a small server function, and we choose our own score threshold from our own tests. We have not retrained or fine-tuned it. Its score alone never ends a conversation or reaches anyone: it can only change the tone of a reply or offer a short card, as described in the Terms.
+- The authors have not endorsed Nenya.

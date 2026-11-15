@@ -1,6 +1,6 @@
 # DRAFT: Terms revision for the 1.1.0 release
 
-Status: a draft for the owner to read and edit, written 2026-11-09. **Nothing here is in the live Terms** (`src/lib/legalDocument.ts`) until it is approved. I am not a lawyer; the owner (and Fractured Atlas, if it wishes) should read it before it ships. Each change is shown as exact replacement text, with a note on what in the code makes it true.
+Status: a draft for the owner to read and edit, written 2026-11-09. **Nothing here is in the live Terms** (`src/lib/legalDocument.ts`) until it is approved. Each change is shown as exact replacement text, with a note on what in the code makes it true.
 
 Why now: the rewritten Privacy Promise and the pre-written answers already say that our server encrypts a message before it goes to Venice, that this is not encryption all the way from the device, and that some words in the coach are written by the site. The Terms must say the same things, or the pages disagree.
 
@@ -62,4 +62,3 @@ What makes it true: `CLOSING` and the greeting in `src/coach/CoachDemo.tsx`; the
 ## 5. Not covered here
 - The break's pause, the quiz and the turn charge or refund (later, with the trigger).
 - The dehumanising-language and slur lists (later; private; need review by a counselor and a domestic-violence advocate).
-- Any legal review.

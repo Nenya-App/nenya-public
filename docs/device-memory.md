@@ -37,4 +37,6 @@ The person picks 10, 15 or 20 minutes of quiet, or "Leave open", before starting
 ## Breathing tones
 `breathingTones` is one more saved display setting (off by default; saved only while "Remember on this device" is on; erased by "Forget me" and Emergency Exit). It is shared by three switches, so it lives in `src/lib/deviceMemory.ts`. Nothing about it is counted or sent.
 
+`gemKaleidoscope` is another saved display setting (off by default; saved only while "Remember on this device" is on; erased by "Forget me" and Emergency Exit). It is shared by the switch in the accessibility panel ("Gem Kaleidoscope") and the gem, and lives in `src/lib/deviceMemory.ts`. The stone holds still when the device asks for reduced motion, whatever it says.
+
 `breathingSound` (harp, bowls, chord or scale; harp by default) is the style the tones are played in, kept and erased the same way.

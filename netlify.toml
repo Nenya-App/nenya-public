@@ -32,6 +32,13 @@
   status = 200
   force = true
 
+# /cell is partner practice's own page (cell/index.html), rewritten the same way as /coach. Not a rate-limit rule.
+[[redirects]]
+  from = "/cell"
+  to = "/cell/index.html"
+  status = 200
+  force = true
+
 # Rule 1: app entry point. Caps how many fresh app loads a single IP can
 # request per minute -- the main "someone is hammering the site" vector.
 [[redirects]]
@@ -131,6 +138,19 @@
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
 
+# ── Partner practice, while it is being tested ──────────────────────────────
+[[headers]]
+  for = "/cell/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+# ── The design bench ────────────────────────────────────────────────────────
+# /bench, for tuning the logo's gem and orbits side by side. Not linked from anywhere, and kept out of search results.
+[[headers]]
+  for = "/bench/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
 # ── Caching ─────────────────────────────────────────────────────────────────
 # By default Netlify tells browsers to re-check every file on every visit. These rules let returning
 # visitors keep the files that never change under the same name, so a second visit loads almost
@@ -166,3 +186,8 @@
   for = "/pdf-assets/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
+
+# The screening function loads the ONNX runtime (WebAssembly) and a tokenizer from node_modules at run time: ship those packages whole instead of bundling them.
+[functions.screen]
+  external_node_modules = ["onnxruntime-web", "@huggingface/tokenizers"]
+  node_bundler = "esbuild"

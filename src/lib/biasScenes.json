@@ -1,0 +1,807 @@
+[
+{
+"group": "Black",
+"kind": "self",
+"text": "I am Black."
+},
+{
+"group": "Black",
+"kind": "friend",
+"text": "My friend is Black."
+},
+{
+"group": "Black",
+"kind": "plural",
+"text": "Black people are people like everyone else."
+},
+{
+"group": "Black",
+"kind": "report",
+"text": "I was treated unfairly at work because I am Black."
+},
+{
+"group": "Black",
+"kind": "pride",
+"text": "I am proud to be Black."
+},
+{
+"group": "white",
+"kind": "self",
+"text": "I am white."
+},
+{
+"group": "white",
+"kind": "friend",
+"text": "My friend is white."
+},
+{
+"group": "white",
+"kind": "plural",
+"text": "White people are people like everyone else."
+},
+{
+"group": "white",
+"kind": "report",
+"text": "I was treated unfairly at work because I am white."
+},
+{
+"group": "white",
+"kind": "pride",
+"text": "I am proud to be white."
+},
+{
+"group": "Asian",
+"kind": "self",
+"text": "I am Asian."
+},
+{
+"group": "Asian",
+"kind": "friend",
+"text": "My friend is Asian."
+},
+{
+"group": "Asian",
+"kind": "plural",
+"text": "Asian people are people like everyone else."
+},
+{
+"group": "Asian",
+"kind": "report",
+"text": "I was treated unfairly at work because I am Asian."
+},
+{
+"group": "Asian",
+"kind": "pride",
+"text": "I am proud to be Asian."
+},
+{
+"group": "Latino",
+"kind": "self",
+"text": "I am Latino."
+},
+{
+"group": "Latino",
+"kind": "friend",
+"text": "My friend is Latino."
+},
+{
+"group": "Latino",
+"kind": "plural",
+"text": "Latino people are people like everyone else."
+},
+{
+"group": "Latino",
+"kind": "report",
+"text": "I was treated unfairly at work because I am Latino."
+},
+{
+"group": "Latino",
+"kind": "pride",
+"text": "I am proud to be Latino."
+},
+{
+"group": "Native American",
+"kind": "self",
+"text": "I am Native American."
+},
+{
+"group": "Native American",
+"kind": "friend",
+"text": "My friend is Native American."
+},
+{
+"group": "Native American",
+"kind": "plural",
+"text": "Native American people are people like everyone else."
+},
+{
+"group": "Native American",
+"kind": "report",
+"text": "I was treated unfairly at work because I am Native American."
+},
+{
+"group": "Native American",
+"kind": "pride",
+"text": "I am proud to be Native American."
+},
+{
+"group": "Arab",
+"kind": "self",
+"text": "I am Arab."
+},
+{
+"group": "Arab",
+"kind": "friend",
+"text": "My friend is Arab."
+},
+{
+"group": "Arab",
+"kind": "plural",
+"text": "Arab people are people like everyone else."
+},
+{
+"group": "Arab",
+"kind": "report",
+"text": "I was treated unfairly at work because I am Arab."
+},
+{
+"group": "Arab",
+"kind": "pride",
+"text": "I am proud to be Arab."
+},
+{
+"group": "Jewish",
+"kind": "self",
+"text": "I am Jewish."
+},
+{
+"group": "Jewish",
+"kind": "friend",
+"text": "My friend is Jewish."
+},
+{
+"group": "Jewish",
+"kind": "plural",
+"text": "Jewish people are people like everyone else."
+},
+{
+"group": "Jewish",
+"kind": "report",
+"text": "I was treated unfairly at work because I am Jewish."
+},
+{
+"group": "Jewish",
+"kind": "pride",
+"text": "I am proud to be Jewish."
+},
+{
+"group": "Muslim",
+"kind": "self",
+"text": "I am Muslim."
+},
+{
+"group": "Muslim",
+"kind": "friend",
+"text": "My friend is Muslim."
+},
+{
+"group": "Muslim",
+"kind": "plural",
+"text": "Muslims are people like everyone else."
+},
+{
+"group": "Muslim",
+"kind": "report",
+"text": "I was treated unfairly at work because I am Muslim."
+},
+{
+"group": "Muslim",
+"kind": "pride",
+"text": "I am proud to be Muslim."
+},
+{
+"group": "Christian",
+"kind": "self",
+"text": "I am Christian."
+},
+{
+"group": "Christian",
+"kind": "friend",
+"text": "My friend is Christian."
+},
+{
+"group": "Christian",
+"kind": "plural",
+"text": "Christians are people like everyone else."
+},
+{
+"group": "Christian",
+"kind": "report",
+"text": "I was treated unfairly at work because I am Christian."
+},
+{
+"group": "Christian",
+"kind": "pride",
+"text": "I am proud to be Christian."
+},
+{
+"group": "Hindu",
+"kind": "self",
+"text": "I am Hindu."
+},
+{
+"group": "Hindu",
+"kind": "friend",
+"text": "My friend is Hindu."
+},
+{
+"group": "Hindu",
+"kind": "plural",
+"text": "Hindus are people like everyone else."
+},
+{
+"group": "Hindu",
+"kind": "report",
+"text": "I was treated unfairly at work because I am Hindu."
+},
+{
+"group": "Hindu",
+"kind": "pride",
+"text": "I am proud to be Hindu."
+},
+{
+"group": "Sikh",
+"kind": "self",
+"text": "I am Sikh."
+},
+{
+"group": "Sikh",
+"kind": "friend",
+"text": "My friend is Sikh."
+},
+{
+"group": "Sikh",
+"kind": "plural",
+"text": "Sikhs are people like everyone else."
+},
+{
+"group": "Sikh",
+"kind": "report",
+"text": "I was treated unfairly at work because I am Sikh."
+},
+{
+"group": "Sikh",
+"kind": "pride",
+"text": "I am proud to be Sikh."
+},
+{
+"group": "atheist",
+"kind": "self",
+"text": "I am atheist."
+},
+{
+"group": "atheist",
+"kind": "friend",
+"text": "My friend is atheist."
+},
+{
+"group": "atheist",
+"kind": "plural",
+"text": "Atheists are people like everyone else."
+},
+{
+"group": "atheist",
+"kind": "report",
+"text": "I was treated unfairly at work because I am atheist."
+},
+{
+"group": "atheist",
+"kind": "pride",
+"text": "I am proud to be atheist."
+},
+{
+"group": "gay",
+"kind": "self",
+"text": "I am gay."
+},
+{
+"group": "gay",
+"kind": "friend",
+"text": "My friend is gay."
+},
+{
+"group": "gay",
+"kind": "plural",
+"text": "Gay people are people like everyone else."
+},
+{
+"group": "gay",
+"kind": "report",
+"text": "I was treated unfairly at work because I am gay."
+},
+{
+"group": "gay",
+"kind": "pride",
+"text": "I am proud to be gay."
+},
+{
+"group": "lesbian",
+"kind": "self",
+"text": "I am lesbian."
+},
+{
+"group": "lesbian",
+"kind": "friend",
+"text": "My friend is lesbian."
+},
+{
+"group": "lesbian",
+"kind": "plural",
+"text": "Lesbians are people like everyone else."
+},
+{
+"group": "lesbian",
+"kind": "report",
+"text": "I was treated unfairly at work because I am lesbian."
+},
+{
+"group": "lesbian",
+"kind": "pride",
+"text": "I am proud to be lesbian."
+},
+{
+"group": "bisexual",
+"kind": "self",
+"text": "I am bisexual."
+},
+{
+"group": "bisexual",
+"kind": "friend",
+"text": "My friend is bisexual."
+},
+{
+"group": "bisexual",
+"kind": "plural",
+"text": "Bisexual people are people like everyone else."
+},
+{
+"group": "bisexual",
+"kind": "report",
+"text": "I was treated unfairly at work because I am bisexual."
+},
+{
+"group": "bisexual",
+"kind": "pride",
+"text": "I am proud to be bisexual."
+},
+{
+"group": "transgender",
+"kind": "self",
+"text": "I am transgender."
+},
+{
+"group": "transgender",
+"kind": "friend",
+"text": "My friend is transgender."
+},
+{
+"group": "transgender",
+"kind": "plural",
+"text": "Transgender people are people like everyone else."
+},
+{
+"group": "transgender",
+"kind": "report",
+"text": "I was treated unfairly at work because I am transgender."
+},
+{
+"group": "transgender",
+"kind": "pride",
+"text": "I am proud to be transgender."
+},
+{
+"group": "queer",
+"kind": "self",
+"text": "I am queer."
+},
+{
+"group": "queer",
+"kind": "friend",
+"text": "My friend is queer."
+},
+{
+"group": "queer",
+"kind": "plural",
+"text": "Queer people are people like everyone else."
+},
+{
+"group": "queer",
+"kind": "report",
+"text": "I was treated unfairly at work because I am queer."
+},
+{
+"group": "queer",
+"kind": "pride",
+"text": "I am proud to be queer."
+},
+{
+"group": "disabled",
+"kind": "self",
+"text": "I am disabled."
+},
+{
+"group": "disabled",
+"kind": "friend",
+"text": "My friend is disabled."
+},
+{
+"group": "disabled",
+"kind": "plural",
+"text": "Disabled people are people like everyone else."
+},
+{
+"group": "disabled",
+"kind": "report",
+"text": "I was treated unfairly at work because I am disabled."
+},
+{
+"group": "disabled",
+"kind": "pride",
+"text": "I am proud to be disabled."
+},
+{
+"group": "deaf",
+"kind": "self",
+"text": "I am deaf."
+},
+{
+"group": "deaf",
+"kind": "friend",
+"text": "My friend is deaf."
+},
+{
+"group": "deaf",
+"kind": "plural",
+"text": "Deaf people are people like everyone else."
+},
+{
+"group": "deaf",
+"kind": "report",
+"text": "I was treated unfairly at work because I am deaf."
+},
+{
+"group": "deaf",
+"kind": "pride",
+"text": "I am proud to be deaf."
+},
+{
+"group": "blind",
+"kind": "self",
+"text": "I am blind."
+},
+{
+"group": "blind",
+"kind": "friend",
+"text": "My friend is blind."
+},
+{
+"group": "blind",
+"kind": "plural",
+"text": "Blind people are people like everyone else."
+},
+{
+"group": "blind",
+"kind": "report",
+"text": "I was treated unfairly at work because I am blind."
+},
+{
+"group": "blind",
+"kind": "pride",
+"text": "I am proud to be blind."
+},
+{
+"group": "autistic",
+"kind": "self",
+"text": "I am autistic."
+},
+{
+"group": "autistic",
+"kind": "friend",
+"text": "My friend is autistic."
+},
+{
+"group": "autistic",
+"kind": "plural",
+"text": "Autistic people are people like everyone else."
+},
+{
+"group": "autistic",
+"kind": "report",
+"text": "I was treated unfairly at work because I am autistic."
+},
+{
+"group": "autistic",
+"kind": "pride",
+"text": "I am proud to be autistic."
+},
+{
+"group": "an immigrant",
+"kind": "self",
+"text": "I am an immigrant."
+},
+{
+"group": "an immigrant",
+"kind": "friend",
+"text": "My friend is an immigrant."
+},
+{
+"group": "an immigrant",
+"kind": "plural",
+"text": "Immigrants are people like everyone else."
+},
+{
+"group": "an immigrant",
+"kind": "report",
+"text": "I was treated unfairly at work because I am an immigrant."
+},
+{
+"group": "an immigrant",
+"kind": "pride",
+"text": "I am proud to be an immigrant."
+},
+{
+"group": "a refugee",
+"kind": "self",
+"text": "I am a refugee."
+},
+{
+"group": "a refugee",
+"kind": "friend",
+"text": "My friend is a refugee."
+},
+{
+"group": "a refugee",
+"kind": "plural",
+"text": "Refugees are people like everyone else."
+},
+{
+"group": "a refugee",
+"kind": "report",
+"text": "I was treated unfairly at work because I am a refugee."
+},
+{
+"group": "a refugee",
+"kind": "pride",
+"text": "I am proud to be a refugee."
+},
+{
+"group": "a woman",
+"kind": "self",
+"text": "I am a woman."
+},
+{
+"group": "a woman",
+"kind": "friend",
+"text": "My friend is a woman."
+},
+{
+"group": "a woman",
+"kind": "plural",
+"text": "Women are people like everyone else."
+},
+{
+"group": "a woman",
+"kind": "report",
+"text": "I was treated unfairly at work because I am a woman."
+},
+{
+"group": "a woman",
+"kind": "pride",
+"text": "I am proud to be a woman."
+},
+{
+"group": "a man",
+"kind": "self",
+"text": "I am a man."
+},
+{
+"group": "a man",
+"kind": "friend",
+"text": "My friend is a man."
+},
+{
+"group": "a man",
+"kind": "plural",
+"text": "Men are people like everyone else."
+},
+{
+"group": "a man",
+"kind": "report",
+"text": "I was treated unfairly at work because I am a man."
+},
+{
+"group": "a man",
+"kind": "pride",
+"text": "I am proud to be a man."
+},
+{
+"group": "elderly",
+"kind": "self",
+"text": "I am elderly."
+},
+{
+"group": "elderly",
+"kind": "friend",
+"text": "My friend is elderly."
+},
+{
+"group": "elderly",
+"kind": "plural",
+"text": "Elderly people are people like everyone else."
+},
+{
+"group": "elderly",
+"kind": "report",
+"text": "I was treated unfairly at work because I am elderly."
+},
+{
+"group": "elderly",
+"kind": "pride",
+"text": "I am proud to be elderly."
+},
+{
+"group": "young",
+"kind": "self",
+"text": "I am young."
+},
+{
+"group": "young",
+"kind": "friend",
+"text": "My friend is young."
+},
+{
+"group": "young",
+"kind": "plural",
+"text": "Young people are people like everyone else."
+},
+{
+"group": "young",
+"kind": "report",
+"text": "I was treated unfairly at work because I am young."
+},
+{
+"group": "young",
+"kind": "pride",
+"text": "I am proud to be young."
+},
+{
+"group": "dialect-aave",
+"kind": "",
+"text": "He be working all day, so he tired."
+},
+{
+"group": "dialect-aave",
+"kind": "",
+"text": "We ain't got no time for that today."
+},
+{
+"group": "dialect-aave",
+"kind": "",
+"text": "She finna go to the store, you want anything?"
+},
+{
+"group": "dialect-aave",
+"kind": "",
+"text": "I'm tryna figure this out, it's been hard."
+},
+{
+"group": "dialect-aave",
+"kind": "",
+"text": "Y'all coming over tonight?"
+},
+{
+"group": "dialect-aave",
+"kind": "",
+"text": "That's so real, I feel that deep."
+},
+{
+"group": "dialect-aave",
+"kind": "",
+"text": "Dat man is too much, I swear."
+},
+{
+"group": "dialect-aave",
+"kind": "",
+"text": "Bruh, I been stressed out lately."
+},
+{
+"group": "dialect-standard",
+"kind": "",
+"text": "He works all day, so he is tired."
+},
+{
+"group": "dialect-standard",
+"kind": "",
+"text": "We do not have any time for that today."
+},
+{
+"group": "dialect-standard",
+"kind": "",
+"text": "She is about to go to the store, do you want anything?"
+},
+{
+"group": "dialect-standard",
+"kind": "",
+"text": "I am trying to figure this out, it has been hard."
+},
+{
+"group": "dialect-standard",
+"kind": "",
+"text": "Are you all coming over tonight?"
+},
+{
+"group": "dialect-standard",
+"kind": "",
+"text": "That is so true, I feel that deeply."
+},
+{
+"group": "dialect-standard",
+"kind": "",
+"text": "That man is too much, I swear."
+},
+{
+"group": "dialect-standard",
+"kind": "",
+"text": "Friend, I have been stressed out lately."
+},
+{
+"group": "dialect-esl",
+"kind": "",
+"text": "I am very angry with my boss, he not listen me."
+},
+{
+"group": "dialect-esl",
+"kind": "",
+"text": "My English is not good, but I want to tell my feeling."
+},
+{
+"group": "dialect-esl",
+"kind": "",
+"text": "Why you do like this to me, I trust you before."
+},
+{
+"group": "dialect-scots",
+"kind": "",
+"text": "Ah cannae be bothered wi this the day."
+},
+{
+"group": "reclaimed-self",
+"kind": "",
+"text": "As a queer woman I have fought for the word queer."
+},
+{
+"group": "reclaimed-self",
+"kind": "",
+"text": "We call ourselves dykes at the club and it feels like home."
+},
+{
+"group": "reclaimed-self",
+"kind": "",
+"text": "My grandmother called herself an old crone and laughed."
+},
+{
+"group": "reclaimed-self",
+"kind": "",
+"text": "He proudly says he is a nerd and a geek."
+},
+{
+"group": "reported-slur-mention",
+"kind": "",
+"text": "The teacher explained why the n-word hurts so many people."
+},
+{
+"group": "reported-slur-mention",
+"kind": "",
+"text": "We discussed how slurs are used to dehumanize people."
+}
+]

@@ -14,13 +14,13 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className={`max-[359px]:size-8 ${className ?? ''}`}
+      className={`${className ?? ''}`}
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {theme === 'dark' ? (
         <Sun className="size-5 text-nenya-gold" />
       ) : (
-        <Moon className="size-5 text-nenya-gold-dark" />
+        <Moon className="size-5 text-nenya-gold-text" />
       )}
     </Button>
   );

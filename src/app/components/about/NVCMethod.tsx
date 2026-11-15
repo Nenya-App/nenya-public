@@ -52,7 +52,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-primary/30">
                 <div className="flex items-start gap-4">
                   <div className="size-12 rounded-full bg-nenya-accent-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Eye className="size-6 text-nenya-accent-warm" />
+                    <Eye className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-foreground">1. Observation</h3>
@@ -66,7 +66,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-secondary/30">
                 <div className="flex items-start gap-4">
                   <div className="size-12 rounded-full bg-nenya-accent-secondary/10 flex items-center justify-center flex-shrink-0">
-                    <Heart className="size-6 text-nenya-accent-warm" />
+                    <Heart className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-foreground">2. Feelings</h3>
@@ -80,7 +80,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-metallic/30">
                 <div className="flex items-start gap-4">
                   <div className="size-12 rounded-full bg-nenya-accent-metallic/10 flex items-center justify-center flex-shrink-0">
-                    <Lightbulb className="size-6 text-nenya-accent-warm" />
+                    <Lightbulb className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-foreground">3. Needs</h3>
@@ -94,7 +94,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               <Card className="p-6 bg-gradient-to-br from-background-secondary to-background border-nenya-accent-warm/30">
                 <div className="flex items-start gap-4">
                   <div className="size-12 rounded-full bg-nenya-accent-warm/10 flex items-center justify-center flex-shrink-0">
-                    <MessageCircle className="size-6 text-nenya-accent-warm" />
+                    <MessageCircle className="size-6 text-nenya-gold-text dark:text-nenya-accent-warm" />
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-foreground">4. Requests</h3>
@@ -190,7 +190,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                 href="https://www.cnvc.org/store/feelings-and-needs-inventory"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline underline-offset-4 hover:text-nenya-gold-dark"
+                className="underline underline-offset-4 hover:text-nenya-gold-text"
               >
                 Feelings and Needs Inventory
               </a>
@@ -206,15 +206,15 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                   To deepen your understanding of the principles behind Nenya, we encourage you to explore the work of these foundational thinkers and practitioners. Their work on conflict, communication, and systems thinking directly informs the NVC+ framework.
                 </p>
                 <div className="space-y-3">
-                  <Card className="p-4 bg-background/60 border-border/60">
+                  <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
-                      <ExternalLink className="size-4 text-nenya-gold-dark mt-1 flex-shrink-0" />
+                      <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
                       <div className="space-y-1">
                         <a 
                           href="https://www.yvetteerasmus.com" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-dark transition-colors"
+                          className="hover:text-nenya-gold-text transition-colors"
                         >
                           <h4 className="text-sm">YvetteErasmus.com</h4>
                         </a>
@@ -224,15 +224,15 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                       </div>
                     </div>
                   </Card>
-                  <Card className="p-4 bg-background/60 border-border/60">
+                  <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
-                      <ExternalLink className="size-4 text-nenya-gold-dark mt-1 flex-shrink-0" />
+                      <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
                       <div className="space-y-1">
                         <a 
                           href="https://www.mikikashtan.org" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-dark transition-colors"
+                          className="hover:text-nenya-gold-text transition-colors"
                         >
                           <h4 className="text-sm">MikiKashtan.org</h4>
                         </a>
@@ -242,15 +242,15 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                       </div>
                     </div>
                   </Card>
-                  <Card className="p-4 bg-background/60 border-border/60">
+                  <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
-                      <ExternalLink className="size-4 text-nenya-gold-dark mt-1 flex-shrink-0" />
+                      <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
                       <div className="space-y-1">
                         <a 
                           href="https://empathyfactor.com/" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-dark transition-colors"
+                          className="hover:text-nenya-gold-text transition-colors"
                         >
                           <h4 className="text-sm">EmpathyFactor.com - Marie Miyashiro</h4>
                         </a>
@@ -272,7 +272,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                   For authentic NVC training and certification, we recommend these trusted organizations:
                 </p>
                 <div className="space-y-3">
-                  <Card className="p-4 bg-background/60 border-border/60">
+                  <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
                       <ExternalLink className="size-4 text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0" />
                       <div className="space-y-1">
@@ -280,7 +280,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                           href="https://www.cnvc.org" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-dark transition-colors"
+                          className="hover:text-nenya-gold-text transition-colors"
                         >
                           <h4 className="text-sm">CNVC.org (Center for Nonviolent Communication)</h4>
                         </a>
@@ -290,7 +290,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                       </div>
                     </div>
                   </Card>
-                  <Card className="p-4 bg-background/60 border-border/60">
+                  <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
                       <ExternalLink className="size-4 text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0" />
                       <div className="space-y-1">
@@ -298,7 +298,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                           href="https://nvctraining.com" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-dark transition-colors"
+                          className="hover:text-nenya-gold-text transition-colors"
                         >
                           <h4 className="text-sm">NVC Academy (Online Training)</h4>
                         </a>

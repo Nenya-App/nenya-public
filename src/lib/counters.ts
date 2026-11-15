@@ -4,11 +4,16 @@
 import { capDay, type CounterStore } from './dailyCap.ts';
 
 /** Why a coach turn was refused. A code, never message text. */
-export const BLOCK_REASONS = ['manipulation', 'context', 'crisis', 'cap', 'ip'] as const;
+export const BLOCK_REASONS = ['manipulation', 'context', 'crisis', 'cap', 'ip', 'form.short', 'form.unclear', 'region'] as const;
 
 export const FIXED_EVENTS = [
   'coach.turn.sent', // a well-formed message reached the function
   'coach.turn.answered', // the message went to the model and a reply came back
+  'coach.sealed.attested', // sealed mode: a browser was given an attestation to check (docs/ghost-footprint-stack.md)
+  'coach.sealed.turn.sent', // sealed mode: an encrypted message reached the function (it cannot read it)
+  'coach.sealed.turn.answered', // sealed mode: the encrypted reply was passed back
+  'cell.opened', // partner practice: a two-person encrypted mailbox was opened (no content, no code)
+  'cell.report.verified', // partner practice: a reported message's franking check passed
   'coach.turn.hostile.abuse', // the message was hostile toward the coach (contempt, insults, dares): the coach was told how to answer, a count and no content
   'coach.turn.hostile.critique', // the message was sharp feedback on the coach's reply: same
   'coach.turn.hostile.thanks-added', // the site opened a reply to critique with its thank-you
@@ -18,6 +23,35 @@ export const FIXED_EVENTS = [
   'coach.conversation.finished', // the last exchange (the fifth) was answered
   'coach.report.verified', // a signed transcript sent to us passed the signature check
   'coach.report.rejected', // one did not (a code, never the content)
+  'coach.report.alert-failed', // a transcript was kept but the owner's email alert could not be sent
+  'transcript.deleted', // a transcript's copies were deleted at the end of the time its owner chose
+  'transcript.needs-manual-deletion', // a deletion was due but did not go through (listed for the owner)
+  'coach.offer.slur', // an educational card was offered (counts only, by kind of language; nothing about the words)
+  'coach.offer.dehumanizing-metaphor',
+  'coach.offer.dehumanizing-phrase',
+  'coach.offer.coded-term',
+  'coach.offer.harassing-insult',
+  'coach.offer.ai-insult',
+  // The coach's own stance, counted: a plain statement added to a reply (COACH_VALUES), the steering note given while a conversation carries contempt for a group or a call to harm one, and stacked questions.
+  'coach.values.challenge',
+  'coach.challenge.note.contempt',
+  'coach.challenge.note.violence',
+  'coach.challenge.note.soft',
+  'coach.guard.mirror', // a reply mirrored the feeling during contempt or a call to harm and was asked for again
+  'coach.guard.mirror.repaired', // it still did, and the mirroring sentences were taken out
+  'coach.screen.acted.contempt', // the screening model (COACH_SCREEN=on) changed what the list alone would have done
+  'coach.screen.acted.soft',
+  'coach.turn.multi-question',
+  // "This was a mistake": a person said a check was wrong, by kind (the coach stated its position; a card was offered; a message was asked to be rewritten). A count only.
+  'coach.mistake.challenge',
+  'coach.mistake.offer',
+  'coach.mistake.form',
+  // The screening model in shadow mode (docs/coach-screening-flow-scope.md): a count per band, whether the phrase matcher also acted, and how often the model could not answer in time. Counts only: no message, no score.
+  'coach.screen.unavailable',
+  'coach.screen.band.high',
+  'coach.screen.band.mid',
+  'coach.screen.band.low',
+  ...(['high', 'mid', 'low'] as const).flatMap((b) => [`coach.screen.vs-list.${b}.list`, `coach.screen.vs-list.${b}.nolist`]),
 ] as const;
 
 /** The screens a page view can be counted for (the app's own screen ids; the About pages count together as 'about'). */

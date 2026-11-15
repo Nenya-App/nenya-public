@@ -43,7 +43,7 @@ const PATTERNS: RegExp[] = [
   /\bmessage from (?:the )?(?:developer|admin|system|anthropic|venice|openai)\b/,
   // Asking for output that has nothing to do with reflection
   /\b(?:translate|encode|decode)\b[^.]{0,30}\b(?:base64|rot13|hex|binary|morse)\b/,
-  /\bwrite (?:me )?(?:a |some )?(?:code|script|python|javascript|sql|malware|exploit)\b/,
+  /\bwrite (?:me )?(?:a |some )?(?:malware|exploit)\b/, // plain code requests are not manipulation: the lane guard (laneGuard.ts) answers them kindly
 ];
 
 /** True if the text looks like an attempt to manipulate the coach. */

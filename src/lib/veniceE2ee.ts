@@ -14,8 +14,10 @@
 // describe it as end-to-end encryption from the visitor's device.
 //
 // Attestation: we check what Venice reports (verified, our nonce echoed back, a signing key present, no debug
-// flag). We do not parse the Intel TDX quote or the NVIDIA payload ourselves, so we rely on Venice's own
-// verification of the enclave.
+// flag), and then the hardware evidence itself (src/lib/enclaveCheck.ts: Intel's signatures up to the pinned root, the
+// key and our nonce in the quote, which code runs). COACH_HARDWARE_CHECK sets what a failed hardware check does here:
+// "report" (the default) logs it and carries on with Venice's own verification, "enforce" refuses the key, "off" skips
+// it. The browser's sealed mode always enforces it, whatever this is set to.
 //
 // A short memory of the result: asking Venice for an attestation on every message hit Venice's rate limit for that step
 // (each coach turn made two requests). So the verified model key is kept in this function's memory for a few minutes
@@ -31,6 +33,7 @@
 //    dropped and the request is repeated once with a fresh attestation.
 
 import { createCipheriv, createDecipheriv, createECDH, hkdfSync, randomBytes } from 'node:crypto';
+import { checkHardware } from './enclaveCheck.ts';
 
 const HKDF_INFO = Buffer.from('ecdsa_encryption');
 const MIN_ENCRYPTED_HEX = 186; // ephemeral key (65) + nonce (12) + tag (16) = 93 bytes
@@ -137,6 +140,20 @@ export interface AttestationPolicy {
   /** How old a stored key may be and still be used when the attestation step is only rate limited or briefly down (ms). */
   staleMs: number;
   now: () => number;
+  /** What a failed hardware check does: 'report' (log, carry on; the default), 'enforce' (refuse the key) or 'off'. */
+  hardware?: HardwareMode;
+}
+
+export type HardwareMode = 'report' | 'enforce' | 'off';
+export const hardwareModeFrom = (v: string | undefined): HardwareMode => (v === 'enforce' || v === 'off' ? v : 'report');
+
+/** Runs the hardware check on a report whose basic checks passed. Throws only in 'enforce' mode. */
+async function hardwareGate(report: AttestationReport, key: string, nonce: string, mode: HardwareMode = 'report'): Promise<void> {
+  if (mode === 'off') return;
+  const hw = await checkHardware(report, key, nonce);
+  if (hw.ok === true) return;
+  if (mode === 'enforce') throw new E2eeError('attestation', { detail: 'hardware: ' + hw.failed });
+  console.warn(`coach: the enclave hardware check did not pass (${hw.failed}); carrying on with Venice's own verification (COACH_HARDWARE_CHECK=report)`);
 }
 
 const secondsFromEnv = (v: string | undefined, fallback: number): number => {
@@ -148,7 +165,7 @@ const secondsFromEnv = (v: string | undefined, fallback: number): number => {
 export function attestationPolicyFromEnv(env: Record<string, string | undefined> = process.env): AttestationPolicy {
   const ttl = Math.min(86400, secondsFromEnv(env.COACH_E2EE_ATTESTATION_TTL_S, 300));
   const stale = Math.min(86400, Math.max(ttl, secondsFromEnv(env.COACH_E2EE_ATTESTATION_STALE_S, 900)));
-  return { ttlMs: ttl * 1000, staleMs: ttl === 0 ? 0 : stale * 1000, now: () => Date.now() };
+  return { ttlMs: ttl * 1000, staleMs: ttl === 0 ? 0 : stale * 1000, now: () => Date.now(), hardware: hardwareModeFrom(env.COACH_HARDWARE_CHECK) };
 }
 
 const keyMemory = new Map<string, { key: string; at: number }>();
@@ -168,22 +185,18 @@ const onlyBusy = (e: unknown): boolean => {
 };
 
 /** Fetch and check the enclave's attestation; returns the key to encrypt to. */
-async function attest(o: Required<Pick<E2eeChatOptions, 'apiKey' | 'model' | 'baseUrl'>> & { fetchImpl: typeof fetch; signal?: AbortSignal }): Promise<string> {
+async function attest(o: Required<Pick<E2eeChatOptions, 'apiKey' | 'model' | 'baseUrl'>> & { fetchImpl: typeof fetch; signal?: AbortSignal; hardware?: HardwareMode }): Promise<string> {
   const nonce = randomBytes(32).toString('hex'); // 32 bytes, as the providers require
   const res = await o.fetchImpl(`${o.baseUrl}/tee/attestation?model=${encodeURIComponent(o.model)}&nonce=${nonce}`, {
     headers: { Authorization: `Bearer ${o.apiKey}` },
     signal: o.signal,
   });
   if (!res.ok) throw new E2eeError('attestation', { status: res.status, detail: await errorDetail(res) });
-  const a = (await res.json()) as Record<string, unknown>;
-  if (a.verified !== true) throw new E2eeError('attestation');
-  if (a.nonce !== nonce) throw new E2eeError('nonce');
-  // Best effort: refuse a report that says it came from a debug enclave. (The guide asks for this check but
-  // does not name the field, so look at the likely ones.)
-  if (a.debug === true || a.debug_mode === true || a.debuggable === true) throw new E2eeError('attestation');
-  const key = (a.signing_key ?? a.signing_public_key) as unknown;
-  if (typeof key !== 'string' || !key) throw new E2eeError('key');
-  publicKeyBytes(key); // throws on a malformed key
+  // Verified, our nonce echoed back, not a debug enclave (the guide asks for this check but does not name the field, so the
+  // likely ones are checked), and a well-formed key: see checkReport below.
+  const report = (await res.json()) as AttestationReport;
+  const key = checkReport(report, nonce);
+  await hardwareGate(report, key, nonce, o.hardware);
   return key;
 }
 
@@ -200,7 +213,7 @@ async function modelKeyFor(
   // Requests that arrive together share one attestation instead of each making their own.
   let pending = policy.ttlMs > 0 ? keyInFlight.get(o.model) : undefined;
   if (!pending) {
-    pending = attest({ ...o, signal: o.signal ?? AbortSignal.timeout(15000) }).then(
+    pending = attest({ ...o, signal: o.signal ?? AbortSignal.timeout(15000), hardware: policy.hardware }).then(
       (key) => {
         if (policy.ttlMs > 0) keyMemory.set(o.model, { key, at: policy.now() });
         return key;
@@ -302,4 +315,133 @@ async function chatWithKey(opts: E2eeChatOptions, modelKey: string, fetchImpl: t
   if (pending) handle(pending);
   if (!content) throw new E2eeError('format');
   return { content, finishReason };
+}
+
+// ── Sealed mode: the visitor's browser encrypts (docs/ghost-footprint-stack.md) ─────────────────────────────────────────
+// In sealed mode this function never sees the visitor's words. The browser asks for an attestation with its own nonce
+// (attestationFor), checks it itself (src/lib/sealedCoach.ts), and encrypts every message to the enclave's key. This
+// function then adds the system instruction, which it encrypts itself, and relays the request (sealedChat). The reply comes
+// back encrypted to the browser's one-time key, so it is passed along as the encrypted pieces it arrived in.
+
+const NONCE_HEX = /^[0-9a-f]{64}$/;
+/** The longest a single encrypted message may be (hex): 3000 characters of text at up to 4 bytes each, plus the envelope. */
+export const MAX_SEALED_HEX = (3000 * 4 + 93) * 2;
+const MAX_SEALED_RESPONSE_CHUNKS = 4000;
+
+export interface AttestationReport {
+  [field: string]: unknown;
+}
+
+/**
+ * An attestation fetched with the browser's own nonce, checked here as for the witnessed route, and returned whole so the
+ * browser can check it again. A key that passes is remembered (only the public key, as above).
+ */
+export async function attestationFor(o: { apiKey: string; model: string; nonce: string; baseUrl?: string; fetchImpl?: typeof fetch; signal?: AbortSignal; policy?: AttestationPolicy }): Promise<{ key: string; report: AttestationReport }> {
+  if (!NONCE_HEX.test(o.nonce)) throw new E2eeError('nonce');
+  const fetchImpl = o.fetchImpl ?? fetch;
+  const baseUrl = o.baseUrl ?? VENICE_BASE;
+  const res = await fetchImpl(`${baseUrl}/tee/attestation?model=${encodeURIComponent(o.model)}&nonce=${o.nonce}`, {
+    headers: { Authorization: `Bearer ${o.apiKey}` },
+    signal: o.signal ?? AbortSignal.timeout(15000),
+  });
+  if (!res.ok) throw new E2eeError('attestation', { status: res.status, detail: await errorDetail(res) });
+  const report = (await res.json()) as AttestationReport;
+  const key = checkReport(report, o.nonce);
+  const policy = o.policy ?? attestationPolicyFromEnv();
+  await hardwareGate(report, key, o.nonce, policy.hardware);
+  if (policy.ttlMs > 0) keyMemory.set(o.model, { key, at: policy.now() });
+  return { key, report };
+}
+
+/** The checks both sides run on a report. Returns the key to encrypt to. Shared with the browser (src/lib/sealedCoach.ts). */
+export function checkReport(a: AttestationReport, nonce: string): string {
+  if (a.verified !== true) throw new E2eeError('attestation');
+  if (a.nonce !== nonce) throw new E2eeError('nonce');
+  if (a.debug === true || a.debug_mode === true || a.debuggable === true) throw new E2eeError('attestation');
+  const key = (a.signing_key ?? a.signing_public_key) as unknown;
+  if (typeof key !== 'string' || !key) throw new E2eeError('key');
+  onCurve(key);
+  return key;
+}
+
+/** Throws unless the key is a real point on secp256k1 (the right length is not enough). */
+function onCurve(hex: string): void {
+  const probe = createECDH('secp256k1');
+  probe.generateKeys();
+  try {
+    probe.computeSecret(publicKeyBytes(hex));
+  } catch (e) {
+    throw e instanceof E2eeError ? e : new E2eeError('key');
+  }
+}
+
+const normKey = (hex: string): string => {
+  let h = hex.trim().toLowerCase();
+  if (h.startsWith('0x')) h = h.slice(2);
+  if (h.length === 128) h = '04' + h;
+  return h;
+};
+
+export interface SealedChatOptions {
+  apiKey: string;
+  model: string;
+  /** The enclave key the browser encrypted to. It must be the key this function has itself checked, or the request is refused. */
+  modelKey: string;
+  /** The browser's one-time public key (uncompressed secp256k1, hex): the reply is encrypted to it. */
+  clientKey: string;
+  /** Written here and encrypted here: the browser never sees it. */
+  systemText: string;
+  /** The conversation, every message already encrypted by the browser. */
+  messages: { role: 'user' | 'assistant'; content: string }[];
+  params?: Record<string, unknown>;
+  signal?: AbortSignal;
+  baseUrl?: string;
+  fetchImpl?: typeof fetch;
+  attestation?: AttestationPolicy;
+}
+
+/** One relayed request. Returns the reply as the encrypted pieces it arrived in (this function cannot read them). */
+export async function sealedChat(o: SealedChatOptions): Promise<{ chunks: string[]; finishReason?: string }> {
+  const fetchImpl = o.fetchImpl ?? fetch;
+  const baseUrl = o.baseUrl ?? VENICE_BASE;
+  onCurve(o.clientKey);
+  if (!o.messages.length || o.messages.some((m) => typeof m.content !== 'string' || m.content.length > MAX_SEALED_HEX || !looksEncrypted(m.content))) throw new E2eeError('format');
+  // Only ever encrypt our instruction to a key this function has checked itself: a page that sent its own key could
+  // otherwise read the private instruction.
+  const known = await modelKeyFor({ apiKey: o.apiKey, model: o.model, baseUrl, fetchImpl, signal: o.signal }, o.attestation ?? attestationPolicyFromEnv());
+  if (normKey(known.key) !== normKey(o.modelKey)) throw new E2eeError('key');
+  const messages = [{ role: 'system', content: encryptTo(known.key, o.systemText) }, ...o.messages];
+  const res = await fetchImpl(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    signal: o.signal,
+    headers: {
+      Authorization: `Bearer ${o.apiKey}`,
+      'Content-Type': 'application/json',
+      'X-Venice-TEE-Client-Pub-Key': normKey(o.clientKey),
+      'X-Venice-TEE-Model-Pub-Key': known.key,
+      'X-Venice-TEE-Signing-Algo': 'ecdsa',
+    },
+    body: JSON.stringify({ ...o.params, model: o.model, messages, stream: true }),
+  });
+  if (!res.ok || !res.body) throw new E2eeError('status', { status: res.status, detail: res.ok ? 'no response body' : await errorDetail(res) });
+  const chunks: string[] = [];
+  let finishReason: string | undefined;
+  const text = await res.text();
+  for (const line of text.split('\n')) {
+    if (!line.startsWith('data:')) continue;
+    const data = line.slice(5).trim();
+    if (!data || data === '[DONE]') continue;
+    try {
+      const chunk = JSON.parse(data) as { choices?: { delta?: { content?: string }; finish_reason?: string | null }[] };
+      const choice = chunk.choices?.[0];
+      if (choice?.finish_reason) finishReason = choice.finish_reason;
+      const piece = choice?.delta?.content;
+      if (piece) chunks.push(piece);
+    } catch {
+      /* a malformed chunk is skipped */
+    }
+    if (chunks.length > MAX_SEALED_RESPONSE_CHUNKS) throw new E2eeError('size');
+  }
+  if (!chunks.length) throw new E2eeError('format');
+  return { chunks, finishReason };
 }

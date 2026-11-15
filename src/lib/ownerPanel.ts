@@ -1,16 +1,17 @@
 // The owner's testing switches for the coach, kept in the owner's own browser (see deviceMemory.ts, docs/coach-testing.md):
 //   skipRest      skip the six-hour rest after a conversation (the existing nenya.coach.owner flag)
 //   distressText  'site' (follow the site's own setting), 'on' or 'off' for the sentences the site adds after a flagged reply
-//   instructions  'site', 'v1' (the live wording) or 'v2' (the new wording)
+//   instructions  'site', 'v1', 'v2' or 'v2.1' (src/lib/instructionsVersions.ts)
 // The two coach switches are sent with each message ONLY when the owner's token is also in this browser, and the coach honours them only
 // when it checks the token: a visitor who opens the panel can change nothing about how the coach behaves. Nothing here leaves the device
 // except that header and those two values.
+import { isInstructionsVersion, type InstructionsVersion } from './instructionsVersions.ts';
 import { OVERRIDES_KEY, OWNER_KEY, OWNER_TOKEN_KEY } from './deviceMemory.ts';
 
 export interface OwnerSettings {
   skipRest: boolean;
   distressText: 'site' | 'on' | 'off';
-  instructions: 'site' | 'v1' | 'v2';
+  instructions: 'site' | InstructionsVersion;
 }
 
 const get = (k: string): string | null => {
@@ -30,7 +31,7 @@ export function readSettings(): OwnerSettings {
   return {
     skipRest: get(OWNER_KEY) === '1',
     distressText: o.distressText === 'on' || o.distressText === 'off' ? o.distressText : 'site',
-    instructions: o.instructions === 'v1' || o.instructions === 'v2' ? o.instructions : 'site',
+    instructions: isInstructionsVersion(o.instructions) ? o.instructions : 'site',
   };
 }
 
@@ -46,7 +47,7 @@ export const saveToken = (token: string) => { const t = token.trim(); if (t) set
 export const clearOwner = () => { del(OWNER_TOKEN_KEY); del(OWNER_KEY); del(OVERRIDES_KEY); };
 
 /** What goes in a coach request: the switches that are set, and only if the owner's token is here too. */
-export function overridesForRequest(): { overrides?: { distressText?: 'on' | 'off'; instructions?: 'v1' | 'v2' } } {
+export function overridesForRequest(): { overrides?: { distressText?: 'on' | 'off'; instructions?: InstructionsVersion } } {
   if (!hasOwnerToken()) return {};
   const s = readSettings();
   const overrides = { ...(s.distressText !== 'site' ? { distressText: s.distressText } : {}), ...(s.instructions !== 'site' ? { instructions: s.instructions } : {}) };

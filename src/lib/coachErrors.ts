@@ -37,6 +37,7 @@ const BY_CODE: Record<string, string> = {
   off: 'The coach is switched off on this site right now.',
   config: 'The coach is not fully set up on this site yet.',
   origin: 'This web address is not allowed to use the coach.',
+  region: 'For now, the coach is available only to connections in the United States.',
   messages: 'The server could not read the message.',
   json: 'The server could not read the message.',
   session: 'The server could not read the message.',

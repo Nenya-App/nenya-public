@@ -21,12 +21,12 @@ export function SupportThisWork() {
       <Card className="p-8 bg-card/80 dark:bg-card/50 backdrop-blur-sm border-nenya-gold/30 space-y-6">
         <div className="flex justify-center">
           <div className="size-16 rounded-full bg-nenya-gold/20 flex items-center justify-center">
-            <Heart className="size-8 text-nenya-gold" />
+            <Heart className="size-8 text-nenya-gold-text dark:text-nenya-gold" />
           </div>
         </div>
 
         <div className="space-y-4 text-left">
-          <h3 className="text-2xl text-nenya-gold-light text-center">
+          <h3 className="text-2xl text-nenya-gold-text dark:text-nenya-gold-light text-center">
             What You're Supporting
           </h3>
           <p className="text-muted-foreground leading-relaxed">
@@ -53,7 +53,7 @@ export function SupportThisWork() {
 
         <Button
           size="lg"
-          className="gap-3 bg-nenya-gold hover:bg-nenya-gold-dark text-background-elevated px-8 py-6 text-lg w-full sm:w-auto"
+          className="gap-3 bg-nenya-gold hover:bg-nenya-gold-light text-primary-foreground px-8 py-6 text-lg w-full sm:w-auto"
           asChild
         >
           <a

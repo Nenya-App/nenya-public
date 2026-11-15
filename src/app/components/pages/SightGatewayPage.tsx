@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
+import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStages';
+import { GatewayProgress } from '../GatewayProgress';
 import { ColorNameSuggest } from '../ColorNameSuggest';
 import { PalettePanel } from '../PalettePanel';
 import type { GeneratedPalette } from '../../../lib/colorSchemes';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, Shuffle, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { ValarColorPicker } from '../ValarColorPicker';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
-import { Slider } from '../ui/slider';
+import { SnappingSlider } from '../ui/snapping-slider';
 import { UserColors } from '../../App';
 import { useTheme } from '../ThemeProvider';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
@@ -32,6 +35,12 @@ interface SightGatewayPageProps {
   totalGateways: number;
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
+  /** Colors a melody made first in the Sound gateway can offer as a starting point (null if none). */
+  melodyColors?: { color1: string; color2: string } | null;
+  /** True if the person chose, on the Sound page, to bring the melody's colors here: they are then the starting colors. */
+  melodyShared?: boolean;
+  /** Whether the Sound gateway is still to come in this session (so a kept palette can be marked for it). */
+  soundComesLater?: boolean;
 }
 
 const generateRandomColor = () => {
@@ -97,9 +106,11 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap }: SightGatewayPageProps) {
+export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap, melodyColors, melodyShared = false, soundComesLater = true }: SightGatewayPageProps) {
   const { theme } = useTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState<PairStage>('present');
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Step state: 'instructions' or 'selection'
   const [step, setStep] = useState<'instructions' | 'selection'>('instructions');
@@ -116,15 +127,16 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   }, [step]);
 
   // Set default colors based on theme: dark mode = white, light mode = black
-  const [color1, setColor1] = useState(theme === 'dark' ? '#FFFFFF' : '#000000');
-  const [color2, setColor2] = useState(theme === 'dark' ? '#FFFFFF' : '#000000');
+  // The usual start is white (dark mode) or black (light mode). If a melody was made first and the person chose to bring it here, its two colors are the start.
+  const [color1, setColor1] = useState(melodyShared && melodyColors ? melodyColors.color1 : theme === 'dark' ? '#FFFFFF' : '#000000');
+  const [color2, setColor2] = useState(melodyShared && melodyColors ? melodyColors.color2 : theme === 'dark' ? '#FFFFFF' : '#000000');
   const [color1Name, setColor1Name] = useState('');
   const [color2Name, setColor2Name] = useState('');
   const [generatedPalettes, setGeneratedPalettes] = useState<GeneratedPalette[]>([]);
   const [color1Qualities, setColor1Qualities] = useState<string[]>([]);
   const [color2Qualities, setColor2Qualities] = useState<string[]>([]);
-  const [color1Intensity, setColor1Intensity] = useState(50);
-  const [color2Intensity, setColor2Intensity] = useState(50);
+  const [color1Intensity, setColor1Intensity] = useState<number[]>(() => unsetSlider());
+  const [color2Intensity, setColor2Intensity] = useState<number[]>(() => unsetSlider());
   const [gradientDirection] = useState('to-right');
   const [activeColorPicker, setActiveColorPicker] = useState<'present' | 'potential' | null>(null);
   // bodyMapData/onUpdateBodyMap come from props -- shared App-level state
@@ -139,8 +151,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
     setColor2Name('');
     setColor1Qualities([]);
     setColor2Qualities([]);
-    setColor1Intensity(50);
-    setColor2Intensity(50);
+    setColor1Intensity(unsetSlider());
+    setColor2Intensity(unsetSlider());
     setGeneratedPalettes([]);
   };
 
@@ -154,8 +166,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
       color2Random: !color2Name.trim(),
       color1Qualities: color1Qualities.length > 0 ? color1Qualities : null,
       color2Qualities: color2Qualities.length > 0 ? color2Qualities : null,
-      color1Intensity,
-      color2Intensity,
+      color1Intensity: sliderValue(color1Intensity),
+      color2Intensity: sliderValue(color2Intensity),
       gradientDirection,
       generatedPalettes: generatedPalettes.length > 0 ? generatedPalettes : null,
     });
@@ -204,15 +216,13 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
             </Button>
 
             <div className="flex items-center gap-3">
-              <NenyaLogo size={32} />
+              <PanelLogo size={32} />
               <div className="text-center">
                 <h1 className="text-lg">
                   Sight - Chromesthesia
                   <GatewaySubtitleLink href="https://en.wikipedia.org/wiki/Chromesthesia" />
                 </h1>
-                <p className="text-xs text-muted-foreground">
-                  Gateway {currentIndex + 1} of {totalGateways}
-                </p>
+                <GatewayProgress index={currentIndex} total={totalGateways} />
               </div>
             </div>
 
@@ -243,9 +253,12 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       {INSTRUCTION_CARDS[instructionCardIndex].detail}
                     </p>
                     <div className="flex items-center justify-between pt-4">
-                      <p className="text-sm text-muted-foreground">
-                        {instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}
-                      </p>
+                      <div className="flex items-center gap-3">
+                        <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
+                          <ArrowLeft className="size-4" /> Back
+                        </Button>
+                        <p className="text-sm text-muted-foreground">{instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}</p>
+                      </div>
                       <Button variant="ghost" className="gap-2">
                         {instructionCardIndex < INSTRUCTION_CARDS.length - 1 ? (
                           <>
@@ -276,26 +289,53 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   <Shuffle className="size-4" />
                   Surprise Me
                 </Button>
+                {melodyColors && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => {
+                      setColor1(melodyColors.color1);
+                      setColor2(melodyColors.color2);
+                      setColor1Name('');
+                      setColor2Name('');
+                      setGeneratedPalettes([]);
+                    }}
+                    className="gap-2"
+                  >
+                    ♪ Start from my melody&rsquo;s colors
+                  </Button>
+                )}
               </div>
+              {melodyColors && (
+                <p className="text-center text-xs text-muted-foreground">
+                  {melodyShared ? 'You brought your melody here, so these two colors started from it (its first three notes and its last three). ' : 'You made a melody in the Sound gateway first. Its first three notes and its last three notes can give these two colors a starting point. '}Changing them here never changes your melody or what was recorded about it.
+                </p>
+              )}
 
               {/* Two Color Cards Side by Side */}
-              <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+              <div className="mx-auto w-full max-w-2xl">
+                <StageIntro stage={stage} />
+                <StageSlot stage="present" current={stage}>
                 {/* Present State Card */}
                 <Card
-                  className="cursor-pointer transition-all hover:shadow-lg overflow-hidden"
+                  className="transition-all hover:shadow-lg overflow-hidden"
                   style={{
                     boxShadow: `0 0 20px ${color1}40, 0 0 40px ${color1}20`,
                     borderColor: `${color1}60`,
                     borderWidth: '2px'
                   }}
-                  onClick={() => setActiveColorPicker('present')}
                 >
                   <div
-                    className="h-32 md:h-40 relative group"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Choose the current state color. It is now ${color1}.`}
+                    onClick={() => setActiveColorPicker('present')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveColorPicker('present'); } }}
+                    className="h-32 md:h-40 relative group cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring"
                     style={{ backgroundColor: color1 }}
                   >
                     <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-                      <Palette className="size-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                      <Palette className="size-8 text-white opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity drop-shadow-lg" />
                     </div>
                   </div>
                   <CardHeader>
@@ -338,46 +378,39 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       <WordPicker category="lightQuality" idPrefix="color1Qualities" selected={color1Qualities} onToggle={(t) => toggleQuality(1, t)} />
                     </div>
 
-                    {/* Intensity Slider */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="color1-intensity" className="text-sm">
-                          Intensity
-                        </Label>
-                        <span className="text-xs text-muted-foreground">
-                          {color1Intensity}
-                        </span>
-                      </div>
-                      <Slider
-                        id="color1-intensity"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={[color1Intensity]}
-                        onValueChange={(values) => setColor1Intensity(values[0])}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-full"
-                      />
-                    </div>
+                    <SnappingSlider
+                      value={color1Intensity}
+                      onValueChange={setColor1Intensity}
+                      label="Intensity"
+                      leftLabel="Faint"
+                      rightLabel="Strong"
+                      max={100}
+                    />
                   </CardContent>
                 </Card>
 
+                </StageSlot>
+                <StageSlot stage="wish" current={stage}>
                 {/* Potential State Card */}
                 <Card
-                  className="cursor-pointer transition-all hover:shadow-lg overflow-hidden"
+                  className="transition-all hover:shadow-lg overflow-hidden"
                   style={{
                     boxShadow: `0 0 20px ${color2}40, 0 0 40px ${color2}20`,
                     borderColor: `${color2}60`,
                     borderWidth: '2px'
                   }}
-                  onClick={() => setActiveColorPicker('potential')}
                 >
                   <div
-                    className="h-32 md:h-40 relative group"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Choose the wish state color. It is now ${color2}.`}
+                    onClick={() => setActiveColorPicker('potential')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveColorPicker('potential'); } }}
+                    className="h-32 md:h-40 relative group cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring"
                     style={{ backgroundColor: color2 }}
                   >
                     <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-                      <Palette className="size-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                      <Palette className="size-8 text-white opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity drop-shadow-lg" />
                     </div>
                   </div>
                   <CardHeader>
@@ -420,32 +453,22 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       <WordPicker category="lightQuality" idPrefix="color2Qualities" selected={color2Qualities} onToggle={(t) => toggleQuality(2, t)} />
                     </div>
 
-                    {/* Intensity Slider */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="color2-intensity" className="text-sm">
-                          Intensity
-                        </Label>
-                        <span className="text-xs text-muted-foreground">
-                          {color2Intensity}
-                        </span>
-                      </div>
-                      <Slider
-                        id="color2-intensity"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={[color2Intensity]}
-                        onValueChange={(values) => setColor2Intensity(values[0])}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-full"
-                      />
-                    </div>
+                    <SnappingSlider
+                      value={color2Intensity}
+                      onValueChange={setColor2Intensity}
+                      label="Intensity"
+                      leftLabel="Faint"
+                      rightLabel="Strong"
+                      max={100}
+                    />
                   </CardContent>
                 </Card>
+              </StageSlot>
               </div>
 
-              <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} />
+              {stage === 'wish' && (
+              <>
+              <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} soundComesLater={soundComesLater} />
 
               <BodyMapAvatar
                 inline
@@ -454,9 +477,15 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 onSave={(data) => onUpdateBodyMap(data)}
                 initialPlacements={bodyMapData.placements}
                 initialNotes={bodyMapData.notes}
+          initialPins={bodyMapData.pins}
               />
 
-              {/* Next Button */}
+                            </>
+              )}
+              <StageNav stage={stage} onChange={setStage} />
+
+{/* Next Button */}
+              {stage === 'wish' && (
               <div className="flex justify-center pt-4">
                 <Button
                   size="lg"
@@ -467,6 +496,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Enter Session'}
                 </Button>
               </div>
+              )}
             </div>
           )}
 

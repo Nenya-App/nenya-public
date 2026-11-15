@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import SkipLink from '../app/components/SkipLink';
 import { GlobalNavigation } from '../app/components/GlobalNavigation';
 import { BreathingPopout } from '../app/components/BreathingPopout';
 import { EmergencyExitDock } from '../app/components/EmergencyExit';
 import SessionKeyPicker from './SessionKeyPicker';
 import CoachDemo from './CoachDemo';
+import ModeChooser from './ModeChooser';
+import SealedChat from './SealedChat';
 import OwnerPanel from './OwnerPanel';
+import { RegionGate } from './RegionGate';
 import OnboardingFlow from '../app/components/OnboardingFlow';
 import { termsAcceptedFor, usePref } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
@@ -26,6 +30,24 @@ export default function CoachPage() {
     if (agreed) enableUsageCounts();
   }, [agreed]);
   const [colors, setColors] = useState<{ color1: string; color2: string } | null>(null);
+  // Witnessed is the coach as it has always been. Sealed is offered only when the server has it switched on (COACH_SEALED).
+  const [sealedOffered, setSealedOffered] = useState(false);
+  const [mode, setMode] = useState<'witnessed' | 'sealed' | null>(null);
+  useEffect(() => {
+    if (!agreed) return;
+    let on = true;
+    fetch('/api/coach?modes', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => on && setSealedOffered(j?.sealed === true))
+      .catch(() => undefined);
+    return () => {
+      on = false;
+    };
+  }, [agreed]);
+  const leave = () => {
+    setColors(null);
+    setMode(null);
+  };
   // Display choices are kept only if the visitor turned on "Remember on this device".
   const [textSize, setTextSize] = usePref('textSize', 16);
   // The logo opens the same breathing animation panel as the rest of the site.
@@ -59,6 +81,7 @@ export default function CoachPage() {
 
   return (
     <>
+      <SkipLink />
       {/* First in the page, above the panel: the header's Exit is covered while the terms panel or the breathing panel is open. */}
       <EmergencyExitDock show={popoutOpen || !agreed} onEmergencyExit={() => { exiting.current = true; }} />
       {!agreed && <OnboardingFlow skipRhythm technique={STEADY} onTechniqueChange={noop} onFinish={() => setAgreed(true)} />}
@@ -90,10 +113,20 @@ export default function CoachPage() {
         onOpacityChange={setOpacity}
       />
       <div className="flex-1 min-h-0">
-        {!agreed ? null : !colors ? (
+        {!agreed ? null : (
+          <RegionGate onBack={() => goToApp()}>
+          {!colors ? (
           <SessionKeyPicker onComplete={setColors} onBack={() => goToApp()} />
         ) : (
-          <CoachDemo colors={colors} onBack={() => setColors(null)} />
+          sealedOffered && mode === null ? (
+            <ModeChooser onChoose={setMode} onBack={leave} />
+          ) : mode === 'sealed' ? (
+            <SealedChat colors={colors} onBack={leave} />
+          ) : (
+            <CoachDemo colors={colors} onBack={leave} />
+          )
+        )}
+          </RegionGate>
         )}
       </div>
       <OwnerPanel />

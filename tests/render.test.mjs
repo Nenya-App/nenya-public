@@ -82,7 +82,7 @@ try {
     {
       const coachPage = readFileSync(new URL('../src/coach/CoachPage.tsx', import.meta.url), 'utf8');
       ok('the coach page: reached only after the terms are accepted (the same panel, opened on the terms), unless the agreement was remembered for these terms', /useState\(\(\) => termsAcceptedFor\(LEGAL_EFFECTIVE_DATE\)\)/.test(coachPage) && /\{!agreed && <OnboardingFlow skipRhythm/.test(coachPage));
-      ok('the coach page: nothing behind the panel is mounted or reachable until then, the Emergency Exit stays reachable, and counting begins only after agreement', /\{!agreed \? null : !colors/.test(coachPage) && /inert: ''/.test(coachPage) && /EmergencyExitDock show=\{popoutOpen \|\| !agreed\}/.test(coachPage) && /if \(agreed\) enableUsageCounts\(\)/.test(coachPage));
+      ok('the coach page: nothing behind the panel is mounted or reachable until then, the Emergency Exit stays reachable, and counting begins only after agreement', /\{!agreed \? null : \(\s*<RegionGate/.test(coachPage) && /inert: ''/.test(coachPage) && /EmergencyExitDock show=\{popoutOpen \|\| !agreed\}/.test(coachPage) && /if \(agreed\) enableUsageCounts\(\)/.test(coachPage));
     }
     ok('first-visit panel: goes straight from the rhythm to the terms', /STEPS: OnboardingStep\[\] = \['rhythm', 'terms'\]/.test(src) && !/'counter'|'process'/.test(src));
   }
@@ -142,7 +142,9 @@ try {
     const logoSrc = readFileSync(new URL('../src/app/components/NenyaLogo.tsx', import.meta.url), 'utf8');
     const gemSrc = readFileSync(new URL('../src/app/components/SpectralGem.tsx', import.meta.url), 'utf8');
     const mainSrc = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
-    ok('inner orbs peak at 80% opacity', /INNER_ORB_OPACITY = \[0\.66, 0\.8, 0\.66\]/.test(logoSrc));
+    // The orbit's defaults moved to src/lib/orbitLook.ts (so the /bench page can tune them); NenyaLogo pulses between them.
+    const orbitSrc = readFileSync(new URL('../src/lib/orbitLook.ts', import.meta.url), 'utf8');
+    ok('inner orbs peak at 90% opacity (the look chosen on the bench, 2026-11-12)', /opacityLow: 0\.8,\s*opacityHigh: 0\.9,/.test(orbitSrc) && /INNER_ORB_OPACITY = \[inner\.opacityLow, inner\.opacityHigh, inner\.opacityLow\]/.test(logoSrc));
     ok('the gem reports its first drawn frame, and the downloads start before the page is drawn', /markGemDrawn\(\)/.test(gemSrc) && /startLogoDownloads\(\)/.test(mainSrc));
   }
   const { TourOffer } = await vite.ssrLoadModule('/src/app/components/TourOffer.tsx');

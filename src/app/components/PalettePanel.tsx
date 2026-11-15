@@ -15,11 +15,13 @@ interface PalettePanelProps {
   /** The palettes kept so far (up to two). */
   values: GeneratedPalette[];
   onChange: (next: GeneratedPalette[]) => void;
+  /** Whether the Sound gateway is still to come. If not (Sound was done first, or is not part of this session) there is nothing to choose it for. */
+  soundComesLater?: boolean;
 }
 
 type Draft = Omit<GeneratedPalette, 'colors'> & { colors: string[] };
 
-export function PalettePanel({ color1, color2, values, onChange }: PalettePanelProps) {
+export function PalettePanel({ color1, color2, values, onChange, soundComesLater = true }: PalettePanelProps) {
   const [mode, setMode] = useState<SchemeMode>('analogic');
   const [base, setBase] = useState<'present' | 'wish'>('present');
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -158,10 +160,12 @@ export function PalettePanel({ color1, color2, values, onChange }: PalettePanelP
           <div key={i} role="status" className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-foreground">
             <p>In your report: {describePalettePlainly(v, values.length > 1 ? i + 1 : undefined)}.</p>
             <div className="flex flex-wrap items-center gap-3">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={!!v.useInSound} onChange={(e) => onChange(values.map((x, j) => (j === i ? { ...x, useInSound: e.target.checked } : x)))} className="size-4" />
-                Use this palette in the Sound gateway
-              </label>
+              {soundComesLater && (
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={!!v.useInSound} onChange={(e) => onChange(values.map((x, j) => (j === i ? { ...x, useInSound: e.target.checked } : x)))} className="size-4" />
+                  Use this palette in the Sound gateway
+                </label>
+              )}
               <button type="button" className="underline underline-offset-4" onClick={() => onChange(values.filter((_, j) => j !== i))}>Remove it</button>
             </div>
           </div>

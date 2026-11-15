@@ -7,7 +7,7 @@ import { ok } from './helpers.mts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]));
-const sources = [...walk(join(root, 'src')), join(root, 'index.html'), join(root, 'coach', 'index.html'), join(root, 'admin', 'index.html'), join(root, 'verify', 'index.html')].filter((f) => /\.(tsx?|css|html)$/.test(f));
+const sources = [...walk(join(root, 'src')), join(root, 'index.html'), join(root, 'coach', 'index.html'), join(root, 'admin', 'index.html'), join(root, 'verify', 'index.html'), join(root, 'bench', 'index.html'), join(root, 'cell', 'index.html')].filter((f) => /\.(tsx?|css|html)$/.test(f));
 
 // Everything under /assets is served with a one-year "immutable" cache header (see netlify.toml), which is only
 // safe because the build gives those files hashed names. A hand-placed file in public/assets would have a fixed

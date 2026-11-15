@@ -4,7 +4,8 @@ import petalsSvg from '../assets/logo/petals.svg';
 import bezelSvg from '../assets/logo/bezel.svg';
 import flatLogo from '../assets/nenya-logo.webp';
 import smallLogo from '../assets/nenya-logo-small.webp';
-import { gemFirstDraw, loadGemSprite, loadImage } from './gemSprite';
+import { GEM_ENGINE, gemFirstDraw, loadGemSprite, loadImage } from './gemSprite';
+import { liveGemSupported } from './gemRenderer';
 
 /** The longest the first screen is held back for the logo's files. */
 export const PRELOAD_TIMEOUT_MS = 6000;
@@ -25,8 +26,9 @@ let downloads: Promise<void> | null = null;
  */
 export function startLogoDownloads(): Promise<void> {
   if (!downloads) {
-    // The gem is requested first and on its own, so the small files cannot queue ahead of it.
-    const gem = quietly(ready(loadGemSprite));
+    // The gem is requested first and on its own, so the small files cannot queue ahead of it. The live gem is drawn by the
+    // browser itself, so where it can run the sprite is not downloaded at all.
+    const gem = GEM_ENGINE === 'live' && liveGemSupported() ? Promise.resolve() : quietly(ready(loadGemSprite));
     downloads = Promise.all([
       gem,
       quietly(ready(() => loadImage(petalsSvg))),

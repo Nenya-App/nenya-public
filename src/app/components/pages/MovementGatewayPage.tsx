@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStages';
+import { GatewayProgress } from '../GatewayProgress';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
@@ -12,6 +15,7 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
+import { ShapePicker, MAX_SHAPES } from '../ShapePicker';
 interface MovementGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -48,6 +52,8 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
   const [showBodyMap, setShowBodyMap] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState<PairStage>('present');
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -57,20 +63,22 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   }, [step]);
 
   // Current state
+  const [currentMovementShapes, setCurrentMovementShapes] = useState<string[]>([]);
   const [currentDirections, setCurrentDirections] = useState<string[]>([]);
   const [currentDirectionOther, setCurrentDirectionOther] = useState('');
-  const [currentEnergy, setCurrentEnergy] = useState([50]);
-  const [currentSpeed, setCurrentSpeed] = useState([50]);
+  const [currentEnergy, setCurrentEnergy] = useState(() => unsetSlider());
+  const [currentSpeed, setCurrentSpeed] = useState(() => unsetSlider());
   const [currentQualities, setCurrentQualities] = useState<string[]>([]);
   const [currentQualityOther, setCurrentQualityOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
   const [currentMovementDrawing, setCurrentMovementDrawing] = useState<string | null>(null);
 
   // Potential state
+  const [potentialMovementShapes, setPotentialMovementShapes] = useState<string[]>([]);
   const [potentialDirections, setPotentialDirections] = useState<string[]>([]);
   const [potentialDirectionOther, setPotentialDirectionOther] = useState('');
-  const [potentialEnergy, setPotentialEnergy] = useState([50]);
-  const [potentialSpeed, setPotentialSpeed] = useState([50]);
+  const [potentialEnergy, setPotentialEnergy] = useState(() => unsetSlider());
+  const [potentialSpeed, setPotentialSpeed] = useState(() => unsetSlider());
   const [potentialQualities, setPotentialQualities] = useState<string[]>([]);
   const [potentialQualityOther, setPotentialQualityOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
@@ -89,6 +97,10 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
     }
   };
 
+  const toggleShape = (id: string, list: string[], set: (v: string[]) => void) => {
+    set(list.includes(id) ? list.filter((x) => x !== id) : list.length < MAX_SHAPES ? [...list, id] : list);
+  };
+
   const handleNextInstructionCard = () => {
     if (instructionCardIndex < INSTRUCTION_CARDS.length - 1) {
       setInstructionCardIndex(instructionCardIndex + 1);
@@ -99,18 +111,20 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
 
   const handleNext = () => {
     onComplete({
+      currentMovementShapes: currentMovementShapes.length > 0 ? currentMovementShapes : null,
+      potentialMovementShapes: potentialMovementShapes.length > 0 ? potentialMovementShapes : null,
       currentDirections: currentDirections.length > 0 ? currentDirections : null,
       currentDirectionOther: currentDirectionOther || null,
-      currentEnergy: currentEnergy[0],
-      currentSpeed: currentSpeed[0],
+      currentEnergy: sliderValue(currentEnergy),
+      currentSpeed: sliderValue(currentSpeed),
       currentQualities: currentQualities.length > 0 ? currentQualities : null,
       currentQualityOther: currentQualityOther || null,
       currentDescription: currentDescription || null,
       currentMovementDrawing: currentMovementDrawing || null,
       potentialDirections: potentialDirections.length > 0 ? potentialDirections : null,
       potentialDirectionOther: potentialDirectionOther || null,
-      potentialEnergy: potentialEnergy[0],
-      potentialSpeed: potentialSpeed[0],
+      potentialEnergy: sliderValue(potentialEnergy),
+      potentialSpeed: sliderValue(potentialSpeed),
       potentialQualities: potentialQualities.length > 0 ? potentialQualities : null,
       potentialQualityOther: potentialQualityOther || null,
       potentialDescription: potentialDescription || null,
@@ -139,15 +153,13 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
           </Button>
           
           <div className="flex items-center gap-3">
-            <NenyaLogo size={32} />
+            <PanelLogo size={32} />
             <div className="text-center">
               <h1 className="text-lg">
                 Movement - Kinesthesia
                 <GatewaySubtitleLink href="https://open.lib.umn.edu/sensationandperception/chapter/kinesthesia-and-prorioception/" />
               </h1>
-              <p className="text-xs text-muted-foreground">
-                Gateway {currentIndex + 1} of {totalGateways}
-              </p>
+              <GatewayProgress index={currentIndex} total={totalGateways} />
             </div>
           </div>
           
@@ -178,9 +190,12 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                     {INSTRUCTION_CARDS[instructionCardIndex].detail}
                   </p>
                   <div className="flex items-center justify-between pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      {instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
+                        <ArrowLeft className="size-4" /> Back
+                      </Button>
+                      <p className="text-sm text-muted-foreground">{instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}</p>
+                    </div>
                     <Button variant="ghost" className="gap-2">
                       {instructionCardIndex < INSTRUCTION_CARDS.length - 1 ? (
                         <>
@@ -206,7 +221,9 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                 Open Body Map
               </Button>
             </div>
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+            <div className="mx-auto w-full max-w-2xl">
+              <StageIntro stage={stage} />
+              <StageSlot stage="present" current={stage}>
               {/* Present State Card */}
               <Card
                 className="transition-all"
@@ -225,6 +242,11 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   <CardDescription>The kinesthetic qualities of where you are now</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label id="currentMovement-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="movement" idPrefix="currentMovement" selected={currentMovementShapes} onToggle={(id) => toggleShape(id, currentMovementShapes, setCurrentMovementShapes)} />
+                  </div>
+
                   <div className="space-y-2">
                     <Label className="text-sm">Direction (optional)</Label>
                     <WordPicker category="direction" idPrefix="currentDirections" selected={currentDirections} onToggle={(t) => handleCheckboxChange(t, !currentDirections.includes(t), currentDirections, setCurrentDirections)} other={{ value: currentDirectionOther, onChange: setCurrentDirectionOther, placeholder: "Describe..." }} />
@@ -273,6 +295,8 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                 </CardContent>
               </Card>
 
+              </StageSlot>
+              <StageSlot stage="wish" current={stage}>
               {/* Potential State Card */}
               <Card
                 className="transition-all"
@@ -291,6 +315,11 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   <CardDescription>The kinesthetic qualities of where you're moving toward</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label id="potentialMovement-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="movement" idPrefix="potentialMovement" selected={potentialMovementShapes} onToggle={(id) => toggleShape(id, potentialMovementShapes, setPotentialMovementShapes)} />
+                  </div>
+
                   <div className="space-y-2">
                     <Label className="text-sm">Direction (optional)</Label>
                     <WordPicker category="direction" idPrefix="potentialDirections" selected={potentialDirections} onToggle={(t) => handleCheckboxChange(t, !potentialDirections.includes(t), potentialDirections, setPotentialDirections)} other={{ value: potentialDirectionOther, onChange: setPotentialDirectionOther, placeholder: "Describe..." }} />
@@ -339,9 +368,12 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   </div>
                 </CardContent>
               </Card>
+            </StageSlot>
+              <StageNav stage={stage} onChange={setStage} />
             </div>
 
             {/* Next Button */}
+            {stage === 'wish' && (
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"
@@ -352,6 +384,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                 {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
               </Button>
             </div>
+            )}
           </div>
         )}
 
@@ -365,6 +398,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
           onSave={(data) => onUpdateBodyMap(data)}
           initialPlacements={bodyMapData.placements}
           initialNotes={bodyMapData.notes}
+          initialPins={bodyMapData.pins}
         />
       )}
     </div>

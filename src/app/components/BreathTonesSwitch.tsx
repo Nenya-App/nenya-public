@@ -79,7 +79,7 @@ export function BreathTonesSwitch({ variant }: { variant: 'skip' | 'panel' | 'co
             border: 'none',
             cursor: 'pointer',
             display: 'flex',
-            color: on ? 'rgba(232,160,32,0.95)' : 'rgba(232,160,32,0.55)',
+            color: on ? 'rgba(232,160,32,0.95)' : 'rgba(232,160,32,0.85)',
           }}
         >
           {on ? <Volume2 size={13} aria-hidden="true" /> : <VolumeX size={13} aria-hidden="true" />}

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import SkipLink from './components/SkipLink';
 import { ThemeProvider } from './components/ThemeProvider';
 import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { aboutSectionFromLocation, SITE_TITLE } from '../lib/aboutRoutes';
+import { melodyColorsFor, melodyShared } from '../lib/melodySeed';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
@@ -15,6 +17,7 @@ import { BreathTonesPlayer, BreathTonesSwitch, TonesAnnouncer } from './componen
 import { preloadLogoAssets } from '../lib/preload';
 import { enableUsageCounts, countEvents, countEvent, countPageView } from '../lib/usageCounts';
 import { PRESETS, sameTechnique } from '../lib/breathingPresets';
+import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
 import { BreathingTechnique } from './components/ValarBreathingLogo';
 import OnboardingFlow from './components/OnboardingFlow';
 import WelcomePage from './components/pages/WelcomePage';
@@ -33,6 +36,7 @@ const InsightGatewayPage = lazy(() => import('./components/pages/InsightGatewayP
 const SessionKeyPicker = lazy(() => import('../coach/SessionKeyPicker'));
 const GatewayReviewPage = lazy(() => import('./components/pages/GatewayReviewPage'));
 const CoachDemo = lazy(() => import('../coach/CoachDemo'));
+const RegionGate = lazy(() => import('../coach/RegionGate').then((m) => ({ default: m.RegionGate })));
 const DyadicCellCreation = lazy(() => import('./components/DyadicCellCreation'));
 const DyadicCellInterface = lazy(() => import('./components/DyadicCellInterface'));
 const AboutNenya = lazy(() => import('./components/AboutNenya'));
@@ -53,8 +57,8 @@ export interface UserColors {
   // declared here -- harmless at runtime since nothing enforces this type,
   // but it meant the interface didn't actually describe the data flowing
   // through it.
-  color1Intensity?: number;
-  color2Intensity?: number;
+  color1Intensity?: number | null;
+  color2Intensity?: number | null;
   gradientDirection?: string;
   /** Up to two palettes the person made in the Sight gateway and chose to keep (their own colours; see src/lib/colorSchemes.ts). */
   generatedPalettes?: import('../lib/colorSchemes').GeneratedPalette[] | null;
@@ -142,7 +146,9 @@ export default function App() {
   }, [breathingTechnique]);
 
   // Breathing popout state
-  const [breathingPopoutOpen, setBreathingPopoutOpen] = useState(false);
+  // Open or closed, shared with every logo that opens it (src/lib/breathingPanel.ts).
+  const breathingPopoutOpen = useBreathingPanel();
+  const setBreathingPopoutOpen = setBreathingPanel;
 
   // The logo's files (the gem sprite, the petals and bezel, the flat logo) are loaded before the first screen is
   // shown, behind a short loading screen, so the logo does not pop in piece by piece.
@@ -409,6 +415,7 @@ export default function App() {
 
   return (
     <ThemeProvider defaultTheme="dark">
+      <SkipLink />
       {/* First in the page, above every overlay: the header's Exit is out of reach behind the loading screen, the first-visit panel and the tour. */}
       <EmergencyExitDock
         show={!veilGone || !termsAgreed || tourOffered || tutorialActive}
@@ -484,7 +491,7 @@ export default function App() {
           onCvModeChange={setColorBlindMode}
           showAnimationControls={currentScreen === 'welcome'}
           onEmergencyExit={() => { isEmergencyExiting.current = true; }}
-          onBreathingPopoutToggle={() => setBreathingPopoutOpen(!breathingPopoutOpen)}
+          onBreathingPopoutToggle={toggleBreathingPanel}
           onTutorialReplay={handleStartTutorial}
         />
 
@@ -518,7 +525,7 @@ export default function App() {
         )}
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-hidden">
+        <div id="main-content" role="main" tabIndex={-1} className="flex-1 overflow-hidden outline-none">
           <Suspense fallback={null}>
           {currentScreen === 'welcome' && (
             <WelcomePage
@@ -531,8 +538,7 @@ export default function App() {
               technique={breathingTechnique}
               cvMode={colorBlindMode}
               cycleStart={breathingCycleStart}
-              onStartTutorial={handleStartTutorial}
-              entryUnlocked={termsAgreed}
+              onLogoClick={toggleBreathingPanel}
             />
           )}
 
@@ -551,6 +557,9 @@ export default function App() {
               totalGateways={selectedGateways.length}
               bodyMapData={bodyMapData}
               onUpdateBodyMap={setBodyMapData}
+              melodyColors={melodyColorsFor(gatewayData.find((g) => g.gateway === 'sound')?.data)}
+              melodyShared={melodyShared(gatewayData.find((g) => g.gateway === 'sound')?.data)}
+              soundComesLater={selectedGateways.includes('sound') && !gatewayData.some((g) => g.gateway === 'sound')}
             />
           )}
 
@@ -563,6 +572,7 @@ export default function App() {
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
               bodyMapData={bodyMapData}
               onUpdateBodyMap={setBodyMapData}
+              sightComesLater={selectedGateways.includes('sight') && !gatewayData.some((g) => g.gateway === 'sight')}
             />
           )}
 
@@ -633,6 +643,7 @@ export default function App() {
           )}
 
           {currentScreen === 'session' && (
+            <RegionGate onBack={() => navigateBack('home')} onBreathe={() => handleGlobalNavigation('welcome')}>
             <CoachDemo
               colors={interfaceColors}
               report={gatewayData.length > 0 ? { gatewayData: gatewayData.map((gd) => ({ gateway: gd.gateway, data: gd.data })), bodyMap: bodyMapData } : undefined}
@@ -640,6 +651,7 @@ export default function App() {
               onBreathe={() => handleGlobalNavigation('welcome')}
               onPartnerPractice={handleNavigateToCell}
             />
+            </RegionGate>
           )}
           
           {currentScreen === 'cell-creation' && (
@@ -690,6 +702,7 @@ export default function App() {
           cvMode={colorBlindMode}
           onCvModeChange={setColorBlindMode}
           technique={breathingTechnique}
+          onTechniqueChange={setBreathingTechnique}
           cycleStart={breathingCycleStart}
         />
       </div>

@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStages';
+import { GatewayProgress } from '../GatewayProgress';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
@@ -12,6 +15,7 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
+import { ShapePicker, MAX_SHAPES } from '../ShapePicker';
 interface InsightGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -48,6 +52,8 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
   const [showBodyMap, setShowBodyMap] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState<PairStage>('present');
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -57,20 +63,22 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   }, [step]);
 
   // Current state
+  const [currentPatternShapes, setCurrentPatternShapes] = useState<string[]>([]);
   const [currentPatterns, setCurrentPatterns] = useState<string[]>([]);
   const [currentPatternOther, setCurrentPatternOther] = useState('');
-  const [currentClarity, setCurrentClarity] = useState([50]);
-  const [currentDepth, setCurrentDepth] = useState([50]);
+  const [currentClarity, setCurrentClarity] = useState(() => unsetSlider());
+  const [currentDepth, setCurrentDepth] = useState(() => unsetSlider());
   const [currentPerspectives, setCurrentPerspectives] = useState<string[]>([]);
   const [currentPerspectiveOther, setCurrentPerspectiveOther] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
   const [currentPatternDrawing, setCurrentPatternDrawing] = useState<string | null>(null);
 
   // Potential state
+  const [potentialPatternShapes, setPotentialPatternShapes] = useState<string[]>([]);
   const [potentialPatterns, setPotentialPatterns] = useState<string[]>([]);
   const [potentialPatternOther, setPotentialPatternOther] = useState('');
-  const [potentialClarity, setPotentialClarity] = useState([50]);
-  const [potentialDepth, setPotentialDepth] = useState([50]);
+  const [potentialClarity, setPotentialClarity] = useState(() => unsetSlider());
+  const [potentialDepth, setPotentialDepth] = useState(() => unsetSlider());
   const [potentialPerspectives, setPotentialPerspectives] = useState<string[]>([]);
   const [potentialPerspectiveOther, setPotentialPerspectiveOther] = useState('');
   const [potentialDescription, setPotentialDescription] = useState('');
@@ -89,6 +97,10 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
     }
   };
 
+  const toggleShape = (id: string, list: string[], set: (v: string[]) => void) => {
+    set(list.includes(id) ? list.filter((x) => x !== id) : list.length < MAX_SHAPES ? [...list, id] : list);
+  };
+
   const handleNextInstructionCard = () => {
     if (instructionCardIndex < INSTRUCTION_CARDS.length - 1) {
       setInstructionCardIndex(instructionCardIndex + 1);
@@ -99,18 +111,20 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
 
   const handleNext = () => {
     onComplete({
+      currentPatternShapes: currentPatternShapes.length > 0 ? currentPatternShapes : null,
+      potentialPatternShapes: potentialPatternShapes.length > 0 ? potentialPatternShapes : null,
       currentPatterns: currentPatterns.length > 0 ? currentPatterns : null,
       currentPatternOther: currentPatternOther || null,
-      currentClarity: currentClarity[0],
-      currentDepth: currentDepth[0],
+      currentClarity: sliderValue(currentClarity),
+      currentDepth: sliderValue(currentDepth),
       currentPerspectives: currentPerspectives.length > 0 ? currentPerspectives : null,
       currentPerspectiveOther: currentPerspectiveOther || null,
       currentDescription: currentDescription || null,
       currentPatternDrawing: currentPatternDrawing || null,
       potentialPatterns: potentialPatterns.length > 0 ? potentialPatterns : null,
       potentialPatternOther: potentialPatternOther || null,
-      potentialClarity: potentialClarity[0],
-      potentialDepth: potentialDepth[0],
+      potentialClarity: sliderValue(potentialClarity),
+      potentialDepth: sliderValue(potentialDepth),
       potentialPerspectives: potentialPerspectives.length > 0 ? potentialPerspectives : null,
       potentialPerspectiveOther: potentialPerspectiveOther || null,
       potentialDescription: potentialDescription || null,
@@ -139,15 +153,13 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
           </Button>
           
           <div className="flex items-center gap-3">
-            <NenyaLogo size={32} />
+            <PanelLogo size={32} />
             <div className="text-center">
               <h1 className="text-lg">
                 Insight - Noesis
                 <GatewaySubtitleLink href="https://en.wikipedia.org/wiki/Noesis" />
               </h1>
-              <p className="text-xs text-muted-foreground">
-                Gateway {currentIndex + 1} of {totalGateways}
-              </p>
+              <GatewayProgress index={currentIndex} total={totalGateways} />
             </div>
           </div>
           
@@ -178,9 +190,12 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                     {INSTRUCTION_CARDS[instructionCardIndex].detail}
                   </p>
                   <div className="flex items-center justify-between pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      {instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
+                        <ArrowLeft className="size-4" /> Back
+                      </Button>
+                      <p className="text-sm text-muted-foreground">{instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}</p>
+                    </div>
                     <Button variant="ghost" className="gap-2">
                       {instructionCardIndex < INSTRUCTION_CARDS.length - 1 ? (
                         <>
@@ -206,7 +221,9 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                 Open Body Map
               </Button>
             </div>
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+            <div className="mx-auto w-full max-w-2xl">
+              <StageIntro stage={stage} />
+              <StageSlot stage="present" current={stage}>
               {/* Present State Card */}
               <Card
                 className="transition-all"
@@ -225,6 +242,11 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   <CardDescription>The patterns of understanding where you are now</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
+                  <div className="space-y-2">
+                    <Label id="currentPattern-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="pattern" idPrefix="currentPattern" selected={currentPatternShapes} onToggle={(id) => toggleShape(id, currentPatternShapes, setCurrentPatternShapes)} />
+                  </div>
+
                   <div className="space-y-2">
                     <Label className="text-sm">Pattern (optional)</Label>
                     <WordPicker category="pattern" idPrefix="currentPatterns" selected={currentPatterns} onToggle={(t) => handleCheckboxChange(t, !currentPatterns.includes(t), currentPatterns, setCurrentPatterns)} other={{ value: currentPatternOther, onChange: setCurrentPatternOther, placeholder: "Describe..." }} />
@@ -274,6 +296,8 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                 </CardContent>
               </Card>
 
+              </StageSlot>
+              <StageSlot stage="wish" current={stage}>
               {/* Potential State Card */}
               <Card
                 className="transition-all"
@@ -292,6 +316,11 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   <CardDescription>The patterns of understanding you're moving toward</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
+                  <div className="space-y-2">
+                    <Label id="potentialPattern-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
+                    <ShapePicker set="pattern" idPrefix="potentialPattern" selected={potentialPatternShapes} onToggle={(id) => toggleShape(id, potentialPatternShapes, setPotentialPatternShapes)} />
+                  </div>
+
                   <div className="space-y-2">
                     <Label className="text-sm">Pattern (optional)</Label>
                     <WordPicker category="pattern" idPrefix="potentialPatterns" selected={potentialPatterns} onToggle={(t) => handleCheckboxChange(t, !potentialPatterns.includes(t), potentialPatterns, setPotentialPatterns)} other={{ value: potentialPatternOther, onChange: setPotentialPatternOther, placeholder: "Describe..." }} />
@@ -340,9 +369,12 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   </div>
                 </CardContent>
               </Card>
+            </StageSlot>
+              <StageNav stage={stage} onChange={setStage} />
             </div>
 
             {/* Next Button */}
+            {stage === 'wish' && (
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"
@@ -353,6 +385,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                 {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
               </Button>
             </div>
+            )}
           </div>
         )}
 
@@ -366,6 +399,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
           onSave={(data) => onUpdateBodyMap(data)}
           initialPlacements={bodyMapData.placements}
           initialNotes={bodyMapData.notes}
+          initialPins={bodyMapData.pins}
         />
       )}
     </div>

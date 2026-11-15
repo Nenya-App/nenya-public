@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Nenya logo export</title>
+    <!-- A page for drawing the logo at an exact size on a plain background, so the static assets (icons, social images, print logos) can be made from the same live gem the site draws
+         (scripts/render-logo-assets.mts). Served by the dev server only: it is not a build input, so it is not in the production site. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <style>html, body, #root { margin: 0; background: transparent !important; } #root { line-height: 0; }</style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/logo-export/main.tsx"></script>
+  </body>
+</html>

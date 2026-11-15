@@ -4,7 +4,7 @@
 // Principle: a false "stop" ends someone's conversation, so a new phrase is SOFTEN (the message still reaches the coach, with care and the
 // resources) unless it states a plan, a method, an attempt, or abuse happening now with a physical or sexual verb. Phrase matching reads words,
 // not meaning: it misses euphemisms, typos and other languages, and it sometimes fires on ordinary text. Nothing may claim it catches every crisis.
-// The wording of these lists is reviewed by a person (see docs/crisis-check-scope.md).
+// The wording of these lists is the owner's own and has not been reviewed by any outside professional; review by counselors, crisis-line workers and others is invited (see docs/crisis-check-scope.md).
 
 type Tier = 'stop' | 'soften';
 export interface Rule { tier: Tier; why: string; pattern: RegExp }
@@ -37,7 +37,7 @@ export const CANDIDATES: Rule[] = [
 
 
 // ── abuse, partner violence, child abuse and assault ──────────────────────────────────────────────────────────
-export type AbuseKind = 'partner-or-family' | 'child-or-dependent' | 'sexual' | 'control-or-fear';
+export type AbuseKind = 'partner-or-family' | 'child-or-dependent' | 'sexual' | 'control-or-fear' | 'trafficking';
 export interface AbuseRule { tier: 'stop' | 'soften'; kind: AbuseKind; why: string; pattern: RegExp }
 
 const WHO = "(?:my (?:husband|wife|partner|boyfriend|girlfriend|ex|ex-?(?:husband|wife|boyfriend|girlfriend)|spouse|fianc[eé]e?|dad|father|mom|mother|stepfather|stepmother|stepdad|stepmom|parents?|uncle|aunt|brother|sister|grandfather|grandmother|caregiver|roommate|boss|teacher|coach|babysitter|neighbou?r)|he|she|they)";
@@ -45,6 +45,8 @@ const ADV = "(?:is |are |keeps |keep |always |often |still |sometimes |just |eve
 const VICTIM_KIN = "(?:my |our |the )?(?:child|children|kids?|son|daughter|baby|toddler|boy|girl|sister|brother|niece|nephew|grand(?:mother|father|ma|pa|child|children|son|daughter)|mother|mom|dad|father|aunt|uncle|elderly\\s+\\w+|stepson|stepdaughter)";
 
 export const ABUSE_CANDIDATES: AbuseRule[] = [
+  // ── stop: I am being trafficked, enslaved or made to work or have sex against my will, or my papers are held (2026-11-14)
+  { tier: 'stop', kind: 'trafficking', why: 'I am being trafficked, sold, or forced to work or have sex', pattern: /\b(?:i(?:'m| am| was| have been|'ve been) (?:being )?(?:traffick(?:ed|ing)|enslaved|sold|forced (?:to|into) (?:work|have sex|sell sex|prostitution|sex work|beg)|made to (?:work for free|have sex|sell sex))|(?:he|she|they|my (?:boss|employer|captor|trafficker)|someone) (?:took|has|have|keeps?|kept|holds?|held|confiscated) my (?:passport|papers|id|documents|phone))\b/i },
   // ── stop: happening now to me, with a physical or sexual verb ──────────────────────────────────────────────────────────
   { tier: 'stop', kind: 'partner-or-family', why: 'someone hits, chokes or otherwise physically harms me now', pattern: new RegExp(`\\b${WHO}\\s+${ADV}(?:hits|hitting|beats|beating|chokes|choking|strangles|strangling|kicks|kicking|punche[sd]|punching|slaps|slapping(?! me on)|shoves|shoving|burns|burning|whips|whipping|throws (?:me|him|her) (?:against|down|across)|drags(?= me by)|dragging(?= me by))\\s+me\\b(?! up\\b)(?! (?:at|to|in|by|back)\\b)(?! on the (?:back|shoulder))`, 'i') },
   { tier: 'stop', kind: 'partner-or-family', why: 'pushes or grabs me in a way that is physical', pattern: new RegExp(`\\b${WHO}\\s+${ADV}(?:pushe[sd]|pushing|grab(?:s|bed|bing)|pins?|pinned|pinning)\\s+me\\s+(?:against|down|into|onto|by the|around|to the (?:floor|ground|wall))`, 'i') },

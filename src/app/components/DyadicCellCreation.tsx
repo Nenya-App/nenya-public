@@ -2,25 +2,15 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Copy, Check, Sparkles, Shield, AlertCircle } from 'lucide-react';
+import { newCellCode } from '../../lib/cellCrypto';
 
 interface DyadicCellCreationProps {
   onCreateCell: (code: string) => void;
   onBack: () => void;
 }
 
-const generateCellCode = () => {
-  const words = [
-    'Blue', 'Dolphin', 'Sunset', 'Quiet', 'River', 'Mountain',
-    'Ocean', 'Forest', 'Meadow', 'Willow', 'Amber', 'Crystal',
-    'Silver', 'Golden', 'Gentle', 'Peaceful', 'Bright', 'Calm'
-  ];
-  
-  const shuffled = [...words].sort(() => Math.random() - 0.5);
-  const selected = shuffled.slice(0, 5);
-  const number = Math.floor(Math.random() * 10);
-  
-  return `${selected.join('-')}-${number}`;
-};
+// The same code a real cell uses (src/lib/cellCrypto.ts): 80 bits from the browser's secure random numbers.
+const generateCellCode = () => newCellCode();
 
 export default function DyadicCellCreation({ onCreateCell, onBack }: DyadicCellCreationProps) {
   const [cellCode] = useState(generateCellCode());

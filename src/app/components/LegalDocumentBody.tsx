@@ -55,6 +55,21 @@ export function LegalDocumentBody({ compact = false }: LegalDocumentBodyProps) {
                   ))}
                 </ul>
               )}
+              {section.after?.map((p, i) => (
+                <p key={`after-${i}`} className={text}>
+                  {linkify(p)}
+                </p>
+              ))}
+              {section.subsections?.map((sub) => (
+                <div key={sub.heading} className="space-y-1.5 pt-1">
+                  <h5 className={`font-semibold ${headingSize}`}>{sub.heading}</h5>
+                  {sub.paragraphs.map((p, i) => (
+                    <p key={i} className={text}>
+                      {linkify(p)}
+                    </p>
+                  ))}
+                </div>
+              ))}
             </div>
           ))}
         </div>

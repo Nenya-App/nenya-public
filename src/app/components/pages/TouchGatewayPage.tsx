@@ -1,14 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
+import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStages';
+import { GatewayProgress } from '../GatewayProgress';
+import { TextureCredits } from '../TextureCredits';
 import { Button } from '../ui/button';
+import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, ChevronRight, ArrowRight as ArrowRightIcon, User } from 'lucide-react';
 import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
-import NenyaLogo from '../NenyaLogo';
+import PanelLogo from '../PanelLogo';
 import { SnappingSlider } from '../ui/snapping-slider';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
+import { TouchSurfaceField } from '../TouchSurfaceField';
 
 interface TouchGatewayPageProps {
   onComplete: (data: any) => void;
@@ -44,6 +49,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
   const [showBodyMap, setShowBodyMap] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState<PairStage>('present');
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -53,19 +60,21 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   }, [step]);
 
   // Current state
-  const [currentTexture, setCurrentTexture] = useState([50]);
-  const [currentTemperature, setCurrentTemperature] = useState([50]);
-  const [currentPressure, setCurrentPressure] = useState([50]);
-  const [currentWeight, setCurrentWeight] = useState([50]);
-  const [currentSharpness, setCurrentSharpness] = useState([50]);
+  const [currentSurface, setCurrentSurface] = useState<string | null>(null);
+  const [currentTexture, setCurrentTexture] = useState(() => unsetSlider());
+  const [currentTemperature, setCurrentTemperature] = useState(() => unsetSlider());
+  const [currentPressure, setCurrentPressure] = useState(() => unsetSlider());
+  const [currentWeight, setCurrentWeight] = useState(() => unsetSlider());
+  const [currentSharpness, setCurrentSharpness] = useState(() => unsetSlider());
   const [currentDescription, setCurrentDescription] = useState('');
 
   // Potential state
-  const [potentialTexture, setPotentialTexture] = useState([50]);
-  const [potentialTemperature, setPotentialTemperature] = useState([50]);
-  const [potentialPressure, setPotentialPressure] = useState([50]);
-  const [potentialWeight, setPotentialWeight] = useState([50]);
-  const [potentialSharpness, setPotentialSharpness] = useState([50]);
+  const [potentialSurface, setPotentialSurface] = useState<string | null>(null);
+  const [potentialTexture, setPotentialTexture] = useState(() => unsetSlider());
+  const [potentialTemperature, setPotentialTemperature] = useState(() => unsetSlider());
+  const [potentialPressure, setPotentialPressure] = useState(() => unsetSlider());
+  const [potentialWeight, setPotentialWeight] = useState(() => unsetSlider());
+  const [potentialSharpness, setPotentialSharpness] = useState(() => unsetSlider());
   const [potentialDescription, setPotentialDescription] = useState('');
 
   const handleNextInstructionCard = () => {
@@ -78,17 +87,19 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
 
   const handleNext = () => {
     onComplete({
-      currentTexture: currentTexture[0],
-      currentTemperature: currentTemperature[0],
-      currentPressure: currentPressure[0],
-      currentWeight: currentWeight[0],
-      currentSharpness: currentSharpness[0],
+      currentSurface,
+      currentTexture: sliderValue(currentTexture),
+      currentTemperature: sliderValue(currentTemperature),
+      currentPressure: sliderValue(currentPressure),
+      currentWeight: sliderValue(currentWeight),
+      currentSharpness: sliderValue(currentSharpness),
       currentDescription: currentDescription || null,
-      potentialTexture: potentialTexture[0],
-      potentialTemperature: potentialTemperature[0],
-      potentialPressure: potentialPressure[0],
-      potentialWeight: potentialWeight[0],
-      potentialSharpness: potentialSharpness[0],
+      potentialSurface,
+      potentialTexture: sliderValue(potentialTexture),
+      potentialTemperature: sliderValue(potentialTemperature),
+      potentialPressure: sliderValue(potentialPressure),
+      potentialWeight: sliderValue(potentialWeight),
+      potentialSharpness: sliderValue(potentialSharpness),
       potentialDescription: potentialDescription || null
     });
   };
@@ -112,15 +123,13 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
           </Button>
 
           <div className="flex items-center gap-3">
-            <NenyaLogo size={32} />
+            <PanelLogo size={32} />
             <div className="text-center">
               <h1 className="text-lg">
                 Touch - Somatosensation
                 <GatewaySubtitleLink href="https://www.ncbi.nlm.nih.gov/books/NBK583711/" />
               </h1>
-              <p className="text-xs text-muted-foreground">
-                Gateway {currentIndex + 1} of {totalGateways}
-              </p>
+              <GatewayProgress index={currentIndex} total={totalGateways} />
             </div>
           </div>
 
@@ -151,9 +160,12 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                     {INSTRUCTION_CARDS[instructionCardIndex].detail}
                   </p>
                   <div className="flex items-center justify-between pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      {instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
+                        <ArrowLeft className="size-4" /> Back
+                      </Button>
+                      <p className="text-sm text-muted-foreground">{instructionCardIndex + 1} of {INSTRUCTION_CARDS.length}</p>
+                    </div>
                     <Button variant="ghost" className="gap-2">
                       {instructionCardIndex < INSTRUCTION_CARDS.length - 1 ? (
                         <>
@@ -179,7 +191,9 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                 Open Body Map
               </Button>
             </div>
-            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+            <div className="mx-auto w-full max-w-2xl">
+              <StageIntro stage={stage} />
+              <StageSlot stage="present" current={stage}>
               {/* Present State Card */}
               <Card
                 className="transition-all"
@@ -198,6 +212,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <CardDescription>The tactile qualities of where you are now</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <TouchSurfaceField stateName="Present" value={currentSurface} onChange={setCurrentSurface} slider={currentTexture[0]} onMatchSlider={(v) => setCurrentTexture([v])} />
+
                   <SnappingSlider
                     value={currentTexture}
                     onValueChange={setCurrentTexture}
@@ -255,6 +271,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                 </CardContent>
               </Card>
 
+              </StageSlot>
+              <StageSlot stage="wish" current={stage}>
               {/* Potential State Card */}
               <Card
                 className="transition-all"
@@ -273,6 +291,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <CardDescription>The tactile qualities of where you wish to be</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <TouchSurfaceField stateName="Wish" value={potentialSurface} onChange={setPotentialSurface} slider={potentialTexture[0]} onMatchSlider={(v) => setPotentialTexture([v])} />
+
                   <SnappingSlider
                     value={potentialTexture}
                     onValueChange={setPotentialTexture}
@@ -329,9 +349,13 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   </div>
                 </CardContent>
               </Card>
+            </StageSlot>
+              <StageNav stage={stage} onChange={setStage} />
             </div>
 
             {/* Next Button */}
+            <TextureCredits />
+            {stage === 'wish' && (
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"
@@ -341,6 +365,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                 {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
               </Button>
             </div>
+            )}
           </div>
         )}
 
@@ -354,6 +379,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
           onSave={(data) => onUpdateBodyMap(data)}
           initialPlacements={bodyMapData.placements}
           initialNotes={bodyMapData.notes}
+          initialPins={bodyMapData.pins}
         />
       )}
     </div>

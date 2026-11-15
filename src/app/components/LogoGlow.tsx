@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from './ThemeProvider';
 import { GLOW_COLORS, GLOW_RADII, GLOW_SPREAD, GLOW_STRENGTH, MAX_GLOW_RADIUS, bakeGlow } from '../../lib/glowBake';
-import { GEM_CENTRE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite, loadImage } from '../../lib/gemSprite';
+import { GEM_CENTRE, GEM_ENGINE, GEM_TO_PETALS, SPRITE_CELL, drawGemSilhouette, frameOrigin, loadGemSprite, loadImage, type GemEngine } from '../../lib/gemSprite';
+import { liveGemSupported } from '../../lib/gemRenderer';
 
 interface LogoGlowProps {
   /** The logo's size (the same `size` NenyaLogo takes). */
@@ -10,6 +11,8 @@ interface LogoGlowProps {
   orbit: boolean;
   /** URL of the image whose alpha the glow is cast from (petals layer, or the flat logo). */
   maskSrc: string;
+  /** With the live gem, the stone's outline is drawn as a hexagon, so the sprite is never downloaded just for the glow. */
+  gemEngine?: GemEngine;
 }
 
 /** Room left around the logo for the glow: three times the largest blur radius. */
@@ -27,7 +30,7 @@ function alphaOf(ctx: CanvasRenderingContext2D, w: number, h: number): Float32Ar
  * pixel density. Replaces a CSS `filter: drop-shadow()` chain, which Safari fails to draw on an element
  * whose contents are animated or blended. Never computed per frame.
  */
-export default function LogoGlow({ size, orbit, maskSrc }: LogoGlowProps) {
+export default function LogoGlow({ size, orbit, maskSrc, gemEngine = GEM_ENGINE }: LogoGlowProps) {
   const { theme } = useTheme();
   const restRef = useRef<HTMLCanvasElement>(null);
   const hoverRef = useRef<HTMLCanvasElement>(null);
@@ -45,7 +48,8 @@ export default function LogoGlow({ size, orbit, maskSrc }: LogoGlowProps) {
     const W = Math.round(side * scale);
 
     const run = async () => {
-      const [mask, sprite] = await Promise.all([loadImage(maskSrc), orbit ? loadGemSprite() : Promise.resolve(null)]);
+      const hexOnly = orbit && gemEngine === 'live' && liveGemSupported();
+      const [mask, sprite] = await Promise.all([loadImage(maskSrc), orbit && !hexOnly ? loadGemSprite() : Promise.resolve(null)]);
       if (cancelled) return;
       const work = document.createElement('canvas');
       work.width = work.height = W;
@@ -58,13 +62,17 @@ export default function LogoGlow({ size, orbit, maskSrc }: LogoGlowProps) {
       ctx.clearRect(0, 0, W, W);
       ctx.drawImage(mask, o, o, cs, cs);
       const alpha = alphaOf(ctx, W, W);
-      if (sprite) {
+      if (sprite || hexOnly) {
         const gs = Math.round(contentSide * GEM_TO_PETALS * scale);
-        const [sx, sy] = frameOrigin(0);
         const gx = Math.round(W / 2 + (GEM_CENTRE.x - 0.5) * cs - gs / 2);
         const gy = Math.round(W / 2 + (GEM_CENTRE.y - 0.5) * cs - gs / 2);
         ctx.clearRect(0, 0, W, W);
-        ctx.drawImage(sprite, sx, sy, SPRITE_CELL, SPRITE_CELL, gx, gy, gs, gs);
+        if (sprite) {
+          const [sx, sy] = frameOrigin(0);
+          ctx.drawImage(sprite, sx, sy, SPRITE_CELL, SPRITE_CELL, gx, gy, gs, gs);
+        } else {
+          drawGemSilhouette(ctx, gx, gy, gs);
+        }
         const gem = alphaOf(ctx, W, W);
         for (let i = 0; i < alpha.length; i++) if (gem[i] > alpha[i]) alpha[i] = gem[i];
       }
@@ -92,7 +100,7 @@ export default function LogoGlow({ size, orbit, maskSrc }: LogoGlowProps) {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [side, contentSide, orbit, maskSrc, theme]);
+  }, [side, contentSide, orbit, maskSrc, theme, gemEngine]);
 
   const place: React.CSSProperties = {
     position: 'absolute',

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import NenyaLogo from '../NenyaLogo';
 import { ValarBreathingLogo, BreathingTechnique } from '../ValarBreathingLogo';
-import WelcomePopup from '../WelcomePopup';
+import QuickNav from '../QuickNav';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { AppFooter } from '../AppFooter';
 import { SupportThisWork } from '../SupportThisWork';
@@ -19,8 +19,8 @@ interface WelcomePageProps {
   technique?: BreathingTechnique | null;
   cvMode?: string;
   cycleStart?: number;
-  onStartTutorial?: () => void;
-  entryUnlocked?: boolean;
+  /** Clicking the big logo opens the same panel as the small one in the top left: breathing animation and accessibility settings. */
+  onLogoClick?: () => void;
 }
 
 export default function WelcomePage({
@@ -33,8 +33,7 @@ export default function WelcomePage({
   technique = null,
   cvMode = '',
   cycleStart,
-  onStartTutorial,
-  entryUnlocked = false,
+  onLogoClick,
 }: WelcomePageProps) {
   const [logoSize, setLogoSize] = useState(400);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -73,8 +72,8 @@ export default function WelcomePage({
 
   return (
     <div ref={scrollContainerRef} className="size-full relative overflow-y-auto snap-y snap-proximity">
-      {/* Welcome Popup */}
-      <WelcomePopup initiallyOpen={false} />
+      {/* Quick navigation, bottom right: Breathe (home), Reflect (the gateways), Coach. It replaces the welcome message the sparkle used to reopen. */}
+      <QuickNav onBreathe={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} onReflect={onContinue} />
 
       {/* First Section: Full Viewport with Large Logo */}
       <div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">
@@ -83,8 +82,26 @@ export default function WelcomePage({
             leaving a large empty gap above it. The outer section's own
             justify-center now centers this + the text block as one unit. */}
         <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`flex items-center justify-center transition-all duration-500`}>
-          {/* Not interactive: hovering only brightens the glow. */}
-          <div id="tutorial-logo" className="relative transition-all duration-500 nenya-logo-hover">
+          {/* Clicking the logo opens the breathing and accessibility settings, the same as the small logo in the top left (a button for the keyboard and screen readers, too). Hovering brightens the glow. */}
+          <div
+            id="tutorial-logo"
+            className={`relative transition-all duration-500 nenya-logo-hover ${onLogoClick ? 'cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring' : ''}`}
+            {...(onLogoClick
+              ? {
+                  role: 'button',
+                  tabIndex: 0,
+                  'aria-label': 'Open breathing animation and accessibility settings',
+                  title: 'Open breathing animation & accessibility settings',
+                  onClick: onLogoClick,
+                  onKeyDown: (e: React.KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onLogoClick();
+                    }
+                  },
+                }
+              : {})}
+          >
             <ValarBreathingLogo
               enabled={breathingEnabled}
               opacity={breathingOpacity}
@@ -116,24 +133,6 @@ export default function WelcomePage({
           <p className="text-xl md:text-2xl text-center text-muted-foreground">
             Give Yourself a Moment to Breathe
           </p>
-
-          {/* Opt-in tutorial entry. It never launches on its own (the site keeps
-              no memory of past visits), but once the welcome card is dismissed
-              it gets a brief gold pulse so it isn't missed. */}
-          {onStartTutorial && (
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={onStartTutorial}
-                className={`rounded-full border border-nenya-accent-warm/50 px-4 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:border-nenya-accent-warm transition-colors ${
-                  entryUnlocked ? 'nenya-tour-highlight' : ''
-                }`}
-                style={entryUnlocked ? { animation: 'nenya-tour-pulse 1.6s ease-out 0.4s 3' } : undefined}
-              >
-                New here? Take a quick tour
-              </button>
-            </div>
-          )}
 
           {/* Animated Scroll Indicator */}
           <div
@@ -174,7 +173,7 @@ export default function WelcomePage({
               id="tutorial-cta"
               size="lg"
               onClick={onContinue}
-              className="gap-2 text-lg px-8 py-6 bg-nenya-accent-warm hover:bg-nenya-accent-secondary text-background-elevated"
+              className="gap-2 text-lg px-8 py-6 bg-nenya-accent-warm hover:bg-nenya-gold-light text-primary-foreground"
             >
               Explore Your Senses
               <ArrowRight className="size-5" />

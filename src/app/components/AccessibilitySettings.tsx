@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Orbit, Sun, Moon, Type } from 'lucide-react';
+import { Eye, EyeOff, Orbit, Sparkles, Sun, Moon, Type } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
@@ -8,6 +8,7 @@ import { Separator } from './ui/separator';
 import { useTheme } from './ThemeProvider';
 import { DeviceMemoryControls } from './DeviceMemoryControls';
 import { BreathToneStyle, BreathTonesSwitch } from './BreathTonesSwitch';
+import { setGemKaleidoscope, useGemKaleidoscope } from '../../lib/deviceMemory';
 
 const VISION_MODES: { value: string; label: string }[] = [
   { value: '', label: 'Standard' },
@@ -57,6 +58,7 @@ export function AccessibilitySettingsContent({
   const { theme, setTheme } = useTheme();
 
   // Pending changes state
+  const gemKaleidoscope = useGemKaleidoscope();
   const [pendingBreathingEnabled, setPendingBreathingEnabled] = useState(breathingEnabled);
   const [pendingOrbitEnabled, setPendingOrbitEnabled] = useState(orbitEnabled);
   const [pendingLogoVisible, setPendingLogoVisible] = useState(logoVisible);
@@ -153,6 +155,24 @@ export function AccessibilitySettingsContent({
           />
         </div>
 
+        {/* Gem kaleidoscope: the inside of the stone slowly re-cuts itself. Off by default; it takes effect at once and holds still when the device asks for reduced motion. */}
+        {!compact && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-muted-foreground" aria-hidden="true" />
+                <Label htmlFor="kaleidoscope-toggle" className="cursor-pointer text-sm">
+                  Gem Kaleidoscope
+                </Label>
+              </div>
+              <Switch id="kaleidoscope-toggle" checked={gemKaleidoscope} onCheckedChange={setGemKaleidoscope} aria-describedby="kaleidoscope-help" />
+            </div>
+            <p id="kaleidoscope-help" className="pl-6 text-xs text-muted-foreground">
+              The inside of the gem slowly re-cuts itself. Off by default. It holds still if your device asks for reduced motion.
+            </p>
+          </div>
+        )}
+
         {/* Logo Visibility Toggle */}
         {onLogoVisibleToggle && (
           <div className="flex items-center justify-between">
@@ -209,7 +229,7 @@ export function AccessibilitySettingsContent({
               onClick={() => onCvModeChange && onCvModeChange(mode.value)}
               // Colours come from the theme so the label stays readable in light and dark: plain text colour, with the
               // chosen option marked by an amber border and tint (dark amber text on light, light amber on dark).
-              className={`cursor-pointer whitespace-nowrap rounded border px-2 py-1 text-[11px] font-medium [touch-action:manipulation] ${
+              className={`cursor-pointer whitespace-nowrap rounded border px-2 py-1 text-xs font-medium [touch-action:manipulation] ${
                 cvMode === mode.value
                   ? 'border-[#9a5f00] bg-[rgba(232,160,32,0.18)] text-[#5c3800] dark:border-[rgba(232,160,32,0.8)] dark:text-[#F3C56B]'
                   : 'border-foreground/30 text-foreground hover:border-foreground/60'
