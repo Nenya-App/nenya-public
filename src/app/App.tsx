@@ -21,6 +21,7 @@ import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../l
 import { BreathingTechnique } from './components/ValarBreathingLogo';
 import OnboardingFlow from './components/OnboardingFlow';
 import type { StartChoice } from '../lib/startCopy';
+import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
 import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
 
@@ -81,9 +82,18 @@ export default function App() {
       return null;
     }
   });
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : 'welcome');
-  // Arrived on a page other than the welcome page (a link to an About page): the first-visit panel then skips the breathing-rhythm choice.
-  const [arrivedElsewhere] = useState(initialAbout !== null);
+  // With the section addresses on (VITE_START_CHOOSER), /senses opens the gateway choice; / and /breath the front page (src/lib/sections.ts).
+  const [arrivedAtSenses] = useState(() => {
+    try {
+      return initialAbout === null && sectionsOn() && sectionOfPath(window.location.pathname) === 'senses';
+    } catch {
+      return false;
+    }
+  });
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : arrivedAtSenses ? 'home' : 'welcome');
+  // Arrived on a page other than the welcome page (a link to an About page, or straight to /senses, which means reflection was chosen):
+  // the first-visit panel then skips the start chooser and the breathing-rhythm choice, and asks only the Terms.
+  const [arrivedElsewhere] = useState(initialAbout !== null || arrivedAtSenses);
   // Real navigation history instead of a single "previousScreen" value.
   // A single value can only ever answer "what screen came immediately
   // before this one" -- it breaks the moment a screen is reachable more
@@ -96,6 +106,14 @@ export default function App() {
   // The browser's back button from an About address to a non-About one leaves the About pages.
   useEffect(() => {
     const onPop = () => {
+      // With the section addresses on, Back and Forward move between Breath, Senses and Coach. A reflection stays in memory either way.
+      const sec = sectionsOn() ? sectionOfPath(window.location.pathname) : null;
+      if (sec && sec !== sectionOfScreen(currentScreen)) {
+        setAboutSection(undefined);
+        const done = gatewayDataRef.current.length > 0;
+        setCurrentScreen(sec === 'breath' ? 'welcome' : sec === 'senses' ? (done ? 'gateway-review' : 'home') : done ? 'session' : 'home');
+        return;
+      }
       if (currentScreen === 'about' && aboutSectionFromLocation(window.location.pathname, window.location.search) === null) {
         setAboutSection(undefined);
         setCurrentScreen('welcome');
@@ -104,10 +122,27 @@ export default function App() {
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, [currentScreen]);
-  // Leaving the About pages by the app's own buttons returns the address and the title to the site's own.
+  // Leaving the About pages by the app's own buttons returns the address and the title to the site's own. With the section addresses on,
+  // the address follows the part of the site: a new history entry when the part changes, the same entry when it does not (so "/" becomes
+  // "/breath" without adding a step), and the canonical and share addresses follow.
+  const firstAddress = useRef(true);
   useEffect(() => {
     if (currentScreen === 'about') return;
-    if (aboutSectionFromLocation(window.location.pathname, '') !== null) window.history.replaceState(null, '', '/');
+    const sec = sectionsOn() ? sectionOfScreen(currentScreen) : null;
+    const leavingAbout = aboutSectionFromLocation(window.location.pathname, '') !== null;
+    if (sec) {
+      const target = SECTION_PATHS[sec];
+      if (window.location.pathname !== target) {
+        const sameSection = sectionOfPath(window.location.pathname) === sec;
+        if (firstAddress.current || sameSection || leavingAbout) window.history.replaceState(null, '', target);
+        else window.history.pushState(null, '', target);
+      }
+      document.querySelector('link[rel="canonical"]')?.setAttribute('href', `https://nenya.biz${target}`);
+      document.querySelector('meta[property="og:url"]')?.setAttribute('content', `https://nenya.biz${target}`);
+    } else if (leavingAbout) {
+      window.history.replaceState(null, '', '/');
+    }
+    firstAddress.current = false;
     document.title = SITE_TITLE;
   }, [currentScreen]);
   const [termsAgreed, setTermsAgreed] = useState(() => termsAcceptedFor(LEGAL_EFFECTIVE_DATE));
@@ -115,6 +150,9 @@ export default function App() {
   // Gateway system state
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
   const [gatewayData, setGatewayData] = useState<GatewayData[]>([]);
+  // Read by the Back/Forward handler, which is set up before this state exists.
+  const gatewayDataRef = useRef<GatewayData[]>([]);
+  gatewayDataRef.current = gatewayData;
   // Shared across every gateway -- not owned by Sight or any one gateway's
   // data blob, so it persists regardless of which gateways are visited or
   // in what order.

@@ -34,6 +34,7 @@ import { FailureNotice } from './FailureNotice';
 import { RegionNotice } from './RegionGate';
 import { suggestsBreath } from '../lib/breathOffer';
 import { setBreathingPanel } from '../lib/breathingPanel';
+import { sectionsOn } from '../lib/sections';
 import { resetScroll } from '../app/components/ScrollToTop';
 import { describeFailure, type FailureInfo } from '../lib/coachErrors';
 import { DEFAULT_TIMEOUT, quietState, type TimeoutChoice } from '../lib/chatTimeout';
@@ -429,7 +430,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       </Button>
     ) : (
       <a
-        href="/"
+        href={sectionsOn() ? '/breath' : '/'}
         className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm"
         style={gradientButton}
       >

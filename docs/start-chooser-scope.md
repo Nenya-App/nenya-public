@@ -53,7 +53,7 @@ Chooser before the Terms; the automatic tour offer retired (the tour stays in th
 ## Out of scope
 The front page's own layout, the quick links, and the gateways themselves (the simpler gateways are separate work, starting with Touch).
 
-## Part 2: one address per part of the site (owner, 2026-11-15; scope, not built)
+## Part 2: one address per part of the site (owner, 2026-11-15; built behind VITE_START_CHOOSER)
 
 **The idea:** the site divides into `/breath`, `/senses` and `/coach`. The front page with the breathing animation stays as it is and lives at `/breath`.
 
@@ -76,7 +76,9 @@ The front page's own layout, the quick links, and the gateways themselves (the s
 - **Counting:** unchanged (screens are already counted by name).
 - **Switch:** the same `VITE_START_CHOOSER`, since the chooser leads to these parts; one rollout.
 
-**Decisions for the owner**
+**Decided (owner, 2026-11-15): all three recommendations.** `/` shows the front page and the address becomes `/breath` (no server redirect); the whole reflection stays at `/senses`; the coach after a reflection shows `/coach`. Built in `src/lib/sections.ts` and `App` (addresses, Back and Forward, canonical and share addresses); tests in `tests/sections.test.mts`. Still to do at the production rollout: the sitemap, `llms.txt`, `about-nenya.html` and the manifest's start address (static files that should not name `/senses` before production has the switch).
+
+**The decisions as they were put**
 1. `/`: the same page with the address bar updated to `/breath` (recommended: no extra trip to the server, and nothing breaks), or a server redirect from `/` to `/breath`.
 2. Gateways: everything at `/senses` (recommended: a reflection cannot be resumed from an address, because nothing is kept), or `/senses/touch` and so on, which would suggest a page you could return to.
 3. The in-app coach after a reflection showing `/coach` (recommended: one address for the coach), or `/senses/coach`.

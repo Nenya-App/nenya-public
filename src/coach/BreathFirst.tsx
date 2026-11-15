@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { ArrowRight, Wind } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { setBreathingPanel } from '../lib/breathingPanel';
+import { sectionsOn } from '../lib/sections';
 
 interface BreathFirstProps {
   /** Go on to the coach (the color choice comes next). */
@@ -39,7 +40,7 @@ export function BreathFirst({ onContinue }: BreathFirstProps) {
           </Button>
         </div>
         <p className="text-sm">
-          <a href="/" className="inline-flex min-h-11 items-center text-muted-foreground underline underline-offset-4 hover:text-foreground">
+          <a href={sectionsOn() ? '/senses' : '/'} className="inline-flex min-h-11 items-center text-muted-foreground underline underline-offset-4 hover:text-foreground">
             Start with a reflection instead
           </a>
         </p>
