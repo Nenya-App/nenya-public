@@ -32,6 +32,8 @@ import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages
 import { TranscriptTools } from './TranscriptTools';
 import { FailureNotice } from './FailureNotice';
 import { RegionNotice } from './RegionGate';
+import { suggestsBreath } from '../lib/breathOffer';
+import { setBreathingPanel } from '../lib/breathingPanel';
 import { resetScroll } from '../app/components/ScrollToTop';
 import { describeFailure, type FailureInfo } from '../lib/coachErrors';
 import { DEFAULT_TIMEOUT, quietState, type TimeoutChoice } from '../lib/chatTimeout';
@@ -786,6 +788,16 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       {m.note && <span className="mt-2 block text-xs italic text-muted-foreground">{m.note}</span>}
                     </div>
                   </div>
+                  {m.role === 'assistant' && suggestsBreath(m.content) && (
+                    <div className="ml-9 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm" role="group" aria-label="Breathing tool">
+                      <button type="button" onClick={() => setBreathingPanel(true)} className={`${linkClass} min-h-11`}>
+                        Breathe along with the pop-out
+                      </button>
+                      <a href="/" target="_blank" rel="noopener" className={`${linkClass} inline-flex min-h-11 items-center`}>
+                        Open the breathing tool in a new tab<span className="sr-only"> (opens a new tab)</span>
+                      </a>
+                    </div>
+                  )}
                   {m.card && <AnswerCard card={m.card} />}
                   {m.offer && <LearningOffer cardId={m.offer.id} />}
                   {m.checked && m.checked.length > 0 && <MistakeButton kind={m.checked.includes('challenge') ? 'challenge' : 'offer'} />}

@@ -42,6 +42,7 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `COACH_ARC` | `practice` | The practice arc (later) |
 | `COACH_STANCES` | includes `learn` | The Learn stance (later) |
 | `COACH_SEALED` | `on` | Sealed mode (later; needs an `e2ee-` model) |
+| `COACH_MODULES` | `on` | The private module set (method notes in parts: the ICARUS lenses and the coaching moves, chosen per reply). Off: the single `method-notes` text is used. Upload the set to production's store first. |
 | `CELL_ENABLED` | `true` | Partner cells (not built for visitors yet) |
 | `PALETTE_ENABLED` | `true` | "Ask The Color API" in the Sight gateway |
 | `COACH_CARD_DRAFTS` | leave unset | Owner tool for card drafts; not for production |

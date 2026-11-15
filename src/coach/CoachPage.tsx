@@ -13,6 +13,7 @@ import OnboardingFlow from '../app/components/OnboardingFlow';
 import { termsAcceptedFor, usePref } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { enableUsageCounts } from '../lib/usageCounts';
+import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
 
 const STEADY = { ih: 5000, hi: 0, ex: 5000, ho: 0 };
 const noop = () => undefined;
@@ -51,7 +52,8 @@ export default function CoachPage() {
   // Display choices are kept only if the visitor turned on "Remember on this device".
   const [textSize, setTextSize] = usePref('textSize', 16);
   // The logo opens the same breathing animation panel as the rest of the site.
-  const [popoutOpen, setPopoutOpen] = useState(false);
+  // The shared panel state (src/lib/breathingPanel.ts), so a reply's "breathing tool" offer in the conversation can open it too.
+  const popoutOpen = useBreathingPanel();
   const [breathingEnabled, setBreathingEnabled] = usePref('breathingEnabled', true);
   const [orbitEnabled, setOrbitEnabled] = usePref('orbitEnabled', true);
   const [logoVisible, setLogoVisible] = usePref('logoVisible', true);
@@ -97,7 +99,7 @@ export default function CoachPage() {
           }
         }}
         compactSettings
-        onBreathingPopoutToggle={() => setPopoutOpen((open) => !open)}
+        onBreathingPopoutToggle={toggleBreathingPanel}
         onEmergencyExit={() => {
           exiting.current = true;
         }}
@@ -132,7 +134,7 @@ export default function CoachPage() {
       <OwnerPanel />
       <BreathingPopout
         isOpen={popoutOpen}
-        onClose={() => setPopoutOpen(false)}
+        onClose={() => setBreathingPanel(false)}
         breathingEnabled={breathingEnabled}
         orbitEnabled={orbitEnabled}
         logoVisible={logoVisible}

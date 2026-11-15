@@ -34,6 +34,8 @@ import {
 
 import { WordPicker } from '../WordPicker';
 import { PhraseMelody, type Active } from '../PhraseMelody';
+import { ChordPrototype } from '../ChordPrototype';
+import { chordsOn } from '../../../lib/chords';
 import { buildPhrases, movePhrase, playlist, remapScale, setMuted, setNote, type Phrase } from '../../../lib/longMelody';
 import { playSequence, renderWav, clampStep, clampVolume, DEFAULT_STEP } from '../../../lib/melodyPlayer';
 interface SoundGatewayPageProps {
@@ -659,6 +661,18 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               <Button variant="outline" size="sm" onClick={handleDownload} disabled={!melodyComplete || isPlaying}>Save as a sound file</Button>
               <p className="text-xs text-muted-foreground" role="status">{fileNote || 'The file is made on your device and is not sent anywhere.'}</p>
             </div>
+
+            {chordsOn() && melodyComplete && (
+              <ChordPrototype
+                chords={longMode ? phrases.filter((p) => !p.muted).map((p) => p.notes) : [melody.slice(0, 3) as number[], melody.slice(3, 6) as number[]]}
+                labels={longMode ? phrases.filter((p) => !p.muted).map((p) => (p.kind === 'present' ? 'Present' : p.kind === 'wish' ? 'Wish' : p.label)) : ['Present', 'Wish']}
+                scale={scale}
+                noteNames={noteNames}
+                westernScale={tonalSystem === 'western'}
+                volume={volume}
+                timbre={activeTimbre}
+              />
+            )}
 
             <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginTop: '6px', flexWrap: 'wrap' }}>
               {TIMBRE_OPTIONS.map((opt) => (

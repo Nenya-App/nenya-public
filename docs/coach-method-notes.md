@@ -19,7 +19,7 @@ Do not commit the notes file. Do not put transcripts, names, or caller details i
 Because part of the coach's instructions is private, the public pages say the *core* instructions are public and that method notes may be kept outside the code.
 
 ## Modular notes (preferred)
-Instead of one long text, store JSON under key `modules` in the same store:
+Instead of one long text, store JSON under key `modules` in the same store, and set `COACH_MODULES=on` (since 2026-11-14 the set is used only with that switch, so a new set can be uploaded and checked before it is used):
 
     { "core": "...always included...", "modules": { "reserves": "...", "legitimacy": "..." } }
 

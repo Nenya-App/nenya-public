@@ -22,8 +22,12 @@ const TRIGGERS: Array<[id: string, group: ModuleGroup, patterns: RegExp[]]> = [
 
   // Lenses (internal reading of what is blocking the person).
   ['reserves', 'lens', [/\b(exhaust\w*|burn(?:ed|t)? out|burnout|drained|depleted|no energy|nothing left|running on (?:empty|fumes)|can't keep going|too tired|worn (?:out|down)|no capacity|wiped out)\b/]],
+  // A caregiver with nothing left: caring for someone and depletion, anywhere in what they have said.
+  ['care_depleted', 'lens', [/(?=[\s\S]*\b(?:caring for|care for|caregiver|carer|looking after|look after|taking care of|take care of)\b)(?=[\s\S]*\b(?:exhaust\w*|drained|depleted|nothing left|burn(?:ed|t)? out|burnout|running on empty|no energy|worn out|can't keep (?:going|doing))\b)/]],
   ['legitimacy', 'lens', [/\b(don't listen|doesn't listen|not listening|never listen\w*|won't listen|dismiss\w*|ignor\w+ me|not taken seriously|don't believe me|doesn't believe me|invalidat\w+|gaslight\w*|talks? over me|discount\w*|no one (?:hears|takes)|silenced|my (?:experience|word) (?:doesn't|does not) count)\b/]],
-  ['deliberate_harm', 'lens', [/\b(on purpose|deliberate\w*|target(?:s|ed|ing) me|sabotag\w+|retaliat\w+|punish\w* me|every time i try|blocks? me|undermin\w+|bully\w*|harass\w*|intimidat\w+|takes? (?:the )?credit|manipulat\w+|threaten\w*)\b/]],
+  // Intent is never read into a description (owner, 2026-11-14): the coach cannot know anyone's intent. These two fire only on the person's own words
+  // that it was, or was not, meant. "Bully", "takes credit", "undermines" and the like fall back to the core.
+  ['harm_named_as_intended', 'lens', [/\b(on purpose|deliberately|intentionally|out to get me|(?:doing|did|does) (?:it|this|that) to (?:hurt|punish|spite|get at) me|trying to (?:sabotage|punish|silence|hurt|undermine|get rid of) me|target(?:s|ed|ing) me)\b/]],
   ['inward_turn', 'lens', [/\b(my fault|i'm (?:the problem|not good enough|too sensitive|overreacting|a failure|just lazy|just weak)|something(?: is)? wrong with me|i must be (?:crazy|overreacting|imagining)|i should (?:just )?be able to)\b/]],
   ['split_values', 'lens', [/\b(part of me|torn between|half of me|two minds|caught between|on one hand|want both|can't decide between)\b/]],
   ['recurrence', 'lens', [/\b(same (?:fight|argument|thing|pattern)|again and again|over and over|one thing goes wrong|everything (?:falls apart|goes wrong)|snowball\w*|spiral\w*|domino|nothing (?:ever )?sticks)\b/]],
@@ -31,9 +35,13 @@ const TRIGGERS: Array<[id: string, group: ModuleGroup, patterns: RegExp[]]> = [
   ['systemic_scale', 'lens', [/\b(the whole (?:system|company|team|culture|department|family)|everyone (?:here|in)|polic(?:y|ies)|structural\w*|systemic|bureaucra\w+|bigger than me|the way (?:it|things) (?:is|are) set up)\b/]],
   ['pressure', 'lens', [/\b(about to (?:snap|explode|quit|break)|can't (?:take|do) (?:this|it) any ?more|breaking point|at my limit|ready to (?:quit|walk out|explode)|bottling|holding (?:it|everything) in)\b/]],
   ['over_smoothing', 'lens', [/\b(we always (?:make up|move on)|sweep\w* (?:it )?under|never (?:talk|discuss|address)\w* (?:it|about it)|keeps happening (?:but|and)|make up and then|forgive and forget)\b/]],
-  ['careless_harm', 'lens', [/\b(didn't mean|did not mean|unintentional\w*|by accident|misunderst\w+|miscommunicat\w+|oversight|didn't realize|thoughtless)\b/]],
+  ['harm_named_as_unintended', 'lens', [/\b(didn't mean (?:to|it)|did not mean (?:to|it)|wasn't intentional|was not intentional|unintentional\w*|by accident|accidentally|didn't realize|did not realize|didn't know (?:it|that) would|an oversight)\b/]],
   ['unable_to_begin', 'lens', [/\b(don't know where to start|can't (?:even )?start|can't get (?:myself )?started|freez\w+|paraly\w+|procrastinat\w+|avoiding it|stuck)\b/]],
   ['backup', 'lens', [/\b(only one|single point|no (?:backup|plan b|safety net|savings)|all (?:my|our) eggs|one paycheck|depend\w* on (?:one|him|her|them)|no one else (?:to|can))\b/]],
+  // A judgment someone said about them that still stings at that exact spot (Theorems 9 and 10, v4.3 draft).
+  ['named_verdict', 'lens', [/\b(?:(?:always|was|were|got|been) told (?:i|me) (?:was|am|were|can't|couldn't|wasn't|would never|will never|had no)|(?:said|told me) (?:that )?i (?:would never|will never|can't|couldn't|was too|am too|wasn't)|made fun of my|laughed at my|mocked my)\b/]],
+  // Weighing a choice that touches others (the Ω draft): only then may the coach ask, once, what it costs or gives the people around them.
+  ['field_cost', 'lens', [/\b(?:should i (?:take|accept|move|quit|buy|sell|leave|stay|go)|deciding (?:whether|between)|trying to decide|can't decide whether)\b/]],
 
   // Coaching moves (how the coach answers), written from what the coach does in the calls.
   ['answer_with_words', 'move', [/\b(how (?:do|can|should|could|would) i (?:say|tell|bring up|raise|ask|approach|respond|word|put)|what (?:do|should|can|could) i say|how to (?:say|tell|ask|bring up|raise|approach)|(?:don't|do not) know how to (?:say|tell|ask|bring|raise|start)|what words|how (?:would|do) you (?:say|put))\b/]],
@@ -62,7 +70,8 @@ const TRIGGERS: Array<[id: string, group: ModuleGroup, patterns: RegExp[]]> = [
 // skip skill-building and perspective-taking toward the other party, and support boundaries.
 const SUPPRESS: Record<string, string[]> = {
   reserves: ['answer_with_words', 'open_a_hard_conversation', 'ask_for_what_you_want', 'empathize_before_asking', 'offer_to_play_the_other', 'reaction_as_information', 'set_a_boundary', 'say_the_real_feeling', 'read_a_silence', 'closure_check', 'power_difference'],
-  deliberate_harm: ['empathize_before_asking', 'open_a_hard_conversation', 'ask_for_what_you_want', 'offer_to_play_the_other', 'reaction_as_information', 'reframe_gently', 'closure_check'],
+  care_depleted: ['answer_with_words', 'open_a_hard_conversation', 'ask_for_what_you_want', 'empathize_before_asking', 'offer_to_play_the_other', 'reaction_as_information', 'set_a_boundary', 'say_the_real_feeling', 'read_a_silence', 'closure_check', 'power_difference'],
+  harm_named_as_intended: ['empathize_before_asking', 'open_a_hard_conversation', 'ask_for_what_you_want', 'offer_to_play_the_other', 'reaction_as_information', 'reframe_gently', 'closure_check'],
 };
 
 const CAPS: Record<ModuleGroup, number> = { safety: 1, lens: 2, move: 3, resource: 1 };
