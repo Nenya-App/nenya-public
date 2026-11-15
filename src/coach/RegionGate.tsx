@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../app/components/ui/button';
 import { ArrowLeft, Wind } from 'lucide-react';
 import { IpExplainer } from './IpExplainer';
+import { OWNER_TOKEN_KEY } from '../lib/deviceMemory';
 
 // The coach is open only to connections our host places in the United States (src/lib/coachRegion.ts). The page asks the
 // server once; the server enforces it on every message regardless, so a failed check here simply lets the page continue.
@@ -22,7 +23,15 @@ export function RegionGate({ children, onBack, onBreathe }: { children: ReactNod
   const [state, setState] = useState<State>({ kind: 'checking' });
   useEffect(() => {
     let on = true;
-    fetch('/api/coach?region', { cache: 'no-store' })
+    // The owner's token, if this browser has one, goes with the check (the same header the coach's messages carry), so the owner is let through anywhere.
+    let headers: Record<string, string> = {};
+    try {
+      const t = localStorage.getItem(OWNER_TOKEN_KEY);
+      if (t) headers = { 'x-nenya-owner': t };
+    } catch {
+      /* storage unavailable: no token */
+    }
+    fetch('/api/coach?region', { cache: 'no-store', headers })
       .then((r) => (r.ok ? r.json() : null))
       .then((j: { allowed?: boolean; country?: string | null } | null) => {
         if (!on) return;
@@ -72,8 +81,9 @@ export function RegionNotice({ country, onBack, onBreathe, inline = false }: { c
   );
 
   return (
+    <Scroll inline={inline}>
     <section
-      className={inline ? 'space-y-4 rounded-2xl border border-border bg-card p-5' : 'scroll-container mx-auto w-full max-w-xl space-y-6 overflow-y-auto px-4 py-6 md:px-6'}
+      className={inline ? 'space-y-4 rounded-2xl border border-border bg-card p-5' : 'mx-auto w-full max-w-xl space-y-6 px-4 py-6 md:px-6'}
       aria-labelledby="region-title"
       data-region-notice
     >
@@ -108,5 +118,11 @@ export function RegionNotice({ country, onBack, onBreathe, inline = false }: { c
         )}
       </div>
     </section>
+    </Scroll>
   );
+}
+
+/** As a page of its own, the notice fills the space it is given and scrolls inside it; shown inside the conversation, it scrolls with the conversation. */
+function Scroll({ inline, children }: { inline: boolean; children: ReactNode }) {
+  return inline ? <>{children}</> : <div className="scroll-container size-full overflow-y-auto">{children}</div>;
 }

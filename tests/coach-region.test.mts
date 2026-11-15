@@ -59,3 +59,18 @@ ok('it says the code is not stored or logged, and points to the Terms', /We do n
   const terms = JSON.stringify(LEGAL_PARTS);
   ok('the Terms say the coach is US-only, how the country is found, and that the code is neither stored nor logged', /open only to connections our host places in the United States/.test(terms) && /neither stores nor logs it/.test(terms) && /Netlify also tells our code which country/.test(terms) && /a connection outside the United States/.test(terms));
 }
+
+{
+  const OWNER = 'owner-test-token';
+  const { createHash } = await import('node:crypto');
+  process.env.COACH_OWNER_TOKEN_HASH = createHash('sha256').update(OWNER).digest('hex');
+  const res = await handler(new Request('https://nenya.biz/api/coach?region', { method: 'GET', headers: { 'x-nenya-owner': OWNER } }), { geo: { country: { code: 'DE' } } });
+  const j = await res.json();
+  ok('the page\'s check lets the owner through from anywhere (a VPN included), and still reports the country', j.allowed === true && j.country === 'DE');
+  const wrong = await (await handler(new Request('https://nenya.biz/api/coach?region', { method: 'GET', headers: { 'x-nenya-owner': 'not-it' } }), { geo: { country: { code: 'DE' } } })).json();
+  ok('a wrong token changes nothing', wrong.allowed === false);
+  delete process.env.COACH_OWNER_TOKEN_HASH;
+  const g = readFileSync('src/coach/RegionGate.tsx', 'utf8');
+  ok('the page sends the owner token with its check', /localStorage\.getItem\(OWNER_TOKEN_KEY\)/.test(g) && /fetch\('\/api\/coach\?region', \{ cache: 'no-store', headers \}\)/.test(g));
+  ok('the full-page notice scrolls inside the space it is given', /<div className="scroll-container size-full overflow-y-auto">/.test(g));
+}
