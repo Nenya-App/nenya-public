@@ -1,138 +1,60 @@
 # Nenya (nenya.biz) robots.txt
 #
-# Default: everyone (including regular search engines like Googlebot and
-# Bingbot) may crawl the full site.
+# Our policy, in plain words:
+# - Search engines may crawl and index the site, so people can find it.
+# - AI assistants that fetch a page to answer someone's question may read our two
+#   summary pages and llms.txt, which were written to be quoted accurately. They are
+#   kept out of the interactive tool, which has nothing to read without a person using it.
+# - Nothing on this site may be used to train AI models.
+# - The coach is for people. Its endpoint is not for crawlers or agents, and it
+#   refuses automated use regardless of what this file says.
 #
-# Named AI crawlers/agents below are funneled to /about-nenya.html and
-# /why-nenya.html -- curated, static summaries of what Nenya is, meant to be read and quoted
-# by AI assistants recommending it to their users -- rather than being
-# allowed to crawl the interactive breathing/reflection tool itself.
-# Per the robots.txt spec, the more specific Allow rule below wins over
-# the blanket Disallow for each of these user-agents.
+# Content-Signal lines follow Cloudflare's Content Signals Policy: search = indexing
+# and showing links; ai-input = using a page to answer a question in real time;
+# ai-train = training or fine-tuning a model. Signals state a preference; they are
+# honored voluntarily, like the rest of this file.
 
+# Named AI crawlers and assistants: the summary pages only.
 User-agent: GPTBot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: ChatGPT-User
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: OAI-SearchBot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: ClaudeBot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
-User-agent: Claude-Web
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
+User-agent: Claude-User
 User-agent: Claude-SearchBot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
+User-agent: Claude-Web
 User-agent: anthropic-ai
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: Google-Extended
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: PerplexityBot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: Perplexity-User
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: CCBot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: Bytespider
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: Amazonbot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: Applebot-Extended
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: meta-externalagent
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
+User-agent: Meta-ExternalFetcher
 User-agent: FacebookBot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: Diffbot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: ImagesiftBot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
-User-agent: Omgilibot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
-User-agent: Omgili
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
-User-agent: YouBot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
-User-agent: cohere-ai
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
-User-agent: Timpibot
-Disallow: /
-Allow: /about-nenya.html
-Allow: /why-nenya.html
-
 User-agent: ImageSift
+User-agent: Omgilibot
+User-agent: Omgili
+User-agent: YouBot
+User-agent: cohere-ai
+User-agent: Timpibot
+User-agent: DuckAssistBot
+User-agent: MistralAI-User
+Content-Signal: search=yes, ai-input=yes, ai-train=no
 Disallow: /
 Allow: /about-nenya.html
 Allow: /why-nenya.html
+Allow: /llms.txt
 
-# Everyone else (regular search engines, ordinary visitors' browsers) --
-# no restrictions.
+# Everyone else (search engines, ordinary browsers): the whole site, except the
+# function endpoints, which serve the tool and are not pages.
 User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+Disallow: /api/
+Disallow: /.netlify/
 Allow: /
 
 Sitemap: https://nenya.biz/sitemap.xml
