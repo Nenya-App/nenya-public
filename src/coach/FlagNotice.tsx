@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
-import { noticeIntro, resourcesFor, type SafetyFlag } from '../lib/safetyFlags';
+import { admitsHarm, noticeIntro, REPORTING_FACTS, resourcesFor, type SafetyFlag } from '../lib/safetyFlags';
 import { submitReport } from '../lib/reportSubmission';
 
 interface FlagNoticeProps {
@@ -76,6 +76,21 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
           </li>
         ))}
       </ul>
+
+      {/* Only when the message admits an act: what reporting involves, as facts, closed until opened (docs/harm-disclosure-directions.md). */}
+      {admitsHarm(flag) && (
+        <details className="rounded-lg border border-border bg-card p-3 text-sm">
+          <summary className="min-h-11 cursor-pointer py-2 text-foreground underline underline-offset-4">What reporting involves</summary>
+          <dl className="mt-2 space-y-3">
+            {REPORTING_FACTS.map((f) => (
+              <div key={f.heading}>
+                <dt className="font-medium text-foreground">{f.heading}</dt>
+                <dd className="text-muted-foreground">{f.text}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+      )}
 
       {state === 'closed' && (
         <button

@@ -83,8 +83,10 @@
     #
     # Notes on each directive:
     #
-    # script-src 'self'
-    #   Only self-hosted scripts. No inline scripts exist in this build.
+    # script-src 'self' https://challenges.cloudflare.com
+    #   Only self-hosted scripts, plus Cloudflare Turnstile (the coach's humanity check). Turnstile's script
+    #   is loaded only by the coach, before the first message, and only when the build has a Turnstile site
+    #   key (src/coach/useHumanCheck.ts); no other page loads it. No inline scripts exist in this build.
     #   UPGRADE PATH: Install the Netlify CSP Nonce extension in the dashboard
     #   (Extensions → Content Security Policy). It injects a per-request nonce
     #   via Edge Function, changing 'self' to 'nonce-{random}' automatically —
@@ -111,8 +113,8 @@
     #   No external API calls. Venice AI opens in a new tab (navigation),
     #   not a fetch/XHR, so it does not need to be listed here.
     #
-    # frame-src 'none' + frame-ancestors 'none'
-    #   Belt-and-suspenders: site neither embeds iframes nor can be iframed.
+    # frame-src https://challenges.cloudflare.com + frame-ancestors 'none'
+    #   The only frame the site embeds is Turnstile's widget, on the coach. The site cannot be framed.
     #
     # worker-src 'none'
     #   No Web Workers or Service Workers in use.
@@ -124,7 +126,7 @@
     # manifest-src 'self'
     #   Web app manifest served from same origin.
     #
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src 'none'; frame-ancestors 'none'; worker-src 'none'; form-action 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; worker-src 'none'; form-action 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'"
 
     # ── CSP violation reporting ───────────────────────────────────────────────
     # Violations log automatically once the Netlify CSP extension is enabled

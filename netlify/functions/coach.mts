@@ -33,6 +33,9 @@
 //                                 sealed mode always enforces its own check.
 //   COACH_METHOD_NOTES   plain    optional, short method notes (fallback when the blob below is absent)
 //   COACH_MODULES        plain    optional, 'on' uses the module set (store key "modules") instead of the single method-notes text
+//   COACH_TURNSTILE      plain    optional, the humanity check on a conversation's first message: "shadow" (check, count, never refuse) or "on"
+//   TURNSTILE_SECRET_KEY secret   the Turnstile widget's secret (needed for shadow and on)
+//   TURNSTILE_HOSTNAMES  plain    page hosts a token may come from, comma-separated (production: nenya.biz,www.nenya.biz; never localhost there)
 // Netlify Blobs: store "coach-private", key "method-notes" holds longer private method
 // notes that are added to the system instruction. See docs/coach-method-notes.md.
 import { regionDecision, countryOf, type HostGeo } from '../../src/lib/coachRegion.ts';
@@ -62,6 +65,7 @@ import { tokenMatches } from '../../src/lib/ownerAuth.ts';
 import { recordReceipt } from '../../src/lib/receiptLog.ts';
 import { addConnectionTurn, allowanceReached, connectionCode, turnsFromEnv } from '../../src/lib/connectionLimit.ts';
 import { hostAllowed, originHint, storeNameFrom } from '../../src/lib/originHosts.ts';
+import { checkTurnstile, turnstileHosts, turnstileMode } from '../../src/lib/turnstileCheck.ts';
 import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
 import { E2eeError, MAX_SEALED_HEX, attestationFor, e2eeChat, isE2eeModel, sealedChat } from '../../src/lib/veniceE2ee.ts';
 import { aboutTheWorld, detectDirectQuestion, hasSeveralQuestions, MULTI_QUESTION_NOTE } from '../../src/lib/coachIntent.ts';
@@ -409,6 +413,25 @@ async function notesFor(userTexts: string[], softened: boolean, exclude: ModuleG
   return loadMethodNotes();
 }
 
+// The humanity check (Cloudflare Turnstile; src/lib/turnstileCheck.ts), on the first message of a conversation only: later messages are bound to
+// that first one by the signed ticket. Off unless COACH_TURNSTILE is "shadow" (check and count, never refuse) or "on". The owner's token passes,
+// so the staging suite and owner testing run without a widget. Only plain counts are kept; the token is not stored or logged.
+async function humanCheck(req: Request, token: unknown, tally: (e: string) => void): Promise<Response | null> {
+  const mode = turnstileMode(process.env.COACH_TURNSTILE);
+  if (mode === 'off' || isOwner(req)) return null;
+  const r = await checkTurnstile(token, process.env.TURNSTILE_SECRET_KEY, turnstileHosts(process.env.TURNSTILE_HOSTNAMES));
+  if (r.ok) {
+    tally('coach.human.passed');
+    return null;
+  }
+  if (mode === 'shadow') {
+    tally(`coach.human.shadow.${r.why}`);
+    return null;
+  }
+  tally(`coach.human.refused.${r.why}`);
+  return json(403, { error: 'human' });
+}
+
 // The site owner's token (COACH_OWNER_TOKEN_HASH holds the SHA-256 of it, so the secret itself is never in the
 // environment) lifts the per-connection allowance only, never the site-wide cap or the per-minute limit.
 function isOwner(req: Request): boolean {
@@ -622,6 +645,9 @@ async function handleSealed(
     const carried = verifySealed(secret, body.ticket, turn - 1, userCipher.slice(0, -1), session);
     if (carried === null) return fail(400, 'ticket');
     code = carried;
+  } else {
+    const refused = await humanCheck(req, body.human, tally);
+    if (refused) return refused;
   }
   tally('coach.sealed.turn.sent');
 
@@ -838,6 +864,9 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     const carried = verify(secret, body.ticket, turn - 1, history, session, context);
     if (carried === null) return fail(400, 'ticket');
     startCode = carried;
+  } else {
+    const refused = await humanCheck(req, (body as { human?: unknown }).human, tally);
+    if (refused) return refused;
   }
   tally('coach.turn.sent');
 

@@ -47,7 +47,16 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `PALETTE_ENABLED` | `true` | "Ask The Color API" in the Sight gateway |
 | `COACH_CARD_DRAFTS` | leave unset | Owner tool for card drafts; not for production |
 
-Planned, not built yet: `VITE_TURNSTILE_SITE_KEY` (Builds), `TURNSTILE_SECRET_KEY` (secret, Functions), `COACH_TURNSTILE`. Do not set them on production until the code and the Terms change ship.
+**Humanity check (Cloudflare Turnstile), built 2026-11-15, off by default.** Staging first; on production only after the Terms change ships.
+
+| Variable | Scope | Value | Notes |
+|---|---|---|---|
+| `VITE_TURNSTILE_SITE_KEY` | Builds | the widget's site key (public) | Without it the page loads nothing from Cloudflare. A `VITE_` value needs "Clear cache and deploy site". |
+| `TURNSTILE_SECRET_KEY` | Functions, secret | the widget's secret | Paste it straight from Cloudflare into Netlify; never into chat or the repo. |
+| `TURNSTILE_HOSTNAMES` | Functions | production: `nenya.biz,www.nenya.biz`; staging: `nenyastaging.netlify.app` | The hosts a token may come from. **Never `localhost` on production.** Empty while on refuses every first message. |
+| `COACH_TURNSTILE` | Functions | `shadow`, later `on` | `shadow` checks and counts (`coach.human.passed`, `coach.human.shadow.*`) and never refuses. `on` refuses a first message that fails (`coach.human.refused.*`). The owner's token always passes. |
+
+Order: set the site key, the secret and the hosts, then `COACH_TURNSTILE=shadow`, and redeploy. Watch the counts for a few days, then switch to `on`.
 
 ## 4. Leave unset (defaults are right for production), except `COACH_INSTRUCTIONS`
 

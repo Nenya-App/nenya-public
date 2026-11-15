@@ -38,6 +38,7 @@ import { resetScroll } from '../app/components/ScrollToTop';
 import { describeFailure, type FailureInfo } from '../lib/coachErrors';
 import { DEFAULT_TIMEOUT, quietState, type TimeoutChoice } from '../lib/chatTimeout';
 import { QuietNotice, QuietTimeoutPicker } from './QuietTimeout';
+import { useHumanCheck } from './useHumanCheck';
 
 const MAX_TURNS = 5;
 const MAX_CHARS = 500;
@@ -167,6 +168,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const hoursLeft = Math.max(1, Math.ceil((restEnds - Date.now()) / HOUR_MS));
   const [messages, setMessages] = useState<Msg[]>([]);
   const [ticket, setTicket] = useState<string | undefined>();
+  // The humanity check, only before the first message (off unless the build has a Turnstile site key).
+  const human = useHumanCheck(stage === 'chat' && messages.length === 0 && !ticket);
   const [draft, setDraft] = useState('');
   // Reflect (the base) or Learn (adds a little teaching). The choice is only shown where the site has turned Learn on (VITE_COACH_STANCES=learn at build time);
   // the server decides what actually runs and falls back to Reflect when someone is in distress or on a sensitive topic.
@@ -317,11 +320,13 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     touch();
     setSending(true);
     setFailure(null);
+    const first = messages.length === 0 && !ticket;
     try {
+      const humanToken = first ? await human.take() : null;
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...ownerHeader() },
-        body: JSON.stringify({ messages: toWire(next), session, ticket, shown: messages.flatMap((m) => (m.offer ? [m.offer.id] : [])), ...(shared ? { context: shared.text } : {}), ...(learnAvailable && stance === 'vilya' ? { stance } : {}), ...overridesForRequest() }),
+        body: JSON.stringify({ messages: toWire(next), session, ticket, ...(humanToken ? { human: humanToken } : {}), shown: messages.flatMap((m) => (m.offer ? [m.offer.id] : [])), ...(shared ? { context: shared.text } : {}), ...(learnAvailable && stance === 'vilya' ? { stance } : {}), ...overridesForRequest() }),
       });
       if (!res.ok) {
         // Say what went wrong instead of a bare "failed". The server's answer carries a code, a reason and a reference.
@@ -381,6 +386,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       // A fetch that never got an answer throws a TypeError; anything else is an answer that could not be read.
       setFailure({ ...describeFailure(e instanceof TypeError ? { network: true } : { error: 'unreadable' }), at: new Date().toISOString() });
     } finally {
+      // A check's token works once: whatever the answer, a retry of the first message gets a fresh one.
+      if (first) human.reset();
       setSending(false);
     }
   };
@@ -793,9 +800,6 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       <button type="button" onClick={() => setBreathingPanel(true)} className={`${linkClass} min-h-11`}>
                         Breathe along with the pop-out
                       </button>
-                      <a href="/" target="_blank" rel="noopener" className={`${linkClass} inline-flex min-h-11 items-center`}>
-                        Open the breathing tool in a new tab<span className="sr-only"> (opens a new tab)</span>
-                      </a>
                     </div>
                   )}
                   {m.card && <AnswerCard card={m.card} />}
@@ -954,6 +958,15 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       Send
                     </Button>
                   </div>
+                  {/* The humanity check's widget (empty unless the build has a Turnstile site key, and only before the first message). */}
+                  <div ref={human.box} />
+                  {human.state !== 'off' && (
+                    <p className="text-xs text-muted-foreground" role={human.state === 'error' ? 'status' : undefined}>
+                      {human.state === 'error'
+                        ? 'The check that keeps automated traffic away from the coach (run by Cloudflare) could not load. Blocking scripts or some extensions can stop it. You can still try sending.'
+                        : 'Before your first message, Cloudflare checks that you are a person, not automated traffic. Usually you will not see it; sometimes it asks you to tick a box. The Terms say what Cloudflare collects for this.'}
+                    </p>
+                  )}
                   {/* From the second exchange on: the first one is in their own words, to show they can do it without an aid. */}
                   {messages.length >= 2 && (
                   <WordPanel

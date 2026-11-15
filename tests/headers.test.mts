@@ -20,8 +20,8 @@ ok('camera, microphone and location are denied', ['camera=()', 'microphone=()', 
 const csp = header('Content-Security-Policy') ?? '';
 const directive = (d: string) => csp.split(';').map((x) => x.trim()).find((x) => x.startsWith(d + ' ') || x === d);
 ok('CSP defaults to same-origin', directive('default-src') === "default-src 'self'");
-ok('CSP allows only same-origin scripts', directive('script-src') === "script-src 'self'");
-ok('CSP lets nothing frame the site and nothing be framed', directive('frame-ancestors') === "frame-ancestors 'none'" && directive('frame-src') === "frame-src 'none'");
+ok('CSP allows only same-origin scripts, plus Cloudflare Turnstile (the coach\'s humanity check)', directive('script-src') === "script-src 'self' https://challenges.cloudflare.com");
+ok('CSP lets nothing frame the site, and the site frames only Turnstile', directive('frame-ancestors') === "frame-ancestors 'none'" && directive('frame-src') === "frame-src https://challenges.cloudflare.com");
 ok('CSP limits connections, forms and objects to the site', directive('connect-src') === "connect-src 'self'" && directive('form-action') === "form-action 'self'" && directive('object-src') === "object-src 'none'");
 ok('CSP allows no remote images or fonts', !/https?:/.test(directive('img-src') ?? '') && !/https?:/.test(directive('font-src') ?? ''));
 
