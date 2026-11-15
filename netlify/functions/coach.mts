@@ -704,7 +704,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // Whether this connection may use the coach (src/lib/coachRegion.ts). The country code goes back only to the visitor's own page and is not stored or logged.
   if (req.method === 'GET' && url.searchParams.has('region')) {
     const decision = regionDecision(netlify?.geo);
-    return json(200, { allowed: decision !== 'denied', country: countryOf(netlify?.geo) });
+    // The owner's token passes here too, as it does for messages, so the owner can test from anywhere (a VPN included).
+    return json(200, { allowed: decision !== 'denied' || isOwner(req), country: countryOf(netlify?.geo) });
   }
   if (req.method === 'GET' && url.searchParams.has('key')) {
     const k = signingKey();
