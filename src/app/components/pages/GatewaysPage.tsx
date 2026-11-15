@@ -4,6 +4,7 @@ import { Card } from '../ui/card';
 import { ArrowLeft, Eye, Music, Hand, Droplet, Zap, Lightbulb, Check } from 'lucide-react';
 import { Gateway } from '../../App';
 import { AppFooter } from '../AppFooter';
+import { GATEWAY_ROUTES } from '../../../lib/gatewaySummaries';
 
 interface GatewaysPageProps {
   onGatewaysSelected: (gateways: Gateway[]) => void;
@@ -175,17 +176,13 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
             </div>
           )}
           
-          {/* Footer - Mathematical Pathway Information */}
+          {/* Footer: how open the route is, and where privacy actually comes from */}
           <div className="mt-12 pt-8 border-t border-border max-w-3xl mx-auto">
-            <div className="space-y-4 text-center">
-              <p className="text-base md:text-lg text-foreground">
-                <span className="text-nenya-gold-text dark:text-nenya-accent-warm">There are more potential pathways through Nenya than there are atoms in the observable universe.</span>
-              </p>
+            <div className="space-y-3 text-center">
+              <p className="text-base md:text-lg text-foreground">No two visits need look alike.</p>
               <p className="text-sm md:text-base text-muted-foreground">
-                With 6.55 × 10¹⁰⁸ unique pathways through all six gateways, each journey is statistically unique. This isn't hyperbole — it's combinatorial mathematics ensuring that your privacy and sovereignty are protected not by policy, but by mathematical necessity.
-              </p>
-              <p className="text-sm md:text-base text-muted-foreground italic">
-                Even choosing between gateways creates 720 unique orderings of the full sequence. This flexibility is a deliberate design choice: your experience, your sovereignty, your journey.
+                Visit one gateway or all six, in any order: that alone makes {GATEWAY_ROUTES.toLocaleString('en-US')} possible routes, before any
+                choice inside them. Every step is optional, and what you choose stays on your device.
               </p>
             </div>
           </div>

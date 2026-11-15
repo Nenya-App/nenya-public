@@ -8,6 +8,7 @@ import { AppFooter } from '../AppFooter';
 import { SupportThisWork } from '../SupportThisWork';
 import { ContactSection } from '../ContactSection';
 import { LOGO_ALT_NO_ORBS, LOGO_ALT_SHORT } from '../../../lib/altText';
+import { GATEWAY_SUMMARIES } from '../../../lib/gatewaySummaries';
 
 interface WelcomePageProps {
   onContinue: () => void;
@@ -179,6 +180,26 @@ export default function WelcomePage({
               <ArrowRight className="size-5" />
             </Button>
           </div>
+
+          {/* The six gateways in a sentence each: short by default, nothing to open */}
+          <section aria-labelledby="gateways-overview" className="mx-auto max-w-xl space-y-4 text-left">
+            <h2 id="gateways-overview" className="text-center text-xl md:text-2xl">The six gateways</h2>
+            <p className="text-center text-base text-muted-foreground">
+              Each one asks about where you are now and where you would like to be. Choose any of them, in any order, and skip
+              anything you like.
+            </p>
+            <dl className="space-y-3">
+              {GATEWAY_SUMMARIES.map((g) => (
+                <div key={g.id}>
+                  <dt className="font-medium">{g.name}</dt>
+                  <dd className="text-muted-foreground">{g.summary}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="text-center text-sm text-muted-foreground">
+              At the end you can see everything together and save it as a report, made on your device.
+            </p>
+          </section>
 
           {/* Animated Scroll Indicator */}
           <div
