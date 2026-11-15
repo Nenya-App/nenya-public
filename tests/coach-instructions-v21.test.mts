@@ -31,7 +31,7 @@ const fp21 = __instructionsFingerprint();
 ok('v2.1 is a known wording and has its own signed fingerprint', isInstructionsVersion('v2.1') && !isInstructionsVersion('v3') && fp21 !== fp2);
 ok('v2.1 is shorter than v2', s.length < v2.length * 0.9, `${s.length} vs ${v2.length}`);
 ok('it says the coach is an AI, once, at the start', /^You are the Nenya coach, an AI/.test(s) && /You are an AI, not a person/.test(s));
-ok('distress comes before everything about the coach, and now rules out breathing or exercises (the v2 failure)', s.indexOf('Distress comes first') < s.indexOf('What you are.') && /do not suggest breathing or any exercise/.test(s) && /do not ask about the thoughts or for details/.test(s) && /988/.test(s) && /findahelpline\.com/.test(s));
+ok('distress comes before everything about the coach; a grounding tool may be offered as an option but never "calm down"; no probing', s.indexOf('Distress comes first') < s.indexOf('What you are.') && /never tell them to calm down or not to worry/.test(s) && /You may offer one grounding tool/.test(s) && /never instead of one/.test(s) && /do not ask about the thoughts or for details/.test(s) && /988/.test(s) && /findahelpline\.com/.test(s));
 ok('not a therapist and no diagnosing are said once, not three times', count(s, /not a therapist/g) === 2 /* the rule and its example */ && count(s, /do not diagnose/g) === 1);
 ok('"never claim to be a person" is said once', count(s, /Never say you are a person/g) === 1 && !/Never claim to be a person/.test(s));
 ok('the therapist question has its own example (the v2 regression)', /'Are you a therapist\?' 'No, I'm not a therapist/.test(s));
