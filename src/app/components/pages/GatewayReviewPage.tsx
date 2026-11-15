@@ -23,6 +23,8 @@ interface GatewayReviewPageProps {
   onEditGateway: (gateway: Gateway) => void;
   onBack: () => void;
   bodyMapData: BodyMapData;
+  /** "Sign Our Guestbook", where the guestbook is on (VITE_GUESTBOOK). */
+  onGuestbook?: () => void;
 }
 
 const gatewayIcons = {
@@ -41,6 +43,7 @@ export default function GatewayReviewPage({
   onEditGateway,
   onBack,
   bodyMapData,
+  onGuestbook,
 }: GatewayReviewPageProps) {
   const bodyMapUsed = isBodyMapUsed(bodyMapData);
 
@@ -357,6 +360,13 @@ export default function GatewayReviewPage({
           <div className="flex justify-center pt-2">
             <SaveReflectionLink />
           </div>
+          {onGuestbook && (
+            <div className="flex justify-center">
+              <button type="button" onClick={onGuestbook} className="min-h-11 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
+                Sign Our Guestbook
+              </button>
+            </div>
+          )}
         </div>
 
         <AppFooter />

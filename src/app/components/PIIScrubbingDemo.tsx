@@ -1,450 +1,161 @@
 import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
-import { Shield, Eye, EyeOff, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Card } from './ui/card';
-import { ConversationControls } from './ConversationControls';
 import { AppFooter } from './AppFooter';
+import { SCRUB_RULES_DOC, describeScrub, scrubPII } from '../../lib/piiScrub';
+
+// How Nenya removes identifiers, as it actually works (owner, 2026-11-15: the earlier walkthrough described a planned "pipeline" and claimed things the
+// code does not do). This page runs the site's own scrubber (src/lib/piiScrub.ts) in the visitor's browser, so what they see here is exactly what the coach
+// would send. Nothing typed here is sent anywhere. The technical details sit behind one closed disclosure, generated from the descriptions kept beside the rules.
 
 interface PIIScrubbingDemoProps {
   onComplete?: () => void;
   onBack?: () => void;
 }
 
-type DemoStep = 
-  | 'intro'
-  | 'example-input'
-  | 'detection'
-  | 'scrubbing'
-  | 'final-output'
-  | 'complete';
+const EXAMPLE =
+  'My name is Sarah Johnson and I live at 123 Oak Street in Portland. My email is sarah.j@example.com and my phone is 503-555-0134. My sister Maria says I should quit, and I told Jordan I would think about it. I have been feeling really overwhelmed at work.';
 
-interface PIIDetection {
-  type: string;
-  original: string;
-  replacement: string;
-  start: number;
-  end: number;
+const SOURCE = 'https://github.com/Nenya-App/nenya-public/blob/main/src/lib/piiScrub.ts';
+
+// Shows the scrubbed text with each placeholder marked, so it is easy to see what changed.
+function Marked({ text }: { text: string }) {
+  const parts = text.split(/(\[[A-Z ]+\])/g);
+  return (
+    <p className="whitespace-pre-wrap break-words text-sm">
+      {parts.map((p, i) =>
+        /^\[[A-Z ]+\]$/.test(p) ? (
+          <mark key={i} className="rounded bg-nenya-accent-warm/25 px-1 font-mono text-xs text-foreground">
+            {p}
+          </mark>
+        ) : (
+          <span key={i}>{p}</span>
+        ),
+      )}
+    </p>
+  );
 }
 
 export default function PIIScrubbingDemo({ onComplete, onBack }: PIIScrubbingDemoProps) {
-  const [currentStep, setCurrentStep] = useState<DemoStep>('intro');
-  const [showExplanation, setShowExplanation] = useState(true);
-
-  // Example user input with PII
-  const originalInput = "My name is Sarah Johnson and I live at 123 Oak Street in Portland. My email is sarah.j@email.com and my phone is 503-555-1234. I've been feeling really overwhelmed at work.";
-
-  // Detected PII items
-  const detections: PIIDetection[] = [
-    { type: 'Name', original: 'Sarah Johnson', replacement: '[NAME]', start: 11, end: 24 },
-    { type: 'Address', original: '123 Oak Street', replacement: '[ADDRESS]', start: 39, end: 53 },
-    { type: 'Location', original: 'Portland', replacement: '[CITY]', start: 57, end: 65 },
-    { type: 'Email', original: 'sarah.j@email.com', replacement: '[EMAIL]', start: 80, end: 97 },
-    { type: 'Phone', original: '503-555-1234', replacement: '[PHONE]', start: 115, end: 127 }
-  ];
-
-  // Final scrubbed output
-  const scrubbedOutput = "My name is [NAME] and I live at [ADDRESS] in [CITY]. My email is [EMAIL] and my phone is [PHONE]. I've been feeling really overwhelmed at work.";
-
-  const getHighlightedText = (text: string, highlights: PIIDetection[], showReplacement: boolean = false) => {
-    if (highlights.length === 0) return text;
-
-    const parts: { text: string; isPII: boolean; type?: string }[] = [];
-    let lastIndex = 0;
-
-    // Sort by start position
-    const sortedHighlights = [...highlights].sort((a, b) => a.start - b.start);
-
-    sortedHighlights.forEach((detection) => {
-      // Add text before this detection
-      if (lastIndex < detection.start) {
-        parts.push({ text: text.substring(lastIndex, detection.start), isPII: false });
-      }
-
-      // Add the detected PII
-      parts.push({
-        text: showReplacement ? detection.replacement : detection.original,
-        isPII: true,
-        type: detection.type
-      });
-
-      lastIndex = detection.end;
-    });
-
-    // Add remaining text
-    if (lastIndex < text.length) {
-      parts.push({ text: text.substring(lastIndex), isPII: false });
-    }
-
-    return (
-      <span>
-        {parts.map((part, index) => (
-          part.isPII ? (
-            <span
-              key={index}
-              className="bg-yellow-200 dark:bg-yellow-900 px-1 rounded relative"
-              title={`Detected: ${part.type}`}
-            >
-              {part.text}
-            </span>
-          ) : (
-            <span key={index}>{part.text}</span>
-          )
-        ))}
-      </span>
-    );
-  };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 'intro':
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-center mb-6">
-              <Shield className="size-16 text-primary" />
-            </div>
-            <h2 className="text-center">Privacy-First Processing (Walkthrough)</h2>
-            <p className="text-muted-foreground text-center max-w-2xl mx-auto">
-              This is a walkthrough of the privacy pipeline we're building for Nenya's AI conversations: before any message reaches the AI, it detects and removes personally identifiable information (PII). <strong className="text-foreground">The walkthrough itself is scripted and sends nothing.</strong> A simpler version of the same idea already runs in the optional coach demo (nenya.biz/coach), where it catches common identifiers but misses most names. The fuller pipeline shown here is still aspirational.
-            </p>
-            <p className="text-muted-foreground text-center max-w-2xl mx-auto">
-              Let's walk through how it's designed to work, using an example.
-            </p>
-          </div>
-        );
-
-      case 'example-input':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Eye className="size-5 text-primary" />
-              <h3>Example User Input</h3>
-            </div>
-            <Card className="p-6 bg-muted/50">
-              <p className="text-sm italic">"{originalInput}"</p>
-            </Card>
-            {showExplanation && (
-              <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <AlertCircle className="size-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <p className="text-sm text-blue-900 dark:text-blue-100">
-                      <strong>What's happening:</strong> This is an example message a user might send. Notice it contains personal information like name, address, email, and phone number alongside the emotional content.
-                    </p>
-                    <p className="text-sm text-blue-900 dark:text-blue-100">
-                      In the finished design, Nenya would process this message to protect your privacy while preserving the emotional content that matters.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-
-      case 'detection':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertCircle className="size-5 text-yellow-600" />
-              <h3>PII Detection</h3>
-            </div>
-            <Card className="p-6 bg-muted/50">
-              <p className="text-sm">
-                {getHighlightedText(originalInput, detections)}
-              </p>
-            </Card>
-            <div className="space-y-2">
-              <p className="text-sm">Detected items:</p>
-              <div className="grid gap-2">
-                {detections.map((detection, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-950 rounded border border-yellow-200 dark:border-yellow-800"
-                  >
-                    <CheckCircle2 className="size-4 text-yellow-600" />
-                    <span className="text-sm">
-                      <strong>{detection.type}:</strong> "{detection.original}"
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {showExplanation && (
-              <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <AlertCircle className="size-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <p className="text-sm text-blue-900 dark:text-blue-100">
-                      <strong>What's happening:</strong> Nenya's privacy system has identified 5 pieces of personally identifiable information highlighted in yellow.
-                    </p>
-                    <p className="text-sm text-blue-900 dark:text-blue-100">
-                      In the coach demo, a basic version of this replaces common identifiers with generic placeholders before your message reaches the AI. The fuller version shown here is the design we're building toward.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-
-      case 'scrubbing':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 mb-4">
-              <EyeOff className="size-5 text-green-600" />
-              <h3>Privacy Scrubbing in Progress</h3>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm mb-2 text-muted-foreground">Original (with PII):</p>
-                <Card className="p-6 bg-muted/50 opacity-60">
-                  <p className="text-sm line-through">
-                    {getHighlightedText(originalInput, detections)}
-                  </p>
-                </Card>
-              </div>
-
-              <div className="flex justify-center">
-                <ArrowRight className="size-6 text-muted-foreground animate-pulse" />
-              </div>
-
-              <div>
-                <p className="text-sm mb-2 text-muted-foreground">Scrubbed (PII removed):</p>
-                <Card className="p-6 bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
-                  <p className="text-sm">
-                    {getHighlightedText(scrubbedOutput, detections.map(d => ({
-                      ...d,
-                      original: d.replacement,
-                      start: scrubbedOutput.indexOf(d.replacement),
-                      end: scrubbedOutput.indexOf(d.replacement) + d.replacement.length
-                    })))}
-                  </p>
-                </Card>
-              </div>
-            </div>
-
-            {showExplanation && (
-              <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <AlertCircle className="size-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <p className="text-sm text-blue-900 dark:text-blue-100">
-                      <strong>What's happening:</strong> This preview replaces each piece of PII with a generic placeholder to show the intended flow. In the coach demo your page does this on your device before sending, for common identifiers only. Catching names and context is the part still being designed.
-                    </p>
-                    <p className="text-sm text-blue-900 dark:text-blue-100">
-                      The emotional content—"I've been feeling really overwhelmed at work"—remains intact because that's what matters for the conversation.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-
-      case 'final-output':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 mb-4">
-              <CheckCircle2 className="size-5 text-green-600" />
-              <h3>Privacy-Protected Message</h3>
-            </div>
-            
-            <Card className="p-6 bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
-              <p className="text-sm font-medium mb-4">This is what gets processed:</p>
-              <p className="text-sm italic">"{scrubbedOutput}"</p>
-            </Card>
-
-            <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4">
-              <div className="flex gap-3">
-                <Shield className="size-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <p className="text-sm text-green-900 dark:text-green-100">
-                    <strong>The goal:</strong> the AI receives only the scrubbed version. In the coach demo that already happens for common identifiers. The full design, which also catches names and other context, is not built yet.
-                  </p>
-                  <p className="text-sm text-green-900 dark:text-green-100">
-                    The AI can still understand and respond to your emotional needs: "feeling really overwhelmed at work."
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {showExplanation && (
-              <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <AlertCircle className="size-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <p className="text-sm text-blue-900 dark:text-blue-100">
-                      <strong>What's happening:</strong> In the finished version, this automatic scrubbing would happen with every message you send, protecting your privacy while maintaining the emotional depth of your communication.
-                    </p>
-                    <p className="text-sm text-blue-900 dark:text-blue-100">
-                      A basic version runs in the optional coach demo (nenya.biz/coach): it replaces common identifiers like email addresses and phone numbers, but most names slip through. Please still avoid typing real personal or identifying details into any system, even one that claims to be secure.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-
-      case 'complete':
-        return (
-          <div className="space-y-6 text-center">
-            <div className="flex justify-center mb-6">
-              <div className="size-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                <CheckCircle2 className="size-10 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-            <h2>The Privacy Design We're Building</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              This walkthrough is scripted and sends nothing. The core tool never sends anything to an AI, so there is nothing to scrub. A basic scrubber runs in the optional coach demo (nenya.biz/coach), and it catches common identifiers but not most names. Please don't include real names, addresses, or other identifying details in anything you write, here or in any system, even one that claims to be secure.
-            </p>
-            <div className="bg-muted/50 rounded-lg p-6 max-w-2xl mx-auto">
-              <h4 className="mb-3">What exists today, and what is still planned:</h4>
-              <ul className="text-sm text-muted-foreground space-y-2 text-left">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span><strong>Now, basic:</strong> detection and removal of common identifiers in the coach demo (most names are not caught). <strong>Planned:</strong> fuller detection.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span><strong>Now:</strong> Nenya does not store or log coach messages. They pass through to Venice AI, whose own policies apply.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span><strong>Now:</strong> emotional content is left intact; only identifiers are replaced.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span><strong>Now:</strong> a two-color session key instead of a username, as a temporary label. <strong>Planned:</strong> optional sign-in.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span><strong>Now, basic:</strong> a phrase-matching crisis check in the coach demo. <strong>Planned:</strong> a fuller safety system with human review.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="size-4 flex-shrink-0 mt-0.5 text-green-600" />
-                  <span><strong>Now, basic:</strong> you can report a problem with a safety notice in the coach demo. <strong>Planned:</strong> a fuller report system.</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  const handleNext = () => {
-    const steps: DemoStep[] = ['intro', 'example-input', 'detection', 'scrubbing', 'final-output', 'complete'];
-    const currentIndex = steps.indexOf(currentStep);
-    
-    if (currentIndex < steps.length - 1) {
-      setCurrentStep(steps[currentIndex + 1]);
-      setShowExplanation(true);
-    }
-  };
-
-  const handleSkip = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      onComplete?.();
-    }
-  };
-
-  const handleComplete = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      onComplete?.();
-    }
-  };
-
-  const handleClearDemo = () => {
-    setCurrentStep('intro');
-    setShowExplanation(true);
-  };
-
-  const getStepNumber = () => {
-    const steps: DemoStep[] = ['intro', 'example-input', 'detection', 'scrubbing', 'final-output', 'complete'];
-    return steps.indexOf(currentStep) + 1;
-  };
-
-  const getTotalSteps = () => 6;
+  const [input, setInput] = useState(EXAMPLE);
+  const result = scrubPII(input);
+  const leave = () => (onBack ? onBack() : onComplete?.());
 
   return (
     <div className="size-full flex flex-col bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-background px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Shield className="size-6 text-primary" />
-            <div>
-              <h3>Privacy Protection Tutorial</h3>
-              <p className="text-sm text-muted-foreground">
-                Step {getStepNumber()} of {getTotalSteps()}
+      <div className="border-b border-border px-4 py-4 md:px-6">
+        <Button variant="ghost" size="sm" onClick={leave} className="min-h-11 gap-2">
+          <ArrowLeft className="size-4" />
+          Back
+        </Button>
+      </div>
+      <div className="scroll-container flex-1 overflow-y-auto">
+        <main className="mx-auto max-w-3xl space-y-10 px-4 py-8 sm:px-6">
+          <header className="space-y-3">
+            <h1 className="text-2xl md:text-3xl">How Nenya removes identifiers</h1>
+            <p className="text-muted-foreground">
+              Before a coach message leaves your device, the page looks for things that could identify someone and swaps them for placeholders like [EMAIL]. The
+              site’s server does the same again. This page runs that same code here in your browser, so what you see is what the coach would send. Nothing you
+              type on this page is sent anywhere.
+            </p>
+          </header>
+
+          <section aria-labelledby="try-it" className="space-y-3">
+            <h2 id="try-it" className="text-xl">Try it</h2>
+            <label htmlFor="pii-input" className="block text-sm">
+              Write anything, or change the example.
+            </label>
+            <textarea
+              id="pii-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              rows={5}
+              className="w-full resize-y rounded-lg border border-border bg-background p-3 text-sm"
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => setInput(EXAMPLE)}>
+                Use the example
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => setInput('')}>
+                Clear
+              </Button>
+            </div>
+            <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-4" aria-live="polite">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">What the coach would receive</p>
+              <Marked text={result.text} />
+              <p className="text-xs text-muted-foreground">
+                {result.total ? `Replaced ${describeScrub(result.counts)}.` : 'Nothing was replaced.'}
+                {input === EXAMPLE && ' Notice what stays: “Portland” (places are not removed), and the feelings, which are what the coach needs.'}
               </p>
             </div>
-          </div>
-          <Button variant="ghost" size="sm" onClick={handleSkip}>
-            Skip Tutorial
-          </Button>
-        </div>
-      </div>
+          </section>
 
-      {/* Progress Bar */}
-      <div className="w-full bg-muted h-1">
-        <div
-          className="bg-primary h-1 transition-all duration-300"
-          style={{ width: `${(getStepNumber() / getTotalSteps()) * 100}%` }}
-        />
-      </div>
+          <section aria-labelledby="where" className="space-y-3">
+            <h2 id="where" className="text-xl">Where it runs</h2>
+            <ol className="list-decimal space-y-2 pl-5 text-sm">
+              <li>While you type in the coach, a note tells you if your message looks like it has a name or contact detail in it.</li>
+              <li>When you press Send, your page replaces them on your device, before anything leaves it.</li>
+              <li>The site’s server replaces them again, in case the page was bypassed, then sends the message on to the AI. Nenya does not store it.</li>
+              <li>A signed transcript you download holds the replaced text, not what you first typed.</li>
+            </ol>
+            <p className="text-sm text-muted-foreground">
+              Reports and messages sent through the site’s forms are not scrubbed this way; those forms ask you to leave names and contact details out.
+            </p>
+          </section>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-8">
-        <div className="max-w-4xl mx-auto">
-          {renderStepContent()}
-        </div>
+          <section aria-labelledby="limits" className="space-y-3">
+            <h2 id="limits" className="text-xl">What it can miss</h2>
+            <p className="text-sm">
+              This is pattern matching, not understanding. It is good at structured details like emails, phone numbers and addresses. It misses names that are not on
+              its lists, nicknames and unusual spellings, places, workplaces, and details that are unique to your story. It can also replace a word that only looks
+              like a name. So Nenya never calls the coach anonymous: please leave out anything that would identify you or someone else.
+            </p>
+          </section>
 
-        <AppFooter />
-      </div>
-
-      {/* Footer */}
-      <div className="border-t border-border bg-background px-6 py-4">
-        <div className="max-w-4xl mx-auto space-y-3">
-          {/* Conversation Controls */}
-          <div className="flex justify-center">
-            <ConversationControls 
-              onClearConversation={handleClearDemo}
-              conversationName="pii-scrubbing-demo"
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={() => setShowExplanation(!showExplanation)}
-              className="text-sm"
-            >
-              {showExplanation ? 'Hide' : 'Show'} Explanation
-            </Button>
-            
-            <div className="flex gap-3">
-              {currentStep === 'complete' ? (
-                <Button onClick={handleComplete} size="lg">
-                  {onBack ? 'Back to Menu' : 'Begin Practice Session'}
-                  <ArrowRight className="size-4 ml-2" />
-                </Button>
-              ) : (
-                <Button onClick={handleNext} size="lg">
-                  Continue
-                  <ArrowRight className="size-4 ml-2" />
-                </Button>
-              )}
+          <details className="rounded-lg border border-border p-4">
+            <summary className="flex min-h-11 cursor-pointer items-center text-base underline underline-offset-4">Show the technical details</summary>
+            <div className="mt-3 space-y-4 text-sm">
+              <p>
+                The rules run in this order, each on the text left by the one before. A placeholder replaces the whole match, or, for names after a telling phrase,
+                only the name.
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[560px] border-collapse text-left">
+                  <thead>
+                    <tr className="border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
+                      <th scope="col" className="py-2 pr-3">Order</th>
+                      <th scope="col" className="py-2 pr-3">Placeholder</th>
+                      <th scope="col" className="py-2 pr-3">Catches</th>
+                      <th scope="col" className="py-2">How it decides</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {SCRUB_RULES_DOC.map((r, i) => (
+                      <tr key={`${r.tag}-${i}`} className="border-b border-border align-top">
+                        <td className="py-2 pr-3 tabular-nums">{i + 1}</td>
+                        <td className="py-2 pr-3 font-mono text-xs">[{r.tag}]</td>
+                        <td className="py-2 pr-3">{r.catches}</td>
+                        <td className="py-2 text-muted-foreground">{r.how}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p>
+                Separately from identifiers, the server also checks every message for attempts to give the coach instructions or change how it works; those are not
+                sent at all. The crisis check runs before any of this: a message that clearly signals danger never leaves your device.
+              </p>
+              <p>
+                The code is public:{' '}
+                <a href={SOURCE} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
+                  src/lib/piiScrub.ts<span className="sr-only"> (opens a new tab)</span>
+                </a>
+                , with its tests in tests/pii-names.test.mts and tests/safety-scrub-guard.test.mts.
+              </p>
             </div>
-          </div>
-        </div>
+          </details>
+        </main>
+        <AppFooter />
       </div>
     </div>
   );

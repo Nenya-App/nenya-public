@@ -184,3 +184,22 @@ export function describeScrub(counts: Record<string, number>): string {
   if (parts.length <= 1) return parts[0] ?? '';
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }
+
+/**
+ * Plain descriptions of every rule above, in the order they run, for the public "How Nenya removes identifiers" page (PIIScrubbingDemo.tsx). Kept here,
+ * next to the rules, so the explanation cannot drift from the code: tests/pii-tutorial.test.mts fails if a rule's placeholder has no description.
+ */
+export const SCRUB_RULES_DOC: { tag: string; catches: string; how: string }[] = [
+  { tag: 'EMAIL', catches: 'Email addresses', how: 'Text with an @ and a domain ending, such as name@example.org.' },
+  { tag: 'LINK', catches: 'Web links', how: 'Anything starting with http://, https:// or www.' },
+  { tag: 'CARD', catches: 'Payment card numbers', how: '13 to 19 digits, spaces or dashes allowed, kept only if they pass the Luhn checksum that real card numbers pass.' },
+  { tag: 'SSN', catches: 'US Social Security numbers', how: 'The 3-2-4 digit pattern with dashes.' },
+  { tag: 'IP', catches: 'IP addresses', how: 'Four numbers from 0 to 255 joined by dots.' },
+  { tag: 'PHONE', catches: 'Phone numbers', how: 'US-style 10-digit numbers (with or without +1, brackets, dots or spaces), and international numbers that start with +.' },
+  { tag: 'DATE OF BIRTH', catches: 'Birth dates', how: 'A date only when it follows “born”, “DOB” or “date of birth”; other dates are left alone.' },
+  { tag: 'ADDRESS', catches: 'Street addresses and PO boxes', how: 'A house number, one to four words and a street word (Street, Ave, Road and so on), with an apartment or unit if one follows.' },
+  { tag: 'ZIP', catches: 'US state and ZIP code', how: 'Two capital letters followed by a five-digit ZIP, such as “OR 97201”.' },
+  { tag: 'HANDLE', catches: 'Usernames', how: 'An @ followed by 2 to 30 letters, digits or underscores.' },
+  { tag: 'NAME', catches: 'Names after a telling phrase', how: '“My name is…”, “call me…”, “my sister Maria”, “named…”, and titles such as Dr., Ms. or Pastor before a capitalised name.' },
+  { tag: 'NAME', catches: 'Names with no telling phrase', how: 'Last, a check against lists of common given names and surnames. Words that are also ordinary words (Will, Hope, Rose) count only when the sentence shows a person: after “my sister”, “told”, “with”, or beside a surname. A capitalised word right after a name is taken as its surname.' },
+];

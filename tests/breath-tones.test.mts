@@ -74,7 +74,14 @@ ok('all three go through the one function that sets the shared setting', (sw.mat
 ok('switching on unlocks audio, plays one sample note and says so politely; switching off says so', /unlockAudio\(\);\s*playPreview\(/.test(sw) && /Breathing tones on/.test(sw) && /Breathing tones off/.test(sw) && /aria-live="polite"/.test(sw));
 ok('the announcement never moves focus', !/\.focus\(/.test(sw) && !/\.focus\(/.test(src('src/lib/breathTones.ts')));
 ok('there is no sound at import time: audio is created only from a click (unlockAudio), never at load', !/new (webkit)?AudioContext\(\)?;?\s*$/m.test(src('src/lib/breathTones.ts').split('export function unlockAudio')[0]) && /ctx \?\?= new Ctor\(\)/.test(src('src/lib/breathTones.ts')));
-ok('the tones play only on the welcome screen with the counter showing, with the setting on, and stop when the tab is hidden', /active=\{currentScreen === 'welcome' && entryUnlocked && breathingEnabled && showBreathingCounter\}/.test(src('src/app/App.tsx')) && /visibilitychange/.test(sw) && /if \(!on \|\| !active\) return/.test(sw));
+ok('the tones play on every screen and on /coach once the terms are accepted, whenever the setting and the breathing are on (whether or not the counter shows), and stop when the tab is hidden',
+  /<BreathTonesPlayer active=\{breathingEnabled\}/.test(src('src/app/components/PortableBreath.tsx')) && /if \(!ready\) return null/.test(src('src/app/components/PortableBreath.tsx'))
+  && /<PortableBreath\s+ready=\{entryUnlocked\}/.test(src('src/app/App.tsx')) && !/currentScreen === 'welcome' && entryUnlocked && \(/.test(src('src/app/App.tsx'))
+  && /<PortableBreath\s+ready=\{agreed\}/.test(src('src/coach/CoachPage.tsx')) && /<TonesAnnouncer \/>/.test(src('src/coach/CoachPage.tsx'))
+  && /visibilitychange/.test(sw) && /if \(!on \|\| !active\) return/.test(sw));
+ok('one pace for the whole page: the coach page\'s panel offers the paces, and the header logo breathes with the same clock',
+  /onTechniqueChange=\{setTechnique\}/.test(src('src/coach/CoachPage.tsx')) && /<NenyaLogo size=\{40\} technique=\{technique\} cycleStart=\{cycleStart\}/.test(src('src/app/components/GlobalNavigation.tsx'))
+  && /technique=\{breathingTechnique\}\s+cycleStart=\{breathingCycleStart\}/.test(src('src/app/App.tsx')));
 ok('the counter\'s ticking number and word are hidden from screen readers', /<div aria-hidden="true">\s*<div\s+style=\{\{\s*fontSize: '11px'/.test(src('src/app/components/BreathingCounter.tsx')));
 ok('notes are scheduled on the audio clock ahead of time, not with a timer per note', /c\.currentTime \+ Math\.max\(0, e\.at - now\) \/ 1000/.test(src('src/lib/breathTones.ts')));
 ok('the setting is one of the remembered display settings, and is checked as a boolean', /breathingTones\?: boolean/.test(src('src/lib/deviceMemory.ts')) && /breathingTones: isBool/.test(src('src/lib/deviceMemory.ts')));

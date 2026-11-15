@@ -78,7 +78,7 @@ try {
     ok('first-visit panel: rendered under the loading screen, it is inert, aria-hidden and fully solid', typeof h === 'string' && /inert=""/.test(h) && h.includes('aria-hidden="true"') && /opacity:1;transition:opacity 0\.9s/.test(h), h.error ?? '');
     h = render(Onboarding, { technique: { ih: 5000, hi: 0, ex: 5000, ho: 0 }, onTechniqueChange: noop, onFinish: noop, skipRhythm: true });
     ok('first-visit panel: arriving on another page (skipRhythm) opens on the terms, with no rhythm choice and no step dots', typeof h === 'string' && h.includes('Terms of Use') && h.includes('Agree, Enter') && !h.includes('Not choosing is fine') && !h.includes('>Box<') && !h.includes('h-1.5 rounded-full'), h.error ?? '');
-    ok('first-visit panel: the App skips the rhythm only when the visitor arrived on an About page (or, with the section addresses on, straight at /senses), and does not count a rhythm that was never chosen', /skipRhythm=\{arrivedElsewhere\}/.test(appSrc) && /arrivedElsewhere\] = useState\(initialAbout !== null \|\| arrivedAtSenses\)/.test(appSrc) && /rhythm && !arrivedElsewhere/.test(appSrc));
+    ok('first-visit panel: the App skips the rhythm only when the visitor arrived on an About page (or, with those switches on, straight at /senses or /guestbook), and does not count a rhythm that was never chosen', /skipRhythm=\{arrivedElsewhere\}/.test(appSrc) && /arrivedElsewhere\] = useState\(initialAbout !== null \|\| arrivedAtSenses \|\| arrivedAtGuestbook\)/.test(appSrc) && /rhythm && !arrivedElsewhere/.test(appSrc));
     {
       const coachPage = readFileSync(new URL('../src/coach/CoachPage.tsx', import.meta.url), 'utf8');
       ok('the coach page: reached only after the terms are accepted (the same panel, opened on the terms), unless the agreement was remembered for these terms', /useState\(\(\) => termsAcceptedFor\(LEGAL_EFFECTIVE_DATE\)\)/.test(coachPage) && /\{!agreed && <OnboardingFlow skipRhythm/.test(coachPage));
@@ -157,7 +157,8 @@ try {
     const nav = readFileSync(new URL('../src/app/components/GlobalNavigation.tsx', import.meta.url), 'utf8');
     const page = readFileSync(new URL('../src/app/components/pages/WelcomePage.tsx', import.meta.url), 'utf8');
     const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
-    return [nav, page, app].some((t) => t.includes(`id="${id}"`));
+    // The counter is portable (src/app/components/PortableBreath.tsx): App gives it the tour's id on the front page.
+    return [nav, page, app].some((t) => t.includes(`id="${id}"`)) || app.includes(`id={currentScreen === 'welcome' ? '${id}'`);
   })));
   {
     const src = readFileSync(new URL('../src/app/components/WelcomeTutorial.tsx', import.meta.url), 'utf8');

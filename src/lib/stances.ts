@@ -1,6 +1,6 @@
 // Stances: the coach's base (Nenya: empathic reflection) with, in the future, up to two layers added on top (Vilya: teaching and
 // system-oriented; Narya: challenging, encouraging growth). Not a strict switch between three coaches: one base, and filters that
-// add to it. See docs/coach-lenses-scope.md. Only one layer has text so far: the draft Learn layer (Vilya, LEARN_LAYER below), used only where COACH_STANCES contains "learn" (off by default). Narya has none, and the gate below refuses a layer without text.
+// add to it. See docs/coach-lenses-scope.md. Only one layer has text so far: the Learn layer (Vilya, LEARN_LAYER below; wording approved by the owner 2026-11-15), used only where COACH_STANCES contains "learn" (off by default). Narya has none, and the gate below refuses a layer without text.
 // What is built now is the safeguards, so that when a layer is written (and, in time, perhaps sold as a paid option) it can only be
 // used where it is safe and allowed:
 //  - a request for a stance is validated against a fixed list (a message cannot invent one);
@@ -33,7 +33,7 @@ let layers: Record<Stance, string | null> = { nenya: null, vilya: null, narya: n
  * where COACH_STANCES contains "learn" (off by default) and, like every layer, it falls back to the base on a distress flag or a sensitive topic.
  */
 export const LEARN_LAYER =
-  'Learn: add a little teaching to the practice, one idea at a time, as an invitation and in plain words, and only when the person\'s own words show it. For example: "I feel ignored" tells a story about what someone did, and a feeling like lonely or hurt may sit under it; what happened can be said as a camera would see it, apart from what we made of it; a need is not the same as one way of meeting it; a request leaves room for a no; a label for a whole person can stand in for what we needed; behind "I have to" there is often a choice and a need. Explain in two or three sentences, give one small example, then hand it back as a question. Offer one idea in a reply, never when they only want to be heard, and never as a correction.';
+  'Learn: add a little teaching to the practice, one idea at a time, as an invitation and in plain words, and only when the person\'s own words show it. For example: "I feel ignored" tells a story about what someone did, and a feeling like lonely or hurt may sit under it; what happened can be said as a camera would see it, apart from what we made of it; a need is not the same as one way of meeting it; a request leaves room for a no; calling someone a name often hides a need of our own; behind "I have to" there is often a choice and a need. Explain in two or three sentences, give one small example, then hand it back as a question. Offer one idea in a reply, never when they only want to be heard, and never as a correction.';
 export const learnOn = (value: string | undefined = process.env.COACH_STANCES): boolean => /\blearn\b/i.test(value ?? '');
 export const stanceLayers = (): Record<Stance, string | null> => ({ ...layers, vilya: layers.vilya ?? (learnOn() ? LEARN_LAYER : null) });
 /** For tests: set layer text (it is linted first). Pass null to clear. */

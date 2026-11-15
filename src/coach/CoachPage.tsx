@@ -15,6 +15,8 @@ import { termsAcceptedFor, usePref } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { enableUsageCounts } from '../lib/usageCounts';
 import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
+import { PortableBreath, useBreathRhythm } from '../app/components/PortableBreath';
+import { TonesAnnouncer } from '../app/components/BreathTonesSwitch';
 
 const STEADY = { ih: 5000, hi: 0, ex: 5000, ho: 0 };
 const noop = () => undefined;
@@ -61,6 +63,9 @@ export default function CoachPage() {
   const [orbitEnabled, setOrbitEnabled] = usePref('orbitEnabled', true);
   const [logoVisible, setLogoVisible] = usePref('logoVisible', true);
   const [opacity, setOpacity] = usePref('breathingOpacity', 1);
+  // The same pace, counter and tones as the main site (portable, owner 2026-11-15).
+  const [showCounter, setShowCounter] = usePref('showBreathingCounter', true);
+  const { technique, setTechnique, cycleStart } = useBreathRhythm();
 
   useEffect(() => {
     document.documentElement.style.setProperty('--font-size', `${textSize}px`);
@@ -87,6 +92,7 @@ export default function CoachPage() {
   return (
     <>
       <SkipLink />
+      <TonesAnnouncer />
       {/* First in the page, above the panel: the header's Exit is covered while the terms panel or the breathing panel is open. */}
       <EmergencyExitDock show={popoutOpen || !agreed} onEmergencyExit={() => { exiting.current = true; }} />
       {!agreed && <OnboardingFlow skipRhythm technique={STEADY} onTechniqueChange={noop} onFinish={() => setAgreed(true)} />}
@@ -116,6 +122,16 @@ export default function CoachPage() {
         onOrbitToggle={setOrbitEnabled}
         onLogoVisibleToggle={setLogoVisible}
         onOpacityChange={setOpacity}
+        technique={technique}
+        cycleStart={cycleStart}
+      />
+      <PortableBreath
+        ready={agreed}
+        breathingEnabled={breathingEnabled}
+        showCounter={showCounter}
+        technique={technique}
+        onTechniqueChange={setTechnique}
+        cycleStart={cycleStart}
       />
       <div className="flex-1 min-h-0">
         {!agreed ? null : (
@@ -150,6 +166,11 @@ export default function CoachPage() {
         onLogoVisibleToggle={setLogoVisible}
         onOpacityChange={setOpacity}
         onTextSizeChange={setTextSize}
+        showBreathingCounter={showCounter}
+        onCounterToggle={setShowCounter}
+        technique={technique}
+        onTechniqueChange={setTechnique}
+        cycleStart={cycleStart}
       />
     </div>
     </>

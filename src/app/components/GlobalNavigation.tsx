@@ -3,6 +3,7 @@ import { ShareNenya } from './ShareNenya';
 import { Button } from './ui/button';
 import { useState } from 'react';
 import NenyaLogo from './NenyaLogo';
+import type { BreathingTechnique } from '../../lib/breathingPresets';
 import { ThemeToggle } from './ThemeToggle';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
 import { EmergencyExitButton } from './EmergencyExit';
@@ -39,6 +40,9 @@ interface GlobalNavigationProps {
   onTutorialReplay?: () => void;
   /** Accessibility dialog shows theme and text size only. */
   compactSettings?: boolean;
+  /** The page's pace and clock, so the header logo breathes in phase with the counter and the tones. */
+  technique?: BreathingTechnique | null;
+  cycleStart?: number;
 }
 
 export function GlobalNavigation({
@@ -63,6 +67,8 @@ export function GlobalNavigation({
   onBreathingPopoutToggle,
   onTutorialReplay,
   compactSettings = false,
+  technique = null,
+  cycleStart,
 }: GlobalNavigationProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accessibilityOpen, setAccessibilityOpen] = useState(false);
@@ -112,7 +118,7 @@ export function GlobalNavigation({
                 aria-label="Open breathing animation"
                 title="Open breathing animation & accessibility settings"
               >
-                <NenyaLogo size={40} />
+                <NenyaLogo size={40} technique={technique} cycleStart={cycleStart} />
               </button>
               <button
                 onClick={handleNenyaTextClick}
@@ -246,7 +252,7 @@ export function GlobalNavigation({
               aria-label="Open breathing animation"
               title="Open breathing animation & accessibility settings"
             >
-              <NenyaLogo size={32} />
+              <NenyaLogo size={32} technique={technique} cycleStart={cycleStart} />
             </button>
             <button
               onClick={handleNenyaTextClick}

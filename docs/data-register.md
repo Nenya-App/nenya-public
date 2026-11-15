@@ -14,6 +14,8 @@ Everything Nenya keeps, where, for how long, and what deletes it. **Keep this cu
 | Partner-practice cells | private store | short | `cell-cleanup` (hourly) | the two people (end-to-end encrypted) |
 | Daily totals | private store | no limit yet (proposal: 13 months, then monthly) | nothing yet | the owner (admin page) |
 | "Save and return later" | the visitor's own browser (encrypted) | 24 hours | the page itself; Forget me; Emergency Exit | the visitor, with ID and passcode |
+| Guestbook signatures (`guestbook/<day>/<random>`: one color, the centroid of the visitor's two chosen colors and the two of the moment) | private store | forever (owner, 2026-11-15) | nothing (by design); cannot be found again to remove | everyone (the guestbook page) |
+| Guestbook once-a-day markers (`c/<day>/g-<code>`) | private store | about 1.5 days | `coach-cleanup` (daily, with the connection records) | nobody (codes only) |
 | Settings ("Remember on this device") | the visitor's own browser | until turned off | Forget me; Emergency Exit | the visitor |
 | Older report-form submissions (before 2026-11-15) | Netlify Forms (`report-submission`) | until deleted | the owner, by hand: delete those older than 90 days now, the rest as they reach 90 days | the owner |
 | Host logs and visit statistics | Netlify | Netlify's practices | Netlify | Netlify; the owner sees totals |

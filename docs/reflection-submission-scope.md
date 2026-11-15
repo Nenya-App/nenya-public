@@ -22,3 +22,18 @@ A person who has finished a reflection could choose to send it, signed, for Neny
 2. Drawings included later, or never?
 3. One public page for both conversations and reflections, or separate pages?
 4. Build after the data hygiene practice (recommended: the new stored type then joins a written register from day one)?
+
+## Update (owner, 2026-11-15): a display and a notice of submission
+The owner wants shared sensory reports shown publicly, like the witnessed conversations, with notice of submission.
+
+**What exists now:** "Share mine" on the review page sends the reflection summary privately (kept 90 days, deletion code, alert to the owner without the text; docs/data-register.md). Nothing is shown publicly.
+
+**Proposed build**
+1. **Choices when sharing** (the transcript model): keep it private for Nenya to read (today), and optionally "show it on the shared reflections page, without anything that identifies me". Unticked by default.
+2. **Review first:** a shared reflection waits on the admin page; the owner reads it, can edit the words (names are scrubbed again first), and approves or declines. Nothing is public before that.
+3. **The page:** "Shared reflections" (`/about/shared`, beside the witnessed conversations): each one shown as the reflection itself: its two colors rounded to the nearest of the site's named colors (never the exact pair, which is the save-and-return ID; see docs/guestbook-scope.md), a texture name, a short melody that can be played, a scent, a few of the person's words; the month only, never the exact date.
+4. **Notice of submission:** the sender sees at once what happens next ("received; a person will read it before anything is shown; nothing is public until then") with their code. On `/my-transcript` the same code shows its status (waiting for review, shown, not shown) and can take it down or delete it at any time. There is no email to the sender: Nenya never asks for one.
+5. **Removal:** the code takes a shown reflection down at once; the daily job removes it when its showing time ends (default 90 days, the sender may choose longer).
+6. **Signing** (from the scope above) can come later; the review step already prevents invented submissions from appearing.
+
+**Decisions for the owner:** the default showing time; whether the person's own words are shown at all or only the senses; one page shared with the witnessed conversations, or its own.

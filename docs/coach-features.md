@@ -69,7 +69,7 @@ decision is set in `maintenance-plan.md`.
 | `COACH_LEARNING_OFFERS` (`on`), `COACH_JUDGMENT_CARDS` (`on`), `COACH_LEARNING_MIN_SEVERITY` | Offers of short learning cards | Approved cards, Terms draft | `learning-cards-scope.md`, `drafts/terms-learning-cards-draft.md` |
 | `COACH_SCREEN` (`shadow`, then `on`) with `COACH_SCREEN_SECRET` | The ONNX screening model. Shadow only counts. On changes the "soft" note | Shadow data. Bias results | `coach-screening-flow-scope.md` |
 | `COACH_ARC` (`practice`) | The practice arc: the person names their own feeling and need | Owner decision | `coach-practice-arc-scope.md` |
-| `COACH_STANCES` (contains `learn`) | The Learn layer (gentle teaching) | Draft wording | `coach-lenses-scope.md` |
+| `COACH_STANCES` (contains `learn`), with `VITE_COACH_STANCES` (`learn`) | The Learn layer (gentle teaching) | Wording approved by the owner 2026-11-15 and switched on in production with that deploy; the ICARUS part waits for its private wording | `coach-lenses-scope.md` |
 | `COACH_MODULES` (`on`) | Method notes chosen in parts per reply, instead of one text | Private module set uploaded | `coach-modules-scope.md` |
 | `COACH_TURNSTILE` (`shadow`, then `on`) | Humanity check on the first message | Terms change | `production-env.md` |
 | `COACH_SEALED` (`on`) | Sealed mode: the browser encrypts for the enclave, and the relay cannot read | Terms draft, hardware evidence in the browser | `ghost-footprint-stack.md`, `drafts/terms-sealed-and-partner-draft.md` |

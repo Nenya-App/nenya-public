@@ -363,6 +363,24 @@ let notesCache: { at: number; text: string } | null = null;
 
 // Private method notes: the blob wins, the environment variable is the fallback.
 // Failure to load never stops the coach; it simply runs on the core instructions.
+// The ICARUS part of the Learn layer (owner, 2026-11-15) is private framework text, so it is never in the public repo: it lives in the private store under
+// "learn-icarus" and is added after the public Learn text (src/lib/stances.ts) when someone has chosen Learn and the layer is allowed. Absent, Learn is the
+// public text alone. Like the method notes, it is not part of the instructions fingerprint.
+const MAX_LEARN_EXTRA_CHARS = 2000;
+let learnExtraCache: { at: number; text: string } | null = null;
+async function loadLearnExtra(): Promise<string> {
+  if (learnExtraCache && Date.now() - learnExtraCache.at < 5 * 60 * 1000) return learnExtraCache.text;
+  let text = '';
+  try {
+    text = (await privateStore().get('learn-icarus', { type: 'text' })) ?? '';
+  } catch {
+    text = '';
+  }
+  text = text.trim().slice(0, MAX_LEARN_EXTRA_CHARS);
+  learnExtraCache = { at: Date.now(), text };
+  return text;
+}
+
 async function loadMethodNotes(): Promise<string> {
   if (notesCache && Date.now() - notesCache.at < 5 * 60 * 1000) return notesCache.text;
   let text = '';
@@ -933,6 +951,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // overwhelm, self-blame, acute pain, in the last two things the person wrote).
   const recentUser = messages.filter((m) => m.role === 'user').slice(-2).map((m) => m.content);
   const stance = effectiveStance({ requested: parseStance((body as { stance?: unknown }).stance), flag: flag ?? (context ? detectFlag(context) : null), topics: detectSensitiveTopics(...recentUser) });
+  // Learn, when allowed: the public text, then the private ICARUS part if it has been uploaded.
+  const layerText = stance.layer ? (stance.stance === 'vilya' ? [stance.layer, await loadLearnExtra()].filter(Boolean).join(' ') : stance.layer) : null;
   // On the last exchange the coaching moves are left out: they are how the coach opens a new thread, and nothing new should be opened.
   const notes = await notesFor(messages.filter((m) => m.role === 'user').map((m) => m.content), softened, closingPhase(turn, MAX_TURNS) === 'close' ? ['move'] : []);
 
@@ -999,7 +1019,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       // One system message, not several: the encrypted route to Venice answered a request with a second system message with a 400
       // (seen on the dev site for the answer-first reply, 2026-11-09), so the context, the answer-first note and any retry note are folded into it.
       const systemText = [
-        systemInstruction(turn, softened, notes, directQ, stance.layer ? layerBlock(stance.layer) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '', practiceArcOn() ? { stuck: isStuck(lastText) } : null, isWordsOnly(lastText), gapText(namedParts(messages.filter((m) => m.role === 'user').map((m) => m.content))), standing, severalQ),
+        systemInstruction(turn, softened, notes, directQ, layerText ? layerBlock(layerText) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '', practiceArcOn() ? { stuck: isStuck(lastText) } : null, isWordsOnly(lastText), gapText(namedParts(messages.filter((m) => m.role === 'user').map((m) => m.content))), standing, severalQ),
         ...(context ? [contextInstruction(neutralize(scrubPII(context).text))] : []),
         ...(within ? [ABOUT_FIRST_NOTE] : []),
         ...(extra ? [extra] : []),

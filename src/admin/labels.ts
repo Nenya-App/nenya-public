@@ -6,6 +6,7 @@ export const GROUPS: { title: string; match: (e: string) => boolean }[] = [
   { title: 'Opening and tour', match: (e) => e.startsWith('onboarding.') || e.startsWith('tour.') },
   { title: 'Screens shown', match: (e) => e.startsWith('page.view.') },
   { title: 'Reports and messages', match: (e) => e.startsWith('submission.') },
+  { title: 'Guestbook', match: (e) => e.startsWith('guestbook.') },
 ];
 
 const LABELS: Record<string, string> = {
@@ -27,6 +28,8 @@ const LABELS: Record<string, string> = {
   'coach.pause.begun': 'Pauses begun',
   'coach.pause.returned.waited': 'Returned from a pause by waiting',
   'coach.pause.returned.quiz': 'Returned from a pause by the quiz',
+  'guestbook.signed': 'Guestbook signed',
+  'guestbook.refused.once': 'Guestbook: second signature that day refused',
   'submission.received': 'Report or message received',
   'submission.deleted.self': 'Deleted by its sender (code)',
   'submission.deleted.expired': 'Deleted at 90 days',

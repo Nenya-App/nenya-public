@@ -11,7 +11,7 @@ ok('the whole reflection is /senses: the choice, every gateway, the colors and t
 ok('the front page is /breath, the coach after a reflection /coach, and About and partner practice keep their own', sectionOfScreen('welcome') === 'breath' && sectionOfScreen('session') === 'coach' && sectionOfScreen('about') === null && sectionOfScreen('cell-creation') === null);
 
 const app = readFileSync('src/app/App.tsx', 'utf8');
-ok('arriving at /senses opens the gateway choice and asks only the Terms (no chooser, no rhythm)', /arrivedAtSenses \? 'home' : 'welcome'/.test(app) && /useState\(initialAbout !== null \|\| arrivedAtSenses\)/.test(app));
+ok('arriving at /senses opens the gateway choice and asks only the Terms (no chooser, no rhythm)', /arrivedAtSenses \? 'home' : 'welcome'/.test(app) && /useState\(initialAbout !== null \|\| arrivedAtSenses \|\| arrivedAtGuestbook\)/.test(app));
 ok('a new history entry only when the part of the site changes; "/" becomes /breath without adding a step', /if \(firstAddress\.current \|\| sameSection \|\| leavingAbout\) window\.history\.replaceState\(null, '', target\);\s*else window\.history\.pushState\(null, '', target\);/.test(app));
 ok('the canonical and share addresses follow the part of the site', /link\[rel="canonical"\][\s\S]{0,80}https:\/\/nenya\.biz\$\{target\}/.test(app) && /og:url[\s\S]{0,80}https:\/\/nenya\.biz\$\{target\}/.test(app));
 ok('Back and Forward move between the parts; after a reflection, /senses returns to the review and /coach to the coach', /sec === 'senses' \? \(done \? 'gateway-review' : 'home'\) : done \? 'session' : 'home'/.test(app));

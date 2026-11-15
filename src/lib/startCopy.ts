@@ -12,13 +12,13 @@ export const START_COPY = {
   options: [
     {
       id: 'breathing',
-      title: 'Breathing',
+      title: 'Breathe',
       line: 'A minute of paced breathing, at a rhythm you choose.',
       more: 'A glow and a counter breathe with you. You can change the rhythm any time, or turn the motion off. Many people start here.',
     },
     {
       id: 'reflection',
-      title: 'Reflection',
+      title: 'Reflect',
       line: 'Describe how you feel with color, sound, touch and more.',
       more: 'Six short gateways, all optional, in any order. Pick one or all six. A summary is made on your device, to keep or to bring to someone you trust.',
     },

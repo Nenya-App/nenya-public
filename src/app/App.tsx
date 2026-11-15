@@ -8,20 +8,20 @@ import { melodyColorsFor, melodyShared } from '../lib/melodySeed';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
-import { BreathingCounter } from './components/BreathingCounter';
 import { WelcomeTutorial, type TutorialStepId } from './components/WelcomeTutorial';
 import { TourOffer } from './components/TourOffer';
 import { LoadingVeil } from './components/LoadingVeil';
 import { EmergencyExitDock } from './components/EmergencyExit';
-import { BreathTonesPlayer, BreathTonesSwitch, TonesAnnouncer } from './components/BreathTonesSwitch';
+import { BreathTonesSwitch, TonesAnnouncer } from './components/BreathTonesSwitch';
+import { PortableBreath, useBreathRhythm } from './components/PortableBreath';
 import { preloadLogoAssets } from '../lib/preload';
 import { enableUsageCounts, countEvents, countEvent, countPageView } from '../lib/usageCounts';
 import { PRESETS, sameTechnique } from '../lib/breathingPresets';
 import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
-import { BreathingTechnique } from './components/ValarBreathingLogo';
 import OnboardingFlow from './components/OnboardingFlow';
 import type { StartChoice } from '../lib/startCopy';
 import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
+import { guestbookOn } from '../lib/guestbook';
 import { SaveReflectionContext, type SaveReflectionApi } from './components/SaveReflection';
 import { normalizeId, openReflection, purgeExpired, saveReflection, saveReflectionOn, sessionIdFrom, shadowId, type SavedPayload } from '../lib/savedReflection';
 import WelcomePage from './components/pages/WelcomePage';
@@ -40,6 +40,7 @@ const InsightGatewayPage = lazy(() => import('./components/pages/InsightGatewayP
 const SessionKeyPicker = lazy(() => import('../coach/SessionKeyPicker'));
 const GatewayReviewPage = lazy(() => import('./components/pages/GatewayReviewPage'));
 const CoachDemo = lazy(() => import('../coach/CoachDemo'));
+const GuestbookPage = lazy(() => import('./components/pages/GuestbookPage'));
 const RegionGate = lazy(() => import('../coach/RegionGate').then((m) => ({ default: m.RegionGate })));
 const DyadicCellCreation = lazy(() => import('./components/DyadicCellCreation'));
 const DyadicCellInterface = lazy(() => import('./components/DyadicCellInterface'));
@@ -73,7 +74,7 @@ export interface GatewayData {
   data: any;
 }
 
-type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about';
+type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about' | 'guestbook';
 
 export default function App() {
   // An address under /about (or the older /?about=<section>) opens that About page.
@@ -92,10 +93,18 @@ export default function App() {
       return false;
     }
   });
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : arrivedAtSenses ? 'home' : 'welcome');
+  // "Sign Our Guestbook" has its own address (VITE_GUESTBOOK=on): arriving there opens it, after the Terms.
+  const [arrivedAtGuestbook] = useState(() => {
+    try {
+      return initialAbout === null && guestbookOn() && /^\/guestbook\/?$/.test(window.location.pathname);
+    } catch {
+      return false;
+    }
+  });
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : arrivedAtGuestbook ? 'guestbook' : arrivedAtSenses ? 'home' : 'welcome');
   // Arrived on a page other than the welcome page (a link to an About page, or straight to /senses, which means reflection was chosen):
   // the first-visit panel then skips the start chooser and the breathing-rhythm choice, and asks only the Terms.
-  const [arrivedElsewhere] = useState(initialAbout !== null || arrivedAtSenses);
+  const [arrivedElsewhere] = useState(initialAbout !== null || arrivedAtSenses || arrivedAtGuestbook);
   // Real navigation history instead of a single "previousScreen" value.
   // A single value can only ever answer "what screen came immediately
   // before this one" -- it breaks the moment a screen is reachable more
@@ -109,6 +118,11 @@ export default function App() {
   useEffect(() => {
     const onPop = () => {
       // With the section addresses on, Back and Forward move between Breath, Senses and Coach. A reflection stays in memory either way.
+      if (guestbookOn() && /^\/guestbook\/?$/.test(window.location.pathname) && currentScreen !== 'guestbook') {
+        setAboutSection(undefined);
+        setCurrentScreen('guestbook');
+        return;
+      }
       const sec = sectionsOn() ? sectionOfPath(window.location.pathname) : null;
       if (sec && sec !== sectionOfScreen(currentScreen)) {
         setAboutSection(undefined);
@@ -132,6 +146,12 @@ export default function App() {
     if (currentScreen === 'about') return;
     const sec = sectionsOn() ? sectionOfScreen(currentScreen) : null;
     const leavingAbout = aboutSectionFromLocation(window.location.pathname, '') !== null;
+    if (currentScreen === 'guestbook' && guestbookOn()) {
+      if (!/^\/guestbook\/?$/.test(window.location.pathname)) window.history[firstAddress.current || leavingAbout ? 'replaceState' : 'pushState'](null, '', '/guestbook');
+      firstAddress.current = false;
+      document.title = SITE_TITLE;
+      return;
+    }
     if (sec) {
       const target = SECTION_PATHS[sec];
       if (window.location.pathname !== target) {
@@ -174,17 +194,8 @@ export default function App() {
   const [textSize, setTextSize] = usePref('textSize', 16); // Default text size
   const [showBreathingCounter, setShowBreathingCounter] = usePref('showBreathingCounter', true);
   const [colorBlindMode, setColorBlindMode] = usePref('colorBlindMode', '');
-  const [breathingTechnique, setBreathingTechnique] = usePref('breathingTechnique', { ih: 5000, hi: 0, ex: 5000, ho: 0 } as BreathingTechnique);
-
-  // Single shared clock anchor for the breathing pulse animation and the
-  // numeric counter, so they read the same phase instead of each timing
-  // itself from whenever it happened to last mount. Only resets when the
-  // technique itself changes (a real change in cycle shape) -- not for
-  // opacity, colorblind mode, or visibility toggles.
-  const [breathingCycleStart, setBreathingCycleStart] = useState(() => Date.now());
-  useEffect(() => {
-    setBreathingCycleStart(Date.now());
-  }, [breathingTechnique]);
+  // One pace and one clock for the ring, the counter, the tones, the panel and the header logo, on every screen (src/app/components/PortableBreath.tsx).
+  const { technique: breathingTechnique, setTechnique: setBreathingTechnique, cycleStart: breathingCycleStart } = useBreathRhythm();
 
   // Breathing popout state
   // Open or closed, shared with every logo that opens it (src/lib/breathingPanel.ts).
@@ -328,7 +339,8 @@ export default function App() {
   // actual reflection flow represents work that a refresh would destroy.
   useEffect(() => {
     const screensWithNothingToLose: ScreenType[] = ['welcome', 'home', 'about'];
-    const hasUnsavedProgress = !screensWithNothingToLose.includes(currentScreen);
+    // The guestbook holds nothing to lose itself; a reflection in memory still does.
+    const hasUnsavedProgress = currentScreen === 'guestbook' ? gatewayData.length > 0 : !screensWithNothingToLose.includes(currentScreen);
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedProgress && !isEmergencyExiting.current) {
@@ -346,7 +358,7 @@ export default function App() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [currentScreen]);
+  }, [currentScreen, gatewayData.length]);
 
   // Gateway selection from home
   // "Save and return later" (VITE_SAVE_REFLECTION=on; src/lib/savedReflection.ts). The session ID is the two colors from Sight (or Sound's
@@ -546,11 +558,6 @@ export default function App() {
       >
         {/* Breathing tones: first in the reading and tab order, hidden until it has keyboard focus. */}
         <BreathTonesSwitch variant="skip" />
-        <BreathTonesPlayer
-          active={currentScreen === 'welcome' && entryUnlocked && breathingEnabled && showBreathingCounter}
-          timing={breathingTechnique}
-          cycleStart={breathingCycleStart}
-        />
         {/* Scroll to top on screen change */}
         <ScrollToTop trigger={currentScreen} />
         
@@ -585,23 +592,22 @@ export default function App() {
           onEmergencyExit={() => { isEmergencyExiting.current = true; }}
           onBreathingPopoutToggle={toggleBreathingPanel}
           onTutorialReplay={handleStartTutorial}
+          technique={breathingTechnique}
+          cycleStart={breathingCycleStart}
         />
 
-        {currentScreen === 'welcome' && entryUnlocked && (
-          <BreathingCounter
-            id="tutorial-breathing-counter"
-            enabled={breathingEnabled}
-            show={showBreathingCounter}
-            ih={breathingTechnique.ih}
-            hi={breathingTechnique.hi || 0}
-            ex={breathingTechnique.ex}
-            ho={breathingTechnique.ho || 0}
-            onTechniqueChange={setBreathingTechnique}
-            cycleStart={breathingCycleStart}
-            minimized={breathingCounterMinimized}
-            onMinimizedChange={setBreathingCounterMinimized}
-          />
-        )}
+        {/* The counter and the tones on every screen once the terms are accepted (portable, owner 2026-11-15). The tour points at it on the front page. */}
+        <PortableBreath
+          ready={entryUnlocked}
+          breathingEnabled={breathingEnabled}
+          showCounter={showBreathingCounter}
+          technique={breathingTechnique}
+          onTechniqueChange={setBreathingTechnique}
+          cycleStart={breathingCycleStart}
+          id={currentScreen === 'welcome' ? 'tutorial-breathing-counter' : undefined}
+          minimized={breathingCounterMinimized}
+          onMinimizedChange={setBreathingCounterMinimized}
+        />
 
         {currentScreen === 'welcome' && (
           <WelcomeTutorial
@@ -632,6 +638,12 @@ export default function App() {
               cycleStart={breathingCycleStart}
               onLogoClick={toggleBreathingPanel}
             />
+          )}
+
+          {currentScreen === 'guestbook' && (
+            <Suspense fallback={null}>
+              <GuestbookPage onBack={() => navigateBack('welcome')} sessionId={sessionId} />
+            </Suspense>
           )}
 
           {currentScreen === 'home' && (
@@ -728,6 +740,7 @@ export default function App() {
               gatewayData={gatewayData}
               selectedGateways={selectedGateways}
               onContinue={handleContinueFromReview}
+              onGuestbook={guestbookOn() ? () => navigateTo('guestbook') : undefined}
               onEditGateway={handleEditGateway}
               onBack={() => navigateBack('home')}
               bodyMapData={bodyMapData}
@@ -742,6 +755,7 @@ export default function App() {
               onBack={() => navigateBack('home')}
               onBreathe={() => handleGlobalNavigation('welcome')}
               onPartnerPractice={handleNavigateToCell}
+              onGuestbook={guestbookOn() ? () => navigateTo('guestbook') : undefined}
             />
             </RegionGate>
           )}

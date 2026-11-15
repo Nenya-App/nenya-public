@@ -15,8 +15,11 @@ ok('it suggests breathing without choosing for anyone, and names crisis help', /
 const flow = readFileSync('src/app/components/OnboardingFlow.tsx', 'utf8');
 ok('with the switch on, the panel opens on the chooser (not on a link straight to another page)', /const chooser = startChooserOn\(\) && !skipRhythm;/.test(flow) && /useState<OnboardingStep>\(chooser \? 'start' :/.test(flow));
 ok('breathing goes to the rhythm, the others straight to the Terms', /setStep\(c === 'breathing' \? 'rhythm' : 'terms'\)/.test(flow));
-ok('nothing is preselected: options are plain buttons, each with a native "Learn more"', !/aria-checked=\{[^}]*choice/.test(flow) && /onClick=\{\(\) => choose\(o\.id\)\}/.test(flow) && /<details className="px-3 pb-2 text-xs text-muted-foreground">/.test(flow) && /<span className="sr-only">: \{o\.title\}<\/span>/.test(flow));
-ok('the rhythm and the Terms can go back, and every target is 44px', /goTo\('start'\)/.test(flow) && /goTo\(choice === 'breathing' \? 'rhythm' : 'start'\)/.test(flow) && (flow.match(/min-h-11/g) ?? []).length >= 4);
+const triad = readFileSync('src/app/components/StartTriad.tsx', 'utf8');
+ok('nothing is preselected: three ring buttons in a triangle (Breathe on top), and one closed "Learn more" for all three', /<StartTriad onChoose=\{choose\} \/>/.test(flow) && /onClick=\{\(\) => onChoose\(id\)\}/.test(triad) && !/aria-pressed|aria-checked/.test(triad) && /<RingButton id="breathing"[\s\S]{0,200}<RingButton id="reflection"[\s\S]{0,80}<RingButton id="coach"/.test(triad) && /<details className="rounded-xl border border-border/.test(triad));
+ok('the three rings: Breathe white, Reflect blue, Coach red; white keeps a pearl rim on light backgrounds', /breathing: \{ glow: 'rgba\(250, 248, 245/.test(triad) && /rim: '#C9C4BD'/.test(triad) && /reflection: \{ glow: 'rgba\(74, 144, 226/.test(triad) && /coach: \{ glow: 'rgba\(214, 69, 65/.test(triad));
+ok('the glow is still under reduced motion, and each ring names its line for screen readers', /prefers-reduced-motion: reduce\) \{ \.start-ring \{ animation: none; \}/.test(triad) && /aria-describedby=\{`start-line-\$\{id\}`\}/.test(triad));
+ok('the rhythm and the Terms can go back, and every target is at least 44px', /goTo\('start'\)/.test(flow) && /goTo\(choice === 'breathing' \? 'rhythm' : 'start'\)/.test(flow) && (flow.match(/min-h-11/g) ?? []).length >= 2 && /size-20/.test(triad) && /min-h-11/.test(triad));
 ok('the choice and the agreement in progress are handed on at agreement', /onFinish\(chooser \? \(choice \?\? undefined\) : undefined, agreement\)/.test(flow));
 ok('without the switch, the earlier panel is unchanged', /'Welcome to Nenya'\}/.test(flow) && /Let’s begin with your breath\./.test(flow));
 
