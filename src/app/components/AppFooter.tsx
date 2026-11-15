@@ -29,7 +29,8 @@ export function AppFooter({ className = '' }: AppFooterProps) {
 
           {/* Copyright (Right) */}
           <div className="text-xs text-muted-foreground text-center md:text-right order-3 md:order-3">
-            <p>© 2025 Nenya Project</p>
+            {/* The current year, so the mark never goes stale again (it read 2025 into 2026). Credits to others keep their own years. */}
+            <p>© {Math.max(2026, new Date().getFullYear())} Nenya Project</p>
             <p>Public infrastructure for emotional literacy</p>
           </div>
         </div>
