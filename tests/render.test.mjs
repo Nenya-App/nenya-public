@@ -157,7 +157,8 @@ try {
     const nav = readFileSync(new URL('../src/app/components/GlobalNavigation.tsx', import.meta.url), 'utf8');
     const page = readFileSync(new URL('../src/app/components/pages/WelcomePage.tsx', import.meta.url), 'utf8');
     const app = readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8');
-    return [nav, page, app].some((t) => t.includes(`id="${id}"`));
+    // The counter is portable (src/app/components/PortableBreath.tsx): App gives it the tour's id on the front page.
+    return [nav, page, app].some((t) => t.includes(`id="${id}"`)) || app.includes(`id={currentScreen === 'welcome' ? '${id}'`);
   })));
   {
     const src = readFileSync(new URL('../src/app/components/WelcomeTutorial.tsx', import.meta.url), 'utf8');

@@ -8,17 +8,16 @@ import { melodyColorsFor, melodyShared } from '../lib/melodySeed';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
 import { BreathingPopout } from './components/BreathingPopout';
-import { BreathingCounter } from './components/BreathingCounter';
 import { WelcomeTutorial, type TutorialStepId } from './components/WelcomeTutorial';
 import { TourOffer } from './components/TourOffer';
 import { LoadingVeil } from './components/LoadingVeil';
 import { EmergencyExitDock } from './components/EmergencyExit';
-import { BreathTonesPlayer, BreathTonesSwitch, TonesAnnouncer } from './components/BreathTonesSwitch';
+import { BreathTonesSwitch, TonesAnnouncer } from './components/BreathTonesSwitch';
+import { PortableBreath, useBreathRhythm } from './components/PortableBreath';
 import { preloadLogoAssets } from '../lib/preload';
 import { enableUsageCounts, countEvents, countEvent, countPageView } from '../lib/usageCounts';
 import { PRESETS, sameTechnique } from '../lib/breathingPresets';
 import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
-import { BreathingTechnique } from './components/ValarBreathingLogo';
 import OnboardingFlow from './components/OnboardingFlow';
 import type { StartChoice } from '../lib/startCopy';
 import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
@@ -195,17 +194,8 @@ export default function App() {
   const [textSize, setTextSize] = usePref('textSize', 16); // Default text size
   const [showBreathingCounter, setShowBreathingCounter] = usePref('showBreathingCounter', true);
   const [colorBlindMode, setColorBlindMode] = usePref('colorBlindMode', '');
-  const [breathingTechnique, setBreathingTechnique] = usePref('breathingTechnique', { ih: 5000, hi: 0, ex: 5000, ho: 0 } as BreathingTechnique);
-
-  // Single shared clock anchor for the breathing pulse animation and the
-  // numeric counter, so they read the same phase instead of each timing
-  // itself from whenever it happened to last mount. Only resets when the
-  // technique itself changes (a real change in cycle shape) -- not for
-  // opacity, colorblind mode, or visibility toggles.
-  const [breathingCycleStart, setBreathingCycleStart] = useState(() => Date.now());
-  useEffect(() => {
-    setBreathingCycleStart(Date.now());
-  }, [breathingTechnique]);
+  // One pace and one clock for the ring, the counter, the tones, the panel and the header logo, on every screen (src/app/components/PortableBreath.tsx).
+  const { technique: breathingTechnique, setTechnique: setBreathingTechnique, cycleStart: breathingCycleStart } = useBreathRhythm();
 
   // Breathing popout state
   // Open or closed, shared with every logo that opens it (src/lib/breathingPanel.ts).
@@ -568,11 +558,6 @@ export default function App() {
       >
         {/* Breathing tones: first in the reading and tab order, hidden until it has keyboard focus. */}
         <BreathTonesSwitch variant="skip" />
-        <BreathTonesPlayer
-          active={currentScreen === 'welcome' && entryUnlocked && breathingEnabled && showBreathingCounter}
-          timing={breathingTechnique}
-          cycleStart={breathingCycleStart}
-        />
         {/* Scroll to top on screen change */}
         <ScrollToTop trigger={currentScreen} />
         
@@ -607,23 +592,22 @@ export default function App() {
           onEmergencyExit={() => { isEmergencyExiting.current = true; }}
           onBreathingPopoutToggle={toggleBreathingPanel}
           onTutorialReplay={handleStartTutorial}
+          technique={breathingTechnique}
+          cycleStart={breathingCycleStart}
         />
 
-        {currentScreen === 'welcome' && entryUnlocked && (
-          <BreathingCounter
-            id="tutorial-breathing-counter"
-            enabled={breathingEnabled}
-            show={showBreathingCounter}
-            ih={breathingTechnique.ih}
-            hi={breathingTechnique.hi || 0}
-            ex={breathingTechnique.ex}
-            ho={breathingTechnique.ho || 0}
-            onTechniqueChange={setBreathingTechnique}
-            cycleStart={breathingCycleStart}
-            minimized={breathingCounterMinimized}
-            onMinimizedChange={setBreathingCounterMinimized}
-          />
-        )}
+        {/* The counter and the tones on every screen once the terms are accepted (portable, owner 2026-11-15). The tour points at it on the front page. */}
+        <PortableBreath
+          ready={entryUnlocked}
+          breathingEnabled={breathingEnabled}
+          showCounter={showBreathingCounter}
+          technique={breathingTechnique}
+          onTechniqueChange={setBreathingTechnique}
+          cycleStart={breathingCycleStart}
+          id={currentScreen === 'welcome' ? 'tutorial-breathing-counter' : undefined}
+          minimized={breathingCounterMinimized}
+          onMinimizedChange={setBreathingCounterMinimized}
+        />
 
         {currentScreen === 'welcome' && (
           <WelcomeTutorial
