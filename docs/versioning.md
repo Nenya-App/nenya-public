@@ -20,7 +20,7 @@ It is the `version` in `package.json` and nothing else. Change it by hand, as pa
 - **MINOR** (1.1.0 to 1.2.0): something new a person can see or use.
 - **MAJOR** (1.x to 2.0.0): a change that breaks something others rely on: the signed transcript format, a Terms revision that changes what we collect, or an API change.
 
-Use `npm version minor --no-git-tag-version` (or `patch` / `major`) so only `package.json` and the lock file change, then commit it in the release pull request. After the merge, make a GitHub release (or tag) named for the number on the merge commit, so each number maps to one commit. Keep a line per release in `CHANGELOG.md` (not yet written; see the backfill item in the to-do list).
+Use `npm version minor --no-git-tag-version` (or `patch` / `major`) so only `package.json` and the lock file change, then commit it in the release pull request. After the merge, make a GitHub release (or tag) named for the number on the merge commit, so each number maps to one commit. Give each release its own section in `CHANGELOG.md`. The history through 1.1.0 was backfilled there from the commit subjects, one line per commit, and the terse ones were annotated from the commits themselves.
 
 ## How the label gets into the code
 

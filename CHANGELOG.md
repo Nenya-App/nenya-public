@@ -1,122 +1,122 @@
 # Changelog
 
-All notable changes to Nenya. This file was **backfilled on 2026-11-10 from the commit subjects** (the history has no pull-request merge records to draw on, so it is grouped by month, one line per commit, oldest first, with the short commit id). Early commit subjects are terse; where a subject says little, read the commit itself. From 1.1.0 on, each change is described in its commit message and, when released, summarised here under the version.
+All notable changes to Nenya. This file was **backfilled on 2026-11-10 from the commit subjects** (the history has no pull-request merge records to draw on, so it is grouped by month, one line per commit, oldest first, with the short commit id). Early commit subjects are terse, so on 2026-11-15 those entries were annotated from the commits themselves: on an annotated line, the text before the " — " is the original subject and the sentence after it is the annotation. From 1.1.0 on, each change is described in its commit message and, when released, summarised here under the version.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/) loosely. Nenya is licensed AGPL-3.0; see `LICENSE`.
 
 ## August 2026
 
 - 2026-08-22 `a3fa223` Initial public release
-- 2026-08-22 `685d787` Update package-lock.json
+- 2026-08-22 `685d787` Update package-lock.json — Lockfile only: renamed the package from the Figma template name to nenya 1.0.0 and recorded the AGPL-3.0-or-later license.
 - 2026-08-22 `d5fcd4c` Update custom sponsorship URL in FUNDING.yml
 - 2026-08-22 `5506477` Add Netlify badge and open-source/license notice to the live site
-- 2026-08-22 `409a2ad` Merge branch 'main' of https://github.com/Nenya-App/nenya-public
-- 2026-08-22 `d8de74f` Added Tutorial
-- 2026-08-22 `06abb29` Persistent Footer
-- 2026-08-22 `4efdf9f` Footer Fix
-- 2026-08-22 `105baf2` Fixed accessibility panel
-- 2026-08-22 `fc71929` Add site preview
-- 2026-08-23 `5a77de7` Scrolling fix
-- 2026-08-23 `819b95b` Update Scroll to Top
-- 2026-08-24 `d7ce3b9` Breathing Animation Troubleshoot
-- 2026-08-24 `ad63462` Update ValarBreathingLogo.tsx
-- 2026-08-24 `ea24f99` Restructure main page
-- 2026-08-24 `e3e286f` Sensory warning, name scrub
-- 2026-08-24 `440e30f` Update breathing animation
-- 2026-08-24 `8566512` report update
-- 2026-08-25 `c795c9d` Visual Aids Added
-- 2026-08-25 `19250d7` Cleanup dead code
-- 2026-08-26 `e9a14c1` Layout bug fix
-- 2026-08-26 `0fc2358` Security buff
-- 2026-08-26 `e004e16` Fix navigation
-- 2026-08-28 `718814e` Added submission forms
-- 2026-08-28 `e9122d0` Audit
-- 2026-08-30 `f0ecfad` Add body report to all gateways
-- 2026-08-30 `b0676e6` Body map implementation
-- 2026-08-30 `878a5d0` Update netlify.toml
+- 2026-08-22 `409a2ad` Merge branch 'main' of https://github.com/Nenya-App/nenya-public — Merge of GitHub main into the local branch; it brought in only the FUNDING.yml change from d5fcd4c.
+- 2026-08-22 `d8de74f` Added Tutorial — Added WelcomeTutorial.tsx, a four-step spotlight tour of the breathing logo, counter, start button and menu, with a replay entry in the navigation.
+- 2026-08-22 `06abb29` Persistent Footer — Moved AppFooter from individual pages into App.tsx so it shows on every screen.
+- 2026-08-22 `4efdf9f` Footer Fix — Moved the footer back into individual pages (Welcome, Gateways, Sight) and loosened the welcome page's scroll snapping.
+- 2026-08-22 `105baf2` Fixed accessibility panel — Made the accessibility panel and breathing popout scroll within the screen height on small devices, and added the footer to every About and gateway page.
+- 2026-08-22 `fc71929` Add site preview — Added Open Graph and Twitter card tags to index.html and public/og-image.jpg, so shared links show a preview image.
+- 2026-08-23 `5a77de7` Scrolling fix — Closing the tutorial now scrolls the page back to the top instead of leaving it at the last highlighted step.
+- 2026-08-23 `819b95b` Update Scroll to Top — ScrollToTop.tsx now resets scroll twice, immediately and again after 120 ms, so late layout shifts do not leave a new screen scrolled down.
+- 2026-08-24 `d7ce3b9` Breathing Animation Troubleshoot — Gave the breathing logo animation and the breathing counter one shared clock in App.tsx so they stay in phase, and stopped opacity changes restarting the pulse.
+- 2026-08-24 `ad63462` Update ValarBreathingLogo.tsx — Further breathing-sync fix in ValarBreathingLogo.tsx: the phase offset is computed once per animation setup instead of on every render.
+- 2026-08-24 `ea24f99` Restructure main page — Moved the breathing-tool explanation from the welcome page to a new About page (BreathingTool.tsx) and added click-to-pause for the breathing animations.
+- 2026-08-24 `e3e286f` Sensory warning, name scrub — Terms gained a visual-content (motion and color) warning and an AGPL open-source license section; the founder bio was rewritten in About and the welcome page.
+- 2026-08-24 `440e30f` Update breathing animation — Breathing ring phase alignment in ValarBreathingLogo.tsx is now set once per cycle start instead of being re-applied every cycle, which had caused drift.
+- 2026-08-24 `8566512` report update — Moved PDF report generation into src/lib/nenyaPdfReport.ts with bundled fonts and logo, replacing the inline export in GatewayReviewPage.tsx.
+- 2026-08-25 `c795c9d` Visual Aids Added — Added candidate icons and Openverse images for gateway choices under public/pdf-assets/visual-aids-review, with ATTRIBUTIONS.md, docs/REFERENCE_LINKS.md and gateway subtitle links.
+- 2026-08-25 `19250d7` Cleanup dead code — Removed about 9,000 lines of unused code: unused shadcn/ui components, old chat, cell and icon components, a theme file, and roughly 40 unused npm dependencies.
+- 2026-08-26 `e9a14c1` Layout bug fix — Added a Support Us button to the desktop and mobile navigation and fixed the welcome logo section pushing its text to the bottom of the screen.
+- 2026-08-26 `0fc2358` Security buff — Pinned jspdf, upgraded Vite 6.3.5 to 6.4.3, and relabeled the Eagle Protocol, PII-scrubbing and report screens as non-working previews instead of live features.
+- 2026-08-26 `e004e16` Fix navigation — Replaced the single previous-screen value in App.tsx with a navigation history stack, and warned before reload on any screen inside the reflection flow.
+- 2026-08-28 `718814e` Added submission forms — Added report and sensory-reflection submission through Netlify Forms (a hidden form in index.html, src/lib/reportSubmission.ts) with plain-text sanitizing.
+- 2026-08-28 `e9122d0` Audit — Labeled the Dyadic Cell and Eagle Protocol demos as previews, changed the legal name to a Fractured Atlas sponsored project, and fixed type declarations.
+- 2026-08-30 `f0ecfad` Add body report to all gateways — Added optional where-in-your-body text fields to every gateway, sanitized and included in the review page and PDF report; sanitizing moved to src/lib/textSanitize.ts.
+- 2026-08-30 `b0676e6` Body map implementation — Rewrote BodyMapAvatar.tsx and added the body map to every gateway, the review page and the PDF report, with docs/body-map-integration-spec.md.
+- 2026-08-30 `878a5d0` Update netlify.toml — Comment-only change to the Content Security Policy notes in netlify.toml, describing the body map's data: images and the Netlify Forms POST.
 
 ## September 2026
 
-- 2026-09-04 `387d5bc` Added drawing
-- 2026-09-04 `862da14` Major update
-- 2026-09-04 `447a710` Update Tonals
-- 2026-09-04 `026d2de` New Updates 9.4.26
-- 2026-09-04 `c025e26` Addition to Sound Gateway
-- 2026-09-04 `5e85fa4` Audio update
-- 2026-09-06 `a859468` Opacity Update
-- 2026-09-12 `b055b37` Update to transparency & Audio gateway
-- 2026-09-12 `21b762e` Update ScrollIndicator.tsx
-- 2026-09-12 `3cc354f` Audio update
-- 2026-09-12 `11d11d7` Report update for audio gateway
-- 2026-09-12 `0dacb8e` Logo reduction
-- 2026-09-12 `c49a5a2` Hidable breathing counter
-- 2026-09-13 `0f0b360` Updates
-- 2026-09-13 `c56f4b3` Update ThemeProvider.tsx
-- 2026-09-16 `c6f8a8b` Update add bookmark
-- 2026-09-23 `f6f3771` Update to scroll.
-- 2026-09-23 `f5476ca` Scroll fix
-- 2026-09-23 `663e677` Real scroll fix
-- 2026-09-23 `1641aa8` Self-host donate button
+- 2026-09-04 `387d5bc` Added drawing — Added a freehand drawing canvas to the Movement gateway, included in the review page, and expanded public/about-nenya.html with new sections and an FAQ.
+- 2026-09-04 `862da14` Major update — Added a color-blend paint canvas (Sight), a melody contour canvas (Sound), a flavor wheel (Essence) and pattern drawing (Insight), sharing one DrawingCanvas.
+- 2026-09-04 `447a710` Update Tonals — Removed the color-blend and melody-contour canvases again and added MusicalStaff.tsx, showing Sound gateway notes on a staff.
+- 2026-09-04 `026d2de` New Updates 9.4.26 — Added a second tonal system, Arabic Maqam Rast in quarter tones, to src/lib/audio.ts, with a ScaleRow.tsx note picker.
+- 2026-09-04 `c025e26` Addition to Sound Gateway — Added a Western or Maqam Rast scale switch to the Sound gateway; the chosen system's note names appear on the review page and in the PDF.
+- 2026-09-04 `5e85fa4` Audio update — Made color-to-melody translation in audio.ts work for any scale length, so melodies re-seed correctly when the tonal system changes.
+- 2026-09-06 `a859468` Opacity Update — Raised the default breathing animation opacity from 50% to 100%.
+- 2026-09-12 `b055b37` Update to transparency & Audio gateway — Dimmed the logo, removed the Sight gateway's Recommended badge, and added Slendro, Bhairav, Miyako-bushi and Blues tonal systems in audio.ts.
+- 2026-09-12 `21b762e` Update ScrollIndicator.tsx — The scroll indicator became a clickable, keyboard-accessible button that scrolls down about one screen.
+- 2026-09-12 `3cc354f` Audio update — Added KotoStringDiagram.tsx for Miyako-bushi, cipher-style names for Slendro, and staff notation for Rast and Blues in the Sound gateway.
+- 2026-09-12 `11d11d7` Report update for audio gateway — The review page and PDF report now name the scale a melody was composed in, from one shared label list in audio.ts.
+- 2026-09-12 `0dacb8e` Logo reduction — Added a 128 px WebP logo (about 5 KB) used for small logo sizes instead of the full 1024 px PNG.
+- 2026-09-12 `c49a5a2` Hidable breathing counter — The breathing counter can be minimized; it opens for the tutorial and collapses when the tutorial ends.
+- 2026-09-13 `0f0b360` Updates — Wired the scroll indicator to each page's real scroll container (Pantheon of Needs, Sight) and made the welcome page's More below cue clickable.
+- 2026-09-13 `c56f4b3` Update ThemeProvider.tsx — Stopped saving the theme choice in localStorage and deleted any previously saved value, so nothing about a visitor persisted between visits.
+- 2026-09-16 `c6f8a8b` Update add bookmark — Added a web app manifest, app icons and an Add to Home Screen prompt (AddToHomeScreen.tsx) reachable from the navigation.
+- 2026-09-23 `f6f3771` Update to scroll. — Each gateway page now scrolls back to the top when moving between its steps.
+- 2026-09-23 `f5476ca` Scroll fix — Tutorial steps that highlight the fixed header now return the page to the top, and closing the tour resets scroll again after 400 ms.
+- 2026-09-23 `663e677` Real scroll fix — Turned off browser scroll restoration and repeated the scroll reset at 120, 400 and 1000 ms, fixing pages opening scrolled down after a refresh in Firefox.
+- 2026-09-23 `1641aa8` Self-host donate button — Served the Fractured Atlas donate badge from public/badges instead of their server, and removed that host from the CSP img-src in netlify.toml.
 
 ## October 2026
 
-- 2026-10-04 `d95d039` Tutorial Opt-in
+- 2026-10-04 `d95d039` Tutorial Opt-in — The tutorial no longer starts automatically on every visit; it became opt-in from a welcome-page link or the menu.
 - 2026-10-20 `d39636d` Update fiscal sponsor exact language
-- 2026-10-24 `cc8d58a` Privacy and Terms Update
-- 2026-10-24 `bdde27e` Cue fixes
-- 2026-10-26 `6facf4f` Update Welcome
-- 2026-10-26 `834b3d6` Breathing Counter Update
-- 2026-10-26 `e0d3c43` Header fix
-- 2026-10-26 `d339155` Header fix mobile
-- 2026-10-26 `1d859ce` Header Fix 2
-- 2026-10-30 `ccff925` Update README.md
-- 2026-10-30 `eb55578` Build out of Coach Demo Initial
-- 2026-10-30 `b0bbdaf` Coach fix
-- 2026-10-30 `4e7aca3` Coach Update
-- 2026-10-30 `e54cfe1` Coach Update
+- 2026-10-24 `cc8d58a` Privacy and Terms Update — Combined the Terms and a new Privacy Policy into one source (src/lib/legalDocument.ts) with a PDF download, and started archiving old versions in docs/legal.
+- 2026-10-24 `bdde27e` Cue fixes — Added a New here? Take a quick tour button that pulses briefly after the welcome card closes, and enlarged the More below cue.
+- 2026-10-26 `6facf4f` Update Welcome — Replaced the terms page with OnboardingFlow.tsx: a first-visit overlay for choosing a breathing rhythm, a counter tour, how it works, then the terms.
+- 2026-10-26 `834b3d6` Breathing Counter Update — The breathing counter can collapse fully to just the word breathe.
+- 2026-10-26 `e0d3c43` Header fix — Kept the header clear of the phone status bar, moved Replay tutorial into the menu, and added a contact section; the Terms now cover contact messages.
+- 2026-10-26 `d339155` Header fix mobile — Made the header part of the page layout instead of fixed and stopped the document itself scrolling, so iPhone Safari cannot slide the header away.
+- 2026-10-26 `1d859ce` Header Fix 2 — Removed viewport-fit=cover from the viewport settings so iOS browsers such as Brave keep the header inside the safe area.
+- 2026-10-30 `ccff925` Update README.md — Rewrote README.md with sections on what Nenya does, what is and is not true about privacy, the AI pieces, running locally and deploying.
+- 2026-10-30 `eb55578` Build out of Coach Demo Initial — Added the /coach page and netlify/functions/coach.mts, a stateless relay to Venice AI with signed turn tickets and a rate limit, plus a Terms revision.
+- 2026-10-30 `b0bbdaf` Coach fix — Fixed a redirect loop on /coach by rewriting it to /coach/index.html, and wrote the function's route as a literal in its config.
+- 2026-10-30 `4e7aca3` Coach Update — Added identifier scrubbing (piiScrub.ts), stop and soften crisis flags (safetyFlags.ts), and Ed25519-signed transcripts with scripts/verify-transcript.mjs; Terms revised.
+- 2026-10-30 `e54cfe1` Coach Update — Added an instruction-steering screen (promptGuard.ts) on page and server, two session colors bound into signed transcripts, and a standalone /coach page; Terms revised.
 - 2026-10-30 `b2630d8` Coach: fix cut-off replies, set coach identity in our own system instruction
-- 2026-10-30 `ef1456b` Sensory Report Inclusion for Coach
-- 2026-10-30 `51e07de` Updates to Coach Intro and Date 10/31/2026
-- 2026-10-30 `dd4262e` Coach Updates
-- 2026-10-31 `0bf0016` Update to Report Mechanism and Dyad Cell Statements
+- 2026-10-30 `ef1456b` Sensory Report Inclusion for Coach — Let a visitor optionally pass a text summary of a finished reflection to the coach, bound into tickets and signed transcripts; Terms revised.
+- 2026-10-30 `51e07de` Updates to Coach Intro and Date 10/31/2026 — Added SessionKeyPicker.tsx and sessionSound.ts, so a coach visit without Sight colors picks two colors and hears their six-note signature; Terms dated October 31.
+- 2026-10-30 `dd4262e` Coach Updates — Added a Continue on Venice link with a referral note after the demo ends, and reworded About pages so unbuilt privacy features read as hopes, not facts.
+- 2026-10-31 `0bf0016` Update to Report Mechanism and Dyad Cell Statements — Removed the old session demo screens, moved the partner-practice plan to a new About page, and let a signed coach transcript be sent with a note.
 
 ## November 2026 (the 1.1.0 work, on `dev`, unreleased)
 
-- 2026-11-02 `51c7211` Update discoverability
-- 2026-11-02 `b050ca3` Search engine support and Vite update
-- 2026-11-02 `7fca9cb` Adding blobs and modules for coach discernment
-- 2026-11-02 `8b2c953` Update coach section
-- 2026-11-02 `7477b7f` Coach interface update
-- 2026-11-02 `13a3764` Coach Dynamics Update
+- 2026-11-02 `51c7211` Update discoverability — Added public/why-nenya.html, llms.txt, sitemap entries, structured data in index.html, AI-crawler rules in robots.txt, and docs/discoverability.md.
+- 2026-11-02 `b050ca3` Search engine support and Vite update — Upgraded Vite from 6.4.3 to 6.4.5; package.json and lockfile only.
+- 2026-11-02 `7fca9cb` Adding blobs and modules for coach discernment — The coach function loads private method notes and phrase-triggered modules from Netlify Blobs (coachModules.ts), and drops replies claiming clinical or diagnostic status.
+- 2026-11-02 `8b2c953` Update coach section — The /coach page gained the site header, a compact theme and text-size panel, a leave warning and a shared SupportThisWork.tsx section.
+- 2026-11-02 `7477b7f` Coach interface update — The coach's session colors now start as a random readable pair instead of fixed defaults; Terms wording updated to match.
+- 2026-11-02 `13a3764` Coach Dynamics Update — Reworked the coach's per-turn instructions for the first, second-to-last and last exchanges, added page-written greeting lines, and added a ShareNenya.tsx share button.
 - 2026-11-03 `d1e11c3` Add Index Now compatibility
-- 2026-11-03 `9f4ff72` Adding options persistence in-browser
-- 2026-11-03 `618a4a4` Coach crash fix, remove redundant code
-- 2026-11-03 `528b95a` Update terms and coach upload option
-- 2026-11-04 `f795a63` Create
-- 2026-11-04 `c471955` Update branches-and-previews.md
-- 2026-11-04 `fc16e06` Lighthouse Ext Audit
-- 2026-11-04 `a2611ee` Compacting large images and animations
-- 2026-11-04 `54a0a3a` Update to file sizing
-- 2026-11-04 `65d15fd` Logo update
-- 2026-11-05 `1510e9c` Complete revamp of logo/gem
-- 2026-11-05 `d93750c` Switch models on preview
-- 2026-11-05 `402da3e` Coach updates
-- 2026-11-05 `eb6fd8e` Build in modules
-- 2026-11-05 `3fd42e7` Update coach model defaults
+- 2026-11-03 `9f4ff72` Adding options persistence in-browser — Added opt-in Remember on this device settings (deviceMemory.ts), a 12-hour coach rest stored locally, and a 100-conversation daily cap counted in Blobs; Terms revised.
+- 2026-11-03 `618a4a4` Coach crash fix, remove redundant code — Fixed a coach page crash from a variable used before it was declared, and deleted the Eagle Protocol demo, the exit passcode, unused UI files and old docs.
+- 2026-11-03 `528b95a` Update terms and coach upload option — Removed the reflection-summary hand-off to the coach and the click-to-pause logo, added a Venice link on the review page, and revised the Terms.
+- 2026-11-04 `f795a63` Create — Created the CI workflow (.github/workflows/ci.yml), the first test suite under tests/, docs/branches-and-previews.md, and configurable allowed coach hosts (originHosts.ts).
+- 2026-11-04 `c471955` Update branches-and-previews.md — Rewrote the preview setup as a second, password-protected Netlify staging site built from dev, with its own keys and Blobs store.
+- 2026-11-04 `fc16e06` Lighthouse Ext Audit — Converted the gem and petal images to WebP, added a Cross-Origin-Opener-Policy header, recorded the signing key ID, and added asset and header tests.
+- 2026-11-04 `a2611ee` Compacting large images and animations — Converted large PNG assets to WebP, loaded the animation engine lazily (MotionProvider.tsx), preloaded two fonts, and added long-lived cache headers in netlify.toml.
+- 2026-11-04 `54a0a3a` Update to file sizing — Made the first-visit panel, Emergency Exit and crisis notice independent of the lazily loaded animation engine, enforced by tests/critical-ui.test.mts.
+- 2026-11-04 `65d15fd` Logo update — Replaced the logo image assets with new versions and removed the Nenya versus Palantir comparison image from the Name page.
+- 2026-11-05 `1510e9c` Complete revamp of logo/gem — Rebuilt the logo as a canvas-drawn gem (SpectralGem.tsx) with a precomputed glow and one shared breath clock (breathClock.ts), and regenerated all icons.
+- 2026-11-05 `d93750c` Switch models on preview — Added src/lib/veniceE2ee.ts so a COACH_MODEL starting with e2ee- sends prompts encrypted from the relay to Venice's enclave; set on staging only.
+- 2026-11-05 `402da3e` Coach updates — The coach now answers direct questions first (coachIntent.ts), breathing pace changes fade instead of snapping, the gem was retuned, and docs/coach-instructions-scope.md was added.
+- 2026-11-05 `eb6fd8e` Build in modules — Added a build script and format for the private coach module set, and added Canadian crisis lines to Emergency Exit and the coach's crisis notice.
+- 2026-11-05 `3fd42e7` Update coach model defaults — Changed the coach's default model from deepseek-v3.2 to Venice's encrypted e2ee-qwen-2-5-7b-p, so production used the encrypted route by default.
 - 2026-11-05 `9181254` Upgrade node to 24
-- 2026-11-05 `31dcc09` Update logo bezel
-- 2026-11-05 `2f8c112` Update gem again
-- 2026-11-05 `1b6d8a4` Gem fix
-- 2026-11-05 `d5061df` Update gem pass 3
-- 2026-11-05 `0cd7320` Gems fixed final
-- 2026-11-05 `ef0c2ae` Breathing animation update
-- 2026-11-05 `225e7c5` Error reports on coach
-- 2026-11-05 `54b4de8` Error Status Update push
-- 2026-11-05 `7967445` Encryption error fix
-- 2026-11-05 `ceab1a9` Scroll fix
+- 2026-11-05 `31dcc09` Update logo bezel — Added a warm rim tint and a gold bezel to the gem in SpectralGem.tsx, and regenerated the icons and logo images.
+- 2026-11-05 `2f8c112` Update gem again — Fixed the overlap where the last orbs in the ring sat on top of the first ones, and regenerated the icons and logo images.
+- 2026-11-05 `1b6d8a4` Gem fix — Made the gem nearly opaque and colored it from the inner orbs' current colors (orbColours.ts), with a thicker bezel; icons regenerated.
+- 2026-11-05 `d5061df` Update gem pass 3 — Redrew the gem bezel as a double gold and cream line matching the petals' strokes; icons regenerated.
+- 2026-11-05 `0cd7320` Gems fixed final — Final gem shading values, and the counter's stronger pulse now marks only the start of each inhale (breathClock.ts); icons regenerated.
+- 2026-11-05 `ef0c2ae` Breathing animation update — The breathing ring now shrinks only to just outside the gem (25% instead of 10%), so each breath looks slower.
+- 2026-11-05 `225e7c5` Error reports on coach — Coach failures now show a plain explanation with a reference code and a report button that sends codes only, and Forget me was added to every footer.
+- 2026-11-05 `54b4de8` Error Status Update push — Logged Venice's own error status and text for encrypted-route failures (server log only), and added scripts/probe-e2ee.mts to test that route.
+- 2026-11-05 `7967445` Encryption error fix — Fixed every second encrypted turn failing by also encrypting the coach's earlier replies, and added diagnostic switches for the encrypted route.
+- 2026-11-05 `ceab1a9` Scroll fix — After the coach's consent screen, the conversation now opens scrolled to the top so the greeting is visible.
 - 2026-11-05 `2d43aa5` Stop the coach repeating itself on follow-up turns
 - 2026-11-05 `62c0aff` Keep the repeat retry inside the single-attempt time budget
-- 2026-11-05 `6c64bde` Mobile Icon Updates
+- 2026-11-05 `6c64bde` Mobile Icon Updates — Replaced the four home-screen and app icon PNGs in public/icons; images only.
 - 2026-11-06 `bda7706` Make the coach's final reply read as an ending
 - 2026-11-06 `5d3038a` Keep paragraph breaks in the coach's replies
 - 2026-11-06 `cbd878a` Make "Forget me" return to the start, where the terms are asked again
@@ -148,7 +148,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) loosely. Nenya is
 - 2026-11-07 `a2b4998` Reports: only a genuine signed transcript can be sent to Nenya
 - 2026-11-07 `195b741` Add a public page to check a signed transcript, and tamper-evident readable copies
 - 2026-11-07 `5992e2b` Terms revision 2: add the transcript wording now that it is built
-- 2026-11-08 `9e468c7` Admin Initial Identity Build
+- 2026-11-08 `9e468c7` Admin Initial Identity Build — The owner stats endpoint and admin page now also accept a signed-in Netlify Identity user with the Owner role, alongside the owner token.
 - 2026-11-08 `679c4d2` Emergency Exit everywhere and without Back, coach quiet timeout, optional sound, clearer transcript names
 - 2026-11-08 `ebb9933` Tests: hearing the signature sound stays optional on both coach start screens
 - 2026-11-08 `d35a67b` Versioning: a real build label in every signed transcript
@@ -191,7 +191,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) loosely. Nenya is
 - 2026-11-08 `18bdecf` Coach: owner-only per-request switches for the distress sentences and the instruction wording
 - 2026-11-08 `5333828` Coach page: an owner panel for the testing switches
 - 2026-11-08 `9103b97` Safety runner: explain a 401
-- 2026-11-08 `d255a15` Update eval-safety.mts
+- 2026-11-08 `d255a15` Update eval-safety.mts — The safety runner now tells a site-protection 401 (a password on the deploy) apart from Venice rejecting the API key.
 - 2026-11-08 `c6ad924` Coach: tell the owner why an origin was refused
 - 2026-11-08 `2937836` Safety set: no apologies, gratitude only for critique; show breath advice and sending away
 - 2026-11-08 `737bd9a` Persona checks: "I'm sorry to hear that" and "I'm sorry if" count as apologies

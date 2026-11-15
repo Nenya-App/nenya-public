@@ -30,10 +30,15 @@ turned back into the conversation) so duplicates can be recognized. The signed f
 
 If a visitor chooses "Send to Nenya", they are shown exactly what will be sent first. Only a signed
 transcript can be sent: the report function (`/api/report`) checks the signature and that the key is
-Nenya's before anything is forwarded, and an unsigned or altered transcript is refused. A genuine one is
-rebuilt as readable text from the signed transcript itself and reaches us through a separate Netlify form
-with the signed file attached, the key id, whether the receipt is in the 30-day log, and a `checked` value
-only the function can produce. The function sees the transcript on its way through and does not keep it.
+Nenya's before anything is kept, and an unsigned or altered transcript is refused. A genuine one is
+rebuilt as readable text from the signed transcript itself and **kept in the site's private store** (not in
+Netlify Forms, logs or counts), keyed by its fingerprint, together with a record of the choices the person made
+(uses, keeping time, and whether a reviewed copy may be published; `src/lib/transcriptPolicy.ts`). The owner reads it
+on the admin page. The owner's alert email, sent through a separate Netlify form, carries only the fingerprint and
+those choices. The person can take permissions back, or have every copy deleted, with the same signed file
+(`/api/transcript-revoke`), and a daily job deletes it when the chosen time ends (`transcript-expiry.mts`). See
+[`transcript-consent-scope.md`](./transcript-consent-scope.md). (Until this was corrected on 2026-11-15, this page said
+the function did not keep the transcript. That was true of an earlier version.)
 
 ## The signed file
 
