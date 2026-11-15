@@ -219,6 +219,32 @@ const TRAFFICKING_LINES: Resource[] = [
   { name: 'National Human Trafficking Hotline (US)', detail: 'Call 1-888-373-7888 or text 233733, any time. Confidential, for survivors, for anyone who wants out, and for anyone who wants to report', href: 'tel:18883737888' },
   { name: 'Canadian Human Trafficking Hotline', detail: 'Call 1-833-900-1010, any time. Confidential, in many languages', href: 'tel:18339001010' },
 ];
+// When a message admits having harmed someone: legal help by default (owner, 2026-11-15; docs/harm-disclosure-directions.md). Second for an adult harmed,
+// after the emergency number; third where a child may be at risk, after the child-safety lines. No link: the right place is the person's own state bar,
+// and no current national directory was found (checked 2026-11-15, docs/crisis-resources-check.md).
+export const LEGAL_HELP: Resource = {
+  name: 'A lawyer (US)',
+  detail: 'Before you speak to the police or anyone in authority about what happened, you have the right to speak with a lawyer. Search for your state bar association’s lawyer referral service; many offer a first consultation for a small fee. If you are arrested or charged and cannot afford a lawyer, ask for a public defender.',
+};
+const ADMITTED_KINDS: ReadonlySet<string> = new Set(['admitted', 'admitted-partner', 'admitted-child', 'admitted-child-sexual', 'admitted-sexual', 'admitted-trafficking']);
+const CHILD_KINDS: ReadonlySet<string> = new Set(['admitted-child', 'admitted-child-sexual']);
+
+/** Whether a notice is about an act the person says they did (and so shows legal help and "What reporting involves"). */
+export function admitsHarm(flag: Pick<SafetyFlag, 'category' | 'kind'>): boolean {
+  return flag.category === 'harm-others' && !!flag.kind && ADMITTED_KINDS.has(flag.kind);
+}
+
+/** What reporting involves, as facts and never as a push either way (checked 2026-11-15; docs/crisis-resources-check.md). No state's law is quoted. */
+export const REPORTING_FACTS: { heading: string; text: string }[] = [
+  { heading: 'Reporting yourself', text: 'You can go to the police yourself, or ask a lawyer to contact them for you and be with you. Anything you tell the police can be used in court, and you can decline to answer questions until you have a lawyer.' },
+  { heading: 'A lawyer', text: 'What you tell a lawyer about something you have already done is generally confidential. It does not cover asking for help with a crime that is still going on or being planned.' },
+  { heading: 'Therapists and counselors', text: 'In most states, therapists and counselors must report suspected abuse of a child, and some states require everyone to. Many states also let or require them to act when a specific person is in serious danger. You can ask how confidentiality works before you start.' },
+  { heading: 'Crisis lines', text: '988 is for your own crisis. Fewer than 2 in 100 contacts involve emergency services; most of those happen with the caller’s agreement, and some, when someone is in immediate danger, do not.' },
+  { heading: 'Stop It Now', text: 'A private place to talk, and not a reporting agency. If you give identifying details about a specific child who is being abused, it may have to make a report.' },
+  { heading: 'Other lines', text: 'Childhelp, RAINN, and the trafficking and domestic violence hotlines each have their own rules about confidentiality. You can ask at the start of a call.' },
+  { heading: 'Your state', text: 'These rules differ from state to state. A lawyer can tell you how they apply to you.' },
+];
+
 /** For each kind of harm to others: the lines for people who want to stop, and for the people harmed. The emergency number is added in front. */
 const HARM_LINES: Record<string, Resource[]> = {
   admitted: [],
@@ -253,7 +279,14 @@ export function resourcesFor(category: FlagCategory, kind?: string): Resource[] 
   if (category === 'abuse' && kind === 'trafficking') list.push(...TRAFFICKING_LINES);
   // For an admitted act or graphic violence the emergency number comes first: someone may need help now. Then the lines for the kind of harm, for people who want to stop and for the people harmed.
   if (category === 'harm-others' && kind && HARM_LINES[kind]) {
-    const first = kind === 'child-attraction' ? [...HARM_LINES[kind], emergency] : [emergency, ...HARM_LINES[kind]];
+    const first =
+      kind === 'child-attraction'
+        ? [...HARM_LINES[kind], emergency]
+        : CHILD_KINDS.has(kind)
+          ? [emergency, ...HARM_LINES[kind], LEGAL_HELP]
+          : ADMITTED_KINDS.has(kind)
+            ? [emergency, LEGAL_HELP, ...HARM_LINES[kind]]
+            : [emergency, ...HARM_LINES[kind]];
     return [...first, ...list, outside];
   }
   list.push(emergency, outside);
@@ -277,19 +310,19 @@ const SELF_INJURY_NOTICE: Record<string, string> = {
 // What the notice says when a message admits having killed or seriously hurt someone, describes violence graphically, admits abuse, sexual harm or trafficking, or says the person is attracted to children. Wording approved by the owner 2026-11-14; the phone numbers were checked against the organizations' own pages the same day (see docs/crisis-resources-check.md).
 const HARM_NOTICE: Record<string, string> = {
   'admitted-partner':
-    "What you have written says you have hurt someone you are close to. I'm an AI, and this is beyond what I can help with. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately, and get away from the person if you can. Hurting a partner is serious, and people can stop: the numbers below include a line that is also for people who are worried that their own behavior is harmful, and a crisis line. I'm ending our conversation here so that you can call.",
+    "What you have written says you have hurt someone you are close to. I'm an AI, and this is beyond what I can help with. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately, and get away from the person if you can. Hurting a partner is serious, and people can stop: the numbers below include a line that is also for people who are worried that their own behavior is harmful, and a crisis line. The page stopped this message before it reached the AI; Nenya keeps nothing of it and cannot report it to anyone. A lawyer can explain your rights before you speak to anyone in authority, and below is how to find one, with what reporting involves. I'm ending our conversation here so that you can call.",
   'admitted-child':
-    "What you have written says a child has been hurt, by you. I'm an AI, and this is beyond what I can help with. If a child is hurt or in danger right now, call your local emergency number (911 in the US and Canada) immediately. A child is not safe until the hurting stops. The numbers below include a line for parents who are afraid of hurting a child, and a crisis line. I'm ending our conversation here so that you can call.",
+    "What you have written says a child has been hurt, by you. I'm an AI, and this is beyond what I can help with. If a child is hurt or in danger right now, call your local emergency number (911 in the US and Canada) immediately. A child is not safe until the hurting stops. The numbers below include a line for parents who are afraid of hurting a child, and a crisis line. The page stopped this message before it reached the AI; Nenya keeps nothing of it and cannot report it to anyone. After the child-safety lines below is how to find a lawyer, with what reporting involves. I'm ending our conversation here so that you can call.",
   'admitted-child-sexual':
-    "What you have written describes sexually harming a child, or sexual images of a child. I'm an AI, and I can't help with this, and I won't go into it. If a child is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The numbers below include a confidential line for anyone concerned about child sexual abuse, a line to report sexual images of children, and a crisis line. I'm ending our conversation here so that you can call.",
+    "What you have written describes sexually harming a child, or sexual images of a child. I'm an AI, and I can't help with this, and I won't go into it. If a child is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The numbers below include a confidential line for anyone concerned about child sexual abuse, a line to report sexual images of children, and a crisis line. The page stopped this message before it reached the AI; Nenya keeps nothing of it and cannot report it to anyone. After the child-safety lines below is how to find a lawyer, with what reporting involves. I'm ending our conversation here so that you can call.",
   'child-attraction':
     "What you wrote is about sexual thoughts about children. Having thoughts does not mean you have acted on them, and wanting help is the right step. I'm an AI, and I can't help with this. The first number below is a confidential line for anyone concerned about child sexual abuse, and it is a place to start. If a child is in danger right now, call your local emergency number (911 in the US and Canada). I'm ending our conversation here so that you can call.",
   'admitted-sexual':
-    "What you have written says you have sexually harmed someone. I'm an AI, and this is beyond what I can help with, and I won't go into it. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The numbers below include a crisis line, which can help you through the next hours, and a line for the person who was harmed. A mental health professional can help you with what comes next. I'm ending our conversation here so that you can call.",
+    "What you have written says you have sexually harmed someone. I'm an AI, and this is beyond what I can help with, and I won't go into it. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The numbers below include a crisis line, which can help you through the next hours, and a line for the person who was harmed. A mental health professional can help you with what comes next. The page stopped this message before it reached the AI; Nenya keeps nothing of it and cannot report it to anyone. A lawyer can explain your rights before you speak to anyone in authority, and below is how to find one, with what reporting involves. I'm ending our conversation here so that you can call.",
   'admitted-trafficking':
-    "What you have written says someone is being held, forced or sold. I'm an AI, and this is beyond what I can help with, and I won't go into it. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The National Human Trafficking Hotline below is confidential and can advise anyone, including people who are involved and want to get out. I'm ending our conversation here so that you can call.",
+    "What you have written says someone is being held, forced or sold. I'm an AI, and this is beyond what I can help with, and I won't go into it. If anyone is in danger right now, call your local emergency number (911 in the US and Canada) immediately. The National Human Trafficking Hotline below is confidential and can advise anyone, including people who are involved and want to get out. The page stopped this message before it reached the AI; Nenya keeps nothing of it and cannot report it to anyone. A lawyer can explain your rights before you speak to anyone in authority, and below is how to find one, with what reporting involves. I'm ending our conversation here so that you can call.",
   admitted:
-    "What you have written says someone was killed or badly hurt. I'm an AI, and this is beyond what I can help with. If anyone is hurt or in danger right now, call your local emergency number (911 in the US and Canada) immediately. Please also speak with a person today: a crisis line (988 in the US and Canada) can help you through the next hours, a mental health professional can help with what you are carrying, and a lawyer can explain your rights and options. I'm ending our conversation here so that you can do that.",
+    "What you have written says someone was killed or badly hurt. I'm an AI, and this is beyond what I can help with. If anyone is hurt or in danger right now, call your local emergency number (911 in the US and Canada) immediately. Please also speak with a person today: a crisis line (988 in the US and Canada) can help you through the next hours, a mental health professional can help with what you are carrying, and a lawyer can explain your rights before you speak to anyone in authority (below is how to find one, with what reporting involves). The page stopped this message before it reached the AI; Nenya keeps nothing of it and cannot report it to anyone. I'm ending our conversation here so that you can do that.",
   graphic:
     "What you wrote describes violence in detail, or a wish to do violence. I'm an AI, and I can't help with this, and I won't go into it. If you are afraid you might act on it, or someone is in danger, call your local emergency number (911 in the US and Canada) or a crisis line (988 in the US and Canada) right now. A mental health professional is the right person to talk this through with. I'm ending our conversation here so that you can reach one.",
 };

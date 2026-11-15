@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { DeletionCode } from './DeletionCode';
+import type { SubmitReceipt } from '../../lib/reportSubmission';
 import { Check, Copy, Link as LinkIcon, Mail, Send } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -17,6 +19,7 @@ type Status = 'idle' | 'sending' | 'sent' | 'error';
 export function ContactSection() {
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState<Status>('idle');
+  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
   const [copied, setCopied] = useState<'email' | 'link' | null>(null);
 
   const copy = async (what: 'email' | 'link') => {
@@ -34,7 +37,7 @@ export function ContactSection() {
     if (!message.trim() || status === 'sending') return;
     setStatus('sending');
     try {
-      await submitReport({ type: 'contact-message', report: message });
+      setReceipt(await submitReport({ type: 'contact-message', report: message }));
       setStatus('sent');
       setMessage('');
     } catch {
@@ -116,6 +119,7 @@ export function ContactSection() {
             </Button>
             <p role="status" aria-live="polite" className="text-sm">
               {status === 'sent' && <span className="text-muted-foreground">Thank you. Your message is on its way.</span>}
+              {status === 'sent' && <DeletionCode receipt={receipt} />}
               {status === 'error' && (
                 <span className="text-destructive">
                   That didn’t send. Please email us at {CONTACT_EMAIL} instead.

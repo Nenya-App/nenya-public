@@ -3,7 +3,8 @@ import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Loader2, Mail } from
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { submitReport } from '../../lib/reportSubmission';
+import { submitReport, type SubmitReceipt } from '../../lib/reportSubmission';
+import { DeletionCode } from './DeletionCode';
 
 interface SubmitSensoryReportFormProps {
   /** The exact text produced by generateSensoryReport() -- displayed
@@ -18,12 +19,13 @@ export function SubmitSensoryReportForm({ report }: SubmitSensoryReportFormProps
   const [expanded, setExpanded] = useState(false);
   const [comments, setComments] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
+  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
 
   const handleSubmit = async () => {
     if (submitState === 'sending') return;
     setSubmitState('sending');
     try {
-      await submitReport({ type: 'sensory-reflection', report, comments });
+      setReceipt(await submitReport({ type: 'sensory-reflection', report, comments }));
       setSubmitState('sent');
     } catch {
       setSubmitState('error');
@@ -86,6 +88,7 @@ export function SubmitSensoryReportForm({ report }: SubmitSensoryReportFormProps
               <p>Sent. Thank you for sharing this.</p>
             </div>
           )}
+          {submitState === 'sent' && <DeletionCode receipt={receipt} />}
           {submitState === 'error' && (
             <div className="flex items-start gap-2 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
               <AlertCircle className="size-4 mt-0.5 flex-shrink-0" />

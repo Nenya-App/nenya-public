@@ -3,6 +3,7 @@ import { EmergencyExitDock } from '../app/components/EmergencyExit';
 import { extractSigned, verifySigned, type SignedFile } from '../lib/verifyTranscript';
 import { USES, USE_LABELS } from '../lib/transcriptPolicy';
 import { CONTACT_EMAIL, KEEP_KEY_PLANNED, KEEP_KEY_POLICY, REVIEW_DAYS } from '../lib/keepTheKey';
+import { DeleteSubmission } from './DeleteSubmission';
 
 // Change or take back what you allowed us to do with a transcript you sent (docs/transcript-consent-scope.md). The signed file is the key: it is checked in
 // this browser first, and only when you press the button is it sent to /api/transcript-revoke. A request can only remove permissions. This page is separate
@@ -118,6 +119,7 @@ export default function MyTranscriptPage() {
           </section>
           <p>To only check a transcript, with nothing sent anywhere, use <a className="underline underline-offset-4" href="/verify/">nenya.biz/verify</a>.</p>
         </footer>
+        <DeleteSubmission />
       </main>
     </div>
   );

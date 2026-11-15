@@ -2,6 +2,7 @@ import PanelLogo from './PanelLogo';
 import { EmergencyExitButton } from './EmergencyExit';
 import { ShareNenya } from './ShareNenya';
 import { ForgetMeLink } from './DeviceMemoryControls';
+import { NenyaMark, nameMarkOn } from './NenyaMark';
 
 interface AppFooterProps {
   onNavigateToAbout?: () => void;
@@ -22,14 +23,16 @@ export function AppFooter({ className = '' }: AppFooterProps) {
           <div className="flex items-center gap-3 order-2 md:order-2">
             <PanelLogo size={32} />
             <div className="flex flex-col">
-              <span className="text-sm font-medium">Nenya</span>
+              {/* The mark (nənya.biz, VITE_NAME_MARK=on) or, until it is approved, the plain name. */}
+              {nameMarkOn() ? <NenyaMark face="body" className="text-sm font-medium" /> : <span className="text-sm font-medium">Nenya</span>}
               <span className="text-xs text-muted-foreground">A mirror for your inner world</span>
             </div>
           </div>
 
           {/* Copyright (Right) */}
           <div className="text-xs text-muted-foreground text-center md:text-right order-3 md:order-3">
-            <p>© 2025 Nenya Project</p>
+            {/* Owner, 2026-11-15: 2025 is the right year, and the name is just "Nenya" or "nenya.biz", with no suffix. */}
+            <p>© 2025 Nenya</p>
             <p>Public infrastructure for emotional literacy</p>
           </div>
         </div>

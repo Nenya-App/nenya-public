@@ -1,3 +1,5 @@
+import { SaveReflectionLink } from './SaveReflection';
+
 // A bar that shows where a person is in the gateways they chose: "Gateway 2 of 6". Shown in every gateway's header.
 export function GatewayProgress({ index, total }: { index: number; total: number }) {
   const n = Math.max(1, Math.min(total, index + 1));
@@ -15,6 +17,8 @@ export function GatewayProgress({ index, total }: { index: number; total: number
         <div className="h-full rounded-full bg-nenya-accent-warm transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${(n / total) * 100}%` }} />
       </div>
       <p className="text-xs text-muted-foreground">Gateway {n} of {total}</p>
+      {/* Only with VITE_SAVE_REFLECTION=on and at least one finished gateway (the link renders nothing otherwise). */}
+      <SaveReflectionLink />
     </div>
   );
 }

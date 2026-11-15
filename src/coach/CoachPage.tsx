@@ -9,6 +9,7 @@ import ModeChooser from './ModeChooser';
 import SealedChat from './SealedChat';
 import OwnerPanel from './OwnerPanel';
 import { RegionGate } from './RegionGate';
+import { BreathFirst } from './BreathFirst';
 import OnboardingFlow from '../app/components/OnboardingFlow';
 import { termsAcceptedFor, usePref } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
@@ -31,6 +32,8 @@ export default function CoachPage() {
     if (agreed) enableUsageCounts();
   }, [agreed]);
   const [colors, setColors] = useState<{ color1: string; color2: string } | null>(null);
+  // Opened directly, not through the gateways: a breath (and a reflection) is offered first, never required (src/coach/BreathFirst.tsx).
+  const [pastBreath, setPastBreath] = useState(false);
   // Witnessed is the coach as it has always been. Sealed is offered only when the server has it switched on (COACH_SEALED).
   const [sealedOffered, setSealedOffered] = useState(false);
   const [mode, setMode] = useState<'witnessed' | 'sealed' | null>(null);
@@ -117,7 +120,9 @@ export default function CoachPage() {
       <div className="flex-1 min-h-0">
         {!agreed ? null : (
           <RegionGate onBack={() => goToApp()}>
-          {!colors ? (
+          {!pastBreath ? (
+          <BreathFirst onContinue={() => setPastBreath(true)} />
+        ) : !colors ? (
           <SessionKeyPicker onComplete={setColors} onBack={() => goToApp()} />
         ) : (
           sealedOffered && mode === null ? (

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { DeletionCode } from './DeletionCode';
+import type { SubmitReceipt } from '../../lib/reportSubmission';
 import { AlertCircle, CheckCircle2, FileText, Loader2, Send, Shield } from 'lucide-react';
 import { Button } from './ui/button';
 import {
@@ -23,6 +25,7 @@ type SubmitState = 'idle' | 'sending' | 'sent' | 'error';
 export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
   const [reportText, setReportText] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
+  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
 
   const handleClose = () => {
     setReportText('');
@@ -38,7 +41,7 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
       // along, and no file upload is offered anywhere in this form.
       // submitReport() strips markup/control characters before sending,
       // so only plain text ever reaches the team's inbox.
-      await submitReport({ type: 'error-report', report: reportText });
+      setReceipt(await submitReport({ type: 'error-report', report: reportText }));
       setSubmitState('sent');
       setReportText('');
     } catch {
@@ -121,6 +124,7 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
               <p>Sent. Thank you — a person on the team will read this.</p>
             </div>
           )}
+          {submitState === 'sent' && <DeletionCode receipt={receipt} />}
           {submitState === 'error' && (
             <div className="flex items-start gap-2 text-xs sm:text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
               <AlertCircle className="size-4 mt-0.5 flex-shrink-0" />

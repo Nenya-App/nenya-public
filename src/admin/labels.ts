@@ -5,6 +5,7 @@ export const GROUPS: { title: string; match: (e: string) => boolean }[] = [
   { title: 'Partner practice', match: (e) => e.startsWith('cell.') },
   { title: 'Opening and tour', match: (e) => e.startsWith('onboarding.') || e.startsWith('tour.') },
   { title: 'Screens shown', match: (e) => e.startsWith('page.view.') },
+  { title: 'Reports and messages', match: (e) => e.startsWith('submission.') },
 ];
 
 const LABELS: Record<string, string> = {
@@ -26,6 +27,11 @@ const LABELS: Record<string, string> = {
   'coach.pause.begun': 'Pauses begun',
   'coach.pause.returned.waited': 'Returned from a pause by waiting',
   'coach.pause.returned.quiz': 'Returned from a pause by the quiz',
+  'submission.received': 'Report or message received',
+  'submission.deleted.self': 'Deleted by its sender (code)',
+  'submission.deleted.expired': 'Deleted at 90 days',
+  'submission.deleted.owner': 'Deleted by the owner',
+  'submission.alert-failed': 'Report alert email failed',
   'tour.accepted': 'Tour accepted',
   'tour.declined': 'Tour declined',
   'tour.completed': 'Tour completed',
@@ -47,6 +53,7 @@ export const label = (e: string): string => {
   if (e.startsWith('coach.receipt.issued.')) return `Receipts issued (key ${e.slice('coach.receipt.issued.'.length, 'coach.receipt.issued.'.length + 6)}…)`;
   if (e.startsWith('coach.turn.blocked.')) return `Blocked: ${e.slice('coach.turn.blocked.'.length)}`;
   if (e.startsWith('onboarding.rhythm.')) return `Rhythm: ${e.slice('onboarding.rhythm.'.length)}`;
+  if (e.startsWith('onboarding.start.')) return `Started with: ${e.slice('onboarding.start.'.length)}`;
   if (e.startsWith('page.view.')) return e.slice('page.view.'.length);
   return e;
 };

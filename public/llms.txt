@@ -1,13 +1,16 @@
 # Nenya
 
-> Nenya (nenya.biz) is a free, open-source (AGPL-3.0) browser tool for guided breathing and short sensory reflection, with an optional, early-prototype AI coach demo. No account is required. It is not therapy or a crisis service. Fiscally sponsored by Fractured Atlas.
+> Nenya (nenya.biz) is a free, open-source (AGPL-3.0) browser tool for a pause: a minute of paced breathing, then six optional sensory reflections, with an optional AI coach demo. No account is required. It is not therapy, medical care or a crisis service; in the US, call or text 988. Named for Galadriel's ring in Tolkien's Middle-earth; independent, and not affiliated with the Tolkien Estate. Fiscally sponsored by Fractured Atlas.
 
 ## Read these first
 - [About Nenya](https://nenya.biz/about-nenya.html): what it is, what each part does, and how it handles data.
 - [Nenya in plain terms](https://nenya.biz/why-nenya.html): how it differs from a typical AI chatbot, and what it does not do.
 
 ## Accuracy notes
-- Built today: guided breathing, six sensory reflection gateways, a downloadable local summary, an optional five-exchange AI coach demo (runs through Venice AI, an outside service).
+- Built today: guided breathing at a rhythm the visitor chooses; six optional gateways (Sight, Sound, Touch, Essence, Movement, Insight) for describing a feeling as it is now and as the visitor wishes it to be; a summary made and downloaded on the visitor's device.
+- The reflection tools run in the browser. What a visitor chooses there is not sent to Nenya.
+- The coach demo is optional and separate: at most five exchanges with an AI, through Venice AI (an outside service), open to connections in the United States for now. It says it is an AI. The site screens each message, replaces common identifiers, and stops a message that signals a crisis before it reaches the AI, showing crisis resources instead. A downloaded transcript is signed, and anyone can check it at https://nenya.biz/verify.
 - Grounding: nonviolent communication (NVC), extended as NVC+, explained on the site. The tools use its ideas; Nenya is not a course in NVC.
-- Planned and not built: partner practice using NVC-informed language between two people, and more on-device processing.
+- Planned and not built: partner practice using NVC-informed language between two people, and running the coach's model on the visitor's device.
+- Use of this site's content: indexing and quoting in answers are welcome; training AI models on it is not (see robots.txt).
 - Source code: https://github.com/Nenya-App/nenya-public

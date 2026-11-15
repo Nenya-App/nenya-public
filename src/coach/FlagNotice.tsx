@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { DeletionCode } from '../app/components/DeletionCode';
+import type { SubmitReceipt } from '../lib/reportSubmission';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
-import { noticeIntro, resourcesFor, type SafetyFlag } from '../lib/safetyFlags';
+import { admitsHarm, noticeIntro, REPORTING_FACTS, resourcesFor, type SafetyFlag } from '../lib/safetyFlags';
 import { submitReport } from '../lib/reportSubmission';
 
 interface FlagNoticeProps {
@@ -20,6 +22,7 @@ type ReportState = 'closed' | 'open' | 'sending' | 'sent' | 'error';
 // anywhere unless they press Send on the report.
 export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNoticeProps) {
   const [state, setState] = useState<ReportState>('closed');
+  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
   const [comment, setComment] = useState('');
   const [includeMessage, setIncludeMessage] = useState(false);
 
@@ -34,7 +37,7 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
     if (state === 'sending') return;
     setState('sending');
     try {
-      await submitReport({ type: 'error-report', report: reportText });
+      setReceipt(await submitReport({ type: 'error-report', report: reportText }));
       setState('sent');
     } catch {
       setState('error');
@@ -76,6 +79,21 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
           </li>
         ))}
       </ul>
+
+      {/* Only when the message admits an act: what reporting involves, as facts, closed until opened (docs/harm-disclosure-directions.md). */}
+      {admitsHarm(flag) && (
+        <details className="rounded-lg border border-border bg-card p-3 text-sm">
+          <summary className="min-h-11 cursor-pointer py-2 text-foreground underline underline-offset-4">What reporting involves</summary>
+          <dl className="mt-2 space-y-3">
+            {REPORTING_FACTS.map((f) => (
+              <div key={f.heading}>
+                <dt className="font-medium text-foreground">{f.heading}</dt>
+                <dd className="text-muted-foreground">{f.text}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+      )}
 
       {state === 'closed' && (
         <button
@@ -139,6 +157,7 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
       )}
 
       {state === 'sent' && <p className="text-xs text-muted-foreground">Thank you. Your report was sent.</p>}
+      {state === 'sent' && <DeletionCode receipt={receipt} />}
     </section>
   );
 }

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { DeletionCode } from '../app/components/DeletionCode';
+import type { SubmitReceipt } from '../lib/reportSubmission';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { failureDetails, failureLine, type FailureInfo } from '../lib/coachErrors';
@@ -9,13 +11,14 @@ import { submitReport } from '../lib/reportSubmission';
 export function FailureNotice({ info, turn }: { info: FailureInfo; turn: number }) {
   const [comments, setComments] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
   const [copied, setCopied] = useState(false);
   const details = failureDetails(info, turn);
 
   const send = async () => {
     setState('sending');
     try {
-      await submitReport({ type: 'error-report', report: details, comments });
+      setReceipt(await submitReport({ type: 'error-report', report: details, comments }));
       setState('sent');
     } catch {
       setState('error');
@@ -59,6 +62,7 @@ export function FailureNotice({ info, turn }: { info: FailureInfo; turn: number 
             {state === 'sent' && 'Sent. Thank you.'}
             {state === 'error' && 'The report could not be sent. You can copy the details and email them to info@nenya.biz.'}
           </p>
+          {state === 'sent' && <DeletionCode receipt={receipt} />}
         </div>
       </details>
     </div>

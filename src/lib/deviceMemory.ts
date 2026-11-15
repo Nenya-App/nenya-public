@@ -95,6 +95,10 @@ export interface Prefs {
   breathingTechnique?: { ih: number; hi: number; ex: number; ho: number };
   /** The gem's kaleidoscope: the inside of the stone slowly re-cuts itself. Off unless the visitor switches it on. */
   gemKaleidoscope?: boolean;
+  /** Which kaleidoscope look the visitor chose: calm, gentle (the default), lively or full. */
+  gemKaleidoscopeLook?: string;
+  /** Whether the kaleidoscope moves with the visitor's breathing (opens on the in-breath, settles on the out-breath). */
+  gemKaleidoscopeBreath?: boolean;
 }
 
 const VISION = ['', 'deuteranopia', 'protanopia', 'tritanopia', 'achromatopsia'];
@@ -112,6 +116,8 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   showBreathingCounter: isBool,
   breathingTones: isBool,
   gemKaleidoscope: isBool,
+  gemKaleidoscopeLook: (v) => v === 'calm' || v === 'gentle' || v === 'lively' || v === 'full',
+  gemKaleidoscopeBreath: isBool,
   breathingSound: (v) => v === 'harp' || v === 'bowls' || v === 'chord' || v === 'scale',
   colorBlindMode: (v) => typeof v === 'string' && VISION.includes(v),
   breathingTechnique: (v) => {
@@ -197,6 +203,39 @@ export function useGemKaleidoscope(): boolean {
   }, [remembering, on]);
   return on;
 }
+
+// The kaleidoscope's look and "move with my breathing" (owner, 2026-11-15): the same kind of shared setting as the switch above, saved only
+// while "Remember on this device" is on.
+export type KaleidoscopeLookChoice = 'calm' | 'gentle' | 'lively' | 'full';
+function sharedPref<T>(key: 'gemKaleidoscopeLook' | 'gemKaleidoscopeBreath', read: () => T, fallback: T) {
+  let value: T | null = null;
+  const listeners = new Set<() => void>();
+  const get = (): T => (value ??= read());
+  const set = (v: T): void => {
+    value = v;
+    savePref(key, v as never);
+    listeners.forEach((l) => l());
+  };
+  const subscribe = (l: () => void) => {
+    listeners.add(l);
+    return () => listeners.delete(l);
+  };
+  const use = (): T => {
+    const v = useSyncExternalStore(subscribe, get, () => fallback);
+    const remembering = useRemembering();
+    useEffect(() => {
+      if (remembering) savePref(key, v as never);
+    }, [remembering, v]);
+    return v;
+  };
+  return { get, set, use };
+}
+const kaleidoLook = sharedPref<KaleidoscopeLookChoice>('gemKaleidoscopeLook', () => (loadPrefs().gemKaleidoscopeLook as KaleidoscopeLookChoice | undefined) ?? 'gentle', 'gentle');
+export const setGemKaleidoscopeLook = kaleidoLook.set;
+export const useGemKaleidoscopeLook = kaleidoLook.use;
+const kaleidoBreath = sharedPref<boolean>('gemKaleidoscopeBreath', () => loadPrefs().gemKaleidoscopeBreath === true, false);
+export const setGemKaleidoscopeBreath = kaleidoBreath.set;
+export const useGemKaleidoscopeBreath = kaleidoBreath.use;
 
 // The style the tones are played in: the same kind of shared setting (the choice is made in the accessibility panel,
 // the sound is played from the page).

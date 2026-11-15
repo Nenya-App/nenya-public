@@ -14,6 +14,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { TouchSurfaceField } from '../TouchSurfaceField';
+import { MoreDetail } from '../MoreDetail';
+import { simpleGatewaysOn, STEP_NAMES, TOUCH_COPY } from '../../../lib/gatewayCopy';
 
 interface TouchGatewayPageProps {
   onComplete: (data: any) => void;
@@ -44,8 +46,10 @@ const INSTRUCTION_CARDS = [
 ];
 
 export default function TouchGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: TouchGatewayPageProps) {
+  // The simpler version (VITE_GATEWAYS_SIMPLE=on): no instruction cards, one main choice per step, the rest under "Add more detail".
+  const simple = simpleGatewaysOn();
   // Step state
-  const [step, setStep] = useState<'instructions' | 'selection'>('instructions');
+  const [step, setStep] = useState<'instructions' | 'selection'>(simple ? 'selection' : 'instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
   const [showBodyMap, setShowBodyMap] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -192,6 +196,17 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
               </Button>
             </div>
             <div className="mx-auto w-full max-w-2xl">
+              {simple && (
+                <div className="mb-6 space-y-3">
+                  <p className="text-center">{TOUCH_COPY.intro}</p>
+                  <details className="mx-auto max-w-xl rounded-lg border border-border p-3 text-sm">
+                    <summary className="flex min-h-11 cursor-pointer items-center underline underline-offset-4">{TOUCH_COPY.howTitle}</summary>
+                    <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
+                      {TOUCH_COPY.how.map((line) => <li key={line}>{line}</li>)}
+                    </ol>
+                  </details>
+                </div>
+              )}
               <StageIntro stage={stage} />
               <StageSlot stage="present" current={stage}>
               {/* Present State Card */}
@@ -208,11 +223,13 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                 }
               >
                 <CardHeader>
-                  <CardTitle>Present State</CardTitle>
-                  <CardDescription>The tactile qualities of where you are now</CardDescription>
+                  <CardTitle>{simple ? STEP_NAMES.present : 'Present State'}</CardTitle>
+                  <CardDescription>{simple ? TOUCH_COPY.pick.present : 'The tactile qualities of where you are now'}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <TouchSurfaceField stateName="Present" value={currentSurface} onChange={setCurrentSurface} slider={currentTexture[0]} onMatchSlider={(v) => setCurrentTexture([v])} />
+
+                  <MoreDetail simple={simple} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
 
                   <SnappingSlider
                     value={currentTexture}
@@ -260,14 +277,16 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   />
 
                   <div className="space-y-2">
-                    <Label className="text-sm">Describe the sensations (optional)</Label>
+                    <Label htmlFor="touch-words-present" className="text-sm">{simple ? TOUCH_COPY.wordsLabel : 'Describe the sensations (optional)'}</Label>
                     <Textarea
-                      placeholder="Describe the tactile qualities..."
+                      id="touch-words-present"
+                      placeholder={simple ? TOUCH_COPY.wordsPlaceholder.present : "Describe the tactile qualities..."}
                       value={currentDescription}
                       onChange={(e) => setCurrentDescription(e.target.value)}
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                  </MoreDetail>
                 </CardContent>
               </Card>
 
@@ -287,11 +306,13 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                 }
               >
                 <CardHeader>
-                  <CardTitle>Wish State</CardTitle>
-                  <CardDescription>The tactile qualities of where you wish to be</CardDescription>
+                  <CardTitle>{simple ? STEP_NAMES.wish : 'Wish State'}</CardTitle>
+                  <CardDescription>{simple ? TOUCH_COPY.pick.wish : 'The tactile qualities of where you wish to be'}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <TouchSurfaceField stateName="Wish" value={potentialSurface} onChange={setPotentialSurface} slider={potentialTexture[0]} onMatchSlider={(v) => setPotentialTexture([v])} />
+
+                  <MoreDetail simple={simple} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
 
                   <SnappingSlider
                     value={potentialTexture}
@@ -339,14 +360,16 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   />
 
                   <div className="space-y-2">
-                    <Label className="text-sm">Describe the sensations (optional)</Label>
+                    <Label htmlFor="touch-words-wish" className="text-sm">{simple ? TOUCH_COPY.wordsLabel : 'Describe the sensations (optional)'}</Label>
                     <Textarea
-                      placeholder="Describe the tactile qualities you're moving toward..."
+                      id="touch-words-wish"
+                      placeholder={simple ? TOUCH_COPY.wordsPlaceholder.wish : "Describe the tactile qualities you're moving toward..."}
                       value={potentialDescription}
                       onChange={(e) => setPotentialDescription(e.target.value)}
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                  </MoreDetail>
                 </CardContent>
               </Card>
             </StageSlot>

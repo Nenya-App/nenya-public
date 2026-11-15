@@ -5,6 +5,7 @@ import { Gateway, GatewayData } from '../../App';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { BodyMapData } from '../BodyMapAvatar';
 import { AppFooter } from '../AppFooter';
+import { SaveReflectionLink } from '../SaveReflection';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_TERMS_URL, VENICE_PRIVACY_URL, VENICE_DIFFERENCES } from '../../../lib/veniceLinks';
 import { veniceOfferAllowed } from '../../../lib/veniceOffer';
 import { SubmitSensoryReportForm } from '../SubmitSensoryReportForm';
@@ -353,6 +354,9 @@ export default function GatewayReviewPage({
             Optional. A short, five-exchange conversation with an early prototype. Nothing you chose in the gateways is
             sent anywhere.
           </p>
+          <div className="flex justify-center pt-2">
+            <SaveReflectionLink />
+          </div>
         </div>
 
         <AppFooter />

@@ -1,6 +1,6 @@
 # Production environment variables
 
-Every variable the site's functions read, for the **production** site (nenya.biz). Names only: values never go in the repo or in chat.
+Every variable the site's functions read, for the **production** site (nenya.biz). Names only: values never go in the repo or in chat. A test (`tests/docs-drift.test.mts`) fails if the code reads a variable this page does not name, so add new ones here in the same change.
 Set them in Netlify: the production site → Site configuration → Environment variables. Redeploy after each change; a `VITE_` variable needs "Clear cache and deploy site".
 
 Staging (nenyastaging) is a separate Netlify site with its own variables and its own Blobs store. **Production secrets must not be copies of staging's**: if one leaks from staging (where test scripts and owner tools run), production is untouched. Generate each production secret fresh.
@@ -47,7 +47,26 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `PALETTE_ENABLED` | `true` | "Ask The Color API" in the Sight gateway |
 | `COACH_CARD_DRAFTS` | leave unset | Owner tool for card drafts; not for production |
 
-Planned, not built yet: `VITE_TURNSTILE_SITE_KEY` (Builds), `TURNSTILE_SECRET_KEY` (secret, Functions), `COACH_TURNSTILE`. Do not set them on production until the code and the Terms change ship.
+**Build switches for new screens (Builds scope; "Clear cache and deploy site" after a change).** Staging first; on production only after the owner approves what staging shows.
+
+| Variable | On value | What it turns on |
+|---|---|---|
+| `VITE_START_CHOOSER` | `on` | The start chooser before the Terms (breathing, reflection or the coach); retires the automatic tour offer |
+| `VITE_GATEWAYS_SIMPLE` | `on` | The simpler gateways (Touch first): one main choice per step, the rest under "Add more detail" |
+| `VITE_SOUND_CHORDS` | `on` | Chords in the Sound gateway (softened by default) |
+| `VITE_SAVE_REFLECTION` | `on` | "Save and return later": finished gateways kept encrypted on the visitor's device for 24 hours |
+| `VITE_NAME_MARK` | `on` | The mark in the footer: nənya.biz, the gold e turning behind the white one (src/app/components/NenyaMark.tsx) |
+
+**Humanity check (Cloudflare Turnstile), built 2026-11-15, off by default.** Staging first; on production only after the Terms change ships.
+
+| Variable | Scope | Value | Notes |
+|---|---|---|---|
+| `VITE_TURNSTILE_SITE_KEY` | Builds | the widget's site key (public) | Without it the page loads nothing from Cloudflare. A `VITE_` value needs "Clear cache and deploy site". |
+| `TURNSTILE_SECRET_KEY` | Functions, secret | the widget's secret | Paste it straight from Cloudflare into Netlify; never into chat or the repo. |
+| `TURNSTILE_HOSTNAMES` | Functions | production: `nenya.biz,www.nenya.biz`; staging: `nenyastaging.netlify.app` | The hosts a token may come from. **Never `localhost` on production.** Empty while on refuses every first message. |
+| `COACH_TURNSTILE` | Functions | `shadow`, later `on` | `shadow` checks and counts (`coach.human.passed`, `coach.human.shadow.*`) and never refuses. `on` refuses a first message that fails (`coach.human.refused.*`). The owner's token always passes. |
+
+Order: set the site key, the secret and the hosts, then `COACH_TURNSTILE=shadow`, and redeploy. Watch the counts for a few days, then switch to `on`.
 
 ## 4. Leave unset (defaults are right for production), except `COACH_INSTRUCTIONS`
 
@@ -63,6 +82,8 @@ These exist for testing, diagnosis, or turning a guard off in an emergency. Unse
 | `COACH_BUILD` | the generated build label | Overrides the label signed into transcripts |
 | `COACH_HARDWARE_CHECK` | `report` | `enforce` or `off` for the encrypted model's hardware check |
 | `COACH_E2EE_PLAIN_HISTORY`, `COACH_E2EE_MINIMAL` | off | Diagnostics for the encrypted route |
+| `COACH_E2EE_ATTESTATION_TTL_S`, `COACH_E2EE_ATTESTATION_STALE_S` | 300, 900 | How long (seconds) the encrypted model's verified key is reused, and how old a remembered key may be when a fresh check fails; at most a day. `0` turns the reuse off (src/lib/veniceE2ee.ts) |
+| `COACH_ACCEPTED_KEY_IDS` | none | Earlier signing-key ids (comma-separated) whose transcripts `/api/report` still accepts after `COACH_SIGNING_KEY` is replaced (src/lib/signedCheck.ts) |
 | `COACH_INCLUDE_VENICE_PROMPT` | off | Adds Venice's own system prompt; leave off |
 | `COACH_METHOD_NOTES` | none | Short method notes (the Blobs key `method-notes` is used first) |
 | `COACH_FORM_CHECK`, `COACH_ABOUT_ANSWERS`, `COACH_LANE_GUARD`, `COACH_ARC_GUARD`, `COACH_CLOSING_GUARD`, `COACH_PERSONA_GUARD`, `COACH_NAME_GUARD`, `COACH_INFRA_GUARD`, `COACH_CARE_GUARD` | on | `off` turns that check off. For emergencies only. |

@@ -20,6 +20,10 @@ import { PRESETS, sameTechnique } from '../lib/breathingPresets';
 import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
 import { BreathingTechnique } from './components/ValarBreathingLogo';
 import OnboardingFlow from './components/OnboardingFlow';
+import type { StartChoice } from '../lib/startCopy';
+import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
+import { SaveReflectionContext, type SaveReflectionApi } from './components/SaveReflection';
+import { normalizeId, openReflection, purgeExpired, saveReflection, saveReflectionOn, sessionIdFrom, shadowId, type SavedPayload } from '../lib/savedReflection';
 import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
 
@@ -80,9 +84,18 @@ export default function App() {
       return null;
     }
   });
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : 'welcome');
-  // Arrived on a page other than the welcome page (a link to an About page): the first-visit panel then skips the breathing-rhythm choice.
-  const [arrivedElsewhere] = useState(initialAbout !== null);
+  // With the section addresses on (VITE_START_CHOOSER), /senses opens the gateway choice; / and /breath the front page (src/lib/sections.ts).
+  const [arrivedAtSenses] = useState(() => {
+    try {
+      return initialAbout === null && sectionsOn() && sectionOfPath(window.location.pathname) === 'senses';
+    } catch {
+      return false;
+    }
+  });
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : arrivedAtSenses ? 'home' : 'welcome');
+  // Arrived on a page other than the welcome page (a link to an About page, or straight to /senses, which means reflection was chosen):
+  // the first-visit panel then skips the start chooser and the breathing-rhythm choice, and asks only the Terms.
+  const [arrivedElsewhere] = useState(initialAbout !== null || arrivedAtSenses);
   // Real navigation history instead of a single "previousScreen" value.
   // A single value can only ever answer "what screen came immediately
   // before this one" -- it breaks the moment a screen is reachable more
@@ -95,6 +108,14 @@ export default function App() {
   // The browser's back button from an About address to a non-About one leaves the About pages.
   useEffect(() => {
     const onPop = () => {
+      // With the section addresses on, Back and Forward move between Breath, Senses and Coach. A reflection stays in memory either way.
+      const sec = sectionsOn() ? sectionOfPath(window.location.pathname) : null;
+      if (sec && sec !== sectionOfScreen(currentScreen)) {
+        setAboutSection(undefined);
+        const done = gatewayDataRef.current.length > 0;
+        setCurrentScreen(sec === 'breath' ? 'welcome' : sec === 'senses' ? (done ? 'gateway-review' : 'home') : done ? 'session' : 'home');
+        return;
+      }
       if (currentScreen === 'about' && aboutSectionFromLocation(window.location.pathname, window.location.search) === null) {
         setAboutSection(undefined);
         setCurrentScreen('welcome');
@@ -103,10 +124,27 @@ export default function App() {
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, [currentScreen]);
-  // Leaving the About pages by the app's own buttons returns the address and the title to the site's own.
+  // Leaving the About pages by the app's own buttons returns the address and the title to the site's own. With the section addresses on,
+  // the address follows the part of the site: a new history entry when the part changes, the same entry when it does not (so "/" becomes
+  // "/breath" without adding a step), and the canonical and share addresses follow.
+  const firstAddress = useRef(true);
   useEffect(() => {
     if (currentScreen === 'about') return;
-    if (aboutSectionFromLocation(window.location.pathname, '') !== null) window.history.replaceState(null, '', '/');
+    const sec = sectionsOn() ? sectionOfScreen(currentScreen) : null;
+    const leavingAbout = aboutSectionFromLocation(window.location.pathname, '') !== null;
+    if (sec) {
+      const target = SECTION_PATHS[sec];
+      if (window.location.pathname !== target) {
+        const sameSection = sectionOfPath(window.location.pathname) === sec;
+        if (firstAddress.current || sameSection || leavingAbout) window.history.replaceState(null, '', target);
+        else window.history.pushState(null, '', target);
+      }
+      document.querySelector('link[rel="canonical"]')?.setAttribute('href', `https://nenya.biz${target}`);
+      document.querySelector('meta[property="og:url"]')?.setAttribute('content', `https://nenya.biz${target}`);
+    } else if (leavingAbout) {
+      window.history.replaceState(null, '', '/');
+    }
+    firstAddress.current = false;
     document.title = SITE_TITLE;
   }, [currentScreen]);
   const [termsAgreed, setTermsAgreed] = useState(() => termsAcceptedFor(LEGAL_EFFECTIVE_DATE));
@@ -114,6 +152,9 @@ export default function App() {
   // Gateway system state
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
   const [gatewayData, setGatewayData] = useState<GatewayData[]>([]);
+  // Read by the Back/Forward handler, which is set up before this state exists.
+  const gatewayDataRef = useRef<GatewayData[]>([]);
+  gatewayDataRef.current = gatewayData;
   // Shared across every gateway -- not owned by Sight or any one gateway's
   // data blob, so it persists regardless of which gateways are visited or
   // in what order.
@@ -195,16 +236,29 @@ export default function App() {
 
   // Counting begins only once the terms are agreed. Agreeing is the first thing counted, with the rhythm that was
   // chosen (nothing before this point is counted, so the rhythm is recorded here, not when it was picked).
-  const handleOnboardingFinish = () => {
+  // With the start chooser (VITE_START_CHOOSER=on), `choice` is where the visitor chose to start: it is counted here, at agreement, with the rhythm (only on
+  // the breathing path), and the visitor goes there. The tour is no longer offered on its own then; it stays in the help menu.
+  const handleOnboardingFinish = (choice?: StartChoice, agreement?: Promise<void>) => {
     enableUsageCounts();
     const rhythm = PRESETS.find((p) => sameTechnique(breathingTechnique, p));
-    const rhythmName = rhythm && !arrivedElsewhere ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
-    countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : [])]);
+    const rhythmName = rhythm && !arrivedElsewhere && (!choice || choice === 'breathing') ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
+    countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : []), ...(choice ? [`onboarding.start.${choice}`] : [])]);
     setBreathingCounterMinimized(true);
     setEntryUnlocked(true);
     setTermsAgreed(true);
-    // Only on the welcome screen: that is where the tour points.
-    if (currentScreen === 'welcome') setTourOffered(true);
+    if (choice === 'reflection') {
+      navigateTo('home');
+      return;
+    }
+    if (choice === 'coach') {
+      // The coach page reads the agreement held for this visit; wait for it to be signed (at most a few seconds) so the signed note is not lost.
+      const go = () => window.location.assign('/coach/');
+      if (agreement) void agreement.finally(go);
+      else go();
+      return;
+    }
+    // Only on the welcome screen, and only without the chooser: that is where the tour points.
+    if (!choice && currentScreen === 'welcome') setTourOffered(true);
   };
 
   // Track emergency exit to disable beforeunload warning
@@ -295,6 +349,43 @@ export default function App() {
   }, [currentScreen]);
 
   // Gateway selection from home
+  // "Save and return later" (VITE_SAVE_REFLECTION=on; src/lib/savedReflection.ts). The session ID is the two colors from Sight (or Sound's
+  // melody colors); before either, a random "shadow" pair kept for this visit only. Neither the ID nor the passcode is ever stored.
+  const saveOn = saveReflectionOn();
+  const [shadow, setShadow] = useState(() => shadowId());
+  useEffect(() => {
+    if (saveOn) purgeExpired();
+  }, [saveOn]);
+  const sightDone = gatewayData.find((g) => g.gateway === 'sight')?.data;
+  const soundDone = gatewayData.find((g) => g.gateway === 'sound')?.data;
+  const sessionId =
+    (sightDone && sessionIdFrom(sightDone.color1, sightDone.color2)) ||
+    (soundDone && sessionIdFrom(soundDone.melodyColor1, soundDone.melodyColor2)) ||
+    shadow;
+  const saveApi: SaveReflectionApi = {
+    on: saveOn,
+    canSave: gatewayData.length > 0,
+    sessionId,
+    save: (passcode) => {
+      const payload: SavedPayload = { v: 1, selectedGateways, gatewayData, bodyMapData, interfaceColors };
+      return saveReflection(payload, sessionId, passcode);
+    },
+    open: async (id, passcode) => {
+      const saved = await openReflection(id, passcode);
+      if (!saved) return false;
+      const gateways = saved.selectedGateways as Gateway[];
+      const data = saved.gatewayData as GatewayData[];
+      setSelectedGateways(gateways);
+      setGatewayData(data);
+      setBodyMapData(saved.bodyMapData as BodyMapData);
+      setInterfaceColors(saved.interfaceColors);
+      setShadow(normalizeId(id) ?? shadow); // a shadow ID stays the same if they save again
+      const next = gateways.find((g) => !data.some((d) => d.gateway === g));
+      navigateTo(next ?? 'gateway-review');
+      return true;
+    },
+  };
+
   const handleGatewaysSelected = (gateways: Gateway[]) => {
     setSelectedGateways(gateways);
     setGatewayData([]);
@@ -414,6 +505,7 @@ export default function App() {
   const userHasGatewayData = gatewayData.length > 0;
 
   return (
+    <SaveReflectionContext.Provider value={saveApi}>
     <ThemeProvider defaultTheme="dark">
       <SkipLink />
       {/* First in the page, above every overlay: the header's Exit is out of reach behind the loading screen, the first-visit panel and the tour. */}
@@ -707,5 +799,6 @@ export default function App() {
         />
       </div>
     </ThemeProvider>
+    </SaveReflectionContext.Provider>
   );
 }

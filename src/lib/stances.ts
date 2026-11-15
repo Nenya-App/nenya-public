@@ -1,6 +1,6 @@
 // Stances: the coach's base (Nenya: empathic reflection) with, in the future, up to two layers added on top (Vilya: teaching and
 // system-oriented; Narya: challenging, encouraging growth). Not a strict switch between three coaches: one base, and filters that
-// add to it. See docs/coach-lenses-scope.md. NONE OF THE LAYERS EXISTS YET: their text is empty and the gate below refuses them.
+// add to it. See docs/coach-lenses-scope.md. Only one layer has text so far: the draft Learn layer (Vilya, LEARN_LAYER below), used only where COACH_STANCES contains "learn" (off by default). Narya has none, and the gate below refuses a layer without text.
 // What is built now is the safeguards, so that when a layer is written (and, in time, perhaps sold as a paid option) it can only be
 // used where it is safe and allowed:
 //  - a request for a stance is validated against a fixed list (a message cannot invent one);

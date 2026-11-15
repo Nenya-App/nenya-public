@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import NenyaLogo from './NenyaLogo';
 import { ScrollIndicator } from './ScrollIndicator';
@@ -9,8 +9,9 @@ import { LEGAL_EFFECTIVE_DATE } from '../../lib/legalDocument';
 import { rememberTerms, setRemembering } from '../../lib/deviceMemory';
 import { agreeToTerms } from '../../lib/visitConsent';
 import { PRESETS, sameTechnique, type BreathingTechnique } from '../../lib/breathingPresets';
+import { START_COPY, startChooserOn, type StartChoice } from '../../lib/startCopy';
 
-export type OnboardingStep = 'rhythm' | 'terms';
+export type OnboardingStep = 'start' | 'rhythm' | 'terms';
 const STEPS: OnboardingStep[] = ['rhythm', 'terms'];
 
 // Friendly names for the picker. The first four are the ones most people want (three hold-free, and Box); the rest
@@ -31,7 +32,8 @@ interface OnboardingFlowProps {
   technique: BreathingTechnique;
   onTechniqueChange: (t: BreathingTechnique) => void;
   onStepChange?: (step: OnboardingStep) => void;
-  onFinish: () => void;
+  /** Called once the Terms are agreed. With the start chooser on, it says where the visitor chose to start and hands over the agreement in progress (so a page change can wait for it to be signed). */
+  onFinish: (choice?: StartChoice, agreement?: Promise<void>) => void;
   /**
    * False while the loading screen is still over the page. The panel is mounted under the loading screen, completely solid, so that
    * when the loading screen fades there is no half-drawn page or panel fading in; it is hidden from assistive technology and
@@ -70,13 +72,24 @@ function RhythmOrb({ t }: { t: BreathingTechnique }) {
 }
 
 export default function OnboardingFlow({ technique, onTechniqueChange, onStepChange, onFinish, veilGone = true, skipRhythm = false }: OnboardingFlowProps) {
-  const [step, setStep] = useState<OnboardingStep>(skipRhythm ? 'terms' : 'rhythm');
+  // The start chooser (VITE_START_CHOOSER=on) comes first: what is here, and where to start; then the Terms. The rhythm step is only on the breathing path.
+  const chooser = startChooserOn() && !skipRhythm;
+  const [choice, setChoice] = useState<StartChoice | null>(null);
+  const [step, setStep] = useState<OnboardingStep>(chooser ? 'start' : skipRhythm ? 'terms' : 'rhythm');
   const [showMore, setShowMore] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const steps = skipRhythm ? STEPS.filter((x) => x !== 'rhythm') : STEPS;
+  const steps: OnboardingStep[] = chooser
+    ? ['start', ...(choice === 'breathing' || choice === null ? (['rhythm'] as OnboardingStep[]) : []), 'terms']
+    : skipRhythm
+      ? STEPS.filter((x) => x !== 'rhythm')
+      : STEPS;
+  const choose = (c: StartChoice) => {
+    setChoice(c);
+    setStep(c === 'breathing' ? 'rhythm' : 'terms');
+  };
   const stepIndex = steps.indexOf(step);
   const goTo = (s: OnboardingStep) => setStep(s);
 
@@ -102,9 +115,9 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
       rememberTerms(LEGAL_EFFECTIVE_DATE);
     }
     // Held for the visit (cleared when the tab closes, on Emergency Exit or Forget me) and signed by the site; carried into anything the person later signs.
-    void agreeToTerms();
+    const agreement = agreeToTerms();
     setIsExiting(true);
-    setTimeout(onFinish, 700);
+    setTimeout(() => onFinish(chooser ? (choice ?? undefined) : undefined, agreement), 700);
   };
 
   const isTerms = step === 'terms';
@@ -144,7 +157,13 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
 
   // Nothing to choose is also a choice: the rhythm already selected (Steady unless changed) is what is used.
   const nav = (
-    <div className="flex justify-end pt-1">
+    <div className={`flex pt-1 ${chooser ? 'justify-between' : 'justify-end'}`}>
+      {chooser && (
+        <Button size="sm" variant="ghost" onClick={() => goTo('start')} className="min-h-11 gap-1">
+          <ArrowLeft className="size-3.5" />
+          {START_COPY.back}
+        </Button>
+      )}
       <Button
         size="sm"
         onClick={() => goTo('terms')}
@@ -186,17 +205,56 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
         >
           {/* A new key restarts the entrance, so each step fades in as it appears. */}
           <div key={step} className={`onb-step-in ${isTerms ? 'flex min-h-0 flex-1 flex-col' : 'space-y-4 p-5 sm:p-7'}`}>
+              {step === 'start' && (
+                <>
+                  <div className="space-y-1">
+                    <h2 id="onboarding-title" ref={headingRef} tabIndex={-1} className="text-xl sm:text-2xl outline-none">
+                      {START_COPY.heading}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">{START_COPY.line}</p>
+                  </div>
+                  {/* Nothing is preselected; each option is a button, with its "Learn more" beside it (a native disclosure). */}
+                  <ul className="space-y-2" aria-label="Where to start">
+                    {START_COPY.options.map((o) => (
+                      <li key={o.id} className="rounded-xl border border-border">
+                        <button
+                          type="button"
+                          onClick={() => choose(o.id)}
+                          className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-nenya-accent-warm/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nenya-accent-warm"
+                        >
+                          <span className="flex-1">
+                            <span className="block">{o.title}</span>
+                            <span className="block text-xs leading-snug text-muted-foreground">{o.line}</span>
+                          </span>
+                          <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                        </button>
+                        <details className="px-3 pb-2 text-xs text-muted-foreground">
+                          <summary className="flex min-h-11 cursor-pointer items-center underline underline-offset-4">
+                            {START_COPY.learnMore}<span className="sr-only">: {o.title}</span>
+                          </summary>
+                          <p>{o.more}</p>
+                        </details>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-sm text-muted-foreground">{START_COPY.notSure}</p>
+                  <p className="text-xs text-muted-foreground">{START_COPY.crisis}</p>
+                </>
+              )}
+
               {step === 'rhythm' && (
                 <>
                   <div className="flex items-center gap-4">
                     <RhythmOrb t={technique} />
                     <div className="space-y-1">
                       <h2 id="onboarding-title" ref={headingRef} tabIndex={-1} className="text-xl sm:text-2xl outline-none">
-                        Welcome to Nenya
+                        {chooser ? START_COPY.rhythmHeading : 'Welcome to Nenya'}
                       </h2>
-                      <p className="text-sm text-muted-foreground">
-                        A private place to listen to yourself. Let’s begin with your breath.
-                      </p>
+                      {!chooser && (
+                        <p className="text-sm text-muted-foreground">
+                          A private place to listen to yourself. Let’s begin with your breath.
+                        </p>
+                      )}
                     </div>
                   </div>
                   <p className="text-sm">
@@ -231,6 +289,12 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                         Effective {LEGAL_EFFECTIVE_DATE}. Choosing “Agree, Enter” means you accept them.
                       </p>
                       <DownloadLegalPdfButton />
+                      {chooser && (
+                        <button type="button" onClick={() => goTo(choice === 'breathing' ? 'rhythm' : 'start')} className="flex min-h-11 items-center gap-1 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground">
+                          <ArrowLeft className="size-3" aria-hidden="true" />
+                          {START_COPY.back}
+                        </button>
+                      )}
                     </div>
                   </div>
                   <div
