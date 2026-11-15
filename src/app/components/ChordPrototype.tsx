@@ -3,8 +3,10 @@ import { Button } from './ui/button';
 import type { ScaleNote, Timbre } from '../../lib/audio';
 import { playChords, voice, type Voicing } from '../../lib/chords';
 
-// Staging-only prototype (VITE_SOUND_CHORDS=on): hear each color's three notes as a chord, three ways, to decide whether the Sound gateway
-// should offer chords. Nothing here is saved or reported; it only plays. Never starts by itself, and Stop works from the keyboard.
+// Chords in the Sound gateway (VITE_SOUND_CHORDS=on; staging first). Owner, 2026-11-15: the softened voicing is the one people hear;
+// the other two are under "Other ways to hear them", closed, so there is one main choice. On a non-Western scale "softened" does not
+// apply, so the notes play as the color gives them. Nothing here is saved or reported; it only plays. Never starts by itself, and
+// Stop works from the keyboard.
 const VOICINGS: { id: Voicing; label: string; hint: string }[] = [
   { id: 'raw', label: 'As the color gives it', hint: 'the three notes together, exactly' },
   { id: 'softened', label: 'Softened', hint: 'moved to the nearest settled chord (Western scale only)' },
@@ -22,7 +24,7 @@ export function ChordPrototype({ chords, labels, scale, noteNames, westernScale,
   volume: number;
   timbre: Timbre;
 }) {
-  const [voicing, setVoicing] = useState<Voicing>('raw');
+  const [voicing, setVoicing] = useState<Voicing>(westernScale ? 'softened' : 'raw');
   const [playing, setPlaying] = useState<number | null>(null);
   const stopRef = useRef<(() => void) | null>(null);
   useEffect(() => () => stopRef.current?.(), []);
@@ -43,8 +45,10 @@ export function ChordPrototype({ chords, labels, scale, noteNames, westernScale,
 
   return (
     <section aria-labelledby="chord-proto" className="space-y-3 rounded-lg border border-dashed border-border p-4 text-sm">
-      <h3 id="chord-proto" className="text-base">Chords (prototype, staging only)</h3>
-      <p className="text-muted-foreground">Each color&rsquo;s three notes, played together instead of one by one. Only for listening: nothing here is saved or added to your report.</p>
+      <h3 id="chord-proto" className="text-base">Hear them as chords</h3>
+      <p className="text-muted-foreground">Each color&rsquo;s three notes, played together and gently settled into a chord. Only for listening: nothing here is saved or added to your report.</p>
+      <details className="rounded-md border border-border p-2">
+      <summary className="flex min-h-11 cursor-pointer items-center underline underline-offset-4">Other ways to hear them</summary>
       <fieldset className="space-y-1">
         <legend className="text-muted-foreground">How to voice them</legend>
         {VOICINGS.map((v) => (
@@ -54,6 +58,7 @@ export function ChordPrototype({ chords, labels, scale, noteNames, westernScale,
           </label>
         ))}
       </fieldset>
+      </details>
       <div className="flex flex-wrap gap-2">
         {chords.map((_, i) => (
           <Button key={i} variant="outline" size="sm" onClick={() => play([i])} disabled={playing !== null}>Play {labels[i] ?? `chord ${i + 1}`}</Button>
