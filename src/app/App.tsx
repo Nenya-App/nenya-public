@@ -22,6 +22,7 @@ import { BreathingTechnique } from './components/ValarBreathingLogo';
 import OnboardingFlow from './components/OnboardingFlow';
 import type { StartChoice } from '../lib/startCopy';
 import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
+import { guestbookOn } from '../lib/guestbook';
 import { SaveReflectionContext, type SaveReflectionApi } from './components/SaveReflection';
 import { normalizeId, openReflection, purgeExpired, saveReflection, saveReflectionOn, sessionIdFrom, shadowId, type SavedPayload } from '../lib/savedReflection';
 import WelcomePage from './components/pages/WelcomePage';
@@ -40,6 +41,7 @@ const InsightGatewayPage = lazy(() => import('./components/pages/InsightGatewayP
 const SessionKeyPicker = lazy(() => import('../coach/SessionKeyPicker'));
 const GatewayReviewPage = lazy(() => import('./components/pages/GatewayReviewPage'));
 const CoachDemo = lazy(() => import('../coach/CoachDemo'));
+const GuestbookPage = lazy(() => import('./components/pages/GuestbookPage'));
 const RegionGate = lazy(() => import('../coach/RegionGate').then((m) => ({ default: m.RegionGate })));
 const DyadicCellCreation = lazy(() => import('./components/DyadicCellCreation'));
 const DyadicCellInterface = lazy(() => import('./components/DyadicCellInterface'));
@@ -73,7 +75,7 @@ export interface GatewayData {
   data: any;
 }
 
-type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about';
+type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about' | 'guestbook';
 
 export default function App() {
   // An address under /about (or the older /?about=<section>) opens that About page.
@@ -92,10 +94,18 @@ export default function App() {
       return false;
     }
   });
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : arrivedAtSenses ? 'home' : 'welcome');
+  // "Sign Our Guestbook" has its own address (VITE_GUESTBOOK=on): arriving there opens it, after the Terms.
+  const [arrivedAtGuestbook] = useState(() => {
+    try {
+      return initialAbout === null && guestbookOn() && /^\/guestbook\/?$/.test(window.location.pathname);
+    } catch {
+      return false;
+    }
+  });
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : arrivedAtGuestbook ? 'guestbook' : arrivedAtSenses ? 'home' : 'welcome');
   // Arrived on a page other than the welcome page (a link to an About page, or straight to /senses, which means reflection was chosen):
   // the first-visit panel then skips the start chooser and the breathing-rhythm choice, and asks only the Terms.
-  const [arrivedElsewhere] = useState(initialAbout !== null || arrivedAtSenses);
+  const [arrivedElsewhere] = useState(initialAbout !== null || arrivedAtSenses || arrivedAtGuestbook);
   // Real navigation history instead of a single "previousScreen" value.
   // A single value can only ever answer "what screen came immediately
   // before this one" -- it breaks the moment a screen is reachable more
@@ -109,6 +119,11 @@ export default function App() {
   useEffect(() => {
     const onPop = () => {
       // With the section addresses on, Back and Forward move between Breath, Senses and Coach. A reflection stays in memory either way.
+      if (guestbookOn() && /^\/guestbook\/?$/.test(window.location.pathname) && currentScreen !== 'guestbook') {
+        setAboutSection(undefined);
+        setCurrentScreen('guestbook');
+        return;
+      }
       const sec = sectionsOn() ? sectionOfPath(window.location.pathname) : null;
       if (sec && sec !== sectionOfScreen(currentScreen)) {
         setAboutSection(undefined);
@@ -132,6 +147,12 @@ export default function App() {
     if (currentScreen === 'about') return;
     const sec = sectionsOn() ? sectionOfScreen(currentScreen) : null;
     const leavingAbout = aboutSectionFromLocation(window.location.pathname, '') !== null;
+    if (currentScreen === 'guestbook' && guestbookOn()) {
+      if (!/^\/guestbook\/?$/.test(window.location.pathname)) window.history[firstAddress.current || leavingAbout ? 'replaceState' : 'pushState'](null, '', '/guestbook');
+      firstAddress.current = false;
+      document.title = SITE_TITLE;
+      return;
+    }
     if (sec) {
       const target = SECTION_PATHS[sec];
       if (window.location.pathname !== target) {
@@ -328,7 +349,8 @@ export default function App() {
   // actual reflection flow represents work that a refresh would destroy.
   useEffect(() => {
     const screensWithNothingToLose: ScreenType[] = ['welcome', 'home', 'about'];
-    const hasUnsavedProgress = !screensWithNothingToLose.includes(currentScreen);
+    // The guestbook holds nothing to lose itself; a reflection in memory still does.
+    const hasUnsavedProgress = currentScreen === 'guestbook' ? gatewayData.length > 0 : !screensWithNothingToLose.includes(currentScreen);
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedProgress && !isEmergencyExiting.current) {
@@ -346,7 +368,7 @@ export default function App() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [currentScreen]);
+  }, [currentScreen, gatewayData.length]);
 
   // Gateway selection from home
   // "Save and return later" (VITE_SAVE_REFLECTION=on; src/lib/savedReflection.ts). The session ID is the two colors from Sight (or Sound's
@@ -634,6 +656,12 @@ export default function App() {
             />
           )}
 
+          {currentScreen === 'guestbook' && (
+            <Suspense fallback={null}>
+              <GuestbookPage onBack={() => navigateBack('welcome')} sessionId={sessionId} />
+            </Suspense>
+          )}
+
           {currentScreen === 'home' && (
             <GatewaysPage
               onGatewaysSelected={handleGatewaysSelected}
@@ -728,6 +756,7 @@ export default function App() {
               gatewayData={gatewayData}
               selectedGateways={selectedGateways}
               onContinue={handleContinueFromReview}
+              onGuestbook={guestbookOn() ? () => navigateTo('guestbook') : undefined}
               onEditGateway={handleEditGateway}
               onBack={() => navigateBack('home')}
               bodyMapData={bodyMapData}
@@ -742,6 +771,7 @@ export default function App() {
               onBack={() => navigateBack('home')}
               onBreathe={() => handleGlobalNavigation('welcome')}
               onPartnerPractice={handleNavigateToCell}
+              onGuestbook={guestbookOn() ? () => navigateTo('guestbook') : undefined}
             />
             </RegionGate>
           )}

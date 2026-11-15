@@ -35,6 +35,7 @@ import { RegionNotice } from './RegionGate';
 import { suggestsBreath } from '../lib/breathOffer';
 import { setBreathingPanel } from '../lib/breathingPanel';
 import { sectionsOn } from '../lib/sections';
+import { guestbookOn } from '../lib/guestbook';
 import { resetScroll } from '../app/components/ScrollToTop';
 import { describeFailure, type FailureInfo } from '../lib/coachErrors';
 import { DEFAULT_TIMEOUT, quietState, type TimeoutChoice } from '../lib/chatTimeout';
@@ -147,11 +148,13 @@ interface CoachDemoProps {
   onPartnerPractice?: () => void;
   /** The reflection report in memory, if the visitor has made one in this visit. It is only ever offered, never read or sent unless they choose. */
   report?: ReportInput;
+  /** "Sign Our Guestbook" at the end, where the guestbook is on: in the app it opens the page in place; on /coach it links to /guestbook. */
+  onGuestbook?: () => void;
 }
 
 // The conversation lives in this component's memory and closing the tab ends it. The only thing
 // written to browser storage is the finish time described above.
-export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, onPartnerPractice, report }: CoachDemoProps) {
+export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, onPartnerPractice, report, onGuestbook }: CoachDemoProps) {
   const color1 = norm(colors.color1, '#7A9B9E');
   const color2 = norm(colors.color2, '#DAC682');
   const session = { color1, color2 };
@@ -394,6 +397,12 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   };
 
   const linkClass = 'text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground';
+  // "Sign Our Guestbook" at the end of a conversation (VITE_GUESTBOOK), never after a safety stop.
+  const guestbookLink = guestbookOn() && flag?.tier !== 'stop'
+    ? onGuestbook
+      ? <button type="button" onClick={onGuestbook} className={`${linkClass} min-h-11`}>Sign Our Guestbook</button>
+      : <a href="/guestbook" className={`${linkClass} inline-flex min-h-11 items-center`}>Sign Our Guestbook</a>
+    : null;
 
   const gradientButton = {
     background: gradient,
@@ -881,6 +890,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </p>
                   <div className="flex flex-wrap items-center gap-4">
                     {breatheButton}
+                    {guestbookLink}
                     <ShareNenya />
                   </div>
                 </section>
@@ -1013,6 +1023,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </p>
                   <div className="flex flex-wrap items-center gap-4">
                     {breatheButton}
+                    {guestbookLink}
                     <ShareNenya />
                     {onPartnerPractice && (
                       <button type="button" onClick={onPartnerPractice} className={linkClass}>

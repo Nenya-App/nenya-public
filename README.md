@@ -220,6 +220,7 @@ docs/legal/           Archive of earlier versions of the Terms and Privacy Polic
 | Transcripts | `receipt-lookup.mts` | `/api/receipt`: owner check of a receipt hash |
 | Partner practice | `cell.mts`, `cell-cleanup.mts` | The encrypted mailbox for two-person practice (behind `CELL_ENABLED`); hourly deletion |
 | Submissions | `submit.mts`, `submissions.mts`, `submission-expiry.mts` | Reports and messages kept 90 days and deletable by code; the owner's view; daily deletion |
+| Guestbook | `guestbook.mts` | "Sign Our Guestbook": keeps one centroid color and the day per signature, one per connection a day; lists them for the 3D view |
 | Counts | `count.mts`, `stats.mts` | Plain daily totals (`/api/count`), and the owner's view of them (`/api/stats`) |
 | Core tool | `colors.mts` | `/api/colors`: optional palette from The Color API (behind `PALETTE_ENABLED`) |
 

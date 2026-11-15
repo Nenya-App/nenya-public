@@ -1,4 +1,4 @@
-# "I was here": a color guestbook (scope, draft for the owner, 2026-11-15)
+# "I was here": a color guestbook (decided and built behind VITE_GUESTBOOK, 2026-11-15)
 
 **The idea (owner):** at the end of a session, a visitor can sign an "I was here" mark with their session colors, and the marks build a color graph over time somewhere on the site, like a guestbook.
 
@@ -29,8 +29,8 @@ They are not the session colors, are not linked to anything else, and are comple
 - **Taking it back:** a mark has no code and nothing ties it to the person, so it cannot be found again to remove it. Say so before signing.
 - **Terms and register:** a short paragraph (what is kept, public and anonymous, cannot be removed) and a row in docs/data-register.md.
 
-## Decisions for the owner
-1. ~~Session colors or a blend~~, ~~one color or two~~: decided (above).
-2. The renderer: the Apiary has the centroid math (RGBPoint averaging, apiary_v43.py) but no 3D drawing; the site's gem renderer places colored lights in 3D. Which tool is meant, or build a small 3D color-space view?
-3. Where the guestbook lives: its own page (`/here`), the About page, or elsewhere.
-4. Kept for how long: forever, or a rolling year.
+## Decided and built (owner, 2026-11-15)
+- Its own page, "Sign Our Guestbook", at `/guestbook` (an in-app page, so the session pair can be refused), linked from the end of a reflection and the end of a coach conversation (not after a safety stop).
+- Kept forever.
+- The renderer: the owner's `apiary_handshake_geometry.html` was the reference. Ported as a plain canvas (the site loads no outside scripts; three.js from a CDN is blocked by the security policy): the same RGB cube with red and green inverted and blue as depth, points for signatures, a star for the centroid of them all, the visitor's own point ringed; drag or arrow keys to turn, a pause button, still under reduced motion, a text summary. **Fix carried over from the Apiary's JavaScript:** its `centroidOfPoints` averages the packed 24-bit numbers, which lets one channel spill into the next; Nenya averages each channel on its own, as the Apiary's Python `RGBPoint` does.
+- Built: `src/lib/guestbook.ts`, `netlify/functions/guestbook.mts`, `src/app/components/GuestbookCloud.tsx`, `src/app/components/pages/GuestbookPage.tsx`; Terms Section 14 paragraph; data-register rows; tests in `tests/guestbook.test.mts`.

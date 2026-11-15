@@ -57,6 +57,9 @@ export const FIXED_EVENTS = [
   'submission.deleted.expired',
   'submission.deleted.owner',
   'submission.alert-failed',
+  // The guestbook (src/lib/guestbook.ts): a signature, and a second one refused that day.
+  'guestbook.signed',
+  'guestbook.refused.once',
   ...(['high', 'mid', 'low'] as const).flatMap((b) => [`coach.screen.vs-list.${b}.list`, `coach.screen.vs-list.${b}.nolist`]),
 ] as const;
 
