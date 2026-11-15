@@ -69,6 +69,7 @@ import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClo
 import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
+import { CARE_NOTE, careGuardOn, careProblems, withoutCareProblems } from '../../src/lib/careGuard.ts';
 import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCritiqueThanks, type CritiqueTarget, type Hostility } from '../../src/lib/hostility.ts';
 import { termsFromOurKey } from '../../src/lib/termsReceipt.ts';
 import { CHALLENGE_NOTE, MIRROR_NOTE, VALUES_RULE, challengeFor, conversationChallenge, mirrorRemovals, mirrors, valuesOn, withoutMirroring } from '../../src/lib/valuesRule.ts';
@@ -252,7 +253,7 @@ function provenEdits(secret: string, raw: unknown, done: Msg[]): SiteEdit[] {
   if (!Array.isArray(raw)) return [];
   const out: SiteEdit[] = [];
   for (const o of raw.slice(0, 10) as { after?: unknown; kind?: unknown; n?: unknown; proof?: unknown }[]) {
-    if (!o || !Number.isInteger(o.after) || (o.kind !== 'added' && o.kind !== 'removed') || !Number.isInteger(o.n) || typeof o.proof !== 'string') continue;
+    if (!o || !Number.isInteger(o.after) || (o.kind !== 'added' && o.kind !== 'removed' && o.kind !== 'removed-care') || !Number.isInteger(o.n) || typeof o.proof !== 'string') continue;
     const after = o.after as number, n = o.n as number;
     if (after < 1 || after >= done.length || done[after].role !== 'assistant' || n < 1 || n > 20) continue;
     const want = Buffer.from(editProof(secret, done.slice(0, after + 1), o.kind, n));
@@ -1139,6 +1140,19 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     }
     if (mirrors(reply)) { removedN = mirrorRemovals(reply); reply = withoutMirroring(reply); tally('coach.guard.mirror.repaired'); }
   }
+  // The care guard (src/lib/careGuard.ts): when the message may signal distress, a reply that suggests breathing or an exercise, speaks as if the coach
+  // could be with the person, or asks about the thoughts is asked for again once, then cleaned of those sentences. Runs before the site's distress
+  // sentence is added, so that sentence is never touched. COACH_CARE_GUARD=off turns it off (to measure the instructions alone).
+  let careRemovedN = 0;
+  if (softened && !about && careGuardOn() && careProblems(reply).length) {
+    tally('coach.guard.care');
+    const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
+    if (left >= REPEAT_RETRY_MIN_REMAINING_MS) {
+      const again = await generate(CARE_NOTE, left);
+      if (!('failure' in again) && again.reply) reply = again.reply;
+    }
+    if (careProblems(reply).length) { const cleaned = withoutCareProblems(reply); reply = cleaned.reply; careRemovedN = cleaned.removed; tally('coach.guard.care.repaired'); }
+  }
   let siteChallenged = false;
   // Justifying or denying mass violence, or calling for a group to be removed (COACH_VALUES=on): make sure a plain statement of disagreement is there (src/lib/valuesRule.ts).
   if (valuesOn() && !flag && !softened) {
@@ -1212,6 +1226,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   const edits = [
     ...(siteChallenged ? [{ kind: 'added', n: 1, proof: editProof(secret, history, 'added', 1) }] : []),
     ...(removedN > 0 ? [{ kind: 'removed', n: removedN, proof: editProof(secret, history, 'removed', removedN) }] : []),
+    ...(careRemovedN > 0 ? [{ kind: 'removed-care', n: careRemovedN, proof: editProof(secret, history, 'removed-care', careRemovedN) }] : []),
   ];
   const checked = [...(standing || siteChallenged ? ['challenge'] : []), ...(offer ? ['offer'] : [])];
   return json(200, { reply, ticket, turn, done: turn >= MAX_TURNS, ...(flag ? { flag } : {}), ...(checked.length ? { checked } : {}), ...(edits.length ? { edits } : {}), ...(ctxFlag && turn === 1 ? { contextFlag: ctxFlag } : {}), ...(withinCard ? { card: withinCard } : {}), ...(offer ? { offer } : {}) });

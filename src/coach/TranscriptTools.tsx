@@ -40,7 +40,7 @@ interface TranscriptToolsProps {
   /** Cards the site offered under replies, with the server's proof of each (the server records only the ones it can prove). */
   offers?: { after: number; id: string; proof: string }[];
   /** Changes the site made to replies, with the server's proof (recorded only when the server can prove them). */
-  edits?: { after: number; kind: 'added' | 'removed'; n: number; proof: string }[];
+  edits?: { after: number; kind: 'added' | 'removed' | 'removed-care'; n: number; proof: string }[];
 }
 
 type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';

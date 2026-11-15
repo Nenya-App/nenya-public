@@ -117,7 +117,7 @@ interface Msg {
   /** Which of the site's checks shaped this reply ("challenge", "offer"): the page offers "This was a mistake" under it. */
   checked?: string[];
   /** Changes the site made to this reply (a sentence added, sentences removed), with the server's proof of each; sent back only with the receipt request. */
-  edits?: { kind: 'added' | 'removed'; n: number; proof: string }[];
+  edits?: { kind: 'added' | 'removed' | 'removed-care'; n: number; proof: string }[];
 }
 
 const toWire = (ms: Msg[]) => ms.map((m) => ({ role: m.role, content: m.content }));
@@ -342,7 +342,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         card?: AnswerCardData;
         offer?: { id: string; proof: string };
         checked?: string[];
-        edits?: { kind: 'added' | 'removed'; n: number; proof: string }[];
+        edits?: { kind: 'added' | 'removed' | 'removed-care'; n: number; proof: string }[];
         problem?: string;
       };
       // The server screens too. A blocked message is not part of the conversation.

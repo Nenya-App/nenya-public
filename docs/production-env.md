@@ -64,7 +64,7 @@ These exist for testing, diagnosis, or turning a guard off in an emergency. Unse
 | `COACH_E2EE_PLAIN_HISTORY`, `COACH_E2EE_MINIMAL` | off | Diagnostics for the encrypted route |
 | `COACH_INCLUDE_VENICE_PROMPT` | off | Adds Venice's own system prompt; leave off |
 | `COACH_METHOD_NOTES` | none | Short method notes (the Blobs key `method-notes` is used first) |
-| `COACH_FORM_CHECK`, `COACH_ABOUT_ANSWERS`, `COACH_LANE_GUARD`, `COACH_ARC_GUARD`, `COACH_CLOSING_GUARD`, `COACH_PERSONA_GUARD`, `COACH_NAME_GUARD`, `COACH_INFRA_GUARD` | on | `off` turns that check off. For emergencies only. |
+| `COACH_FORM_CHECK`, `COACH_ABOUT_ANSWERS`, `COACH_LANE_GUARD`, `COACH_ARC_GUARD`, `COACH_CLOSING_GUARD`, `COACH_PERSONA_GUARD`, `COACH_NAME_GUARD`, `COACH_INFRA_GUARD`, `COACH_CARE_GUARD` | on | `off` turns that check off. For emergencies only. |
 | `PALETTE_DAILY_CAP`, `PALETTE_PER_CONNECTION` | 300, 20 | Limits for The Color API button |
 
 ## Not for Netlify
