@@ -21,10 +21,12 @@ export const INVITATION_TEXT =
   'If you would like the people who made Nenya to read what you thought, you can send this conversation to us with a note, using the buttons below. It is up to you, and nothing is sent unless you choose.';
 
 /** A change the site made to a reply the AI wrote: a sentence of the site's put in front of it, or sentences taken out of it. The server only records ones it can prove. */
-export interface SiteEdit { after: number; kind: 'added' | 'removed'; n: number }
+export interface SiteEdit { after: number; kind: 'added' | 'removed' | 'removed-care'; n: number }
 
 export const editText = (e: SiteEdit): string => e.kind === 'added'
   ? 'The site added the opening sentence of the reply above. It is the site\u2019s own plain sentence, written by Nenya, not by the AI.'
+  : e.kind === 'removed-care'
+  ? `The site removed ${e.n === 1 ? 'one sentence' : `${e.n} sentences`} from the reply above that suggested breathing or an exercise, spoke as if the AI could be with you, or asked about painful thoughts, which the coach should not do when someone may be in distress. The AI wrote ${e.n === 1 ? 'it' : 'them'}; the site took ${e.n === 1 ? 'it' : 'them'} out before you saw the reply. If nothing else was left, the short sentence that remains is the site\u2019s own.`
   : `The site removed ${e.n === 1 ? 'one sentence' : `${e.n} sentences`} from the reply above that echoed back contempt or a wish to harm a group of people. The AI wrote ${e.n === 1 ? 'it' : 'them'}; the site took ${e.n === 1 ? 'it' : 'them'} out before you saw the reply.`;
 
 export interface SiteMessage {
