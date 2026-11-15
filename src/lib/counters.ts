@@ -51,6 +51,12 @@ export const FIXED_EVENTS = [
   'coach.screen.band.high',
   'coach.screen.band.mid',
   'coach.screen.band.low',
+  // Reports and messages in the private store (src/lib/submissions.ts): plain counts, nothing about who or what.
+  'submission.received',
+  'submission.deleted.self',
+  'submission.deleted.expired',
+  'submission.deleted.owner',
+  'submission.alert-failed',
   ...(['high', 'mid', 'low'] as const).flatMap((b) => [`coach.screen.vs-list.${b}.list`, `coach.screen.vs-list.${b}.nolist`]),
 ] as const;
 

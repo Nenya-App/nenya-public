@@ -1,4 +1,4 @@
-# Data hygiene: scope (draft for the owner, 2026-11-15)
+# Data hygiene: scope (reports built 2026-11-15; the rest open)
 
 **The gap (owner, 2026-11-15):** there is no written data hygiene practice. Much is already automatic, but scattered across scheduled jobs, and some data has no deletion rule at all.
 
@@ -28,6 +28,9 @@
 3. **A quarterly review** (15 minutes, checklist): the register matches the code; the jobs ran (their counts on the stats page); nothing kept past its time; owner-side copies trimmed.
 4. **If something goes wrong** (a leak, a mistaken publication): a one-page plan: take it down, record what and when, tell the people affected where that is possible, and say so publicly on the site.
 5. **The Terms** then state each period plainly (replacing "no automatic deletion schedule yet" and "while useful").
+
+## Built (owner, 2026-11-15): reports and messages
+Reports, reflection summaries and contact messages go to `/api/submit` (`netlify/functions/submit.mts`), are kept in the private store for 90 days under the hash of a deletion code, deleted by `submission-expiry` (daily), deletable by the sender at `/my-transcript` and by the owner on the admin page (`SubmissionsPanel`, `/api/submissions`). The alert email (`submission-alert` form) carries the kind and dates only. Terms Sections 14 and 20 updated. The written register is `docs/data-register.md`, with the quarterly review. Still open: daily totals (decision 2) and the review's month cycle (decision 3).
 
 ## Decisions for the owner
 1. Reports and messages: into the private store with a 90-day keeping time and a self-service deletion code (recommended), or stay in Netlify Forms with a deletion job (an API token; deletion requests still by email)? Existing Forms submissions: delete those older than 90 days by hand once, at the switch.

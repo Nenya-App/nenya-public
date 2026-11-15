@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { DeletionCode } from '../app/components/DeletionCode';
+import type { SubmitReceipt } from '../lib/reportSubmission';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
@@ -20,6 +22,7 @@ type ReportState = 'closed' | 'open' | 'sending' | 'sent' | 'error';
 // anywhere unless they press Send on the report.
 export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNoticeProps) {
   const [state, setState] = useState<ReportState>('closed');
+  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
   const [comment, setComment] = useState('');
   const [includeMessage, setIncludeMessage] = useState(false);
 
@@ -34,7 +37,7 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
     if (state === 'sending') return;
     setState('sending');
     try {
-      await submitReport({ type: 'error-report', report: reportText });
+      setReceipt(await submitReport({ type: 'error-report', report: reportText }));
       setState('sent');
     } catch {
       setState('error');
@@ -154,6 +157,7 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
       )}
 
       {state === 'sent' && <p className="text-xs text-muted-foreground">Thank you. Your report was sent.</p>}
+      {state === 'sent' && <DeletionCode receipt={receipt} />}
     </section>
   );
 }

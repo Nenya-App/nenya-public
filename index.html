@@ -62,20 +62,15 @@
   <body>
     <div id="root"></div>
 
-    <!-- Netlify Forms only detects forms present in the built HTML at
-         deploy time -- it can't see forms rendered later by React. This
-         static, hidden copy exists purely so Netlify's build step
-         registers the "report-submission" form and its fields; the real,
-         interactive version is rendered by React and POSTs here with the
-         same field names (see src/lib/reportSubmission.ts). Never remove
-         this without also removing the JS-side submission logic, or
-         submissions will silently start failing. -->
-    <form name="report-submission" data-netlify="true" netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="report-submission" />
+    <!-- An alert for a report or message (netlify/functions/submit.mts): the kind and the dates only. The text is kept in the site's own private store for 90 days
+         (src/lib/submissions.ts) and read on the admin page, never in a form, so the sender can delete it themselves with their code. Netlify Forms only detects
+         forms present in the built HTML, hence this hidden copy. -->
+    <form name="submission-alert" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="submission-alert" />
       <input type="text" name="bot-field" />
-      <input type="text" name="type" />
-      <textarea name="report"></textarea>
-      <textarea name="comments"></textarea>
+      <input type="text" name="kind" />
+      <input type="text" name="received-at" />
+      <input type="text" name="keep-until" />
     </form>
 
     <!-- An alert for signed coach-demo transcripts: it reaches this form only through the report function (netlify/functions/report.mts) after their signature has been

@@ -6,6 +6,7 @@ import { GROUPS, label } from './labels';
 import { csvFilename, totalsCsv } from './exportCsv';
 import TranscriptChecker, { type LookupResult } from '../verify/TranscriptChecker';
 import WitnessedPanel from './WitnessedPanel';
+import SubmissionsPanel from './SubmissionsPanel';
 
 // The owner's page for reading the usage totals (see docs/site-metrics-scope.md). It holds nothing but the owner's own
 // token (in this browser only) and a table of plain daily totals fetched from /api/stats. It is not linked from anywhere.
@@ -340,6 +341,7 @@ export default function AdminPage() {
       )}
 
       {(phase === 'in' || stats) && <WitnessedPanel getToken={() => token.trim() || readToken()} />}
+      {(phase === 'in' || stats) && <SubmissionsPanel getToken={() => token.trim() || readToken()} />}
 
       {stats && (
         <section className="space-y-8" aria-label="Totals">
