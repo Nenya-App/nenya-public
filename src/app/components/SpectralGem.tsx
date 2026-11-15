@@ -5,16 +5,16 @@ import bezelSvg from '../../assets/logo/bezel.svg';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { allColors, valarColors } from './ValarBreathingLogo';
 import { orbColour } from '../../lib/orbColours';
-import { breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
+import { breathEnvelope, breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
 import { GEM_CENTRE, GEM_ENGINE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite, markGemDrawn, type GemEngine } from '../../lib/gemSprite';
 import { GEM_LOOP_BREATHS } from '../../lib/breathClock';
 import { deviceProfile } from '../../lib/deviceProfile';
 import { HIGH_QUALITY, LOW_QUALITY, createGemRenderer, type GemLight, type GemQuality, type GemRenderer } from '../../lib/gemRenderer';
 import type { GemCut } from '../../lib/gemCut';
-import { kaleidoscopeCut, type KaleidoscopeLook } from '../../lib/kaleidoscope';
+import { KALEIDOSCOPE_PRESETS, breathDepth, breathPeriodS, kaleidoscopeCut, type KaleidoscopeLook } from '../../lib/kaleidoscope';
 import { DEFAULT_INNER_ORBIT } from '../../lib/orbitLook';
 import { SITE_LIVE_FIELD_ALPHA, SITE_LIVE_GEM } from '../../lib/siteGem';
-import { useGemKaleidoscope } from '../../lib/deviceMemory';
+import { useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook } from '../../lib/deviceMemory';
 
 /** The live gem's settings (see src/lib/gemRenderer.ts). All optional: the defaults are the tuned starting point. */
 export interface LiveGemLook {
@@ -143,8 +143,14 @@ export default function SpectralGem({
   // (which rebuilds the shader) does.
   // The visitor's switch (accessibility panel) turns the kaleidoscope on in addition to whatever the look says; a toggle either way puts the stone back to its plain cut first.
   const visitorKaleido = useGemKaleidoscope();
+  // The visitor's own look (Calm, Gentle, Lively, Full motion) applies while their switch is on (owner, 2026-11-15).
+  const visitorLook = useGemKaleidoscopeLook();
+  const visitorBreath = useGemKaleidoscopeBreath();
   const liveRef = useRef(live);
-  liveRef.current = live ? { ...live, kaleidoscope: { ...live.kaleidoscope, on: !!live.kaleidoscope?.on || visitorKaleido }, restart: live.restart ?? (visitorKaleido ? 1 : 0) } : live;
+  liveRef.current = live ? { ...live, kaleidoscope: { ...live.kaleidoscope, ...(visitorKaleido ? KALEIDOSCOPE_PRESETS[visitorLook] : {}), on: !!live.kaleidoscope?.on || visitorKaleido }, restart: live.restart ?? (visitorKaleido ? 1 : 0) } : live;
+  // "Move with my breathing": read on every frame, like the look. Only while the visitor's switch is on.
+  const breathRef = useRef({ sync: false, breathMs, fractions: { t1, t2, t3 } });
+  breathRef.current = { sync: visitorKaleido && visitorBreath, breathMs, fractions: { t1, t2, t3 } };
   // The kaleidoscope's own clock: it only runs while the kaleidoscope is on, so turning it off pauses the pattern
   // where it is instead of snapping back to the plain cut.
   const kaleido = useRef<{ t: number; last: number; started: boolean; restart: number | undefined }>({ t: 0, last: 0, started: false, restart: undefined });
@@ -235,7 +241,7 @@ export default function SpectralGem({
 
     // The cut for this frame. The kaleidoscope's clock advances only while it is on and motion is allowed; when it is
     // off (or paused for reduced motion) the stone holds the cut it had reached. Before it has ever run, the plain cut.
-    const kaleidoscopeAt = (reduced: boolean, L: LiveGemLook | undefined): Partial<GemCut> | undefined => {
+    const kaleidoscopeAt = (reduced: boolean, L: LiveGemLook | undefined, breathPhase: number): Partial<GemCut> | undefined => {
       const k = kaleido.current;
       const now = performance.now();
       if (L?.restart !== k.restart) {
@@ -252,6 +258,13 @@ export default function SpectralGem({
       }
       k.last = running ? now : 0;
       if (!k.started) return L?.cut;
+      const b = breathRef.current;
+      if (b.sync && L?.kaleidoscope) {
+        // Opens on the in-breath, settles on the out-breath; the slow drift lasts a whole number of breaths at this pace.
+        const look = L.kaleidoscope;
+        const envelope = reduced ? 0 : breathEnvelope(breathPhase, b.fractions);
+        return kaleidoscopeCut(k.t, L?.cut, { ...look, on: true, depth: breathDepth(look.depth ?? 0.6, envelope), periodS: breathPeriodS(look.periodS ?? 200, b.breathMs) });
+      }
       return kaleidoscopeCut(k.t, L?.cut, { ...L?.kaleidoscope, on: true });
     };
 
@@ -279,7 +292,7 @@ export default function SpectralGem({
           orbit: reduced ? 0 : (((orbitT / (oS > 0 ? oS : 120)) % 1) * 2 * Math.PI),
           orbs: valarColors.map((v, j) => orbColour(v.vector, j, tSec, cS)),
           light: L?.light,
-          cut: kaleidoscopeAt(reduced, L),
+          cut: kaleidoscopeAt(reduced, L, c.p),
         });
         octx.drawImage(renderer.canvas, 0, 0, px, px);
       } else if (reduced) {

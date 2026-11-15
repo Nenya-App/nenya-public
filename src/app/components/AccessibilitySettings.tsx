@@ -8,7 +8,8 @@ import { Separator } from './ui/separator';
 import { useTheme } from './ThemeProvider';
 import { DeviceMemoryControls } from './DeviceMemoryControls';
 import { BreathToneStyle, BreathTonesSwitch } from './BreathTonesSwitch';
-import { setGemKaleidoscope, useGemKaleidoscope } from '../../lib/deviceMemory';
+import { setGemKaleidoscope, setGemKaleidoscopeBreath, setGemKaleidoscopeLook, useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook, type KaleidoscopeLookChoice } from '../../lib/deviceMemory';
+import { VISITOR_LOOKS } from '../../lib/kaleidoscope';
 
 const VISION_MODES: { value: string; label: string }[] = [
   { value: '', label: 'Standard' },
@@ -59,6 +60,8 @@ export function AccessibilitySettingsContent({
 
   // Pending changes state
   const gemKaleidoscope = useGemKaleidoscope();
+  const kaleidoLook = useGemKaleidoscopeLook();
+  const kaleidoBreath = useGemKaleidoscopeBreath();
   const [pendingBreathingEnabled, setPendingBreathingEnabled] = useState(breathingEnabled);
   const [pendingOrbitEnabled, setPendingOrbitEnabled] = useState(orbitEnabled);
   const [pendingLogoVisible, setPendingLogoVisible] = useState(logoVisible);
@@ -170,6 +173,32 @@ export function AccessibilitySettingsContent({
             <p id="kaleidoscope-help" className="pl-6 text-xs text-muted-foreground">
               The inside of the gem slowly re-cuts itself. Off by default. It holds still if your device asks for reduced motion.
             </p>
+            {/* Shown only while it is on: the look, and whether it moves with the breath (owner, 2026-11-15). */}
+            {gemKaleidoscope && (
+              <div className="space-y-3 pl-6 pt-2">
+                <fieldset className="space-y-1">
+                  <legend className="text-xs text-muted-foreground">How much it moves</legend>
+                  {VISITOR_LOOKS.map((l) => (
+                    <label key={l.id} className="flex min-h-11 items-start gap-2 text-sm">
+                      <input type="radio" name="kaleidoscope-look" value={l.id} checked={kaleidoLook === l.id} onChange={() => setGemKaleidoscopeLook(l.id as KaleidoscopeLookChoice)} className="mt-1" />
+                      <span>
+                        {l.label}
+                        <span className="block text-xs text-muted-foreground">{l.hint}</span>
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor="kaleidoscope-breath" className="cursor-pointer text-sm">
+                    Move with my breathing
+                  </Label>
+                  <Switch id="kaleidoscope-breath" checked={kaleidoBreath} onCheckedChange={setGemKaleidoscopeBreath} aria-describedby="kaleidoscope-breath-help" />
+                </div>
+                <p id="kaleidoscope-breath-help" className="text-xs text-muted-foreground">
+                  The pattern opens as you breathe in and settles as you breathe out, at the pace you chose.
+                </p>
+              </div>
+            )}
           </div>
         )}
 

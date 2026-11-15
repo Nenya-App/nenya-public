@@ -49,6 +49,29 @@ export type KaleidoscopePreset = keyof typeof KALEIDOSCOPE_PRESETS;
 
 export const DEFAULT_KALEIDOSCOPE: KaleidoscopeLook = KALEIDOSCOPE_PRESETS.gentle;
 
+/** The looks a visitor can choose, in order of how much they move (owner, 2026-11-15). */
+export const VISITOR_LOOKS: { id: KaleidoscopePreset; label: string; hint: string }[] = [
+  { id: 'calm', label: 'Calm', hint: 'The shape holds still; the pattern drifts a little, very slowly.' },
+  { id: 'gentle', label: 'Gentle', hint: 'The pattern drifts slowly inside a steady shape.' },
+  { id: 'lively', label: 'Lively', hint: 'More visible change, always returning home.' },
+  { id: 'full', label: 'Full motion', hint: 'Everything moves and the facets keep turning. A lot of movement.' },
+];
+export const isVisitorLook = (v: unknown): v is KaleidoscopePreset => typeof v === 'string' && VISITOR_LOOKS.some((l) => l.id === v);
+
+/**
+ * "Move with my breathing": the pattern opens as the visitor breathes in and settles as they breathe out. `envelope` is 0 at
+ * rest and 1 at full inhale (breathEnvelope in breathClock.ts); the depth never drops below 40% of the look's, so the
+ * pattern keeps its shape and only swells and settles.
+ */
+export const breathDepth = (depth: number, envelope: number): number => depth * (0.4 + 0.6 * clamp(envelope, 0, 1));
+
+/** The look's slowest wave, rounded to a whole number of breaths at the visitor's pace, so drift and breath stay in step. */
+export function breathPeriodS(periodS: number, breathMs: number): number {
+  if (!(breathMs > 0)) return periodS;
+  const breaths = Math.max(1, Math.round((periodS * 1000) / breathMs));
+  return (breaths * breathMs) / 1000;
+}
+
 /** The furthest each part of the cut may move from its base value at depth 1 (degrees, or stone units). */
 export const KALEIDOSCOPE_SWING = {
   crown: 6,
