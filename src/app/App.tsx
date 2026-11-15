@@ -22,6 +22,8 @@ import { BreathingTechnique } from './components/ValarBreathingLogo';
 import OnboardingFlow from './components/OnboardingFlow';
 import type { StartChoice } from '../lib/startCopy';
 import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
+import { SaveReflectionContext, type SaveReflectionApi } from './components/SaveReflection';
+import { normalizeId, openReflection, purgeExpired, saveReflection, saveReflectionOn, sessionIdFrom, shadowId, type SavedPayload } from '../lib/savedReflection';
 import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
 
@@ -347,6 +349,43 @@ export default function App() {
   }, [currentScreen]);
 
   // Gateway selection from home
+  // "Save and return later" (VITE_SAVE_REFLECTION=on; src/lib/savedReflection.ts). The session ID is the two colors from Sight (or Sound's
+  // melody colors); before either, a random "shadow" pair kept for this visit only. Neither the ID nor the passcode is ever stored.
+  const saveOn = saveReflectionOn();
+  const [shadow, setShadow] = useState(() => shadowId());
+  useEffect(() => {
+    if (saveOn) purgeExpired();
+  }, [saveOn]);
+  const sightDone = gatewayData.find((g) => g.gateway === 'sight')?.data;
+  const soundDone = gatewayData.find((g) => g.gateway === 'sound')?.data;
+  const sessionId =
+    (sightDone && sessionIdFrom(sightDone.color1, sightDone.color2)) ||
+    (soundDone && sessionIdFrom(soundDone.melodyColor1, soundDone.melodyColor2)) ||
+    shadow;
+  const saveApi: SaveReflectionApi = {
+    on: saveOn,
+    canSave: gatewayData.length > 0,
+    sessionId,
+    save: (passcode) => {
+      const payload: SavedPayload = { v: 1, selectedGateways, gatewayData, bodyMapData, interfaceColors };
+      return saveReflection(payload, sessionId, passcode);
+    },
+    open: async (id, passcode) => {
+      const saved = await openReflection(id, passcode);
+      if (!saved) return false;
+      const gateways = saved.selectedGateways as Gateway[];
+      const data = saved.gatewayData as GatewayData[];
+      setSelectedGateways(gateways);
+      setGatewayData(data);
+      setBodyMapData(saved.bodyMapData as BodyMapData);
+      setInterfaceColors(saved.interfaceColors);
+      setShadow(normalizeId(id) ?? shadow); // a shadow ID stays the same if they save again
+      const next = gateways.find((g) => !data.some((d) => d.gateway === g));
+      navigateTo(next ?? 'gateway-review');
+      return true;
+    },
+  };
+
   const handleGatewaysSelected = (gateways: Gateway[]) => {
     setSelectedGateways(gateways);
     setGatewayData([]);
@@ -466,6 +505,7 @@ export default function App() {
   const userHasGatewayData = gatewayData.length > 0;
 
   return (
+    <SaveReflectionContext.Provider value={saveApi}>
     <ThemeProvider defaultTheme="dark">
       <SkipLink />
       {/* First in the page, above every overlay: the header's Exit is out of reach behind the loading screen, the first-visit panel and the tour. */}
@@ -759,5 +799,6 @@ export default function App() {
         />
       </div>
     </ThemeProvider>
+    </SaveReflectionContext.Provider>
   );
 }

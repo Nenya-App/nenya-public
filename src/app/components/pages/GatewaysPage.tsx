@@ -4,6 +4,7 @@ import { Card } from '../ui/card';
 import { ArrowLeft, Eye, Music, Hand, Droplet, Zap, Lightbulb, Check } from 'lucide-react';
 import { Gateway } from '../../App';
 import { AppFooter } from '../AppFooter';
+import { ContinueSavedLink } from '../SaveReflection';
 import { GATEWAY_ROUTES } from '../../../lib/gatewaySummaries';
 
 interface GatewaysPageProps {
@@ -176,6 +177,11 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
             </div>
           )}
           
+          {/* Returning to a saved reflection (VITE_SAVE_REFLECTION=on). Always shown when on, so it never tells anyone that something is saved. */}
+          <div className="flex justify-center pt-4">
+            <ContinueSavedLink />
+          </div>
+
           {/* Footer: how open the route is, and where privacy actually comes from */}
           <div className="mt-12 pt-8 border-t border-border max-w-3xl mx-auto">
             <div className="space-y-3 text-center">

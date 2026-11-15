@@ -137,7 +137,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         paragraphs: [],
         bullets: [
           'No accounts, no advertising, no tracking cookies, nothing that follows you around the internet.',
-          'What you enter in the reflection tools (colors, melodies, drawings, body-map placements, written reflections) stays in your browser, is never sent to us, and is gone when you close the tab. A PDF report is made on your own device.',
+          'What you enter in the reflection tools (colors, melodies, drawings, body-map placements, written reflections) stays in your browser, is never sent to us, and is gone when you close the tab, unless you choose “Save and return later”: then it is kept on this device, locked with your passcode, for at most 24 hours (Section 16). A PDF report is made on your own device.',
           'Our web host keeps ordinary connection logs and gives us visit totals (Section 13). We keep plain daily totals of our own, which identify no one.',
           'Things leave your device only when you choose: the report form (Section 14), a palette from The Color API (Section 14), the coach demo (Section 15), and the signed note when you agree to these Terms (Section 16).',
           'By default the only thing kept on your device between visits is one timestamp after a coach conversation. If you choose “Remember my settings on this device,” your display settings and your agreement are kept too (Section 16).',
@@ -221,7 +221,7 @@ export const LEGAL_PARTS: LegalPart[] = [
           'Only if you turn on “Remember my settings on this device” (in the settings menu, or the box on the terms screen): your theme, text size, animation and breathing choices, the date of the terms you agreed to (so you are not asked each visit; if the terms change, you are asked again), and the signed note of your agreement.',
         ],
         after: [
-          'These are kept in your browser’s storage, never sent to us, and we cannot read them. Turning the switch off erases what it saved. “Forget me” (in the settings menu and at the bottom of every page) erases everything saved on your device, and Emergency Exit erases everything before it leaves the page; neither can reset the coach’s server-side daily limit. We never save what you write, draw or answer, your session colors, or anything derived from them. Anyone who can use your device could see the saved items in its browser tools, so on a shared or watched device, leave the switch off and use Forget me or Emergency Exit when you finish.',
+          'These are kept in your browser’s storage, never sent to us, and we cannot read them. Turning the switch off erases what it saved. “Forget me” (in the settings menu and at the bottom of every page) erases everything saved on your device, and Emergency Exit erases everything before it leaves the page; neither can reset the coach’s server-side daily limit. We never save what you write, draw or answer, your session colors, or anything derived from them, with one exception you choose yourself: “Save and return later” keeps your finished gateways on this device, encrypted with a key made from your session ID and a passcode you pick, for at most 24 hours. Neither the ID nor the passcode is stored, and nothing is sent to us. It is erased after 24 hours, when you open it again, when you delete it, and by Forget me and Emergency Exit. A simple passcode stops a glance, not someone with time and this device; on a shared device, choose a longer one. Someone who opens the browser’s own storage tools can see that something locked is saved, but not what it says. Anyone who can use your device could see the saved items in its browser tools, so on a shared or watched device, leave the switch off and use Forget me or Emergency Exit when you finish.',
         ],
       },
       {
@@ -229,7 +229,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         heading: 'What the site never does',
         paragraphs: [],
         bullets: [
-          'It does not require or offer visitor accounts, create profiles, or set persistent identifiers. The only code that stands for your connection is the coach’s one-way daily code (Section 15), which changes daily and is deleted within two days; visit statistics count unique visitors by address within a day, with nothing saved on your device; the signed note of your agreement is not an identifier, is not linked to your connection, and is not stored by us.',
+          'It does not require or offer visitor accounts, create profiles, or set persistent identifiers. The session ID used by “Save and return later” is your two colors (or two random ones), shown to you, never stored with the save, and never sent to us. The only code that stands for your connection is the coach’s one-way daily code (Section 15), which changes daily and is deleted within two days; visit statistics count unique visitors by address within a day, with nothing saved on your device; the signed note of your agreement is not an identifier, is not linked to your connection, and is not stored by us.',
           'It does not send what you enter in the reflection tools to any server, except what you choose to send through the form, The Color API, or the coach demo.',
           'It does not sell, share or monetize data.',
         ],

@@ -1,4 +1,4 @@
-# Save and return later: scope (owner's decisions, 2026-11-15)
+# Save and return later (owner's decisions, 2026-11-15; built behind VITE_SAVE_REFLECTION)
 
 **The idea:** a visitor can save the reflection in progress on their own device and come back to it, protected by a simple passcode, with Forget me and Emergency Exit erasing it.
 
@@ -21,8 +21,10 @@
 - Someone who opens the browser's own storage tools can see that something encrypted is saved, though not what it says. The page itself never reveals it.
 - It does not follow the visitor to another device or browser.
 
-## Decision still open
-**Store the ID, or not.**
+## Decided: the ID is not stored (owner, 2026-11-15)
+Built in `src/lib/savedReflection.ts` (encryption, expiry, one slot), `src/lib/saveCopy.ts` (wording), `src/app/components/SaveReflection.tsx` (the two panels), `App` (the session ID, saving, restoring at the next unfinished gateway or the review), the gateway header and review ("Save and return later") and the gateway choice ("Continue a saved reflection"). Terms Sections 13, 16 and 17 updated. Tests: `tests/save-reflection.test.mts`.
+
+**The choice as it was put: store the ID, or not.**
 - **Not stored (recommended):** stronger (a guesser needs the ID too) and nothing on the page hints that a reflection exists. The visitor needs a password manager, or to copy the ID when saving. Without it, the reflection is gone in 24 hours anyway.
 - **Stored and pre-filled:** easier to come back to, but then only the passcode protects it, and a pre-filled ID tells anyone looking that a reflection is saved.
 

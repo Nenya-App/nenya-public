@@ -54,6 +54,7 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `VITE_START_CHOOSER` | `on` | The start chooser before the Terms (breathing, reflection or the coach); retires the automatic tour offer |
 | `VITE_GATEWAYS_SIMPLE` | `on` | The simpler gateways (Touch first): one main choice per step, the rest under "Add more detail" |
 | `VITE_SOUND_CHORDS` | `on` | Chords in the Sound gateway (softened by default) |
+| `VITE_SAVE_REFLECTION` | `on` | "Save and return later": finished gateways kept encrypted on the visitor's device for 24 hours |
 
 **Humanity check (Cloudflare Turnstile), built 2026-11-15, off by default.** Staging first; on production only after the Terms change ships.
 
