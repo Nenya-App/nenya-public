@@ -588,6 +588,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 A short conversation with the Nenya coach
               </h1>
               <p className="text-muted-foreground">
+                {/* Arrived through the gateways (a report is in memory): they have breathed and reflected already, so the opening says so instead of offering it. */}
+                {report ? 'You have already taken time with your reflection, so this can start right here; below, you can choose to bring parts of it. ' : ''}
                 This is an early prototype. You get {MAX_TURNS} exchanges, then we breathe. It is built to help you
                 settle, not to keep you talking.
               </p>
