@@ -20,6 +20,7 @@ import { PRESETS, sameTechnique } from '../lib/breathingPresets';
 import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
 import { BreathingTechnique } from './components/ValarBreathingLogo';
 import OnboardingFlow from './components/OnboardingFlow';
+import type { StartChoice } from '../lib/startCopy';
 import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
 
@@ -195,16 +196,29 @@ export default function App() {
 
   // Counting begins only once the terms are agreed. Agreeing is the first thing counted, with the rhythm that was
   // chosen (nothing before this point is counted, so the rhythm is recorded here, not when it was picked).
-  const handleOnboardingFinish = () => {
+  // With the start chooser (VITE_START_CHOOSER=on), `choice` is where the visitor chose to start: it is counted here, at agreement, with the rhythm (only on
+  // the breathing path), and the visitor goes there. The tour is no longer offered on its own then; it stays in the help menu.
+  const handleOnboardingFinish = (choice?: StartChoice, agreement?: Promise<void>) => {
     enableUsageCounts();
     const rhythm = PRESETS.find((p) => sameTechnique(breathingTechnique, p));
-    const rhythmName = rhythm && !arrivedElsewhere ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
-    countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : [])]);
+    const rhythmName = rhythm && !arrivedElsewhere && (!choice || choice === 'breathing') ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
+    countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : []), ...(choice ? [`onboarding.start.${choice}`] : [])]);
     setBreathingCounterMinimized(true);
     setEntryUnlocked(true);
     setTermsAgreed(true);
-    // Only on the welcome screen: that is where the tour points.
-    if (currentScreen === 'welcome') setTourOffered(true);
+    if (choice === 'reflection') {
+      navigateTo('home');
+      return;
+    }
+    if (choice === 'coach') {
+      // The coach page reads the agreement held for this visit; wait for it to be signed (at most a few seconds) so the signed note is not lost.
+      const go = () => window.location.assign('/coach/');
+      if (agreement) void agreement.finally(go);
+      else go();
+      return;
+    }
+    // Only on the welcome screen, and only without the chooser: that is where the tour points.
+    if (!choice && currentScreen === 'welcome') setTourOffered(true);
   };
 
   // Track emergency exit to disable beforeunload warning

@@ -47,6 +47,14 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `PALETTE_ENABLED` | `true` | "Ask The Color API" in the Sight gateway |
 | `COACH_CARD_DRAFTS` | leave unset | Owner tool for card drafts; not for production |
 
+**Build switches for new screens (Builds scope; "Clear cache and deploy site" after a change).** Staging first; on production only after the owner approves what staging shows.
+
+| Variable | On value | What it turns on |
+|---|---|---|
+| `VITE_START_CHOOSER` | `on` | The start chooser before the Terms (breathing, reflection or the coach); retires the automatic tour offer |
+| `VITE_GATEWAYS_SIMPLE` | `on` | The simpler gateways (Touch first): one main choice per step, the rest under "Add more detail" |
+| `VITE_SOUND_CHORDS` | `on` | Chords in the Sound gateway (softened by default) |
+
 **Humanity check (Cloudflare Turnstile), built 2026-11-15, off by default.** Staging first; on production only after the Terms change ships.
 
 | Variable | Scope | Value | Notes |

@@ -1,4 +1,4 @@
-# Start chooser: scope (draft for the owner, 2026-11-15)
+# Start chooser: scope (decided and built behind a switch, 2026-11-15)
 
 **The idea (owner):** a first screen that says what Nenya offers and asks where to start: breathing, reflection or the coach, with "Learn more" on each. Breathing leads to the rhythm picker, reflection to the gateways, the coach to the coach page. The coach page's own "Begin with a breath first?" stays.
 
@@ -33,7 +33,10 @@ A remembered visitor (Terms already agreed for this version) does not see the ch
   - *Learn more:* At most five exchanges, then it ends. It is an AI, not therapy, and not for emergencies. Open to connections in the United States for now.
 - **Below the choices:** Not sure? Breathing is a gentle place to begin. · In danger or crisis? Call or text 988 (US and Canada).
 
-## Decisions for the owner
+## Decided (owner, 2026-11-15)
+Chooser before the Terms; the automatic tour offer retired (the tour stays in the help menu); the choice counted as a plain daily total (Terms Section 13 updated); the coach shown everywhere with "Open in the United States for now". Built behind `VITE_START_CHOOSER=on`: `src/lib/startCopy.ts`, `OnboardingFlow` (`start` step), `App` (routing and counting), `src/lib/counters.ts` (`onboarding.start.*`), tests in `tests/start-chooser.test.mts`.
+
+## The decisions as they were put
 1. **Order:** chooser, then Terms (recommended: people know what they are agreeing to use), or Terms first?
 2. **The tour:** retire the automatic offer and keep the tour in the help menu (recommended), or offer it after the breathing path only?
 3. **Counting the choice:** a plain daily total of which start was chosen would show what people want, with nothing about who chose. It needs one line changed in the Terms (Section 13 counts "whether the tour is taken" today, which goes stale either way). Count it, or not?
