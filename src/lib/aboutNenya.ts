@@ -1,6 +1,6 @@
 // Pre-written answers about Nenya and about the coach: the single source for the coach's cards, the About pages and the tutorials. Written 2026-11-08;
 // the wording is the owner's to edit. Only answers with status 'ready' may be used live (liveAnswers); 'owner' and 'pending' wait for a decision or a feature.
-// STEP 1 and 2 of docs/about-nenya-questions-scope.md: the content and the detector. The coach function does not use them yet.
+// STEP 1 and 2 of docs/about-nenya-questions-scope.md: the content and the detector. The coach function uses them (aboutAnswerFor, aboutAnswerWithin in netlify/functions/coach.mts; COACH_ABOUT_ANSWERS=off turns them off).
 //
 // One source for several uses, so the words are written once:
 //   short     what a small card under a coach reply would say (the coach does not improvise these; see docs/about-nenya-questions-scope.md)

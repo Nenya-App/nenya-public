@@ -6,38 +6,27 @@
 // running count of the day's turns (src/lib/dailyCap.ts) and, per connection, a count of turns under a one-way daily
 // code (src/lib/connectionLimit.ts). See docs/site-metrics-scope.md and docs/coach-ip-limit-scope.md.
 //
-// Environment (Netlify, production, Functions scope):
-//   VENICE_API_KEY       secret   Venice API key
-//   COACH_TICKET_SECRET  secret   long random string for signing tickets
-//   COACH_ENABLED        plain    "true" to accept requests
-//   COACH_IP_SECRET      secret   long random string for the per-connection daily code; without it that limit is off
-//   COACH_ARC            plain    optional, 'practice' makes the coach ask for the person's own feeling and need words (docs/coach-practice-arc-scope.md; off by default)
-//   COACH_VALUES         plain    optional, 'on' adds the coach's stance on mass violence, history, belief and survivors (src/lib/valuesRule.ts; off by default)
-//   COACH_LANE_GUARD     plain    optional, 'off' skips the lane guard (requests for images, code, writing and professional advice are then left to the model)
-//   COACH_ARC_GUARD      plain    optional, 'off' skips the practice arc's guard (naming, confirming and echoing are then left as the model wrote them)
-//   COACH_IP_TURNS       plain    optional, turns a connection may use a day (default 10, two full conversations)
-//   COACH_DAILY_CAP      plain    optional, turns the whole site may use a day (default 500)
-//   COACH_OWNER_TOKEN_HASH secret optional, SHA-256 (hex) of the owner's token; the header x-nenya-owner with the token
-//                                 lifts only the per-connection limit (never the site-wide cap)
-//   COACH_SIGNING_KEY    secret   optional, base64 Ed25519 private key (PKCS8 DER) for
-//                                 signing transcript receipts
-//   COACH_MODEL          plain    optional, overrides DEFAULT_MODEL. An id starting "e2ee-" (Venice's encrypted
-//                                 models) is called through src/lib/veniceE2ee.ts instead of the plain request.
-//   COACH_CHARACTER_SLUG plain    optional, overrides DEFAULT_CHARACTER_SLUG
-//   COACH_E2EE_PLAIN_HISTORY plain optional, "true" sends earlier coach replies unencrypted on the encrypted route
-//   COACH_E2EE_MINIMAL   plain    optional, "true" sends fewer sampling settings on the encrypted route (a diagnostic)
-//   COACH_SEALED         plain    optional, "on" accepts sealed mode: messages the browser encrypted itself (handleSealed below;
-//                                 needs an "e2ee-" model). Off by default.
-//   COACH_HARDWARE_CHECK plain    optional, what a failed enclave hardware check does on this server (src/lib/enclaveCheck.ts):
-//                                 "report" (default: log it, carry on), "enforce" (refuse the key) or "off". The browser's
-//                                 sealed mode always enforces its own check.
-//   COACH_METHOD_NOTES   plain    optional, short method notes (fallback when the blob below is absent)
-//   COACH_MODULES        plain    optional, 'on' uses the module set (store key "modules") instead of the single method-notes text
-//   COACH_TURNSTILE      plain    optional, the humanity check on a conversation's first message: "shadow" (check, count, never refuse) or "on"
-//   TURNSTILE_SECRET_KEY secret   the Turnstile widget's secret (needed for shadow and on)
-//   TURNSTILE_HOSTNAMES  plain    page hosts a token may come from, comma-separated (production: nenya.biz,www.nenya.biz; never localhost there)
-// Netlify Blobs: store "coach-private", key "method-notes" holds longer private method
+// Environment: the full list of variables this function reads, with defaults, is docs/production-env.md (a test,
+// tests/docs-drift.test.mts, keeps it complete). Which of them are decided features and which are experiments is
+// docs/coach-features.md. The minimum to run: VENICE_API_KEY and COACH_TICKET_SECRET (secrets) and COACH_ENABLED=true.
+// Netlify Blobs: store "coach-private" (or COACH_STORE_NAME), key "method-notes" holds longer private method
 // notes that are added to the system instruction. See docs/coach-method-notes.md.
+//
+// How a request moves through this file (handle(), below). Each stage either answers and returns, or passes on:
+//   1. Route       GET ?modes / ?region / ?key answer at once; anything but POST /api/coach stops here.
+//   2. Gates       switched on, region, keys present, origin, content type, body size, JSON, session colours.
+//   3. Branches    sealed mode goes to handleSealed(); action 'receipt' signs a transcript and returns.
+//   4. History     parse the messages, check the turn number, verify the ticket (later turns) or the humanity check (first turn).
+//   5. Pre-model   steering attempts, a steering shared report, crisis/harm stops, the message form check. None of these reaches the model.
+//   6. Limits      per-connection allowance and site-wide cap (only a first turn can be refused).
+//   7. Read        what the conversation needs: distress tier, hostility, stance, notes, values/contempt, screening bands, question kind.
+//   8. Site answers  questions about Nenya (aboutNenya.ts) and out-of-lane requests (laneGuard.ts) are answered by the site, not the model.
+//   9. Generate    one model call (encrypted route or plain), retried once if it repeats an earlier reply.
+//  10. Guards      in this order, each "ask once more, then repair": infrastructure, persona, names, closing, practice arc, mirror, care.
+//  11. Site text   values challenge, apology strip and critique thanks, length trim, distress sentence, answer-first, report-text distress.
+//  12. After       screening shadow count, learning-card offer, counts.
+//  13. Respond     new ticket over the history, proofs of the site's edits, flags.
+// docs/maintenance-plan.md proposes moving each stage into its own module under src/lib/coach/ in this order.
 import { regionDecision, countryOf, type HostGeo } from '../../src/lib/coachRegion.ts';
 import { isInstructionsVersion, type InstructionsVersion } from '../../src/lib/instructionsVersions.ts';
 import { getStore } from '@netlify/blobs';

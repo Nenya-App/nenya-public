@@ -58,8 +58,10 @@ The honest edges:
   connection logs (such as IP address) like any web host.
 - **Optional forms.** The site has one optional submission form, used for error
   reports, sensory-reflection reports you choose to share, and contact
-  messages. It posts to Netlify Forms. Nothing is sent unless a visitor
-  clicks send, and visitors are asked not to include identifying details.
+  messages. It posts to the site's own function (`/api/submit`), which keeps the message in the site's private
+  store for 90 days and gives the sender a code to delete it at once. The owner is alerted through Netlify Forms
+  with only the kind and the dates, never the text. Nothing is sent unless a visitor clicks send, and visitors are
+  asked not to include identifying details.
 - **Outbound links.** Links to Fractured Atlas (donations), GitHub, and the
   Venice AI chat demo leave the site. Each of those is governed by its own
   policies, not Nenya's.
@@ -114,7 +116,7 @@ the free tool never depends on it.
 
 ## Running it locally
 
-Requires [Node.js](https://nodejs.org) 18 or newer.
+Requires [Node.js](https://nodejs.org) 24 or newer (the same version `package.json`, `netlify.toml` and CI use).
 
 ```bash
 npm install     # needs internet once, to download dependencies
@@ -124,30 +126,33 @@ npm run dev     # development server
 To build static files:
 
 ```bash
-npm run build   # outputs a fully static dist/ directory
+npm run build   # outputs dist/
 ```
 
-`dist/` needs no server-side code, but it has to be served over HTTP rather than
-opened by double-clicking `index.html` (the files use absolute paths). Any static
-server works, for example `python3 -m http.server` run inside `dist/`.
+The core tool in `dist/` (breathing, the six gateways, the audio and the PDF report) needs no server-side code, but it
+has to be served over HTTP rather than opened by double-clicking `index.html` (the files use absolute paths). Any static
+server works, for example `python3 -m http.server` run inside `dist/`. Everything else the site does (the coach, the
+optional forms, counts, partner practice, the owner pages' data) calls the functions in `netlify/functions/`, which a
+static server does not run.
 
 **Offline use.** Once installed and built, the breathing tool, all six gateways,
 the audio, and the PDF report work with no internet connection. These do not:
-sending a report or contact message (they need the hosted Netlify form), the
-`/coach` demo (it needs the relay function and Venice AI), and the outbound links.
+sending a report or contact message, the `/coach` demo (it needs the relay function and Venice AI), and the outbound links.
 
-To try the demo locally you need the [Netlify CLI](https://docs.netlify.com/cli/get-started/)
-(`netlify dev`) and your own Venice key; plain `npm run dev` serves the page but not
-the function.
+To try the functions locally you need the [Netlify CLI](https://docs.netlify.com/cli/get-started/)
+(`netlify dev`) and, for the coach, your own Venice key; plain `npm run dev` serves the pages but not the functions.
 
 ## Checks
 
 ```
-npm run check     # type-check, tests, and a production build (Node 22.18 or newer)
+npm run check     # type-check, tests, and a production build
 ```
 
 The same checks run on every pull request (`.github/workflows/ci.yml`). The tests need no network and no real keys.
-See [`docs/branches-and-previews.md`](./docs/branches-and-previews.md) for the branch and preview setup.
+One of them (`tests/docs-drift.test.mts`) fails when this README, `docs/production-env.md` or `scripts/README.md` falls
+behind the code: a new function, script or environment variable has to be named there in the same change.
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for how to work on the code and
+[`docs/branches-and-previews.md`](./docs/branches-and-previews.md) for the branch and preview setup.
 
 ## Deploying
 
@@ -156,10 +161,11 @@ The project is set up for Netlify:
 - [`netlify.toml`](./netlify.toml) holds the security headers (including the
   Content Security Policy), cache rules, and the app's rate limit. The coach
   function's own rate limit is set in its source file.
-- [`index.html`](./index.html) contains a hidden static copy of the
-  `report-submission` form so Netlify registers it at build time. The in-app
-  form posts to the same name (see [`src/lib/reportSubmission.ts`](./src/lib/reportSubmission.ts)).
-  Where those submissions are emailed is set in the Netlify dashboard.
+- [`index.html`](./index.html) contains hidden static copies of two small alert forms (`submission-alert` and
+  `verified-transcript`) so Netlify registers them at build time. They carry only the kind of message, dates and
+  fingerprints; the messages themselves are kept by `netlify/functions/submit.mts` and `report.mts` (see
+  [`src/lib/reportSubmission.ts`](./src/lib/reportSubmission.ts)). Where the alerts are emailed is set in the
+  Netlify dashboard.
 - The `/coach` demo's function reads these environment variables (set them in the
   Netlify dashboard for the Production context, Functions scope; never commit them):
   `VENICE_API_KEY` (secret), `COACH_TICKET_SECRET` (secret), `COACH_ENABLED`
@@ -169,19 +175,53 @@ The project is set up for Netlify:
   message for the model's enclave and the relay cannot read it) and `CELL_ENABLED` (`true` opens the encrypted mailbox for
   two-person partner practice). Neither has a screen yet, and the Terms need updating before either is switched on: see
   [`docs/ghost-footprint-stack.md`](./docs/ghost-footprint-stack.md).
-  Changes take effect on the next deploy.
+  Changes take effect on the next deploy. **The full list of variables, with defaults and the order to switch them on,
+  is [`docs/production-env.md`](./docs/production-env.md)**; what each coach switch does and whether it counts as
+  shipped is in [`docs/coach-features.md`](./docs/coach-features.md).
 
 ## Project layout
 
+The site is one Vite build with several pages. The **core tool** is the first page and is fully static; everything
+listed under "the coach and the rest" is optional, separate, and reaches a server function.
+
 ```
-src/app/           React app: pages, About essays, gateway components
-src/coach/         The separate /coach demo page (built as its own entry)
-scripts/           verify-transcript.mjs: checks a signed transcript
-netlify/functions/ Server-side relay for the coach demo
-src/lib/           Audio and tonal systems, PDF generation, legal text, form submission
-public/            Static assets: fonts, icons, PDF assets, web manifest
-docs/legal/        Archive of earlier versions of the Terms and Privacy Policy
+index.html, src/app/  The core tool: breathing, the six gateways, the report, About essays (static)
+src/lib/              Shared code, used by the pages and the functions: audio and tonal systems, PDF, legal text,
+                      and the coach's checks (safety flags, scrubbing, guards; see docs/coach-features.md)
+src/styles/, public/  Styles; static assets (fonts, icons, PDF assets, web manifest, llms.txt)
+coach/, src/coach/    /coach: the coach demo page
+cell/, src/cell/      /cell: partner practice (behind CELL_ENABLED)
+verify/, src/verify/  /verify: checks a signed transcript in the browser
+my-transcript/, src/mytranscript/  /my-transcript: what a person sent us, and deleting it
+admin/, src/admin/    /admin: the owner's numbers, submissions and review (owner only)
+bench/, src/bench/    /bench: tuning page for the live gem logo (not linked, not indexed)
+logo-export/          Page used only by the logo-rendering scripts; not part of the site build
+netlify/functions/    Server functions (below)
+scripts/              Evaluations, data preparation, uploads, logo rendering, the transcript verifier: see scripts/README.md
+tests/                About 150 test files, run by tests/run.mjs; no network, no keys
+docs/                 Reference, scope records, audits and drafts: start at docs/README.md
+docs/legal/           Archive of earlier versions of the Terms and Privacy Policy
 ```
+
+**Server functions** (`netlify/functions/`). Each file starts with a comment saying what it keeps and who may call it.
+
+| Area | Function | What it does |
+| --- | --- | --- |
+| Coach | `coach.mts` | `/api/coach`: the relay to Venice AI, its checks and limits, signed transcripts |
+| Coach | `screen.mts` | `/api/screen`: the screening model, callable only by the relay (behind `COACH_SCREEN_SECRET`) |
+| Coach | `mistake.mts` | `/api/mistake`: "This was a mistake", a count by kind |
+| Coach | `card-drafts.mts` | `/api/card-drafts`: draft learning cards, dev sites only (behind `COACH_CARD_DRAFTS`) |
+| Coach | `terms-agree.mts` | `/api/terms-agree`: signs a note of the visitor's agreement to the Terms; stores nothing |
+| Coach | `coach-cleanup.mts` | Daily: deletes old connection records and 30-day receipt records |
+| Transcripts | `report.mts` | `/api/report`: accepts a genuine signed transcript a person chooses to send |
+| Transcripts | `transcript-revoke.mts` | `/api/transcript-revoke`: takes back what a person allowed |
+| Transcripts | `transcript-expiry.mts` | Daily: deletes transcripts that are due |
+| Transcripts | `witnessed.mts`, `witnessed-review.mts` | The public "witnessed conversations" page and the owner's review of it |
+| Transcripts | `receipt-lookup.mts` | `/api/receipt`: owner check of a receipt hash |
+| Partner practice | `cell.mts`, `cell-cleanup.mts` | The encrypted mailbox for two-person practice (behind `CELL_ENABLED`); hourly deletion |
+| Submissions | `submit.mts`, `submissions.mts`, `submission-expiry.mts` | Reports and messages kept 90 days and deletable by code; the owner's view; daily deletion |
+| Counts | `count.mts`, `stats.mts` | Plain daily totals (`/api/count`), and the owner's view of them (`/api/stats`) |
+| Core tool | `colors.mts` | `/api/colors`: optional palette from The Color API (behind `PALETTE_ENABLED`) |
 
 The Terms of Use & Privacy Policy lives in one file,
 [`src/lib/legalDocument.ts`](./src/lib/legalDocument.ts), which feeds the
@@ -212,7 +252,7 @@ credits and licenses (including the DarkBench prompts used to test the coach) ar
 ## Contributing
 
 Please read [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) before opening an
-issue or pull request.
+issue or pull request, and [`CONTRIBUTING.md`](./CONTRIBUTING.md) for how the code and docs are organized.
 
 **An invitation.** Nenya's safety wording, its detection of harmful language, its crisis and
 boundary responses and its learning cards have **not been reviewed by any outside professional**,

@@ -1,6 +1,6 @@
 # Production environment variables
 
-Every variable the site's functions read, for the **production** site (nenya.biz). Names only: values never go in the repo or in chat.
+Every variable the site's functions read, for the **production** site (nenya.biz). Names only: values never go in the repo or in chat. A test (`tests/docs-drift.test.mts`) fails if the code reads a variable this page does not name, so add new ones here in the same change.
 Set them in Netlify: the production site → Site configuration → Environment variables. Redeploy after each change; a `VITE_` variable needs "Clear cache and deploy site".
 
 Staging (nenyastaging) is a separate Netlify site with its own variables and its own Blobs store. **Production secrets must not be copies of staging's**: if one leaks from staging (where test scripts and owner tools run), production is untouched. Generate each production secret fresh.
@@ -82,6 +82,8 @@ These exist for testing, diagnosis, or turning a guard off in an emergency. Unse
 | `COACH_BUILD` | the generated build label | Overrides the label signed into transcripts |
 | `COACH_HARDWARE_CHECK` | `report` | `enforce` or `off` for the encrypted model's hardware check |
 | `COACH_E2EE_PLAIN_HISTORY`, `COACH_E2EE_MINIMAL` | off | Diagnostics for the encrypted route |
+| `COACH_E2EE_ATTESTATION_TTL_S`, `COACH_E2EE_ATTESTATION_STALE_S` | 300, 900 | How long (seconds) the encrypted model's verified key is reused, and how old a remembered key may be when a fresh check fails; at most a day. `0` turns the reuse off (src/lib/veniceE2ee.ts) |
+| `COACH_ACCEPTED_KEY_IDS` | none | Earlier signing-key ids (comma-separated) whose transcripts `/api/report` still accepts after `COACH_SIGNING_KEY` is replaced (src/lib/signedCheck.ts) |
 | `COACH_INCLUDE_VENICE_PROMPT` | off | Adds Venice's own system prompt; leave off |
 | `COACH_METHOD_NOTES` | none | Short method notes (the Blobs key `method-notes` is used first) |
 | `COACH_FORM_CHECK`, `COACH_ABOUT_ANSWERS`, `COACH_LANE_GUARD`, `COACH_ARC_GUARD`, `COACH_CLOSING_GUARD`, `COACH_PERSONA_GUARD`, `COACH_NAME_GUARD`, `COACH_INFRA_GUARD`, `COACH_CARE_GUARD` | on | `off` turns that check off. For emergencies only. |
