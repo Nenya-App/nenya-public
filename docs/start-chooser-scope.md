@@ -52,3 +52,31 @@ Chooser before the Terms; the automatic tour offer retired (the tour stays in th
 
 ## Out of scope
 The front page's own layout, the quick links, and the gateways themselves (the simpler gateways are separate work, starting with Touch).
+
+## Part 2: one address per part of the site (owner, 2026-11-15; scope, not built)
+
+**The idea:** the site divides into `/breath`, `/senses` and `/coach`. The front page with the breathing animation stays as it is and lives at `/breath`.
+
+**Today:** the main app never changes the address except for `/about/...`. Every other path already loads the main app (Netlify's catch-all), always on the front page. `/coach` is its own page.
+
+**Proposed map**
+
+| Address | Shows | Notes |
+|---|---|---|
+| `/breath` | the front page with the breathing animation, as today | canonical address of the front page |
+| `/` | the same front page; the address bar changes to `/breath` | every old link and home-screen icon keeps working |
+| `/senses` | the gateway choice, then the gateways and the review | the whole reflection stays at `/senses` |
+| `/coach` | the coach | the in-app coach after a reflection shows `/coach` too |
+| `/about/...` | unchanged | |
+
+- **Moving around:** each part gets a browser history entry, so Back and Forward move between Breath, Senses and Coach. Inside a reflection, Back keeps behaving as the app's own Back does now.
+- **Reload:** a reflection lives only in the tab's memory (by design), so reloading `/senses` opens the gateway choice again, and reloading the in-app coach opens the standalone coach. Say so where it matters, and keep the existing warning before leaving with unsaved work.
+- **First visit:** the start chooser appears at `/` and `/breath`. Arriving directly at `/senses` means reflection was chosen, so only the Terms are asked (as for an About link today). `/coach` keeps its own Terms step and "Begin with a breath first?".
+- **Links to update:** the quick links (Breathe, Reflect, Coach), "Start with a reflection instead" on the coach (`/` to `/senses`), the coach's "Open the breathing tool" (`/` to `/breath`), the manifest's start address, the sitemap, canonical and Open Graph addresses, `llms.txt` and `about-nenya.html`.
+- **Counting:** unchanged (screens are already counted by name).
+- **Switch:** the same `VITE_START_CHOOSER`, since the chooser leads to these parts; one rollout.
+
+**Decisions for the owner**
+1. `/`: the same page with the address bar updated to `/breath` (recommended: no extra trip to the server, and nothing breaks), or a server redirect from `/` to `/breath`.
+2. Gateways: everything at `/senses` (recommended: a reflection cannot be resumed from an address, because nothing is kept), or `/senses/touch` and so on, which would suggest a page you could return to.
+3. The in-app coach after a reflection showing `/coach` (recommended: one address for the coach), or `/senses/coach`.
