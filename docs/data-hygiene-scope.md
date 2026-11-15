@@ -21,7 +21,7 @@
 ## Proposed practice
 1. **One written register** (`docs/data-register.md`): the table above, kept current; every new feature that stores anything adds its row in the same change (a test checks that each store key prefix in the code has a row).
 2. **Deletion schedules where there are none:**
-   - **Reports and contact messages: 90 days**, then deleted. Netlify Forms has no automatic expiry; a daily job could delete older submissions through Netlify's API (needs an API token scoped to the site, stored as a secret), or new reports could go to the private store with a keeping time, like transcripts, instead of Forms.
+   - **Reports and contact messages: move them out of Netlify Forms into the private store, like transcripts (recommended).** Owner, 2026-11-15: today a report goes through Netlify Forms, so asking to delete it means an email and a deletion by hand, while a transcript's owner can delete it themselves, automatically. In the private store a report gets a keeping time (90 days, then deleted by the daily job) and the person gets a **deletion code** when they send it (shown once, like a receipt; only its hash is stored), so they can delete it themselves on `/my-transcript` (renamed or widened to "my submissions") without writing to anyone. The owner reads reports on the admin page; the notification email carries only that a report arrived, never its text. The alternative, keeping Forms and adding a daily deletion job through Netlify's API, needs an API token and still leaves self-service deletion impossible.
    - **Daily totals: 13 months** at daily detail, then folded into monthly totals and the daily entries deleted (a year-on-year comparison stays possible; nothing about anyone is in them either way).
    - **Notification emails:** delete after acting on them, and at most 90 days (a habit for the owner, written in the register).
    - **Owner-side copies:** a short checklist in the private folder: what is kept, why, until when; a reminder each quarter to review and delete.
@@ -30,6 +30,6 @@
 5. **The Terms** then state each period plainly (replacing "no automatic deletion schedule yet" and "while useful").
 
 ## Decisions for the owner
-1. Reports and messages: 90 days? And Forms with a deletion job (needs an API token), or the private store with a keeping time (no token; the owner reads them on the admin page instead of by email)?
+1. Reports and messages: into the private store with a 90-day keeping time and a self-service deletion code (recommended), or stay in Netlify Forms with a deletion job (an API token; deletion requests still by email)? Existing Forms submissions: delete those older than 90 days by hand once, at the switch.
 2. Daily totals: 13 months daily, then monthly?
 3. The quarterly review: yes, and on which month cycle?
