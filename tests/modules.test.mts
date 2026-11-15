@@ -7,14 +7,20 @@ const cases: [string, string[]][] = [
   ["I'm exhausted and nothing left to give", ['reserves']],
   ["My boss doesn't listen and dismisses everything I say", ['legitimacy']],
   ["My boss never listens", ['legitimacy']],
-  ["I think he's sabotaging me on purpose, every time I try", ['deliberate_harm']],
+  ["I think he's sabotaging me on purpose, every time I try", ['harm_named_as_intended']],
+  ["My boss bullies me and takes credit for my work", []],
+  ["She undermines me in every meeting", []],
   ["Maybe it's my fault, I'm too sensitive", ['inward_turn']],
   ["Part of me wants to leave but part of me wants to stay", ['split_values']],
   ["It's the same fight again and again", ['recurrence']],
   ["Nothing ever changes no matter what I do", ['frozen_system']],
   ["The whole company is set up this way, it's systemic", ['systemic_scale']],
   ["I'm at my limit, about to quit", ['pressure']],
-  ["She didn't mean it, it was an oversight", ['careless_harm']],
+  ["She didn't mean it, it was an oversight", ['harm_named_as_unintended']],
+  ["We keep misunderstanding each other", []],
+  ["I was always told I can't sing, and it still stings", ['named_verdict']],
+  ["I'm caring for my mother and I'm exhausted, nothing left", ['reserves', 'care_depleted']],
+  ["Should I take the job in another city? My partner would have to move too.", ['field_cost']],
   ["I know what to say but I freeze", ['unable_to_begin']],
   ["I only have one client, no savings", ['backup']],
   ["I'm exhausted. My boss never listens and I think it's on purpose. Same fight again. It's systemic.", ['reserves', 'legitimacy']],
@@ -35,7 +41,7 @@ const cases: [string, string[]][] = [
   ['I had a panic attack and I freeze up around people', ['deep_fear_refer_out', 'unable_to_begin']],
   // a lens that applies holds back the moves that would pull against it
   ["I'm exhausted and I need to tell my boss no but I don't know how to say it", ['reserves']],
-  ["My manager is so controlling and it's on purpose. How do I raise it?", ['deliberate_harm', 'answer_with_words']],
+  ["My manager is so controlling and it's on purpose. How do I raise it?", ['harm_named_as_intended', 'answer_with_words']],
   ["I had a nice walk today and want to plan dinner", []],
 ];
 for (const [text, expected] of cases) {
@@ -61,3 +67,9 @@ ok('notes leave out modules that were not selected', !notes.includes('MODULE-bac
 const soft = buildNotes(fake, ["I'm exhausted"], { skipModules: true });
 ok('softened conversations get the core only', soft.includes('CORE-TEXT') && !soft.includes('MODULE-'));
 ok('notes respect the character cap', buildNotes({ core: 'c'.repeat(500), modules: { reserves: 'r'.repeat(5000) } }, ["I'm exhausted"], { maxChars: 1000 }).length <= 1000);
+{
+  const { readFileSync } = await import('node:fs');
+  const fn = readFileSync('netlify/functions/coach.mts', 'utf8');
+  ok('the module set is used only with COACH_MODULES=on (one switch for the whole set); otherwise the single notes text', /process\.env\.COACH_MODULES === 'on' \? await loadModuleSet\(\) : null/.test(fn));
+  ok('no trigger reads intent into a description: bullying, credit-taking and undermining select no harm lens', ['My boss bullies me', 'He takes credit for my work', 'She undermines me', 'They harass me online'].every((t) => !selectModules([t]).some((id) => id.startsWith('harm_named'))));
+}

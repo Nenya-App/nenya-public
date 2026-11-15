@@ -32,6 +32,7 @@
 //                                 "report" (default: log it, carry on), "enforce" (refuse the key) or "off". The browser's
 //                                 sealed mode always enforces its own check.
 //   COACH_METHOD_NOTES   plain    optional, short method notes (fallback when the blob below is absent)
+//   COACH_MODULES        plain    optional, 'on' uses the module set (store key "modules") instead of the single method-notes text
 // Netlify Blobs: store "coach-private", key "method-notes" holds longer private method
 // notes that are added to the system instruction. See docs/coach-method-notes.md.
 import { regionDecision, countryOf, type HostGeo } from '../../src/lib/coachRegion.ts';
@@ -400,9 +401,10 @@ async function loadModuleSet(): Promise<ModuleSet | null> {
   return set;
 }
 
-// Modules when available, otherwise the single notes blob or variable.
+// Modules when switched on and available, otherwise the single notes blob or variable. COACH_MODULES=on is the one switch for the whole
+// module set (owner, 2026-11-14), so a new set can be uploaded to the store before it is used, and turned off without deleting it.
 async function notesFor(userTexts: string[], softened: boolean, exclude: ModuleGroup[] = []): Promise<string> {
-  const set = await loadModuleSet();
+  const set = process.env.COACH_MODULES === 'on' ? await loadModuleSet() : null;
   if (set) return buildNotes(set, userTexts, { skipModules: softened, maxChars: MAX_NOTES_CHARS, exclude });
   return loadMethodNotes();
 }
