@@ -1,15 +1,19 @@
 // Builds src/lib/learningCardsData.ts from a folder of card files (Markdown). Only cards whose front matter says `status: approved` are included, and each must
 // pass every rule in cardProblems(). A card that is approved but breaks a rule stops the build and says why, so nothing unchecked ships.
-//   node scripts/build-learning-cards.mts <folder-of-cards>
+//   node scripts/build-learning-cards.mts <folder-of-cards> [<another folder> ...]   (the cards live in several series folders)
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseCard } from '../src/lib/learningCards.ts';
 
-const dir = process.argv[2];
-if (!dir) { console.error('usage: build-learning-cards.mts <folder>'); process.exit(1); }
+const dirs = process.argv.slice(2);
+if (!dirs.length) { console.error('usage: build-learning-cards.mts <folder> [<folder> ...]'); process.exit(1); }
 const approved = [];
 let skipped = 0;
-for (const f of readdirSync(dir).filter((x) => /^(prop|dehum|conn|ai|hist|idea|think)-\d\d-.*\.md$/.test(x)).sort()) {
+const files = dirs.flatMap((dir) => readdirSync(dir).filter((x) => /^(prop|dehum|conn|ai|hist|idea|think)-\d\d-.*\.md$/.test(x)).map((x) => ({ dir, f: x })));
+const seen = new Set<string>();
+for (const { dir, f } of files.sort((a, b) => a.f.localeCompare(b.f))) {
+  if (seen.has(f)) { console.error(`${f} is in more than one folder; give each card once`); process.exit(1); }
+  seen.add(f);
   const r = parseCard(readFileSync(join(dir, f), 'utf8'));
   if (!r) { console.error(`${f}: not in the expected shape`); process.exit(1); }
   if (r.status !== 'approved') { skipped++; continue; }
