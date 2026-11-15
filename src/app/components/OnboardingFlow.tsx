@@ -10,6 +10,7 @@ import { rememberTerms, setRemembering } from '../../lib/deviceMemory';
 import { agreeToTerms } from '../../lib/visitConsent';
 import { PRESETS, sameTechnique, type BreathingTechnique } from '../../lib/breathingPresets';
 import { START_COPY, startChooserOn, type StartChoice } from '../../lib/startCopy';
+import { StartTriad } from './StartTriad';
 
 export type OnboardingStep = 'start' | 'rhythm' | 'terms';
 const STEPS: OnboardingStep[] = ['rhythm', 'terms'];
@@ -213,30 +214,8 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                     </h2>
                     <p className="text-sm text-muted-foreground">{START_COPY.line}</p>
                   </div>
-                  {/* Nothing is preselected; each option is a button, with its "Learn more" beside it (a native disclosure). */}
-                  <ul className="space-y-2" aria-label="Where to start">
-                    {START_COPY.options.map((o) => (
-                      <li key={o.id} className="rounded-xl border border-border">
-                        <button
-                          type="button"
-                          onClick={() => choose(o.id)}
-                          className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-nenya-accent-warm/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nenya-accent-warm"
-                        >
-                          <span className="flex-1">
-                            <span className="block">{o.title}</span>
-                            <span className="block text-xs leading-snug text-muted-foreground">{o.line}</span>
-                          </span>
-                          <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                        </button>
-                        <details className="px-3 pb-2 text-xs text-muted-foreground">
-                          <summary className="flex min-h-11 cursor-pointer items-center underline underline-offset-4">
-                            {START_COPY.learnMore}<span className="sr-only">: {o.title}</span>
-                          </summary>
-                          <p>{o.more}</p>
-                        </details>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* The triangle of three glowing rings (StartTriad.tsx). Nothing is preselected; "Learn more" for all three sits below it. */}
+                  <StartTriad onChoose={choose} />
                   <p className="text-sm text-muted-foreground">{START_COPY.notSure}</p>
                   <p className="text-xs text-muted-foreground">{START_COPY.crisis}</p>
                 </>
