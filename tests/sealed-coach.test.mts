@@ -9,6 +9,7 @@ import { ok } from './helpers.mts';
 
 process.env.COACH_ENABLED = 'true';
 process.env.VENICE_API_KEY = 'test-key';
+process.env.COACH_PROVIDER = 'venice'; // these tests stub Venice's address
 process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret';
 process.env.COACH_MODEL = 'e2ee-qwen-2-5-7b-p';
 process.env.COACH_SEALED = 'on';

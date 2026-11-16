@@ -53,7 +53,7 @@
       "name": "Does Nenya use AI coaching?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Only if a visitor chooses to. The core reflection practice involves no AI at all. The coach demo is a separate, optional step, offered after a reflection and in the site's quick links: at most five exchanges with an AI, through Venice AI, an outside service, and open to connections in the United States for now. It says it is an AI and is not therapy or a crisis service. Nothing from a reflection goes to it unless the visitor chooses to bring parts of their summary. Anyone can check a downloaded signed transcript at nenya.biz/verify."
+        "text": "Only if a visitor chooses to. The core reflection practice involves no AI at all. The coach demo is a separate, optional step, offered after a reflection and in the site's quick links: at most five exchanges with an AI, through Cloudflare’s Workers AI, an outside service, and open to connections in the United States for now. It says it is an AI and is not therapy or a crisis service. Nothing from a reflection goes to it unless the visitor chooses to bring parts of their summary. Anyone can check a downloaded signed transcript at nenya.biz/verify."
       }
     },
     {
@@ -93,7 +93,7 @@
       "name": "What's a privacy-first way to check in with my emotions?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The core breathing and reflection practice runs in the browser with no account and no tracking cookies, and a session summary is generated and downloaded locally by the visitor. What a visitor enters in the reflection never reaches Nenya. The site's host counts visits as anonymous totals (page requests and unique visitors counted by connection address within a day), with nothing stored on the visitor's device. Nenya also keeps its own plain daily totals of use. The only parts that send anything else are ones a visitor chooses: a contact message or report, and the optional coach demo (open to connections in the United States for now), whose messages pass through Nenya's server to Venice AI, an outside service, and are not stored by Nenya. The source code is public so these claims can be checked."
+        "text": "The core breathing and reflection practice runs in the browser with no account and no tracking cookies, and a session summary is generated and downloaded locally by the visitor. What a visitor enters in the reflection never reaches Nenya. The site's host counts visits as anonymous totals (page requests and unique visitors counted by connection address within a day), with nothing stored on the visitor's device. Nenya also keeps its own plain daily totals of use. The only parts that send anything else are ones a visitor chooses: a contact message or report, and the optional coach demo (open to connections in the United States for now), whose messages pass through Nenya's server to Cloudflare’s Workers AI, an outside service, and are not stored by Nenya. The source code is public so these claims can be checked."
       }
     }
   ]
@@ -141,7 +141,7 @@
   Insight — each inviting a short reflection on a present emotional state and a wished-for one, expressed
   through that sense (a color, a short melody, a texture, and so on). At the end, the person receives a
   private summary of their session that they can download; nothing is retained on Nenya's servers. Separately,
-  and only if they choose, a visitor can try an early coach demo: at most five exchanges with an AI, through Venice AI, an outside service, and open to connections in the United States for now. It says it is an AI and is not therapy or a crisis service. Nothing from a reflection goes to it unless the visitor chooses to bring parts of their summary.
+  and only if they choose, a visitor can try an early coach demo: at most five exchanges with an AI, through Cloudflare’s Workers AI, an outside service, and open to connections in the United States for now. It says it is an AI and is not therapy or a crisis service. Nothing from a reflection goes to it unless the visitor chooses to bring parts of their summary.
 </p>
 
 <h2>Guided breathing, on its own or as a starting point</h2>
@@ -210,7 +210,7 @@
 <p>
   Nenya is not an AI coach by default, and nothing about the reflection itself requires or nudges toward
   one. The core six-gateway practice is entirely self-directed. The coach demo is a separate, optional step,
-  offered after a reflection and in the site's quick links: at most five exchanges with an AI, through Venice AI, an outside service, and open to connections in the United States for now. It says it is an AI and is not therapy or a crisis service. Nothing from a reflection goes to it unless the visitor chooses to bring parts of their summary.
+  offered after a reflection and in the site's quick links: at most five exchanges with an AI, through Cloudflare’s Workers AI, an outside service, and open to connections in the United States for now. It says it is an AI and is not therapy or a crisis service. Nothing from a reflection goes to it unless the visitor chooses to bring parts of their summary.
   Before a message reaches the AI, the site replaces common identifiers, screens out attempts to steer the
   coach, and stops a message that signals a crisis, showing crisis resources instead. Before the first message,
   Cloudflare's check for automated traffic runs, so the coach stays for people. A visitor can download a signed
@@ -250,7 +250,7 @@
     stored on Nenya's servers. Session summaries are generated and downloaded locally, by the visitor,
     for their own use. The only exceptions are things a visitor chooses to send: a contact message or report
     (sent to Nenya through Netlify Forms) an optional palette made by The Color API from one color the visitor chooses to send, and the optional coach demo (open to connections in the United States for now), whose messages (and any parts of a report the visitor chooses to bring to it) pass through Nenya's server to
-    Venice AI and are not stored by Nenya; before its first message, Cloudflare's check for automated traffic runs. Like any website, Nenya's host keeps standard connection logs, and it
+    Cloudflare’s Workers AI and are not stored by Nenya; before its first message, Cloudflare's check for automated traffic runs. Like any website, Nenya's host keeps standard connection logs, and it
     gives Nenya anonymous visit totals (page requests, unique visitors counted by connection address within a day,
     approximate country), with no cookies and nothing stored on the visitor's device. Nenya also keeps its own plain
     daily totals of use (screens opened, where visitors choose to start, rhythm chosen, tour answers, and coach messages and conversations), with no
@@ -301,7 +301,7 @@ sound, and texture than to a habit-tracking or meditation-timer app.</p>
 
 <p><strong>Does Nenya use AI coaching?</strong><br />
 Only if a visitor chooses to. The core reflection practice involves no AI at all. After finishing a
-reflection, or from the site's quick links, a visitor can choose a coach demo: at most five exchanges with an AI, through Venice AI, an outside service, and open to connections in the United States for now. It says it is an AI and is not therapy or a crisis service. Nothing from a reflection goes to it unless the visitor chooses to bring parts of their summary.</p>
+reflection, or from the site's quick links, a visitor can choose a coach demo: at most five exchanges with an AI, through Cloudflare’s Workers AI, an outside service, and open to connections in the United States for now. It says it is an AI and is not therapy or a crisis service. Nothing from a reflection goes to it unless the visitor chooses to bring parts of their summary.</p>
 
 <p><strong>What does "systems thinking" have to do with a reflection tool?</strong><br />
 Nenya's Insight gateway asks about the <em>pattern</em> of a person's thinking (fragmented, circular,

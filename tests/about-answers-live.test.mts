@@ -4,6 +4,7 @@
 import { generateKeyPairSync, randomBytes } from 'node:crypto';
 process.env.COACH_ENABLED = 'true';
 process.env.VENICE_API_KEY = 'k';
+process.env.COACH_PROVIDER = 'venice'; // these tests stub Venice's address
 process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
 process.env.COACH_MODEL = 'deepseek-v3.2';
 process.env.COACH_SIGNING_KEY = generateKeyPairSync('ed25519').privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');

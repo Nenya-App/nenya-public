@@ -1,6 +1,6 @@
 // The coach's stance on mass violence and history: off by default, on with COACH_VALUES=on, never while the care note governs.
 import { randomBytes } from 'node:crypto';
-process.env.COACH_ENABLED = 'true'; process.env.COACH_ABOUT_ANSWERS = 'off'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex'); process.env.COACH_MODEL = 'deepseek-v3.2';
+process.env.COACH_ENABLED = 'true'; process.env.COACH_ABOUT_ANSWERS = 'off'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_PROVIDER = 'venice'; process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex'); process.env.COACH_MODEL = 'deepseek-v3.2';
 delete process.env.COACH_IP_SECRET; delete process.env.COACH_SIGNING_KEY; delete process.env.COACH_INSTRUCTIONS; delete process.env.COACH_ARC; delete process.env.COACH_VALUES;
 let sent: any[] = [];
 (globalThis as any).fetch = async (_u: string, init: any) => { sent.push(JSON.parse(init.body).messages); return new Response(JSON.stringify({ choices: [{ message: { content: 'What are you noticing?' } }] }), { status: 200, headers: { 'content-type': 'application/json' } }); };

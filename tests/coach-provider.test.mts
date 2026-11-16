@@ -7,8 +7,8 @@ import { ok } from './helpers.mts';
 
 const ACCOUNT = '0123456789abcdef0123456789abcdef';
 // The pure parts.
-ok('Venice unless the switch says workers-ai', coachProvider({}) === 'venice' && coachProvider({ COACH_PROVIDER: 'cloudflare' }) === 'venice' && coachProvider({ COACH_PROVIDER: 'workers-ai' }) === 'workers-ai');
-ok('each provider has its own default model, and COACH_MODEL wins', coachModel({}) === VENICE_DEFAULT_MODEL && coachModel({ COACH_PROVIDER: 'workers-ai' }) === WORKERS_AI_DEFAULT_MODEL && coachModel({ COACH_PROVIDER: 'workers-ai', COACH_MODEL: '@cf/qwen/qwen3-30b-a3b-fp8' }) === '@cf/qwen/qwen3-30b-a3b-fp8');
+ok('Workers AI unless the switch says venice (the Terms of November 16, 2026 name Cloudflare)', coachProvider({}) === 'workers-ai' && coachProvider({ COACH_PROVIDER: 'cloudflare' }) === 'workers-ai' && coachProvider({ COACH_PROVIDER: 'venice' }) === 'venice');
+ok('each provider has its own default model, and COACH_MODEL wins', coachModel({}) === WORKERS_AI_DEFAULT_MODEL && coachModel({ COACH_PROVIDER: 'venice' }) === VENICE_DEFAULT_MODEL && coachModel({ COACH_PROVIDER: 'workers-ai' }) === WORKERS_AI_DEFAULT_MODEL && coachModel({ COACH_PROVIDER: 'workers-ai', COACH_MODEL: '@cf/qwen/qwen3-30b-a3b-fp8' }) === '@cf/qwen/qwen3-30b-a3b-fp8');
 ok('the Workers AI default is Gemma 4 26B-A4B (Apache 2.0, the bake-off leader)', WORKERS_AI_DEFAULT_MODEL === '@cf/google/gemma-4-26b-a4b-it' && isWorkersAiModel(WORKERS_AI_DEFAULT_MODEL));
 ok('the address is built only from a real account id and a Workers AI model id', workersAiUrl(ACCOUNT, WORKERS_AI_DEFAULT_MODEL) === `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/ai/run/@cf/google/gemma-4-26b-a4b-it` && workersAiUrl('nope', WORKERS_AI_DEFAULT_MODEL) === null && workersAiUrl(ACCOUNT, 'e2ee-qwen-2-5-7b-p') === null && workersAiUrl(ACCOUNT, '@cf/../../x') === null);
 const body = workersAiBody([{ role: 'user', content: 'hi' }], { temperature: 0.7, top_p: 0.9, max_completion_tokens: 600 });
@@ -86,5 +86,5 @@ ok('the coach answers "what model are you" itself, with the Workers AI version, 
 
 // The pages follow the same switch (src/lib/coachService.ts): Venice unless VITE_COACH_PROVIDER=workers-ai, and no page hard-codes the service's name where it says who runs the model.
 const svc = readFileSync('src/lib/coachService.ts', 'utf8');
-ok('the pages name Venice unless the build says workers-ai', /name: 'Venice AI'/.test(svc) && /VITE_COACH_PROVIDER === 'workers-ai'/.test(svc));
+ok('the pages name Cloudflare unless the build says venice', /name: 'Venice AI'/.test(svc) && /VITE_COACH_PROVIDER !== 'venice'/.test(svc));
 ok('the pages that say who runs the model use the helper', ['src/coach/CoachDemo.tsx', 'src/coach/ReportShare.tsx', 'src/coach/RegionGate.tsx', 'src/app/components/about/CoachRegion.tsx', 'src/app/components/about/NamePhilosophy.tsx', 'src/app/components/about/BioSocialDesign.tsx', 'src/app/components/about/PrivacyPromise.tsx'].every((f) => /coachService/.test(readFileSync(f, 'utf8'))));

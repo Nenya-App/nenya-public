@@ -2,7 +2,7 @@
 // with the person, or ask about the thoughts. Through the real coach function, with a model that does it anyway. No model call.
 import { generateKeyPairSync, randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-process.env.COACH_ENABLED = 'true'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex'); process.env.COACH_MODEL = 'deepseek-v3.2';
+process.env.COACH_ENABLED = 'true'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_PROVIDER = 'venice'; process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex'); process.env.COACH_MODEL = 'deepseek-v3.2';
 process.env.COACH_SIGNING_KEY = generateKeyPairSync('ed25519').privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');
 process.env.COACH_FORM_CHECK = 'off'; process.env.COACH_DISTRESS_TEXT = 'on'; process.env.COACH_INSTRUCTIONS = 'v2.1';
 for (const k of ['COACH_IP_SECRET', 'COACH_VALUES', 'COACH_SCREEN', 'COACH_EXTRA_HOSTS', 'COACH_CARE_GUARD', 'COACH_ARC']) delete process.env[k];

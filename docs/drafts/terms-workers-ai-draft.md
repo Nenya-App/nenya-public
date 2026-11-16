@@ -1,4 +1,4 @@
-# Terms revision for the coach on Cloudflare Workers AI: draft for the owner (2026-11-15)
+# Terms revision for the coach on Cloudflare Workers AI (2026-11-15). APPLIED 2026-11-16: now in `src/lib/legalDocument.ts` (effective November 16, 2026); the outgoing text is archived. Kept as a record of the decisions.
 
 **What this is.** The changes to the Terms of Use & Privacy Policy (`src/lib/legalDocument.ts`) for the day the coach moves from Venice AI to Gemma 4 on Cloudflare Workers AI (`COACH_PROVIDER=workers-ai`; docs/hosted-model-swap-scope.md).
 

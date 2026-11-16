@@ -6,7 +6,7 @@ import { __forgetLexiconForTests } from '../src/lib/lexiconStore.ts';
 import { ok } from './helpers.mts';
 
 const mine = generateKeyPairSync('ed25519');
-process.env.COACH_ENABLED = 'true'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret'; process.env.COACH_MODEL = 'deepseek-v3.2';
+process.env.COACH_ENABLED = 'true'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_PROVIDER = 'venice'; process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret'; process.env.COACH_MODEL = 'deepseek-v3.2';
 process.env.COACH_SIGNING_KEY = mine.privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');
 process.env.COACH_ABOUT_ANSWERS = 'off';
 delete process.env.COACH_EXTRA_HOSTS; delete process.env.COACH_IP_SECRET; delete process.env.COACH_LEARNING_OFFERS; delete process.env.COACH_LEARNING_MIN_SEVERITY;

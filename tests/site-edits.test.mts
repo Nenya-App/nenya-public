@@ -1,7 +1,7 @@
 // The site's edits to a reply (a sentence put in front, sentences taken out by the mirror guard) through the real coach function, with a model that mirrors:
 // the server reports each with a proof, the receipt records only the ones it can prove, and a forged, moved or altered proof is ignored. No model call.
 import { generateKeyPairSync, randomBytes } from 'node:crypto';
-process.env.COACH_ENABLED = 'true'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex'); process.env.COACH_MODEL = 'deepseek-v3.2';
+process.env.COACH_ENABLED = 'true'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_PROVIDER = 'venice'; process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex'); process.env.COACH_MODEL = 'deepseek-v3.2';
 process.env.COACH_SIGNING_KEY = generateKeyPairSync('ed25519').privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');
 process.env.COACH_FORM_CHECK = 'off'; process.env.COACH_VALUES = 'on';
 delete process.env.COACH_IP_SECRET; delete process.env.COACH_DISTRESS_TEXT; delete process.env.COACH_INSTRUCTIONS; delete process.env.COACH_SCREEN; delete process.env.COACH_EXTRA_HOSTS;

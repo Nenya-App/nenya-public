@@ -4,7 +4,7 @@ const kp = generateKeyPairSync('ed25519');
 const other = generateKeyPairSync('ed25519');
 const KEY = (kp.privateKey.export({ type: 'pkcs8', format: 'der' }) as Buffer).toString('base64');
 const OTHER = (other.privateKey.export({ type: 'pkcs8', format: 'der' }) as Buffer).toString('base64');
-process.env.COACH_ENABLED = 'true'; process.env.COACH_ABOUT_ANSWERS = 'off'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex'); process.env.COACH_MODEL = 'deepseek-v3.2'; process.env.COACH_SIGNING_KEY = KEY;
+process.env.COACH_ENABLED = 'true'; process.env.COACH_ABOUT_ANSWERS = 'off'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_PROVIDER = 'venice'; process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex'); process.env.COACH_MODEL = 'deepseek-v3.2'; process.env.COACH_SIGNING_KEY = KEY;
 delete process.env.COACH_IP_SECRET; delete process.env.COACH_ARC; delete process.env.COACH_VALUES;
 (globalThis as any).fetch = async () => new Response(JSON.stringify({ choices: [{ message: { content: 'What are you noticing?' } }] }), { status: 200, headers: { 'content-type': 'application/json' } });
 // device storage stubs: local (kept by choice) and session (the visit)
