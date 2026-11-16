@@ -1,4 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
+import { REGION_REASON } from '../../../lib/coachService';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { IpExplainer } from '../../../coach/IpExplainer';
@@ -24,9 +25,7 @@ export default function CoachRegion({ onBack, onOpenTerms }: { onBack: () => voi
           <div className="space-y-3">
             <h2 className="text-lg">Why</h2>
             <p>
-              The coach&rsquo;s replies are written by an AI model that Venice AI runs for us. Venice AI&rsquo;s terms say its
-              service is intended for people located in the United States, and our own terms promise to respect theirs.
-              So, until there is another way to run the coach, it stays closed elsewhere.
+              {REGION_REASON}
             </p>
             <p>
               We are exploring a coach that runs on your own device, with nothing sent to an outside AI service. If that

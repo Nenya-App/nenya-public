@@ -83,3 +83,8 @@ ok('a signed transcript recognizes either version as the site\'s own answer', ma
 calls = [];
 r = await call({ messages: [{ role: 'user', content: 'what model are you' }] });
 ok('the coach answers "what model are you" itself, with the Workers AI version, without calling the model', r.status === 200 && /Cloudflare/.test(r.json.reply) && !/Venice/.test(r.json.reply) && calls.length === 0, String(r.json.reply).slice(0, 120));
+
+// The pages follow the same switch (src/lib/coachService.ts): Venice unless VITE_COACH_PROVIDER=workers-ai, and no page hard-codes the service's name where it says who runs the model.
+const svc = readFileSync('src/lib/coachService.ts', 'utf8');
+ok('the pages name Venice unless the build says workers-ai', /name: 'Venice AI'/.test(svc) && /VITE_COACH_PROVIDER === 'workers-ai'/.test(svc));
+ok('the pages that say who runs the model use the helper', ['src/coach/CoachDemo.tsx', 'src/coach/ReportShare.tsx', 'src/coach/RegionGate.tsx', 'src/app/components/about/CoachRegion.tsx', 'src/app/components/about/NamePhilosophy.tsx', 'src/app/components/about/BioSocialDesign.tsx', 'src/app/components/about/PrivacyPromise.tsx'].every((f) => /coachService/.test(readFileSync(f, 'utf8'))));

@@ -1,6 +1,7 @@
 // Bringing part of a reflection report to the coach, always the visitor's choice (docs/report-to-coach-scope.md): the report is listed in pieces with
 // NOTHING selected, the exact words that would be sent are shown (identifiers already replaced), and "No thanks" is as easy as "Share these".
 // A report is not needed to use the coach; with none in memory, a saved text report can be pasted instead.
+import { COACH_SERVICE } from '../lib/coachService';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
@@ -68,7 +69,7 @@ export function ReportShare({ report, shared, onChange, locked = false }: Report
       <div className="mt-3 space-y-3 text-sm text-muted-foreground">
         <p>
           You do not need a report to talk with the coach, and nothing from one is shared unless you choose it here. If you do, you pick the pieces, and you
-          see exactly the words the coach would be given. They go through our server to Venice AI along with your messages, and through the same safety
+          see exactly the words the coach would be given. They go through our server to {COACH_SERVICE.name} along with your messages, and through the same safety
           checks. Palettes are starting points, not a measurement, and no color has a fixed meaning.
         </p>
 

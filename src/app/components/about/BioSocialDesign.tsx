@@ -1,4 +1,5 @@
 import React from 'react';
+import { COACH_SERVICE } from '../../../lib/coachService';
 import { ArrowLeft, Leaf, Heart, TrendingDown, Users, Cpu, Cloud, Eye, Circle, ExternalLink, Gauge } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -34,19 +35,19 @@ const FOOTPRINT_ROWS: ({ feature: string } & Record<FootprintId, string>)[] = [
   {
     feature: 'Energy (per session)',
     typical: 'High-end GPU (~400W peak) and high network energy for 5+ daily round trips.',
-    today: 'The core reflection tools use no AI and run in your browser. The optional coach runs on data-center GPUs through Venice AI, but each conversation is small: five short exchanges. We have not measured its footprint.',
+    today: 'The core reflection tools use no AI and run in your browser. The optional coach runs on data-center GPUs through ' + COACH_SERVICE.name + ', but each conversation is small: five short exchanges. We have not measured its footprint.',
     goal: 'Mobile NPU (~35W peak) and offline inference. Estimated 90%+ power reduction per task, from the cited analysis; not yet measured for Nenya.',
   },
   {
     feature: 'Water stress (macro)',
     typical: 'Data-center cooling: 5 million gallons/day per facility. Exports water scarcity to host communities.',
-    today: 'The coach still draws on data-center cooling through Venice AI, though conversations are capped and short. Not measured.',
+    today: 'The coach still draws on data-center cooling through ' + COACH_SERVICE.name + ', though conversations are capped and short. Not measured.',
     goal: 'Computation moved off cooling systems and onto your own device.',
   },
   {
     feature: 'Data footprint',
     typical: 'Persistent cloud data retention for harvesting. Passive energy debt and privacy risk.',
-    today: 'What you enter stays on your device and is gone when you close the tab, unless you choose to remember your settings. Nenya stores no messages and logs none. Its web host keeps standard connection logs and gives us anonymous visit totals. Coach messages pass through to Venice AI, whose own policies apply, and so do any parts of a report you choose to bring to the coach (nothing is shared automatically).',
+    today: 'What you enter stays on your device and is gone when you close the tab, unless you choose to remember your settings. Nenya stores no messages and logs none. Its web host keeps standard connection logs and gives us anonymous visit totals. Coach messages pass through to ' + COACH_SERVICE.name + ', whose own policies apply, and so do any parts of a report you choose to bring to the coach (nothing is shared automatically).',
     goal: 'Data stays on your device or is ephemeral by design, and minimal data ever leaves it.',
   },
 ];
