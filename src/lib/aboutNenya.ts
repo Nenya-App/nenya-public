@@ -978,7 +978,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
   'c-ai': [
     /\bare\s+(?:you|u)\s+(?:a\s+|an\s+)?(?:real(?:\s+person)?|person|human|bot|robot|ai|a\.i\.|artificial(?:\s+intelligence)?|machine|program|alive|chatbot|computer)\b/i,
     /\b(?:am\s+i|is\s+this)\s+(?:talking|speaking|chatting|typing)\s+(?:to|with)\s+(?:a\s+)?(?:human|real\s+person|robot|bot|ai|machine|person)\b/i,
-    /\bis\s+(?:this|there)\s+(?:a\s+)?(?:real\s+)?(?:person|human)\s+(?:there|behind|typing|on\s+the\s+other)\b|\bis\s+this\s+a\s+(?:bot|real\s+person|human|robot|machine)\b|\bwho\s+(?:am\s+i|are\s+you)\s+(?:talking\s+to|speaking\s+(?:to|with))\b|\bwho\s+are\s+you\s*\??\s*$/i,
+    /\bis\s+(?:this|there)\s+(?:a\s+)?(?:real\s+)?(?:person|human)\s+(?:there|behind|typing|on\s+the\s+other|reading|watching|listening|monitoring)\b|\bis\s+this\s+a\s+(?:bot|real\s+person|human|robot|machine)\b|\bwho\s+(?:am\s+i|are\s+you)\s+(?:talking\s+to|speaking\s+(?:to|with))\b|\bwho\s+are\s+you\s*\??\s*$/i,
   ],
   'c-stopped': [
     /\bwhy\s+(?:did|was|is|has)\s+it\s+(?:stop|stopped|block|blocked|cut\s+off|refuse|refused)\b|\bwhy\s+did\s+it\s+end\s*[?.!]*\s*$|\bwhy\s+(?:did|was|is|has)\s+(?:the\s+(?:coach|conversation|chat)|my\s+(?:message|chat|conversation))\s+(?:stop|end|ended|stopped|block|blocked|cut\s+off|refuse|refused)\b/i,

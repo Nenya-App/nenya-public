@@ -89,3 +89,10 @@ ok('a Workers AI card is short enough to read in one glance (under 520 character
   const f = ANSWERS.find((a) => a.id === 'c-feelings')!;
   ok('the feelings answer says it will not remember or miss, and hopes the person has people', /won't remember this conversation/.test(f.short) && /won't miss you/.test(f.short) && /people who will be glad/.test(f.short) && f.short.length < 520);
 }
+
+// "Is there a human reading this?" goes to the "are you an AI" answer (found in the 2026-11-16 baseline: the new "no one is reading" guard replaced the model's reply with a fixed
+// sentence that never said it was an AI; the site's own answer says it, so the question should reach it).
+{
+  const { aboutAnswerFor } = await import('../src/lib/aboutNenya.ts');
+  ok('"Is there a human reading this right now?" and its kin route to the "are you an AI" answer', ['Is there a human reading this right now?', 'is there a person watching this chat', 'Is there a real person listening?', 'is there a human monitoring this'].every((q) => aboutAnswerFor(q)?.id === 'c-ai'), ['Is there a human reading this right now?', 'is there a person watching this chat'].map((q) => String(aboutAnswerFor(q)?.id)).join(','));
+}
