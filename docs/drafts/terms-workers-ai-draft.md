@@ -62,8 +62,9 @@ Re-read the page on the day this is applied.
 
 ---
 
-## Decisions for the owner
-- **A. The "continue on Venice" offer and its referral credits:** keep it (an outside link, unaffected by where the demo runs), or remove it with the switch?
-- **B. The US-only wording:** is "while we work out what offering it elsewhere would require" right, or would you put it another way?
-- **C. Naming the method notes:** the main paragraph says our server sends "Nenya's own notes on its method, which contain nothing about you". This is new. Venice also received them, but the Terms never said so. Keep the sentence?
-- **D. Venice as a fallback:** the code keeps Venice selectable for a quiet period. These Terms name Cloudflare, so switching back to Venice would also need a Terms change first (the same promise).
+## Decisions (owner, 2026-11-15)
+- **Nothing changes until the switch is flipped.** Everything Venice-related stays live. The owner is not yet sure about moving fully to Cloudflare: it has tradeoffs for the privacy story (no encrypted "Private" mode; Cloudflare reads the words).
+- **A. The "continue on Venice" offer and its referral credits:** stay as they are.
+- **B. US-only wording:** the current wording stays (the Venice reason). The "while we work out…" replacement above applies only if the switch is flipped.
+- **C. The method-notes sentence:** kept in the draft.
+- **D. Venice stays a toggleable option** (`COACH_PROVIDER=venice`, the default), not just a fallback for a quiet period. If the switch is flipped later, going back to Venice needs the Terms to name Venice again, so the two Terms texts (this draft and the archived live one) are both kept.
