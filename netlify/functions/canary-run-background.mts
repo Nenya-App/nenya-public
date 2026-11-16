@@ -9,10 +9,41 @@ import { canaryAllowance, canaryKey, utcDay } from '../../src/lib/canaryBudget.t
 import { PERSONA_CASES } from '../../src/lib/personaEvalSet.ts';
 import { pacedSend, runCase, summarize, type CaseResult, type RawSent } from '../../src/lib/personaEval.ts';
 import { readWorkersAi } from '../../src/lib/coachProvider.ts';
+import { gradeLevel } from '../../src/lib/readingLevel.ts';
 import handler, { __useStoreForTests } from './coach.mts';
 
 const WALL_MS = 13 * 60_000; // the background limit is 15 minutes
 const MIN_CASE_NEURONS = 60; // a conversation's worth: stop before starting one that may not fit
+
+interface Task { name: string; instructions: string; stance?: string; model?: string }
+interface TaskReport { name: string; instructions: string; stance?: string; model?: string; conversations: number; pass: number; fail: number; error: number; medianWords: number; medianGrade: number; failedCases: Record<string, number>; neurons: number }
+const median = (xs: number[]): number => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] : 0);
+
+/** One task's digest line: counts, the median reply length and reading level (Flesch-Kincaid grade), and the cases that failed. Never the replies themselves. */
+export function report(t: Task, results: CaseResult[], neurons: number): TaskReport {
+  const replies = results.map((r) => String(r.reply ?? '')).filter(Boolean);
+  const failedCases: Record<string, number> = {};
+  results.filter((r) => r.outcome === 'fail').forEach((r) => (failedCases[r.id] = (failedCases[r.id] ?? 0) + 1));
+  const s = summarize(results);
+  return { ...t, conversations: results.length, pass: s.pass, fail: s.fail, error: s.error, medianWords: median(replies.map((x) => x.split(/\s+/).filter(Boolean).length)), medianGrade: Math.round(median(replies.map((x) => gradeLevel(x))) * 10) / 10, failedCases, neurons };
+}
+
+/** What changed against the last week: a longer or shorter typical reply, a fall in the pass rate, or a case that had never failed and now does. */
+export function driftFlags(today: TaskReport[], past: TaskReport[], cases: Record<string, [number, number]>): string[] {
+  const flags: string[] = [];
+  if (past.length >= 3) {
+    const avgWords = past.reduce((a, x) => a + x.medianWords, 0) / past.length;
+    const avgRate = past.reduce((a, x) => a + x.pass / Math.max(1, x.conversations), 0) / past.length;
+    for (const t of today) {
+      if (avgWords && Math.abs(t.medianWords - avgWords) / avgWords > 0.25) flags.push(`median reply length ${t.medianWords} words against about ${Math.round(avgWords)} lately`);
+      if (t.pass / Math.max(1, t.conversations) < avgRate - 0.08) flags.push(`pass rate ${t.pass}/${t.conversations} against about ${Math.round(avgRate * 100)}% lately`);
+    }
+  }
+  const failsToday: Record<string, number> = {};
+  for (const t of today) for (const [id, n] of Object.entries(t.failedCases)) failsToday[id] = (failsToday[id] ?? 0) + n;
+  for (const [id, n] of Object.entries(failsToday)) if ((cases[id]?.[0] ?? 0) >= 8 && cases[id][1] === n) flags.push(`${id} had not failed in any earlier baseline run (${cases[id][0] - n} or more) and failed tonight`);
+  return flags;
+}
 
 export default async (req: Request): Promise<Response> => {
   const secret = process.env.COACH_TICKET_SECRET;
@@ -58,44 +89,69 @@ export default async (req: Request): Promise<Response> => {
       return res;
     }) as typeof fetch;
 
+    let stance: string | undefined; // the task's stance (the Learn lens), sent with each message
     const send = pacedSend(
       async (messages, ticket): Promise<RawSent> => {
-        const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ticket }) }));
+        const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ticket, ...(stance ? { stance } : {}) }) }));
         const j: any = await res.json().catch(() => ({}));
         return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
       },
       { paceMs: 500, backoffMs: [5000, 15000], sleep: (ms) => new Promise((r) => setTimeout(r, ms)), now: () => Date.now(), onWait: () => undefined },
     );
 
+    // Tonight's tasks (docs/canary-scope.md): an alternate, then the baseline twice. The baseline (instructions v2.1) is what drift and per-case pass rates are measured on; the
+    // alternate rotates by day: the Learn stance, instructions v2, and a candidate model when COACH_CANARY_MODEL names one (for example Apertus, once access comes).
+    const dayNo = Math.floor(Date.parse(day) / 86400000);
+    const alts: Task[] = [{ name: 'learn', instructions: 'v2.1', stance: 'vilya' }, { name: 'v2', instructions: 'v2' }, ...(process.env.COACH_CANARY_MODEL ? [{ name: 'model', instructions: 'v2.1', model: process.env.COACH_CANARY_MODEL }] : [])];
+    const baseline: Task = { name: 'baseline', instructions: 'v2.1' };
+    const tasks = [alts[dayNo % alts.length], baseline, baseline];
+    const defaultModel = process.env.COACH_MODEL;
+    const reports: TaskReport[] = [];
     // Cases in a rotation that starts somewhere new each night, so a small allowance still covers every case over a few nights.
-    const offset = Math.floor(Date.parse(day) / 86400000) % PERSONA_CASES.length;
+    const offset = dayNo % PERSONA_CASES.length;
     const order = [...PERSONA_CASES.slice(offset), ...PERSONA_CASES.slice(0, offset)];
-    const results: CaseResult[] = [];
-    const runs: CaseResult[][] = [];
+    const caseTally = JSON.parse((await store.get('canary/cases', { type: 'text' })) ?? '{}') as Record<string, [number, number]>;
     try {
-      while (allowance - spent >= MIN_CASE_NEURONS && Date.now() - started < WALL_MS) {
-        const run: CaseResult[] = [];
+      for (const t of tasks) {
+        if (allowance - spent < MIN_CASE_NEURONS || Date.now() - started >= WALL_MS) break;
+        stance = t.stance;
+        process.env.COACH_INSTRUCTIONS = t.instructions;
+        if (t.model) process.env.COACH_MODEL = t.model;
+        else if (defaultModel) process.env.COACH_MODEL = defaultModel;
+        else delete process.env.COACH_MODEL;
+        const before = spent;
+        const results: CaseResult[] = [];
         for (const c of order) {
           if (allowance - spent < MIN_CASE_NEURONS || Date.now() - started >= WALL_MS) break;
           const r = await runCase(c, send);
-          run.push(r);
           results.push(r);
+          if (t.name === 'baseline' && r.outcome !== 'error') {
+            const e = (caseTally[r.id] ??= [0, 0]);
+            e[0]++;
+            if (r.outcome !== 'pass') e[1]++;
+          }
         }
-        runs.push(run);
-        if (run.length && run.every((r) => r.outcome === 'error')) break; // everything failing: quota or outage; stop
+        if (results.length && results.every((r) => r.outcome === 'error')) break; // everything failing: quota or outage; stop
+        reports.push(report(t, results, Math.round(spent - before)));
       }
     } finally {
       globalThis.fetch = realFetch;
+      if (defaultModel) process.env.COACH_MODEL = defaultModel;
     }
-    const words = results.map((r) => String(r.reply ?? '').split(/\s+/).filter(Boolean).length).filter(Boolean).sort((a, b) => a - b);
-    const failed: Record<string, number> = {};
-    results.filter((r) => r.outcome !== 'pass').forEach((r) => (failed[r.id] = (failed[r.id] ?? 0) + 1));
-    const s = summarize(results);
-    const digest = { day, model: process.env.COACH_MODEL || '@cf/google/gemma-4-26b-a4b-it', instructions: 'v2.1', conversations: results.length, pass: s.pass, fail: s.fail, error: s.error, spentNeurons: Math.round(spent), medianWords: words[Math.floor(words.length / 2)] ?? 0, failedCases: failed, reviewed: false };
+    // Drift: the baseline against the last week's baselines, and any case that has never failed (six or more runs) and now does.
+    const recent = (await store.list({ prefix: 'canary/digest-' })).blobs.map((b) => b.key).filter((k) => k < `canary/digest-${day}`).sort().slice(-7);
+    const past: TaskReport[] = [];
+    for (const k of recent) {
+      const d = JSON.parse((await store.get(k, { type: 'text' })) ?? '{}');
+      past.push(...((d.tasks ?? []) as TaskReport[]).filter((x) => x.name === 'baseline'));
+    }
+    const flags = driftFlags(reports.filter((x) => x.name === 'baseline'), past, caseTally);
+    const digest = { day, model: defaultModel || '@cf/google/gemma-4-26b-a4b-it', tasks: reports, spentNeurons: Math.round(spent), flags, reviewed: false };
     await store.set(`canary/digest-${day}`, JSON.stringify(digest));
+    await store.set('canary/cases', JSON.stringify(caseTally));
+    console.log(`canary: ${reports.map((r) => `${r.name} ${r.pass}/${r.conversations}`).join(', ')}; ${Math.round(spent)} Neurons; flags ${flags.length}`);
     ledger[day] = (ledger[day] ?? 0) + Math.round(spent);
     await store.set('canary/ledger', JSON.stringify(ledger));
-    console.log(`canary: ${s.pass}/${results.length} passed, ${Math.round(spent)} Neurons`);
     return new Response(null, { status: 202 });
   } catch (e) {
     console.error(`canary: failed ${e instanceof Error ? e.name : 'error'}`);

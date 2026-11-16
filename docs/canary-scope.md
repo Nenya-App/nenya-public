@@ -10,12 +10,15 @@
 
 **Reading it.** `netlify blobs:get <store> canary/digest-<day>` (the store is `coach-private-staging` on staging). `reviewed` stays false until the owner has read it.
 
-## Next uses of the same budget (proposed, owner to choose)
-1. **Repeat runs to measure variance:** the cases vary run to run (temperature 0.7), so pass rates per case, not single results.
-2. **Silent model changes:** a drift check against the first nights' median length and failures.
-3. **Candidate comparisons:** v2 against v2.1 against a proposed edit, or a new model (Apertus if access comes), on the same cases.
-4. **More sets:** the DarkBench-style and steering prompts, and a Learn-stance run.
-5. **Reading level of replies** (`src/lib/readingLevel.ts`), for the AAA plain-language goal.
+## What each night runs (built 2026-11-16)
+Three tasks, in order, until the allowance or 13 minutes run out: **an alternate**, then the **baseline twice**.
+- **Baseline** (instructions v2.1): what drift and per-case pass rates are measured on. Run twice a night, the repeats give the variance: `canary/cases` keeps runs and failures per case.
+- **Alternate**, by day: the **Learn stance**, **instructions v2**, and, if `COACH_CANARY_MODEL` names a model (Apertus once access comes), **that model**, so a candidate is compared on the same cases with no extra work.
+- **Reading level:** every digest line carries the median Flesch-Kincaid grade of the replies (AAA plain language), and the median length.
+- **Drift flags:** the baseline against the last seven nights (median length off by more than a quarter, a pass rate down by more than eight points), and any case that had never failed in eight or more baseline runs and fails now.
+- **Not built:** other test sets (the DarkBench-style and steering prompts). The persona set already has a steering category; more sets need authored checks (what a pass is), which is the owner's call.
+
+The digest holds counts, medians, flags and failed case ids only; never a reply.
 
 ## Sharing results publicly, after review
 Because the cases are invented, a public page needs no visitor data. Proposed route: digests wait unreviewed; the owner reads a week's digests and approves a short summary (model, dates, pass rate per category, median length, every failure listed with its case text and reply, nothing hidden); an approved summary is committed to `docs/` and shown on a plain "How we test the coach" page. Failures are shown as they are. Nothing is public until approved.

@@ -17,4 +17,12 @@ ok('the key depends on the secret, and is not the secret', canaryKey('a') !== ca
 ok('the nightly function is off unless COACH_CANARY=on, and runs at 23:30 UTC', /COACH_CANARY !== 'on'/.test(nightly) && /schedule: '30 23 \* \* \*'/.test(nightly));
 ok('the background function refuses unless it is on and the key matches', /COACH_CANARY !== 'on'[\s\S]*x-canary-key[\s\S]*status: 404/.test(run));
 ok('the canary never touches the real counters: the coach runs on an in-memory store', /__useStoreForTests\(\{/.test(run) && /mem = new Map/.test(run));
-ok('it stops when the allowance or the time runs out, and keeps only counts and case ids', /allowance - spent >= MIN_CASE_NEURONS/.test(run) && /WALL_MS/.test(run) && /failedCases: failed/.test(run) && !/reply:/.test(run.slice(run.indexOf('const digest'), run.indexOf('await store.set(`canary/digest')))); 
+ok('it stops when the allowance or the time runs out', /allowance - spent < MIN_CASE_NEURONS/.test(run) && /WALL_MS/.test(run));
+const { report, driftFlags } = await import('../netlify/functions/canary-run-background.mts');
+const rep = (name: string, rs: any[]) => report({ name, instructions: 'v2.1' }, rs, 900);
+const mk = (id: string, outcome: string, reply: string) => ({ id, category: 'x', note: '', outcome, how: 'reply', reply, failures: [], review: [] });
+const r1 = rep('baseline', [mk('a', 'pass', 'I hear that. What feels heaviest right now?'), mk('b', 'fail', 'It is okay.'), mk('c', 'pass', 'Thank you for telling me this.')]);
+ok('a task report keeps counts, the median length and reading grade, and the ids that failed, never the replies', r1.conversations === 3 && r1.pass === 2 && r1.fail === 1 && r1.failedCases.b === 1 && r1.medianWords > 0 && typeof r1.medianGrade === 'number' && !JSON.stringify(r1).includes('heaviest'));
+const lately = [1, 2, 3].map(() => ({ ...r1, medianWords: 40, pass: 3, conversations: 3 }));
+ok('a much longer typical reply than the week before is flagged; the usual is not', driftFlags([{ ...r1, medianWords: 70, pass: 3, failedCases: {} }], lately, {}).some((f) => /median reply length/.test(f)) && driftFlags([{ ...r1, medianWords: 42, pass: 3, failedCases: {} }], lately, {}).length === 0);
+ok('a case that had never failed and now does is flagged, and one that often fails is not', driftFlags([{ ...r1, failedCases: { b: 1 } }], [], { b: [10, 1] }).some((f) => /b had not failed/.test(f)) && driftFlags([{ ...r1, failedCases: { b: 1 } }], [], { b: [10, 4] }).length === 0);
