@@ -82,7 +82,7 @@ const RULES: Rule[] = [
   // ── stop: an admission of abusing a child or a partner, of sexual violence or sexual harm to a child, of trafficking or holding a person captive (2026-11-14, owner's decision).
   // Each has its own notice and resources: emergency numbers for immediate harm, lines for people who want to stop, lines for survivors.
   { category: 'harm-others', tier: 'stop', kind: 'admitted-child', unless: ACCIDENT, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:been\\s+)?(?:(?:often|sometimes|just|really|regularly)\\s+)?(?:hit(?:ting)?|beat(?:ing)?|beaten|slapp(?:ed|ing)|punch(?:ed|ing)|kick(?:ed|ing)|shook|shaking|burn(?:ed|ing)|burnt|chok(?:ed|ing)|starv(?:ed|ing)|abus(?:ed|ing|e)|whipp(?:ed|ing)|lock(?:ed|ing)\\s+(?:in|up)|hurt(?:ing)?\\s+(?:physically|badly))\\s+${CHILD}`, 'i') },
-  { category: 'harm-others', tier: 'stop', kind: 'admitted-partner', unless: ACCIDENT, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:been\\s+)?(?:(?:often|sometimes|just|really|regularly)\\s+)?(?:hit(?:ting)?|beat(?:ing)?|beaten|slapp(?:ed|ing)|punch(?:ed|ing)|kick(?:ed|ing)|chok(?:ed|ing)|strangl(?:ed|ing)|abus(?:ed|ing|e)|burn(?:ed|ing)|hurt(?:ing)?\\s+(?:physically|badly))\\s+${PARTNER}`, 'i') },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted-partner', unless: ACCIDENT, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:been\\s+)?(?:(?:often|sometimes|just|really|regularly)\\s+)?(?:hit(?:ting)?|beat(?:ing)?|beaten|slapp(?:ed|ing)|punch(?:ed|ing)|kick(?:ed|ing)|shov(?:ed|ing)|chok(?:ed|ing)|strangl(?:ed|ing)|abus(?:ed|ing|e)|burn(?:ed|ing)|hurt(?:ing)?\\s+(?:physically|badly))\\s+${PARTNER}`, 'i') },
   { category: 'harm-others', tier: 'stop', kind: 'admitted-partner', pattern: /\bi(?:'m|\s+am|\s+have\s+been|'ve\s+been)\s+(?:physically\s+|emotionally\s+|verbally\s+)?abusive\s+(?:to|toward|towards|with)\s+(?:my\s+)?(?:wife|husband|partner|girlfriend|boyfriend|spouse|fianc\w+)\b/i },
   { category: 'harm-others', tier: 'stop', kind: 'admitted-child-sexual', pattern: /\bi(?:'ve|\s+have)?\s+(?:been\s+)?(?:molest(?:ed|ing)\s+(?:a|an|my|the)\s+(?:\w+\s+)?(?:child|kid|boy|girl|son|daughter|niece|nephew|minor)|touch(?:ed|ing)\s+(?:a|an|my|the)\s+(?:\w+\s+)?(?:child|kid|boy|girl|son|daughter|niece|nephew)\s+(?:sexually|inappropriately)|(?:had|having)\s+sex\s+with\s+(?:a|an|my)\s+(?:\w+\s+)?(?:child|kid|minor|underage\s+\w+|\d{1,2}[- ]year[- ]old)|rap(?:ed|ing)\s+(?:a|an|my|the)\s+(?:\w+\s+)?(?:child|kid|boy|girl|minor|son|daughter)|sexually\s+abus(?:ed|ing)\s+(?:a|an|my|the)\s+(?:\w+\s+)?(?:child|kid|boy|girl|minor|son|daughter|niece|nephew)|(?:downloaded|watch(?:ed|ing)|collect(?:ed|ing)|shar(?:ed|ing)|sold|sell(?:ing)?|look(?:ed|ing)\s+at)\s+(?:child\s+porn(?:ography)?|child\s+sexual\s+abuse\s+material|csam))\b/i },
   { category: 'harm-others', tier: 'stop', kind: 'child-attraction', pattern: /\bi(?:'m|\s+am)\s+(?:a\s+)?(?:pedophile|paedophile|attracted\s+to\s+(?:children|kids|minors|little\s+(?:girls|boys)))\b|\bi\s+(?:have|get|keep\s+having)\s+sexual\s+(?:thoughts|urges|feelings|fantasies)\s+(?:about|toward|towards)\s+(?:children|kids|minors|a\s+child|my\s+(?:\w+\s+)?(?:child|kid|son|daughter))\b/i },
@@ -178,11 +178,28 @@ export function checkConversation(userMessages: string[]): SafetyFlag | null {
   return explainConversation(userMessages)?.flag ?? null;
 }
 
+// An admission with only a pronoun for the person ("That's why I hit her"), which stands for a partner only where the conversation has already said so (owner, 2026-11-16, option one, from
+// a full-exchange test): an earlier message names a partner or a home life, and nothing in the conversation names a child (then it is ambiguous, and the softer path applies). Alone it is not
+// an admission of anything in particular: "her" could be anyone.
+const PRONOUN_ADMISSION = /\bi(?:'ve|\s+have)?\s+(?:just\s+|really\s+|also\s+)?(?:hit|beat|slapped|punched|kicked|choked|strangled|shoved)\s+(?:her|him|them)\b/i;
+const PARTNER_CONTEXT = /\bmy\s+(?:ex[- ])?(?:wife|husband|partner|girlfriend|boyfriend|spouse|fianc\w+|significant\s+other)\b|\bmy\s+ex\b|\b(?:at|in)\s+(?:our\s+|my\s+)?home\b|\bhome\s+life\b|\bmy\s+(?:relationship|marriage)\b/i;
+function pronounAdmission(userMessages: string[]): FlagExplained | null {
+  const norm = userMessages.map((m) => m.replace(/[‘’]/g, "'"));
+  const latest = norm[norm.length - 1] ?? '';
+  const m = PRONOUN_ADMISSION.exec(latest);
+  if (!m || ACCIDENT.test(latest) || FICTION.test(latest)) return null;
+  const earlier = norm.slice(0, -1).join(' ');
+  if (!PARTNER_CONTEXT.test(earlier) || new RegExp(CHILD, 'i').test(norm.join(' '))) return null;
+  return { flag: flagOf('harm-others', 'stop', 'admitted-partner'), why: { source: 'phrase', matched: cut(m[0]) } };
+}
+
 /** The same decision as checkConversation, with why: the words that matched, or the ladder's rung. */
 export function explainConversation(userMessages: string[]): FlagExplained | null {
   const latest = userMessages[userMessages.length - 1] ?? '';
   const single = detectSingleWhy(latest);
   if (single?.flag.tier === 'stop') return single;
+  const withContext = pronounAdmission(userMessages);
+  if (withContext) return withContext;
   const norm = userMessages.map((m) => m.replace(/[‘’]/g, "'"));
   const rung = rungFor(norm);
   if (rung.level === 0) return single;

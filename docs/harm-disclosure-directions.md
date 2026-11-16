@@ -64,3 +64,9 @@ Out of scope:
 - Terms, Section 15: "emergency numbers, support lines and legal help". This is a revision, so archive the old text and set a new effective date.
 - Tests: the order above; no legal panel for `graphic`, `child-attraction` or threats; the notice still never reaches the model; no state-law text.
 - `docs/crisis-resources-check.md`: each new fact and link, with the date checked.
+
+## Pronoun admissions, with context (owner, 2026-11-16)
+A full-exchange test found that "That's why I hit her" was not stopped: the partner rules need a word such as partner, wife or girlfriend after the verb, and "shoved" was not a verb. Now, in `src/lib/safetyFlags.ts`:
+- "shoved" joins the verbs for a named partner.
+- A pronoun admission ("I hit / beat / slapped / punched / kicked / choked / strangled / shoved her, him or them") is treated as an admission to a partner when an EARLIER message in the conversation names a partner (wife, husband, girlfriend, boyfriend, partner, spouse, "my ex") or a home life ("at home", "my marriage"), and nothing in the conversation names a child (then it is ambiguous, and the softer path applies). On its own, or with a game, a film or an accident in the message, it is not an admission. "Hurt" and "pushed" are not enough.
+It works on the page and on the server, which both read the whole conversation. Tests: tests/harm-context.test.mts.
