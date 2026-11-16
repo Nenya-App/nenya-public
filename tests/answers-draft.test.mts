@@ -83,3 +83,9 @@ const wa = ANSWERS.filter((a) => a.workersAi);
 ok('the answers that name Venice as the coach\'s service have a Workers AI version', ['n-privacy-coach', 'n-report-share', 'n-region', 'n-howworks', 'c-scam'].every((id) => wa.some((a) => a.id === id)));
 ok('a Workers AI version never says Venice runs the model or encrypts the message (Venice appears only for its referral credits)', wa.every((a) => [a.workersAi!.short ?? '', ...(a.workersAi!.full ?? [])].every((t) => !/Venice/.test(t.replace(/Venice AI's referral credits/g, '')))));
 ok('a Workers AI card is short enough to read in one glance (under 520 characters)', wa.every((a) => !a.workersAi!.short || a.workersAi!.short.length < 520));
+
+// "Will you miss me?" is answered by the feelings answer (owner, 2026-11-16): it now says the coach will not remember or miss, and turns toward people.
+{
+  const f = ANSWERS.find((a) => a.id === 'c-feelings')!;
+  ok('the feelings answer says it will not remember or miss, and hopes the person has people', /won't remember this conversation/.test(f.short) && /won't miss you/.test(f.short) && /people who will be glad/.test(f.short) && f.short.length < 520);
+}

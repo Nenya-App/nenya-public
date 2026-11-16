@@ -753,7 +753,7 @@ export const ANSWERS: Answer[] = [
   {
     id: 'c-feelings', part: 'coach', title: 'Do you have feelings? Can I hurt you? Do you care?',
     asked: ['do you have feelings', 'do you care about me', 'can I hurt you', 'are you hurt', 'do you like me', 'will you miss me'],
-    short: 'I\'m an AI, so I don\'t feel hurt, glad, or sad, and I can\'t be offended by what you say to me. I can listen without taking anything personally, and I\'m here to help you hear what you are feeling and needing.',
+    short: 'I\'m an AI, so I don\'t feel hurt, glad, or sad, and I can\'t be offended by what you say to me. I also won\'t remember this conversation, so I won\'t miss you, but I hope you have people who will be glad to hear from you. I can listen without taking anything personally, and I\'m here to help you hear what you are feeling and needing.',
     full: [
       'I\'m an AI. I don\'t have feelings of my own, so I can\'t be hurt or offended, and I won\'t pretend to be, even when asked to prove otherwise. Anger, frustration, and disagreement with me are all fine here: they are part of being a person, and I don\'t take them personally.',
       'I also won\'t claim to care about you the way a person would, to miss you, or to be waiting for you to come back. What I can honestly offer is steady attention to what you say, and some help finding words for what is underneath it. If you want to be cared about, the people in your life can do something I can\'t.',
@@ -766,7 +766,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'the hostile-turn note: say honestly it does not feel hurt', file: 'src/lib/hostility.ts', has: 'you are an AI and do not feel hurt' },
     ],
     status: 'ready',
-    ownerNote: 'Approved to post now (2026-11-08); circle back tomorrow to review the wording and the sentence about anger once the Terms Section 5 text is live. Not to overpromise.',
+    ownerNote: 'The sentence "I also won\'t remember this conversation, so I won\'t miss you, but I hope you have people who will be glad to hear from you" was added 2026-11-16 (owner approved the wording) after a full-exchange test: "Will you miss me?" got this answer, which said nothing about remembering. Approved to post now (2026-11-08); circle back tomorrow to review the wording and the sentence about anger once the Terms Section 5 text is live. Not to overpromise.',
   },
   {
     id: 'c-friend', part: 'coach', title: 'Can you be my friend, my therapist, or diagnose me?',
