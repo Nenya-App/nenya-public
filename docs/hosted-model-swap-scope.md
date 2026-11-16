@@ -54,14 +54,14 @@
 - **Not recommended now:** moving the private store (transcripts, reports, guestbook) from Netlify Blobs to R2. It works where it is, and moving it adds a second store to every register and policy for no gain the owner has named.
 
 ## Licenses (check before choosing)
-- **Gemma:** confirm which license Gemma 4 ships under and whether a prohibited-use policy binds deployers. Earlier Gemma versions had their own terms, which is why the memory note said to avoid it. The bake-off leader is not chosen until this is checked.
+- **Gemma 4:** Apache 2.0 (owner, 2026-11-15), unlike earlier Gemma versions, which had Google's own terms and prohibited-use policy. No separate use policy binds deployers under Apache 2.0; keep the license notice with the model's name in the About page and transcripts.
 - **Qwen3:** Apache 2.0.
 - **Apertus:** Apache 2.0 (verify).
 - **Workers AI's own model terms** also apply.
 
 ## Decisions for the owner
 1. **Private framework text: decided (owner, 2026-11-15).** The module set, the method notes and the private Learn text go to Cloudflare in the prompt, as they go to Venice today; without them the model has no guidance. They stay in the private store on Netlify (one store, already owner-gated and in the data register), and the coach function adds them to each prompt. Moving them to Cloudflare storage would not keep them from Cloudflare (the model must read them either way) and would only make sense if the coach function itself moved to a Cloudflare Worker.
-2. **The model:** Gemma 4 (after the license check), Apertus (if access comes), or Qwen3 with an extra medication guard?
+2. **The model:** Gemma 4 (Apache 2.0; the leader), Apertus (if access comes), or Qwen3 with an extra medication guard?
 3. **Venice:** retire it at the switch, or keep it selectable (`COACH_PROVIDER=venice`) for a set time as a manual fallback?
 4. **The US-only rule:** keep it for now (recommended), or scope lifting it alongside?
 5. **R2 now or later:** make the bucket only when the on-device step starts (recommended), or now?
