@@ -170,7 +170,7 @@ The project is set up for Netlify:
   Netlify dashboard for the Production context, Functions scope; never commit them):
   `VENICE_API_KEY` (secret), `COACH_TICKET_SECRET` (secret), `COACH_ENABLED`
   (`true` to accept requests). Optional: `COACH_SIGNING_KEY` (secret; enables signed
-  transcripts, see the docs), `COACH_MODEL`, `COACH_CHARACTER_SLUG`, `COACH_E2EE_ATTESTATION_TTL_S` and `COACH_E2EE_ATTESTATION_STALE_S` (how long the encrypted model's verified key is remembered, in seconds; see `docs/coach-testing.md`).
+  transcripts, see the docs), `COACH_PROVIDER` (`venice` by default, or `workers-ai` with `CF_AI_ACCOUNT_ID` and the secret `CF_AI_TOKEN`; see `docs/hosted-model-swap-scope.md`), `COACH_MODEL`, `COACH_CHARACTER_SLUG`, `COACH_E2EE_ATTESTATION_TTL_S` and `COACH_E2EE_ATTESTATION_STALE_S` (how long the encrypted model's verified key is remembered, in seconds; see `docs/coach-testing.md`).
   Also optional, and off by default: `COACH_SEALED` (`on` accepts sealed mode, where the visitor's browser encrypts each
   message for the model's enclave and the relay cannot read it) and `CELL_ENABLED` (`true` opens the encrypted mailbox for
   two-person partner practice). Neither has a screen yet, and the Terms need updating before either is switched on: see

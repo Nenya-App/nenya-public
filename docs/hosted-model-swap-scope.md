@@ -61,10 +61,15 @@
 
 ## Decisions for the owner
 1. **Private framework text: decided (owner, 2026-11-15).** The module set, the method notes and the private Learn text go to Cloudflare in the prompt, as they go to Venice today; without them the model has no guidance. They stay in the private store on Netlify (one store, already owner-gated and in the data register), and the coach function adds them to each prompt. Moving them to Cloudflare storage would not keep them from Cloudflare (the model must read them either way) and would only make sense if the coach function itself moved to a Cloudflare Worker.
-2. **The model:** Gemma 4 (Apache 2.0; the leader), Apertus (if access comes), or Qwen3 with an extra medication guard?
-3. **Venice:** retire it at the switch, or keep it selectable (`COACH_PROVIDER=venice`) for a set time as a manual fallback?
-4. **The US-only rule:** keep it for now (recommended), or scope lifting it alongside?
-5. **R2 now or later:** make the bucket only when the on-device step starts (recommended), or now?
+2. **The model:** Gemma 4 26B-A4B (Apache 2.0), the leader and the Workers AI default in the code; Apertus is compared if access comes.
+3. **Venice: decided (owner, 2026-11-15).** Kept selectable (`COACH_PROVIDER=venice`) as a manual fallback for a quiet period after the switch, then retired with its code.
+4. **The US-only rule: decided (owner, 2026-11-15).** Kept for now; lifting it is its own scope.
+5. **R2: decided (owner, 2026-11-15).** The bucket is made when the on-device step starts.
 
 ## Order (recommended)
 Part 1 (code, off) → part 2 gates → Terms draft for approval → staging trial → production switch with a same-day Terms revision → retire Venice code after a quiet period → R2 and the on-device runtime as their own scope.
+
+## Progress
+- **Part 1 built (2026-11-15), off by default:** `src/lib/coachProvider.ts` and the branch in `coach.mts`; `COACH_PROVIDER`, `CF_AI_ACCOUNT_ID`, `CF_AI_TOKEN` documented in `docs/production-env.md`; tests in `tests/coach-provider.test.mts`. Workers AI also gets a brevity note (`WORKERS_AI_STYLE_NOTE`: two to four sentences, under 80 words, everyday words), since Gemma ran longer than Venice's model (median 57 words against 37). Venice's prompt is unchanged.
+- **Before staging can use it:** the site's answers about the model (`n-howworks` and others in `src/lib/aboutNenya.ts`) still say Venice; they change with the Terms draft (part 3).
+- **Bake-off script** now runs through the real Workers AI path, and `--private <folder>` (plus `--stance vilya`) includes the private text from a folder outside the repository.

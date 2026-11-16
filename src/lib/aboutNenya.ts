@@ -333,7 +333,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'messages go through Netlify to Venice AI, which writes the replies', file: TERMS, has: 'to Venice AI, which writes the replies' },
       { claim: 'Venice\'s servers relay ciphertext; the encryption happens in our function, not the browser', file: "src/lib/veniceE2ee.ts", has: 'Venice\'s servers relay ciphertext' },
       { claim: 'it must not be described as end-to-end from the visitor\'s device', file: "src/lib/veniceE2ee.ts", has: "describe it as end-to-end encryption from the visitor's device" },
-      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: COACH, has: 'e2ee-qwen-2-5-7b-p' },
+      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: 'src/lib/coachProvider.ts', has: "VENICE_DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p'" }, { claim: 'Venice is the provider unless switched', file: 'src/lib/coachProvider.ts', has: "env.COACH_PROVIDER === 'workers-ai' ? 'workers-ai' : 'venice'" },
       { claim: 'on-device processing is a goal, not built', file: about('PrivacyPromise'), has: 'We are not there yet' },
       { claim: 'the crisis check and instruction screening are phrase matching', file: TERMS, has: 'These checks are simple phrase matching' },
     ],

@@ -72,6 +72,7 @@ import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_MENU_NOTE, ARC_NOTE, WORDS_ONLY_NO
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
 import type { ModuleGroup } from '../../src/lib/coachModules.ts';
+import { WORKERS_AI_STYLE_NOTE, coachModel, coachProvider, readWorkersAi, workersAiBody, workersAiUrl } from '../../src/lib/coachProvider.ts';
 
 const MAX_TURNS = 5;
 const MAX_USER_CHARS = 500;
@@ -94,7 +95,7 @@ const CLOSE_NOTE =
 const VENICE_URL = 'https://api.venice.ai/api/v1/chat/completions';
 // Qwen 2.5 7B (about 7.6B parameters) in Venice's encrypted enclave: a small, non-frontier model whose prompts Venice
 // relays only as ciphertext (see src/lib/veniceE2ee.ts). Any other Venice model id can be set with COACH_MODEL.
-const DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p';
+// The defaults live in src/lib/coachProvider.ts (VENICE_DEFAULT_MODEL); with COACH_PROVIDER=workers-ai the default is Gemma 4 on Cloudflare Workers AI.
 const DEFAULT_CHARACTER_SLUG = 'nenya-20';
 
 const ROUTE = '/api/coach';
@@ -612,7 +613,9 @@ async function handleSealed(
   ctx: { apiKey: string; secret: string; store: () => CounterStore | null; tally: (e: string) => void; track: (p: Promise<unknown>) => void }
 ): Promise<Response> {
   if (process.env.COACH_SEALED !== 'on') return fail(503, 'sealed-off');
-  const model = process.env.COACH_MODEL || DEFAULT_MODEL;
+  // Sealed mode is Venice's encrypted enclave; there is no such thing on Workers AI.
+  if (coachProvider() !== 'venice') return fail(503, 'sealed-provider');
+  const model = coachModel();
   if (!isE2eeModel(model)) return fail(503, 'sealed-model');
   if (body.context !== undefined && body.context !== '') return fail(400, 'context'); // a shared reflection is not sealed yet
   const { apiKey, secret, store, tally, track } = ctx;
@@ -731,8 +734,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   if (url.pathname !== ROUTE) return json(404, { error: 'not found' });
   // Which privacy modes the page may offer (docs/ghost-footprint-stack.md). No secrets, nothing about the visitor.
   if (req.method === 'GET' && url.searchParams.has('modes')) {
-    const model = process.env.COACH_MODEL || DEFAULT_MODEL;
-    return json(200, { witnessed: process.env.COACH_ENABLED === 'true', sealed: process.env.COACH_ENABLED === 'true' && process.env.COACH_SEALED === 'on' && isE2eeModel(model) });
+    const model = coachModel();
+    return json(200, { witnessed: process.env.COACH_ENABLED === 'true', sealed: process.env.COACH_ENABLED === 'true' && process.env.COACH_SEALED === 'on' && coachProvider() === 'venice' && isE2eeModel(model) });
   }
   // Whether this connection may use the coach (src/lib/coachRegion.ts). The country code goes back only to the visitor's own page and is not stored or logged.
   if (req.method === 'GET' && url.searchParams.has('region')) {
@@ -755,9 +758,12 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     return json(403, { error: 'region' });
   }
 
-  const apiKey = process.env.VENICE_API_KEY;
+  // The provider's own settings (src/lib/coachProvider.ts): Venice's key, or Cloudflare's account and a token allowed only Workers AI.
+  const provider = coachProvider();
+  const apiKey = provider === 'venice' ? process.env.VENICE_API_KEY : process.env.CF_AI_TOKEN;
   const secret = process.env.COACH_TICKET_SECRET;
   if (!apiKey || !secret) return fail(500, 'config');
+  if (provider === 'workers-ai' && !workersAiUrl(process.env.CF_AI_ACCOUNT_ID ?? '', coachModel())) return fail(500, 'config', 'workers-ai');
 
   // Browsers always send Origin on a cross-origin-capable POST. This is a courtesy
   // check against casual misuse, not a security boundary.
@@ -807,7 +813,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       closed: false,
       exchanges: history.length / 2,
       build: buildId(),
-      model: process.env.COACH_MODEL || DEFAULT_MODEL,
+      model: coachModel(),
       instructions: instructionsFingerprint(),
       endedBy: 'site',
       stop: { category: stopFlag.category, ...(stopFlag.kind ? { kind: stopFlag.kind } : {}) },
@@ -840,7 +846,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       closed: exchanges >= MAX_TURNS,
       exchanges,
       build: buildId(),
-      model: process.env.COACH_MODEL || DEFAULT_MODEL,
+      model: coachModel(),
       instructions: instructionsFingerprint(),
       ...(termsFacts ? { terms: termsFacts } : {}),
     };
@@ -942,7 +948,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   const target = hostile === 'critique' ? critiqueTarget(messages[messages.length - 1].content) : null;
   if (hostile) tally(`coach.turn.hostile.${hostile}`);
   if (target) tally(`coach.turn.hostile.critique.${target}`);
-  const model = process.env.COACH_MODEL || DEFAULT_MODEL;
+  const model = coachModel();
   const slug = process.env.COACH_CHARACTER_SLUG || DEFAULT_CHARACTER_SLUG;
 
   const softened = flag?.tier === 'soften' || (!!context && !!detectFlag(context));
@@ -1022,6 +1028,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
         systemInstruction(turn, softened, notes, directQ, layerText ? layerBlock(layerText) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '', practiceArcOn() ? { stuck: isStuck(lastText) } : null, isWordsOnly(lastText), gapText(namedParts(messages.filter((m) => m.role === 'user').map((m) => m.content))), standing, severalQ),
         ...(context ? [contextInstruction(neutralize(scrubPII(context).text))] : []),
         ...(within ? [ABOUT_FIRST_NOTE] : []),
+        ...(provider === 'workers-ai' ? [WORKERS_AI_STYLE_NOTE] : []),
         ...(extra ? [extra] : []),
       ].join('\n\n');
       const chatMessages = [
@@ -1031,7 +1038,24 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       ];
       let raw = '';
       let finish: string | undefined;
-      if (isE2eeModel(model)) {
+      if (provider === 'workers-ai') {
+        // Cloudflare Workers AI (docs/hosted-model-swap-scope.md): the same prompt, guards and checks; only where the model runs changes. No fallback to
+        // Venice if it fails: the person sees the ordinary failure notice.
+        const res = await fetch(workersAiUrl(process.env.CF_AI_ACCOUNT_ID ?? '', model)!, {
+          method: 'POST',
+          signal: ctrl.signal,
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+          body: JSON.stringify(workersAiBody(chatMessages, sampling)),
+        });
+        clearTimeout(timer);
+        if (!res.ok) return { failure: () => fail(502, 'upstream', `status-${res.status}`) }; // the status only, never content
+        const out = readWorkersAi(await res.json());
+        raw = out.content;
+        finish = out.finish;
+        tally('coach.model.workers-ai');
+        // What the call cost, in steps of 5 Neurons, so the daily totals show the spread without a running sum.
+        if (out.neurons !== undefined) tally(`coach.neurons.${Math.min(100, Math.ceil(out.neurons / 5) * 5)}`);
+      } else if (isE2eeModel(model)) {
         // Encrypted models: the prompt is encrypted before it reaches Venice (see src/lib/veniceE2ee.ts). Venice's
         // own system prompt and the character card do not apply, which is fine because ours wins anyway.
         try {
