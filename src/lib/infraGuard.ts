@@ -8,6 +8,8 @@ export const INFRA_PATTERNS: RegExp[] = [
   // "we run on AWS", "this site is hosted by Google", "I'm built on OpenAI"
   /\b(?:we|nenya|this (?:site|app|tool)|i)(?:'m| am| are|'re)?\b[^.?!]{0,40}\b(?:run|runs|running|host|hosted|hosts|use|uses|using|store|stores|stored|built|powered|trained)\b[^.?!]{0,40}\b(?:aws|amazon|google|gcp|azure|microsoft|openai|chatgpt|gpt-?\d\w*|anthropic|claude|gemini|llama|mistral|deepseek|meta)\b/i,
   /\bend[- ]to[- ]end\b/i,
+  // who can see or read the conversation (the coach cannot know what is read, stored or watched)
+  /\b(?:no ?one|nobody|no humans?|no (?:real )?person)\s+(?:(?:is|are|can|will|could|would|ever|else)\s+)*(?:reading|reads?|seeing|sees?|watching|watches|listening|monitoring|reviewing|looking)\b/i,
   /\b(?:hipaa|gdpr[- ]compliant|gdpr compliant|soc ?2|iso ?27001|ccpa[- ]compliant|pci[- ]compliant)\b/i,
   // promises about data
   /\b(?:nothing(?: you (?:say|write|share|type))?|none of (?:it|this|what you (?:say|write|share|type))) (?:is|will be|gets|ever gets) (?:ever )?(?:stored|saved|kept|recorded|logged|seen|read)\b|\bnever (?:stored|saved|kept|recorded|logged)\b|\b(?:completely|totally|100%|fully) (?:private|anonymous|confidential)\b|\bno one (?:will )?(?:ever )?(?:sees?|reads?)\b/i,
