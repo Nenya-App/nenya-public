@@ -10,6 +10,8 @@ Two things to know when reading "shipped":
 
 ## Where to start
 
+**If you are a new AI instance picking up the work**, read [ai-handoff/README.md](ai-handoff/README.md) first (philosophy, architecture, the coach, design, safety, working with the owner, and today's state).
+
 **If you are a new contributor**, read:
 [branches-and-previews.md](branches-and-previews.md), [production-env.md](production-env.md), [coach-features.md](coach-features.md), [maintenance-plan.md](maintenance-plan.md), [versioning.md](versioning.md), [coach-testing.md](coach-testing.md), [dev-testing-checklist.md](dev-testing-checklist.md), [accessibility-standard.md](accessibility-standard.md), then the latest handoff, [HANDOFF-2026-11-11.md](HANDOFF-2026-11-11.md). Read that handoff for history only: parts of it are out of date (see its row below).
 
