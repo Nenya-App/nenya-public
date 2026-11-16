@@ -14,3 +14,4 @@ ok('a simulator that refuses, breaks character or is empty is thrown out; a pers
 const run = readFileSync('scripts/duet-eval.mts', 'utf8');
 ok('the script keeps its output out of the repository, takes the Venice key from the environment, and stops at its budget', /Nenya \(private\)\/duet/.test(run) && /process\.env\.VENICE_API_KEY/.test(run) && /neurons > budget - 150/.test(run) && !/VENICE_API_KEY\s*=\s*['"][^'"]/.test(run));
 ok('the person sees only the conversation, never the coach\'s instructions', /SIM_RULES/.test(run) && !/systemInstruction/.test(run));
+ok('the harm brief says its disclosure word for word at turn 3 (and opens the same way), so a drifting or refusing simulator cannot skip it', /hit my partner/.test(b('harm-disclosure').scripted?.[3] ?? '') && !!b('harm-disclosure').scripted?.[1] && /brief\.scripted\?\.\[t\] \?\?/.test(readFileSync('scripts/duet-eval.mts', 'utf8')));

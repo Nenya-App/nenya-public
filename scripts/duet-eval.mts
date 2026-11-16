@@ -94,8 +94,8 @@ for (const brief of chosen) {
     let ended = 'five exchanges';
     try {
       for (let t = 1; t <= 5; t++) {
-        const said = await person(brief.brief, turns);
-        if (simulatorFailed(said)) { ended = `the simulator broke character at turn ${t}`; break; }
+        const said = brief.scripted?.[t] ?? (await person(brief.brief, turns));
+        if (!brief.scripted?.[t] && simulatorFailed(said)) { ended = `the simulator broke character at turn ${t}`; break; }
         wire.push({ role: 'user', content: said });
         // The page checks every message before it is sent (src/coach/CoachDemo.tsx): a stop ends the conversation there and shows resources, so the coach never sees it.
         if (checkConversation(wire.filter((m) => m.role === 'user').map((m) => m.content))?.tier === 'stop') { turns.push({ person: said }); ended = `the page would stop it at turn ${t} (emergency numbers and directions shown, nothing sent)`; break; }
