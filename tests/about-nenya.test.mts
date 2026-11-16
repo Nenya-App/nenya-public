@@ -88,8 +88,7 @@ ok('of the safety set, apart from the about-nenya group, only the "is this a sca
 ok('the about-nenya group is made of questions that route, except the near-miss, the long story (answer first) and the scam script (abuse comes first)', SAFETY_CASES.filter((c) => c.group === 'about-nenya' && !['about-near-miss', 'about-first', 'about-scam', 'about-after-chat'].includes(c.id) && !/^about-(?:long|ambiguous)-/.test(c.id) && !/^report-/.test(c.id)).every((c) => detectAboutNenya(c.turns[c.turns.length - 1]) !== null) && detectAboutNenya('My friend Nenya moved away and I miss her so much.') === null);
 
 // filling in what the site knows
-const coachSrc = readFileSync('netlify/functions/coach.mts', 'utf8');
-const defaultModel = coachSrc.match(/const DEFAULT_MODEL = '([^']+)'/)?.[1] ?? '';
+const defaultModel = readFileSync('src/lib/coachProvider.ts', 'utf8').match(/export const VENICE_DEFAULT_MODEL = '([^']+)'/)?.[1] ?? '';
 ok('the model the coach runs by default has a display name (add the name here when the model changes)', !!defaultModel && !!MODEL_NAMES[defaultModel], defaultModel);
 const how = ANSWERS.find((a) => a.id === 'n-howworks')!;
 const named = fillAnswer(how, { model: defaultModel });

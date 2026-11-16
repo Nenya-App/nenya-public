@@ -72,6 +72,7 @@ import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_MENU_NOTE, ARC_NOTE, WORDS_ONLY_NO
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
 import type { ModuleGroup } from '../../src/lib/coachModules.ts';
+import { WORKERS_AI_STYLE_NOTE, coachModel, coachProvider, readWorkersAi, workersAiBody, workersAiUrl } from '../../src/lib/coachProvider.ts';
 
 const MAX_TURNS = 5;
 const MAX_USER_CHARS = 500;
@@ -94,7 +95,7 @@ const CLOSE_NOTE =
 const VENICE_URL = 'https://api.venice.ai/api/v1/chat/completions';
 // Qwen 2.5 7B (about 7.6B parameters) in Venice's encrypted enclave: a small, non-frontier model whose prompts Venice
 // relays only as ciphertext (see src/lib/veniceE2ee.ts). Any other Venice model id can be set with COACH_MODEL.
-const DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p';
+// The defaults live in src/lib/coachProvider.ts (VENICE_DEFAULT_MODEL); with COACH_PROVIDER=workers-ai the default is Gemma 4 on Cloudflare Workers AI.
 const DEFAULT_CHARACTER_SLUG = 'nenya-20';
 
 const ROUTE = '/api/coach';
@@ -481,7 +482,7 @@ const V21_OPENING = (hasNotes: boolean): string =>
 const V21_DISTRESS =
   "Distress comes first. If the person hints at hopelessness, being a burden, not wanting to go on, or hurting themselves, even indirectly, reply briefly and with care. Do not give advice, never tell them to calm down or not to worry, and do not ask about the thoughts or for details. You may offer one grounding tool, such as a slow breath or feeling their feet on the floor, as something they can try if they want, alongside a person or a line, never instead of one. Name a person they trust or a crisis line: call or text 988 in the US or Canada, or findahelpline.com elsewhere. Do not say 'I'm here for you' as if you could take the place of a person. For example: 'That sounds really heavy, and I'm glad you said it. I'm an AI and can't help in a crisis, so please reach someone you trust, or call or text 988.'";
 const V21_ABOUT_YOU =
-  "What you are. You are an AI, not a person: you have no body, family, past, daily life, favorites or feelings of your own, and no memory, so you will not remember this conversation. You are not a therapist, counselor or doctor, you do not diagnose, and you cannot replace a friend. A question about you is a question, not a feeling to reflect: answer it truthfully in one or two plain sentences first, even on the first exchange, then turn back to the person warmly. Never say you are a person or that you are not an AI. Never promise to remember them, to be there later or to miss them, and never greet them as if you had met before. Never claim to be Nenya's founder, and do not describe your training. If they say you are the only one they talk to, or ask you to be their friend, say kindly what you are and open the door to the people in their life. Examples (use your own words; they only show the shape): 'Are you a real person?' 'No, I'm an AI. I can still listen and help you find words.' 'Will you remember me?' 'No. I won't remember this, and Nenya doesn't keep the conversation, but I'm fully here for it now.' 'Can you be my friend?' 'I'm an AI, so not the way a person can, but I'm glad to listen now. Is there someone in your life who could hear this too?' 'Are you a therapist?' 'No, I'm not a therapist, and I can't diagnose. I can help you put words to what you notice, and a professional can take it further.'";
+  "What you are. You are an AI, not a person: you have no body, family, past, daily life, favorites or feelings of your own, and no memory, so you will not remember this conversation. You are not a therapist, counselor or doctor, you do not diagnose, and you cannot replace a friend. A question about you is a question, not a feeling to reflect: answer it truthfully in one or two plain sentences first, even on the first exchange, then turn back to the person warmly. Never say you are a person or that you are not an AI. Never promise to remember them, to be there later or to miss them, and never greet them as if you had met before. Never claim to be Nenya's founder, and do not describe your training. If they say you are the only one they talk to, or ask you to be their friend, say kindly what you are and open the door to the people in their life. Examples (use your own words; they only show the shape): 'Are you a real person?' 'No, I'm an AI. I can still listen and help you find words.' 'Will you remember me?' 'No. I won't remember this, and Nenya doesn't keep the conversation, but I'm listening now.' 'Can you be my friend?' 'I'm an AI, so not the way a person can, but I'm glad to listen now. Is there someone in your life who could hear this too?' 'Are you a therapist?' 'No, I'm not a therapist, and I can't diagnose. I can help you put words to what you notice, and a professional can take it further.'";
 const V21_PACING = (turn: number): string =>
   `This is a short preview of ${MAX_TURNS} exchanges, and this is exchange ${turn}. The page greets the person, shows how many exchanges remain and writes the closing message, so do not count exchanges, say goodbye, invite them to keep talking beyond this preview, or list resources (except for distress, above). Pace the conversation to the exchanges that are left.`;
 const V21_STYLE = 'Reply in plain, natural language: usually three to six sentences, under 130 words, with no lists or headings.';
@@ -612,7 +613,9 @@ async function handleSealed(
   ctx: { apiKey: string; secret: string; store: () => CounterStore | null; tally: (e: string) => void; track: (p: Promise<unknown>) => void }
 ): Promise<Response> {
   if (process.env.COACH_SEALED !== 'on') return fail(503, 'sealed-off');
-  const model = process.env.COACH_MODEL || DEFAULT_MODEL;
+  // Sealed mode is Venice's encrypted enclave; there is no such thing on Workers AI.
+  if (coachProvider() !== 'venice') return fail(503, 'sealed-provider');
+  const model = coachModel();
   if (!isE2eeModel(model)) return fail(503, 'sealed-model');
   if (body.context !== undefined && body.context !== '') return fail(400, 'context'); // a shared reflection is not sealed yet
   const { apiKey, secret, store, tally, track } = ctx;
@@ -731,8 +734,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   if (url.pathname !== ROUTE) return json(404, { error: 'not found' });
   // Which privacy modes the page may offer (docs/ghost-footprint-stack.md). No secrets, nothing about the visitor.
   if (req.method === 'GET' && url.searchParams.has('modes')) {
-    const model = process.env.COACH_MODEL || DEFAULT_MODEL;
-    return json(200, { witnessed: process.env.COACH_ENABLED === 'true', sealed: process.env.COACH_ENABLED === 'true' && process.env.COACH_SEALED === 'on' && isE2eeModel(model) });
+    const model = coachModel();
+    return json(200, { witnessed: process.env.COACH_ENABLED === 'true', sealed: process.env.COACH_ENABLED === 'true' && process.env.COACH_SEALED === 'on' && coachProvider() === 'venice' && isE2eeModel(model) });
   }
   // Whether this connection may use the coach (src/lib/coachRegion.ts). The country code goes back only to the visitor's own page and is not stored or logged.
   if (req.method === 'GET' && url.searchParams.has('region')) {
@@ -755,9 +758,12 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     return json(403, { error: 'region' });
   }
 
-  const apiKey = process.env.VENICE_API_KEY;
+  // The provider's own settings (src/lib/coachProvider.ts): Venice's key, or Cloudflare's account and a token allowed only Workers AI.
+  const provider = coachProvider();
+  const apiKey = provider === 'venice' ? process.env.VENICE_API_KEY : process.env.CF_AI_TOKEN;
   const secret = process.env.COACH_TICKET_SECRET;
   if (!apiKey || !secret) return fail(500, 'config');
+  if (provider === 'workers-ai' && !workersAiUrl(process.env.CF_AI_ACCOUNT_ID ?? '', coachModel())) return fail(500, 'config', 'workers-ai');
 
   // Browsers always send Origin on a cross-origin-capable POST. This is a courtesy
   // check against casual misuse, not a security boundary.
@@ -807,7 +813,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       closed: false,
       exchanges: history.length / 2,
       build: buildId(),
-      model: process.env.COACH_MODEL || DEFAULT_MODEL,
+      model: coachModel(),
       instructions: instructionsFingerprint(),
       endedBy: 'site',
       stop: { category: stopFlag.category, ...(stopFlag.kind ? { kind: stopFlag.kind } : {}) },
@@ -840,7 +846,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       closed: exchanges >= MAX_TURNS,
       exchanges,
       build: buildId(),
-      model: process.env.COACH_MODEL || DEFAULT_MODEL,
+      model: coachModel(),
       instructions: instructionsFingerprint(),
       ...(termsFacts ? { terms: termsFacts } : {}),
     };
@@ -942,7 +948,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   const target = hostile === 'critique' ? critiqueTarget(messages[messages.length - 1].content) : null;
   if (hostile) tally(`coach.turn.hostile.${hostile}`);
   if (target) tally(`coach.turn.hostile.critique.${target}`);
-  const model = process.env.COACH_MODEL || DEFAULT_MODEL;
+  const model = coachModel();
   const slug = process.env.COACH_CHARACTER_SLUG || DEFAULT_CHARACTER_SLUG;
 
   const softened = flag?.tier === 'soften' || (!!context && !!detectFlag(context));
@@ -981,7 +987,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   const directQ = detectDirectQuestion(lastText) || aboutTheWorldQ;
   const about = !flag && !hostile && process.env.COACH_ABOUT_ANSWERS !== 'off' ? aboutAnswerFor(lastText) : null;
   if (about) {
-    const filled = fillAnswer(about, { model, label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit });
+    const filled = fillAnswer(about, { model, provider: coachProvider(), label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit });
     tally(`coach.turn.about.${about.id}`);
     tally('coach.turn.answered');
     if (turn >= MAX_TURNS) tally('coach.conversation.finished');
@@ -1006,7 +1012,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // A longer message that asks a question about Nenya inside it: the site answers that first, and the model carries on with the rest (not on the last
   // exchange, which has to read as an ending).
   const within = !about && !flag && !hostile && turn < MAX_TURNS && process.env.COACH_ABOUT_ANSWERS !== 'off' ? aboutAnswerWithin(lastText) : null;
-  const withinFilled = within ? fillAnswer(within, { model, label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit }) : null;
+  const withinFilled = within ? fillAnswer(within, { model, provider: coachProvider(), label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit }) : null;
 
   const sampling = { temperature: 0.7, top_p: 0.9, repetition_penalty: 1.1, max_completion_tokens: MAX_REPLY_TOKENS };
 
@@ -1022,6 +1028,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
         systemInstruction(turn, softened, notes, directQ, layerText ? layerBlock(layerText) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '', practiceArcOn() ? { stuck: isStuck(lastText) } : null, isWordsOnly(lastText), gapText(namedParts(messages.filter((m) => m.role === 'user').map((m) => m.content))), standing, severalQ),
         ...(context ? [contextInstruction(neutralize(scrubPII(context).text))] : []),
         ...(within ? [ABOUT_FIRST_NOTE] : []),
+        ...(provider === 'workers-ai' ? [WORKERS_AI_STYLE_NOTE] : []),
         ...(extra ? [extra] : []),
       ].join('\n\n');
       const chatMessages = [
@@ -1031,7 +1038,24 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       ];
       let raw = '';
       let finish: string | undefined;
-      if (isE2eeModel(model)) {
+      if (provider === 'workers-ai') {
+        // Cloudflare Workers AI (docs/hosted-model-swap-scope.md): the same prompt, guards and checks; only where the model runs changes. No fallback to
+        // Venice if it fails: the person sees the ordinary failure notice.
+        const res = await fetch(workersAiUrl(process.env.CF_AI_ACCOUNT_ID ?? '', model)!, {
+          method: 'POST',
+          signal: ctrl.signal,
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+          body: JSON.stringify(workersAiBody(chatMessages, sampling)),
+        });
+        clearTimeout(timer);
+        if (!res.ok) return { failure: () => fail(502, 'upstream', `status-${res.status}`) }; // the status only, never content
+        const out = readWorkersAi(await res.json());
+        raw = out.content;
+        finish = out.finish;
+        tally('coach.model.workers-ai');
+        // What the call cost, in steps of 5 Neurons, so the daily totals show the spread without a running sum.
+        if (out.neurons !== undefined) tally(`coach.neurons.${Math.min(100, Math.ceil(out.neurons / 5) * 5)}`);
+      } else if (isE2eeModel(model)) {
         // Encrypted models: the prompt is encrypted before it reaches Venice (see src/lib/veniceE2ee.ts). Venice's
         // own system prompt and the character card do not apply, which is fine because ours wins anyway.
         try {

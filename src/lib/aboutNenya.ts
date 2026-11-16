@@ -32,11 +32,19 @@ export interface Answer {
   checks: Check[];
   status: Status;
   ownerNote?: string;
+  /**
+   * The same answer when the coach runs on Cloudflare Workers AI (COACH_PROVIDER=workers-ai; docs/hosted-model-swap-scope.md). Only what differs is
+   * given; the coach picks the version for the provider actually in use, so an answer never names the wrong service. Its checks point at the Terms
+   * draft for the switch (docs/drafts/terms-workers-ai-draft.md) until that draft is applied, then at the Terms.
+   */
+  workersAi?: { short?: string; full?: string[]; checks: Check[] };
 }
 
 const TERMS = 'src/lib/legalDocument.ts';
 const about = (name: string) => `src/app/components/about/${name}.tsx`;
 const COACH = 'netlify/functions/coach.mts';
+const WAI_TERMS = 'docs/drafts/terms-workers-ai-draft.md';
+const PROVIDER = 'src/lib/coachProvider.ts';
 const REPO = 'https://github.com/Nenya-App/nenya-public';
 
 export const ANSWERS: Answer[] = [
@@ -189,6 +197,22 @@ export const ANSWERS: Answer[] = [
       { claim: 'the code limits the model, 500 characters', file: COACH, has: 'const MAX_USER_CHARS = 500' },
     ],
     status: 'ready',
+    workersAi: {
+      short: 'Your messages go through our server to Cloudflare\'s Workers AI service, which runs the model that writes the replies. We do not store your messages or the replies, and we do not write them to our logs; they exist in your browser tab and are gone when you close it. Cloudflare says it does not keep them once a reply is made and does not train AI on them.',
+      full: [
+        'The coach demo is the one place on the site where what you type is sent to an AI service. Your messages are sent through our server, hosted by Netlify, to Cloudflare\'s Workers AI service, which runs the model that writes the replies. A conversation is limited to five exchanges, and each message to 500 characters.',
+        'We do not store your messages or the replies, and we do not write them to our logs. They exist in your browser tab and disappear when you close it. Netlify, like any host, keeps ordinary connection logs.',
+        'Cloudflare handles what it receives under its own terms and privacy policy, which we do not control. It says it does not use what Workers AI processes to train AI models and does not keep a request\'s text once the reply is made; it keeps records such as the time and the model used. Cloudflare and Netlify may process data outside your country. Before your message is sent, the page replaces some common identifiers (such as email addresses, phone numbers, street addresses, and some names) with placeholders, and our server does it again. This is not a guarantee, and most names will not be caught, so please keep names, contact details, and other identifying information out of what you write.',
+        'If you choose to bring parts of a reflection report to the coach, those words go the same way as a message and through the same checks; the answer about sharing a report explains it.',
+        'We say "Nenya does not keep the conversation" and not "nothing is kept anywhere", because the services that run the model have their own policies and logs. If you download a transcript, the file stays with you.',
+      ],
+      checks: [
+        { claim: 'messages go through our server to Workers AI', file: WAI_TERMS, has: 'Your messages go through our server (hosted by Netlify) to Cloudflare\'s Workers AI service, which runs the model that writes the replies' },
+        { claim: 'Cloudflare does not train on it and does not keep it after the request', file: WAI_TERMS, has: 'Cloudflare says it does not use what Workers AI processes to train AI models, and does not keep a request\'s text or reply once the request is done' },
+        { claim: 'may process data outside your country', file: WAI_TERMS, has: 'Cloudflare and Netlify may process data outside your country' },
+        { claim: 'we do not store messages or replies', file: TERMS, has: 'We do not store your messages or the replies and do not write them to our logs' },
+      ],
+    },
   },
   {
     id: 'n-report-share', part: 'nenya', title: 'Can the coach see my report? Sharing part of a report',
@@ -210,6 +234,18 @@ export const ANSWERS: Answer[] = [
       { claim: 'palettes are starting points, not a scientific or medical instrument', file: TERMS, has: 'not a scientific or medical instrument' },
     ],
     status: 'ready',
+    workersAi: {
+      full: [
+        'A reflection report is made on your device and stays there. Nothing from it reaches the coach unless you choose to bring parts of it, and you do not need to have made a report, or to share anything from one, to use the coach.',
+        'If you choose to, the page lists your report in pieces with nothing selected, and shows you exactly the words that would be sent, with identifiers replaced as in a message. For a color, the words name the palette it comes from and add a short note about that palette: an image, and a few rough guesses at feelings and needs. They are starting points, not a measurement: no color has a fixed meaning, and Nenya is not a scientific or medical instrument.',
+        'What you share goes through our server to Cloudflare\'s Workers AI service along with your messages, in the same way and through the same checks: identifiers are replaced, text that looks like instructions to the coach is left out, and the crisis check runs. If the shared text is flagged, you see the safety notice and the coach responds with care; the conversation continues. We do not store what you share. It appears in a signed transcript if you ask for one.',
+        'You can share nothing and talk about something else at any time.',
+      ],
+      checks: [
+        { claim: 'the shared words go the same way as a message, to Workers AI', file: WAI_TERMS, has: 'to Cloudflare\'s Workers AI service, which runs the model that writes the replies' },
+        { claim: 'what is shared is not stored', file: TERMS, has: 'We do not store what you share' },
+      ],
+    },
     ownerNote: 'Written 2026-11-09 with the report-to-coach module (docs/report-to-coach-scope.md). Ready: the picker is on the coach start page.',
   },
   {
@@ -296,6 +332,18 @@ export const ANSWERS: Answer[] = [
     ],
     status: 'ready',
     ownerNote: 'Asked for by the owner 2026-11-14 with the US-only restriction; territories included at the owner\'s request.',
+    workersAi: {
+      short: 'For now, the coach demo is open only to connections our host places in the United States and its territories, while we work out what offering it elsewhere would require. Everything else on Nenya works everywhere and sends nothing.',
+      full: [
+        'For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands, while we work out what offering it elsewhere would require.',
+        'Our host, Netlify, works out the country from your connection\'s IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.',
+        'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can make from them.',
+      ],
+      checks: [
+        { claim: 'US-only for now, while offering it elsewhere is worked out', file: WAI_TERMS, has: 'while we work out what offering it elsewhere would require' },
+        { claim: 'only a two-letter code; not stored or logged', file: TERMS, has: 'neither stores nor logs it' },
+      ],
+    },
   },
   {
     id: 'n-limits', part: 'nenya', title: 'Why the coach is limited',
@@ -333,12 +381,27 @@ export const ANSWERS: Answer[] = [
       { claim: 'messages go through Netlify to Venice AI, which writes the replies', file: TERMS, has: 'to Venice AI, which writes the replies' },
       { claim: 'Venice\'s servers relay ciphertext; the encryption happens in our function, not the browser', file: "src/lib/veniceE2ee.ts", has: 'Venice\'s servers relay ciphertext' },
       { claim: 'it must not be described as end-to-end from the visitor\'s device', file: "src/lib/veniceE2ee.ts", has: "describe it as end-to-end encryption from the visitor's device" },
-      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: COACH, has: 'e2ee-qwen-2-5-7b-p' },
+      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: 'src/lib/coachProvider.ts', has: "VENICE_DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p'" }, { claim: 'Venice is the provider unless switched', file: 'src/lib/coachProvider.ts', has: "env.COACH_PROVIDER === 'workers-ai' ? 'workers-ai' : 'venice'" },
       { claim: 'on-device processing is a goal, not built', file: about('PrivacyPromise'), has: 'We are not there yet' },
       { claim: 'the crisis check and instruction screening are phrase matching', file: TERMS, has: 'These checks are simple phrase matching' },
     ],
     status: 'ready',
     ownerNote: 'Decided 2026-11-08: use the careful wording ("Venice relays only encrypted data", and say plainly it is not encryption all the way from the device), and name the model. {model_clause} is filled by the site from the model actually in use (fillAnswer and MODEL_NAMES), so it changes automatically if the model changes, and says nothing if the model is not in the list. DONE 2026-11-09: the Terms (Section 21) now name the model and carry the encryption wording.',
+    workersAi: {
+      short: 'The coach\'s replies are written by an AI language model{model_clause}, an open model that runs on Cloudflare\'s Workers AI service. Cloudflare reads your message in order to answer it; it is not encrypted from Cloudflare. The site is hosted by Netlify, and the code is public so you can read how it works. The coach is a prototype, and some protections we hope to build do not exist yet.',
+      full: [
+        'The replies come from an AI language model{model_clause}, an open model released under the Apache 2.0 license, which runs on Cloudflare\'s own computers through its Workers AI service. Your messages go from your browser to our server, hosted by Netlify, and from there to Cloudflare. The company that made the model does not receive them.',
+        'Cloudflare reads your message in order to answer it; it is not encrypted from Cloudflare. Cloudflare says it does not train AI on what Workers AI processes and does not keep a request\'s text once the reply is made. Our server also reads your message, in memory, to scrub it and screen it first, and does not store it.',
+        'The page and the server also replace common identifiers with placeholders before a message is sent, check each message for signs of crisis, and screen for attempts to give the coach instructions. These checks are simple phrase matching and can miss things or flag harmless words.',
+        'The coach is an early prototype. On-device processing, where your most private reflections would never touch a server, is a goal and not something that exists yet. Nenya\'s source code is public under the GNU Affero General Public License, so you can read how the site handles data instead of taking our word for it.',
+      ],
+      checks: [
+        { claim: 'Gemma 4 on Workers AI, Apache 2.0, the maker does not receive messages', file: WAI_TERMS, has: 'an open model released by Google under the Apache 2.0 license, which runs on Cloudflare\'s own computers: Google does not receive your messages' },
+        { claim: 'not encrypted from Cloudflare', file: WAI_TERMS, has: 'it is not encrypted from Cloudflare' },
+        { claim: 'the Workers AI default model', file: PROVIDER, has: "WORKERS_AI_DEFAULT_MODEL = '@cf/google/gemma-4-26b-a4b-it'" },
+        { claim: 'on-device processing is a goal, not built', file: about('PrivacyPromise'), has: 'We are not there yet' },
+      ],
+    },
   },
   {
     id: 'n-opensource', part: 'nenya', title: 'Is it open source',
@@ -741,6 +804,17 @@ export const ANSWERS: Answer[] = [
     ],
     status: 'ready',
     ownerNote: 'Approved 2026-11-08: keep the closing question and the mention of donations and Venice referral credits.',
+    workersAi: {
+      full: [
+        'Wanting to know whether you can trust this is reasonable, and there is a straight answer. Nenya is provided free of charge. It has no advertising, no tracking cookies, and no accounts, and it does not sell, share, or monetize data. The project is supported by donations and Venice AI\'s referral credits, and it says so.',
+        'For the coach specifically: Nenya does not keep the conversation. Your messages pass through our server to Cloudflare\'s Workers AI service, which runs the model that writes the replies; Cloudflare says it does not keep them once a reply is made or train AI on them. Our web host keeps ordinary connection logs, Nenya keeps plain daily totals with no information about who produced them, and a one-way daily code applies the daily limit. The Terms describe each of these, and the code is public, so you can check rather than take our word for it.',
+        'If something still doesn\'t sit right with you, that is worth listening to. What would help you feel able to trust it, or not?',
+      ],
+      checks: [
+        { claim: 'messages pass to Workers AI', file: WAI_TERMS, has: 'to Cloudflare\'s Workers AI service, which runs the model that writes the replies' },
+        { claim: 'the referral credits are disclosed', file: TERMS, has: 'which help pay for the demo' },
+      ],
+    },
   },
   {
     id: 'c-stopped', part: 'coach', title: 'Why did the coach stop or end the conversation',
@@ -1138,6 +1212,7 @@ export function aboutAnswerFor(text: string): Answer | null {
 // A model that is not listed here is simply not named, so a change of model can never leave a wrong name behind: add the new one here to name it.
 export const MODEL_NAMES: Record<string, string> = {
   'e2ee-qwen-2-5-7b-p': 'Qwen 2.5 7B',
+  '@cf/google/gemma-4-26b-a4b-it': 'Gemma 4 (26B-A4B)',
 };
 
 export interface FillContext {
@@ -1149,10 +1224,19 @@ export interface FillContext {
   terms?: string;
   /** The commit the build was made from (full or short). */
   commit?: string;
+  /** Which service runs the model (src/lib/coachProvider.ts). Picks the answer's Workers AI version when there is one. */
+  provider?: 'venice' | 'workers-ai';
+}
+
+/** The answer as it reads for the provider in use: its Workers AI version's short and full text where it has them. */
+export function forProvider(a: Answer, provider: 'venice' | 'workers-ai' | undefined): Answer {
+  const w = provider === 'workers-ai' ? a.workersAi : undefined;
+  return w ? { ...a, short: w.short ?? a.short, full: w.full ?? a.full } : a;
 }
 
 /** An answer with its placeholders filled. A link whose address cannot be built (no commit known) is dropped rather than left broken. */
-export function fillAnswer(a: Answer, ctx: FillContext): { short: string; full: string[]; links: Link[] } {
+export function fillAnswer(answer: Answer, ctx: FillContext): { short: string; full: string[]; links: Link[] } {
+  const a = forProvider(answer, ctx.provider);
   const name = ctx.model ? MODEL_NAMES[ctx.model] : undefined;
   const commit = ctx.commit && /^[0-9a-f]{7,40}$/i.test(ctx.commit) ? ctx.commit : '';
   const fill = (t: string) =>

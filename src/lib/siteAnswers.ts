@@ -4,15 +4,17 @@ import { ANSWERS, aboutAnswerFor, aboutAnswerWithin, type Answer } from './about
 
 const esc = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const pattern = (a: Answer): string => esc(a.short).replace(/\\\{(?:version|terms|model_clause|commit_url)\\\}/g, '.{0,80}');
+const pattern = (short: string): string => esc(short).replace(/\\\{(?:version|terms|model_clause|commit_url)\\\}/g, '.{0,80}');
+// An answer's short text for each provider (src/lib/coachProvider.ts): a transcript may come from either, so either version counts as the site's.
+const shorts = (a: Answer): string[] => (a.workersAi?.short ? [a.short, a.workersAi.short] : [a.short]);
 
 /** Whether a reply is a site answer's short text, with its filled-in parts (version, date, model) allowed to differ. */
 export function matchesAnswer(a: Answer, content: string): boolean {
-  return new RegExp('^' + pattern(a) + '$').test(content);
+  return shorts(a).some((s) => new RegExp('^' + pattern(s) + '$').test(content));
 }
 /** Whether a reply BEGINS with a site answer's short text and then carries on in the model's words (answer first, then carry on). */
 export function beginsWithAnswer(a: Answer, content: string): boolean {
-  return new RegExp('^' + pattern(a) + '\\n\\n').test(content);
+  return shorts(a).some((s) => new RegExp('^' + pattern(s) + '\\n\\n').test(content));
 }
 
 /** The replies the site wrote itself, whole or in their first part, by their index in the conversation, with the answer's title. */

@@ -75,7 +75,10 @@ These exist for testing, diagnosis, or turning a guard off in an emergency. Unse
 
 | Variable | Default | Setting it |
 |---|---|---|
-| `COACH_MODEL` | `e2ee-qwen-2-5-7b-p` | Another Venice model. The Terms name the model: change them first. |
+| `COACH_PROVIDER` | `venice` | `workers-ai` sends the model call to Cloudflare Workers AI instead (docs/hosted-model-swap-scope.md). Needs `CF_AI_ACCOUNT_ID` and `CF_AI_TOKEN`. Sealed mode is Venice-only and turns itself off. No automatic fallback between providers. **Not on production until the Terms and the site's answers about the model are changed.** |
+| `CF_AI_ACCOUNT_ID` | none | The Cloudflare account that runs Workers AI (32 hex characters; not a secret). Only with `COACH_PROVIDER=workers-ai`. |
+| `CF_AI_TOKEN` | none | **Secret.** A Cloudflare API token allowed only Workers AI. Only with `COACH_PROVIDER=workers-ai`. |
+| `COACH_MODEL` | `e2ee-qwen-2-5-7b-p` (Venice) or `@cf/google/gemma-4-26b-a4b-it` (Workers AI) | Another model for the chosen provider (a Workers AI id starts `@cf/`). The Terms name the model: change them first. |
 | `COACH_CHARACTER_SLUG` | the built-in one | Another Venice character |
 | `COACH_INSTRUCTIONS` | `v1` in the code | **Production and staging are set to `v2`** (owner, 2026-11-14). Keep it set: removing it falls back to v1. |
 | `COACH_STORE_NAME` | `coach-private` | Another Blobs store name |

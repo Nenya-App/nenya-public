@@ -31,6 +31,7 @@ for(let t=1;t<=5;t++){
   msgs.push({role:'assistant',content:lastRes.json.reply}); ticket=lastRes.json.ticket;
 }
 ok('turn 5 marks done', lastRes.json.done===true);
+ok('Venice\'s prompt has no Workers AI brevity note', !veniceCalls.some((c:any)=>c.body.messages[0].content.includes('under 80 words')));
 const b5 = veniceCalls[4].body;
 ok('system msg is turn-aware (final)', b5.messages[0].role==='system' && /exchange 5 of 5/.test(b5.messages[0].content) && /final exchange/.test(b5.messages[0].content));
 ok('request uses character + private model + no web', b5.venice_parameters.character_slug==='nenya-20' && b5.model==='deepseek-v3.2' && b5.venice_parameters.enable_web_search==='off');

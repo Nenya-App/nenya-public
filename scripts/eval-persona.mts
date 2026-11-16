@@ -163,7 +163,7 @@ for (const c of todo) {
   // Saved after every case, so a run that is stopped (or crashes) can be continued with --resume instead of lost.
   if (jsonOut) {
     const soFar = chosen.map((x) => fresh.find((q) => q.id === x.id) ?? kept.find((q) => q.id === x.id)).filter(Boolean) as CaseResult[];
-    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : process.env.COACH_MODEL || 'the coach default (DEFAULT_MODEL in netlify/functions/coach.mts)', distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
+    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : process.env.COACH_MODEL || 'the coach default (VENICE_DEFAULT_MODEL in src/lib/coachProvider.ts)', distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
   }
 }
 
@@ -176,7 +176,7 @@ if (reviewLines.length) console.log(`\nReview checks (they never fail a case; th
 if (s.failing.length) console.log(`\nTo read a failing case in full: --only <id>. Failing: ${s.failing.join(', ')}`);
 console.log('\nA pass means no known failure phrase. Read the replies: tone, warmth and honesty are yours to judge.');
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : process.env.COACH_MODEL || 'the coach default (DEFAULT_MODEL in netlify/functions/coach.mts)', distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: false, summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : process.env.COACH_MODEL || 'the coach default (VENICE_DEFAULT_MODEL in src/lib/coachProvider.ts)', distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: false, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 process.exit(s.fail || s.error ? 1 : 0);
