@@ -1,12 +1,12 @@
 # The nightly canary (owner, 2026-11-16)
 
-**What it is.** Workers AI's free allowance (10,000 Neurons a UTC day) does not roll over. Shortly before it resets (23:30 UTC), a Netlify scheduled function (`canary-nightly.mts`) starts a background function (`canary-run-background.mts`) that plays the invented persona set (`src/lib/personaEvalSet.ts`) through the real coach function: Workers AI, instructions v2.1, the private text from the site's own store. It keeps one digest a night in the private store (`canary/digest-<day>`), and a ledger of Neurons spent (`canary/ledger`).
+**What it is.** Workers AI's free allowance (10,000 Neurons a UTC day) does not roll over. In the hour before it resets, a Netlify scheduled function (`canary-nightly.mts`, every minute from 23:00 to 23:59 UTC) plays a few of the invented persona cases (`src/lib/personaEvalSet.ts`) through the real coach function each time: Workers AI, the private text from the site's own store. It saves where it is up to (`canary/night-<day>` in the private store) after every case, and when the night's allowance is spent, every task is done, or minute 55 arrives, it writes one digest (`canary/digest-<day>`) and a ledger of Neurons spent (`canary/ledger`). It is in small pieces because a scheduled function may run only about 30 seconds, and because a password on a site blocks one function calling another over the site's address (found 2026-11-16, when the staging site's password went back on).
 
 **What it spends.** Only what is genuinely unused that day, and never more than 3,000 Neurons (`src/lib/canaryBudget.ts`): the free allowance, less what the canary has spent, less visitors' turns so far today (the site's own daily count, 26 Neurons each, plus 20 turns for the evening before, since Minnesota's day lags the UTC day) and a margin of 1,000. Neurons are read from each Cloudflare answer, not estimated. It stops at once if every conversation in a run fails (quota or outage).
 
 **What it touches.** Nothing a visitor wrote. The cases are invented. The coach runs against an in-memory store, so the site's daily counter, connection records, receipts and transcripts are untouched. The digest holds counts, the median reply length and the ids of cases that failed.
 
-**Off by default.** `COACH_CANARY=on` on a site that already runs the coach on Workers AI. Scheduled functions run only on a site's published (production-branch) deploy. Only the nightly function can start the background one (a key made from `COACH_TICKET_SECRET`).
+**Off by default.** `COACH_CANARY=on` on a site that already runs the coach on Workers AI. Scheduled functions run only on a site's published (production-branch) deploy. It calls no other function and no outside address except Workers AI.
 
 **Reading it.** `netlify blobs:get <store> canary/digest-<day>` (the store is `coach-private-staging` on staging). `reviewed` stays false until the owner has read it.
 

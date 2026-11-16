@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 // How many Neurons are genuinely unused today (owner, 2026-11-16: the nightly canary spends only what is unused). Pure arithmetic, so it can be tested.
 // Workers AI's free allowance is 10,000 Neurons a UTC day and does not roll over. What visitors may still need comes first, then the margin; the canary
 // gets the rest. It never reads or sends anything from a visitor: only a count of turns.
@@ -36,5 +34,3 @@ export const runsThatFit = (unused: number): number => Math.floor(unused / NEURO
 /** The UTC day a ledger entry belongs to (Workers AI's allowance turns over at 00:00 UTC). */
 export const utcDay = (now = new Date()): string => now.toISOString().slice(0, 10);
 
-/** The key the nightly function sends to the background one, made from the site's own secret: nothing else can start the canary. */
-export const canaryKey = (secret: string): string => createHash('sha256').update(`canary|${secret}`).digest('hex');
