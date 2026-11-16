@@ -131,8 +131,9 @@ export default async (req: Request): Promise<Response> => {
             if (r.outcome !== 'pass') e[1]++;
           }
         }
-        if (results.length && results.every((r) => r.outcome === 'error')) break; // everything failing: quota or outage; stop
         reports.push(report(t, results, Math.round(spent - before)));
+        // Everything failing: for the candidate model (no access yet, say) go on to the baselines; otherwise it is quota or an outage, so stop.
+        if (results.length && results.every((r) => r.outcome === 'error') && t.name !== 'model') break;
       }
     } finally {
       globalThis.fetch = realFetch;
