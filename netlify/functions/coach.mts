@@ -987,7 +987,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   const directQ = detectDirectQuestion(lastText) || aboutTheWorldQ;
   const about = !flag && !hostile && process.env.COACH_ABOUT_ANSWERS !== 'off' ? aboutAnswerFor(lastText) : null;
   if (about) {
-    const filled = fillAnswer(about, { model, label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit });
+    const filled = fillAnswer(about, { model, provider: coachProvider(), label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit });
     tally(`coach.turn.about.${about.id}`);
     tally('coach.turn.answered');
     if (turn >= MAX_TURNS) tally('coach.conversation.finished');
@@ -1012,7 +1012,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // A longer message that asks a question about Nenya inside it: the site answers that first, and the model carries on with the rest (not on the last
   // exchange, which has to read as an ending).
   const within = !about && !flag && !hostile && turn < MAX_TURNS && process.env.COACH_ABOUT_ANSWERS !== 'off' ? aboutAnswerWithin(lastText) : null;
-  const withinFilled = within ? fillAnswer(within, { model, label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit }) : null;
+  const withinFilled = within ? fillAnswer(within, { model, provider: coachProvider(), label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit }) : null;
 
   const sampling = { temperature: 0.7, top_p: 0.9, repetition_penalty: 1.1, max_completion_tokens: MAX_REPLY_TOKENS };
 

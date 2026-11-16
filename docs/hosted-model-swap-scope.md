@@ -71,5 +71,8 @@ Part 1 (code, off) → part 2 gates → Terms draft for approval → staging tri
 
 ## Progress
 - **Part 1 built (2026-11-15), off by default:** `src/lib/coachProvider.ts` and the branch in `coach.mts`; `COACH_PROVIDER`, `CF_AI_ACCOUNT_ID`, `CF_AI_TOKEN` documented in `docs/production-env.md`; tests in `tests/coach-provider.test.mts`. Workers AI also gets a brevity note (`WORKERS_AI_STYLE_NOTE`: two to four sentences, under 80 words, everyday words), since Gemma ran longer than Venice's model (median 57 words against 37). Venice's prompt is unchanged.
-- **Before staging can use it:** the site's answers about the model (`n-howworks` and others in `src/lib/aboutNenya.ts`) still say Venice; they change with the Terms draft (part 3).
+- **Site answers follow the switch (2026-11-15):** the five answers that named Venice as the coach's service (`n-privacy-coach`, `n-report-share`, `n-region`, `n-howworks`, `c-scam`) have a Workers AI version, picked by the provider in use; signed transcripts recognize either. Their facts are checked against the Terms draft.
+- **Terms draft:** `docs/drafts/terms-workers-ai-draft.md`, applied in the same change that switches production (archive, new effective date); four owner decisions in it.
+- **Instructions v2.1:** the memory example now ends "but I'm listening now" (was "fully here"); v2, which production runs, is unchanged.
+- **Still naming Venice:** the About pages and the coach-region page (client pages, not provider-aware); they change with the Terms at the switch.
 - **Bake-off script** now runs through the real Workers AI path, and `--private <folder>` (plus `--stance vilya`) includes the private text from a folder outside the repository.

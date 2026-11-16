@@ -75,3 +75,11 @@ const langs = ANSWERS.find((a) => a.id === 'n-languages')!;
 const langText = [langs.short, ...langs.full].join(' ');
 ok('the languages answer says plainly that no contributor agreement exists yet, and promises no credit, license, payment or language', /not (?:yet )?set up a contributor agreement/i.test(langText) && !/\b(?:you will be|we will|we'll) (?:be )?(?:credit|licen[sc]e|pay|compensat|list|name|publish)/i.test(langText) && !/\b(?:is|are|will be) (?:coming|available soon)\b/i.test(langText));
 ok('the languages answer invites translators by email and names what is not a plain translation job', /info@nenya\.biz/.test(langText) && /crisis resources/.test(langText) && /safety wording/.test(langText));
+
+// The Workers AI versions (COACH_PROVIDER=workers-ai): their facts are checked like the others, against the Terms draft for the switch until it is applied.
+const waMissing = ANSWERS.flatMap((a) => (a.workersAi?.checks ?? []).filter((c) => !existsSync(c.file) || !text(c.file).includes(norm(c.has))).map((c) => `${a.id}: "${c.has}" not in ${c.file}`));
+ok('every fact a Workers AI version relies on is in its source', waMissing.length === 0, waMissing.join(' | '));
+const wa = ANSWERS.filter((a) => a.workersAi);
+ok('the answers that name Venice as the coach\'s service have a Workers AI version', ['n-privacy-coach', 'n-report-share', 'n-region', 'n-howworks', 'c-scam'].every((id) => wa.some((a) => a.id === id)));
+ok('a Workers AI version never says Venice runs the model or encrypts the message (Venice appears only for its referral credits)', wa.every((a) => [a.workersAi!.short ?? '', ...(a.workersAi!.full ?? [])].every((t) => !/Venice/.test(t.replace(/Venice AI's referral credits/g, '')))));
+ok('a Workers AI card is short enough to read in one glance (under 520 characters)', wa.every((a) => !a.workersAi!.short || a.workersAi!.short.length < 520));

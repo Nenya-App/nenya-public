@@ -70,3 +70,16 @@ delete process.env.COACH_MODEL;
 
 const env = readFileSync('docs/production-env.md', 'utf8');
 ok('the new settings are documented', ['COACH_PROVIDER', 'CF_AI_ACCOUNT_ID', 'CF_AI_TOKEN'].every((k) => env.includes('`' + k + '`')));
+
+// The site's own answers follow the provider.
+const { ANSWERS, fillAnswer } = await import('../src/lib/aboutNenya.ts');
+const how = ANSWERS.find((a) => a.id === 'n-howworks')!;
+const onWai = fillAnswer(how, { model: WORKERS_AI_DEFAULT_MODEL, provider: 'workers-ai' });
+const onVenice = fillAnswer(how, { model: VENICE_DEFAULT_MODEL, provider: 'venice' });
+ok('on Workers AI the answer names Gemma 4 and Cloudflare, and not Venice', /called Gemma 4 \(26B-A4B\), an open model that runs on Cloudflare/.test(onWai.short) && !/Venice/.test(onWai.short + onWai.full.join(' ')));
+ok('on Venice the answer is unchanged', /run by Venice AI/.test(onVenice.short) && /called Qwen 2\.5 7B/.test(onVenice.short));
+const { matchesAnswer } = await import('../src/lib/siteAnswers.ts');
+ok('a signed transcript recognizes either version as the site\'s own answer', matchesAnswer(how, onWai.short) && matchesAnswer(how, onVenice.short));
+calls = [];
+r = await call({ messages: [{ role: 'user', content: 'what model are you' }] });
+ok('the coach answers "what model are you" itself, with the Workers AI version, without calling the model', r.status === 200 && /Cloudflare/.test(r.json.reply) && !/Venice/.test(r.json.reply) && calls.length === 0, String(r.json.reply).slice(0, 120));
