@@ -48,7 +48,7 @@ let r = await call({ messages: [{ role: 'user', content: 'I have been feeling st
 const sent = calls.find((c) => c.url.includes('api.cloudflare.com'));
 ok('a turn goes to Workers AI, with the token, and the reply comes back', r.status === 200 && /What feels heaviest/.test(r.json.reply) && !!sent && sent.init.headers.Authorization === 'Bearer cf-test-token', JSON.stringify(r.json));
 ok('the same system instruction and scrubbed messages as on Venice', !!sent && sent.body.messages[0].role === 'system' && /exchange 1 of 5/.test(sent.body.messages[0].content) && sent.body.messages.at(-1).content.includes('stuck at work'));
-ok('the brevity note is added on Workers AI', !!sent && sent.body.messages[0].content.includes('under 80 words'));
+ok('the brevity note is added on Workers AI', !!sent && sent.body.messages[0].content.includes('under 80 words') && sent.body.messages[0].content.includes('whoever prescribes it'));
 ok('nothing goes to Venice', !calls.some((c) => c.url.includes('venice.ai')));
 calls = [];
 mode = 'fail';

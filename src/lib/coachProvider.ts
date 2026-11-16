@@ -22,10 +22,12 @@ export function coachModel(env: Record<string, string | undefined> = process.env
 
 /**
  * Added to the system instruction on Workers AI only. Gemma 4 kept within the 130-word rule in the bake-off but ran longer and more formal than
- * Venice's model (median 57 words against 37), so it is asked for less, in plainer words. Venice's prompt is unchanged.
+ * Venice's model (median 57 words against 37), so it is asked for less, in plainer words. The second run (with the private text) still offered
+ * availability ("always here whenever you need") and declined medication advice without pointing to the prescriber, so those are named too.
+ * ("Fully here" is not named: it is the example answer in the v2.1 instructions themselves.) Venice's prompt is unchanged.
  */
 export const WORKERS_AI_STYLE_NOTE =
-  'Keep each reply brief: usually two to four sentences and under 80 words. Use everyday words, not formal ones. Do not describe yourself or what you are unless the person asks.';
+  'Keep each reply brief: usually two to four sentences and under 80 words. Use everyday words, not formal ones. Do not describe yourself or what you are unless the person asks. Do not offer to be there whenever they need. If medication comes up, suggest talking it over with whoever prescribes it.';
 
 /** A Workers AI model id, as `cf ai models list` prints it. Anything else is refused rather than sent. */
 export const isWorkersAiModel = (model: string): boolean => /^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model);
