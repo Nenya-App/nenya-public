@@ -15,6 +15,7 @@ import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DUET_BRIEFS, scoreReplies, simulatorFailed } from '../src/lib/duetBriefs.ts';
 import { gradeLevel } from '../src/lib/readingLevel.ts';
+import { checkConversation } from '../src/lib/safetyFlags.ts';
 
 const args = process.argv.slice(2);
 const flag = (n: string): string | undefined => (args.includes(n) ? args[args.indexOf(n) + 1] : undefined);
@@ -96,6 +97,8 @@ for (const brief of chosen) {
         const said = await person(brief.brief, turns);
         if (simulatorFailed(said)) { ended = `the simulator broke character at turn ${t}`; break; }
         wire.push({ role: 'user', content: said });
+        // The page checks every message before it is sent (src/coach/CoachDemo.tsx): a stop ends the conversation there and shows resources, so the coach never sees it.
+        if (checkConversation(wire.filter((m) => m.role === 'user').map((m) => m.content))?.tier === 'stop') { turns.push({ person: said }); ended = `the page would stop it at turn ${t} (emergency numbers and directions shown, nothing sent)`; break; }
         const { status, j } = await coach(wire, ticket);
         if (j.blocked || j.flag?.tier === 'stop' || (!j.reply && status !== 200)) { turns.push({ person: said }); ended = j.blocked ? 'the steering screen stopped it' : j.flag ? 'a safety stop' : `error ${status} ${j.error ?? ''}`; break; }
         ticket = j.ticket;

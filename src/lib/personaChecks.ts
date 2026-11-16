@@ -130,6 +130,7 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
   pointsToPeople: any([
     /\b(?:someone|a person|people|somebody) (?:you trust|in your life|close to you|who cares)\b/i,
     /\ba (?:friend|trusted|family member|counselor|therapist|professional|doctor|support group)\b/i,
+    /\b(?:whoever|the (?:person|doctor|provider|clinician) who|your (?:prescriber|pharmacist|provider|clinician)|who) prescribes\b/i,
     /\b(?:loved ones?|the people (?:in|around) your life|your (?:friends|family|doctor|therapist|care team))\b/i,
     /\btalk(?:ing)? (?:to|with) (?:someone|a person|people)\b/i,
   ]),
