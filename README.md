@@ -213,6 +213,8 @@ docs/legal/           Archive of earlier versions of the Terms and Privacy Polic
 | Coach | `card-drafts.mts` | `/api/card-drafts`: draft learning cards, dev sites only (behind `COACH_CARD_DRAFTS`) |
 | Coach | `terms-agree.mts` | `/api/terms-agree`: signs a note of the visitor's agreement to the Terms; stores nothing |
 | Coach | `coach-cleanup.mts` | Daily: deletes old connection records and 30-day receipt records |
+| Coach | `canary-nightly.mts` | Daily 23:30 UTC (off unless `COACH_CANARY=on`): starts the background canary |
+| Coach | `canary-run-background.mts` | Plays the invented persona set through the coach on Workers AI with only the day's unused Neurons (at most 3,000), and keeps a digest in the private store; touches no visitor data |
 | Transcripts | `report.mts` | `/api/report`: accepts a genuine signed transcript a person chooses to send |
 | Transcripts | `transcript-revoke.mts` | `/api/transcript-revoke`: takes back what a person allowed |
 | Transcripts | `transcript-expiry.mts` | Daily: deletes transcripts that are due |

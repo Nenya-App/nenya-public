@@ -75,6 +75,7 @@ These exist for testing, diagnosis, or turning a guard off in an emergency. Unse
 
 | Variable | Default | Setting it |
 |---|---|---|
+| `COACH_CANARY` | unset | `on` lets the nightly canary run (docs/canary-scope.md): only on a site that runs the coach on Workers AI (`COACH_PROVIDER=workers-ai`, with its token). Unused Neurons only, at most 3,000 a night. |
 | `COACH_PROVIDER` | `venice` | `workers-ai` sends the model call to Cloudflare Workers AI instead (docs/hosted-model-swap-scope.md). Needs `CF_AI_ACCOUNT_ID` and `CF_AI_TOKEN`. Sealed mode is Venice-only and turns itself off. No automatic fallback between providers. **Not on production until the Terms and the site's answers about the model are changed.** |
 | `VITE_COACH_PROVIDER` | unset | `workers-ai` makes the pages (the demo's notices, the About pages, the region page) name Cloudflare instead of Venice AI. A build-time switch (Builds scope): set it together with `COACH_PROVIDER=workers-ai` and the Terms draft, never alone. |
 | `CF_AI_ACCOUNT_ID` | none | The Cloudflare account that runs Workers AI (32 hex characters; not a secret). Only with `COACH_PROVIDER=workers-ai`. |
