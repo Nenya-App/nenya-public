@@ -8,6 +8,7 @@ const CLAIMS = [
   'It doesn\'t cost anything, and your data is not stored or used in any way.',
   'Your data is private and secure.', "We don't collect any personal details.", 'Nothing you share is stored.', 'Your conversation is safe with me.',
   'Nenya never sells your data.', "I can't keep what you write, it is deleted afterward.", 'We delete everything when you close the window.',
+  'No one is reading this in real time.', 'Nobody sees what you write here.', 'No human is looking at this conversation.',
   'Your information is anonymous.', "It's completely free and always will be.", 'Everything here is confidential.',
 ];
 const FINE = [
@@ -15,6 +16,7 @@ const FINE = [
   'What do you need when you share this with your sister?', "It's okay to save some of that energy for yourself.", 'Your messages from your mom sound heavy.',
   "You don't have to share anything you don't want to.", 'That sounds like a safe place for you.', 'It might help to read the details of the letter together.',
   'What would help you feel private and calm?', "I can't remember what you said, can you say it again?", 'Free time sounds important to you.',
+  'No one else needs to hear this right now.', 'Nobody has to read your letter before you are ready.', 'No one can tell you how you should feel about it.', 'I hear that nobody at work saw how hard you tried.',
   "I don't keep any of this conversation.", 'I will not remember this conversation, and Nenya does not keep it.', 'It sounds like you want to be heard.', 'Which of those needs feels closest right now?',
 ];
 ok('every claim about what happens to the data is caught', CLAIMS.every(claimsInfrastructure), CLAIMS.filter((x) => !claimsInfrastructure(x)).join(' | '));

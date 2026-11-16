@@ -10,6 +10,7 @@ import { ok } from './helpers.mts';
 
 process.env.COACH_ENABLED = 'true';
 process.env.VENICE_API_KEY = 'k';
+process.env.COACH_PROVIDER = 'venice'; // these tests stub Venice's address
 process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret';
 process.env.COACH_MODEL = 'deepseek-v3.2'; // these tests use the plain request path; the default encrypted model is covered in venice-e2ee.test.mts
 process.env.COACH_SIGNING_KEY = generateKeyPairSync('ed25519').privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64');

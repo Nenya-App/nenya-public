@@ -170,7 +170,7 @@ The project is set up for Netlify:
   Netlify dashboard for the Production context, Functions scope; never commit them):
   `VENICE_API_KEY` (secret), `COACH_TICKET_SECRET` (secret), `COACH_ENABLED`
   (`true` to accept requests). Optional: `COACH_SIGNING_KEY` (secret; enables signed
-  transcripts, see the docs), `COACH_PROVIDER` (`venice` by default, or `workers-ai` with `CF_AI_ACCOUNT_ID` and the secret `CF_AI_TOKEN`; see `docs/hosted-model-swap-scope.md`), `COACH_MODEL`, `COACH_CHARACTER_SLUG`, `COACH_E2EE_ATTESTATION_TTL_S` and `COACH_E2EE_ATTESTATION_STALE_S` (how long the encrypted model's verified key is remembered, in seconds; see `docs/coach-testing.md`).
+  transcripts, see the docs), `COACH_PROVIDER` (`workers-ai` by default, with `CF_AI_ACCOUNT_ID` and the secret `CF_AI_TOKEN`; `venice` for Venice AI; see `docs/hosted-model-swap-scope.md`), `COACH_MODEL`, `COACH_CHARACTER_SLUG`, `COACH_E2EE_ATTESTATION_TTL_S` and `COACH_E2EE_ATTESTATION_STALE_S` (how long the encrypted model's verified key is remembered, in seconds; see `docs/coach-testing.md`).
   Also optional, and off by default: `COACH_SEALED` (`on` accepts sealed mode, where the visitor's browser encrypts each
   message for the model's enclave and the relay cannot read it) and `CELL_ENABLED` (`true` opens the encrypted mailbox for
   two-person partner practice). Neither has a screen yet, and the Terms need updating before either is switched on: see
@@ -213,6 +213,7 @@ docs/legal/           Archive of earlier versions of the Terms and Privacy Polic
 | Coach | `card-drafts.mts` | `/api/card-drafts`: draft learning cards, dev sites only (behind `COACH_CARD_DRAFTS`) |
 | Coach | `terms-agree.mts` | `/api/terms-agree`: signs a note of the visitor's agreement to the Terms; stores nothing |
 | Coach | `coach-cleanup.mts` | Daily: deletes old connection records and 30-day receipt records |
+| Coach | `canary-nightly.mts` | Every minute 23:00-23:59 UTC (off unless `COACH_CANARY=on`): plays a few invented persona cases through the coach on Workers AI, saves its place, and writes a nightly digest to the private store; only the day's unused Neurons, at most 3,000; touches no visitor data |
 | Transcripts | `report.mts` | `/api/report`: accepts a genuine signed transcript a person chooses to send |
 | Transcripts | `transcript-revoke.mts` | `/api/transcript-revoke`: takes back what a person allowed |
 | Transcripts | `transcript-expiry.mts` | Daily: deletes transcripts that are due |

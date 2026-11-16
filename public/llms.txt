@@ -9,7 +9,7 @@
 ## Accuracy notes
 - Built today: guided breathing at a rhythm the visitor chooses; six optional gateways (Sight, Sound, Touch, Essence, Movement, Insight) for describing a feeling as it is now and as the visitor wishes it to be; a summary made and downloaded on the visitor's device.
 - The reflection tools run in the browser. What a visitor chooses there is not sent to Nenya.
-- The coach demo is optional and separate: at most five exchanges with an AI, through Venice AI (an outside service), open to connections in the United States for now. It says it is an AI. The site screens each message, replaces common identifiers, and stops a message that signals a crisis before it reaches the AI, showing crisis resources instead. A downloaded transcript is signed, and anyone can check it at https://nenya.biz/verify.
+- The coach demo is optional and separate: at most five exchanges with an AI, through Cloudflare’s Workers AI (an outside service), open to connections in the United States for now. It says it is an AI. The site screens each message, replaces common identifiers, and stops a message that signals a crisis before it reaches the AI, showing crisis resources instead. A downloaded transcript is signed, and anyone can check it at https://nenya.biz/verify.
 - Grounding: nonviolent communication (NVC), extended as NVC+, explained on the site. The tools use its ideas; Nenya is not a course in NVC.
 - Planned and not built: partner practice using NVC-informed language between two people, and running the coach's model on the visitor's device.
 - Use of this site's content: indexing and quoting in answers are welcome; training AI models on it is not (see robots.txt).

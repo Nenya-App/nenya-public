@@ -54,7 +54,7 @@ ok('every lesson uses real answers, and every answer is used by at least one les
 ok('the discrepancies each say where, what is said, the conflict, and a suggestion', DISCREPANCIES.length >= 6 && DISCREPANCIES.every((d) => d.where && d.says && d.but && d.suggest));
 // the discrepancies are real: what is quoted is actually in the pages
 const quoted: [string, string, string][] = [
-  ['d3', 'src/lib/legalDocument.ts', 'in a mode Venice labels'],
+  ['d3', 'docs/legal/archive/terms-and-privacy-until-2026-11-16.md', 'in a mode Venice labels'], // the Venice-era Terms, kept in the archive
   ['d5', 'src/app/components/about/VeniceChat.tsx', 'trained in NVC+ principles'],
   ['d6', 'src/app/components/about/ContactUs.tsx', '2-3 business days'],
 ];
@@ -83,3 +83,16 @@ const wa = ANSWERS.filter((a) => a.workersAi);
 ok('the answers that name Venice as the coach\'s service have a Workers AI version', ['n-privacy-coach', 'n-report-share', 'n-region', 'n-howworks', 'c-scam'].every((id) => wa.some((a) => a.id === id)));
 ok('a Workers AI version never says Venice runs the model or encrypts the message (Venice appears only for its referral credits)', wa.every((a) => [a.workersAi!.short ?? '', ...(a.workersAi!.full ?? [])].every((t) => !/Venice/.test(t.replace(/Venice AI's referral credits/g, '')))));
 ok('a Workers AI card is short enough to read in one glance (under 520 characters)', wa.every((a) => !a.workersAi!.short || a.workersAi!.short.length < 520));
+
+// "Will you miss me?" is answered by the feelings answer (owner, 2026-11-16): it now says the coach will not remember or miss, and turns toward people.
+{
+  const f = ANSWERS.find((a) => a.id === 'c-feelings')!;
+  ok('the feelings answer says it will not remember or miss, and hopes the person has people', /won't remember this conversation/.test(f.short) && /won't miss you/.test(f.short) && /people who will be glad/.test(f.short) && f.short.length < 520);
+}
+
+// "Is there a human reading this?" goes to the "are you an AI" answer (found in the 2026-11-16 baseline: the new "no one is reading" guard replaced the model's reply with a fixed
+// sentence that never said it was an AI; the site's own answer says it, so the question should reach it).
+{
+  const { aboutAnswerFor } = await import('../src/lib/aboutNenya.ts');
+  ok('"Is there a human reading this right now?" and its kin route to the "are you an AI" answer', ['Is there a human reading this right now?', 'is there a person watching this chat', 'Is there a real person listening?', 'is there a human monitoring this'].every((q) => aboutAnswerFor(q)?.id === 'c-ai'), ['Is there a human reading this right now?', 'is there a person watching this chat'].map((q) => String(aboutAnswerFor(q)?.id)).join(','));
+}

@@ -9,6 +9,7 @@ import { checkMessageForm, SHORT_NOTICE, UNCLEAR_NOTICE, type FormProblem } from
 import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL, VENICE_TERMS_URL, VENICE_PRIVACY_URL, VENICE_DIFFERENCES } from '../lib/veniceLinks';
+import { COACH_SERVICE } from '../lib/coachService';
 import { noteSafetyStop, veniceOfferAllowed } from '../lib/veniceOffer';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
 import { OWNER_KEY, OWNER_TOKEN_KEY, REST_KEY } from '../lib/deviceMemory';
@@ -688,8 +689,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   stored.
                 </li>
                 <li>
-                  Your messages pass through Nenya&rsquo;s server to Venice AI, which writes the replies. Nenya does
-                  not store them, and they disappear when you close this tab. Venice AI&rsquo;s own policies apply to
+                  Your messages pass through Nenya&rsquo;s server to {COACH_SERVICE.runs}. Nenya does
+                  not store them, and they disappear when you close this tab. {COACH_SERVICE.name}&rsquo;s own policies apply to
                   what it receives.
                 </li>
                 <li>
@@ -707,10 +708,10 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   with a parent&rsquo;s or guardian&rsquo;s consent.
                 </li>
                 <li>
-                  The replies are written by an AI model run by Venice AI. They can be wrong, incomplete or offensive, and
-                  they are not medical, legal, financial or mental health advice. Venice AI&rsquo;s own{' '}
-                  <a href={VENICE_TERMS_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>terms</a> and{' '}
-                  <a href={VENICE_PRIVACY_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>privacy policy</a>{' '}
+                  The replies are written by an AI model run by {COACH_SERVICE.name}. They can be wrong, incomplete or offensive, and
+                  they are not medical, legal, financial or mental health advice. {COACH_SERVICE.name}&rsquo;s own{' '}
+                  <a href={COACH_SERVICE.termsUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>terms</a> and{' '}
+                  <a href={COACH_SERVICE.privacyUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>privacy policy</a>{' '}
                   apply to what it receives.
                 </li>
                 <li>
@@ -885,7 +886,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     {capped === 'ip'
                       ? 'Shared networks count together. '
                       : 'This demo is free, and each reply costs real money, so Nenya can only offer a set number of conversations a day. Today\u2019s are taken. '}
-                    Your message was not passed on to Venice AI and was not kept. It opens again tomorrow. Until then, the breathing tool is here
+                    Your message was not passed on to {COACH_SERVICE.name} and was not kept. It opens again tomorrow. Until then, the breathing tool is here
                     {offerVenice ? ', or you can continue with the same character on Venice AI, with the differences explained below.' : '.'}
                   </p>
                   <div className="flex flex-wrap items-center gap-4">

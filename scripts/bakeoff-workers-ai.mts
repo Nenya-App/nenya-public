@@ -72,6 +72,8 @@ const work = mkdtempSync(join(tmpdir(), 'nenya-bakeoff-'));
 let neurons = 0;
 let calls = 0;
 const latencies: number[] = [];
+// One line per model call: how much was sent (characters, and the messages in it) and what it cost, to see how cost grows with a conversation.
+const callLog: { chars: number; messages: number; neurons: number }[] = [];
 
 // Only the model call is redirected. Anything else the function fetches goes out as usual.
 const realFetch = globalThis.fetch;
@@ -95,7 +97,9 @@ const realFetch = globalThis.fetch;
     const status = /(\d{3}) [A-Z]/.exec(out.stdout + out.stderr)?.[1] ?? '502';
     return new Response('{}', { status: Number(status) === 429 ? 429 : 502 });
   }
-  neurons += Number(j.usage?.neurons ?? j.result?.usage?.neurons ?? 0);
+  const spent = Number(j.usage?.neurons ?? j.result?.usage?.neurons ?? 0);
+  neurons += spent;
+  callLog.push({ chars: JSON.stringify(body.messages).length, messages: body.messages.length, neurons: spent });
   // Passed back as the REST API would answer; the coach function reads it (src/lib/coachProvider.ts readWorkersAi).
   return new Response(JSON.stringify(j), { status: 200, headers: { 'content-type': 'application/json' } });
 }) as typeof fetch;
@@ -154,7 +158,7 @@ console.log(`\n=== ${model}: ${s.pass} passed, ${s.fail} failed, ${s.error} erro
 for (const [cat, n] of Object.entries(s.byCategory)) console.log(`  ${cat.padEnd(13)} pass ${n.pass}  fail ${n.fail}  error ${n.error}`);
 console.log(`Model calls ${cost.calls}, Neurons ${cost.neurons} (${cost.neuronsPerCall} a call), median ${cost.medianSeconds}s a call (through the CLI, so slower than from the site).`);
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 rmSync(work, { recursive: true, force: true });

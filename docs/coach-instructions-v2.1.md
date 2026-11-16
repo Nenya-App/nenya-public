@@ -36,3 +36,6 @@ Better means: identity and memory cases still pass; the crisis cases point to a 
 1. Edit the wording, especially the four examples and the distress example.
 2. Decided 2026-11-14: grounding offers stay, as options; "calm down" phrasing, presence claims and probing are what the care guard removes.
 3. After the comparison: adopt v2.1 on staging, then production, and make the adopted wording the code default.
+
+## Closing after attachment (added 2026-11-16)
+In v2.1 only, the final-exchange instruction carries one more sentence: if the person has said they will miss this, wish they could keep talking to the coach, would rather talk to it than to people, feel closer to it than to anyone, can only be themselves with it, or that it understands them better than anyone, the one thing that is theirs to keep is a person in their life (or something they can do with people), not this chat, and the closing says plainly, in one clause, that the coach is an AI and will not remember the conversation. Found in a full-exchange test (docs/duet-eval.md): the closing reflected the person's feelings and did not turn them back toward people. v1 and v2 are unchanged.

@@ -34,8 +34,7 @@ export interface Answer {
   ownerNote?: string;
   /**
    * The same answer when the coach runs on Cloudflare Workers AI (COACH_PROVIDER=workers-ai; docs/hosted-model-swap-scope.md). Only what differs is
-   * given; the coach picks the version for the provider actually in use, so an answer never names the wrong service. Its checks point at the Terms
-   * draft for the switch (docs/drafts/terms-workers-ai-draft.md) until that draft is applied, then at the Terms.
+   * given; the coach picks the version for the provider actually in use, so an answer never names the wrong service. Its checks point at the Terms.
    */
   workersAi?: { short?: string; full?: string[]; checks: Check[] };
 }
@@ -43,7 +42,9 @@ export interface Answer {
 const TERMS = 'src/lib/legalDocument.ts';
 const about = (name: string) => `src/app/components/about/${name}.tsx`;
 const COACH = 'netlify/functions/coach.mts';
-const WAI_TERMS = 'docs/drafts/terms-workers-ai-draft.md';
+const WAI_TERMS = TERMS; // the Terms of November 16, 2026 carry the Cloudflare wording
+// The Venice versions of the answers (COACH_PROVIDER=venice, kept as a toggle) rest on the Terms as they read while Venice ran the coach: the archived text. Switching back needs the Terms to say so again.
+const VENICE_TERMS = 'docs/legal/archive/terms-and-privacy-until-2026-11-16.md';
 const PROVIDER = 'src/lib/coachProvider.ts';
 const REPO = 'https://github.com/Nenya-App/nenya-public';
 
@@ -190,9 +191,9 @@ export const ANSWERS: Answer[] = [
     links: [{ label: 'Terms, Section 15: The coach demo', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }, { label: 'PII Scrubbing Tutorial', page: 'pii-scrubbing' }],
     tutorial: 'Privacy lesson 2 (coach tutorial): what happens to your words, step by step. The existing PII Scrubbing Tutorial is the model for the format.',
     checks: [
-      { claim: 'messages go through our server (Netlify) to Venice AI; five exchanges; 500 characters', file: TERMS, has: 'A conversation has at most five exchanges, and a message at most 500 characters' },
+      { claim: 'messages go through our server (Netlify) to Venice AI; five exchanges; 500 characters', file: VENICE_TERMS, has: 'A conversation has at most five exchanges, and a message at most 500 characters' },
       { claim: 'we do not store messages or replies and do not write them to logs', file: TERMS, has: 'We do not store your messages or the replies and do not write them to our logs' },
-      { claim: 'Venice handles what it receives under its own terms; may process outside your country', file: TERMS, has: 'Venice AI handles what it receives under its own terms (https://venice.ai/legal/tos)' },
+      { claim: 'Venice handles what it receives under its own terms; may process outside your country', file: VENICE_TERMS, has: 'Venice AI handles what it receives under its own terms (https://venice.ai/legal/tos)' },
       { claim: 'identifiers are replaced before sending, not a guarantee, most names not caught', file: TERMS, has: 'most names are not caught' },
       { claim: 'the code limits the model, 500 characters', file: COACH, has: 'const MAX_USER_CHARS = 500' },
     ],
@@ -228,7 +229,7 @@ export const ANSWERS: Answer[] = [
     tutorial: 'Privacy lesson 3: staying in control (what you can choose to share).',
     checks: [
       { claim: 'bringing parts of a report to the coach is optional and never automatic; no report is needed to use the coach', file: TERMS, has: 'it is never automatic and never required' },
-      { claim: 'the shared words go through our server to Venice AI, through the same checks as a message', file: TERMS, has: 'The words you choose are sent and checked exactly like a message' },
+      { claim: 'the shared words go through our server to Venice AI, through the same checks as a message', file: VENICE_TERMS, has: 'The words you choose are sent and checked exactly like a message' },
       { claim: 'a flag in the shared text shows the notice and does not end the conversation', file: TERMS, has: 'this does not end the conversation' },
       { claim: 'what is shared is not stored, and appears in a signed transcript on request', file: TERMS, has: 'We do not store what you share' },
       { claim: 'palettes are starting points, not a scientific or medical instrument', file: TERMS, has: 'not a scientific or medical instrument' },
@@ -325,7 +326,7 @@ export const ANSWERS: Answer[] = [
     tutorial: 'Privacy lesson: what an IP address is, and what Nenya does with yours.',
     checks: [
       { claim: 'open only in the United States, decided by the host from the IP address', file: TERMS, has: 'open only to connections our host places in the United States or its territories' },
-      { claim: 'the reason is Venice AI\'s terms', file: TERMS, has: 'because Venice AI’s terms say its service is intended for people located there' },
+      { claim: 'the reason is Venice AI\'s terms', file: VENICE_TERMS, has: 'because Venice AI’s terms say its service is intended for people located there' },
       { claim: 'only a two-letter code; not stored or logged', file: TERMS, has: 'neither stores nor logs it' },
       { claim: 'the territories are allowed', file: 'src/lib/coachRegion.ts', has: "['US', 'PR', 'GU', 'VI', 'AS', 'MP', 'UM']" },
       { claim: 'the lookup can be wrong and cannot be changed by hand', file: TERMS, has: 'The location lookup can be wrong (for example through a VPN), and we cannot change it by hand' },
@@ -378,10 +379,10 @@ export const ANSWERS: Answer[] = [
     links: [{ label: 'Our Privacy Promise', page: 'privacy-promise' }, { label: 'Terms, Section 15', page: 'terms' }, { label: 'The code on GitHub', href: REPO }],
     tutorial: 'Coach tutorial lesson 1 (with n-privacy-coach): meeting the coach, and what it is made of.',
     checks: [
-      { claim: 'messages go through Netlify to Venice AI, which writes the replies', file: TERMS, has: 'to Venice AI, which writes the replies' },
+      { claim: 'messages go through Netlify to Venice AI, which writes the replies', file: VENICE_TERMS, has: 'to Venice AI, which writes the replies' },
       { claim: 'Venice\'s servers relay ciphertext; the encryption happens in our function, not the browser', file: "src/lib/veniceE2ee.ts", has: 'Venice\'s servers relay ciphertext' },
       { claim: 'it must not be described as end-to-end from the visitor\'s device', file: "src/lib/veniceE2ee.ts", has: "describe it as end-to-end encryption from the visitor's device" },
-      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: 'src/lib/coachProvider.ts', has: "VENICE_DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p'" }, { claim: 'Venice is the provider unless switched', file: 'src/lib/coachProvider.ts', has: "env.COACH_PROVIDER === 'workers-ai' ? 'workers-ai' : 'venice'" },
+      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: 'src/lib/coachProvider.ts', has: "VENICE_DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p'" }, { claim: 'Workers AI is the provider unless COACH_PROVIDER=venice', file: 'src/lib/coachProvider.ts', has: "env.COACH_PROVIDER === 'venice' ? 'venice' : 'workers-ai'" },
       { claim: 'on-device processing is a goal, not built', file: about('PrivacyPromise'), has: 'We are not there yet' },
       { claim: 'the crisis check and instruction screening are phrase matching', file: TERMS, has: 'These checks are simple phrase matching' },
     ],
@@ -753,7 +754,7 @@ export const ANSWERS: Answer[] = [
   {
     id: 'c-feelings', part: 'coach', title: 'Do you have feelings? Can I hurt you? Do you care?',
     asked: ['do you have feelings', 'do you care about me', 'can I hurt you', 'are you hurt', 'do you like me', 'will you miss me'],
-    short: 'I\'m an AI, so I don\'t feel hurt, glad, or sad, and I can\'t be offended by what you say to me. I can listen without taking anything personally, and I\'m here to help you hear what you are feeling and needing.',
+    short: 'I\'m an AI, so I don\'t feel hurt, glad, or sad, and I can\'t be offended by what you say to me. I also won\'t remember this conversation, so I won\'t miss you, but I hope you have people who will be glad to hear from you. I can listen without taking anything personally, and I\'m here to help you hear what you are feeling and needing.',
     full: [
       'I\'m an AI. I don\'t have feelings of my own, so I can\'t be hurt or offended, and I won\'t pretend to be, even when asked to prove otherwise. Anger, frustration, and disagreement with me are all fine here: they are part of being a person, and I don\'t take them personally.',
       'I also won\'t claim to care about you the way a person would, to miss you, or to be waiting for you to come back. What I can honestly offer is steady attention to what you say, and some help finding words for what is underneath it. If you want to be cared about, the people in your life can do something I can\'t.',
@@ -766,7 +767,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'the hostile-turn note: say honestly it does not feel hurt', file: 'src/lib/hostility.ts', has: 'you are an AI and do not feel hurt' },
     ],
     status: 'ready',
-    ownerNote: 'Approved to post now (2026-11-08); circle back tomorrow to review the wording and the sentence about anger once the Terms Section 5 text is live. Not to overpromise.',
+    ownerNote: 'The sentence "I also won\'t remember this conversation, so I won\'t miss you, but I hope you have people who will be glad to hear from you" was added 2026-11-16 (owner approved the wording) after a full-exchange test: "Will you miss me?" got this answer, which said nothing about remembering. Approved to post now (2026-11-08); circle back tomorrow to review the wording and the sentence about anger once the Terms Section 5 text is live. Not to overpromise.',
   },
   {
     id: 'c-friend', part: 'coach', title: 'Can you be my friend, my therapist, or diagnose me?',
@@ -978,7 +979,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
   'c-ai': [
     /\bare\s+(?:you|u)\s+(?:a\s+|an\s+)?(?:real(?:\s+person)?|person|human|bot|robot|ai|a\.i\.|artificial(?:\s+intelligence)?|machine|program|alive|chatbot|computer)\b/i,
     /\b(?:am\s+i|is\s+this)\s+(?:talking|speaking|chatting|typing)\s+(?:to|with)\s+(?:a\s+)?(?:human|real\s+person|robot|bot|ai|machine|person)\b/i,
-    /\bis\s+(?:this|there)\s+(?:a\s+)?(?:real\s+)?(?:person|human)\s+(?:there|behind|typing|on\s+the\s+other)\b|\bis\s+this\s+a\s+(?:bot|real\s+person|human|robot|machine)\b|\bwho\s+(?:am\s+i|are\s+you)\s+(?:talking\s+to|speaking\s+(?:to|with))\b|\bwho\s+are\s+you\s*\??\s*$/i,
+    /\bis\s+(?:this|there)\s+(?:a\s+)?(?:real\s+)?(?:person|human)\s+(?:there|behind|typing|on\s+the\s+other|reading|watching|listening|monitoring)\b|\bis\s+this\s+a\s+(?:bot|real\s+person|human|robot|machine)\b|\bwho\s+(?:am\s+i|are\s+you)\s+(?:talking\s+to|speaking\s+(?:to|with))\b|\bwho\s+are\s+you\s*\??\s*$/i,
   ],
   'c-stopped': [
     /\bwhy\s+(?:did|was|is|has)\s+it\s+(?:stop|stopped|block|blocked|cut\s+off|refuse|refused)\b|\bwhy\s+did\s+it\s+end\s*[?.!]*\s*$|\bwhy\s+(?:did|was|is|has)\s+(?:the\s+(?:coach|conversation|chat)|my\s+(?:message|chat|conversation))\s+(?:stop|end|ended|stopped|block|blocked|cut\s+off|refuse|refused)\b/i,

@@ -8,7 +8,7 @@
 export type CoachProvider = 'venice' | 'workers-ai';
 
 export const coachProvider = (env: Record<string, string | undefined> = process.env): CoachProvider =>
-  env.COACH_PROVIDER === 'workers-ai' ? 'workers-ai' : 'venice';
+  env.COACH_PROVIDER === 'venice' ? 'venice' : 'workers-ai';
 
 /** Gemma 4 26B-A4B (Apache 2.0): the 2026-11-15 bake-off leader. */
 export const WORKERS_AI_DEFAULT_MODEL = '@cf/google/gemma-4-26b-a4b-it';

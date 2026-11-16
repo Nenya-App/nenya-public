@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 process.env.COACH_ENABLED = 'true';
 process.env.COACH_ABOUT_ANSWERS = 'off';
 process.env.VENICE_API_KEY = 'k';
+process.env.COACH_PROVIDER = 'venice'; // these tests stub Venice's address
 process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
 process.env.COACH_MODEL = 'deepseek-v3.2';
 process.env.COACH_FORM_CHECK = 'off';
@@ -45,3 +46,9 @@ ok('when the page flags distress, the care note is still added and still takes p
 process.env.COACH_INSTRUCTIONS = 'v2';
 ok('v2 itself is unchanged (still has its own paragraphs)', (await systemFor('Are you a real person?')) === v2);
 delete process.env.COACH_INSTRUCTIONS;
+
+// The closing after attachment (owner, 2026-11-16): v2.1's final-exchange instruction turns an attached person toward people; v2 does not say it.
+{
+  const read = (await import('node:fs')).readFileSync('netlify/functions/coach.mts', 'utf8');
+  ok('v2.1 only: the final exchange turns attachment toward people and says the coach will not remember', /if \(v21\) parts\.push\('If the person has said they will miss this[\s\S]{0,200}would rather talk to you than to people[\s\S]{0,400}will not remember this conversation\.'\);/.test(read));
+}

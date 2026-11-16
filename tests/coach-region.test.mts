@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 process.env.COACH_ENABLED = 'true';
 process.env.VENICE_API_KEY = 'k';
+process.env.COACH_PROVIDER = 'venice'; // these tests stub Venice's address
 process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
 process.env.COACH_MODEL = 'deepseek-v3.2';
 process.env.COACH_FORM_CHECK = 'off';

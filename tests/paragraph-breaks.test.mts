@@ -4,6 +4,7 @@ import handler from '../netlify/functions/coach.mts';
 import { ok } from './helpers.mts';
 process.env.COACH_ENABLED = 'true';
 process.env.VENICE_API_KEY = 'k';
+process.env.COACH_PROVIDER = 'venice'; // these tests stub Venice's address
 process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret';
 process.env.COACH_MODEL = 'deepseek-v3.2';
 

@@ -30,6 +30,6 @@ ok('the review page hides "Take it to Venice" and its note after a stop', (revie
   ok('the Terms link Venice AI’s terms and privacy policy', terms.includes(VENICE_TERMS_URL) && terms.includes(VENICE_PRIVACY_URL));
   ok('under-18s use the coach only with a parent’s or guardian’s consent (Venice terms, section 4)', /under 18, please use the coach demo only with a parent/.test(terms) && /under 18, please use it only\s+with a parent/.test(coach));
   ok('the prohibited uses Venice asks for are in the Terms (section 12)', ['anything illegal', 'abuses or exploits a child', 'name, voice or likeness', 'misstate your age', 'bots, scripts or automated requests', 'resell or pass on access', 'death, serious injury or significant harm'].every((p) => terms.includes(p)));
-  ok('no warranty is made on Venice’s behalf, and the limits protect it too (section 7.3)', /We make no promise on Venice AI.s behalf/.test(terms) && /also protect Venice AI/.test(terms) && /not medical, legal, financial, tax or mental health advice/.test(terms));
+  ok('no warranty is made on Cloudflare’s behalf, and the replies are not advice (sections 8 and 9)', /We make no promise on Cloudflare.s behalf/.test(terms) && /not medical, legal, financial, tax or mental health advice/.test(terms));
   ok('every place that offers Venice links its terms and privacy policy', [coach, review, src('src/app/components/about/VeniceChat.tsx')].every((f) => f.includes('VENICE_TERMS_URL') && f.includes('VENICE_PRIVACY_URL') && f.includes('VENICE_DIFFERENCES')));
 }

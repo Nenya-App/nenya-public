@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { REGION_REASON } from '../lib/coachService';
 import { Button } from '../app/components/ui/button';
 import { ArrowLeft, Wind } from 'lucide-react';
 import { IpExplainer } from './IpExplainer';
@@ -91,9 +92,7 @@ export function RegionNotice({ country, onBack, onBreathe, inline = false }: { c
         The coach is available only in the United States, for now
       </H>
       <p>
-        {placed} The coach&rsquo;s replies are written by an AI model run by Venice AI, and Venice AI&rsquo;s terms say its
-        service is intended for people located in the United States. Our own terms promise to respect theirs, so until we
-        have a way to offer the coach elsewhere, it is closed outside the US. Nothing you could type here has been sent.
+        {placed} {REGION_REASON} Nothing you could type here has been sent.
       </p>
       <p>
         The rest of Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can
