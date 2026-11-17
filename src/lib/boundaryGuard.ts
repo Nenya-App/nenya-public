@@ -7,10 +7,8 @@ import { present } from './personaChecks.ts';
 export const boundaryGuardOn = (value: string | undefined = process.env.COACH_BOUNDARY_GUARD): boolean => value === 'on';
 
 const sentences = (reply: string): string[] => reply.split(/(?<=[.!?])\s+|\n+/).filter((x) => x.trim());
-// A sentence that mentions stopping a medication is not a directive when it declines to give one, or sends the person to their prescriber ("I'm not asking you to stop taking your medication",
-// "please don't stop without talking to your doctor"). The evaluation check alone flags those too, so the guard looks at one sentence at a time and lets these through.
-const SOFTENS = /\b(?:can(?:'|’)?t|cannot|won(?:'|’)?t|shouldn(?:'|’)?t|don(?:'|’)?t|do not|not (?:asking|telling|suggesting|saying|able)|unable|before|without|whether|talk|ask|check with|speak|prescriber|doctor|pharmacist)\b/i;
-const medicalSentence = (x: string): boolean => present('medicalDirective', x) && !SOFTENS.test(x);
+// Whether a sentence directs a medication change is decided by the evaluation check (src/lib/personaChecks.ts), which looks one sentence at a time and lets a refusal or a pointer to the prescriber through.
+const medicalSentence = (x: string): boolean => present('medicalDirective', x);
 // The pull guard looks for promises about the FUTURE and claims to be all the person needs, not for a present offer ("I'm here for you now, and can listen"), which the evaluation check also flags. Owner's rule of
 // thumb from the 2026-11-17 offline run over 437 replies: the shared checks flagged "I'll keep it short and kind" (a promise to remember, by the wrong reading) and several present-tense offers in replies that
 // were fine, so this guard has its own, narrower patterns. It trades some recall for precision: a miss only means the reply stands.
