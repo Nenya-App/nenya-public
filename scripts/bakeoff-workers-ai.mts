@@ -22,6 +22,7 @@ import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { pacedSend, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
+import { layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
 
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
@@ -104,7 +105,10 @@ const realFetch = globalThis.fetch;
   return new Response(JSON.stringify(j), { status: 200, headers: { 'content-type': 'application/json' } });
 }) as typeof fetch;
 
-const { default: handler, __useStoreForTests } = await import('../netlify/functions/coach.mts');
+const { default: handler, __useStoreForTests, __trace } = await import('../netlify/functions/coach.mts');
+const withLayers = args.includes('--layers'); // record the model's first reply and what the guards did (docs/outer-layers-scope.md)
+__trace.on(withLayers);
+let lastTrace: ReturnType<typeof __trace.take> | null = null;
 // An in-memory store: the private text when --private is given, and the counters the function writes (kept only for this run).
 {
   const m = new Map<string, { v: string; e: number }>();
@@ -119,6 +123,7 @@ const { default: handler, __useStoreForTests } = await import('../netlify/functi
 }
 const SESSION = { color1: '#7a9b9e', color2: '#DAC682' };
 const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }[], ticket: string | undefined): Promise<RawSent> => {
+  __trace.take();
   const res = await handler(
     new Request('https://nenya.biz/api/coach', {
       method: 'POST',
@@ -126,6 +131,7 @@ const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }
       body: JSON.stringify({ messages, session: SESSION, ticket, ...(stance ? { stance } : {}) }),
     }),
   );
+  lastTrace = __trace.take();
   const j: any = await res.json().catch(() => ({}));
   return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
 };
@@ -143,6 +149,7 @@ console.log(`Bake-off: ${model}, instructions ${instructions}, ${chosen.length} 
 const results: CaseResult[] = [];
 for (const c of chosen) {
   const r = await runCase(c, send);
+  if (withLayers && lastTrace) (r as CaseResult & { layers?: unknown }).layers = layerRecord(c, lastTrace);
   results.push(r);
   const mark = r.outcome === 'pass' ? 'PASS' : r.outcome === 'fail' ? 'FAIL' : 'ERROR';
   console.log(`\n${mark}  ${c.id}  [${c.category}]${r.how !== 'reply' ? `  (${r.how})` : ''}`);
@@ -151,6 +158,8 @@ for (const c of chosen) {
   for (const f of r.failures) console.log(`  !! ${f}`);
 }
 const s = summarize(results);
+const layerSummary = withLayers ? summarizeLayers(results.map((result) => ({ result, layers: (result as CaseResult & { layers?: Parameters<typeof summarizeLayers>[0][number]['layers'] }).layers }))) : null;
+if (layerSummary) console.log(`Layers: the model's first reply failed ${layerSummary.rawFailed} of ${layerSummary.cases}; after the layers ${layerSummary.finalFailed} fail (${layerSummary.rescued} rescued, ${layerSummary.broken} made worse, ${layerSummary.stillFailing} nothing caught). Asked again on ${layerSummary.askedAgain} turns. Guards: ${JSON.stringify(layerSummary.byGuard)}`);
 const sorted = [...latencies].sort((a, b) => a - b);
 const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
 const cost = { calls, neurons: Math.round(neurons), neuronsPerCall: calls ? +(neurons / calls).toFixed(2) : 0, medianSeconds: +(median / 1000).toFixed(1) };
@@ -158,7 +167,7 @@ console.log(`\n=== ${model}: ${s.pass} passed, ${s.fail} failed, ${s.error} erro
 for (const [cat, n] of Object.entries(s.byCategory)) console.log(`  ${cat.padEnd(13)} pass ${n.pass}  fail ${n.fail}  error ${n.error}`);
 console.log(`Model calls ${cost.calls}, Neurons ${cost.neurons} (${cost.neuronsPerCall} a call), median ${cost.medianSeconds}s a call (through the CLI, so slower than from the site).`);
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, layerSummary, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 rmSync(work, { recursive: true, force: true });

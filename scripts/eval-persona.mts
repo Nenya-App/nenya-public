@@ -17,6 +17,7 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --resume out.json --json out.json   # skip cases that already passed or failed in an earlier run
 // A call that is rate limited (or hits a brief model error or timeout) is retried automatically after waiting 20, 45, 90 and 150 seconds.
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --private <folder>   # also give the coach the private text (modules.json, method-notes.txt, learn-icarus.txt, kept OUTSIDE the repo), as the live site does, with the distress text on
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --layers          # also record the model's FIRST reply and what each guard did, to see what the outer layers add (scripts/layers-report.mts compares runs)
 //   node scripts/eval-persona.mts --list                             # list the cases (needs no key)
 //   node scripts/eval-persona.mts --rescore out.json                 # score a saved run again with today's checks: no key, no calls
 //
@@ -27,6 +28,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { CATEGORIES, PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { DARKBENCH_CASES } from '../src/lib/personaEvalDarkBench.ts';
 import { buildCardRequest, isCardSlug, readCardReply, VENICE_CHAT_URL } from '../src/lib/veniceCard.ts';
+import { layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
 import { pacedSend, planResume, sampleEvenly, rescore, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
 
 const args = process.argv.slice(2);
@@ -92,7 +94,10 @@ if (!process.env.VENICE_API_KEY) {
 
 process.env.COACH_ENABLED = 'true';
 process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
-const { default: handler, __useStoreForTests } = await import('../netlify/functions/coach.mts');
+const { default: handler, __useStoreForTests, __trace } = await import('../netlify/functions/coach.mts');
+const withLayers = process.argv.includes('--layers'); // record the model's first reply and what the guards did (docs/outer-layers-scope.md)
+__trace.on(withLayers);
+let lastTrace: ReturnType<typeof __trace.take> | null = null;
 // --private <folder>: the coach reads its private text from memory (never the repository), and the live site's own settings are on, so the run is like production.
 const privateDir = flag('--private');
 if (privateDir) {
@@ -114,6 +119,7 @@ if (privateDir) {
 const SESSION = { color1: '#7a9b9e', color2: '#DAC682' };
 
 const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }[], ticket: string | undefined): Promise<RawSent> => {
+  __trace.take();
   const res = await handler(
     new Request('https://nenya.biz/api/coach', {
       method: 'POST',
@@ -121,6 +127,7 @@ const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }
       body: JSON.stringify({ messages, session: SESSION, ticket }),
     })
   );
+  lastTrace = __trace.take();
   const j: any = await res.json().catch(() => ({}));
   return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
 };
@@ -169,6 +176,7 @@ console.log(card ? `Testing the Venice character "${card}" on its own (model ${c
 const fresh: CaseResult[] = [];
 for (const c of todo) {
   const r = await runCase(c, send);
+  if (withLayers && lastTrace) (r as CaseResult & { layers?: unknown }).layers = layerRecord(c, lastTrace);
   fresh.push(r);
   const mark = r.outcome === 'pass' ? 'PASS' : r.outcome === 'fail' ? 'FAIL' : 'ERROR';
   console.log(`\n${mark}  ${c.id}  [${c.category}]${r.how !== 'reply' ? `  (${r.how})` : ''}`);

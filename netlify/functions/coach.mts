@@ -104,6 +104,18 @@ const ROUTE = '/api/coach';
 // The private Blobs store name can also be set per deploy context (COACH_STORE_NAME), so previews never
 // share the production store, notes, or daily counter.
 // Tests give the function a fake store; in production this is always the Netlify store.
+// Layer tracing (docs/outer-layers-scope.md): for the test scripts only. Turned on in-process with __trace.on(true); never reachable over HTTP and never in a response. It records the model's
+// FIRST reply (before any guard asks again or repairs it), how many model calls the turn made, and every guard event (the same names the daily counts use), so a run can say what the outer
+// layers did and what the model did by itself. Off, it costs one boolean test.
+let traceOn = false;
+let traceRaw: string | null = null;
+let traceCalls = 0;
+let traceEvents: string[] = [];
+export const __trace = {
+  on: (v: boolean): void => { traceOn = v; },
+  /** What the last request did, and clear it. */
+  take: (): { raw: string | null; calls: number; events: string[] } => { const t = { raw: traceRaw, calls: traceCalls, events: traceEvents }; traceRaw = null; traceCalls = 0; traceEvents = []; return t; },
+};
 let storeOverride: ReturnType<typeof getStore> | null = null;
 export const __useStoreForTests = (s: unknown): void => {
   storeOverride = s as ReturnType<typeof getStore> | null;
@@ -726,6 +738,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     }
   };
   const tally = (event: string): void => {
+    if (traceOn) traceEvents.push(event);
     const st = store();
     if (st) track(addCount(st, event));
   };
@@ -1021,6 +1034,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // One attempt at a reply. `extra` adds a further instruction (used to ask for different words after a repeat). A failure is
   // returned as a function so that the log line and reference are only made if that failure is actually used.
   const generate = async (extra: string | undefined, timeoutMs: number): Promise<{ reply: string } | { failure: () => Response }> => {
+    if (traceOn) traceCalls++;
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
@@ -1119,6 +1133,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
 
   const startedAt = Date.now();
   const first = await generate(undefined, VENICE_TIMEOUT_MS);
+  if (traceOn && 'reply' in first) traceRaw = first.reply;
   if ('failure' in first) return first.failure();
   let reply = first.reply;
   if (!reply) return fail(502, 'empty', 'no-reply-text');

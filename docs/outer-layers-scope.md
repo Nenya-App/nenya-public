@@ -1,0 +1,27 @@
+# The outer layers: what they do by themselves, and how to test them (owner, 2026-11-17)
+
+**The idea.** The coach's safety and honesty rest on layers around the model: the page and server checks that stop a crisis or harm message before any model sees it, the pre-written answers, the guards that ask again or repair a reply (infrastructure, persona, names, closing, practice arc, mirror, care), the instructions, and the checks a person reads. The owner's strategy: test with smaller and less compliant ("uncensored") models to find out what those layers can accomplish by themselves, so that they hold on, and improve, models that are more compliant. Keeping the same model **family** across providers makes the comparison cleaner.
+
+**What this gets right.** If the layers hold when the model gives them no help, they hold better when it does. **What it does not show.** A more compliant model fails in other ways (warmth, flattery, length, over-reassurance), so the intended production model is always run through the same tests too; a pass on a small model certifies nothing about a large one.
+
+## The comparison (a 2×2 plus)
+| | Instruct (Google's tuning) | Refusals removed |
+|---|---|---|
+| **Gemma 4 26B-A4B** | `@cf/google/gemma-4-26b-a4b-it` on Workers AI | `e2ee-gemma-4-26b-a4b-uncensored-p` on Venice (E2EE, attested; Venice's page does not say who tuned it, so "same base" is an assumption) |
+| **Gemma 4 E2B** (about 2B active) | to choose (a quantized instruct build) | `TrevorJS/gemma-4-E2B-it-uncensored` (abliterated; Apache-2.0; run locally) |
+Read across a row: what removing refusals does. Read down a column: what size does. Venice's attested Gemma exists only as the uncensored 26B-A4B (as far as the Venice model page showed on 2026-11-16), which is also why that one is the production default.
+
+## What is measured (built 2026-11-17)
+For each persona case, the model's **first reply** (before any guard asks again or repairs it) is scored with the same checks as the final reply, and every guard event is recorded (`src/lib/layerTrace.ts`, hooks in `coach.mts`, in-process only: no header, variable or response ever carries it). The report (`scripts/layers-report.mts`) gives, per model: how often the first reply broke a check, how often the layers **rescued** it, how often **nothing caught** it, how often the layers **made it worse**, how many turns needed a second model call, and which guards did the work. Run a model with `--layers` (the bake-off script for Workers AI, `eval-persona.mts` for Venice), then compare the saved runs side by side.
+
+## What is next, in order
+1. **First data**, on models we can already reach: Gemma 4 instruct on Workers AI, then Venice's uncensored 26B-A4B (the owner's key).
+2. **A local provider** (OpenAI-compatible: Ollama, llama.cpp) so E2B runs on the owner's Mac; scripts take `--coach local`. Manual runs only: the nightly canary cannot reach a laptop. A rented GPU endpoint would let the canary reach it, at a cost.
+3. **A model registry**: family, total and active parameters, tuning, attested or not, where it runs, privacy mode, license, who tuned it. Providers become Venice, Workers AI and local.
+4. **Full-exchange runs with layers**, so adaptive conversations also say what the layers did.
+5. **A conformance suite**: the same persona, full-exchange and canary tests for every model, saved with its metadata. This is the first step toward the layers being reusable on their own.
+
+## Cautions
+- An abliterated small model is for **testing**, never for visitors, until the full-exchange tests say otherwise. Removing refusals costs format compliance first, so structured-output guards need their own per-model baseline.
+- A fine-tune is a derivative: confirm who published it and its license before describing it publicly. The E2B page says Apache-2.0 and says it was made by abliteration of Google's Gemma 4 E2B instruct.
+- Measure before claiming: latency, energy and cost per turn are unmeasured on Venice. Do not state an improvement a run has not produced.
