@@ -93,6 +93,7 @@ These exist for testing, diagnosis, or turning a guard off in an emergency. Unse
 | `COACH_ACCEPTED_KEY_IDS` | none | Earlier signing-key ids (comma-separated) whose transcripts `/api/report` still accepts after `COACH_SIGNING_KEY` is replaced (src/lib/signedCheck.ts) |
 | `COACH_INCLUDE_VENICE_PROMPT` | off | Adds Venice's own system prompt; leave off |
 | `COACH_METHOD_NOTES` | none | Short method notes (the Blobs key `method-notes` is used first) |
+| `COACH_BOUNDARY_GUARD` | unset (off) | `on` enables the two boundary guards (a medication directive; a promise to be there or to remember, or standing in for the person's people): asked again once, then the offending sentences are taken out, or the site's fixed sentence replaces the reply. **Owner to approve the two fixed sentences in `src/lib/boundaryGuard.ts` first.** |
 | `COACH_FORM_CHECK`, `COACH_ABOUT_ANSWERS`, `COACH_LANE_GUARD`, `COACH_ARC_GUARD`, `COACH_CLOSING_GUARD`, `COACH_PERSONA_GUARD`, `COACH_NAME_GUARD`, `COACH_INFRA_GUARD`, `COACH_CARE_GUARD` | on | `off` turns that check off. For emergencies only. |
 | `PALETTE_DAILY_CAP`, `PALETTE_PER_CONNECTION` | 300, 20 | Limits for The Color API button |
 

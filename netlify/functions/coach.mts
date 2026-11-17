@@ -38,6 +38,7 @@ import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/abo
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
+import { BOUNDARY_GUARDS, boundaryGuardOn } from '../../src/lib/boundaryGuard.ts';
 import { allCards, registerExtraCards } from '../../src/lib/learningCards.ts';
 import { OFFER_MAP, historyHits, offerFor } from '../../src/lib/learningOffer.ts';
 import { askScreen } from '../../src/lib/screenClient.ts';
@@ -1167,6 +1168,19 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       if (!('failure' in again) && again.reply) reply = again.reply;
     }
     if (claimsPersona(reply)) { reply = PERSONA_FALLBACK; tally('coach.guard.persona.replaced'); }
+  }
+  // Boundaries (COACH_BOUNDARY_GUARD=on; src/lib/boundaryGuard.ts): a medication directive, or a promise to be there or to remember, or standing in for the person's people. Ask once more, then the site's sentence.
+  if (boundaryGuardOn()) {
+    for (const g of BOUNDARY_GUARDS) {
+      if (!g.test(reply)) continue;
+      tally(`coach.guard.${g.name}`);
+      const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
+      if (left >= REPEAT_RETRY_MIN_REMAINING_MS) {
+        const again = await generate(g.note, left);
+        if (!('failure' in again) && again.reply) reply = again.reply;
+      }
+      if (g.test(reply)) { const fixed = g.repair(reply); reply = fixed.reply; tally(`coach.guard.${g.name}.${fixed.replaced ? 'replaced' : 'repaired'}`); }
+    }
   }
   // Names: the coach is told never to use one. If the reply repeats a capitalised word the person wrote (how a name that slipped past the scrubber would come
   // back), ask once more without it; if it still does, take out the sentences that repeat it. COACH_NAME_GUARD=off turns this off, to measure the instructions alone.
