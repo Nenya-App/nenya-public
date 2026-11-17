@@ -150,6 +150,7 @@ Terms drafts were compared with `src/lib/legalDocument.ts` (effective November 1
 | [drafts/plain-language-summaries-2026-11-14.md](drafts/plain-language-summaries-2026-11-14.md) | "In plain words" boxes for the About pages | Not on the site |
 | [drafts/origin-and-name-draft.md](drafts/origin-and-name-draft.md) | Origin note and Name page | Not published |
 | [expanded-buildout-scope.md](expanded-buildout-scope.md) | The technical workstreams after 2026-11-17: outer layers, local models, lens rewrite, Terms batching, evidence | Scoping |
+| [lens-rebuild-audit.md](lens-rebuild-audit.md) | The six lens pages as they are (sliders, stages, shared state), the card model, the method for rebuilding one lens at a time | Scoping |
 | [lens-rewrite-scope.md](lens-rewrite-scope.md) | Replacing "gateway" with "lens": size, decisions, corrections to the brief, phases | Scoping, decisions open |
 | [outer-layers-scope.md](outer-layers-scope.md) | What the outer layers add per model; the 2x2 test; local models | Measurement built; more to do |
 | [drafts/fractured-atlas-about-2026-11-16.md](drafts/fractured-atlas-about-2026-11-16.md) | The Fractured Atlas About text rewritten for today's scope, in eight voices, with what changed and what to confirm | Draft for the owner; not sent or published |

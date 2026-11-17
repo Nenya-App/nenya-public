@@ -51,7 +51,8 @@ There is no queue, no required order and no "complete all". The review and the r
 3. **Vocabulary first, code later:** brand words change now; identifiers (`GatewayReviewPage`, ...) on their own schedule or never. Confirm.
 4. **Does the opening's "reflect" door go straight to the tray, or open the first lens?** Wireframe both.
 6. **An entry typed but not added:** keep it on the lens page for the visit (marked "not in your report yet"), or discard it when the lens is put down? Recommended: keep it for the visit, never in the saved draft and never in the report unless added, so nothing is lost by switching lenses and nothing is kept that the person did not choose.
-5. **Does anything in the six lenses depend on another** (for example a choice made in sight that another page reads)? If so, the tray must say so or the dependency must go; this needs a pass through the six pages before wireframes are final.
+5. **Dependencies between lenses: answered** (`docs/lens-rebuild-audit.md`, section 2): Sight and Sound share colours and a melody; the other four read the session colours. A soft dependency: each lens must work with no colours yet.
+7. **The rebuild is bigger than the rename:** each lens becomes a run of small activity cards with live-feedback sliders, built one lens at a time; see `docs/lens-rebuild-audit.md` for the inventory, the card model and the method.
 
 ## 4. Corrections to the brief (it feeds other documents, so these matter)
 - **CSP:** the brief says `connect-src 'self'` and nothing else; the real policy also allows Cloudflare's Turnstile script and frame on the coach page (`netlify.toml`). Check before stating "self only".
