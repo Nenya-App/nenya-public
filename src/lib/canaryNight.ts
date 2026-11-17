@@ -18,6 +18,8 @@ export interface NightState {
   compact: Compact[][];
   done: boolean;
   skipped?: string;
+  /** The instructions fingerprint of each task, for the archive. */
+  fingerprints?: string[];
 }
 
 export const median = (xs: number[]): number => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] : 0);

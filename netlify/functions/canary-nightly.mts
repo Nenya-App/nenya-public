@@ -14,7 +14,8 @@ import { PERSONA_CASES } from '../../src/lib/personaEvalSet.ts';
 import { pacedSend, runCase, type RawSent } from '../../src/lib/personaEval.ts';
 import { readWorkersAi } from '../../src/lib/coachProvider.ts';
 import { gradeLevel } from '../../src/lib/readingLevel.ts';
-import handler, { __useStoreForTests } from './coach.mts';
+import { BUILD_INFO } from '../../src/generated/build-info.ts';
+import handler, { __instructionsFingerprint, __useStoreForTests } from './coach.mts';
 
 const START_NEW_CASE_BEFORE_MS = 10_000; // a case (up to five replies) must end before the 30-second limit
 const MIN_CASE_NEURONS = 60; // a conversation's worth: stop before starting one that may not fit
@@ -95,6 +96,7 @@ export default async (): Promise<Response> => {
         if (task.model) process.env.COACH_MODEL = task.model;
         else if (defaultModel) process.env.COACH_MODEL = defaultModel;
         else delete process.env.COACH_MODEL;
+        if (state.c === 0 && !state.fingerprints?.[state.t]) (state.fingerprints ??= [])[state.t] = __instructionsFingerprint();
         while (state.c < order.length) {
           if (state.allowance - state.spent < MIN_CASE_NEURONS) { finished = true; break; }
           if (Date.now() - started >= START_NEW_CASE_BEFORE_MS) break;
@@ -105,6 +107,9 @@ export default async (): Promise<Response> => {
           state.spent += cost;
           state.taskSpent[state.t] += cost;
           state.compact[state.t].push({ id: r.id, outcome: r.outcome, words: reply.split(/\s+/).filter(Boolean).length, grade: reply ? gradeLevel(reply) : 0 });
+          // The complete run, kept privately: the case id, its outcome and checks, and the coach's replies. Never the prompt (it holds the private notes) and never any visitor text: the
+          // cases are invented. One small key per case, so a run cut off by the time limit loses at most the case in hand.
+          await store.set(`canary/runs/${day}/${state.t}-${r.id}`, JSON.stringify({ t: state.t, task: task.name, id: r.id, category: r.category, outcome: r.outcome, how: r.how, failures: r.failures, reply: r.reply ?? null, neurons: Math.round(cost) }));
           state.c++;
           await store.set(stateKey, JSON.stringify(state)); // after every case, so a run cut off by the time limit loses at most the case in hand
         }
@@ -138,6 +143,8 @@ export default async (): Promise<Response> => {
       for (const k of recent) past.push(...((JSON.parse((await store.get(k, { type: 'text' })) ?? '{}').tasks ?? []) as TaskReport[]).filter((x) => x.name === 'baseline'));
       const flags = driftFlags(reports.filter((x) => x.name === 'baseline'), past, caseTally);
       const digest = { day, model: defaultModel || '@cf/google/gemma-4-26b-a4b-it', tasks: reports, spentNeurons: Math.round(state.spent), flags, reviewed: false };
+      // What the full run was made with, so a later reader can tell one night's replies from another's.
+      await store.set(`canary/runs/${day}/meta`, JSON.stringify({ day, model: digest.model, provider: 'workers-ai', build: BUILD_INFO.commit, tasks: state.tasks.map((t, i) => ({ ...t, instructionsFingerprint: state.fingerprints?.[i] ?? null, neurons: Math.round(state.taskSpent[i]) })), spentNeurons: digest.spentNeurons, note: 'Invented cases only. Replies can echo the private notes: read before sharing anything.' }));
       await store.set(`canary/digest-${day}`, JSON.stringify(digest));
       await store.set('canary/cases', JSON.stringify(caseTally));
       ledger[day] = (ledger[day] ?? 0) + Math.round(state.spent);

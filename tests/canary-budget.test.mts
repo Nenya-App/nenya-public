@@ -25,3 +25,8 @@ ok('a task report keeps counts, the median length and reading grade, and the fai
 const lately = [1, 2, 3].map(() => ({ ...r1, medianWords: 40, pass: 3, conversations: 3 }));
 ok('a much longer typical reply than the week before is flagged; the usual is not', driftFlags([{ ...r1, medianWords: 70, pass: 3, failedCases: {} }], lately, {}).some((f) => /median reply length/.test(f)) && driftFlags([{ ...r1, medianWords: 42, pass: 3, failedCases: {} }], lately, {}).length === 0);
 ok('a case that had never failed and now does is flagged, and one that often fails is not', driftFlags([{ ...r1, failedCases: { b: 1 } }], [], { b: [10, 1] }).some((f) => /b had not failed/.test(f)) && driftFlags([{ ...r1, failedCases: { b: 1 } }], [], { b: [10, 4] }).length === 0);
+{
+  const night = readFileSync('netlify/functions/canary-nightly.mts', 'utf8');
+  ok('every case is archived under canary/runs with its reply, and the meta names the model, build and instructions fingerprint', /canary\/runs\/\$\{day\}\/\$\{state\.t\}-\$\{r\.id\}/.test(night) && /reply: r\.reply \?\? null/.test(night) && /canary\/runs\/\$\{day\}\/meta/.test(night) && /instructionsFingerprint/.test(night) && /build: BUILD_INFO\.commit/.test(night));
+  ok('the archive never holds the prompt or a visitor message', !/messages:|systemInstruction|systemText/.test(night.slice(night.indexOf('canary/runs/${day}/${state.t}'), night.indexOf('canary/runs/${day}/${state.t}') + 400)));
+}
