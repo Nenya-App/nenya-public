@@ -24,13 +24,26 @@ Usage-count names are keyed by screen ids, not by the word, so stats continuity 
 - **The tray is where the six regular lenses are picked up and put down.** The coach is not in it.
 - This matches the site's three sections today (`/breath`, `/senses`, `/coach`; `src/lib/sections.ts`): breath is the entry, `/senses` becomes the tray, `/coach` stays its own place. The three-door opening (breathe white, reflect blue, coach red) can stay as the first level: "reflect" opens the tray of six.
 
+**Also decided (owner, 2026-11-17):**
+- **The lenses keep the structure of the gateways** (the same six pages and what each one asks), but **a person chooses as they go**. Today a person selects the whole pathway in advance; with the tray they pick up a lens, look, add something or not, put it down, and pick up another, in any order, and can come back.
+- **A lens put down without anything added** is recorded as **examined but not included**: said so in the person's own summary (local, nothing sent), and counted in the admin console as a plain total. *(Both are the owner's wording: "mentioned as having been examined but not included, or maybe just recorded in our own admin console". This scope proposes both; the admin count needs the Terms and data register, see below.)*
+
+## 3a. How the tray behaves (draft)
+Each of the six lenses is in one of three states: **not opened**, **examined** (opened, nothing added), **included** (something added). The state comes from what the person did; there is no queue, no required order and no "complete all". A lens with something added stays included when put down, for the visit. The person can reopen any lens and add or change entries. The review and the report are available at any time and are built from the **included** lenses; examined lenses appear as one line each ("Examined, not included: touch"), and not-opened lenses are not mentioned. Progress, if shown, says what has been examined and included, not "step 3 of 6". The coach is not in the tray and has no state there.
+
+## 3b. What it changes in the code (read from `App.tsx`)
+`selectedGateways` (the pathway chosen in advance), the auto-advance to "the next gateway" after each one, the `currentIndex` / `totalGateways` props, and "complete all" logic in `handleGatewayComplete` are replaced by a per-lens state derived from `gatewayData` plus the set of lenses opened. `GatewaysPage` (choose the pathway) becomes the tray; `GatewayProgress` / `GatewayStages` show state instead of position. The saved-draft payload (`SavedPayload`, version 1, holds `selectedGateways`) needs a version 2 that stores opened lenses and keeps reading version 1. The session ID (two colours from the sight and sound choices) forms when those lenses are used, as today. Tests that pin the order or "complete all" change with it. This is the heaviest code change in the rewrite and is separate from the vocabulary change.
+
+## 3c. Data and the Terms
+- The summary line "examined, not included" is made on the device and sent nowhere: no Terms change.
+- **The admin count** (for example `lens.examined.<name>` and `lens.included.<name>`) is a new kind of plain count: numbers only, nothing identifying, only after the Terms are agreed and not under Global Privacy Control. The Terms list what is counted (Section 13) and the data register lists the counts, so both are updated in the same revision. Keep it to totals per lens, with no sequence or timing, so it cannot describe one person's path.
+
 **Still open:**
-1. **Hold more than one?** "Pick up and put down" suggests a person can have more than one lens in hand. Today the gateways run in sequence with progress. Is the tray (a) one lens at a time, picked up and put down, or (b) any number held at once, with a way to see what is held?
-2. **What "put down" does to what a person entered.** Entries live only in the tab. Options: put down keeps the entry while the visit lasts (nothing is lost by switching lenses); put down clears it; or the person chooses. This is a data-handling decision and changes the notice text.
-3. **The review and the report.** A report is built from the gateways done. With a tray, is the report built from whichever lenses were used, whenever the person asks?
-4. **When the Terms change.** The Terms use the word three times; a new date makes everyone agree again. Batch it with other Terms changes.
-5. **Naming rule:** sense lenses keep their sense names; any later lens is named for what it does. Confirm.
-6. **Vocabulary first, code later:** brand words change now, identifiers (`GatewayReviewPage`, ...) on their own schedule or never. Confirm.
+1. **When the Terms change.** The Terms use the word "gateway" three times, and the count sentence needs adding; a new date makes everyone agree again. Batch it with other Terms changes.
+2. **Naming rule:** sense lenses keep their sense names; any later lens is named for what it does. Confirm.
+3. **Vocabulary first, code later:** brand words change now; identifiers (`GatewayReviewPage`, ...) on their own schedule or never. Confirm.
+4. **Does the opening's "reflect" door go straight to the tray, or open the first lens?** Wireframe both.
+5. **Does anything in the six lenses depend on another** (for example a choice made in sight that another page reads)? If so, the tray must say so or the dependency must go; this needs a pass through the six pages before wireframes are final.
 
 ## 4. Corrections to the brief (it feeds other documents, so these matter)
 - **CSP:** the brief says `connect-src 'self'` and nothing else; the real policy also allows Cloudflare's Turnstile script and frame on the coach page (`netlify.toml`). Check before stating "self only".
