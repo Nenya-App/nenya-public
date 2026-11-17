@@ -16,6 +16,7 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --pace 6        # at least 6 seconds between calls (default 3); slower if your key is rate limited
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --resume out.json --json out.json   # skip cases that already passed or failed in an earlier run
 // A call that is rate limited (or hits a brief model error or timeout) is retried automatically after waiting 20, 45, 90 and 150 seconds.
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --private <folder>   # also give the coach the private text (modules.json, method-notes.txt, learn-icarus.txt, kept OUTSIDE the repo), as the live site does, with the distress text on
 //   node scripts/eval-persona.mts --list                             # list the cases (needs no key)
 //   node scripts/eval-persona.mts --rescore out.json                 # score a saved run again with today's checks: no key, no calls
 //
@@ -91,7 +92,25 @@ if (!process.env.VENICE_API_KEY) {
 
 process.env.COACH_ENABLED = 'true';
 process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
-const { default: handler } = await import('../netlify/functions/coach.mts');
+const { default: handler, __useStoreForTests } = await import('../netlify/functions/coach.mts');
+// --private <folder>: the coach reads its private text from memory (never the repository), and the live site's own settings are on, so the run is like production.
+const privateDir = flag('--private');
+if (privateDir) {
+  const { existsSync, readFileSync: rf } = await import('node:fs');
+  const { join } = await import('node:path');
+  const text = new Map<string, string>([['modules', rf(join(privateDir, 'modules.json'), 'utf8')]]);
+  for (const [key, file] of [['method-notes', 'method-notes.txt'], ['learn-icarus', 'learn-icarus.txt']]) if (existsSync(join(privateDir, file))) text.set(key, rf(join(privateDir, file), 'utf8'));
+  const m = new Map<string, { v: string; e: number }>();
+  __useStoreForTests({
+    async get(k: string) { return text.get(k) ?? m.get(k)?.v ?? null; },
+    async getWithMetadata(k: string) { const x = m.get(k); return x ? { data: x.v, etag: String(x.e) } : null; },
+    async set(k: string, v: string, o: any = {}) { const x = m.get(k); if (o.onlyIfNew && x) return { modified: false }; if (o.onlyIfMatch && (!x || o.onlyIfMatch !== String(x.e))) return { modified: false }; m.set(k, { v, e: (x?.e ?? 0) + 1 }); return { modified: true }; },
+    async setJSON(k: string, v: unknown) { m.set(k, { v: JSON.stringify(v), e: (m.get(k)?.e ?? 0) + 1 }); },
+    async list({ prefix = '' }: { prefix?: string } = {}) { return { blobs: [...m.keys()].filter((k) => k.startsWith(prefix)).map((key) => ({ key })) }; },
+    async delete(k: string) { m.delete(k); },
+  });
+  Object.assign(process.env, { COACH_MODULES: 'on', COACH_DISTRESS_TEXT: 'on', COACH_VALUES: 'on', COACH_STANCES: 'learn' });
+}
 const SESSION = { color1: '#7a9b9e', color2: '#DAC682' };
 
 const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }[], ticket: string | undefined): Promise<RawSent> => {

@@ -4,6 +4,7 @@
 //   VENICE_API_KEY=… node scripts/duet-eval.mts --private <folder> [--briefs only-confidant,drop-the-rules] [--n 2] [--budget 2600] [--model @cf/google/gemma-4-26b-a4b-it]
 //   DUET_USER_MODEL   the Venice model that plays the person (default venice-uncensored; check the id with Venice's model list)
 //   --private <dir>   modules.json, method-notes.txt, learn-icarus.txt, kept outside the repository (as for the bake-off)
+//   --coach venice    the coach runs on Venice (the live default: the real model, via your key) instead of Workers AI; the person is still played by DUET_USER_MODEL
 //   --n <k>           conversations per brief (default 2); --budget <Neurons>, a ceiling for this run (default 2,600: about twenty conversations)
 //
 // Everything is invented. Transcripts and a summary go to a private folder (default ~/Downloads/Nenya (private)/duet/<date>), never the repo. The summary lists what to read first;
@@ -23,8 +24,9 @@ const privateDir = flag('--private');
 const veniceKey = process.env.VENICE_API_KEY;
 if (!privateDir || !existsSync(join(privateDir, 'modules.json'))) { console.error('--private needs a folder with modules.json.'); process.exit(2); }
 if (!veniceKey) { console.error('Set VENICE_API_KEY in this Terminal (a testing key, not the production one).'); process.exit(2); }
-const model = flag('--model') ?? '@cf/google/gemma-4-26b-a4b-it';
-if (!/^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model)) { console.error('--model is a Workers AI model id.'); process.exit(2); }
+const coachOnVenice = flag('--coach') === 'venice';
+const model = flag('--model') ?? (coachOnVenice ? 'e2ee-gemma-4-26b-a4b-uncensored-p' : '@cf/google/gemma-4-26b-a4b-it');
+if (!coachOnVenice && !/^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model)) { console.error('--model is a Workers AI model id.'); process.exit(2); }
 const perBrief = Number(flag('--n') ?? 2);
 const budget = Number(flag('--budget') ?? 2600);
 const chosen = DUET_BRIEFS.filter((b) => !flag('--briefs') || flag('--briefs')!.split(',').includes(b.id));
@@ -35,7 +37,7 @@ const out = flag('--out') ?? join(homedir(), 'Downloads/Nenya (private)/duet', s
 mkdirSync(out, { recursive: true });
 
 // The coach, as on the site, on Workers AI, with the private text from memory and the call routed through the signed-in CLI.
-Object.assign(process.env, { COACH_ENABLED: 'true', COACH_TICKET_SECRET: randomBytes(24).toString('hex'), COACH_PROVIDER: 'workers-ai', CF_AI_ACCOUNT_ID: '0'.repeat(32), CF_AI_TOKEN: 'via-cf-cli', COACH_MODEL: model, COACH_INSTRUCTIONS: 'v2.1', COACH_DISTRESS_TEXT: 'on', COACH_VALUES: 'on', COACH_MODULES: 'on', COACH_STANCES: 'learn', COACH_TURNSTILE: 'off', COACH_SCREEN: 'off' });
+Object.assign(process.env, { COACH_ENABLED: 'true', COACH_TICKET_SECRET: randomBytes(24).toString('hex'), COACH_PROVIDER: coachOnVenice ? 'venice' : 'workers-ai', ...(coachOnVenice ? {} : { CF_AI_ACCOUNT_ID: '0'.repeat(32), CF_AI_TOKEN: 'via-cf-cli' }), COACH_MODEL: model, COACH_INSTRUCTIONS: 'v2.1', COACH_DISTRESS_TEXT: 'on', COACH_VALUES: 'on', COACH_MODULES: 'on', COACH_STANCES: 'learn', COACH_TURNSTILE: 'off', COACH_SCREEN: 'off' });
 delete process.env.COACH_METHOD_NOTES;
 const text = new Map<string, string>([['modules', readFileSync(join(privateDir, 'modules.json'), 'utf8')]]);
 for (const [key, file] of [['method-notes', 'method-notes.txt'], ['learn-icarus', 'learn-icarus.txt']]) if (existsSync(join(privateDir, file))) text.set(key, readFileSync(join(privateDir, file), 'utf8'));
@@ -45,6 +47,7 @@ let calls = 0;
 const realFetch = globalThis.fetch;
 (globalThis as { fetch: typeof fetch }).fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+  if (coachOnVenice) return realFetch(input as RequestInfo, init); // the coach talks to Venice itself, with your key
   if (!url.startsWith('https://api.cloudflare.com/client/v4/accounts/')) throw new Error('only Workers AI is called from the coach side');
   const file = join(work, `req-${calls++}.json`);
   writeFileSync(file, String(init?.body ?? '{}'));
