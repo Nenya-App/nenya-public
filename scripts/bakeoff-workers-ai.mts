@@ -162,4 +162,5 @@ if (jsonOut) {
   console.log(`Results written to ${jsonOut}`);
 }
 rmSync(work, { recursive: true, force: true });
+if (!args.includes('--no-record')) console.log((await import('./record-neurons.mts')).recordNeurons(neurons));
 process.exit(0);

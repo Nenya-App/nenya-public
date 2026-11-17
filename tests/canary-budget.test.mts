@@ -30,3 +30,10 @@ ok('a case that had never failed and now does is flagged, and one that often fai
   ok('every case is archived under canary/runs with its reply, and the meta names the model, build and instructions fingerprint', /canary\/runs\/\$\{day\}\/\$\{state\.t\}-\$\{r\.id\}/.test(night) && /reply: r\.reply \?\? null/.test(night) && /canary\/runs\/\$\{day\}\/meta/.test(night) && /instructionsFingerprint/.test(night) && /build: BUILD_INFO\.commit/.test(night));
   ok('the archive never holds the prompt or a visitor message', !/messages:|systemInstruction|systemText/.test(night.slice(night.indexOf('canary/runs/${day}/${state.t}'), night.indexOf('canary/runs/${day}/${state.t}') + 400)));
 }
+{
+  const night = readFileSync('netlify/functions/canary-nightly.mts', 'utf8');
+  const rec = readFileSync('scripts/record-neurons.mts', 'utf8');
+  ok('the canary counts the owner\'s manual spend and holds back the production cap whatever the staging count', /canary\/manual/.test(night) && /spentToday: \(ledger\[day\] \?\? 0\) \+ manual/.test(night) && /\(counted \? Number\(counted\) : cap\) \+ cap \+ 20/.test(night));
+  ok('three errors in a row end the night at once and say why in the digest', /last3\.every\(\(x\) => x\.outcome === 'error'\)/.test(night) && /stopped: state\.stopped/.test(night));
+  ok('the recorder adds to today\'s UTC total and the manual scripts call it unless told not to', /canary\/manual/.test(rec) && /utcDay\(\)/.test(rec) && readFileSync('scripts/duet-eval.mts', 'utf8').includes("--no-record") && readFileSync('scripts/bakeoff-workers-ai.mts', 'utf8').includes("--no-record"));
+}

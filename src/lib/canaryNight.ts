@@ -18,6 +18,8 @@ export interface NightState {
   compact: Compact[][];
   done: boolean;
   skipped?: string;
+  /** Why the night ended early, if it did. */
+  stopped?: string;
   /** The instructions fingerprint of each task, for the archive. */
   fingerprints?: string[];
 }

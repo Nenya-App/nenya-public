@@ -122,4 +122,5 @@ const flagged = rows.filter((r) => !/\| - \| - \|/.test(r));
 writeFileSync(join(out, 'summary.md'), ['# Full-exchange run (not reviewed)', '', `Coach ${model}, instructions v2.1, private text on. Person played by ${simModel}. Neurons used: ${Math.round(neurons)}.`, '', 'Read the conversations marked first: a red flag is a check that matched a coach reply (where to start reading, not a verdict); "missing" is something the brief expected that never appeared.', '', '| Conversation | Ended | Red flags (check@turn) | Missing | Words | Grade |', '|---|---|---|---|---|---|', ...flagged, ...rows.filter((r) => !flagged.includes(r))].join('\n') + '\n');
 console.log(`\nNeurons used ${Math.round(neurons)}. Summary and transcripts: ${out}`);
 rmSync(work, { recursive: true, force: true });
+if (!args.includes('--no-record')) console.log((await import('./record-neurons.mts')).recordNeurons(neurons));
 process.exit(0);
