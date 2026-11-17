@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { MARK_MOTION, MARK_SETTINGS } from '../src/lib/nameMark.ts';
 import { ok } from './helpers.mts';
 
-ok("the owner's resting positions, per face", JSON.stringify(MARK_SETTINGS.lyric) === JSON.stringify({ nudge: 0.105, rise: -0.005, after: 0.05 }) && JSON.stringify(MARK_SETTINGS.body) === JSON.stringify({ nudge: 0.09, rise: 0.04, after: 0 }));
+ok("the owner's resting positions, per face", JSON.stringify(MARK_SETTINGS.lyric) === JSON.stringify({ nudge: 0.145, rise: 0.03, after: 0.075 }) && JSON.stringify(MARK_SETTINGS.body) === JSON.stringify({ nudge: 0.085, rise: 0.015, after: 0 }));
 ok('the turn: counterclockwise half turn, 3.5 s after 0.5 s, settling', MARK_MOTION.degrees === -180 && MARK_MOTION.durationMs === 3500 && MARK_MOTION.delayMs === 500 && MARK_MOTION.easing === 'cubic-bezier(.2, .8, .2, 1)');
 const src = readFileSync('src/app/components/NenyaMark.tsx', 'utf8') + readFileSync('src/lib/nameMark.ts', 'utf8');
 ok('screen readers hear "nenya.biz"; the letters themselves are hidden from them', /role="img"\s+aria-label="nenya\.biz"/.test(src) && /aria-hidden="true"/.test(src));
