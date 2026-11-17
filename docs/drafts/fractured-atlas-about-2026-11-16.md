@@ -91,3 +91,84 @@ Nenya is independent and open source (GNU AGPL), with no investors and no funder
 Learn More: https://www.nenya.biz
 
 **Check before sending (D):** "does not remember you, will not miss you" is the coach's pre-written answer and instructions (v2.1). "Nothing is built to bring you back" is true of the design (no accounts, streaks or notifications) and is a statement of intent, not a measured result; do not add a claim about outcomes.
+
+
+---
+
+# Five more voices, one for each element (added 2026-11-16)
+Each leads with one element of what a funder or reviewer of a small, public-interest AI project looks for, without naming any application: **small, intentional, tailored, open, sustaining**. Same facts as above. Each fits 2,500 characters. None is published.
+
+## Voice E: Small: little AI, little compute (1493 characters)
+Leads with how small it is: most of it uses no AI, the AI part is short and capped, and running more of it on a person's own device is the stated direction.
+
+Nenya is a small tool on purpose. Breathing, the six sensory ways to reflect (color, sound, touch, essence, movement and insight) and the learning pages run in the person's own browser and use no AI at all. What is entered stays on the device and is gone when the tab closes.
+
+The one part that uses AI is an optional coach, kept small in every way we can. It is five exchanges, with messages of at most 500 characters and replies of a few sentences. It runs on an open model (Gemma 4) that Cloudflare hosts, chosen because a small open model can be checked, compared and replaced, and because a short, plain reply is what a person who is overwhelmed can use. Daily limits keep the total small, and a rest between conversations keeps it from becoming a habit. It is not therapy and it says so.
+
+Smaller is also safer. The checks that matter most, such as stopping a message that suggests a crisis before any AI sees it, are plain rules that run on the page and on our server, not another model, and they are published and tested. Moving the coach itself onto a person's own device, so that nothing needs to leave it, is the direction, not something built yet; we say so.
+
+Nenya has no accounts, advertising or tracking, and does not sell or share data. Its code is public under the GNU Affero General Public License. It is independent, accepts no equity investors, and is fiscally sponsored by Fractured Atlas; donations are tax-deductible as the law allows.
+
+Learn More: https://www.nenya.biz
+
+**Check before sending (E):** "Messages of at most 500 characters, five exchanges" are the limits in the code. "A few sentences" is the instruction (usually under about 80 words on Workers AI). "A rest between conversations" is the 6-hour rest (device) and daily limits. "Plain rules, not another model" is true of the crisis stops; a small screening model exists in shadow mode only and decides nothing. "On-device is a direction, not built": keep it.
+
+## Voice F: Intentional: you can see it, and you are in charge (1472 characters)
+Leads with agency: a person can see what is sent and kept, can delete it, and can read, fork and check the code.
+
+Nenya is built so a person can see what it does with their words, and stay in charge of them.
+
+The reflection tools keep everything on the person's own device and nothing is sent. Before anything leaves, the page says exactly what will go, where, and for how long. The one AI feature, an optional coach, sends a message through our server to Cloudflare's Workers AI service only after the person has read a plain notice. Names and contact details are removed on the page and again on the server (it is not a guarantee, and we say so). Nothing is kept, and the words are never used to train a model.
+
+Anything a person chooses to share with us, a report, a conversation, a message, comes with a code that lets them delete it themselves, with no email and no account. A signed copy of a conversation can be checked by anyone on their own device. An Emergency Exit button on every page wipes what the device saved and leaves the site, and "Forget me" does the same on request.
+
+Everything kept is listed, with why, for how long and who can read it, in a public data register. The code is open under the GNU Affero General Public License, so every claim the site makes about itself can be checked, copied or changed.
+
+There are no accounts, advertising or tracking, and no data is sold or shared. Nenya is independent, accepts no equity investors, and is fiscally sponsored by Fractured Atlas; donations are tax-deductible as the law allows.
+
+Learn More: https://www.nenya.biz
+
+**Check before sending (F):** "Before anything leaves, the page says what will go" is true of the coach notice and the share forms; confirm for each form you rely on. "A code to delete it themselves" is the reports and shared messages (kept 90 days); witnessed conversations are owner-reviewed and can be withdrawn with the signed file. "Public data register" is `docs/data-register.md` in the public repository. Guestbook points are kept forever and cannot be removed (stated before signing): do not claim that everything can be deleted.
+
+## Voice G: Tailored: for people who need a calm moment (1545 characters)
+Leads with who it is for and how it is made for them: people regulating before a crisis, and anyone for whom a busy screen is a barrier.
+
+Nenya is for the moment before things get too big: the person who is wound up, overwhelmed or just worn out, and wants a few minutes to settle, notice what they feel and need, and say it plainly. It is not therapy and not a crisis service, and it says so where a person will see it.
+
+It is designed to meet people where they are. It starts with a slow breathing animation, and a person can stop there. Every choice is optional, and each screen asks for as little as it can. Reflection uses color, sound, touch, movement and a person's own words, so no one has to find the right words first. The text is plain, written to be easy to read, and the site is designed toward the highest level of web accessibility (WCAG 2.2 level AAA), with its known gaps listed in public. It works with a keyboard and a screen reader, honors a device's request for less motion, has color-blind modes and three text sizes, and offers optional audio cues for breathing.
+
+Nothing is timed or kept to bring a person back. An Emergency Exit button on every page leaves the site at once and clears what the device saved. If a message suggests danger, the optional AI coach never sees it: the page shows emergency numbers and support lines instead.
+
+There are no accounts, advertising or tracking, and no data is sold or shared. The code is public under the GNU Affero General Public License. Nenya is independent, accepts no equity investors, and is fiscally sponsored by Fractured Atlas; donations are tax-deductible as the law allows.
+
+Learn More: https://www.nenya.biz
+
+**Check before sending (G):** "Designed toward WCAG 2.2 AAA" is a goal with audits and tests; it is not a claim of conformance and the docs list gaps. "Screen reader" and "keyboard" rest on the accessibility tests and audit lists; say "designed to work with" if you want to be more careful. "Optional audio cues for breathing" are the breathing tones (off by default). "Nothing is timed": the breathing exercise and gateways have no timers; the coach has a 30-minute conversation ticket (not mentioned here).
+
+## Voice H: Open: building blocks others can use (1379 characters)
+Leads with what others can take and reuse: the code, the documents, the tests, the safety rules and the checkable records.
+
+Nenya is a working example that others can take, check and build on. It is a free tool for breathing, reflection and learning to say what you feel and need, and everything behind it is public under the GNU Affero General Public License.
+
+What is open is the whole site, and its working parts: the breathing and reflection tools; the way names and contact details are removed before a message leaves a person's device; the rules that stop a message suggesting a crisis before any AI sees it, with the checks that test them; the written instructions the optional coach follows and the invented test conversations used to check it; and signed records of conversations that anyone can verify on their own device. The documents explain the choices, what is kept and why, and where the checks fall short, so someone else can judge them, reuse them or do better.
+
+The optional coach is a short AI conversation (five exchanges) that says it is an AI, is not therapy, and turns people back toward the people in their lives. It runs on an open model hosted by Cloudflare. Messages are not kept and are never used to train a model.
+
+Nenya has no accounts, advertising or tracking, and does not sell or share data. It is independent, accepts no equity investors, and is fiscally sponsored by Fractured Atlas; donations are tax-deductible as the law allows.
+
+Learn More: https://www.nenya.biz
+
+**Check before sending (H):** "Invented test conversations" are `src/lib/personaEvalSet.ts` and the safety set, in the public repository. "Signed records ... verify on their own device" is the verify page. "The written instructions the optional coach follows": public in `docs/coach-instructions-v2.1.md` and `coach.mts`; the **private method notes and modules are not public** and this text does not say they are. Do not say everything is open.
+
+## Voice I: Sustaining: how it keeps going (1350 characters)
+Leads with how the project stays small, independent and free: no ads, no data income, no investors, low costs, donations through the sponsor.
+
+Nenya is built to be sustained by care, not by capturing attention. It is a free tool for breathing, reflection and learning to say what you feel and need. It has no accounts, no advertising and no tracking, and it does not sell or share data, so nothing a person does there is worth anything to anyone else. There is no engagement loop to feed: the aim is that a person feels steadier and goes back to their life.
+
+It is kept small so that it can last. Most of it runs in the person's own browser at no cost to anyone. The one part that uses AI, an optional short coach, is capped by conversation length and a daily limit, and runs on an open model hosted by Cloudflare, so what it costs stays modest and under control. The code is public under the GNU Affero General Public License, so the work does not depend on any one person or company.
+
+Nenya is independent. It accepts no equity investors and gives no funder a say in its direction. It is fiscally sponsored by Fractured Atlas, a 501(c)(3), so gifts are tax-deductible as the law allows and the money is handled by an accountable organization. Gifts help pay for hosting, the AI processing for the coach, and the work of testing and review. The core breathing and reflection tools are meant to stay free; subscriptions for extra features are being explored.
+
+Learn More: https://www.nenya.biz
+
+**Check before sending (I):** **"Gifts help pay for hosting, the AI processing, and testing and review"** is the list of uses that was flagged as unconfirmed on 2026-11-13: confirm it with Fractured Atlas, and whether anyone is paid. **"Subscriptions for extra features are being explored"** is on the live site (the "is it free" answer); Fractured Atlas may have a view on earned income, so confirm they are comfortable with the sentence before sending. "Costs stay modest and under control" rests on the daily limits (80 turns a day on production, about 25 Neurons a turn): do not give a dollar figure without checking Cloudflare's current price.
