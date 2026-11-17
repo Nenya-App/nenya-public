@@ -2,6 +2,15 @@
 
 For the owner to edit, and for Fractured Atlas to review before anything changes on their page. **Not published anywhere.** The text below is 2210 characters including spaces (the earlier descriptor draft was held to 2,500; check their field's limit). It replaces the older About on the Fractured Atlas project page; the 2026-11-13 drafts in this folder (the descriptor and the Our Structure redraft) are earlier and still say Venice AI runs the coach, which is no longer true.
 
+
+> **Update 2026-11-16 (evening): the coach is back on Venice AI.** Every voice below was written when Cloudflare ran the coach. Before using any of them, replace the sentence about the AI service with the matching one here, and check the rest:
+> - "an open AI model run by Cloudflare" / "an open model (Gemma 4, run on Cloudflare)" / "runs on an open model (Gemma 4) that Cloudflare hosts" / "an open model hosted by Cloudflare" -> "a small AI model run by Venice AI, in a mode Venice labels private, which our server encrypts before it leaves".
+> - Voice E ("Small") leans on Gemma 4 being an open, replaceable model; reword that paragraph around the short, capped coach and the plain-rule safety checks. Voice B's "open model" line and Voice I's "runs on an open model hosted by Cloudflare" need the same change.
+> - Voice D and the main text need only the one sentence changed.
+> - Keep "not encrypted from Cloudflare" out of everything: on Venice the message is encrypted on our server before it is sent, but not from our device to the model (the Terms say exactly this).
+> Ask me to regenerate the voices for Venice when you have chosen one or two to keep.
+
+
 ---
 
 Nenya is a free, open-source work of contemplative technology: a quiet place to slow down, notice what you feel and what you need, and say it plainly. It is an art project and a practice at once, drawing on myth, systems thinking and Nonviolent Communication, and it aims to give attention back rather than capture it. The goal is restoration, not retention.

@@ -4,7 +4,7 @@
 - **Front end:** Vite + React + TypeScript, Tailwind tokens (`src/styles`), `motion` for animation. Several small entry pages: the main app (`index.html`, `src/app`), the coach page (`coach/`, `src/coach`), plus `admin/`, `cell/` (partner practice, off), `verify/`, `my-transcript/`, `bench/` and `logo-export/` (dev tools). Pure logic lives in `src/lib` (about 180 modules); components import it, tests import it, functions import it.
 - **Back end:** Netlify Functions (`netlify/functions/*.mts`, TypeScript run by Node) and **Netlify Blobs** for the few things kept. No database, no accounts.
 - **Hosting:** two Netlify sites from one repository. `main` is production (nenya.biz). `dev` builds the password-protected staging site (nenyastaging.netlify.app) with its own variables and its own Blobs store (`coach-private-staging`; production's is `coach-private`).
-- **Models:** the coach calls Cloudflare Workers AI (Gemma 4 26B-A4B) by default; Venice AI is a toggle (`COACH_PROVIDER=venice`) and the place a visitor may continue a conversation. Cloudflare also provides Turnstile (the humanity check before a first coach message).
+- **Models:** the coach calls Venice AI by default (decided 2026-11-16 after one day on Cloudflare); Cloudflare Workers AI (Gemma 4 26B-A4B) is built and kept as a toggle (`COACH_PROVIDER=workers-ai`). Cloudflare provides Turnstile (the humanity check before a first coach message) and is kept as an outer layer for organization integrations (not scoped yet).
 - **License:** AGPL-3.0. The repository is public, so **nothing private may be committed** (see file 6).
 
 ## Where things are

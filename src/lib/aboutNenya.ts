@@ -42,9 +42,9 @@ export interface Answer {
 const TERMS = 'src/lib/legalDocument.ts';
 const about = (name: string) => `src/app/components/about/${name}.tsx`;
 const COACH = 'netlify/functions/coach.mts';
-const WAI_TERMS = TERMS; // the Terms of November 16, 2026 carry the Cloudflare wording
-// The Venice versions of the answers (COACH_PROVIDER=venice, kept as a toggle) rest on the Terms as they read while Venice ran the coach: the archived text. Switching back needs the Terms to say so again.
-const VENICE_TERMS = 'docs/legal/archive/terms-and-privacy-until-2026-11-16.md';
+const WAI_TERMS = 'docs/legal/archive/terms-and-privacy-until-2026-11-16-b.md'; // the Cloudflare-era Terms (live earlier on 2026-11-16, then returned to Venice the same day); a switch to Workers AI needs the Terms to say so again
+// The Venice versions of the answers are the live ones (the coach returned to Venice on 2026-11-16, same day as the Cloudflare revision); the Workers AI versions are kept for a later switch.
+const VENICE_TERMS = TERMS; // the live Terms name Venice again
 const PROVIDER = 'src/lib/coachProvider.ts';
 const REPO = 'https://github.com/Nenya-App/nenya-public';
 
@@ -382,7 +382,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'messages go through Netlify to Venice AI, which writes the replies', file: VENICE_TERMS, has: 'to Venice AI, which writes the replies' },
       { claim: 'Venice\'s servers relay ciphertext; the encryption happens in our function, not the browser', file: "src/lib/veniceE2ee.ts", has: 'Venice\'s servers relay ciphertext' },
       { claim: 'it must not be described as end-to-end from the visitor\'s device', file: "src/lib/veniceE2ee.ts", has: "describe it as end-to-end encryption from the visitor's device" },
-      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: 'src/lib/coachProvider.ts', has: "VENICE_DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p'" }, { claim: 'Workers AI is the provider unless COACH_PROVIDER=venice', file: 'src/lib/coachProvider.ts', has: "env.COACH_PROVIDER === 'venice' ? 'venice' : 'workers-ai'" },
+      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: 'src/lib/coachProvider.ts', has: "VENICE_DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p'" }, { claim: 'Venice is the provider unless switched', file: 'src/lib/coachProvider.ts', has: "env.COACH_PROVIDER === 'workers-ai' ? 'workers-ai' : 'venice'" },
       { claim: 'on-device processing is a goal, not built', file: about('PrivacyPromise'), has: 'We are not there yet' },
       { claim: 'the crisis check and instruction screening are phrase matching', file: TERMS, has: 'These checks are simple phrase matching' },
     ],

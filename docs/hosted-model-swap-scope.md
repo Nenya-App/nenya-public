@@ -76,3 +76,6 @@ Part 1 (code, off) → part 2 gates → Terms draft for approval → staging tri
 - **Instructions v2.1:** the memory example now ends "but I'm listening now" (was "fully here"); v2, which production runs, is unchanged.
 - **Still naming Venice:** the About pages and the coach-region page (client pages, not provider-aware); they change with the Terms at the switch.
 - **Bake-off script** now runs through the real Workers AI path, and `--private <folder>` (plus `--stance vilya`) includes the private text from a folder outside the repository.
+
+## Update 2026-11-16 (evening): back to Venice
+After a day on Cloudflare (Terms revision `bfb3b79`, merged), the owner decided to return to Venice AI and keep Cloudflare as an outer layer for organization integrations. The Terms text of Sections 3, 8, 9 and 15 is Venice's again (a same-day revision; the Cloudflare text is archived), the defaults flipped back, and everything built for Workers AI (the provider, the brevity note, the answers' Cloudflare versions, the canary, the bake-off and full-exchange scripts) stays. See `docs/production-switch-checklist.md`.
