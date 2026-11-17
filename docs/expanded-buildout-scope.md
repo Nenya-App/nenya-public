@@ -33,7 +33,7 @@
 Every change keeps `npm run check` green; each workstream ships dark behind a switch; no claim about a model, a number or a license goes public without the check that produced it (the registry records what was checked and when); nothing private enters the repository; the Terms, the pre-written answers, the About pages and the public files are changed together or not at all.
 
 ## Decisions for the owner
-1. Lens decisions 1 to 5 in `docs/lens-rewrite-scope.md`.
+1. The open lens questions in `docs/lens-rewrite-scope.md` section 3 (hold one lens or several; what putting a lens down keeps; the report; the Terms date). The structure is decided: breathing as the entry, six lenses in the tray, the coach as a seventh held apart.
 2. Who writes the compliance-pressure pass criteria (the owner; the AI can draft the messages).
 3. Whether the registry is public in the repository (recommended: yes, with the checks recorded) or private.
 4. The order of A and C if time is short (recommended: A first, because the model question is open and C waits on decisions anyway).
