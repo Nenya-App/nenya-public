@@ -22,3 +22,6 @@ The digest holds counts, medians, flags and failed case ids only; never a reply.
 
 ## Sharing results publicly, after review
 Because the cases are invented, a public page needs no visitor data. Proposed route: digests wait unreviewed; the owner reads a week's digests and approves a short summary (model, dates, pass rate per category, median length, every failure listed with its case text and reply, nothing hidden); an approved summary is committed to `docs/` and shown on a plain "How we test the coach" page. Failures are shown as they are. Nothing is public until approved.
+
+## The complete-run archive (2026-11-16)
+Each case's outcome and the coach's replies are kept as `canary/runs/<day>/<task>-<case>` in the private store, with `canary/runs/<day>/meta` (model, provider, build, the instructions fingerprint of each task, Neurons). About 170 KB a night. The prompt is never kept (it holds the private notes), and the cases are invented, so no visitor text is involved. A reply can still repeat a phrase from the private notes, so **read before sharing anything**, and nothing here is public until the owner approves it. Reading: `netlify blobs:list coach-private-staging --prefix canary/runs/<day>` then `blobs:get`. A later copy to a private R2 bucket (a weekly export from the owner's own Mac with the `cf` sign-in) is possible; none exists yet.

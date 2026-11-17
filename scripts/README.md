@@ -49,6 +49,7 @@ if the model changes.
 | `bakeoff-heldout-bias.py` | Threshold checked on held-out halves, plus flag rates on invented neutral sentences about 27 groups | Research folder |
 | `bakeoff-second-reading.py` | Tests whether a second model (toxic-bert) closes the per-group gaps on the same budget | Research folder |
 | `bakeoff-workers-ai.mts` | Runs the persona set through the real coach function with the model call sent to Workers AI instead of Venice | Cloudflare account |
+| `record-neurons.mts` | Adds Neurons you spent by hand to the nightly canary's ledger (the bake-off and full-exchange scripts do it for you; `--no-record` skips) so the canary does not spend what you already did | Netlify CLI |
 | `duet-eval.mts` | Full-exchange tests: Venice plays an invented person turn by turn against the real coach on Workers AI; writes transcripts and a read-first summary to a private folder (docs/duet-eval.md) | Venice testing key, Cloudflare account |
 | `export-onnx.py` | Exports the cardiffnlp model to int8 ONNX for `netlify/functions/screen.mts` | Research folder, Python packages onnx, onnxruntime and torch |
 

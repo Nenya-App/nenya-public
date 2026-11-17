@@ -2,7 +2,7 @@
 // switches: VITE_COACH_PROVIDER=workers-ai on the same site and build as COACH_PROVIDER=workers-ai. Venice unless set. Only the wording that names the service
 // and what it does with the words changes; the Terms and the site's pre-written answers follow the same switch (docs/drafts/terms-workers-ai-draft.md).
 
-export const onWorkersAi = (): boolean => import.meta.env?.VITE_COACH_PROVIDER !== 'venice';
+export const onWorkersAi = (): boolean => import.meta.env?.VITE_COACH_PROVIDER === 'workers-ai';
 
 export const COACH_SERVICE = onWorkersAi()
   ? {

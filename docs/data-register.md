@@ -14,6 +14,7 @@ Everything Nenya keeps, where, for how long, and what deletes it. **Keep this cu
 | Partner-practice cells | private store | short | `cell-cleanup` (hourly) | the two people (end-to-end encrypted) |
 | Daily totals | private store | no limit yet (proposal: 13 months, then monthly) | nothing yet | the owner (admin page) |
 | "Save and return later" | the visitor's own browser (encrypted) | 24 hours | the page itself; Forget me; Emergency Exit | the visitor, with ID and passcode |
+| Nightly canary archive (`canary/runs/<day>/<task>-<case>` and `meta`: the coach's replies to invented test cases, the model, instructions fingerprint, build and Neurons; never the prompt, never visitor text) | private store (staging, and production if the canary is switched on there) | kept until the owner trims it (about 170 KB a night); never public until the owner has read it, because a reply can echo the private notes | the owner, by hand | the owner |
 | Guestbook signatures (`guestbook/<day>/<random>`: one color, the centroid of the visitor's two chosen colors and the two of the moment) | private store | forever (owner, 2026-11-15) | nothing (by design); cannot be found again to remove | everyone (the guestbook page) |
 | Guestbook once-a-day markers (`c/<day>/g-<code>`) | private store | about 1.5 days | `coach-cleanup` (daily, with the connection records) | nobody (codes only) |
 | Settings ("Remember on this device") | the visitor's own browser | until turned off | Forget me; Emergency Exit | the visitor |

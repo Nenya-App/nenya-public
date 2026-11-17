@@ -1,0 +1,33 @@
+# 3. The coach: pipeline, guards, instructions, providers, tests
+
+## What it is meant to be
+A short (five exchanges, 500 characters a message), honest, NVC-informed listener: it reflects what it hears, names possible feelings and needs (the CNVC Feelings and Needs Inventory, credited), says it is an AI, and does not diagnose, advise on medication, promise memory, miss anyone, or become a companion. It is a prototype and says so.
+
+## The pipeline (`netlify/functions/coach.mts`, header comment lists it)
+1 Route · 2 Gates (switched on, region US-only for now, keys, origin, size, session colors) · 3 Branches (sealed mode, signed-transcript receipts) · 4 History (turn number, signed ticket; first turn needs the Turnstile check) · 5 **Pre-model stops** (steering attempts, crisis and harm stops: **these never reach the model**) · 6 Limits (per connection 10 a day, site cap `COACH_DAILY_CAP`, 80 in production) · 7 Read (distress tier, hostility, stance, notes, values/contempt) · 8 **Site answers** (questions about Nenya and out-of-lane requests are answered by pre-written text) · 9 Generate (one model call, one retry if it repeats) · 10 **Guards**, each "ask once more, then repair": infrastructure, persona, names, closing, practice arc, mirror, care · 11 Site text (distress sentence with 988, apology strip, length trim, answer-first) · 12 After (counts, learning-card offer).
+The model is the smallest part of the safety story. Everything around it is deterministic and tested.
+
+## Instructions versions (`COACH_INSTRUCTIONS`)
+`v1`, `v2` (every rule), `v2.1` (the same rules said once each, plus two 2026-11-16 additions: the memory example now ends "but I'm listening now", and the closing of an attached person turns toward people and says the coach is an AI and will not remember). Production is set to **v2.1**. The text is in `coach.mts` and `docs/coach-instructions-v2.1.md`. The instructions fingerprint goes into signed transcripts. Private method notes and modules (`method-notes`, `modules` in the store) are added to the prompt; they are never in the repository.
+
+## Providers (`src/lib/coachProvider.ts`)
+Default **Venice AI** (the owner returned to it on 2026-11-16 after one day on Cloudflare: its encrypted Qwen 2.5 7B, and its "Sealed" mode). **Cloudflare Workers AI** (`@cf/google/gemma-4-26b-a4b-it`, Apache 2.0, through the REST API with `CF_AI_ACCOUNT_ID` and the secret `CF_AI_TOKEN`) is built, tested and kept for a later switch (`COACH_PROVIDER=workers-ai`, `VITE_COACH_PROVIDER=workers-ai`, and a Terms revision: the Cloudflare-era text is archived). A Workers-AI-only style note asks for brief, plain replies (under 80 words, no "whenever you need", medication goes to the prescriber). **No automatic fallback between providers**: that would send words to a company the person was not told about. Switching provider needs the Terms to name the right service (`docs/production-switch-checklist.md`, archive of the Venice-era Terms).
+Cost: about 25 Neurons a turn, a five-exchange conversation about 130; the free allowance is 10,000 a day, shared by every use of the account.
+
+## The tests that keep it honest (all use invented text only)
+- **Unit tests:** every guard and detector (3,000+ assertions run with `npm test`).
+- **Persona set** (`src/lib/personaEvalSet.ts`, 38 cases, checks in `personaChecks.ts`): run against the real function with `scripts/bakeoff-workers-ai.mts` (or `eval-persona.mts` for Venice). 38/38 on 2026-11-16 with the private text.
+- **Full-exchange tests** (`scripts/duet-eval.mts`, docs/duet-eval.md): Venice plays an invented person turn by turn against the real coach; the owner runs it in a Terminal (Venice key there). A person reads the transcripts; red-flag checks only say where to start. Findings so far became: the attached-person closing, the "no one is reading this" guard, the "won't miss you" sentence, and harm-admission detection that understands "I hit her" after a partner or home life was mentioned.
+- **Nightly canary** (`netlify/functions/canary-nightly.mts`, docs/canary-scope.md): every minute from 23:00 to 23:59 UTC (just before Workers AI's allowance resets) plays a few persona cases, saving its place; spends only genuinely unused Neurons, at most 3,000; writes a digest (`canary/digest-<day>`): pass counts, median length and reading grade, drift flags, failed case ids, never replies. Rotation: an alternate (Learn stance, instructions v2, a candidate model if `COACH_CANARY_MODEL` is set) then the baseline twice.
+- **Never** use real visitor text for any test. The cases are invented; keep it so.
+
+## How to change the coach safely
+1. Say what you want to change in terms of a failing case. Add or find the case.
+2. Change the smallest thing: a guard pattern, a pre-written answer, one sentence of instructions (v2.1 only). Prefer a site-written sentence to a model instruction.
+3. Add tests including near-misses (what must **not** match).
+4. `npm run check`; then a persona run; for conversational behaviour, a full-exchange run.
+5. If wording visitors read changes, it is owner-approved text (pre-written answers carry an `ownerNote`).
+6. Never weaken a safety stop, a limit or a disclaimer to fix a quality complaint.
+
+## Known gaps (as of 2026-11-16)
+Crisis and harm detection is phrase matching (it misses things, by design disclosed). The US-only rule stands. The Learn stance has been run once in tests, not in the full-exchange set. More test sets (DarkBench-style, steering) need authored pass criteria. The About pages that offer "continue on Venice" say "the same character", which runs on Venice's model.
