@@ -149,8 +149,9 @@ Terms drafts were compared with `src/lib/legalDocument.ts` (effective November 1
 | [drafts/reentry-quiz-draft.md](drafts/reentry-quiz-draft.md) | The pause screen and quiz | Built into `PauseScreen.tsx`. Nothing in a conversation starts it. |
 | [drafts/plain-language-summaries-2026-11-14.md](drafts/plain-language-summaries-2026-11-14.md) | "In plain words" boxes for the About pages | Not on the site |
 | [drafts/origin-and-name-draft.md](drafts/origin-and-name-draft.md) | Origin note and Name page | Not published |
-| [drafts/fractured-atlas-about-redraft-2026-11-13.md](drafts/fractured-atlas-about-redraft-2026-11-13.md) | "Our Structure" redraft for Fractured Atlas | Not applied (the live text is `about/Structure.tsx`) |
-| [drafts/fractured-atlas-website-descriptor-2026-11-13.md](drafts/fractured-atlas-website-descriptor-2026-11-13.md) | Project description for Fractured Atlas's page | Not published |
+| [drafts/fractured-atlas-about-2026-11-16.md](drafts/fractured-atlas-about-2026-11-16.md) | The Fractured Atlas About text rewritten for today's scope, in eight voices, with what changed and what to confirm | Draft for the owner; not sent or published |
+| [drafts/fractured-atlas-about-redraft-2026-11-13.md](drafts/fractured-atlas-about-redraft-2026-11-13.md) | "Our Structure" redraft for Fractured Atlas | SUPERSEDED 2026-11-16 (still names Venice). Not applied (the live text is `about/Structure.tsx`) |
+| [drafts/fractured-atlas-website-descriptor-2026-11-13.md](drafts/fractured-atlas-website-descriptor-2026-11-13.md) | Project description for Fractured Atlas's page | SUPERSEDED 2026-11-16 (still names Venice). Not published |
 | [drafts/essence-images-shortlist.md](drafts/essence-images-shortlist.md) | 24 food photographs for Essence | Shortlist only. Not in the code. |
 | [drafts/image-candidates-2026-11-09.md](drafts/image-candidates-2026-11-09.md) | Image search results from the Met and Openverse | A list to review |
 | [drafts/nvc-ideas-cards-README.md](drafts/nvc-ideas-cards-README.md) | Index of private NVC idea cards for the Learn stance | The cards are kept outside the repository |
