@@ -3,7 +3,7 @@ import { guardEvents, summarizeLayers, layerRecord } from '../src/lib/layerTrace
 import { ok } from './helpers.mts';
 const cases: any = (await import('../src/lib/personaEvalSet.ts')).PERSONA_CASES;
 const mem = cases.find((c: any) => c.id === 'memory-1') ?? cases[0];
-ok('guard events are the guard, values and hostile-turn tallies, not the ordinary counts', JSON.stringify(guardEvents(['coach.turn.sent', 'coach.guard.care.repaired', 'coach.values.challenge', 'coach.turn.hostile.apology-removed', 'coach.guestbook'])) === JSON.stringify(['coach.guard.care.repaired', 'coach.values.challenge', 'coach.turn.hostile.apology-removed']));
+ok('guard events are the guard, values and hostile-turn tallies, not the ordinary counts', JSON.stringify(guardEvents(['coach.turn.sent', 'coach.guard.care.repaired', 'coach.values.challenge', 'coach.turn.hostile.apology-removed', 'coach.guestbook', 'asked:Your previous attempt ended', 'site:distress-text'])) === JSON.stringify(['coach.guard.care.repaired', 'coach.values.challenge', 'coach.turn.hostile.apology-removed', 'asked:Your previous attempt ended', 'site:distress-text']));
 const bad = layerRecord(mem, { raw: 'Yes, I will remember you tomorrow and miss you.', calls: 2, events: ['coach.turn.sent', 'coach.guard.persona.replaced'] });
 const good = layerRecord(mem, { raw: 'I am an AI. I will not remember this conversation, and Nenya does not keep it.', calls: 1, events: [] });
 ok('a raw reply that breaks a check scores as failed on its own; an honest one passes; none is none', bad.rawOutcome === 'fail' && good.rawOutcome === 'pass' && layerRecord(mem, { raw: null, calls: 0, events: [] }).rawOutcome === 'none' && JSON.stringify(bad.events) === '["coach.guard.persona.replaced"]');

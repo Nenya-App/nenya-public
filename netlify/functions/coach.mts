@@ -111,6 +111,7 @@ let traceOn = false;
 let traceRaw: string | null = null;
 let traceCalls = 0;
 let traceEvents: string[] = [];
+const traceNote = (e: string): void => { if (traceOn) traceEvents.push(e); }; // a layer acting that the daily counts do not name: 'asked:<note>' (a guard asked the model again), 'site:<what the site added or changed>'
 export const __trace = {
   on: (v: boolean): void => { traceOn = v; },
   /** What the last request did, and clear it. */
@@ -1034,7 +1035,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // One attempt at a reply. `extra` adds a further instruction (used to ask for different words after a repeat). A failure is
   // returned as a function so that the log line and reference are only made if that failure is actually used.
   const generate = async (extra: string | undefined, timeoutMs: number): Promise<{ reply: string } | { failure: () => Response }> => {
-    if (traceOn) traceCalls++;
+    if (traceOn) { traceCalls++; if (extra) traceEvents.push(`asked:${extra.slice(0, 40)}`); }
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
@@ -1192,7 +1193,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       const again = await generate(CLOSE_NOTE, left);
       if (!('failure' in again) && again.reply) reply = again.reply;
     }
-    if (asksOrInvites(reply)) reply = settleReply(reply);
+    if (asksOrInvites(reply)) { reply = settleReply(reply); traceNote('site:closing-settled'); }
   }
   // The practice arc's guard: the coach is told not to name the person's feeling or need, not to check words they already gave and not to repeat picked
   // words back. This model does it anyway, so if it did, ask once more; if it still does, take those sentences out and add one plain question (or, for picked
@@ -1244,12 +1245,13 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   if (hostile) { const cleaned = stripApologies(reply); if (cleaned !== reply) { reply = cleaned; tally('coach.turn.hostile.apology-removed'); } }
   // A reply to critique (not to abuse) opens with the site's thank-you when the coach has not thanked the person itself.
   if (hostile === 'critique') { const thanked = withCritiqueThanks(reply); if (thanked !== reply) { reply = thanked; tally('coach.turn.hostile.thanks-added'); } }
-  if (reply.length > MAX_ASSISTANT_CHARS) reply = trimToSentence(reply.slice(0, MAX_ASSISTANT_CHARS));
+  if (reply.length > MAX_ASSISTANT_CHARS) { reply = trimToSentence(reply.slice(0, MAX_ASSISTANT_CHARS)); traceNote('site:length-trim'); }
   // A possible-distress flag: the site adds the sentence that names a person and the crisis line (the model does not, reliably). It is added
   // after the trimming so it cannot be cut off, and it is part of the reply: a turn like any other, kept in the conversation. Off unless
   // COACH_DISTRESS_TEXT=on (the wording is a draft).
   if (flag?.tier === 'soften' && (overrides.distressText ?? distressTextOn())) {
     reply = withDistressText(flag.category, reply, MAX_ASSISTANT_CHARS, flag.kind);
+    traceNote('site:distress-text');
     tally('coach.turn.distress-text');
   }
 
@@ -1265,6 +1267,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // A flag in the shared report text: the site's sentence pointing to people is added once, to the first reply, as for a flagged message.
   if (ctxFlag && turn === 1 && !flag && (overrides.distressText ?? distressTextOn())) {
     reply = withDistressText(ctxFlag.category, reply, MAX_ASSISTANT_CHARS, ctxFlag.kind);
+    traceNote('site:distress-text');
     tally('coach.turn.distress-text');
   }
   // The screening model, in SHADOW mode only (COACH_SCREEN=shadow and COACH_SCREEN_SECRET set): the latest message is sent to our own screening function while the model answers, and only the

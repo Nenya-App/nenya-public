@@ -11,8 +11,8 @@ export interface LayerRecord {
   rawOutcome: 'pass' | 'fail' | 'error' | 'none';
 }
 
-/** The guard events among the tallies: what a guard, the values rule, or the hostile-turn rules did to a reply. */
-export const guardEvents = (events: string[]): string[] => events.filter((e) => /^coach\.(guard|values|turn\.hostile)\./.test(e));
+/** The layer events among the tallies and notes: what a guard, the values rule or the hostile-turn rules did to a reply; 'asked:' a guard asked the model again; 'site:' the site added, settled or trimmed text (the distress sentence, a closing, a length trim). */
+export const guardEvents = (events: string[]): string[] => events.filter((e) => /^(coach\.(guard|values|turn\.hostile)\.|asked:|site:)/.test(e));
 
 export function layerRecord(c: PersonaCase, trace: { raw: string | null; calls: number; events: string[] }): LayerRecord {
   const rawOutcome = trace.raw === null ? 'none' : judge(c, { reply: trace.raw }).outcome;
