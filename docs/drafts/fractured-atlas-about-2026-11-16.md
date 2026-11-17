@@ -4,7 +4,7 @@ For the owner to edit, and for Fractured Atlas to review before anything changes
 
 
 > **Update 2026-11-16 (evening): the coach is back on Venice AI.** Every voice below was written when Cloudflare ran the coach. Before using any of them, replace the sentence about the AI service with the matching one here, and check the rest:
-> - "an open AI model run by Cloudflare" / "an open model (Gemma 4, run on Cloudflare)" / "runs on an open model (Gemma 4) that Cloudflare hosts" / "an open model hosted by Cloudflare" -> "a small AI model run by Venice AI, in a mode Venice labels private, which our server encrypts before it leaves".
+> - "an open AI model run by Cloudflare" / "an open model (Gemma 4, run on Cloudflare)" / "runs on an open model (Gemma 4) that Cloudflare hosts" / "an open model hosted by Cloudflare" -> "an open AI model (Gemma 4 26B A4B Uncensored) run by Venice AI, in a mode Venice labels private, which our server encrypts before it leaves". Say what "uncensored" means if the word appears: Venice's name for a model with few built-in refusals, so the limits come from Nenya's own checks.
 > - Voice E ("Small") leans on Gemma 4 being an open, replaceable model; reword that paragraph around the short, capped coach and the plain-rule safety checks. Voice B's "open model" line and Voice I's "runs on an open model hosted by Cloudflare" need the same change.
 > - Voice D and the main text need only the one sentence changed.
 > - Keep "not encrypted from Cloudflare" out of everything: on Venice the message is encrypted on our server before it is sent, but not from our device to the model (the Terms say exactly this).

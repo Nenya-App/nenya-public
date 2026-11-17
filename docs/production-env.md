@@ -81,7 +81,7 @@ These exist for testing, diagnosis, or turning a guard off in an emergency. Unse
 | `VITE_COACH_PROVIDER` | unset (= Venice) | `workers-ai` makes the pages (the demo's notices, the About pages, the region page) name Cloudflare instead of Venice AI. A build-time switch (Builds scope): always set it together with `COACH_PROVIDER` and the Terms. |
 | `CF_AI_ACCOUNT_ID` | none | The Cloudflare account that runs Workers AI (32 hex characters; not a secret). Only with `COACH_PROVIDER=workers-ai` (and for the nightly canary). |
 | `CF_AI_TOKEN` | none | **Secret.** A Cloudflare API token allowed only Workers AI. Only with `COACH_PROVIDER=workers-ai` (and for the nightly canary). |
-| `COACH_MODEL` | `e2ee-qwen-2-5-7b-p` (Venice) or `@cf/google/gemma-4-26b-a4b-it` (with `COACH_PROVIDER=workers-ai`) | Another model for the chosen provider (a Workers AI id starts `@cf/`). The Terms name the model: change them first. |
+| `COACH_MODEL` | `e2ee-gemma-4-26b-a4b-uncensored-p` (Venice; was `e2ee-qwen-2-5-7b-p` until 2026-11-16) or `@cf/google/gemma-4-26b-a4b-it` (with `COACH_PROVIDER=workers-ai`) | Another model for the chosen provider (a Workers AI id starts `@cf/`). The Terms name the model: change them first. |
 | `COACH_CHARACTER_SLUG` | the built-in one | Another Venice character |
 | `COACH_INSTRUCTIONS` | `v1` in the code | **Production and staging are set to `v2`** (owner, 2026-11-14). Keep it set: removing it falls back to v1. |
 | `COACH_STORE_NAME` | `coach-private` | Another Blobs store name |

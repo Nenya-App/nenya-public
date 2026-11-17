@@ -179,4 +179,4 @@ delete process.env.COACH_MODEL;
 attestMode = 'ok'; calls = [];
 (globalThis as any).fetch = veniceStub;
 const dflt = await call({ messages: [{ role: 'user', content: 'hello there' }] });
-ok('with no COACH_MODEL set, the default is the encrypted Qwen 2.5 7B', dflt.status === 200 && calls.some((c) => /model=e2ee-qwen-2-5-7b-p/.test(c.url)) && calls.some((c) => c.body?.model === 'e2ee-qwen-2-5-7b-p'));
+ok('with no COACH_MODEL set, the default is the encrypted Gemma 4 26B A4B Uncensored', dflt.status === 200 && calls.some((c) => /model=e2ee-gemma-4-26b-a4b-uncensored-p/.test(c.url)) && calls.some((c) => c.body?.model === 'e2ee-gemma-4-26b-a4b-uncensored-p'));

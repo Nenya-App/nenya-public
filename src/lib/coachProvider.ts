@@ -12,8 +12,8 @@ export const coachProvider = (env: Record<string, string | undefined> = process.
 
 /** Gemma 4 26B-A4B (Apache 2.0): the 2026-11-15 bake-off leader. */
 export const WORKERS_AI_DEFAULT_MODEL = '@cf/google/gemma-4-26b-a4b-it';
-/** Qwen 2.5 7B in Venice's encrypted enclave. */
-export const VENICE_DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p';
+/** Gemma 4 26B A4B Uncensored in Venice's encrypted enclave (owner, 2026-11-16; it replaced Qwen 2.5 7B, `e2ee-qwen-2-5-7b-p`). */
+export const VENICE_DEFAULT_MODEL = 'e2ee-gemma-4-26b-a4b-uncensored-p';
 
 export function coachModel(env: Record<string, string | undefined> = process.env): string {
   if (env.COACH_MODEL) return env.COACH_MODEL;

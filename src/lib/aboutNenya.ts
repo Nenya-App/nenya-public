@@ -382,7 +382,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'messages go through Netlify to Venice AI, which writes the replies', file: VENICE_TERMS, has: 'to Venice AI, which writes the replies' },
       { claim: 'Venice\'s servers relay ciphertext; the encryption happens in our function, not the browser', file: "src/lib/veniceE2ee.ts", has: 'Venice\'s servers relay ciphertext' },
       { claim: 'it must not be described as end-to-end from the visitor\'s device', file: "src/lib/veniceE2ee.ts", has: "describe it as end-to-end encryption from the visitor's device" },
-      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: 'src/lib/coachProvider.ts', has: "VENICE_DEFAULT_MODEL = 'e2ee-qwen-2-5-7b-p'" }, { claim: 'Venice is the provider unless switched', file: 'src/lib/coachProvider.ts', has: "env.COACH_PROVIDER === 'workers-ai' ? 'workers-ai' : 'venice'" },
+      { claim: 'the coach runs an encrypted Venice model (the default model id)', file: 'src/lib/coachProvider.ts', has: "VENICE_DEFAULT_MODEL = 'e2ee-gemma-4-26b-a4b-uncensored-p'" }, { claim: 'Venice is the provider unless switched', file: 'src/lib/coachProvider.ts', has: "env.COACH_PROVIDER === 'workers-ai' ? 'workers-ai' : 'venice'" },
       { claim: 'on-device processing is a goal, not built', file: about('PrivacyPromise'), has: 'We are not there yet' },
       { claim: 'the crisis check and instruction screening are phrase matching', file: TERMS, has: 'These checks are simple phrase matching' },
     ],
@@ -1212,7 +1212,8 @@ export function aboutAnswerFor(text: string): Answer | null {
 // exact commit this build was made from, the most precise place to review the code), and {model_clause} (the model's name, from the model actually in use).
 // A model that is not listed here is simply not named, so a change of model can never leave a wrong name behind: add the new one here to name it.
 export const MODEL_NAMES: Record<string, string> = {
-  'e2ee-qwen-2-5-7b-p': 'Qwen 2.5 7B',
+  'e2ee-gemma-4-26b-a4b-uncensored-p': 'Gemma 4 26B A4B Uncensored',
+  'e2ee-qwen-2-5-7b-p': 'Qwen 2.5 7B', // the model until 2026-11-16 (still named for older transcripts)
   '@cf/google/gemma-4-26b-a4b-it': 'Gemma 4 (26B-A4B)',
 };
 
