@@ -92,9 +92,9 @@ const defaultModel = readFileSync('src/lib/coachProvider.ts', 'utf8').match(/exp
 ok('the model the coach runs by default has a display name (add the name here when the model changes)', !!defaultModel && !!MODEL_NAMES[defaultModel], defaultModel);
 const how = ANSWERS.find((a) => a.id === 'n-howworks')!;
 const named = fillAnswer(how, { model: defaultModel });
-ok('the model is named from the model actually in use, and the sentence still reads', /an AI language model called Qwen 2\.5 7B, run by Venice AI/.test(named.short) && /an AI language model called Qwen 2\.5 7B, run by Venice AI/.test(named.full[0]));
+ok('the model is named from the model actually in use, and the sentence still reads', /an AI language model called Gemma 4 26B A4B Uncensored, run by Venice AI/.test(named.short) && /an AI language model called Gemma 4 26B A4B Uncensored, run by Venice AI/.test(named.full[0]));
 const unnamed = fillAnswer(how, { model: 'some-other-model' });
-ok('a model that is not listed is not named, so a change of model never leaves a wrong name behind', !/Qwen/.test(unnamed.short + unnamed.full.join(' ')) && /an AI language model, run by Venice AI/.test(unnamed.short) && !/\{[a-z_]+\}/.test(unnamed.short + unnamed.full.join(' ')));
+ok('a model that is not listed is not named, so a change of model never leaves a wrong name behind', !/Qwen|Gemma/.test(unnamed.short + unnamed.full.join(' ')) && /an AI language model, run by Venice AI/.test(unnamed.short) && !/\{[a-z_]+\}/.test(unnamed.short + unnamed.full.join(' ')));
 const ver = ANSWERS.find((a) => a.id === 'n-version')!;
 const v = fillAnswer(ver, { label: '1.1.0+679c4d2', terms: 'November 8, 2026', commit: '679c4d2' });
 ok('the version answer carries the build label, the Terms date and a link to that exact commit', /1\.1\.0\+679c4d2/.test(v.short) && /November 8, 2026/.test(v.short) && v.links.some((l) => l.href === 'https://github.com/Nenya-App/nenya-public/commit/679c4d2'));
