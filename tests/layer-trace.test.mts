@@ -34,3 +34,9 @@ ok('the trace is in-process only: it is switched on by a script, never by a head
   ok('with tracing on, the first model reply and the call count are recorded, and the HTTP answer carries no trace', on.raw === 'I hear that. What feels heaviest right now?' && on.calls === 1 && !('trace' in j) && !('raw' in j));
   __trace.on(false);
 }
+{
+  const bake = readFileSync('scripts/bakeoff-workers-ai.mts', 'utf8');
+  const duet = readFileSync('scripts/duet-eval.mts', 'utf8');
+  ok('a local model server must be on this computer (localhost or 127.0.0.1), in both scripts', [bake, duet].every((t) => /\^https\?:\\\/\\\/\(localhost\|127\\\.0\\\.0\\\.1\)/.test(t)));
+  ok('the local path forwards only the model, messages and sampling to the local server, and the coach gets a pseudo id so its own address check passes', [bake, duet].every((t) => /chat\/completions/.test(t) && /@cf\/local\//.test(t) && /body\.messages, temperature: body\.temperature, top_p: body\.top_p, max_tokens: body\.max_tokens/.test(t)));
+}

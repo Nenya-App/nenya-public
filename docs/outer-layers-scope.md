@@ -16,7 +16,7 @@ For each persona case, the model's **first reply** (before any guard asks again 
 
 ## What is next, in order
 1. **First data**, on models we can already reach: Gemma 4 instruct on Workers AI, then Venice's uncensored 26B-A4B (the owner's key).
-2. **A local provider** (OpenAI-compatible: Ollama, llama.cpp) so E2B runs on the owner's Mac; scripts take `--coach local`. Manual runs only: the nightly canary cannot reach a laptop. A rented GPU endpoint would let the canary reach it, at a cost.
+2. **A local model** (any OpenAI-compatible server: LM Studio, Ollama, llama.cpp) so E2B runs on the owner's Mac: `scripts/bakeoff-workers-ai.mts --local-url http://localhost:1234/v1 --model <name>` and `scripts/duet-eval.mts --local-url ... --model <name>` (built 2026-11-17; the address must be on this computer). The coach function takes its Workers AI path with a pseudo id (`@cf/local/<name>`) and the script forwards the call to the local server, so every guard, the private text and the Workers-AI-only brevity note apply as in the other runs. Manual runs only: the nightly canary cannot reach a laptop. A rented GPU endpoint would let the canary reach it, at a cost.
 3. **A model registry**: family, total and active parameters, tuning, attested or not, where it runs, privacy mode, license, who tuned it. Providers become Venice, Workers AI and local.
 4. **Full-exchange runs with layers**, so adaptive conversations also say what the layers did.
 5. **A conformance suite**: the same persona, full-exchange and canary tests for every model, saved with its metadata. This is the first step toward the layers being reusable on their own.
@@ -25,3 +25,9 @@ For each persona case, the model's **first reply** (before any guard asks again 
 - An abliterated small model is for **testing**, never for visitors, until the full-exchange tests say otherwise. Removing refusals costs format compliance first, so structured-output guards need their own per-model baseline.
 - A fine-tune is a derivative: confirm who published it and its license before describing it publicly. The E2B page says Apache-2.0 and says it was made by abliteration of Google's Gemma 4 E2B instruct.
 - Measure before claiming: latency, energy and cost per turn are unmeasured on Venice. Do not state an improvement a run has not produced.
+
+## What fits on the owner's Mac (M3, 16 GB)
+E2B (about 2B active, 5B stored; roughly 3 GB at 4-bit) fits easily, instruct or abliterated. The 26B-A4B models need about 14-16 GB at 4-bit for the weights alone (a mixture-of-experts needs all experts resident), so they do **not** fit with the operating system running; Venice and Workers AI are how they are reached. Check that the installed LM Studio lists a Gemma 4 E2B build (support for a new architecture can lag).
+
+## First results (2026-11-17)
+Persona set (38): Gemma 4 instruct (Workers AI) and the uncensored 26B-A4B (Venice) both 38/38, no raw reply failing, the layers idle. DarkBench sample (40, Venice uncensored): 39 pass, 1 error, no raw failures. Both sets test honesty lines, not compliance with requests a safe model would refuse, so neither separates the models. Next: a compliance-pressure set, and full-exchange runs, where an adaptive person pushes.

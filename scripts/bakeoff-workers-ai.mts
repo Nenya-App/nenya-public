@@ -27,10 +27,18 @@ import { layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
 const model = flag('--model');
-if (!model || !/^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model)) {
-  console.error('--model is a Workers AI model id, such as @cf/meta/llama-3.1-8b-instruct-fp8 (see `cf ai models list`).');
+// --local-url http://localhost:1234/v1 sends the model call to a local OpenAI-compatible server (LM Studio, Ollama, llama.cpp) instead of Workers AI; --model is then the local model's name.
+const localUrl = flag('--local-url');
+if (!model || (!localUrl && !/^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model))) {
+  console.error('--model is a Workers AI model id, such as @cf/meta/llama-3.1-8b-instruct-fp8 (see `cf ai models list`); with --local-url it is the local model name.');
   process.exit(2);
 }
+if (localUrl && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(localUrl)) {
+  console.error('--local-url must be on this computer (localhost or 127.0.0.1): nothing here is sent to another machine.');
+  process.exit(2);
+}
+// The coach function takes the Workers AI path in both cases; for a local model it is given a pseudo id so its address check passes, and the real name is used when forwarding.
+const coachModelId = localUrl ? `@cf/local/${model.replace(/[^a-z0-9._-]/gi, '-')}` : model;
 const instructions = flag('--instructions') ?? 'v2.1';
 if (!['v1', 'v2', 'v2.1'].includes(instructions)) {
   console.error('--instructions must be v1, v2 or v2.1.');
@@ -53,7 +61,7 @@ process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
 process.env.COACH_PROVIDER = 'workers-ai';
 process.env.CF_AI_ACCOUNT_ID = '0'.repeat(32);
 process.env.CF_AI_TOKEN = 'via-cf-cli';
-process.env.COACH_MODEL = model;
+process.env.COACH_MODEL = coachModelId;
 process.env.COACH_INSTRUCTIONS = instructions;
 process.env.COACH_DISTRESS_TEXT = 'on';
 process.env.COACH_VALUES = 'on';
@@ -84,6 +92,20 @@ const realFetch = globalThis.fetch;
   if (!url.startsWith('https://api.cloudflare.com/client/v4/accounts/')) return realFetch(input as RequestInfo, init);
   // The body exactly as the coach function built it for Workers AI.
   const body = JSON.parse(String(init?.body ?? '{}'));
+  if (localUrl) {
+    const t0 = Date.now();
+    calls++;
+    try {
+      const r = await realFetch(`${localUrl.replace(/\/$/, '')}/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, messages: body.messages, temperature: body.temperature, top_p: body.top_p, max_tokens: body.max_tokens }) });
+      latencies.push(Date.now() - t0);
+      if (!r.ok) return new Response('{}', { status: 502 });
+      const lj: any = await r.json();
+      callLog.push({ chars: JSON.stringify(body.messages).length, messages: body.messages.length, neurons: 0 });
+      return new Response(JSON.stringify(lj), { status: 200, headers: { 'content-type': 'application/json' } });
+    } catch {
+      return new Response('{}', { status: 502 });
+    }
+  }
   const file = join(work, `req-${calls}.json`);
   writeFileSync(file, JSON.stringify(body));
   const t0 = Date.now();
@@ -167,7 +189,7 @@ console.log(`\n=== ${model}: ${s.pass} passed, ${s.fail} failed, ${s.error} erro
 for (const [cat, n] of Object.entries(s.byCategory)) console.log(`  ${cat.padEnd(13)} pass ${n.pass}  fail ${n.fail}  error ${n.error}`);
 console.log(`Model calls ${cost.calls}, Neurons ${cost.neurons} (${cost.neuronsPerCall} a call), median ${cost.medianSeconds}s a call (through the CLI, so slower than from the site).`);
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, layerSummary, summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: localUrl ? 'local' : 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, layerSummary, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 rmSync(work, { recursive: true, force: true });
