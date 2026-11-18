@@ -1,6 +1,6 @@
 # A local hub and its spokes: scope for options 1 and 4 (draft for the owner, 2026-11-18)
 
-**The idea (owner).** A machine in one place (a clinic, a school, a community group, a household) runs a model and makes itself reachable, so people nearby use it instead of the default route every time. Two ways to build it were asked about: **option 1**, the hub serves the whole app, and **option 4**, the browser talks to the hub peer-to-peer (WebRTC). Nothing here is built; nothing in the live coach changes.
+**The idea (owner).** A machine in one place (a clinic, a school, a community group, a household) runs a model and makes itself reachable, so people nearby use it instead of the default route every time. Two ways to build it were asked about: **option 1**, the hub serves the whole app, and **option 4**, the browser talks to the hub peer-to-peer (WebRTC). Nothing here is built; nothing in the live coach changes. For who a hub is *for* (a household, a coffee shop, a clinic, a regional network) and what changes as the group grows, see [hub-scales.md](hub-scales.md).
 
 **What the hub is not.** It is not a second Nenya service run for the public, and it does not replace Venice. It is an opt-in provider for a place that chooses to host one, in the same sense that Workers AI is a provider that exists and is switched off.
 
