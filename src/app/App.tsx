@@ -1,4 +1,4 @@
-import { lensTrayOn, openLens, addLens, removeLens, reportShape, LENS_ORDER, type LensId, type LensState, type LensAdded } from '../lib/lensState';
+import { lensTrayOn, openLens, addLens, removeLens, reportShape, readSavedDraft, LENS_ORDER, type LensId, type LensState, type LensAdded } from '../lib/lensState';
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { setSessionMarkId } from '../lib/sessionMarkStore';
 import SkipLink from './components/SkipLink';
@@ -387,12 +387,28 @@ export default function App() {
     canSave: gatewayData.length > 0,
     sessionId,
     save: (passcode) => {
-      const payload: SavedPayload = { v: 1, selectedGateways, gatewayData, bodyMapData, interfaceColors };
+      // Tray mode saves version 2: the added lenses (selectedGateways keeps the same meaning) plus the ones opened but not added. Off: version 1, as before.
+      const payload: SavedPayload = lensTrayOn()
+        ? { v: 2, selectedGateways: gatewayData.map((g) => g.gateway), examined, gatewayData, bodyMapData, interfaceColors }
+        : { v: 1, selectedGateways, gatewayData, bodyMapData, interfaceColors };
       return saveReflection(payload, sessionId, passcode);
     },
     open: async (id, passcode) => {
       const saved = await openReflection(id, passcode);
       if (!saved) return false;
+      if (lensTrayOn()) {
+        // A version 1 or 2 draft opens at the tray: what was added is back, and the lenses opened but not added are remembered.
+        const draft = readSavedDraft(saved);
+        if (!draft) return false;
+        setSelectedGateways(draft.gatewayData.map((g) => g.gateway as Gateway));
+        setGatewayData(draft.gatewayData as GatewayData[]);
+        setExamined(draft.examined);
+        setBodyMapData(saved.bodyMapData as BodyMapData);
+        setInterfaceColors(saved.interfaceColors);
+        setShadow(normalizeId(id) ?? shadow);
+        navigateTo('home');
+        return true;
+      }
       const gateways = saved.selectedGateways as Gateway[];
       const data = saved.gatewayData as GatewayData[];
       setSelectedGateways(gateways);
