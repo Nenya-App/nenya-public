@@ -193,15 +193,18 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const noteNames = getNoteNames(tonalSystem);
 
   // Melody state
-  const [melodyConnected, setMelodyConnected] = useState(hasValidColors);
+  const [melodyConnected, setMelodyConnected] = useState<boolean>(init ? !!init.melodyConnected && hasValidColors : hasValidColors);
   // Sound first: should the melody's two colors be where the Sight gateway starts? Checked unless the person unchecks it.
-  const [bringToSight, setBringToSight] = useState(true);
+  const [bringToSight, setBringToSight] = useState<boolean>(init?.bringToSight ?? true);
   const seedMelody = useCallback(
     () => (hasValidColors && melodyConnected ? colorsToMelody(userColors!.color1!, userColors!.color2!, scale.length) : Array(6).fill(null)),
     [hasValidColors, melodyConnected, userColors, scale.length]
   );
   const [melody, setMelody] = useState<(number | null)[]>(init?.melody ?? seedMelody);
+  // On Edit the saved melody is kept: the first run of this effect must not replace it.
+  const keepSaved = useRef(!!init);
   useEffect(() => {
+    if (keepSaved.current) { keepSaved.current = false; return; }
     if (melodyConnected && hasValidColors) {
       setMelody(colorsToMelody(userColors!.color1!, userColors!.color2!, scale.length));
       setPhrases((prev) => (prev.length ? prev : makePhrases(scale.length)));
