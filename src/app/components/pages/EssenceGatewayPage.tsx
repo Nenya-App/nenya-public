@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { WordPicker } from '../WordPicker';
-import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { PutThisDown, FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 
 import { L } from '../../../lib/vocabulary';
@@ -149,7 +149,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
             </div>
           </div>
           
-          <div className="w-20" />
+          {tray ? <PutThisDown onClick={onBack} name={'Essence'} /> : <div className="w-20" />}
         </div>
       </div>
 

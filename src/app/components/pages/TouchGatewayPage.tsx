@@ -15,7 +15,7 @@ import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { TouchSurfaceField } from '../TouchSurfaceField';
 import { MoreDetail } from '../MoreDetail';
-import { FewerNote, AddToReport } from '../LensCardParts';
+import { PutThisDown, FewerNote, AddToReport } from '../LensCardParts';
 import { lensTrayOn } from '../../../lib/lensState';
 import { simpleGatewaysOn, STEP_NAMES, TOUCH_COPY } from '../../../lib/gatewayCopy';
 
@@ -144,7 +144,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
             </div>
           </div>
 
-          <div className="w-20" />
+          {tray ? <PutThisDown onClick={onBack} name={'Touch'} /> : <div className="w-20" />}
         </div>
       </div>
 

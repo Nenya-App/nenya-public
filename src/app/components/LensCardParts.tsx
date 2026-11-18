@@ -37,3 +37,12 @@ export function AddToReport({ added, onAdd, onPutDown, name }: { added: boolean;
     </div>
   );
 }
+
+/** "Put this down" in the header of every card of a lens (owner, 2026-11-18): leave the lens at any point without adding anything. It stays "examined" in the tray. */
+export function PutThisDown({ onClick, name }: { onClick: () => void; name?: string }) {
+  return (
+    <Button variant="ghost" size="sm" onClick={onClick} className="min-h-11" aria-label={name ? `Put ${name} down without adding it` : undefined}>
+      Put this down
+    </Button>
+  );
+}

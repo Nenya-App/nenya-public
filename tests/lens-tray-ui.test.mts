@@ -67,3 +67,15 @@ ok('on the breathing page Reflect leads to the start screen, which is the tray w
   const scaleAt = snd.indexOf('TONAL_SYSTEM_ORDER.map((system) => (\n                <button'), melodyAt = snd.indexOf("{step === 'melody' && ("), contAt = snd.indexOf("setStep('qualitative')");
   ok('the scale selection comes after the melody maker and just before Continue, not at the top', melodyAt > 0 && scaleAt > snd.indexOf('Click a note') && scaleAt < contAt && scaleAt > melodyAt + 3000);
 }
+
+// "Put this down" is in the header of every card of a lens, not only the last one (owner, 2026-11-18).
+{
+  const files = ['Sight', 'Sound', 'Touch', 'Essence', 'Movement', 'Insight'].map((n) => readFileSync(`src/app/components/pages/${n}GatewayPage.tsx`, 'utf8'));
+  ok('all six lens pages carry Put this down in their header in tray mode (so on every card, instructions included)', files.every((f) => /\{tray \? <PutThisDown onClick=\{onBack\}/.test(f) && /import \{ PutThisDown,/.test(f)));
+  ok('the old flow keeps its spacer where Put this down would be', files.every((f) => /: <div className="w-20" \/>\}/.test(f)));
+}
+// The surface chooser has a search (Touch).
+{
+  const tc = readFileSync('src/app/components/TextureChooser.tsx', 'utf8');
+  ok('the surface chooser has a labelled search that looks at name, kind, group and feel, with every word typed, and a Clear', /Search surfaces/.test(tc) && /words\.every\(\(w\) => `\$\{t\.title\} \$\{t\.kind\} \$\{t\.group\} \$\{t\.feel\}`/.test(tc) && /onClick=\{\(\) => setQuery\(''\)\}>Clear/.test(tc) && /htmlFor=\{searchId\}/.test(tc));
+}

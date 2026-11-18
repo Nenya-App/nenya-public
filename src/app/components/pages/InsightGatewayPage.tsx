@@ -15,7 +15,7 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
-import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { PutThisDown, FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { lensTapestryOn, cleanLayers, tapestryWords } from '../../../lib/lensActivities';
 import { TapestryActivity } from '../LensActivities';
@@ -183,7 +183,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
             </div>
           </div>
           
-          <div className="w-20" />
+          {tray ? <PutThisDown onClick={onBack} name={sixthLensName()} /> : <div className="w-20" />}
         </div>
       </div>
 

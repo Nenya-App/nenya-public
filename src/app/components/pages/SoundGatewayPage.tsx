@@ -33,7 +33,7 @@ import {
 } from '../../../lib/audio';
 
 import { WordPicker } from '../WordPicker';
-import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { PutThisDown, FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { PhraseMelody, type Active } from '../PhraseMelody';
 import { ChordPrototype } from '../ChordPrototype';
@@ -430,7 +430,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
             </div>
           </div>
 
-          <div className="w-20" />
+          {tray ? <PutThisDown onClick={onBack} name={'Sound'} /> : <div className="w-20" />}
         </div>
       </div>
 

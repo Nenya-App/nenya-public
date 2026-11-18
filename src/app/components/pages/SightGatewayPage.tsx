@@ -28,7 +28,7 @@ import {
 } from '../ui/dialog';
 
 import { WordPicker } from '../WordPicker';
-import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { PutThisDown, FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { L } from '../../../lib/vocabulary';
 interface SightGatewayPageProps {
@@ -244,7 +244,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               </div>
             </div>
 
-            <div className="w-20" /> {/* Spacer for balance */}
+            {tray ? <PutThisDown onClick={onBack} name={'Sight'} /> : <div className="w-20" />}
           </div>
         </div>
 

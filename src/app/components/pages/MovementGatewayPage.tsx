@@ -15,7 +15,7 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
-import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { PutThisDown, FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { lensPathOn, cleanPoints, simplifyPoints, pathWords, type PathPoint } from '../../../lib/lensActivities';
 import { PathActivity } from '../LensActivities';
@@ -183,7 +183,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
             </div>
           </div>
           
-          <div className="w-20" />
+          {tray ? <PutThisDown onClick={onBack} name={'Movement'} /> : <div className="w-20" />}
         </div>
       </div>
 
