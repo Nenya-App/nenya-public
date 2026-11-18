@@ -51,7 +51,7 @@ Turn these on one at a time, in the order in the PR description, after the match
 
 | Variable | On value | What it turns on |
 |---|---|---|
-| `VITE_START_CHOOSER` | `on` | The start chooser before the Terms (breathing, reflection or the coach); retires the automatic tour offer |
+| `VITE_SECTION_ADDRESSES` | `on` | One address per part (`/breath`, `/senses`, `/coach`; src/lib/sections.ts). On whenever the lens tray is on. **Replaces `VITE_START_CHOOSER`**: the start chooser (three rings to pick where to begin) was removed on 2026-11-18 at the owner's direction, so that variable is no longer read and can be deleted from a site's settings |
 | `VITE_GATEWAYS_SIMPLE` | `on` | The simpler gateways (Touch first): one main choice per step, the rest under "Add more detail" |
 | `VITE_SOUND_CHORDS` | `on` | Chords in the Sound gateway (softened by default) |
 | `VITE_SAVE_REFLECTION` | `on` | "Save and return later": finished gateways kept encrypted on the visitor's device for 24 hours |

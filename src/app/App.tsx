@@ -21,7 +21,6 @@ import { enableUsageCounts, countEvents, countEvent, countPageView } from '../li
 import { PRESETS, sameTechnique } from '../lib/breathingPresets';
 import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
 import OnboardingFlow from './components/OnboardingFlow';
-import type { StartChoice } from '../lib/startCopy';
 import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
 import { guestbookOn } from '../lib/guestbook';
 import { SaveReflectionContext, type SaveReflectionApi } from './components/SaveReflection';
@@ -89,7 +88,7 @@ export default function App() {
       return null;
     }
   });
-  // With the section addresses on (VITE_START_CHOOSER), /senses opens the gateway choice; / and /breath the front page (src/lib/sections.ts).
+  // With the section addresses on (VITE_SECTION_ADDRESSES, or the lens tray), /senses opens the gateway choice; / and /breath the front page (src/lib/sections.ts).
   const [arrivedAtSenses] = useState(() => {
     try {
       return initialAbout === null && sectionsOn() && sectionOfPath(window.location.pathname) === 'senses';
@@ -107,7 +106,7 @@ export default function App() {
   });
   const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : arrivedAtGuestbook ? 'guestbook' : arrivedAtSenses ? 'home' : 'welcome');
   // Arrived on a page other than the welcome page (a link to an About page, or straight to /senses, which means reflection was chosen):
-  // the first-visit panel then skips the start chooser and the breathing-rhythm choice, and asks only the Terms.
+  // the first-visit panel then skips the breathing-rhythm choice, and asks only the Terms.
   const [arrivedElsewhere] = useState(initialAbout !== null || arrivedAtSenses || arrivedAtGuestbook);
   // Real navigation history instead of a single "previousScreen" value.
   // A single value can only ever answer "what screen came immediately
@@ -253,29 +252,17 @@ export default function App() {
 
   // Counting begins only once the terms are agreed. Agreeing is the first thing counted, with the rhythm that was
   // chosen (nothing before this point is counted, so the rhythm is recorded here, not when it was picked).
-  // With the start chooser (VITE_START_CHOOSER=on), `choice` is where the visitor chose to start: it is counted here, at agreement, with the rhythm (only on
-  // the breathing path), and the visitor goes there. The tour is no longer offered on its own then; it stays in the help menu.
-  const handleOnboardingFinish = (choice?: StartChoice, agreement?: Promise<void>) => {
+  // (The start chooser was removed on 2026-11-18; where to go next is the quick nav's job.)
+  const handleOnboardingFinish = (_agreement?: Promise<void>) => {
     enableUsageCounts();
     const rhythm = PRESETS.find((p) => sameTechnique(breathingTechnique, p));
-    const rhythmName = rhythm && !arrivedElsewhere && !termsFirstOn() && (!choice || choice === 'breathing') ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
-    countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : []), ...(choice ? [`onboarding.start.${choice}`] : [])]);
+    const rhythmName = rhythm && !arrivedElsewhere && !termsFirstOn() ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
+    countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : [])]);
     setBreathingCounterMinimized(true);
     setEntryUnlocked(true);
     setTermsAgreed(true);
-    if (choice === 'reflection') {
-      navigateTo('home');
-      return;
-    }
-    if (choice === 'coach') {
-      // The coach page reads the agreement held for this visit; wait for it to be signed (at most a few seconds) so the signed note is not lost.
-      const go = () => window.location.assign('/coach/');
-      if (agreement) void agreement.finally(go);
-      else go();
-      return;
-    }
-    // Only on the welcome screen, and only without the chooser: that is where the tour points.
-    if (!choice && currentScreen === 'welcome') setTourOffered(true);
+    // Only on the welcome screen: that is where the tour points.
+    if (currentScreen === 'welcome') setTourOffered(true);
   };
 
   // Track emergency exit to disable beforeunload warning

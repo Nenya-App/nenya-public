@@ -1,3 +1,5 @@
+> **REMOVED 2026-11-18 at the owner's direction** ("I don't like it"). The three-ring start chooser, `src/lib/startCopy.ts`, `StartTriad.tsx` and the `VITE_START_CHOOSER` switch are gone; the quick nav does the job of showing where to go. The section addresses (`/breath`, `/senses`, `/coach`) now follow `VITE_SECTION_ADDRESSES` or the lens tray. Past `onboarding.start.*` daily totals stay readable in the admin page; nothing sends them any more. Kept as a record.
+
 # Start chooser: scope (decided and built behind a switch, 2026-11-15)
 
 **The idea (owner):** a first screen that says what Nenya offers and asks where to start: breathing, reflection or the coach, with "Learn more" on each. Breathing leads to the rhythm picker, reflection to the gateways, the coach to the coach page. The coach page's own "Begin with a breath first?" stays.
