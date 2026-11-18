@@ -96,3 +96,43 @@ The operator is a data controller in practice. The hub image ships with logging 
 1. Measure concurrency on a 24–32 GB machine: replies per minute for 1, 3 and 6 simultaneous people.
 2. Confirm the guards run end to end with no Netlify in the path (a test harness using the same shared modules).
 3. Check the Terms for what "the site loads nothing from other sites" covers, so the hub's own origin is described correctly.
+
+---
+
+## Setup with the earlier routes 2 and 3 (owner, 2026-11-18)
+The owner's direction: use **route 2** (the nenya.biz page calls the hub from the browser) and **route 3** (a Cloudflare tunnel) as the way to *set up* options 1 and 4, not as the way conversations travel. Cloudflare is already in the stack (Turnstile, Workers AI), so this adds no new company, but it does add jobs for it, listed below.
+
+### Route 3 at setup: the tunnel carries pairing, never words
+- **For option 1 (the certificate problem).** The hard part of option 1 was HTTPS on a local name. Two ways a tunnel or Cloudflare account solves it:
+  - **A trusted certificate by DNS challenge (preferred).** The hub asks for a free certificate for a name under a Nenya-owned zone (for example `<hub>.hub.<nenya domain>`), proving ownership by a DNS record at Cloudflare, and the name points at the hub's *local* address. Traffic then runs on the local network over real HTTPS with no tunnel in the path. The tunnel (or an API token) is used only at setup and at renewal (about every 60–90 days). *Checks:* some routers refuse public DNS answers that point at a private address (DNS-rebinding protection), so a fallback is needed; certificate transparency logs make the hub's name public (low sensitivity, but it must be said to the operator); the Nenya domain's DNS must be on Cloudflare (it is not today; a delegated subdomain zone is enough).
+  - **A permanent tunnel as the hub's address.** Easiest to set up, works through any Wi-Fi, but Cloudflare then terminates TLS and **sees the conversation in the clear**, so Cloudflare becomes a processor of the words and the hub stops being "local" in the sense the Terms would describe. Not recommended except as an operator's explicit choice, with its own Terms line.
+- **For option 4 (signalling).** The pairing code exchange (the WebRTC offer and answer) travels through the tunnel to a pairing endpoint on the hub, so the person needs no code scanning in the common case. The words never go through it: after pairing, the data channel runs device to hub on the local network. This is the "mailbox" variant, with Cloudflare (not Netlify) seeing that a pairing happened; it needs a data-register row.
+
+### Route 2 once the hub has a real certificate
+With the trusted name above, the hosted page can call the hub directly: an https page may call another https origin. This is simpler than WebRTC and, for hubs that pass the DNS check, **makes option 4 largely unnecessary**. What it needs:
+- **A narrow content-security change:** `connect-src 'self' https://*.hub.<nenya domain>` (a wildcard on a Nenya-owned zone only). This is a loosening of the policy and is the owner's decision; it must be tested (`tests/` pins the policy) and described in the Terms line about what the site loads.
+- **CORS on the hub** for the nenya.biz origin only, and the header Chrome requires for a public page to reach a private address (Private Network Access). Safari and Firefox behave differently; test on each.
+- **Pairing:** the page learns the hub's name from a link or QR the hub shows (route 2 has no discovery on its own); the name is stored on that device only.
+- **The guards:** the browser runs its set, the hub wrapper the server-side set, as above. A page that calls a hub is still a page the person can modify, so the hub wrapper is the one that counts.
+
+### What this changes in the comparison
+| | Option 1 with route 3 certificate | Route 2 page calls the hub | Option 4 with route 3 signalling |
+|---|---|---|---|
+| Local traffic only | Yes | Yes | Yes |
+| Live site version | No (hub copy) | Yes | Yes |
+| Needs a Nenya-owned DNS zone on Cloudflare | Yes | Yes | No |
+| Loosens the site policy | No | Yes (narrow wildcard) | To verify |
+| Third party sees | Cloudflare DNS only | Cloudflare DNS only | Pairing events through the tunnel |
+| Fails on rebinding-protected routers | Yes | Yes | No |
+| Fails on client-isolated Wi-Fi | No | No | Yes |
+
+**Recommended order, given the direction:** (1) the certificate-by-DNS setup, then option 1 on it; (2) route 2 on top of the same certificate, since it reuses the same setup and gives spokes the live site; (3) option 4 only as the fallback for networks where the DNS name will not resolve, if any pilot hits that.
+
+### Questions this adds for the owner
+1. A Nenya-owned zone for hub names (a delegated subdomain on Cloudflare): yes or no? Without it the certificate route does not work and the permanent tunnel is the only easy path.
+2. The narrow `connect-src` wildcard for route 2: acceptable, or is the policy untouchable?
+3. Who holds the Cloudflare token that issues certificates: Nenya (issuing on request for approved hubs) or the operator (their own domain, harder setup)?
+4. Is a hub name appearing in public certificate logs acceptable for every host, including ones that would rather not be found?
+
+### Measure before building (added)
+Test the DNS-to-private-address name on three home and office routers, and from a phone on mobile data. Test a page-to-hub call in Chrome, Safari and Firefox with the Private Network Access header.
