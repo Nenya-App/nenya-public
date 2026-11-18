@@ -54,6 +54,9 @@ export function summaryMessages(turns: readonly Turn[]): { system: string; messa
   return { system: SUMMARY_SYSTEM, messages: [{ role: 'user', content: `Here is the conversation.\n\n${conversationBlock(turns)}\n\nWrite the summary now.` }] };
 }
 
+/** A sentence that ends on one of these words has been cut off or never finished. */
+const DANGLING_END = /\b(?:to|by|of|and|or|but|the|a|an|in|on|at|for|with|from|that|which|as|so|if|when|because|than|your|my|their|his|her|our|its|about|into|toward|towards|while|who|whose|where)$/i;
+
 const words = (t: string): number => t.trim().split(/\s+/).filter(Boolean).length;
 
 /** What is wrong with a summary, as short names (empty = usable). Phrase checks, like the persona checks: they catch the common failures, not every one. */
@@ -76,6 +79,7 @@ export function summaryProblems(text: string): string[] {
   if (words(t) > 110) out.push('too-long');
   if (words(t) < 15) out.push('too-short');
   if (!/[.!]["”’)]?$/.test(t)) out.push('unfinished');
+  if (sentences(t).some((x) => DANGLING_END.test(x.replace(/[.!?"”’)]+$/, '').trim()))) out.push('fragment'); // a sentence that stops on a function word ("...by wanting to.")
   return out;
 }
 
