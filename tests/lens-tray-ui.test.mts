@@ -86,3 +86,9 @@ ok('on the breathing page Reflect leads to the start screen, which is the tray w
   ok('the drawings animate: each line draws itself, staggered, in a loop', /@keyframes shapeDraw/.test(sp) && /animation: shapeDraw 4\.5s ease-in-out infinite/.test(sp) && /animation-delay: \.25s/.test(sp) && /pathLength="100"/.test(sp));
   ok('under reduced motion the drawings are still, and a button pauses them (WCAG 2.2.2); a chosen drawing stays drawn', /@media \(prefers-reduced-motion: reduce\)/.test(sp) && /Pause the drawings/.test(sp) && /aria-pressed=\{paused\}/.test(sp) && /shape-chosen/.test(sp) && /min-h-11/.test(sp));
 }
+
+// Touch is a run of separate cards too: the surface, the five sliders with the display, your own words; present, then wish, then add (owner, 2026-11-18).
+{
+  const t = readFileSync('src/app/components/pages/TouchGatewayPage.tsx', 'utf8');
+  ok('Touch (tray): the surface, the sliders and the words are separate cards for each state, then add; the sliders card shows the display moving', /part: 'surface', title: 'Choose a surface'/.test(t) && /part: 'sliders', title: 'Feel it more'/.test(t) && /part: 'words'/.test(t) && /<LensCardNav index=\{trayIndex\}/.test(t) && /trayOn\('wish', 'sliders'\)/.test(t) && /simple && !tray/.test(t));
+}

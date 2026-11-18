@@ -15,7 +15,7 @@ import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { TouchSurfaceField } from '../TouchSurfaceField';
 import { MoreDetail } from '../MoreDetail';
-import { PutThisDown, FewerNote, AddToReport } from '../LensCardParts';
+import { PutThisDown, FewerNote, AddToReport, LensCardNav } from '../LensCardParts';
 import { lensTrayOn } from '../../../lib/lensState';
 import { TouchOrb } from '../TouchOrb';
 import type { OrbShape } from '../../../lib/touchOrb';
@@ -63,8 +63,23 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   const [showBodyMap, setShowBodyMap] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<PairStage>('present');
+  // Tray mode: each activity is its own card (owner, 2026-11-18): the surface, the five sliders (the display moves as they do), your own words; the present state first, then the wish, then add.
+  type TrayCard = { stage: 'present' | 'wish' | 'add'; part: 'surface' | 'sliders' | 'words' | 'add'; title: string };
+  const cards: TrayCard[] = tray ? [
+    ...(['present', 'wish'] as const).flatMap((st) => [
+      { stage: st, part: 'surface', title: 'Choose a surface' } as TrayCard,
+      { stage: st, part: 'sliders', title: 'Feel it more' } as TrayCard,
+      { stage: st, part: 'words', title: 'In your own words' } as TrayCard,
+    ]),
+    { stage: 'add', part: 'add', title: 'Add to your report' },
+  ] : [];
+  const [trayIndex, setTrayIndex] = useState(0);
+  const cur = tray ? cards[Math.min(trayIndex, cards.length - 1)] : null;
+  const activeStage = tray ? cur!.stage : stage;
+  const trayOn = (st: 'present' | 'wish', part: TrayCard['part']) => !tray || (cur!.stage === st && cur!.part === part);
   const [orbShape, setOrbShape] = useState<OrbShape>('sphere'); // the display: a sphere or a flat circle (tray mode)
   useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [trayIndex]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -226,8 +241,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <label className="flex min-h-11 items-center gap-2"><input type="radio" name="touch-orb-shape" checked={orbShape === 'flat'} onChange={() => setOrbShape('flat')} /> a flat circle</label>
                 </fieldset>
               )}
-              <StageIntro stage={stage} />
-              <StageSlot stage="present" current={stage}>
+              {!tray && <StageIntro stage={stage} />}
+              <StageSlot stage="present" current={activeStage as PairStage}>
               {/* Present State Card */}
               <Card
                 className="transition-all"
@@ -246,11 +261,15 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <CardDescription>{simple ? TOUCH_COPY.pick.present : 'The tactile qualities of where you are now'}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <TouchSurfaceField stateName="Present" value={currentSurface} onChange={setCurrentSurface} slider={currentTexture[0]} onMatchSlider={(v) => setCurrentTexture([v])} />
+                  {trayOn('present', 'surface') && (
+                    <TouchSurfaceField stateName="Present" value={currentSurface} onChange={setCurrentSurface} slider={currentTexture[0]} onMatchSlider={(v) => setCurrentTexture([v])} />
+                  )}
 
-                  {tray && <TouchOrb stateName="Present" surfaceId={currentSurface} shape={orbShape} values={{ texture: sliderValue(currentTexture), temperature: sliderValue(currentTemperature), pressure: sliderValue(currentPressure), weight: sliderValue(currentWeight), sharpness: sliderValue(currentSharpness) }} />}
+                  {tray && (trayOn('present', 'surface') || trayOn('present', 'sliders')) && <TouchOrb stateName="Present" surfaceId={currentSurface} shape={orbShape} values={{ texture: sliderValue(currentTexture), temperature: sliderValue(currentTemperature), pressure: sliderValue(currentPressure), weight: sliderValue(currentWeight), sharpness: sliderValue(currentSharpness) }} />}
 
-                  <MoreDetail simple={simple} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
+                  <MoreDetail simple={simple && !tray} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
+                  {trayOn('present', 'sliders') && (
+                    <>
 
                   <SnappingSlider
                     value={currentTexture}
@@ -297,6 +316,10 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                     max={100}
                   />
 
+                    </>
+                  )}
+                  {trayOn('present', 'words') && (
+                    <>
                   <div className="space-y-2">
                     <Label htmlFor="touch-words-present" className="text-sm">{simple ? TOUCH_COPY.wordsLabel : 'Describe the sensations (optional)'}</Label>
                     <Textarea
@@ -307,12 +330,14 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                    </>
+                  )}
                   </MoreDetail>
                 </CardContent>
               </Card>
 
               </StageSlot>
-              <StageSlot stage="wish" current={stage}>
+              <StageSlot stage="wish" current={activeStage as PairStage}>
               {/* Potential State Card */}
               <Card
                 className="transition-all"
@@ -331,11 +356,15 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <CardDescription>{simple ? TOUCH_COPY.pick.wish : 'The tactile qualities of where you wish to be'}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <TouchSurfaceField stateName="Wish" value={potentialSurface} onChange={setPotentialSurface} slider={potentialTexture[0]} onMatchSlider={(v) => setPotentialTexture([v])} />
+                  {trayOn('wish', 'surface') && (
+                    <TouchSurfaceField stateName="Wish" value={potentialSurface} onChange={setPotentialSurface} slider={potentialTexture[0]} onMatchSlider={(v) => setPotentialTexture([v])} />
+                  )}
 
-                  {tray && <TouchOrb stateName="Wish" surfaceId={potentialSurface} shape={orbShape} values={{ texture: sliderValue(potentialTexture), temperature: sliderValue(potentialTemperature), pressure: sliderValue(potentialPressure), weight: sliderValue(potentialWeight), sharpness: sliderValue(potentialSharpness) }} />}
+                  {tray && (trayOn('wish', 'surface') || trayOn('wish', 'sliders')) && <TouchOrb stateName="Wish" surfaceId={potentialSurface} shape={orbShape} values={{ texture: sliderValue(potentialTexture), temperature: sliderValue(potentialTemperature), pressure: sliderValue(potentialPressure), weight: sliderValue(potentialWeight), sharpness: sliderValue(potentialSharpness) }} />}
 
-                  <MoreDetail simple={simple} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
+                  <MoreDetail simple={simple && !tray} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
+                  {trayOn('wish', 'sliders') && (
+                    <>
 
                   <SnappingSlider
                     value={potentialTexture}
@@ -382,6 +411,10 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                     max={100}
                   />
 
+                    </>
+                  )}
+                  {trayOn('wish', 'words') && (
+                    <>
                   <div className="space-y-2">
                     <Label htmlFor="touch-words-wish" className="text-sm">{simple ? TOUCH_COPY.wordsLabel : 'Describe the sensations (optional)'}</Label>
                     <Textarea
@@ -392,16 +425,31 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                    </>
+                  )}
                   </MoreDetail>
                 </CardContent>
               </Card>
             </StageSlot>
-              <StageNav stage={stage} onChange={setStage} />
+              {!tray && <StageNav stage={stage} onChange={setStage} />}
+              {tray && cur && cur.stage !== 'add' && (
+                <>
+                  <p className="text-center text-sm">{cur.title}</p>
+                  <LensCardNav index={trayIndex} total={cards.length} onBack={() => setTrayIndex(Math.max(0, trayIndex - 1))} onNext={() => setTrayIndex(trayIndex + 1)} />
+                </>
+              )}
+              {tray && cur && cur.stage === 'add' && (
+                <div className="mx-auto w-full max-w-2xl space-y-4">
+                  <h2 className="text-xl">Add Touch to your report?</h2>
+                  <p className="text-sm text-muted-foreground">Everything you chose stays here until you add it. If you put it down without adding, your report says: &ldquo;Examined, not included: Touch.&rdquo;</p>
+                  <AddToReport name="Touch" added={!!init} onAdd={handleNext} onPutDown={onBack} />
+                  <Button variant="ghost" onClick={() => setTrayIndex(Math.max(0, trayIndex - 1))}>Back</Button>
+                </div>
+              )}
             </div>
 
             {/* Next Button */}
             <TextureCredits />
-            {stage === 'wish' && tray && <AddToReport name="Touch" added={!!init} onAdd={handleNext} onPutDown={onBack} />}
             {stage === 'wish' && !tray && (
             <div className="flex justify-center pt-4">
               <Button
