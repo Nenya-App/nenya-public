@@ -81,3 +81,12 @@ for (const f of ['movement.html', 'pattern.html']) {
   ok(`${f}: the controls that act on the preview are labelled, the preview is a named image with a text twin, and More descriptions holds the optional words and free text`, /<label for="A-(speed|clarity)">/.test(h) && /<label for="A-(energy|depth)">/.test(h) && /role="img" aria-label="[^"]+"/.test(h) && /id="A-out" role="status"/.test(h) && /<details><summary>More descriptions<\/summary>/.test(h) && /<label for="A-free">/.test(h));
   ok(`${f}: an optional activity, and the report states Examined, not included`, /\(optional\)/.test(h) && /Examined, not included/.test(h));
 }
+
+for (const f of ['sight.html', 'sound.html', 'touch.html', 'essence.html']) {
+  const h = readFileSync(`${dir}/${f}`, 'utf8');
+  ok(`${f}: the opening instruction says choosing fewer can be more helpful`, /Choosing fewer can be more helpful than choosing many/.test(h));
+}
+for (const [f, keys] of [['sight.html', ['P', 'F1', 'F2']], ['essence.html', ['N']]] as const) {
+  const h = readFileSync(`${dir}/${f}`, 'utf8');
+  ok(`${f}: each choose-several group has the soft limit of three and its warning (Add it anyway, Keep three)`, keys.every((k) => new RegExp(`data-limit="${k}-lim"`).test(h) && new RegExp(`id="${k}-lim" class="limit" role="alert"`).test(h)) && !/choose up to three/i.test(h));
+}

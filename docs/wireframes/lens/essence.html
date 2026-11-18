@@ -22,6 +22,7 @@
   <div class="frame">
     <div class="bar"><button type="button">Emergency Exit</button><span>Essence · start</span><button type="button">Put this down</button></div>
     <h2 id="e0">Where would you like to start?</h2>
+    <p class="fewer">Choosing fewer can be more helpful than choosing many.</p>
     <p>Three ways in. They all lead to the same place: the flavor of the life you have, and the one you want.</p>
     <fieldset><legend>Start from</legend>
       <label><input type="radio" name="basis" value="memory"> <strong>A memory.</strong> A smell or taste that takes you back to a time that felt good.</label>
@@ -63,7 +64,8 @@
   <div class="frame">
     <div class="bar"><button type="button">Emergency Exit</button><span>Essence · card 2 of 4</span><button type="button">Put this down</button></div>
     <h2 id="e2">What else is in it, and what lingers?</h2>
-    <fieldset><legend>Notes (choose up to three)</legend><label><input type="checkbox" name="note" value="smoky"> Smoky</label> <label><input type="checkbox" name="note" value="citrus" checked> Citrus</label> <label><input type="checkbox" name="note" value="earthy"> Earthy</label> <label><input type="checkbox" name="note" value="floral"> Floral</label> <label><input type="checkbox" name="note" value="toasted"> Toasted</label> <label><input type="checkbox" name="note" value="herbal"> Herbal</label> <button type="button">More words</button></fieldset>
+    <fieldset data-limit="N-lim"><legend>Notes (three is a soft limit)</legend><label><input type="checkbox" name="note" value="smoky"> Smoky</label> <label><input type="checkbox" name="note" value="citrus" checked> Citrus</label> <label><input type="checkbox" name="note" value="earthy"> Earthy</label> <label><input type="checkbox" name="note" value="floral"> Floral</label> <label><input type="checkbox" name="note" value="toasted"> Toasted</label> <label><input type="checkbox" name="note" value="herbal"> Herbal</label> <button type="button">More words</button></fieldset>
+    <div id="N-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have chosen three. Add a fourth anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div>
     <label for="feel">How does it feel in the mouth?</label><select id="feel" name="feel"><option value="">Skip</option><option selected>creamy</option><option>dry</option><option>juicy</option><option>thin</option><option>syrupy</option><option>tingly</option></select>
     <label for="finish">What lingers after?</label><select id="finish" name="finish"><option value="">Skip</option><option>a warmth</option><option selected>a sweetness</option><option>a bitterness</option><option>a coolness</option><option>smoke</option><option>nothing much</option></select>
     <p class="note-line" role="status"><strong>Your tasting note so far:</strong> <span data-tasting-now></span></p>

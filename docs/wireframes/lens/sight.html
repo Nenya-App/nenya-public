@@ -24,6 +24,7 @@
   <div class="frame">
     <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 1 of 3</span><button type="button">Put this down</button></div>
     <h2 id="s1">Pick two colors</h2>
+    <p class="fewer">Choosing fewer can be more helpful than choosing many.</p>
     <p>One for how you feel now. One for how you wish to feel.</p>
     <div class="row"><button type="button">Surprise me</button><button type="button">Start from my melody’s colors</button></div>
     <div class="pair">
@@ -37,7 +38,7 @@
         <p class="mini">Now: <span id="out-now" role="status"></span> <button type="button" onclick="document.getElementById('strength-now').value=0;document.getElementById('strength-now').dispatchEvent(new Event('input'))">Skip this</button></p>
         <label for="name-now">Name this color (optional)</label>
         <input type="text" id="name-now"> <button type="button">Suggest a name</button>
-        <details><summary>More words for this color</summary><fieldset><legend>It feels (choose any)</legend><label><input type="checkbox"> Warm</label><label><input type="checkbox"> Heavy</label><label><input type="checkbox"> Bright</label></fieldset></details>
+        <details><summary>More words for this color</summary><fieldset data-limit="F1-lim"><legend>It feels (choose any; three is a soft limit)</legend><label><input type="checkbox"> Warm</label><label><input type="checkbox"> Heavy</label><label><input type="checkbox"> Bright</label></fieldset><div id="F1-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have chosen three. Add a fourth anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div></details>
       </div>
       <div>
         <h3>Wish</h3>
@@ -49,7 +50,7 @@
         <p class="mini">Wish: <span id="out-wish" role="status"></span> <button type="button" onclick="document.getElementById('strength-wish').value=0;document.getElementById('strength-wish').dispatchEvent(new Event('input'))">Skip this</button></p>
         <label for="name-wish">Name this color (optional)</label>
         <input type="text" id="name-wish"> <button type="button">Suggest a name</button>
-        <details><summary>More words for this color</summary><fieldset><legend>It feels (choose any)</legend><label><input type="checkbox"> Calm</label><label><input type="checkbox"> Open</label><label><input type="checkbox"> Light</label></fieldset></details>
+        <details><summary>More words for this color</summary><fieldset data-limit="F2-lim"><legend>It feels (choose any; three is a soft limit)</legend><label><input type="checkbox"> Calm</label><label><input type="checkbox"> Open</label><label><input type="checkbox"> Light</label></fieldset><div id="F2-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have chosen three. Add a fourth anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div></details>
       </div>
     </div>
     <div class="row"><button type="button" class="primary">Next</button></div>
@@ -81,7 +82,8 @@
       <p>This sends one color, as a hex code, through our server to The Color API. Nothing else goes. See the Terms.</p>
       <button type="button">Send one color and ask</button>
     </details>
-    <fieldset><legend>Your palettes (choose any to keep)</legend><label><input type="checkbox"> Palette 1: five colors, named in full</label><label><input type="checkbox"> Palette 2: five colors, named in full</label></fieldset>
+    <fieldset data-limit="P-lim"><legend>Your palettes (choose any to keep; three is a soft limit)</legend><label><input type="checkbox"> Palette 1: five colors, named in full</label><label><input type="checkbox"> Palette 2: five colors, named in full</label></fieldset>
+    <div id="P-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have chosen three. Add a fourth anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div>
     <p class="mini">Marked palettes can also be heard in Sound.</p>
     <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
   </div>
