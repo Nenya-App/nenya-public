@@ -10,10 +10,25 @@ export const nameMarkOn = (): boolean => import.meta.env?.VITE_NAME_MARK === 'on
 
 export type MarkFace = 'body' | 'lyric';
 
-/** Where a turned e rests, per face (em): sideways, up, and the space after the stack (owner, 2026-11-17, from the editor). */
+/** Where a turned e rests relative to the white e, per face (em): sideways, up, and the space after the stack. These are the owner's settings from the editor (2026-11-17: Cormorant nudge -0.030, raise -0.025, after -0.010;
+ *  Manrope nudge 0.085, raise 0.020, after -0.020), written as the NET placement. The editor turned each e about a point one left-side bearing too far left (it added the bearing to the middle of the ink), which pulled a
+ *  turned e left by twice the bearing (Manrope 2 x 0.040 em, Cormorant italic 2 x 0.022 em); the owner's sideways nudge was cancelling that. The turn is now exact (about the middle of the ink), so the nudge is the old nudge
+ *  plus twice the bearing, and the e lands exactly where the editor showed it: Manrope sits 0.005 em right of, and 0.020 em above, the white e (it forms the theta); it turns in place and does not swing. */
 export const MARK_SETTINGS: Record<MarkFace, { nudge: number; rise: number; after: number }> = {
-  lyric: { nudge: -0.03, rise: -0.025, after: -0.01 }, // Cormorant Garamond
-  body: { nudge: 0.085, rise: 0.02, after: -0.02 }, // Manrope
+  lyric: { nudge: -0.074, rise: -0.025, after: -0.01 }, // Cormorant Garamond italic: -0.030 + 2 x (-0.022)
+  body: { nudge: 0.005, rise: 0.02, after: -0.02 }, // Manrope: 0.085 + 2 x (-0.040)
+};
+
+/** An e's ink, in px at the size it is shown: how far it reaches left of and right of the glyph's starting point (left is negative when the letter has a side bearing), and above and below the baseline. */
+export interface InkMetrics { left: number; right: number; ascent: number; descent: number }
+/** The middle of an e's own ink, in px from the top-left of its box, given where the baseline sits in the box: the point an e turns about so that it turns in place (owner, 2026-11-18). */
+export const inkCentre = (m: InkMetrics, baseline: number): { x: number; y: number } => ({ x: (m.right - m.left) / 2, y: baseline - (m.ascent - m.descent) / 2 });
+
+/** Where the middle of an e's ink is in its box, in em from the top-left, per face (measured in Chrome and Firefox at 14 and 56 px, line-height 1). Used only if the browser cannot measure the glyph, so that an e still turns about
+ *  its own middle and not about the middle of its box, which sits a tenth of an em too high and swings the e up and to the right. */
+export const FALLBACK_PIVOT_EM: Record<MarkFace, { x: number; y: number }> = {
+  lyric: { x: 0.177, y: 0.619 }, // Cormorant Garamond italic
+  body: { x: 0.297, y: 0.61 }, // Manrope
 };
 
 export const SETTLE = 'cubic-bezier(.2, .8, .2, 1)';
