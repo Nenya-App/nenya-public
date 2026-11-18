@@ -102,3 +102,25 @@ document.querySelectorAll('[data-body]').forEach((root) => {
   part.addEventListener('change', load);
   [tp, wt].forEach((r) => r.addEventListener('input', () => { kept[part.value] = { t: +tp.value, w: +wt.value }; apply(part.value); say(); }));
 })();
+// Essence: five taste dials draw a shape (a radar of your answers); a second shape for the flavor you want; a composed tasting note says it in words.
+(() => {
+  const root = document.querySelector('[data-essence]'); if (!root) return;
+  const T = ['sweet', 'sour', 'salty', 'bitter', 'umami'], level = ['none', 'a hint', 'mild', 'strong', 'very strong'];
+  const val = (set, k) => +root.querySelector(`[name=${set}-${k}]`).value;
+  const pts = (set) => T.map((k, i) => { const a = (i / 5) * Math.PI * 2 - Math.PI / 2, r = 20 + val(set, k) * 20; return [150 + r * Math.cos(a), 150 + r * Math.sin(a)]; });
+  const draw = () => {
+    root.querySelectorAll('svg.radar').forEach((svg) => {
+      const sets = svg.dataset.sets.split(','); svg.querySelectorAll('.poly').forEach((p) => p.remove());
+      sets.forEach((s) => { const p = document.createElementNS('http://www.w3.org/2000/svg', 'polygon'); p.setAttribute('class', 'poly poly-' + s); p.setAttribute('points', pts(s).map((q) => q.join(',')).join(' ')); svg.appendChild(p); });
+    });
+    root.querySelectorAll('[data-say-taste]').forEach((el) => { const s = el.dataset.sayTaste, parts = T.filter((k) => val(s, k) > 0).map((k) => `${k} ${level[val(s, k)]}`); el.textContent = parts.length ? parts.join(', ') + '.' : 'nothing chosen yet.'; });
+    const diff = T.map((k) => [k, val('wish', k) - val('now', k)]).filter(([, d]) => d !== 0).map(([k, d]) => `${d > 0 ? 'more' : 'less'} ${k}`);
+    const dEl = document.getElementById('ess-diff'); if (dEl) dEl.textContent = diff.length ? 'From now to what you want: ' + diff.join(', ') + '.' : 'Nothing changes between now and what you want.';
+    const top = (s) => T.filter((k) => val(s, k) >= 3), nm = (s) => { const t = top(s); return t.length ? 'mostly ' + t.join(' and ') : 'mild and even'; };
+    const notes = [...root.querySelectorAll('[name=note]:checked')].map((x) => x.value), feel = root.querySelector('[name=feel]').value, fin = root.querySelector('[name=finish]').value;
+    const sentence = `${nm('now')}${notes.length ? ', with notes of ' + notes.join(' and ') : ''}${feel ? ', ' + feel : ''}${fin ? ', and ' + fin + ' that lingers' : ''}.`;
+    root.querySelectorAll('[data-tasting-now]').forEach((el) => { el.textContent = sentence.charAt(0).toUpperCase() + sentence.slice(1); });
+    root.querySelectorAll('[data-tasting-wish]').forEach((el) => { const t = top('wish'); el.textContent = ('It would be ' + nm('wish') + (diff.length ? '; ' + diff.join(', ') : '') + '.'); });
+  };
+  root.addEventListener('input', draw); draw();
+})();

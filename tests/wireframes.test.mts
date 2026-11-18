@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { ok } from './helpers.mts';
 const dir = 'docs/wireframes/lens';
 const pages = readdirSync(dir).filter((f) => f.endsWith('.html'));
-ok('there are wireframes for the index, the tray, Sight, Sound and Touch', ['index.html', 'tray.html', 'sight.html', 'sound.html', 'touch.html', 'body.html'].every((f) => pages.includes(f)));
+ok('there are wireframes for the index, the tray, Sight, Sound and Touch', ['index.html', 'tray.html', 'sight.html', 'sound.html', 'touch.html', 'body.html', 'essence.html'].every((f) => pages.includes(f)));
 for (const f of pages) {
   const h = readFileSync(`${dir}/${f}`, 'utf8');
   ok(`${f}: language, title, viewport, a skip link and one main`, /<html lang="en">/.test(h) && /<title>[^<]+<\/title>/.test(h) && /name="viewport"/.test(h) && /class="skip"/.test(h) && (h.match(/<main\b/g) ?? []).length === 1);
@@ -17,7 +17,7 @@ for (const f of pages) {
   if (f !== 'index.html') {
     const cards = h.split(/<div class="frame"[^>]*>/).slice(1);
     ok(`${f}: Emergency Exit is the first button in every frame`, cards.length >= 1 && cards.every((c) => /^\s*<div class="bar"><button type="button">(?:<img [^>]*>)?Emergency Exit<\/button>/.test(c)));
-    if (['sight.html', 'sound.html', 'touch.html'].includes(f)) ok(`${f}: at least three cards, and the last has Add, Update and Remove`, cards.length >= 3 && /Add this to my report/.test(h) && /Update my report/.test(h) && /Remove from my report/.test(h));
+    if (['sight.html', 'sound.html', 'touch.html', 'essence.html'].includes(f)) ok(`${f}: at least three cards, and the last has Add, Update and Remove`, cards.length >= 3 && /Add this to my report/.test(h) && /Update my report/.test(h) && /Remove from my report/.test(h));
     else if (f === 'body.html') ok(`${f}: every place can be set from a labelled list as well as the drawing, and a text twin says what is where`, /<select id="r-/.test(h) && /data-for=/.test(h) && /role="status"/.test(h) && /one map for the whole report/i.test(h));
     else ok(`${f}: the tray names every state in words, keeps the coach apart, and the report lists examined lenses separately`, /Not opened/.test(h) && /Looked at, not in your report/.test(h) && /In your report/.test(h) && /a lens of its own/.test(h) && /Examined, not included/.test(h));
   }
@@ -61,4 +61,9 @@ ok('the stylesheet respects reduced motion and has a visible focus style', /pref
 {
   const touch = readFileSync(`${dir}/touch.html`, 'utf8');
   ok('Touch landscape: one part can be shaped with temperature and weight, each labelled, with a text twin', /<label for="shape-part">/.test(touch) && /<label for="shape-temp">/.test(touch) && /<label for="shape-weight">/.test(touch) && /id="shape-out" role="status"/.test(touch));
+}
+
+{
+  const es = readFileSync(`${dir}/essence.html`, 'utf8');
+  ok('Essence: five labelled taste dials for now and for wish, an imagine-instead switch, a text twin for the shape, and a tasting note', ['sweet', 'sour', 'salty', 'bitter', 'umami'].every((t) => new RegExp(`<label for="now-${t}">`).test(es) && new RegExp(`<label for="wish-${t}">`).test(es)) && /I can’t taste or smell right now: imagine instead/.test(es) && /data-say-taste="wish" role="status"/.test(es) && /data-tasting-now/.test(es) && /role="img" aria-label="A five-pointed shape/.test(es));
 }

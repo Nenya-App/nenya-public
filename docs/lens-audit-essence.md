@@ -60,7 +60,13 @@ Questions about food are asked as tastes and memories, never as what a person ea
 
 **The same deck for other lenses (owner, 2026-11-17: yes for Movement and Pattern, the lens formerly called Insight).** The deck is a component, with two views: **laid out** (all the cards visible) or **drawn from** (one at a time). See `docs/lens-rewrite-scope.md`, section 3-ter.
 
-**Status 2026-11-17: Essence is still open.** The deck direction above is a candidate, not a decision. The texture-landscape idea belongs to Touch (as an optional activity there), not to Essence. The Met candidate sheet and the "Met Picks" page stay as they are; no image will be downloaded into the project until the Essence direction is settled.
+**Direction chosen, later 2026-11-17: Essence is "the flavor of life you have and/or want".** The owner's framing replaces the deck as the heart of the lens: one question asked twice, **what is the flavor of the life you have, and the one you want?** A person describes it the way a taster describes a drink. Wireframe: `docs/wireframes/lens/essence.html`.
+- **Card 1, now:** five taste dials (sweet, sour, salty, bitter, umami, each from none to very strong) draw a five-pointed shape of the person's answers, with the same thing in words.
+- **Card 2, notes and what lingers:** up to three notes from the existing scent and flavor words, one feel in the mouth, one thing that lingers; the page composes a **tasting note** ("Mostly sweet and bitter, with notes of citrus, creamy, and a sweetness that lingers").
+- **Card 3, the life you want:** the dials again, drawn as a second shape over the first (now dashed, wish solid), with a line on the difference ("more sweet, less bitter"). No judgement: nothing says which is better.
+- **Card 4, add to my report:** the two tasting sentences, an optional edit, add or put down.
+**Safe by design:** it is a metaphor, so nothing is tasted or eaten; an "I can't taste or smell right now: imagine instead" switch is on the first card; no food, diet, hunger or body language; every dial can stay at none. **No artwork needed**: the shape is a chart of answers, not an illustration, and the words are the existing described lists, so nothing new is drawn or translated. **The Met pictures are not needed** (the candidate sheet stays in the private folder in case a later use appears; nothing was downloaded into the project). The question deck survives at most as a small "need an idea?" help of a few prompts. The texture landscape belongs to Touch.
+Open: more dials ("spicy heat" and "richness")? Which words appear as notes (draft: eight)? Is the tasting note editable on the last card (draft: yes)?
 
 ## 5. Questions for the owner
 1. The five themes (Memory, Comfort, Tension, Wish, Place): right, or others (for example Season, Shared meals)?

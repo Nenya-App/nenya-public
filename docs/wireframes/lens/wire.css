@@ -69,3 +69,10 @@ button.primary .ico { filter:none; }
 .land .s { background-color:#6f7f86; background-image:repeating-linear-gradient(45deg, rgba(255,255,255,.22) 0 3px, transparent 3px 9px); }
 .land .b { background-color:#7a8a5c; background-image:repeating-linear-gradient(90deg, rgba(0,0,0,.2) 0 2px, transparent 2px 8px); }
 .land .d { background-color:#b9b3a8; background-image:radial-gradient(circle, rgba(0,0,0,.15) 0 1px, transparent 1px 5px); }
+.radar { width:100%; max-width:300px; height:auto; }
+.radar .grid { fill:none; stroke:var(--edge); stroke-width:1; } .radar .axis { stroke:var(--edge); stroke-width:1; }
+.radar .poly-now { fill:rgba(107,100,88,.25); stroke:var(--ink); stroke-width:2.5; stroke-dasharray:6 4; }
+.radar .poly-wish { fill:rgba(59,49,38,.28); stroke:var(--btn-bg); stroke-width:3; }
+.radar text { fill:var(--ink); font:600 12px system-ui, sans-serif; }
+table.vals { border-collapse:collapse; } table.vals th, table.vals td { padding:2px 8px; border-bottom:1px solid var(--edge); text-align:left; }
+.note-line { border:2px solid var(--edge); border-radius:10px; padding:.6rem .8rem; background:var(--soft); }
