@@ -11,7 +11,7 @@
 | Essence | 337 | 2 | instructions, present, selection | `userColors` |
 | Movement | 406 | 4 | instructions, present, selection | `userColors` |
 | Insight | 407 | 4 | instructions, present, selection | `userColors` |
-All six open with a **carousel of nine instruction cards** (`instructionCardIndex`), then ask for a *present* state and a *potential* state (the "where you are / where you wish you were" logic the brief keeps), and all six accept the body map (`bodyMapData`, `onUpdateBodyMap`). The sliders are `SnappingSlider` with an "unset" state (`optionalSlider.ts`); a slider that does not drive anything visible or audible is a value that is only described afterwards.
+All six open with a **carousel of three instruction cards** (`INSTRUCTION_CARDS`, `instructionCardIndex`; an earlier version of this note said nine, which was a miscount), then ask for a *present* state and a *potential* state (the "where you are / where you wish you were" logic the brief keeps), and all six accept the body map (`bodyMapData`, `onUpdateBodyMap`). The sliders are `SnappingSlider` with an "unset" state (`optionalSlider.ts`); a slider that does not drive anything visible or audible is a value that is only described afterwards.
 
 ## 2. The dependency question, answered
 Sight and Sound share: colours chosen in one can seed the other (`melodyColors`, `melodyShared`, and the "comes later" flags that say which one the person meets first). The other four take the **session colours** (`userColors`) as input, which form from the sight and sound choices. This is a **soft** dependency: with a tray where order is free, every lens must work when no colours exist yet (a default palette), and the first of sight or sound to be used offers its colours to the other. Nothing else depends on another lens.
@@ -20,7 +20,7 @@ Sight and Sound share: colours chosen in one can seed the other (`melodyColors`,
 A lens is an ordered run of cards, each one task, none needing a long read. The order inside a lens is sequential; the order of lenses is free (the tray). Every lens ends with **"Add this to my report"** and **"Put this down"**.
 | Card kind | What it is | Today |
 |---|---|---|
-| Orient | One short instruction, or none | Nine instruction cards |
+| Orient | One short instruction, or none | Three instruction cards |
 | Present | What is here now | The "present" stage |
 | Potential | What you would like | The "potential" stage |
 | Shape it | Sliders with **live feedback**: see it or hear it change as you move it, plus a text equivalent | Sliders that are described afterwards |
@@ -46,4 +46,4 @@ Per-lens state, add/update/remove and the saved-draft version 2 (see the scope, 
 1. Confirm the card kinds and the order inside a lens.
 2. The first lens to rebuild (recommended: Sight and Sound together).
 3. How playful: what "fun" means here (a small toy at the shaping step, a sound that responds, an animation that rewards adding) without becoming a game or an engagement loop.
-4. Whether the nine-card instruction carousel goes entirely (recommended) or survives as an optional "how this works".
+4. Whether the three-card instruction carousel goes entirely (recommended: fold the one thing each card says into the first real card) or survives as an optional "how this works".
