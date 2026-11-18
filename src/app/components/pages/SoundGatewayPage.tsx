@@ -38,6 +38,7 @@ import { ChordPrototype } from '../ChordPrototype';
 import { chordsOn } from '../../../lib/chords';
 import { buildPhrases, movePhrase, playlist, remapScale, setMuted, setNote, type Phrase } from '../../../lib/longMelody';
 import { playSequence, renderWav, clampStep, clampVolume, DEFAULT_STEP } from '../../../lib/melodyPlayer';
+import { L } from '../../../lib/vocabulary';
 interface SoundGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -84,13 +85,13 @@ const PICKER_HINT: Record<'staff' | 'row' | 'koto', string> = {
 
 const INSTRUCTION_CARDS = [
   {
-    title: 'Welcome to the Sound Gateway',
-    description: 'Every color has a sound. In this gateway, your two chosen colors become a six-note melody — or you can compose one directly.',
+    title: L('Welcome to the Sound Gateway'),
+    description: L('Every color has a sound. In this gateway, your two chosen colors become a six-note melody — or you can compose one directly.'),
     detail: 'The first three notes carry your current state. The last three carry your wish state. Both can be adjusted freely.',
   },
   {
     title: 'Connected or Independent',
-    description: "If you've chosen colors in the Sight gateway, your melody is already waiting for you. You can keep it, adjust it, or disconnect and compose from silence.",
+    description: L("If you've chosen colors in the Sight gateway, your melody is already waiting for you. You can keep it, adjust it, or disconnect and compose from silence."),
     detail: 'Either way, what you arrive at is yours — a sound signature for this session.',
   },
   {
@@ -511,7 +512,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-foreground">
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={bringToSight} onChange={(e) => setBringToSight(e.target.checked)} className="size-4" />
-                    Bring this to the Sight gateway?
+                    Bring this to the Sight {L('gateway')}?
                   </label>
                   <p className="text-muted-foreground">
                     {bringToSight
@@ -580,7 +581,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
             <div className="space-y-2">
               {longMode && (
                 <p className="text-xs text-center text-muted-foreground">
-                  {activeSlot ? 'Choose a note below to change the note you picked.' : 'Pick a note in a phrase above to change it; the colors in the Sight gateway stay as they are.'}
+                  {activeSlot ? 'Choose a note below to change the note you picked.' : L('Pick a note in a phrase above to change it; the colors in the Sight gateway stay as they are.')}
                 </p>
               )}
               {!longMode && !melodyComplete && (
@@ -797,7 +798,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
             {stage === 'wish' && (
             <div className="flex justify-center pt-4">
               <Button size="lg" onClick={handleNext} className="px-12">
-                {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
+                {currentIndex + 1 < totalGateways ? L('Next Gateway') : 'Continue'}
               </Button>
             </div>
             )}

@@ -3,6 +3,7 @@ import { Sparkles, Wind, Compass, MessageCircle, X } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 
+import { L } from '../../lib/vocabulary';
 interface QuickNavProps {
   /** Breathe: the home page. */
   onBreathe: () => void;
@@ -35,7 +36,7 @@ export default function QuickNav({ onBreathe, onReflect, coachHref = '/coach/' }
             </button>
             <button type="button" className={item} onClick={() => { setOpen(false); onReflect(); }}>
               <Compass className="size-4 shrink-0" />
-              <span className="flex-1"><span className="block">Reflect</span><span className="block text-xs text-muted-foreground">The six gateways</span></span>
+              <span className="flex-1"><span className="block">Reflect</span><span className="block text-xs text-muted-foreground">The six {L('gateways')}</span></span>
             </button>
             <a href={coachHref} className={item}>
               <MessageCircle className="size-4 shrink-0" />

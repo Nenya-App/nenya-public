@@ -13,6 +13,7 @@ import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { WordPicker } from '../WordPicker';
 
+import { L } from '../../../lib/vocabulary';
 interface EssenceGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -25,8 +26,8 @@ interface EssenceGatewayPageProps {
 
 const INSTRUCTION_CARDS = [
   {
-    title: 'Welcome to the Essence Gateway',
-    description: 'Scent and taste evoke memory and emotion in profound ways. In this gateway, you\'ll explore the aromatic qualities of your inner atmosphere.',
+    title: L('Welcome to the Essence Gateway'),
+    description: L('Scent and taste evoke memory and emotion in profound ways. In this gateway, you\'ll explore the aromatic qualities of your inner atmosphere.'),
     detail: 'Consider the flavors and aromas that capture how you feel. What essences resonate with your current state?'
   },
   {
@@ -312,7 +313,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 disabled={!canContinue}
                 className="px-12"
               >
-                {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
+                {currentIndex + 1 < totalGateways ? L('Next Gateway') : 'Continue'}
               </Button>
             </div>
             )}

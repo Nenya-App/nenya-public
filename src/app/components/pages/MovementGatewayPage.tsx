@@ -16,6 +16,7 @@ import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
 import { ShapePicker, MAX_SHAPES } from '../ShapePicker';
+import { L } from '../../../lib/vocabulary';
 interface MovementGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -30,8 +31,8 @@ interface MovementGatewayPageProps {
 
 const INSTRUCTION_CARDS = [
   {
-    title: 'Welcome to the Movement Gateway',
-    description: 'Emotions have a kinesthetic quality - they move us. In this gateway, you\'ll explore the directional flow of your inner experience.',
+    title: L('Welcome to the Movement Gateway'),
+    description: L('Emotions have a kinesthetic quality - they move us. In this gateway, you\'ll explore the directional flow of your inner experience.'),
     detail: 'Consider how your feelings want to move: Are they rising, falling, spiraling? What direction and speed do they carry?'
   },
   {
@@ -381,7 +382,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                 disabled={!canContinue}
                 className="px-12"
               >
-                {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
+                {currentIndex + 1 < totalGateways ? L('Next Gateway') : 'Continue'}
               </Button>
             </div>
             )}

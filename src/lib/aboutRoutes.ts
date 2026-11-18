@@ -1,3 +1,4 @@
+import { L } from './vocabulary.ts';
 // The About pages have real addresses: /about for the menu and /about/<section> for each page, so they can be linked to, opened directly, found in
 // the browser's history and counted in the host's page statistics. The old form, /?about=<section>, still works and is rewritten to the new one.
 // (The page is still one app: the host serves it for every path, and the app reads the address on load. Each address also sets its own title.)
@@ -10,7 +11,7 @@ export const ABOUT_TITLES: Record<string, string> = {
   'bio-social-design': 'Our Bio-Social Design',
   'name-philosophy': 'Our Name & Philosophy',
   'power-of-color': 'The Power of Color',
-  'six-gateways': 'The Six Gateways',
+  'six-gateways': L('The Six Gateways'),
   'breathing-tool': 'About the Breathing Tool',
   'pantheon-of-needs': 'The Pantheon of Needs',
   'nvc-method': 'Our NVC+ Method',

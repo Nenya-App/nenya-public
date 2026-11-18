@@ -10,6 +10,7 @@ import { ContactSection } from '../ContactSection';
 import { LOGO_ALT_NO_ORBS, LOGO_ALT_SHORT } from '../../../lib/altText';
 import { GATEWAY_SUMMARIES } from '../../../lib/gatewaySummaries';
 
+import { L } from '../../../lib/vocabulary';
 interface WelcomePageProps {
   onContinue: () => void;
   breathingEnabled: boolean;
@@ -183,7 +184,7 @@ export default function WelcomePage({
 
           {/* The six gateways in a sentence each: short by default, nothing to open */}
           <section aria-labelledby="gateways-overview" className="mx-auto max-w-xl space-y-4 text-left">
-            <h2 id="gateways-overview" className="text-center text-xl md:text-2xl">The six gateways</h2>
+            <h2 id="gateways-overview" className="text-center text-xl md:text-2xl">The six {L('gateways')}</h2>
             <p className="text-center text-base text-muted-foreground">
               Each one asks about where you are now and where you would like to be. Choose any of them, in any order, and skip
               anything you like.

@@ -7,6 +7,7 @@ import { shapeById } from './gatewayShapes.ts';
 import { isAnswered } from './optionalSlider.ts';
 import { labelFor, type MapPin } from './bodyMapParts.ts';
 
+import { L, sixthLensName } from './vocabulary.ts';
 export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight';
 export interface BodyMapLike {
   placements: { bodyPartId: string; color: string; colorName?: string }[];
@@ -34,7 +35,7 @@ export const gatewayTitles: Record<Gateway, string> = {
   touch: 'Touch - Somatosensation',
   essence: 'Essence - Aromatic Memory',
   movement: 'Movement - Kinesthesia',
-  insight: 'Insight - Noesis',
+  insight: `${sixthLensName()} - Noesis`,
 };
 
 // Helper function to get body part label from ID
@@ -132,7 +133,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
         info.push(`Melody: ${data.melody.filter((n: number | null) => n !== null).map((n: number) => soundNoteNames[n] || '').join(' – ')}`);
         // A longer melody, one phrase for each color: the colors and the note values, as the person set them (nothing here describes how it sounds).
         if (Array.isArray(data.melodyPhrases) && data.melodyPhrases.length > 0) {
-          info.push('Melody phrases, in playing order (the colors are the ones from the Sight gateway; the notes were set separately):');
+          info.push(L('Melody phrases, in playing order (the colors are the ones from the Sight gateway; the notes were set separately):'));
           data.melodyPhrases.forEach((p: any, i: number) => {
             const kind = p?.kind === 'present' ? 'Present' : p?.kind === 'wish' ? 'Wish' : 'Palette';
             const label = String(p?.label ?? '');

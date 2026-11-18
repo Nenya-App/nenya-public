@@ -7,6 +7,7 @@ import { AppFooter } from '../AppFooter';
 import { ContinueSavedLink } from '../SaveReflection';
 import { GATEWAY_ROUTES } from '../../../lib/gatewaySummaries';
 
+import { L, sixthLensName } from '../../../lib/vocabulary';
 interface GatewaysPageProps {
   onGatewaysSelected: (gateways: Gateway[]) => void;
   onBack: () => void;
@@ -50,7 +51,7 @@ const gatewayCards = [
   },
   {
     id: 'insight' as Gateway,
-    name: 'Insight',
+    name: sixthLensName(),
     icon: Lightbulb,
     description: 'Understand through inner knowing',
     tagline: 'What wisdom emerges from within?',
@@ -104,7 +105,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
           <div className="text-center space-y-4 max-w-3xl mx-auto">
             <h1 className="text-2xl md:text-3xl lg:text-4xl">Which Sense Calls to You Today?</h1>
             <p className="text-base md:text-lg text-muted-foreground">
-              Choose <span className="text-foreground">one or more gateways</span> to begin your reflection. You can select and complete them in <span className="text-foreground">any order you wish</span>.
+              Choose <span className="text-foreground">one or more {L('gateways')}</span> to begin your reflection. You can select and complete them in <span className="text-foreground">any order you wish</span>.
             </p>
           </div>
 
@@ -126,7 +127,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
                   role="button"
                   tabIndex={0}
                   aria-pressed={isSelected}
-                  aria-label={`${gateway.name} gateway: ${gateway.description}. ${isSelected ? 'Selected' : 'Not selected'}`}
+                  aria-label={`${gateway.name} ${L('gateway')}: ${gateway.description}. ${isSelected ? 'Selected' : 'Not selected'}`}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
@@ -172,7 +173,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
                 className="gap-2 text-lg px-8 py-6 bg-nenya-accent-warm hover:bg-nenya-gold-light text-primary-foreground"
               >
                 Begin Journey
-                {selectedGateways.length > 1 && ` (${selectedGateways.length} gateways)`}
+                {selectedGateways.length > 1 && ` (${selectedGateways.length} ${L('gateways')})`}
               </Button>
             </div>
           )}
@@ -187,7 +188,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
             <div className="space-y-3 text-center">
               <p className="text-base md:text-lg text-foreground">No two visits need look alike.</p>
               <p className="text-sm md:text-base text-muted-foreground">
-                Visit one gateway or all six, in any order: that alone makes {GATEWAY_ROUTES.toLocaleString('en-US')} possible routes, before any
+                Visit one {L('gateway')} or all six, in any order: that alone makes {GATEWAY_ROUTES.toLocaleString('en-US')} possible routes, before any
                 choice inside them. Every step is optional, and what you choose stays on your device.
               </p>
             </div>

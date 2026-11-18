@@ -16,6 +16,7 @@ import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
 import { ShapePicker, MAX_SHAPES } from '../ShapePicker';
+import { L } from '../../../lib/vocabulary';
 interface InsightGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -30,8 +31,8 @@ interface InsightGatewayPageProps {
 
 const INSTRUCTION_CARDS = [
   {
-    title: 'Welcome to the Insight Gateway',
-    description: 'How we organize our understanding shapes our experience. In this gateway, you\'ll explore the patterns of your thinking and knowing.',
+    title: L('Welcome to the Insight Gateway'),
+    description: L('How we organize our understanding shapes our experience. In this gateway, you\'ll explore the patterns of your thinking and knowing.'),
     detail: 'Consider the structure of your awareness: Is it clear or foggy? Deep or surface? What patterns and perspectives define how you see?'
   },
   {
@@ -382,7 +383,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                 disabled={!canContinue}
                 className="px-12"
               >
-                {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
+                {currentIndex + 1 < totalGateways ? L('Next Gateway') : 'Continue'}
               </Button>
             </div>
             )}

@@ -1,3 +1,4 @@
+import { L } from './vocabulary.ts';
 // The start chooser (owner, 2026-11-15; docs/start-chooser-scope.md): the first screen says what Nenya offers and asks where to
 // start. Then the Terms, then the chosen path. Shown only when the build has VITE_START_CHOOSER=on (staging first). The wording is
 // checked by tests/start-chooser.test.mts for reading level (WCAG 2.2 AAA 3.1.5).
@@ -20,7 +21,7 @@ export const START_COPY = {
       id: 'reflection',
       title: 'Reflect',
       line: 'Describe how you feel with color, sound, touch and more.',
-      more: 'Six short gateways, all optional, in any order. Pick one or all six. A summary is made on your device, to keep or to bring to someone you trust.',
+      more: L('Six short gateways, all optional, in any order. Pick one or all six. A summary is made on your device, to keep or to bring to someone you trust.'),
     },
     {
       id: 'coach',

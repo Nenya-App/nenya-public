@@ -15,7 +15,7 @@ ok('every entry of the About menu is in exactly one section', entries.length >= 
 ok('each section is a labelled region with a heading, and the page has a way to jump between them', /<section[^>]*aria-labelledby/.test(menu) && /aria-label="Sections of this page"/.test(menu));
 
 const quick = src('src/app/components/QuickNav.tsx');
-ok('the quick navigation offers Breathe (home), Reflect (the gateways) and Coach (/coach)', /Breathe/.test(quick) && /Home/.test(quick) && /Reflect/.test(quick) && /The six gateways/.test(quick) && /coachHref = '\/coach\/'/.test(quick));
+ok('the quick navigation offers Breathe (home), Reflect (the gateways) and Coach (/coach)', /Breathe/.test(quick) && /Home/.test(quick) && /Reflect/.test(quick) && /L\('gateways'\)/.test(quick) && /The six/.test(quick) && /coachHref = '\/coach\/'/.test(quick));
 ok('it sits in the bottom right corner and replaces the welcome message', /fixed bottom-.*right-4/.test(quick) && /<QuickNav /.test(src('src/app/components/pages/WelcomePage.tsx')) && !/WelcomePopup/.test(src('src/app/components/pages/WelcomePage.tsx')));
 const nav = src('src/app/components/GlobalNavigation.tsx');
 ok('Share is in the header on wide screens and in the menu on phones (with Add to Home Screen)', /<ShareNenya variant="header" \/>/.test(nav) && /<ShareNenya variant="menu" \/>/.test(nav) && /<AddToHomeScreen variant="menu" \/>/.test(nav) && !/<ShareNenya variant="icon" \/>/.test(nav));

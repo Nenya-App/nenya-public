@@ -51,6 +51,7 @@ if the model changes.
 | `bakeoff-workers-ai.mts` | Runs the persona set through the real coach function with the model call sent to Workers AI instead of Venice (or to a local model server with `--local-url`); `--layers` records what the guards did | Cloudflare account |
 | `layers-report.mts` | Compares saved persona runs made with `--layers` (bake-off or eval-persona): how often the model's first reply broke a check, how often the outer layers rescued it, which guards did the work, which cases nothing caught (docs/outer-layers-scope.md) | none (no calls) |
 | `record-neurons.mts` | Adds Neurons you spent by hand to the nightly canary's ledger (the bake-off and full-exchange scripts do it for you; `--no-record` skips) so the canary does not spend what you already did | Netlify CLI |
+| `apply-lens-copy.mts` | Runs after `vite build`. With `VITE_LENS_COPY=on`, puts the lens vocabulary into the static public files the page code does not render (about-nenya.html, why-nenya.html, llms.txt); with it off, does nothing | Node |
 | `duet-eval.mts` | Full-exchange tests: Venice plays an invented person turn by turn against the real coach on Workers AI; writes transcripts and a read-first summary to a private folder (docs/duet-eval.md) | Venice testing key, Cloudflare account |
 | `export-onnx.py` | Exports the cardiffnlp model to int8 ONNX for `netlify/functions/screen.mts` | Research folder, Python packages onnx, onnxruntime and torch |
 

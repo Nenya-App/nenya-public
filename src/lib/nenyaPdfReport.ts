@@ -10,6 +10,7 @@ import type { Gateway, GatewayData } from '../app/App';
 import type { BodyMapData } from '../app/components/BodyMapAvatar';
 import { getNoteNames, TonalSystem } from './audio';
 
+import { L } from './vocabulary.ts';
 import {
   COLORS,
   loadFonts,
@@ -223,7 +224,7 @@ export async function downloadNenyaPdfReport(
   doc.setFontSize(9.5);
   doc.setTextColor(...COLORS.textMuted);
   const introLines = doc.splitTextToSize(
-    'This report reflects a private session of self-exploration through Nenya’s six sensory gateways. It is offered as a starting point for your own reflection, or for a conversation with a therapist, spiritual counselor, or trusted guide — never as a diagnosis or a directive.',
+    L('This report reflects a private session of self-exploration through Nenya’s six sensory gateways. It is offered as a starting point for your own reflection, or for a conversation with a therapist, spiritual counselor, or trusted guide — never as a diagnosis or a directive.'),
     150
   );
   doc.text(introLines, centerX, 148, { align: 'center' });

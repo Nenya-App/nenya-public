@@ -9,6 +9,7 @@ import { Button } from './ui/button';
 import { bridge, describePalettePlainly, fetchScheme, localScheme, MAX_PALETTES, MODE_LABELS, SCHEME_MODES, type GeneratedPalette, type SchemeMode } from '../../lib/colorSchemes';
 import { describePlainly, loadColorNames, suggestName } from '../../lib/colorNames';
 
+import { L } from '../../lib/vocabulary';
 interface PalettePanelProps {
   color1: string;
   color2: string;
@@ -163,7 +164,7 @@ export function PalettePanel({ color1, color2, values, onChange, soundComesLater
               {soundComesLater && (
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={!!v.useInSound} onChange={(e) => onChange(values.map((x, j) => (j === i ? { ...x, useInSound: e.target.checked } : x)))} className="size-4" />
-                  Use this palette in the Sound gateway
+                  Use this palette in the Sound {L('gateway')}
                 </label>
               )}
               <button type="button" className="underline underline-offset-4" onClick={() => onChange(values.filter((_, j) => j !== i))}>Remove it</button>

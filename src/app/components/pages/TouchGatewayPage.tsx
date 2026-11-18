@@ -17,6 +17,7 @@ import { TouchSurfaceField } from '../TouchSurfaceField';
 import { MoreDetail } from '../MoreDetail';
 import { simpleGatewaysOn, STEP_NAMES, TOUCH_COPY } from '../../../lib/gatewayCopy';
 
+import { L } from '../../../lib/vocabulary';
 interface TouchGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -29,8 +30,8 @@ interface TouchGatewayPageProps {
 
 const INSTRUCTION_CARDS = [
   {
-    title: 'Welcome to the Touch Gateway',
-    description: 'Physical sensations carry deep emotional information. In this gateway, you\'ll explore the tactile landscape of your inner experience.',
+    title: L('Welcome to the Touch Gateway'),
+    description: L('Physical sensations carry deep emotional information. In this gateway, you\'ll explore the tactile landscape of your inner experience.'),
     detail: 'Consider texture, temperature, pressure, weight, and sharpness. These physical qualities often mirror our emotional states.'
   },
   {
@@ -385,7 +386,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                 onClick={handleNext}
                 className="px-12"
               >
-                {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
+                {currentIndex + 1 < totalGateways ? L('Next Gateway') : 'Continue'}
               </Button>
             </div>
             )}

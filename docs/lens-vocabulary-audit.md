@@ -41,3 +41,10 @@ The word "gateway" appears nowhere in new copy.
 1. Approve the sheet above (especially "Pattern", "lens", and the "of 6" replacement).
 2. Approve doing the module and the switch first, with the visible rename a separate release.
 3. Who changes the public and AI-facing files: me, in the same release (recommended).
+
+## 6. Progress (2026-11-17, owner approved the sheet, the module-first order and the public files together)
+- **Built, switch off by default:** `src/lib/vocabulary.ts` (`L()`, `sixthLensName()`, `lensCopyOn()`); `VITE_LENS_COPY` (row in `docs/production-env.md`); 60 visitor strings in 30 files go through `L()` (page titles and descriptions, buttons, the welcome and choose pages, the review page, saved-reflection and start copy, About links, the PDF and report text, the Terms mentions, the region notices); the sixth lens name and the report heading come from `sixthLensName()`; the shared-report reader accepts both Insight and Pattern.
+- **Static public files:** `scripts/apply-lens-copy.mts` runs after `vite build` (so `npm run build` and Netlify do it) and applies the same words to `about-nenya.html`, `why-nenya.html` and `llms.txt` only when the switch is on. The sitemap path `/about/six-gateways` and route keys keep their addresses (a renamed address needs its own redirect plan).
+- **Guarded by `tests/vocabulary.test.mts`:** off changes nothing; on gives lens and Pattern; no string literal outside `L()` says gateway, except the pages below.
+- **Not yet routed (long About prose, to be rewritten with you, not swapped mechanically):** `SixGateways.tsx`, `BioSocialDesign.tsx`, `HumanCenteredDesign.tsx`, `TheoryU.tsx`, `NamePhilosophy.tsx`, `PrivacyPromise.tsx`, `SupportThisWork.tsx`, `SupportUs.tsx`, and the About-answers phrase list `aboutEvalCorpus.ts`. **The switch should stay off until these are done.**
+- **Still to do before the flip:** the Terms revision (same-day rule, three mentions routed already, plus the count sentence), the structural changes that are not word swaps ("Gateway 2 of 6", Continue, the tray), the `/about/six-gateways` address, and a read-through of every page with the switch on.

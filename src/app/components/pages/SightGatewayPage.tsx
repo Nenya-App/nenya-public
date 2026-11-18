@@ -28,6 +28,7 @@ import {
 } from '../ui/dialog';
 
 import { WordPicker } from '../WordPicker';
+import { L } from '../../../lib/vocabulary';
 interface SightGatewayPageProps {
   onComplete: (data: UserColors & { gradientDirection?: string }) => void;
   onBack: () => void;
@@ -90,8 +91,8 @@ const MAX_DESCRIPTION_LENGTH = 150;
 
 const INSTRUCTION_CARDS = [
   {
-    title: 'Welcome to the Sight Gateway',
-    description: 'Color is a language deeper than words. In this gateway, you\'ll select two colors to represent your inner landscape.',
+    title: L('Welcome to the Sight Gateway'),
+    description: L('Color is a language deeper than words. In this gateway, you\'ll select two colors to represent your inner landscape.'),
     detail: 'There are no right or wrong choices. Trust your immediate response to color.'
   },
   {
@@ -308,7 +309,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               </div>
               {melodyColors && (
                 <p className="text-center text-xs text-muted-foreground">
-                  {melodyShared ? 'You brought your melody here, so these two colors started from it (its first three notes and its last three). ' : 'You made a melody in the Sound gateway first. Its first three notes and its last three notes can give these two colors a starting point. '}Changing them here never changes your melody or what was recorded about it.
+                  {melodyShared ? 'You brought your melody here, so these two colors started from it (its first three notes and its last three). ' : L('You made a melody in the Sound gateway first. Its first three notes and its last three notes can give these two colors a starting point. ')}Changing them here never changes your melody or what was recorded about it.
                 </p>
               )}
 
@@ -493,7 +494,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   disabled={!canContinue}
                   className="px-12"
                 >
-                  {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Enter Session'}
+                  {currentIndex + 1 < totalGateways ? L('Next Gateway') : 'Enter Session'}
                 </Button>
               </div>
               )}

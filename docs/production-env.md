@@ -56,6 +56,7 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `VITE_SOUND_CHORDS` | `on` | Chords in the Sound gateway (softened by default) |
 | `VITE_SAVE_REFLECTION` | `on` | "Save and return later": finished gateways kept encrypted on the visitor's device for 24 hours |
 | `VITE_NAME_MARK` | `on` | The mark in the footer: nənya.biz, the gold e turning behind the white one (src/app/components/NenyaMark.tsx) |
+| `VITE_LENS_COPY` | `on` | The lens vocabulary (src/lib/vocabulary.ts): visitor words say lens instead of gateway and Pattern instead of Insight, in the pages and (after the build, scripts/apply-lens-copy.mts) the static public files. Keep it off until the About pages listed in docs/lens-vocabulary-audit.md are rewritten and the Terms revision is ready |
 | `VITE_GUESTBOOK` | `on` | "Sign Our Guestbook" at /guestbook, and its links at the end of a reflection and a coach conversation (src/lib/guestbook.ts) |
 
 **Humanity check (Cloudflare Turnstile), built 2026-11-15, off by default.** Staging first; on production only after the Terms change ships.
