@@ -6,6 +6,7 @@
 //   --private <dir>   modules.json, method-notes.txt, learn-icarus.txt, kept outside the repository (as for the bake-off)
 //   --local-url <http://localhost:1234/v1>  the coach's model runs on THIS computer (LM Studio, Ollama, llama.cpp; OpenAI-compatible) and --model is its local name; the person is still played by Venice
 //   --coach venice    the coach runs on Venice (the live default: the real model, via your key) instead of Workers AI; the person is still played by DUET_USER_MODEL
+//   cost              every Venice call is tallied by tokens; venice-cost.md (output folder) gives cost per call, per five-exchange conversation, and a month at 10, 30 and 80 turns a day. Use --coach venice; the person (a Venice call too) is listed separately.
 //   --n <k>           conversations per brief (default 2); --budget <Neurons>, a ceiling for this run (default 2,600: about twenty conversations)
 //
 // Everything is invented. Transcripts and a summary go to a private folder (default ~/Downloads/Nenya (private)/duet/<date>), never the repo. The summary lists what to read first;
@@ -48,7 +49,28 @@ for (const [key, file] of [['method-notes', 'method-notes.txt'], ['learn-icarus'
 const work = mkdtempSync(join(tmpdir(), 'nenya-duet-'));
 let neurons = 0;
 let calls = 0;
-const realFetch = globalThis.fetch;
+// Venice cost tally (docs/duet-eval.md): every call to api.venice.ai is counted by model, from the token usage Venice reports. It only counts; the replies are untouched.
+const tally = new Map<string, { calls: number; input: number; output: number; missingUsage: number }>();
+const plainFetch = globalThis.fetch;
+const realFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+  const res = await plainFetch(input as RequestInfo, init);
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+  if (url.startsWith('https://api.venice.ai/') && url.endsWith('/chat/completions')) {
+    let name = 'unknown';
+    try { name = JSON.parse(String(init?.body ?? '{}')).model ?? 'unknown'; } catch { /* keep unknown */ }
+    const row = tally.get(name) ?? { calls: 0, input: 0, output: 0, missingUsage: 0 };
+    row.calls++;
+    try {
+      const body = await res.clone().text();
+      const u = (() => { try { return JSON.parse(body).usage; } catch { const m = [...body.matchAll(/"usage"\s*:\s*(\{[^}]*\})/g)].pop(); return m ? JSON.parse(m[1]) : undefined; } })();
+      if (u && typeof u.prompt_tokens === 'number') { row.input += u.prompt_tokens; row.output += Number(u.completion_tokens ?? 0); } else row.missingUsage++;
+    } catch { row.missingUsage++; }
+    tally.set(name, row);
+  }
+  return res;
+};
+const veniceGet = async (path: string): Promise<any> => { try { const r = await plainFetch(`https://api.venice.ai/api/v1/${path}`, { headers: { Authorization: `Bearer ${veniceKey}` } }); return r.ok ? await r.json() : { error: r.status }; } catch (e) { return { error: (e as Error).message }; } };
+const balanceBefore = await veniceGet('billing/balance');
 (globalThis as { fetch: typeof fetch }).fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
   if (coachOnVenice) return realFetch(input as RequestInfo, init); // the coach talks to Venice itself, with your key
@@ -138,6 +160,30 @@ for (const brief of chosen) {
 const flagged = rows.filter((r) => !/\| - \| - \|/.test(r));
 writeFileSync(join(out, 'summary.md'), ['# Full-exchange run (not reviewed)', '', `Coach ${model}, instructions v2.1, private text on. Person played by ${simModel}. Neurons used: ${Math.round(neurons)}.`, '', 'Read the conversations marked first: a red flag is a check that matched a coach reply (where to start reading, not a verdict); "missing" is something the brief expected that never appeared.', '', '| Conversation | Ended | Red flags (check@turn) | Missing | Words | Grade |', '|---|---|---|---|---|---|', ...flagged, ...rows.filter((r) => !flagged.includes(r))].join('\n') + '\n');
 console.log(`\nNeurons used ${Math.round(neurons)}. Summary and transcripts: ${out}`);
+{
+  // Cost report: tokens x Venice's listed price, plus the balance before and after as a cross-check. The balance endpoint's shape is unverified, so the raw answer is kept.
+  const models = await veniceGet('models');
+  const priceOf = (id: string): { input?: number; output?: number } => { const m = (models.data ?? []).find((x: any) => x.id === id); const pr = m?.model_spec?.pricing; return { input: pr?.input?.usd, output: pr?.output?.usd }; };
+  const balanceAfter = await veniceGet('billing/balance');
+  const lines = ['# Venice cost (private, not reviewed)', '', 'Tokens are what Venice reported per call. Prices are per million tokens, read from Venice\'s model list; "?" means the list did not give one.', '', '| Model | Calls | Input tokens | Output tokens | No usage reported | Input $/M | Output $/M | Cost $ |', '|---|---|---|---|---|---|---|---|'];
+  let coachCost = Number.NaN, coachCalls = 0, total = 0;
+  for (const [id, r] of tally) {
+    const pr = priceOf(id);
+    const cost = pr.input !== undefined && pr.output !== undefined ? (r.input * pr.input + r.output * pr.output) / 1e6 : Number.NaN;
+    if (!Number.isNaN(cost)) total += cost;
+    if (id === model) { coachCost = cost; coachCalls = r.calls; }
+    lines.push(`| ${id}${id === model ? ' (coach)' : id === simModel ? ' (person)' : ''} | ${r.calls} | ${r.input} | ${r.output} | ${r.missingUsage} | ${pr.input ?? '?'} | ${pr.output ?? '?'} | ${Number.isNaN(cost) ? '?' : cost.toFixed(4)} |`);
+  }
+  lines.push('', `Total by tokens x price: $${total.toFixed(4)}.`);
+  if ([...tally.values()].some((r) => r.missingUsage)) lines.push('', 'Some calls reported no token usage (the encrypted E2EE path streams sealed chunks, so usage may not be readable). For those, the balance drop below divided by the number of calls is the figure to trust; or rerun with the same model\'s non-encrypted id (--model) for a token count, and compare the listed prices.');
+  if (coachOnVenice && coachCalls && !Number.isNaN(coachCost)) {
+    const per = coachCost / coachCalls;
+    lines.push('', `Coach on Venice: $${per.toFixed(5)} a call (about one call a turn). A five-exchange conversation about $${(per * 5).toFixed(4)}.`, '', '| Use | Turns a month | Cost $ a month |', '|---|---|---|', ...([[10, 'the 10-turn daily allowance, every day'], [30, '30 turns a day'], [80, '80 turns a day (the site cap)']] as [number, string][]).map(([n, label]) => `| ${label} | ${n * 30} | ${(per * n * 30).toFixed(2)} |`));
+  } else if (!coachOnVenice) lines.push('', 'The coach did not run on Venice in this run (use --coach venice), so there is no coach cost here; the Venice cost above is the simulated person only.');
+  lines.push('', '## Balance cross-check (raw; the key is not shown)', '', `Before: \`${JSON.stringify(balanceBefore)}\``, '', `After: \`${JSON.stringify(balanceAfter)}\``, '', 'The drop in the balance should roughly equal the total above. If the shape is unfamiliar, read it as Venice reports it.');
+  writeFileSync(join(out, 'venice-cost.md'), lines.join('\n') + '\n');
+  console.log(lines.slice(0, 9 + tally.size + 4).join('\n'));
+}
 rmSync(work, { recursive: true, force: true });
 if (!args.includes('--no-record')) console.log((await import('./record-neurons.mts')).recordNeurons(neurons));
 process.exit(0);
