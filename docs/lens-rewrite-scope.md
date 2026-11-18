@@ -94,3 +94,8 @@ First visit no heavier than today's measured weight; the tray fully operable by 
 
 ## 9. Risks
 Camera cliché (always show the beam and the medium, not only glass); the word is unownable (Google Lens and others), so the identity carries the beam; optical-centrism; dispersion as decoration (rainbow gradients are invisible by default); breaking the gem (re-read, never replaced); a copy change that makes the Terms, the answers and the pages disagree (one vocabulary module and a test that scans for the old word guard this).
+
+## Progress (2026-11-17)
+- **P1 vocabulary:** built, switch off (`docs/lens-vocabulary-audit.md` section 6).
+- **P2a state model (built, not yet used by any screen):** `src/lib/lensState.ts`, tested in `tests/lens-state.test.mts`: three states (not opened, examined, included), open, add (update in place), remove, put down, the report shape and its "Examined, not included: ..." line, the soft limit of three, and `readSavedDraft` (version 1 and 2). It keeps the saved-data key `gateway` so old drafts read.
+- **Next, in this order (each a reversible step behind a switch, `VITE_LENS_TRAY`):** (1) a tray page and App state that use `lensState` beside the old flow; (2) one lens at a time rebuilt to the wireframe cards, starting with Sight and Sound (they set the session colors), then Touch, Essence, Movement and Pattern; (3) the report and PDF read the included lenses and the examined line; (4) saved-draft v2 written (v1 still read); (5) the Terms count sentence and register row, then the flip of both switches. The lens pages are the bulk of the work: the wireframes are drawn, but none of the new cards exists in code yet.
