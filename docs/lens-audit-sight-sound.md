@@ -38,7 +38,11 @@
 ## 6. The shared piece, with a free tray
 Whichever of Sight and Sound is picked up first, its two colours (or melody) are offered to the other: "Start from my melody's colors" and "bring to Sight" become offers on the second lens, never requirements. With no colours yet, each lens starts from a default pair. The session colours (the save ID) form from the colours **added to the report** in Sight or Sound, not from anything merely tried.
 
-## 7. Open questions for the owner
+## 7. Decisions (owner, 2026-11-17: "go with these") and the wireframes
+Decided: names stay as an optional field, quality chips tucked under "More words"; the strength slider sits on the swatch (colours with strength, then palette, then body map, then add: four cards); pitch is a transposition (about an octave each way, a plain-word range); four named feels (steady, flowing, light and separate, swaying); playfulness limited to small responses (a still "added" state, no points, streaks or badges); the long melody on its own optional card, shown only when it can be made. **Wireframes:** `docs/wireframes/lens/` (Sight and Sound, plain HTML, tested by `tests/wireframes.test.mts`).
+
+## 8. Questions that remain
+(The list below is the original set; the decisions above answer questions 1 to 6. New questions are in the wireframe notes.)
 1. Sight: keep names and quality chips (an optional extra on the strength card), or drop them for the first rebuild?
 2. Sight: palette before or after strength? (Draft: palette first, then strength.)
 3. Sound: is "pitch" a transposition up and down (draft), or the register of a note?
