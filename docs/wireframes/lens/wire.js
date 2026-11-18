@@ -90,3 +90,15 @@ document.querySelectorAll('[data-body]').forEach((root) => {
   document.querySelector('[data-landscape-clear]').addEventListener('click', () => { parts.forEach((p) => { form.querySelector(`[name=${p}]`).selectedIndex = 0; }); set(); });
   set();
 })();
+
+// Landscape: shape one part with temperature and weight; each part keeps its own.
+(() => {
+  const box = document.querySelector('[data-shape]'); if (!box) return;
+  const part = document.getElementById('shape-part'), tp = document.getElementById('shape-temp'), wt = document.getElementById('shape-weight'), out = document.getElementById('shape-out');
+  const kept = {}, T = ['frozen', 'cool', 'neutral', 'warm', 'burning'], Wd = ['weightless', 'light', 'medium', 'heavy', 'very heavy'];
+  const apply = (p) => { const k = kept[p] || { t: 2, w: 2 }, el = document.getElementById('L-' + p); el.style.filter = k.t < 2 ? `hue-rotate(${(2 - k.t) * 40}deg) saturate(${0.9 - (2 - k.t) * 0.15})` : `sepia(${(k.t - 2) * 0.4}) saturate(${1 + (k.t - 2) * 0.5})`; el.style.transform = `translateY(${(k.w - 2) * 4}px)`; };
+  const say = () => { const s = Object.entries(kept).filter(([, k]) => k.t !== 2 || k.w !== 2).map(([p, k]) => `${p}: ${T[k.t]}, ${Wd[k.w]}`); out.textContent = s.length ? s.join('; ') + '.' : ''; };
+  const load = () => { const k = kept[part.value] || { t: 2, w: 2 }; tp.value = k.t; wt.value = k.w; };
+  part.addEventListener('change', load);
+  [tp, wt].forEach((r) => r.addEventListener('input', () => { kept[part.value] = { t: +tp.value, w: +wt.value }; apply(part.value); say(); }));
+})();

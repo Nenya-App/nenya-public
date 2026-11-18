@@ -57,3 +57,8 @@ ok('the stylesheet respects reduced motion and has a visible focus style', /pref
   const touch = readFileSync(`${dir}/touch.html`, 'utf8');
   ok('Touch: the landscape is an optional activity with five labelled lists, a text twin, and skip', ['p-sky', 'p-hills', 'p-ground', 'p-water', 'p-path'].every((id) => new RegExp(`<label for="${id}">`).test(touch)) && /id="land-out" role="status"/.test(touch) && /optional activity inside Touch/.test(touch));
 }
+
+{
+  const touch = readFileSync(`${dir}/touch.html`, 'utf8');
+  ok('Touch landscape: one part can be shaped with temperature and weight, each labelled, with a text twin', /<label for="shape-part">/.test(touch) && /<label for="shape-temp">/.test(touch) && /<label for="shape-weight">/.test(touch) && /id="shape-out" role="status"/.test(touch));
+}

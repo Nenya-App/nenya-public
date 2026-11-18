@@ -35,9 +35,9 @@ Two cards for the surfaces (rather than one for both) because the choice is larg
 - **The body map keeps a pointer-drawn brush** (with a size slider and undo) **beside the places list**; the list stays the full alternative for keyboard and screen-reader users.
 
 ## 5b. A texture landscape, as an optional activity (owner, 2026-11-17)
-The owner's idea: invite people to **design a landscape for texture**, offered as **one of the activities within Touch** (not a replacement for the surface cards, and not for the other lenses). The person fills the parts of a small landscape (draft: sky, far hills, near ground, water, a path) with surfaces from the 283 existing texture pictures, as the body map takes paints. It is accessible by construction: five labelled lists, a text line that says the same in words ("sky silk, far hills wool..."), a picture that is never needed to understand it, a "surprise me" and a "clear". Wireframe: `docs/wireframes/lens/touch.html` (the landscape card). In the report it is the text list, with a small picture if the person wants one. Open: the layers; whether the sliders from "Feel it more" can act on one layer at a time.
+The owner's idea: invite people to **design a landscape for texture**, offered as **one of the activities within Touch** (not a replacement for the surface cards, and not for the other lenses). The person fills the parts of a small landscape (draft: sky, far hills, near ground, water, a path) with surfaces from the 283 existing texture pictures, as the body map takes paints. It is accessible by construction: five labelled lists, a text line that says the same in words ("sky silk, far hills wool..."), a picture that is never needed to understand it, a "surprise me" and a "clear". Wireframe: `docs/wireframes/lens/touch.html` (the landscape card). In the report it is the text list, with a small picture if the person wants one. Decided (later the same day): **five layers are right**, and **temperature and weight can shape one part at a time** (each part keeps its own, so a cold heavy ground can sit under a warm light sky; the text line says so).
 
-Still open: the landscape's layers, then the copy pass.
+Still open: the copy pass.
 
 ## 6. The decisions that were asked (kept for the record)
 1. The body map: (a), (b) or (c) above.

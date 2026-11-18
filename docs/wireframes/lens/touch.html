@@ -115,14 +115,20 @@
       <label for="p-water">Water</label><select id="p-water" name="water"><option value="">Nothing</option><option>Wool</option><option>Silk</option><option>Bark</option><option selected>Slate</option></select>
       <label for="p-path">Path</label><select id="p-path" name="path"><option value="">Nothing</option><option selected>Wool</option><option>Silk</option><option>Bark</option><option>Slate</option></select>
     </form>
+    <fieldset data-shape><legend>Shape one part (optional)</legend>
+      <label for="shape-part">Part</label><select id="shape-part"><option value="sky">Sky</option><option value="hills">Far hills</option><option value="ground">Near ground</option><option value="water">Water</option><option value="path">Path</option></select>
+      <label for="shape-temp">Temperature</label><input type="range" id="shape-temp" min="0" max="4" value="2"><div class="ends"><span>Frozen</span><span>Burning</span></div>
+      <label for="shape-weight">Weight</label><input type="range" id="shape-weight" min="0" max="4" value="2"><div class="ends"><span>Weightless</span><span>Heavy</span></div>
+      <p class="mini">Each part keeps its own temperature and weight. <span id="shape-out" role="status"></span></p>
+    </fieldset>
     <div class="row"><button type="button" data-landscape-random>Surprise me</button><button type="button" data-landscape-clear>Clear the landscape</button><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
   </div>
   <aside class="note">
     <h3>Where it sits</h3><p>An <strong>optional activity inside Touch</strong> (owner, 2026-11-17), offered after "Feel it more" and before the last card. Skipping it changes nothing.</p>
-    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Sky, far hills, near ground, water, path (five labelled lists)</li><li>Surprise me, Clear, Skip, Next</li></ol>
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Sky, far hills, near ground, water, path (five labelled lists)</li><li>Shape one part: the part, temperature, weight</li><li>Surprise me, Clear, Skip, Next</li></ol>
     <h3>A screen reader says</h3><ul><li>Five labelled lists, the line “Your landscape: sky silk, far hills wool, ...” as a polite status. The picture is described once as a landscape made from the choices; nothing depends on seeing it.</li></ul>
-    <h3>Responds live (<strong>try it</strong>)</h3><ul><li>Each list changes its part of the picture at once. Reduced motion: instant.</li><li>In the real card the surfaces are the existing texture pictures, laid into the shapes; here patterns stand in.</li><li>Optional: the temperature, weight and sharpness sliders from "Feel it more" can act on one layer at a time.</li></ul>
-    <h3>Open</h3><p>Five layers (sky, far hills, near ground, water, path) are a draft. In the report the landscape is the text list, with a small picture if the person wants one.</p>
+    <h3>Responds live (<strong>try it</strong>)</h3><ul><li>Each list changes its part of the picture at once. Reduced motion: instant.</li><li>In the real card the surfaces are the existing texture pictures, laid into the shapes; here patterns stand in.</li><li><strong>Shape one part</strong> (decided: yes): choose a part, then temperature and weight act on that part only, and each part keeps its own. A cold, heavy ground can sit under a warm, light sky. The text line adds it ("ground: cool, heavy").</li></ul>
+    <h3>Decided</h3><p>Five layers are right (owner, 2026-11-17). In the report the landscape is the text list, with a small picture if the person wants one.</p>
     <h3>Copy draft</h3><p>“Fill each part of a small landscape with a surface. There is no right answer.”</p>
   </aside>
 </section>
