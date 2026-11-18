@@ -54,10 +54,13 @@ The browser-side encrypted route (`VITE_BOUNDARY_GUARD`'s sealed path, `src/lib/
 4. About answers, counts, Terms wording drafted for approval; then staging.
 5. The sealed route (phase 2).
 
-## Decisions for the owner
-1. Does the request count against the daily cap (recommended), and how much?
-2. May the summary see the coach's replies as well as the person's messages, after the first tested version?
-3. Is the summary shown on the page only, or also offered inside the downloaded transcript as a signed addendum (recommended: both, addendum only if the person chose to request it)?
-4. Does a flagged conversation get the fixed sentence (recommended) or nothing?
-5. Retire `COACH_FINAL_SUMMARY=call` once this ships?
-6. Who builds it: the tray session owns `App.tsx` and the page; the function, the module and the transcript changes fit this session. The page step waits for the Terms-first and tray steps, because it shares `App.tsx`/`CoachPage.tsx` territory.
+## Decided (owner, 2026-11-18: "yes to all five recommendations")
+1. **The request counts against the daily cap** (the exact weight, one turn or a fraction, is set when the endpoint is built and tested, so a visitor buffer holds).
+2. **After the first tested version, the summary may also see the coach's replies**; the first build uses the person's messages only, and the two are compared on the same conversations before either is chosen.
+3. **Both:** the summary on the page, and a signed addendum in the downloaded transcript **only if the person requested it**.
+4. **A flagged conversation gets the site's fixed sentence**, never a model summary.
+5. **`COACH_FINAL_SUMMARY=call` is retired once this ships.**
+
+## Still open
+- **Who builds it:** the tray session owns `App.tsx` and the page; the function, the module and the transcript changes fit the tests session. The page step waits for the Terms-first and tray steps (shared `App.tsx`/`CoachPage.tsx` territory).
+- The exact wording of the block's label, the failure sentence and the Terms clause (owner approval).
