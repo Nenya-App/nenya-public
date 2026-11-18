@@ -60,7 +60,7 @@ export function summaryProblems(text: string): string[] {
   if (/\b(?:you should|you could|you can try|you might|you may want|try to|i suggest|i recommend|next step)\b/i.test(t)) out.push('advice');
   if (/\b(?:will|would|should)\s+(?:help|ease|make|allow|bring|give|lead|improve|reduce)\b/i.test(t)) out.push('prediction');
   if (/\b(?:suggests?|indicates?|seems? to need|implies|a need for)\b/i.test(t)) out.push('interprets');
-  if (/\blooking for (?:to |being\b|a way to\b)/i.test(t) && /\blooking for (?:to |being\b)/i.test(t)) out.push('grammar');
+  if (/\blooking for (?:to|being)\b/i.test(t)) out.push('grammar');
   if (!/\b(?:felt|feel|feeling|feelings)\b/i.test(t)) out.push('no-feelings');
   if (!/\b(?:looking for|needs?|needing|longing|wanting)\b/i.test(t)) out.push('no-needs');
   if (words(t) > 110) out.push('too-long');
