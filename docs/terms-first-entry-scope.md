@@ -90,3 +90,7 @@ Our own code sends nothing, counts nothing and stores nothing for a decline (no 
 3. The sparkle and dock wiring with the tray switch.
 4. Keyboard, screen-reader and AAA checks; then staging.
 **Who:** the tray work is in the other session ("Nenya repository setup and GitHub Desktop (fork)"); `App.tsx` and `OnboardingFlow.tsx` are shared files, so the order of work between the sessions is the owner's call.
+
+## Progress (2026-11-18)
+- **Step 1 built** (`9e2e064`): `src/lib/shadowSession.ts`, switch `VITE_TERMS_FIRST` (off). A random pair made at agreement, held in memory for the whole session, never stored; the person's own colors win; it can be made again at any time.
+- **Step 2 built:** the plain-English text as data with the Terms section behind each line (`src/lib/plainEnglish.ts`), `PlainEnglish.tsx`, and `DeclinePopout.tsx` (a modal inside the panel, no address, no request, count or storage; Escape returns to the Terms and never agrees). Not wired into the panel yet (step 3). Facts checked against `src/lib/legalDocument.ts` by `tests/decline-popout.test.mts`; two lines the Terms do not say in these words are listed in `PLAIN_UNVERIFIED` for the owner: the pair "is made when you agree" (needs the one-clause Terms change), and the decline statement (a statement about this build; the Terms do not describe a decline). The coach line was rewritten from Section 15 (Venice AI, not stored by us, United States only), not from the first draft.
