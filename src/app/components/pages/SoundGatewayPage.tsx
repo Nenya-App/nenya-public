@@ -474,24 +474,6 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
 
         {step === 'melody' && (
           <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              {TONAL_SYSTEM_ORDER.map((system) => (
-                <button
-                  key={system}
-                  onClick={() => handleSelectTonalSystem(system)}
-                  className="rounded-full px-3.5 py-1.5 text-xs transition-all"
-                  style={{
-                    background: tonalSystem === system ? 'rgba(255,255,255,0.08)' : 'transparent',
-                    border: `1px solid rgba(255,255,255,${tonalSystem === system ? '0.22' : '0.08'})`,
-                    color: tonalSystem === system ? 'rgba(228,234,240,0.85)' : 'rgba(255,255,255,0.32)',
-                    fontFamily: "'DM Sans', sans-serif",
-                  }}
-                >
-                  {TONAL_SYSTEM_LABELS[system]}
-                </button>
-              ))}
-            </div>
-
             <p className="text-xs text-muted-foreground text-center">
               Curious about building a melody from words? Solresol is a constructed language whose words are sequences of the seven notes.{' '}
               <a href="https://solresol.xyz" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
@@ -714,6 +696,28 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 ✓ Your melody is set.
               </p>
             )}
+
+            {/* The scale comes last, after the melody itself (owner, 2026-11-18). */}
+            <div className="space-y-2">
+              <p className="text-center text-xs text-muted-foreground">Scale</p>
+            <div role="group" aria-label="Scale" className="flex items-center justify-center gap-2 flex-wrap">
+              {TONAL_SYSTEM_ORDER.map((system) => (
+                <button
+                  key={system}
+                  onClick={() => handleSelectTonalSystem(system)}
+                  className="rounded-full px-3.5 py-1.5 text-xs transition-all"
+                  style={{
+                    background: tonalSystem === system ? 'rgba(255,255,255,0.08)' : 'transparent',
+                    border: `1px solid rgba(255,255,255,${tonalSystem === system ? '0.22' : '0.08'})`,
+                    color: tonalSystem === system ? 'rgba(228,234,240,0.85)' : 'rgba(255,255,255,0.32)',
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  {TONAL_SYSTEM_LABELS[system]}
+                </button>
+              ))}
+            </div>
+            </div>
 
             <div className="flex justify-end pt-2">
               <Button onClick={() => setStep('qualitative')} disabled={!melodyComplete} className="gap-2">

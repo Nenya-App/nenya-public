@@ -53,3 +53,17 @@ const quick = readFileSync('src/app/components/QuickNav.tsx', 'utf8');
 ok('the quick nav keeps its present words (Breathe, Reflect, Coach) and marks the part you are in', />Breathe</.test(quick) && />Reflect</.test(quick) && />Coach</.test(quick) && /current === 'breathe'/.test(quick) && /current === 'reflect'/.test(quick));
 ok('the tray page carries the quick nav, marked Reflect, with Breathe going back; Coach stays its own page', /<QuickNav current="reflect" onBreathe=\{onBack\}/.test(tray) && /coachHref = '\/coach\/'/.test(quick));
 ok('on the breathing page Reflect leads to the start screen, which is the tray when the tray switch is on', /onReflect=\{onContinue\}/.test(readFileSync('src/app/components/pages/WelcomePage.tsx', 'utf8')) && /currentScreen === 'home' && lensTrayOn\(\)/.test(app));
+
+// Sight in tray mode is a run of separate cards, not one page with the palette and the body map hung on the wish state (owner, 2026-11-18).
+{
+  const sight2 = readFileSync('src/app/components/pages/SightGatewayPage.tsx', 'utf8');
+  ok('Sight (tray): the colors, the palette, the body map and the add step are separate cards, each reached by a button', /useState<'colors' \| 'palette' \| 'bodymap' \| 'add'>\('colors'\)/.test(sight2) && /trayCard === 'palette'/.test(sight2) && /trayCard === 'bodymap'/.test(sight2) && /trayCard === 'add'/.test(sight2) && /Next: a palette \(optional\)/.test(sight2));
+  ok('Sight (tray): the palette and the body map are not attached to the wish state any more (only the old flow keeps that)', /\{!tray && stage === 'wish' && \(\s*<>\s*<PalettePanel/.test(sight2));
+  ok('Sight (tray): Add this to my report is on the last card, with a short summary', /<h2 className="text-xl">Add Sight to your report\?<\/h2>/.test(sight2) && (sight2.match(/<AddToReport name="Sight"/g) ?? []).length === 1);
+}
+// The scale selection is at the bottom of the melody maker (owner, 2026-11-18).
+{
+  const snd = readFileSync('src/app/components/pages/SoundGatewayPage.tsx', 'utf8');
+  const scaleAt = snd.indexOf('TONAL_SYSTEM_ORDER.map((system) => (\n                <button'), melodyAt = snd.indexOf("{step === 'melody' && ("), contAt = snd.indexOf("setStep('qualitative')");
+  ok('the scale selection comes after the melody maker and just before Continue, not at the top', melodyAt > 0 && scaleAt > snd.indexOf('Click a note') && scaleAt < contAt && scaleAt > melodyAt + 3000);
+}

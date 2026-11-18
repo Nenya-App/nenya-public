@@ -27,7 +27,7 @@ t = spy();
 const path: [number, number][] = [[10, 50], [30, 50], [30, 30], [50, 30]];
 const s2 = drawPathThumb(t.doc, path, 5, 5, 28);
 const lines = t.calls.filter((c) => c.n === 'line');
-ok('the path is one line segment per step, inside its square, with a ring at the start and a dot at the end', s2 === 28 && lines.length === 3 && lines.every((l) => (l.a as number[]).every((v, i) => v >= 5 - 0.001 && v <= 33.001)) && t.calls.filter((c) => c.n === 'circle').length === 2 && t.calls.some((c) => c.n === 'circle' && c.a[3] === 'F') && t.calls.some((c) => c.n === 'circle' && c.a[3] === 'S'));
+ok('the path is one line segment per step, inside its square, with a ring at the start and a dot at the end', s2 === 28 && lines.length === 3 && lines.every((l) => (l.a as number[]).every((v) => v >= 5 - 0.001 && v <= 33.001)) && t.calls.filter((c) => c.n === 'circle').length === 2 && t.calls.some((c) => c.n === 'circle' && c.a[3] === 'F') && t.calls.some((c) => c.n === 'circle' && c.a[3] === 'S'));
 t = spy();
 drawPathThumb(t.doc, path, 0, 0, 28, ['Jerky']);
 ok('a jerky path is drawn broken, and the dash is put back afterwards', t.calls.some((c) => c.n === 'setLineDashPattern' && (c.a[0] as number[]).length > 0) && (t.calls.filter((c) => c.n === 'setLineDashPattern').pop()!.a[0] as number[]).length === 0);

@@ -117,6 +117,10 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   const init = tray && initialData && initialData.color1 ? initialData : null;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<PairStage>('present');
+  // Tray mode: Sight is a short run of separate cards (the two colors, an optional palette, an optional body map, then add or put down), not one long page with the palette and the body map hung on the wish state.
+  const [trayCard, setTrayCard] = useState<'colors' | 'palette' | 'bodymap' | 'add'>('colors');
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [trayCard]);
+  const showCard = (c: 'colors' | 'palette' | 'bodymap' | 'add') => !tray || trayCard === c;
   useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Step state: 'instructions' or 'selection'
@@ -293,6 +297,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
           ) : (
             /* Color Selection */
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12 space-y-6 sm:space-y-8">
+              {showCard('colors') && (
+              <>
               {/* Quick Actions */}
               <div className="flex flex-wrap justify-center gap-4">
                 <Button
@@ -529,7 +535,10 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               </StageSlot>
               </div>
 
-              {stage === 'wish' && (
+              </>
+              )}
+
+              {!tray && stage === 'wish' && (
               <>
               <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} soundComesLater={soundComesLater} />
 
@@ -545,12 +554,57 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
 
                             </>
               )}
-              <StageNav stage={stage} onChange={setStage} />
+
+              {tray && trayCard === 'palette' && (
+                <div className="mx-auto w-full max-w-2xl space-y-6">
+                  <h2 className="text-xl">A palette from your colors (optional)</h2>
+                  <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} soundComesLater={soundComesLater} />
+                  <div className="flex flex-wrap justify-between gap-3">
+                    <Button variant="ghost" onClick={() => setTrayCard('colors')} className="gap-2"><ArrowLeft className="size-4" /> Back to your colors</Button>
+                    <Button onClick={() => setTrayCard('bodymap')} className="gap-2">{generatedPalettes.length ? 'Next' : 'Skip'}<ArrowRightIcon className="size-4" /></Button>
+                  </div>
+                </div>
+              )}
+
+              {tray && trayCard === 'bodymap' && (
+                <div className="mx-auto w-full max-w-2xl space-y-6">
+                  <h2 className="text-xl">Where you feel it in your body (optional)</h2>
+                  <BodyMapAvatar
+                    inline
+                    userColors={{ color1, color2, color1Name, color2Name }}
+                    onClose={() => undefined}
+                    onSave={(data) => onUpdateBodyMap(data)}
+                    initialPlacements={bodyMapData.placements}
+                    initialNotes={bodyMapData.notes}
+                    initialPins={bodyMapData.pins}
+                  />
+                  <div className="flex flex-wrap justify-between gap-3">
+                    <Button variant="ghost" onClick={() => setTrayCard('palette')} className="gap-2"><ArrowLeft className="size-4" /> Back</Button>
+                    <Button onClick={() => setTrayCard('add')} className="gap-2">Next<ArrowRightIcon className="size-4" /></Button>
+                  </div>
+                </div>
+              )}
+
+              {tray && trayCard === 'add' && (
+                <div className="mx-auto w-full max-w-2xl space-y-6">
+                  <h2 className="text-xl">Add Sight to your report?</h2>
+                  <ul className="space-y-1 text-sm">
+                    <li>Now: {color1Name.trim() || color1}</li>
+                    <li>Wish: {color2Name.trim() || color2}</li>
+                    <li>Palettes: {generatedPalettes.length ? `${generatedPalettes.length} kept` : 'none'}</li>
+                    <li>Body map: {bodyMapData.placements.length ? 'used' : 'not used'}</li>
+                  </ul>
+                  <AddToReport name="Sight" added={!!init} onAdd={handleNext} onPutDown={onBack} />
+                  <div className="flex justify-start"><Button variant="ghost" onClick={() => setTrayCard('bodymap')} className="gap-2"><ArrowLeft className="size-4" /> Back</Button></div>
+                </div>
+              )}
+
+              {showCard('colors') && <StageNav stage={stage} onChange={setStage} />}
+              {tray && trayCard === 'colors' && stage === 'wish' && (
+                <div className="flex justify-center"><Button size="lg" onClick={() => setTrayCard('palette')} className="gap-2 px-10">Next: a palette (optional)<ArrowRightIcon className="size-4" /></Button></div>
+              )}
 
 {/* Next Button */}
-              {stage === 'wish' && tray && (
-                <AddToReport name="Sight" added={!!init} onAdd={handleNext} onPutDown={onBack} />
-              )}
               {stage === 'wish' && !tray && (
               <div className="flex justify-center pt-4">
                 <Button
