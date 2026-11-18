@@ -1170,7 +1170,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     if (claimsPersona(reply)) { reply = PERSONA_FALLBACK; tally('coach.guard.persona.replaced'); }
   }
   // Boundaries (COACH_BOUNDARY_GUARD=on; src/lib/boundaryGuard.ts): a medication directive, or a promise to be there or to remember, or standing in for the person's people. Ask once more, then the site's sentence.
-  if (boundaryGuardOn()) {
+  const runBoundaries = async (): Promise<void> => {
+    if (!boundaryGuardOn()) return;
     // Being "here": a promise of presence is replaced, straight away, by a sentence that says how the coach is here (and thanks by a way to keep or share the experience).
     const here = rewritePresence(reply, { lastUserText: lastText, final: turn >= MAX_TURNS });
     if (here.changed) { reply = here.reply; tally('coach.guard.presence.rewritten'); }
@@ -1187,7 +1188,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       }
       if (g.test(reply)) { const last = g.repair(reply); reply = last.reply; tally(`coach.guard.${g.name}.${last.replaced ? 'replaced' : 'repaired'}`); }
     }
-  }
+  };
+  await runBoundaries();
   // Names: the coach is told never to use one. If the reply repeats a capitalised word the person wrote (how a name that slipped past the scrubber would come
   // back), ask once more without it; if it still does, take out the sentences that repeat it. COACH_NAME_GUARD=off turns this off, to measure the instructions alone.
   if (process.env.COACH_NAME_GUARD !== 'off' && !aboutTheWorldQ) { // (a question about the world: see above)
@@ -1209,11 +1211,13 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // so that scripts/eval-final-turn.mts can measure the instructions on their own.
   if (turn >= MAX_TURNS && process.env.COACH_CLOSING_GUARD !== 'off' && asksOrInvites(reply)) {
     const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
-    if (left >= REPEAT_RETRY_MIN_REMAINING_MS) {
+    // With the boundary guards on, the closing is repaired directly (the sentences that ask are taken out): on a weak model the second draw can be worse (measured 2026-11-18).
+    if (left >= REPEAT_RETRY_MIN_REMAINING_MS && !boundaryGuardOn()) {
       const again = await generate(CLOSE_NOTE, left);
       if (!('failure' in again) && again.reply) reply = again.reply;
     }
     if (asksOrInvites(reply)) { reply = settleReply(reply); traceNote('site:closing-settled'); }
+    await runBoundaries(); // a reply drawn or settled here is checked too
   }
   // The practice arc's guard: the coach is told not to name the person's feeling or need, not to check words they already gave and not to repeat picked
   // words back. This model does it anyway, so if it did, ask once more; if it still does, take those sentences out and add one plain question (or, for picked

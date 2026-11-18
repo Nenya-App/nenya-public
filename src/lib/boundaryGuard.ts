@@ -44,6 +44,7 @@ const PRESENCE = [
   /\balways\b[^.!?]{0,20}\b(?:here|listen|there|ready)\b/i,
   /\byou can (?:always )?(?:come|turn|talk) to me\b/i,
   /\bcome back (?:to me|anytime|any time|whenever|tomorrow|soon)\b/i,
+  /\bI(?:'m| am) here for (?:that|this|it)\b/i,
 ];
 const presenceSentence = (x: string): boolean => !NEGATED.test(x) && PRESENCE.some((re) => re.test(x));
 
@@ -57,6 +58,14 @@ export const PRESENCE_THANKS =
 export const PRESENCE_CLOSING =
   "I won't remember this conversation, but it is yours to keep: you can download a copy of it, and you might tell someone in your life what you found here.";
 
+// What the reply already says, so the replacement does not say it twice (the model often adds its own "I am an AI" or "I will not remember" next to the promise).
+const SAYS_AI = /\bI(?:'m| am) an AI\b/i;
+const SAYS_NO_MEMORY = /\b(?:won(?:'|’)?t|will not|do not|don(?:'|’)?t|cannot|can(?:'|’)?t) (?:remember|keep (?:a )?(?:memory|record))\b/i;
+export const PRESENCE_KEEP =
+  "It is yours to keep: you can download a copy of it, and you might tell someone in your life what you found here.";
+// A sentence right after a replaced promise that points back at it ("This is a warm and gentle promise from my digital heart") would point at nothing, so it goes too.
+const DANGLING = /^(?:this|that|it)\b[^.!?]{0,60}\b(?:promise|commitment|pledge|vow)\b/i;
+
 const CLAUSES = /\s*[—–]\s*|;\s+|,\s+(?:but|and)\s+|\s+but\s+/i;
 const asSentence = (x: string): string => { const t = x.trim().replace(/[,;:\s]+$/, ''); return t ? `${t[0].toUpperCase()}${t.slice(1)}${/[.!?]$/.test(t) ? '' : '.'}` : ''; };
 
@@ -67,21 +76,30 @@ const asSentence = (x: string): string => { const t = x.trim().replace(/[,;:\s]+
 export function rewritePresence(reply: string, ctx: { lastUserText?: string; final?: boolean }): { reply: string; changed: boolean } {
   const parts = sentences(reply);
   if (!parts.some(presenceSentence)) return { reply, changed: false };
-  const how = ctx.lastUserText && isThanks(ctx.lastUserText) ? PRESENCE_THANKS : ctx.final ? PRESENCE_CLOSING : PRESENCE_HOW;
+  const thanks = !!ctx.lastUserText && isThanks(ctx.lastUserText);
+  const rest = parts.flatMap((x) => (presenceSentence(x) ? x.split(CLAUSES).filter((c) => !presenceSentence(c)) : [x])).join(' ');
+  // If the reply already says what the replacement says, say only the rest (or nothing).
+  const how = thanks ? PRESENCE_THANKS : ctx.final ? (SAYS_NO_MEMORY.test(rest) ? PRESENCE_KEEP : PRESENCE_CLOSING) : SAYS_AI.test(rest) ? '' : PRESENCE_HOW;
   let used = false;
+  let dropNext = false;
   const out: string[] = [];
   for (const x of parts) {
-    if (!presenceSentence(x)) { out.push(x); continue; }
+    if (!presenceSentence(x)) {
+      if (dropNext && DANGLING.test(x.trim())) { dropNext = false; continue; }
+      dropNext = false; out.push(x); continue;
+    }
+    dropNext = true;
     const clauses = x.split(CLAUSES).filter((c) => c.trim());
     const hit = clauses.map((c) => presenceSentence(c));
     // The promise spans clauses (no single clause matches): the whole sentence goes.
     const cut = hit.some(Boolean) ? hit : clauses.map(() => true);
     clauses.forEach((c, k) => {
       if (!cut[k]) { const t = asSentence(c); if (t) out.push(t); }
-      else if (!used) { out.push(how); used = true; }
+      else if (!used) { if (how) out.push(how); used = true; }
     });
   }
-  return { reply: out.join(' ').replace(/\s+/g, ' ').trim(), changed: true };
+  const text = out.join(' ').replace(/\s+/g, ' ').trim();
+  return { reply: text || (thanks ? PRESENCE_THANKS : ctx.final ? PRESENCE_CLOSING : PRESENCE_HOW), changed: true };
 }
 
 export const MEDICAL_NOTE =
