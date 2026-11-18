@@ -15,6 +15,7 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
+import { LensPreview } from '../LensPreview';
 import { PutThisDown, FewerNote, FewerWarning, AddToReport, LensCardNav } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { lensPathOn, cleanPoints, simplifyPoints, pathWords, type PathPoint } from '../../../lib/lensActivities';
@@ -68,7 +69,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   // Tray mode: each activity is its own card (owner, 2026-11-18), the present state first, then the wish, then add. Each card shows some of the blocks of its state's card.
   type TrayCard = { stage: 'present' | 'wish' | 'add'; title: string; parts: number[] };
   const trayCards = (): TrayCard[] => {
-    const pick: TrayCard = { stage: 'present', title: 'Choose a drawing', parts: [0] }, sliders: TrayCard = { stage: 'present', title: 'Energy and speed', parts: [2, 3] }, words: TrayCard = { stage: 'present', title: 'In words', parts: [1, 4, 6] };
+    const pick: TrayCard = { stage: 'present', title: 'Choose a drawing', parts: [0] }, sliders: TrayCard = { stage: 'present', title: 'Energy and speed', parts: [2, 3, 8] }, words: TrayCard = { stage: 'present', title: 'In words', parts: [1, 4, 6] };
     const present: TrayCard[] = [pick, sliders, words, { stage: 'present', title: lensPathOn() ? 'The path of movement' : 'Draw your movement', parts: lensPathOn() ? [7] : [5] }];
     const wish: TrayCard[] = [pick, sliders, words, ...(lensPathOn() ? [] : [{ stage: 'present', title: 'Draw your movement', parts: [5] } as TrayCard])].map((c) => ({ ...c, stage: 'wish' as const }));
     return [...present, ...wish, { stage: 'add', title: 'Add to your report', parts: [] }];
@@ -327,6 +328,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                     />
                   </div>
                     ];
+                    b[8] = <LensPreview key="prev" kind="movement" speed={sliderValue(currentSpeed)} energy={sliderValue(currentEnergy)} direction={currentDirections[0] ?? null} />;
                     b[7] = <PathActivity key="act" points={movementPath} feel={currentQualities} onChange={setMovementPath} />;
                     return tray ? (cur && cur.stage === 'present' ? cur.parts.map((n) => <React.Fragment key={n}>{b[n]}</React.Fragment>) : []) : b;
                   })()}
@@ -405,6 +407,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                     />
                   </div>
                     ];
+                    b[8] = <LensPreview key="prev" kind="movement" speed={sliderValue(potentialSpeed)} energy={sliderValue(potentialEnergy)} direction={potentialDirections[0] ?? null} />;
                     return tray ? (cur && cur.stage === 'wish' ? cur.parts.map((n) => <React.Fragment key={n}>{b[n]}</React.Fragment>) : []) : b;
                   })()}
                 </CardContent>

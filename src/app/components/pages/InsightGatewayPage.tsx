@@ -15,6 +15,7 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
+import { LensPreview } from '../LensPreview';
 import { PutThisDown, FewerNote, FewerWarning, AddToReport, LensCardNav } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { lensTapestryOn, cleanLayers, tapestryWords } from '../../../lib/lensActivities';
@@ -68,7 +69,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   // Tray mode: each activity is its own card (owner, 2026-11-18), the present state first, then the wish, then add. Each card shows some of the blocks of its state's card.
   type TrayCard = { stage: 'present' | 'wish' | 'add'; title: string; parts: number[] };
   const trayCards = (): TrayCard[] => {
-    const pick: TrayCard = { stage: 'present', title: 'Choose a drawing', parts: [0] }, sliders: TrayCard = { stage: 'present', title: 'Clarity and depth', parts: [2, 3] }, words: TrayCard = { stage: 'present', title: 'In words', parts: [1, 4, 6] };
+    const pick: TrayCard = { stage: 'present', title: 'Choose a drawing', parts: [0] }, sliders: TrayCard = { stage: 'present', title: 'Clarity and depth', parts: [2, 3, 8] }, words: TrayCard = { stage: 'present', title: 'In words', parts: [1, 4, 6] };
     const present: TrayCard[] = [pick, sliders, words, { stage: 'present', title: 'Draw the shape of this pattern', parts: [5] }, ...(lensTapestryOn() ? [{ stage: 'present', title: 'The tapestry', parts: [7] } as TrayCard] : [])];
     const wish: TrayCard[] = [pick, sliders, words, { stage: 'present', title: 'Draw the shape of this pattern', parts: [5] }].map((c) => ({ ...c, stage: 'wish' as const }));
     return [...present, ...wish, { stage: 'add', title: 'Add to your report', parts: [] }];
@@ -328,6 +329,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                     />
                   </div>
                     ];
+                    b[8] = <LensPreview key="prev" kind="pattern" clarity={sliderValue(currentClarity)} depth={sliderValue(currentDepth)} word={currentPatterns[0] ?? null} />;
                     b[7] = <TapestryActivity key="act" layers={tapestryLayers} onChange={setTapestryLayers} />;
                     return tray ? (cur && cur.stage === 'present' ? cur.parts.map((n) => <React.Fragment key={n}>{b[n]}</React.Fragment>) : []) : b;
                   })()}
@@ -406,6 +408,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                     />
                   </div>
                     ];
+                    b[8] = <LensPreview key="prev" kind="pattern" clarity={sliderValue(potentialClarity)} depth={sliderValue(potentialDepth)} word={potentialPatterns[0] ?? null} />;
                     return tray ? (cur && cur.stage === 'wish' ? cur.parts.map((n) => <React.Fragment key={n}>{b[n]}</React.Fragment>) : []) : b;
                   })()}
                 </CardContent>
