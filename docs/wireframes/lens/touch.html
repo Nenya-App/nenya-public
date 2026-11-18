@@ -21,7 +21,7 @@
 <!-- CARD 1: NOW -->
 <section class="card" aria-labelledby="c1">
   <div class="frame">
-    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 1 of 4</span><button type="button">Put this down</button></div>
+    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 1 of 5</span><button type="button">Put this down</button></div>
     <h2 id="c1">How does it feel now?</h2>
     <p class="fewer">Choosing fewer can be more helpful than choosing many.</p>
     <p>Imagine you could touch this feeling. Pick the surface that is closest. One is enough.</p>
@@ -49,10 +49,10 @@
 <!-- CARD 2: WISH -->
 <section class="card" aria-labelledby="c2">
   <div class="frame">
-    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 2 of 4</span><button type="button">Put this down</button></div>
+    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 2 of 5</span><button type="button">Put this down</button></div>
     <h2 id="c2">How would you like it to feel?</h2>
     <p>Pick the surface closest to how you would like it to feel. One is enough.</p>
-    <fieldset><legend>Surfaces (the same kinds as the last card)</legend>
+    <fieldset><legend>Surfaces</legend>
       <div class="choices">
         <label><span class="surface" role="img" aria-label="Wool: lightly textured, soft, woven"></span><span><input type="radio" name="surf2"> Wool</span></label>
         <label><span class="surface b" role="img" aria-label="Silk: very smooth"></span><span><input type="radio" name="surf2" checked> Silk</span></label>
@@ -72,7 +72,7 @@
 <!-- CARD 3: SHAPE IT -->
 <section class="card" aria-labelledby="c3">
   <div class="frame">
-    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 3 of 4</span><button type="button">Put this down</button></div>
+    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 3 of 5</span><button type="button">Put this down</button></div>
     <h2 id="c3">Feel it more (optional)</h2>
     <p>Move the sliders. The orb changes as you go.</p>
     <fieldset><legend>Feel it for</legend><label><input type="radio" name="which" value="now" checked> Now</label> <label><input type="radio" name="which" value="wish"> How I would like it to feel</label></fieldset>
@@ -87,11 +87,11 @@
       </form>
     </div>
     <p class="mini">It feels: <span id="tout" role="status"></span></p>
-    <fieldset id="vibe" hidden><legend>On your phone (optional)</legend><label><input type="checkbox" id="vibon"> Let me feel it as a vibration</label> <button type="button" data-vibrate>Try the vibration</button> <span class="mini" role="status" id="vibout"></span></fieldset>
-    <div class="row"><button type="button">Back to the original surface</button><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+    <details><summary>More descriptions</summary><fieldset id="vibe" hidden><legend>Vibration (optional, only if your device can)</legend><label><input type="checkbox" id="vibon"> Let me feel it as a vibration</label> <button type="button" data-vibrate>Try the vibration</button> <span class="mini" role="status" id="vibout"></span></fieldset></details>
+    <div class="row"><button type="button">Go back to the surface I picked</button><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
   </div>
   <aside class="note">
-    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Texture, temperature, pressure, weight, sharpness (sliders)</li><li>Back to the original surface, Skip, Next</li></ol>
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Texture, temperature, pressure, weight, sharpness (sliders)</li><li>Go back to the surface I picked, Skip, Next</li></ol>
     <h3>A screen reader says</h3><ul><li>Each slider: “Temperature, frozen to burning, neutral.” The line “It feels: …” is the text twin and updates politely.</li></ul>
     <h3>Responds live (<strong>try it</strong>)</h3><ul><li>The surface you picked is wrapped on an <strong>orb</strong> (the default shape; here a pattern stands in for the picture and a flat gradient for the light). <strong>Texture</strong>: how grainy it looks. <strong>Temperature</strong>: cool to warm tint. <strong>Pressure</strong>: the orb is squashed. <strong>Weight</strong>: it sinks and its shadow grows. <strong>Sharpness</strong>: the orb turns from round to a pointed star.</li><li>The real card draws this in 2D (CSS and canvas): no 3D engine, so the first visit does not grow. A 3D version (the gem already uses WebGL) is possible later; other shapes (a pebble, a cube) can be offered later.</li><li>Reduced motion: the change is instant.</li><li><strong>Vibration</strong> (decided: yes): where the phone supports it, a switch (off until chosen) lets the person feel the surface. Pressure sets the strength, texture the pattern (smooth is one long soft pulse; rough is quick short ones), weight the length. It appears only if the device can vibrate, never carries meaning alone (the text line always says the same), and stops under reduced motion or when the person turns it off. Android browsers support it; iOS does not.</li></ul>
     <h3>Notes</h3><ul><li>Today these are the five sliders inside “Add more detail” (ten in all, five for each state), recorded and described afterwards. Here they act on the surface.</li><li>Each slider can be left unset: choosing nothing is a choice (an unset state, as in the code).</li><li><strong>Both states get this card</strong> (decided): a Now / Wish choice at the top switches which state the sliders shape, and each keeps its own settings.</li></ul>
@@ -102,7 +102,7 @@
 <!-- CARD: LANDSCAPE (optional activity) -->
 <section class="card" aria-labelledby="l1">
   <div class="frame">
-    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · optional activity</span><button type="button">Put this down</button></div>
+    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 4 of 5 (optional)</span><button type="button">Put this down</button></div>
     <h2 id="l1">Design a landscape for texture (optional)</h2>
     <p>Fill each part of a small landscape with a surface. There is no right answer.</p>
     <div class="land" id="land" role="img" aria-label="A small landscape made from the surfaces you choose. The line below says the same in words.">
@@ -137,11 +137,11 @@
 <!-- CARD 4 -->
 <section class="card" aria-labelledby="c4">
   <div class="frame">
-    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 4 of 4</span><button type="button">Put this down</button></div>
+    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 5 of 5</span><button type="button">Put this down</button></div>
     <h2 id="c4">Add Touch to your report?</h2>
     <p>This is what would be added:</p>
     <ul><li>Now: wool, lightly textured, a little cool, a little heavy</li><li>How you would like it to feel: silk, very smooth, warm, light</li></ul>
-    <label for="words">Anything more to say? (optional)</label><input type="text" id="words">
+    <details><summary>More descriptions</summary><label for="words">In your own words (optional)</label><input type="text" id="words"></details>
     <div class="row"><button type="button" class="primary" data-added="added-touch">Add this to my report</button><button type="button">Put this down</button></div>
     <p id="added-touch" hidden role="status"><strong>Added.</strong> You can come back and change it. <button type="button">Update my report</button> <button type="button">Remove from my report</button></p>
     <p class="mini">If put down without adding, your report says: “Examined, not included: Touch.” Anything you chose stays here for the visit, marked “not in your report yet”, and is never saved unless you add it.</p>
