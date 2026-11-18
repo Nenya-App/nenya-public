@@ -120,6 +120,8 @@ let traceEvents: string[] = [];
 const traceNote = (e: string): void => { if (traceOn) traceEvents.push(e); }; // a layer acting that the daily counts do not name: 'asked:<note>' (a guard asked the model again), 'site:<what the site added or changed>'
 export const __trace = {
   on: (v: boolean): void => { traceOn = v; },
+  /** Also note the text of a summary the site rejected (measurement scripts only; in process, never from a request or a variable). */
+  text: false,
   /** What the last request did, and clear it. */
   take: (): { raw: string | null; calls: number; events: string[] } => { const t = { raw: traceRaw, calls: traceCalls, events: traceEvents }; traceRaw = null; traceCalls = 0; traceEvents = []; return t; },
 };
@@ -1277,7 +1279,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
             const bad = summaryProblems(r.reply);
             if (!bad.length) return r.reply.trim();
             traceNote(`site:summary-rejected:${bad.join(',')}`);
-            if (process.env.COACH_TRACE_TEXT === 'on') traceNote(`site:summary-text:${r.reply.replace(/\s+/g, ' ').slice(0, 500)}`); // for measurement scripts only (the trace is off in production)
+            if (__trace.text) traceNote(`site:summary-text:${r.reply.replace(/\s+/g, ' ').slice(0, 500)}`); // for measurement scripts only (the trace is off in production)
           }
           return null;
         })()

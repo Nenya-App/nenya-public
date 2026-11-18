@@ -91,7 +91,7 @@ if (privateDir) {
   for (const [key, file] of [['method-notes', 'method-notes.txt'], ['learn-icarus', 'learn-icarus.txt']]) if (existsSync(join(privateDir, file))) privateText.set(key, readFileSync(join(privateDir, file), 'utf8'));
 }
 const { default: handler, __useStoreForTests, __trace } = await import('../netlify/functions/coach.mts');
-if (args.includes('--trace')) { __trace.on(true); process.env.COACH_TRACE_TEXT = 'on'; } // prints what the site did to each final reply (summary rejected, closing tidied, and so on)
+if (args.includes('--trace')) { __trace.on(true); __trace.text = true; } // prints what the site did to each final reply (summary rejected, closing tidied, and so on)
 {
   // An in-memory store: the private text when --private is given, and the counters the function writes (kept only for this run).
   const mem = new Map<string, { v: string; e: number }>();
