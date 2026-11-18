@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 import { asksOrInvites } from './coachClosing.ts';
 import { pullsAgainstPeople } from './boundaryGuard.ts';
 import { present } from './personaChecks.ts';
+import { wordsOf } from './feelingsNeeds.ts';
 
 /** The instruction for the summary call. The model sees nothing else of the conversation, so it cannot echo the coach or answer the last message. */
 export const SUMMARY_SYSTEM =
@@ -58,6 +59,8 @@ export function summaryProblems(text: string): string[] {
   if (/\b(transcript|download)\b/i.test(t)) out.push('mentions-transcript');
   if (/^\s*(?:[-*•]|\d+[.)])\s/m.test(t) || /^#/m.test(t)) out.push('list-or-heading');
   if (/\b(?:you should|you could|you can try|you might|you may want|try to|i suggest|i recommend|next step)\b/i.test(t)) out.push('advice');
+  if (/(?:^|[.!]\s+)(?:allow|try|take|consider|remember|give|let|keep|start|make|write|ask|talk|reach|set)\b/i.test(t)) out.push('advice');
+  if (/\b(?:helps?|helped|can help|could help)\s+you\b/i.test(t)) out.push('prediction');
   if (/\b(?:will|would|should)\s+(?:help|ease|make|allow|bring|give|lead|improve|reduce)\b/i.test(t)) out.push('prediction');
   if (/\b(?:suggests?|indicates?|seems? to need|implies|a need for)\b/i.test(t)) out.push('interprets');
   if (/\blooking for (?:to|being)\b/i.test(t)) out.push('grammar');
@@ -72,4 +75,50 @@ export function summaryProblems(text: string): string[] {
 /** The final reply: the closing, a blank line, the summary, and the transcript sentence. Nothing is cut here; the function's length trim applies afterwards. */
 export function assembleFinal(closing: string, summary: string, transcriptLine: string): string {
   return `${closing.trim()}\n\n${summary.trim()} ${transcriptLine.trim()}`;
+}
+
+// ---- The picked form (small models) -------------------------------------------------------------------------------------------------------------------------
+// A small model writes feelings and needs badly ("felt miss", "looking for to be heard") and over-reads. In the picked form it does not write them: it CHOOSES words
+// from CNVC's Feelings and Needs Inventory (src/lib/feelingsNeeds.ts, credited, unchanged), and the SITE writes the two sentences around them, so the grammar is right
+// and every word is a real, credited one. The model also writes one short sentence of care or encouragement, which is used only if it passes the checks.
+
+export const PICK_SYSTEM =
+  'You read what a person wrote in a short conversation and choose words for what they felt and needed. You will be given only their messages, and two word lists. ' +
+  'Choose up to three feelings and up to three needs that you can hear in what they wrote, across the whole conversation. Use ONLY words from the lists, spelled exactly as listed. Choose only what they expressed or clearly implied. ' +
+  'Then write one short sentence (under 30 words) addressed to the person as "you" that names something they said or did that shows care for themselves or others, and ends with encouragement grounded in it. No question, no advice, no prediction, no promise, no goodbye. ' +
+  'Answer in exactly this form and nothing else:\nFeelings: word, word, word\nNeeds: word, word, word\nCare: one sentence.';
+
+/** The messages for the picking call: the instruction with both lists, and the person's messages as data. */
+export function pickMessages(userTexts: readonly string[]): { system: string; messages: { role: 'user'; content: string }[] } {
+  const body = userTexts.map((t, i) => `Message ${i + 1}: ${t.trim()}`).join('\n\n');
+  const lists = `Feeling words: ${wordsOf('feeling').join(', ')}\n\nNeed words: ${wordsOf('need').join(', ')}`;
+  return { system: PICK_SYSTEM, messages: [{ role: 'user', content: `${lists}\n\nHere is what the person wrote.\n\n${body}\n\nAnswer in the form given.` }] };
+}
+
+export interface Picks { feelings: string[]; needs: string[]; care: string }
+
+const splitWords = (line: string): string[] => line.split(/,|\band\b|;/i).map((w) => w.trim().replace(/^["'“”‘’.]+|["'“”‘’.]+$/g, '').toLowerCase()).filter(Boolean);
+
+/** Reads the model's answer: only words that are in the inventory survive (any other word is dropped), at most three of each, no repeats. The care sentence must pass the checks or it is left out. */
+export function parsePicks(raw: string): Picks {
+  // An inventory word written with a slash ("rest/sleep") may be chosen whole or as either part ("rest").
+  const expand = (ws: string[]): Set<string> => new Set(ws.flatMap((w) => (w.includes('/') ? [w, ...w.split('/')] : [w])));
+  const feelingSet = expand(wordsOf('feeling')), needSet = expand(wordsOf('need'));
+  const line = (label: string): string => (raw.match(new RegExp(`^\\s*${label}\\s*:\\s*(.+)$`, 'im'))?.[1] ?? '').trim();
+  const pick = (label: string, set: Set<string>): string[] => [...new Set(splitWords(line(label)).filter((w) => set.has(w) && !/^to /.test(w)))].slice(0, 3); // "to matter" and the like do not fit the site's sentence ("looking for ...")
+  const care = line('Care');
+  const careOk = care.length > 0 && care.split(/\s+/).length <= 40 && summaryProblems(`${care} You felt it. You were looking for need.`).every((p) => p === 'too-short' || p === 'no-feelings' || p === 'no-needs');
+  return { feelings: pick('Feelings', feelingSet), needs: pick('Needs', needSet), care: careOk ? care : '' };
+}
+
+const joinWords = (w: string[]): string => (w.length <= 1 ? (w[0] ?? '') : `${w.slice(0, -1).join(', ')} and ${w[w.length - 1]}`);
+
+/** The summary the site writes from the picks, or null if there is nothing to say (no feeling and no need was chosen from the lists). */
+export function buildPicked(p: Picks): string | null {
+  if (!p.feelings.length && !p.needs.length) return null;
+  const parts: string[] = [];
+  if (p.feelings.length) parts.push(`You felt ${joinWords(p.feelings)}.`);
+  if (p.needs.length) parts.push(`You were looking for ${joinWords(p.needs)}.`);
+  if (p.care) parts.push(/[.!]$/.test(p.care) ? p.care : `${p.care}.`);
+  return parts.join(' ');
 }

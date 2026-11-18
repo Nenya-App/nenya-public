@@ -1,6 +1,6 @@
 // The separate final-exchange summary (src/lib/finalSummary.ts, COACH_FINAL_SUMMARY=call): the pure parts, then the function with the model stubbed.
 import { ok } from './helpers.mts';
-import { TRANSCRIPT_LINES, assembleFinal, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_SYSTEM } from '../src/lib/finalSummary.ts';
+import { TRANSCRIPT_LINES, assembleFinal, buildPicked, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_SYSTEM } from '../src/lib/finalSummary.ts';
 
 const GOOD = 'You felt worn down and unheard at home. You were looking for rest and for being understood by the people close to you. You also named how much you care about doing right by your family. It took honesty to say all of that out loud.';
 ok('a plain summary of feelings and needs passes', summaryProblems(GOOD).length === 0, summaryProblems(GOOD).join());
@@ -16,6 +16,13 @@ ok('the transcript sentence is stable for a conversation and varies across conve
 })());
 ok('the final reply is the closing, a blank line, the summary and the transcript sentence', assembleFinal('That is a lot to carry.', GOOD, TRANSCRIPT_LINES[0]) === `That is a lot to carry.\n\n${GOOD} ${TRANSCRIPT_LINES[0]}`);
 
+ok('imperatives and "helps you" are caught as advice and effect claims', summaryProblems(GOOD + ' Allow yourself the permission to rest now.').includes('advice') && summaryProblems(GOOD + ' Writing it down helps you cope.').includes('prediction'));
+{
+  const r = parsePicks('Feelings: Tired, anxious, banana, hurt, tired\nNeeds: rest/sleep, understanding and to matter\nCare: You asked for two minutes, which shows you care about being heard, and that took courage.');
+  ok('the picked form keeps only words from the CNVC inventory, once each, at most three, and drops "to ..." words', r.feelings.join() === 'tired,anxious,hurt' && r.needs.join() === 'rest/sleep,understanding' && r.care.startsWith('You asked'));
+  ok('the site writes the sentences around the picks, and a care line that gives advice is left out', buildPicked(r) === 'You felt tired, anxious and hurt. You were looking for rest/sleep and understanding. ' + r.care.replace(/\.$/, '') + '.' && parsePicks('Feelings: tired\nNeeds: rest\nCare: Allow yourself to rest now.').care === '' && buildPicked({ feelings: [], needs: [], care: 'x.' }) === null);
+  ok('the picking call carries both CNVC lists and the person\'s messages', (() => { const m = pickMessages(['one']); return /Feeling words:.*tired/.test(m.messages[0].content) && /Need words:.*understanding/.test(m.messages[0].content) && /Message 1: one/.test(m.messages[0].content); })());
+}
 {
   process.env.COACH_ENABLED = 'true'; process.env.COACH_PROVIDER = 'venice'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret'; process.env.COACH_MODEL = 'deepseek-v3.2';
   process.env.COACH_INSTRUCTIONS = 'v2.1'; delete process.env.COACH_SIGNING_KEY; delete process.env.COACH_EXTRA_HOSTS;
@@ -25,7 +32,7 @@ ok('the final reply is the closing, a blank line, the summary and the transcript
     const body = JSON.parse(init.body);
     const system = body.messages[0].content as string;
     sent.push({ system, n: body.messages.length });
-    const content = /^You write the last part/.test(system) ? (summaries.shift() ?? '') : 'That sounds like a lot to hold, and you said it plainly.';
+    const content = /^You (?:write the last part|read what a person wrote)/.test(system) ? (summaries.shift() ?? '') : 'That sounds like a lot to hold, and you said it plainly.';
     return new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 });
   };
   const { default: handler } = await import('../netlify/functions/coach.mts');
@@ -55,5 +62,13 @@ ok('the final reply is the closing, a blank line, the summary and the transcript
   sent.length = 0; summaries = ['No.', GOOD];
   j = await play();
   ok('a first summary that fails and a second that passes: the second is used', j.reply.includes(GOOD));
+  process.env.COACH_SUMMARY_FORM = 'picked';
+  sent.length = 0; summaries = ['Feelings: tired, lonely\nNeeds: rest, understanding\nCare: You kept saying it out loud, and that takes courage.'];
+  j = await play();
+  ok('in the picked form the site writes the summary from the chosen words, then the transcript sentence', /You felt tired and lonely\. You were looking for rest and understanding\. You kept saying it out loud/.test(j.reply) && TRANSCRIPT_LINES.some((l) => j.reply.endsWith(l)), j.reply);
+  sent.length = 0; summaries = ['banana', 'Feelings: nonsense\nNeeds: nothing'];
+  j = await play();
+  ok('in the picked form, two answers with no word from the lists drop the summary and the closing stands alone', j.reply === 'That sounds like a lot to hold, and you said it plainly.', j.reply);
+  delete process.env.COACH_SUMMARY_FORM;
   delete process.env.COACH_FINAL_SUMMARY;
 }
