@@ -169,6 +169,26 @@ export default function WelcomePage({
             </p>
           </div>
 
+          {/* The six gateways in a sentence each: short by default, nothing to open */}
+          <section aria-labelledby="gateways-overview" className="mx-auto max-w-xl space-y-4 text-left">
+            <h2 id="gateways-overview" className="text-center text-xl md:text-2xl">The six {L('gateways')}</h2>
+            <p className="text-center text-base text-muted-foreground">
+              Each one asks about where you are now and where you would like to be. Pick up any of them, in any order, as many or
+              as few as you like. Choosing fewer can be more helpful than choosing many.
+            </p>
+            <dl className="space-y-3">
+              {GATEWAY_SUMMARIES.map((g) => (
+                <div key={g.id}>
+                  <dt className="font-medium">{g.name}</dt>
+                  <dd className="text-muted-foreground">{g.summary}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="text-center text-sm text-muted-foreground">
+              Whatever you add can be seen together and saved as a report, made on your device.
+            </p>
+          </section>
+
           {/* Call to Action */}
           <div className="pt-6">
             <Button
@@ -181,26 +201,6 @@ export default function WelcomePage({
               <ArrowRight className="size-5" />
             </Button>
           </div>
-
-          {/* The six gateways in a sentence each: short by default, nothing to open */}
-          <section aria-labelledby="gateways-overview" className="mx-auto max-w-xl space-y-4 text-left">
-            <h2 id="gateways-overview" className="text-center text-xl md:text-2xl">The six {L('gateways')}</h2>
-            <p className="text-center text-base text-muted-foreground">
-              Each one asks about where you are now and where you would like to be. Choose any of them, in any order, and skip
-              anything you like.
-            </p>
-            <dl className="space-y-3">
-              {GATEWAY_SUMMARIES.map((g) => (
-                <div key={g.id}>
-                  <dt className="font-medium">{g.name}</dt>
-                  <dd className="text-muted-foreground">{g.summary}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="text-center text-sm text-muted-foreground">
-              At the end you can see everything together and save it as a report, made on your device.
-            </p>
-          </section>
 
           {/* Animated Scroll Indicator */}
           <div

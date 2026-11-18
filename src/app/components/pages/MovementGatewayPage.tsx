@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStages';
 import { GatewayProgress } from '../GatewayProgress';
 import { Button } from '../ui/button';
@@ -15,7 +15,7 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
-import { PutThisDown, FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { PutThisDown, FewerNote, FewerWarning, AddToReport, LensCardNav } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { lensPathOn, cleanPoints, simplifyPoints, pathWords, type PathPoint } from '../../../lib/lensActivities';
 import { PathActivity } from '../LensActivities';
@@ -65,6 +65,19 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<PairStage>('present');
   useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
+  // Tray mode: each activity is its own card (owner, 2026-11-18), the present state first, then the wish, then add. Each card shows some of the blocks of its state's card.
+  type TrayCard = { stage: 'present' | 'wish' | 'add'; title: string; parts: number[] };
+  const trayCards = (): TrayCard[] => {
+    const pick: TrayCard = { stage: 'present', title: 'Choose a drawing', parts: [0] }, sliders: TrayCard = { stage: 'present', title: 'Energy and speed', parts: [2, 3] }, words: TrayCard = { stage: 'present', title: 'In words', parts: [1, 4, 6] };
+    const present: TrayCard[] = [pick, sliders, words, { stage: 'present', title: lensPathOn() ? 'The path of movement' : 'Draw your movement', parts: lensPathOn() ? [7] : [5] }];
+    const wish: TrayCard[] = [pick, sliders, words, ...(lensPathOn() ? [] : [{ stage: 'present', title: 'Draw your movement', parts: [5] } as TrayCard])].map((c) => ({ ...c, stage: 'wish' as const }));
+    return [...present, ...wish, { stage: 'add', title: 'Add to your report', parts: [] }];
+  };
+  const [trayIndex, setTrayIndex] = useState(0);
+  const cards = tray ? trayCards() : [];
+  const cur = tray ? cards[Math.min(trayIndex, cards.length - 1)] : null;
+  const activeStage = tray ? cur!.stage : stage;
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [trayIndex]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -243,8 +256,8 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
               </Button>
             </div>
             <div className="mx-auto w-full max-w-2xl">
-              <StageIntro stage={stage} />
-              <StageSlot stage="present" current={stage}>
+              {!tray && <StageIntro stage={stage} />}
+              <StageSlot stage="present" current={activeStage as PairStage}>
               {/* Present State Card */}
               <Card
                 className="transition-all"
@@ -314,13 +327,14 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                     />
                   </div>
                     ];
-                    return tray ? [b[0], b[2], b[3], <MoreDescriptions key="more"><>{b[1]}{b[4]}{b[5]}{b[6]}{lensPathOn() && <PathActivity points={movementPath} feel={currentQualities} onChange={setMovementPath} />}</></MoreDescriptions>] : b;
+                    b[7] = <PathActivity key="act" points={movementPath} feel={currentQualities} onChange={setMovementPath} />;
+                    return tray ? (cur && cur.stage === 'present' ? cur.parts.map((n) => <React.Fragment key={n}>{b[n]}</React.Fragment>) : []) : b;
                   })()}
                 </CardContent>
               </Card>
 
               </StageSlot>
-              <StageSlot stage="wish" current={stage}>
+              <StageSlot stage="wish" current={activeStage as PairStage}>
               {/* Potential State Card */}
               <Card
                 className="transition-all"
@@ -391,16 +405,29 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                     />
                   </div>
                     ];
-                    return tray ? [b[0], b[2], b[3], <MoreDescriptions key="more"><>{b[1]}{b[4]}{b[5]}{b[6]}</></MoreDescriptions>] : b;
+                    return tray ? (cur && cur.stage === 'wish' ? cur.parts.map((n) => <React.Fragment key={n}>{b[n]}</React.Fragment>) : []) : b;
                   })()}
                 </CardContent>
               </Card>
             </StageSlot>
-              <StageNav stage={stage} onChange={setStage} />
+              {!tray && <StageNav stage={stage} onChange={setStage} />}
+              {tray && cur && cur.stage !== 'add' && (
+                <>
+                  <p className="text-center text-sm">{cur.title}</p>
+                  <LensCardNav index={trayIndex} total={cards.length} onBack={() => setTrayIndex(Math.max(0, trayIndex - 1))} onNext={() => setTrayIndex(trayIndex + 1)} />
+                </>
+              )}
+              {tray && cur && cur.stage === 'add' && (
+                <div className="mx-auto w-full max-w-2xl space-y-4">
+                  <h2 className="text-xl">Add Movement to your report?</h2>
+                  <p className="text-sm text-muted-foreground">Everything you chose stays here until you add it. If you put it down without adding, your report says: &ldquo;Examined, not included: Movement.&rdquo;</p>
+                  <AddToReport name="Movement" added={!!init} onAdd={handleNext} onPutDown={onBack} />
+                  <Button variant="ghost" onClick={() => setTrayIndex(Math.max(0, trayIndex - 1))}>Back</Button>
+                </div>
+              )}
             </div>
 
             {/* Next Button */}
-            {stage === 'wish' && tray && <AddToReport name="Movement" added={!!init} onAdd={handleNext} onPutDown={onBack} />}
             {stage === 'wish' && !tray && (
             <div className="flex justify-center pt-4">
               <Button

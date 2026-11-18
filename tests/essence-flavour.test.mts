@@ -1,6 +1,6 @@
 // Essence in the tray: the flavor of your life, five cards (src/lib/flavour.ts, EssenceFlavour.tsx).
 import { readFileSync } from 'node:fs';
-import { DIALS, cleanV2, differenceLine, dialsLine, emptyDials, essenceReportLines, figurePoints, randomDials, tastingNote, type Dials } from '../src/lib/flavour.ts';
+import { DIALS, cleanV2, differenceLine, dialsLine, emptyDials, figurePoints, randomDials, tastingNote, type Dials } from '../src/lib/flavour.ts';
 import { formatGatewayData } from '../src/lib/reportText.ts';
 import { ok } from './helpers.mts';
 

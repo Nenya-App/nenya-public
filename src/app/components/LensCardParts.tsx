@@ -46,3 +46,14 @@ export function PutThisDown({ onClick, name }: { onClick: () => void; name?: str
     </Button>
   );
 }
+
+/** Back and Next between the cards of a lens, with where you are ("Card 2 of 8"). Each card is one activity; nothing is required on any of them. */
+export function LensCardNav({ index, total, onBack, onNext, nextLabel = 'Next' }: { index: number; total: number; onBack: () => void; onNext: () => void; nextLabel?: string }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
+      {index > 0 ? <Button variant="ghost" onClick={onBack}>Back</Button> : <span />}
+      <span className="text-xs text-muted-foreground" aria-live="polite">Card {index + 1} of {total}</span>
+      <Button onClick={onNext}>{nextLabel}</Button>
+    </div>
+  );
+}
