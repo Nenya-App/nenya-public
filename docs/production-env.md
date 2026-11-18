@@ -45,6 +45,9 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `COACH_MODULES` | `on` | The private module set (method notes in parts: the ICARUS lenses and the coaching moves, chosen per reply). Off: the single `method-notes` text is used. Upload the set to production's store first. |
 | `CELL_ENABLED` | `true` | Partner cells (not built for visitors yet) |
 | `PALETTE_ENABLED` | `true` | "Ask The Color API" in the Sight gateway |
+| `WORD_HELP_ENABLED` | `true` | "Look it up online" under Word help (`/api/words`; docs/word-help-scope.md): one typed word goes through our server to Datamuse and the Free Dictionary API, nothing kept or logged. Also needs the build setting `VITE_WORD_HELP=on` for the button to show. Off by default |
+| `WORD_HELP_PER_CONNECTION` | e.g. `40` | Optional: look-ups per connection per day (default 40) |
+| `WORD_HELP_DAILY_CAP` | e.g. `600` | Optional: look-ups per day in all (default 600) |
 | `COACH_CARD_DRAFTS` | leave unset | Owner tool for card drafts; not for production |
 
 **Build switches for new screens (Builds scope; "Clear cache and deploy site" after a change).** Staging first; on production only after the owner approves what staging shows.
@@ -62,6 +65,7 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `VITE_LENS_PATH` | `on` | The Movement path of movement, an optional activity inside Movement's "More descriptions" in tray mode (wireframe: docs/wireframes/lens/movement-path.html). Needs `VITE_LENS_TRAY`. Off by default; built (src/app/components/LensActivities.tsx), saved as movementPath and movementPathWords |
 | `VITE_TERMS_FIRST` | `on` | The Terms-first entry (docs/terms-first-entry-scope.md). Step 1 only so far: the random working pair (the shadow ID) is made at agreement, held in memory for the whole session and made again on request, never stored; the person's own Sight or Sound colors still take over as the session ID. Off by default |
 | `VITE_SUMMARY_REQUEST` | `on` | The "Request a summary" button on the coach page (docs/request-a-summary-scope.md, step 3), shown after the five exchanges and the closing note on an unflagged conversation. Needs the server's `COACH_SUMMARY_REQUEST=on` too (a switched-off server hides the button). Off by default; the wording is the owner's to approve |
+| `VITE_WORD_HELP` | `on` | The "Look it up online" button under Word help (needs `WORD_HELP_ENABLED=true` on the server; English only). The on-device near words need no switch. The Terms (Sections 12 and 14) name the look-up only where this is on |
 | `VITE_NEED_TALLY` | `on` | "What has come up so far" on the coach pages (docs/need-tally-scope.md): a quiet, optional, closed-by-default control that lists the feelings and needs the person named in their own messages (from CNVC's inventory, credited), and at four or more different needs the one-to-three recommendation. Computed in the page from the messages it holds: never stored, never sent, gone with the tab; on the sealed route too. Off by default; the wording is the owner's to approve |
 | `VITE_GUESTBOOK` | `on` | "Sign Our Guestbook" at /guestbook, and its links at the end of a reflection and a coach conversation (src/lib/guestbook.ts) |
 

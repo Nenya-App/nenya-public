@@ -37,6 +37,8 @@ export const LEGAL_EFFECTIVE_DATE = 'November 18, 2026';
 // the November 16 text, apart from the date. Read as static `import.meta.env` names, as Vite needs; on a server there is no env object and both read as off.
 const TRAY = import.meta.env?.VITE_LENS_TRAY === 'on';
 const TERMS_FIRST = import.meta.env?.VITE_TERMS_FIRST === 'on';
+// The optional word look-up (VITE_WORD_HELP, docs/word-help-scope.md): its sentences show only where it is on.
+const WORD_HELP = import.meta.env?.VITE_WORD_HELP === 'on';
 
 export const LEGAL_INTRO =
   'Welcome. Please read this before you begin. It has two parts: the Terms of Use, which cover how you may use Nenya, and the Privacy Policy, which covers what little information reaches us. They sit together because Nenya’s privacy design is also its central promise.';
@@ -147,7 +149,7 @@ export const LEGAL_PARTS: LegalPart[] = [
           'No accounts, no advertising, no tracking cookies, nothing that follows you around the internet.',
           'What you enter in the reflection tools (colors, melodies, drawings, body-map placements, written reflections) stays in your browser, is never sent to us, and is gone when you close the tab, unless you choose “Save and return later”: then it is kept on this device, locked with your passcode, for at most 24 hours (Section 16). A PDF report is made on your own device.',
           'Our web host keeps ordinary connection logs and gives us visit totals (Section 13). We keep plain daily totals of our own, which identify no one.',
-          'Things leave your device only when you choose: the report form (Section 14), a palette from The Color API (Section 14), the coach demo (Section 15), and the signed note when you agree to these Terms (Section 16).',
+          'Things leave your device only when you choose: the report form (Section 14), a palette from The Color API (Section 14),'+(WORD_HELP ? " a word look-up (Section 14)," : '')+' the coach demo (Section 15), and the signed note when you agree to these Terms (Section 16).',
           'By default the only thing kept on your device between visits is one timestamp after a coach conversation. If you choose “Remember my settings on this device,” your display settings and your agreement are kept too (Section 16).',
         ],
       },
@@ -169,6 +171,7 @@ export const LEGAL_PARTS: LegalPart[] = [
           'The report form (Section 5), the form for a reflection summary, and the contact form: the text of your report or message and an optional comment, kept in our own private storage with our host (not in an email inbox or a form service). We do not ask for your name or email; anything identifying that you type becomes part of the submission. If you want a reply, you may include your email address, and we use it only to answer you. Each one is kept for 90 days and then deleted automatically. When you send it you get a deletion code, shown once; with it you can delete what you sent yourself, at once, at nenya.biz/my-transcript. We keep only a scrambled copy of the code, so we cannot show it again. We are told by email only that something arrived, never what it says.',
           'The guestbook (nenya.biz/guestbook), only if you sign it: you choose two colors for it (please not your session colors, which are the key to a saved reflection; the page refuses them when it knows them). Our server adds two colors made from the date and time you sign, keeps only the one color in the middle of the four and the day, and drops the rest. It is shown on the guestbook page among everyone else’s, kept for as long as the guestbook exists, and cannot be removed, because nothing ties it to you. To allow one signature per connection a day, the server uses the same one-way daily code as the coach demo, deleted within two days.',
           L('A palette from The Color API (Sight gateway, only if you press “Ask The Color API”): your page sends one color, as a hex code, and the kind of palette you picked, to our server, which asks The Color API (thecolorapi.com, by Josh Beckman) over a secure connection and returns five colors. That service sees our server and the color, nothing else: not your address, not a cookie, not anything you wrote. Its own terms apply to what it receives. We do not store or log the color or the request; we keep only a count under a one-way daily code, deleted within two days, so the feature cannot be used without limit. Making a palette on your device, suggesting a color name, and bridging from your current to your wish color send nothing anywhere. A palette you keep goes into your report as your own colors, marked with where it was made.'),
+          ...(WORD_HELP ? ['A word look-up (“Word help”, only if you press “Look it up online”): your page sends one word, and nothing else, to our server, which asks Datamuse (datamuse.com) for related words and the Free Dictionary API (dictionaryapi.dev) for a meaning, over a secure connection. Those services see our server and the word, nothing else: not your address, not a cookie, not anything else you wrote. Nothing about the request is kept. It is English only for now.'] : []),
         ],
       },
       {

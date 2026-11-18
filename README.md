@@ -224,6 +224,7 @@ docs/legal/           Archive of earlier versions of the Terms and Privacy Polic
 | Guestbook | `guestbook.mts` | "Sign Our Guestbook": keeps one centroid color and the day per signature, one per connection a day; lists them for the 3D view |
 | Counts | `count.mts`, `stats.mts` | Plain daily totals (`/api/count`), and the owner's view of them (`/api/stats`) |
 | Core tool | `colors.mts` | `/api/colors`: optional palette from The Color API (behind `PALETTE_ENABLED`) |
+| Core tool | `words.mts` | `/api/words`: optional word look-up for "a word of your own" through Datamuse and the Free Dictionary API (behind `WORD_HELP_ENABLED`; English only) |
 
 The Terms of Use & Privacy Policy lives in one file,
 [`src/lib/legalDocument.ts`](./src/lib/legalDocument.ts), which feeds the

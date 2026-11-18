@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import { TermInfo } from './TermInfo';
+import { WordHelp } from './WordHelp';
 import { SENSE_WORDS, type SenseCategory } from '../../lib/senseWords';
 
 interface WordPickerProps {
@@ -128,6 +129,19 @@ export function WordPicker({ category, selected, onToggle, idPrefix, other }: Wo
             placeholder={other.placeholder ?? 'Describe...'}
             className="h-9 text-sm"
           />
+          <div className="mt-2">
+            <WordHelp
+              category={category}
+              startWith={other.value}
+              onUse={(w) => {
+                // A word that is on this lens's own lists is chosen there; any other is added to the person's own words.
+                const own = groups.flatMap((g) => g.words).find((x) => x.term.toLowerCase() === w.toLowerCase());
+                if (own) { if (!selected.includes(own.term)) onToggle(own.term); return; }
+                const cur = other.value.trim();
+                if (!cur.toLowerCase().split(/[,;]\s*/).includes(w.toLowerCase())) other.onChange(cur ? `${cur}, ${w}` : w);
+              }}
+            />
+          </div>
         </div>
       )}
     </div>
