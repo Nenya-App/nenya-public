@@ -165,6 +165,7 @@ Terms drafts were compared with `src/lib/legalDocument.ts` (effective November 1
 | [lens-audit-touch.md](lens-audit-touch.md) | Touch as it is (283 texture photos, ten sliders that change nothing), a card plan, and the shared-body-map finding | Draft for the owner |
 | [lens-audit-sight-sound.md](lens-audit-sight-sound.md) | Sight and Sound as they are, what to fix, and a draft card plan for each | Draft for the owner |
 | [lens-rewrite-scope.md](lens-rewrite-scope.md) | Replacing "gateway" with "lens": size, decisions, corrections to the brief, phases | Scoping, decisions open |
+| [terms-first-entry-scope.md](terms-first-entry-scope.md) | Terms accepted or declined before anything else, breathing as the default, the dock and the sparkle after: decisions and build order | Scoping, decisions open |
 | [outer-layers-scope.md](outer-layers-scope.md) | What the outer layers add per model; the 2x2 test; local models | Measurement built; more to do |
 | [drafts/fractured-atlas-about-2026-11-16.md](drafts/fractured-atlas-about-2026-11-16.md) | The Fractured Atlas About text rewritten for today's scope, in eight voices, with what changed and what to confirm | Draft for the owner; not sent or published |
 | [drafts/fractured-atlas-about-redraft-2026-11-13.md](drafts/fractured-atlas-about-redraft-2026-11-13.md) | "Our Structure" redraft for Fractured Atlas | SUPERSEDED 2026-11-16 (still names Venice). Not applied (the live text is `about/Structure.tsx`) |
