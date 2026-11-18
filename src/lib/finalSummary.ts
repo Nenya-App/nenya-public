@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { asksOrInvites } from './coachClosing.ts';
 import { pullsAgainstPeople } from './boundaryGuard.ts';
 import { present } from './personaChecks.ts';
-import { wordsOf } from './feelingsNeeds.ts';
+import { CNVC_LINK, wordsOf } from './feelingsNeeds.ts';
 
 /** The instruction for the summary call. The model sees nothing else of the conversation, so it cannot echo the coach or answer the last message. */
 export const SUMMARY_SYSTEM =
@@ -59,9 +59,9 @@ export function summaryProblems(text: string): string[] {
   if (/\b(transcript|download)\b/i.test(t)) out.push('mentions-transcript');
   if (/^\s*(?:[-*•]|\d+[.)])\s/m.test(t) || /^#/m.test(t)) out.push('list-or-heading');
   if (/\b(?:you should|you could|you can try|you might|you may want|try to|i suggest|i recommend|next step)\b/i.test(t)) out.push('advice');
-  if (/(?:^|[.!]\s+)(?:allow|try|take|consider|remember|give|let|keep|start|make|write|ask|talk|reach|set)\b/i.test(t)) out.push('advice');
+  if (/(?:^|[.!;:]\s+|,\s+(?:and|so)\s+)(?:allow|try|take|consider|remember|give|let|keep|start|make|write|ask|talk|reach|set|trust|honou?r|notice|breathe|rest|be)\b/i.test(t)) out.push('advice');
   if (/\b(?:helps?|helped|can help|could help)\s+you\b/i.test(t)) out.push('prediction');
-  if (/\b(?:will|would|should)\s+(?:help|ease|make|allow|bring|give|lead|improve|reduce)\b/i.test(t)) out.push('prediction');
+  if (/\b(?:will|would|should)\s+(?:\w+\s+){0,2}(?:help|ease|make|allow|bring|give|lead|improve|reduce|build|create|open|strengthen|deepen|heal|bridge|grow|change|turn|become|bring|show)\b/i.test(t)) out.push('prediction');
   if (/\b(?:suggests?|indicates?|seems? to need|implies|a need for)\b/i.test(t)) out.push('interprets');
   if (/\blooking for (?:to|being)\b/i.test(t)) out.push('grammar');
   if (!/\b(?:felt|feel|feeling|feelings)\b/i.test(t)) out.push('no-feelings');
@@ -105,9 +105,11 @@ export function parsePicks(raw: string): Picks {
   const expand = (ws: string[]): Set<string> => new Set(ws.flatMap((w) => (w.includes('/') ? [w, ...w.split('/')] : [w])));
   const feelingSet = expand(wordsOf('feeling')), needSet = expand(wordsOf('need'));
   const line = (label: string): string => (raw.match(new RegExp(`^\\s*${label}\\s*:\\s*(.+)$`, 'im'))?.[1] ?? '').trim();
-  const pick = (label: string, set: Set<string>): string[] => [...new Set(splitWords(line(label)).filter((w) => set.has(w) && !/^to /.test(w)))].slice(0, 3); // "to matter" and the like do not fit the site's sentence ("looking for ...")
+  // "to matter" and the like do not fit the site's sentence ("looking for ..."); a slash word is shown by its first part ("rest" for "rest/sleep").
+  const pick = (label: string, set: Set<string>): string[] => [...new Set(splitWords(line(label)).filter((w) => set.has(w) && !/^to /.test(w)).map((w) => w.split('/')[0]))].slice(0, 3);
   const care = line('Care');
-  const careOk = care.length > 0 && care.split(/\s+/).length <= 40 && summaryProblems(`${care} You felt it. You were looking for need.`).every((p) => p === 'too-short' || p === 'no-feelings' || p === 'no-needs');
+  const careSentences = care.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const careOk = care.length > 0 && care.split(/\s+/).length >= 6 && care.split(/\s+/).length <= 40 && careSentences.every((x) => x.split(/\s+/).length >= 4) && summaryProblems(`${care} You felt it. You were looking for need.`).every((p) => p === 'too-short' || p === 'no-feelings' || p === 'no-needs');
   return { feelings: pick('Feelings', feelingSet), needs: pick('Needs', needSet), care: careOk ? care : '' };
 }
 
@@ -122,3 +124,7 @@ export function buildPicked(p: Picks): string | null {
   if (p.care) parts.push(/[.!]$/.test(p.care) ? p.care : `${p.care}.`);
   return parts.join(' ');
 }
+
+/** The credit the page shows under a summary made in the picked form (the words are CNVC's, unchanged); the link is CNVC's page for the inventory. */
+export const SUMMARY_CREDIT = 'The feeling and need words come from the Center for Nonviolent Communication\'s Feelings and Needs Inventory (cnvc.org).';
+export const SUMMARY_CREDIT_LINK = CNVC_LINK;

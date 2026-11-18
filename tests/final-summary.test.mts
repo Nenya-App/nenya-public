@@ -1,6 +1,6 @@
 // The separate final-exchange summary (src/lib/finalSummary.ts, COACH_FINAL_SUMMARY=call): the pure parts, then the function with the model stubbed.
 import { ok } from './helpers.mts';
-import { TRANSCRIPT_LINES, assembleFinal, buildPicked, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_SYSTEM } from '../src/lib/finalSummary.ts';
+import { TRANSCRIPT_LINES, assembleFinal, buildPicked, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_CREDIT, SUMMARY_CREDIT_LINK, SUMMARY_SYSTEM } from '../src/lib/finalSummary.ts';
 
 const GOOD = 'You felt worn down and unheard at home. You were looking for rest and for being understood by the people close to you. You also named how much you care about doing right by your family. It took honesty to say all of that out loud.';
 ok('a plain summary of feelings and needs passes', summaryProblems(GOOD).length === 0, summaryProblems(GOOD).join());
@@ -19,9 +19,14 @@ ok('the final reply is the closing, a blank line, the summary and the transcript
 ok('imperatives and "helps you" are caught as advice and effect claims', summaryProblems(GOOD + ' Allow yourself the permission to rest now.').includes('advice') && summaryProblems(GOOD + ' Writing it down helps you cope.').includes('prediction'));
 {
   const r = parsePicks('Feelings: Tired, anxious, banana, hurt, tired\nNeeds: rest/sleep, understanding and to matter\nCare: You asked for two minutes, which shows you care about being heard, and that took courage.');
-  ok('the picked form keeps only words from the CNVC inventory, once each, at most three, and drops "to ..." words', r.feelings.join() === 'tired,anxious,hurt' && r.needs.join() === 'rest/sleep,understanding' && r.care.startsWith('You asked'));
-  ok('the site writes the sentences around the picks, and a care line that gives advice is left out', buildPicked(r) === 'You felt tired, anxious and hurt. You were looking for rest/sleep and understanding. ' + r.care.replace(/\.$/, '') + '.' && parsePicks('Feelings: tired\nNeeds: rest\nCare: Allow yourself to rest now.').care === '' && buildPicked({ feelings: [], needs: [], care: 'x.' }) === null);
+  ok('the picked form keeps only words from the CNVC inventory, once each, at most three, and drops "to ..." words', r.feelings.join() === 'tired,anxious,hurt' && r.needs.join() === 'rest,understanding' && r.care.startsWith('You asked'));
+  ok('the site writes the sentences around the picks, and a care line that gives advice is left out', buildPicked(r) === 'You felt tired, anxious and hurt. You were looking for rest and understanding. ' + r.care.replace(/\.$/, '') + '.' && parsePicks('Feelings: tired\nNeeds: rest\nCare: Allow yourself to rest now.').care === '' && buildPicked({ feelings: [], needs: [], care: 'x.' }) === null);
   ok('the picking call carries both CNVC lists and the person\'s messages', (() => { const m = pickMessages(['one']); return /Feeling words:.*tired/.test(m.messages[0].content) && /Need words:.*understanding/.test(m.messages[0].content) && /Message 1: one/.test(m.messages[0].content); })());
+}
+{
+  const good = 'Feelings: tired\nNeeds: rest\nCare: ';
+  ok('a care sentence with an imperative after a semicolon, a "will build" prediction, or a fragment is left out; an ordinary one stays', ['You showed care for yourself; allow yourself the space to choose now.', 'You tried a note, and this effort will build the bridge you need.', 'You are showing.'].every((c) => parsePicks(good + c).care === '') && parsePicks(good + 'You tried writing a note, which shows how much you care.').care !== '');
+  ok('a slash word is shown by its first part; the credit names CNVC and links its page', parsePicks('Feelings: tired\nNeeds: respect/self-respect, rest/sleep').needs.join() === 'respect,rest' && /Center for Nonviolent Communication/.test(SUMMARY_CREDIT) && /cnvc\.org/.test(SUMMARY_CREDIT_LINK));
 }
 {
   process.env.COACH_ENABLED = 'true'; process.env.COACH_PROVIDER = 'venice'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret'; process.env.COACH_MODEL = 'deepseek-v3.2';
