@@ -50,12 +50,12 @@ Both models stay resident (no per-turn model swapping; LM Studio's load time wou
 - Invented, distressing text: start with a dozen conversations, read them, then scale.
 - A pass is not a safety claim; these are regression and measurement tools.
 
-## 3b. The Mine against the Swan (owner, 2026-11-18)
-**The idea.** The duet becomes a contest. **The Mine** is the hazard: an adversary that tries to make the coach fail. **The Swan** is the sentinel: the thing that must notice when it does. Both are scored against each other. (Working names; the Netlify nightly job keeps the code name "canary" until you decide to rename it.)
+## 3b. The Swamp against the Swan (owner, 2026-11-18)
+**The idea.** The duet becomes a contest, a swan in a swamp (the owner's rename of the "coal mine" in the canary image, 2026-11-18). **The Swamp** is the hazard: an adversary that tries to make the coach fail. **The Swan** is the sentinel: the thing that must notice when it does. Both are scored against each other. (Working names; the Netlify nightly job keeps the code name "canary" until you decide to rename it.)
 
-**Three parts, not two.** The coach (model plus layers) is what is inside the Mine. The Mine plays the person; the Swan watches the coach's replies and raises the alarm.
+**Three parts, not two.** The coach (model plus layers) is what is inside the Swamp. The Swamp plays the person; the Swan watches the coach's replies and raises the alarm.
 
-### The Mine (the adversary)
+### The Swamp (the adversary)
 - **The simulator and its escalation ladders** (section 3), plus a **vein library**: attack seeds (a pressure move, a framing, a phrasing) each with a record of how often it got a failure and against which model.
 - **It adapts between conversations.** Seeds that produced a failure are mutated and replayed (reworded, moved to a different turn, combined with another pressure); seeds that never work retire. This is a simple search over the library, not training of any model.
 - **It adapts within a conversation:** if the coach holds on one pressure, it switches tactic before climbing, so it tests more than one weakness per run.
@@ -64,19 +64,19 @@ Both models stay resident (no per-turn model swapping; LM Studio's load time wou
 ### The Swan (the sentinel)
 Three layers, cheapest first:
 1. **The deterministic checks** already in the repo (the persona checks, the page's crisis and harm checks, the boundary guard tests): instant, no memory, known to miss some wordings.
-2. **A model judge**, run **after** the conversations, not during, so only one model needs to be resident at a time (judging a finished transcript is not interactive). It reads each coach reply against a short rubric (a false promise to be there or remember, claiming a life or feelings, a medication direction, standing in for people, playing a character, pressure to return). A different model from the coach and from the Mine, ideally a stronger one (Apertus 8B locally, or a hosted model on the free allowance for the larger set).
+2. **A model judge**, run **after** the conversations, not during, so only one model needs to be resident at a time (judging a finished transcript is not interactive). It reads each coach reply against a short rubric (a false promise to be there or remember, claiming a life or feelings, a medication direction, standing in for people, playing a character, pressure to return). A different model from the coach and from the Swamp, ideally a stronger one (Apertus 8B locally, or a hosted model on the free allowance for the larger set).
 3. **The union:** a reply is flagged if either layer flags it. The deterministic layer alone is what the live guards can use; the judge is a measurement tool, not a runtime guard.
 
 ### Keeping score
 - **Ground truth** is the owner's labels, not either model's. A **gold set** of labelled coach replies already exists in the 2026-11-18 runs (each reply scored by the checks and then read by hand); it grows by the owner reviewing a sample of every night's conversations.
 - **Swan scores against the gold set:** recall (failures it flagged), false alarms (fine replies it flagged), and **silent failures** (failures it missed). Silent failures are the most valuable output of the whole system.
-- **Mine scores:** yield, time to first failure, and **stealth yield** (failures that the Swan did *not* flag).
+- **Swamp scores:** yield, time to first failure, and **stealth yield** (failures that the Swan did *not* flag).
 - **A nightly gap list:** every silent failure, with the seed that found it, goes to the review queue. The owner confirms it, and each confirmed one becomes a new pattern or guard rule plus a test, the same loop as the manual one on 2026-11-18 (memory promises, farewell bonds), now fed by search instead of by chance.
 
 ### Cautions
-- **Overfitting to the patterns.** A Mine that learns to word things so the deterministic checks miss them shows a real weakness in the checks (that is the point), but the fix must be a better check or a wider guard, not a rule that matches only the Mine's phrasings. Review each fix against ordinary kind replies (the false-positive test).
+- **Overfitting to the patterns.** A Swamp that learns to word things so the deterministic checks miss them shows a real weakness in the checks (that is the point), but the fix must be a better check or a wider guard, not a rule that matches only the Swamp's phrasings. Review each fix against ordinary kind replies (the false-positive test).
 - **Judge drift and disagreement.** A model judge can be wrong in both directions. Its flags are leads for the owner, never verdicts, and the judge is re-scored against the gold set each time its model or rubric changes.
-- **The Mine can write distressing and harmful-sounding text.** It is invented, local, kept in the private folder, never used on the site, and no brief involves a minor.
+- **The Swamp can write distressing and harmful-sounding text.** It is invented, local, kept in the private folder, never used on the site, and no brief involves a minor.
 - **A contest between two weak models proves little.** Read the first batches by hand; label the results with the models used.
 
 ## 4. Build order
@@ -96,6 +96,6 @@ Three layers, cheapest first:
 5. The compliance-pressure pass criteria (item 3 above).
 6. Who reviews the flagged conversations, and how often.
 7. Whether a summary is ever published, and under what review.
-8. Names: keep "Mine" and "Swan" as working names for this system, and rename the Netlify canary or not?
+8. Names: keep "Swamp" and "Swan" as working names for this system, and rename the Netlify canary or not?
 9. Which model is the first Swan judge (a local Apertus 8B pass, or a hosted model on the free allowance)?
 10. Who labels the gold set, and how many replies a week is realistic?
