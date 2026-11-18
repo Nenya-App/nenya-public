@@ -60,3 +60,12 @@ button:hover:not(:disabled) { border-color:var(--sel-edge); }
 table.regions { border-collapse:collapse; } table.regions td, table.regions th { padding:4px 8px; border-bottom:1px solid var(--edge); text-align:left; }
 .ico { width:22px; height:22px; vertical-align:-5px; margin-right:6px; filter:var(--icon-filter); }
 button.primary .ico { filter:none; }
+
+.land { position:relative; width:100%; max-width:420px; height:200px; border:2px solid var(--edge); border-radius:12px; overflow:hidden; background:var(--soft); }
+.land > div { position:absolute; left:0; right:0; background-color:transparent; transition:background-color .25s; }
+@media (prefers-reduced-motion: reduce) { .land > div { transition:none; } }
+.l-sky { top:0; height:42%; } .l-hills { top:30%; height:34%; border-top-left-radius:60% 80%; border-top-right-radius:40% 70%; } .l-ground { bottom:0; height:38%; } .l-water { bottom:12%; left:12%; right:48%; height:22%; border-radius:50%; } .l-path { bottom:0; left:44%; width:14%; right:auto; height:46%; clip-path:polygon(35% 0,65% 0,100% 100%,0 100%); }
+.land .w { background-color:#9b8f7c; background-image:repeating-radial-gradient(circle at 20% 30%, rgba(0,0,0,.18) 0 2px, transparent 2px 6px); }
+.land .s { background-color:#6f7f86; background-image:repeating-linear-gradient(45deg, rgba(255,255,255,.22) 0 3px, transparent 3px 9px); }
+.land .b { background-color:#7a8a5c; background-image:repeating-linear-gradient(90deg, rgba(0,0,0,.2) 0 2px, transparent 2px 8px); }
+.land .d { background-color:#b9b3a8; background-image:radial-gradient(circle, rgba(0,0,0,.15) 0 1px, transparent 1px 5px); }

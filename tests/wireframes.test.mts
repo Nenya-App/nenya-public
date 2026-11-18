@@ -52,3 +52,8 @@ ok('the stylesheet respects reduced motion and has a visible focus style', /pref
   ok('Touch: "feel it more" serves both states, and the vibration is a labelled opt-in that shows only where the device can vibrate', /name="which"[^>]*value="wish"/.test(touch) && /Let me feel it as a vibration/.test(touch) && /id="vibe" hidden/.test(touch) && /typeof navigator\.vibrate === 'function'/.test(js));
   ok('Body map: a pointer-drawn brush with a labelled size beside the places list, with the brush marks counted in words', /id="brushon"/.test(body) && /<label for="brushsize">/.test(body) && /Draw with a brush/.test(body) && /dab/.test(js) && /<select id="r-/.test(body));
 }
+
+{
+  const touch = readFileSync(`${dir}/touch.html`, 'utf8');
+  ok('Touch: the landscape is an optional activity with five labelled lists, a text twin, and skip', ['p-sky', 'p-hills', 'p-ground', 'p-water', 'p-path'].every((id) => new RegExp(`<label for="${id}">`).test(touch)) && /id="land-out" role="status"/.test(touch) && /optional activity inside Touch/.test(touch));
+}

@@ -60,6 +60,8 @@ Questions about food are asked as tastes and memories, never as what a person ea
 
 **The same deck for other lenses (owner, 2026-11-17: yes for Movement and Pattern, the lens formerly called Insight).** The deck is a component, with two views: **laid out** (all the cards visible) or **drawn from** (one at a time). See `docs/lens-rewrite-scope.md`, section 3-ter.
 
+**Status 2026-11-17: Essence is still open.** The deck direction above is a candidate, not a decision. The texture-landscape idea belongs to Touch (as an optional activity there), not to Essence. The Met candidate sheet and the "Met Picks" page stay as they are; no image will be downloaded into the project until the Essence direction is settled.
+
 ## 5. Questions for the owner
 1. The five themes (Memory, Comfort, Tension, Wish, Place): right, or others (for example Season, Shared meals)?
 2. Write the deck yourself from the draft: which of the 25 stay, which go, what is missing?

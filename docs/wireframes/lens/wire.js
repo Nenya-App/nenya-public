@@ -74,3 +74,19 @@ document.querySelectorAll('[data-body]').forEach((root) => {
   root.querySelector('[data-clear]').addEventListener('click', () => { strokes.splice(0).forEach((s) => s.forEach((d) => d.el.remove())); note(); });
   on.addEventListener('change', () => { svg.style.touchAction = on.checked ? 'none' : 'auto'; svg.style.cursor = on.checked ? 'crosshair' : 'default'; });
 })();
+
+// Touch landscape: five labelled lists fill the parts of a small landscape; a text twin says the same.
+(() => {
+  const form = document.querySelector('[data-landscape]'); if (!form) return;
+  const out = document.getElementById(form.dataset.landscape), cls = { Wool: 'w', Silk: 's', Bark: 'b', Slate: 'd' };
+  const parts = ['sky', 'hills', 'ground', 'water', 'path'], names = { sky: 'sky', hills: 'far hills', ground: 'near ground', water: 'water', path: 'path' };
+  const set = () => {
+    const said = [];
+    parts.forEach((p) => { const el = document.getElementById('L-' + p), v = form.querySelector(`[name=${p}]`).value; el.className = 'l-' + p + (v ? ' ' + cls[v] : ''); if (v) said.push(`${names[p]} ${v.toLowerCase()}`); });
+    out.textContent = said.length ? said.join(', ') + '.' : 'nothing yet.';
+  };
+  form.addEventListener('input', set);
+  document.querySelector('[data-landscape-random]').addEventListener('click', () => { parts.forEach((p) => { const s = form.querySelector(`[name=${p}]`); s.selectedIndex = 1 + Math.floor(Math.random() * 4); }); set(); });
+  document.querySelector('[data-landscape-clear]').addEventListener('click', () => { parts.forEach((p) => { form.querySelector(`[name=${p}]`).selectedIndex = 0; }); set(); });
+  set();
+})();

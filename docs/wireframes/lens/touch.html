@@ -98,6 +98,35 @@
   </aside>
 </section>
 
+<!-- CARD: LANDSCAPE (optional activity) -->
+<section class="card" aria-labelledby="l1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · optional activity</span><button type="button">Put this down</button></div>
+    <h2 id="l1">Design a landscape for texture (optional)</h2>
+    <p>Fill each part of a small landscape with a surface. There is no right answer.</p>
+    <div class="land" id="land" role="img" aria-label="A small landscape made from the surfaces you choose. The line below says the same in words.">
+      <div class="l-sky" id="L-sky"></div><div class="l-hills" id="L-hills"></div><div class="l-ground" id="L-ground"></div><div class="l-water" id="L-water"></div><div class="l-path" id="L-path"></div>
+    </div>
+    <p class="mini">Your landscape: <span id="land-out" role="status"></span></p>
+    <form data-landscape="land-out">
+      <label for="p-sky">Sky</label><select id="p-sky" name="sky"><option value="">Nothing</option><option>Wool</option><option selected>Silk</option><option>Bark</option><option>Slate</option></select>
+      <label for="p-hills">Far hills</label><select id="p-hills" name="hills"><option value="">Nothing</option><option selected>Wool</option><option>Silk</option><option>Bark</option><option>Slate</option></select>
+      <label for="p-ground">Near ground</label><select id="p-ground" name="ground"><option value="">Nothing</option><option>Wool</option><option>Silk</option><option selected>Bark</option><option>Slate</option></select>
+      <label for="p-water">Water</label><select id="p-water" name="water"><option value="">Nothing</option><option>Wool</option><option>Silk</option><option>Bark</option><option selected>Slate</option></select>
+      <label for="p-path">Path</label><select id="p-path" name="path"><option value="">Nothing</option><option selected>Wool</option><option>Silk</option><option>Bark</option><option>Slate</option></select>
+    </form>
+    <div class="row"><button type="button" data-landscape-random>Surprise me</button><button type="button" data-landscape-clear>Clear the landscape</button><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Where it sits</h3><p>An <strong>optional activity inside Touch</strong> (owner, 2026-11-17), offered after "Feel it more" and before the last card. Skipping it changes nothing.</p>
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Sky, far hills, near ground, water, path (five labelled lists)</li><li>Surprise me, Clear, Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>Five labelled lists, the line “Your landscape: sky silk, far hills wool, ...” as a polite status. The picture is described once as a landscape made from the choices; nothing depends on seeing it.</li></ul>
+    <h3>Responds live (<strong>try it</strong>)</h3><ul><li>Each list changes its part of the picture at once. Reduced motion: instant.</li><li>In the real card the surfaces are the existing texture pictures, laid into the shapes; here patterns stand in.</li><li>Optional: the temperature, weight and sharpness sliders from "Feel it more" can act on one layer at a time.</li></ul>
+    <h3>Open</h3><p>Five layers (sky, far hills, near ground, water, path) are a draft. In the report the landscape is the text list, with a small picture if the person wants one.</p>
+    <h3>Copy draft</h3><p>“Fill each part of a small landscape with a surface. There is no right answer.”</p>
+  </aside>
+</section>
+
 <!-- CARD 4 -->
 <section class="card" aria-labelledby="c4">
   <div class="frame">
