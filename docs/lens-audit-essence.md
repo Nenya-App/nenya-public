@@ -29,18 +29,41 @@
 
 **C. A pantry (build something).** Fill jars, a bowl or a plate with ingredient tiles; how full is the intensity. *For:* playful. *Against:* the most food-centred, so the one most likely to touch food sensitivities; the most clutter; the most culturally specific. **Not recommended** as the default.
 
-## 4. Recommendation (a combination of A and B, in cards)
-Scent and taste become **separate cards inside the one lens**, with the pair (now | wish) on each card as in Sight:
-1. **A prompt** (choose one of three drafts, or skip): free text plus a few chips.
-2. **Scents** as drawn families, each opening its described words; "I can't smell right now: imagine instead" is always there.
-3. **Tastes**: the five basic tastes as shapes, and the mouth-feelings words below them.
-4. **How strong?** The slider drives the live aroma drawing, tinted by the words picked (or the session colors if there are none), with a text twin.
-5. **Add this to my report / Put this down.**
-Five cards is the most of any lens, but each is one small task and the first can be skipped; the person can also use only the scent or only the taste card.
+## 4. Direction chosen: a deck of thematic questions (owner, 2026-11-17)
+The owner does not want drawn imagery. The lens becomes a **deck of simple thematic question cards**, with open-access artwork on the cards, as accessible as possible.
+
+**The deck.** A person draws a card (a shuffle, or by theme: Memory, Comfort, Tension, Wish, Place), reads one short question, answers it in any way that works for them, and can **draw another, keep this one, or pass**. Nothing is timed; there is no scoring; "pass" is always fine. The deck is drawn for **now** and again for **how you would like it to feel**.
+
+**A card.** The question is the heading and carries the card; the picture is beside or above it, never behind the words (so contrast never depends on the art). The answer is any of: a few words (free text), tapping words from the existing described lists (taste, scent), or nothing. A short **strength** control ("how strong is it in your mind?") adjusts the picture's treatment: faint is pale and soft, strong is rich and sharp, with a text twin ("faint", "strong") and no animation under reduced motion. So the art is also the live feedback.
+
+**Scent and taste.** Each question is marked scent or taste (some either). The person can ask for "scent cards", "taste cards" or both. A switch, **"I can't smell or taste right now: imagine instead"**, rewrites every question as "Imagine..." and says it is fine.
+
+**Artwork, from the Met's open access collection.** The Metropolitan Museum's Open Access images are CC0 (public domain) and the API is free and keyless. This site loads nothing from outside (`img-src 'self'`), so images are **downloaded once, curated, resized (about 30 to 40 KB each as WebP) and served from the site**, one at a time as a card is shown; nothing is called live. Rules for choosing and using them:
+- A **person reviews every image** before it goes in. The API's keyword search is noisy (a search for "tea" returns tea caddies; "market" returns a fish market), so the owner picks from a candidate sheet (titles, dates, links to the Met page; no images downloaded until approved).
+- Avoid anything that could hurt: graphic violence, nudity, colonial-trophy or religious-object contexts, people in distress, and anything that foregrounds eating, dieting or bodies. Prefer still life without carcasses, gardens, plants, bowls and cups, textiles, seashores, rain and weather, rooms and windows.
+- **Alt text is ours**, written for each image (the Met gives titles, not descriptions); a plain line says what is in it. "Show no picture" is a setting (and the default under reduced data or Save-Data).
+- Credit "The Metropolitan Museum of Art, public domain" on the card and in `ATTRIBUTIONS.md`, though CC0 does not require it. Check each object's own **isPublicDomain** flag, not the collection's.
+- The first visit does not grow: pictures load only when a card is drawn.
+
+**The questions.** The owner writes the final deck. A first draft of 25 (about grade 5), five a theme (S scent, T taste):
+- *Memory:* What smell brings back a memory? (S) · What did the kitchen smell like when you were small? (S) · What taste do you remember from a happy day? (T) · What did the sea, or rain, smell like the first time? (S) · Which smell takes you straight to someone? (S)
+- *Comfort:* Describe your ideal meal. (T) · What smell makes you slow down? (S) · What would you like to be sipping right now? (T) · What is the coziest smell you know? (S) · What taste feels like a warm blanket? (T)
+- *Tension:* If this feeling were a smell, what would it be? (S) · What smell makes your shoulders rise? (S) · What taste is stuck in your mouth today? (T) · What smell do you want to get away from? (S) · What would be too much right now? (S/T)
+- *Wish:* What scent or taste would you like to be near? (S/T) · What would you like the air to smell like where you are going? (S) · What would you like to taste first when this passes? (T) · Which smell feels like a fresh start? (S) · What taste feels like enough? (T)
+- *Place:* What smell is your favorite place? (S) · What does your favorite season smell like? (S) · What does the outdoors smell like for you? (S) · Which room at home smells best? (S) · What does a good morning smell like? (S/T)
+Questions about food are asked as tastes and memories, never as what a person eats, and none asks about hunger, weight, diet or allergies.
+
+**Card plan** (each state is its own draw; the cards are the lens):
+1. **Draw a card for how it feels now** (theme or shuffle; answer, strength, keep or draw another).
+2. **Draw a card for how you would like it to feel.**
+3. **Add this to my report / Put this down** (the answers, with their words and strengths).
+
+**The same deck for other lenses?** The deck is a component: Sound, Movement and Insight could each have a deck of their own prompts instead of (or beside) their current controls. Worth trying on Essence first.
 
 ## 5. Questions for the owner
-1. Which direction: A, B, a mix (recommended), or C?
-2. Write the prompts yourself? The draft list above is a start; the right questions matter most here.
-3. One lens with scent and taste on separate cards (recommended), or split into two lenses (which would make seven in the tray, against the decided six)?
-4. How much drawn imagery is realistic: Material icons only for the first rebuild, or commission or draw the pictograms?
-5. Is the "I can't smell or taste right now: imagine instead" line right, and should it appear on every card?
+1. The five themes (Memory, Comfort, Tension, Wish, Place): right, or others (for example Season, Shared meals)?
+2. Write the deck yourself from the draft: which of the 25 stay, which go, what is missing?
+3. Free text, word chips, or both on each card? (Both, with each optional, is the draft.)
+4. May I build a **candidate sheet** from the Met's open access API (metadata and links only, no images downloaded) for the owner to pick from?
+5. Strength as a picture treatment (pale and soft to rich and sharp): right, or something else?
+6. Try the deck idea on the other lenses after Essence?
