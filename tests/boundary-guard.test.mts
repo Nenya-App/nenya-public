@@ -75,6 +75,9 @@ ok('a question about afterward gets the no-memory sentence first and loses "I\'l
   const off = __instructionsFingerprint();
   process.env.COACH_FINAL_SUMMARY = 'on';
   const on = __instructionsFingerprint();
+  process.env.COACH_FINAL_SUMMARY = 'call';
+  const call = __instructionsFingerprint();
   delete process.env.COACH_FINAL_SUMMARY;
+  ok('COACH_FINAL_SUMMARY=call has its own fingerprint', call !== on && call !== off);
   ok('COACH_FINAL_SUMMARY changes the instructions fingerprint only when on, and back off restores it', off !== on && __instructionsFingerprint() === off);
 }
