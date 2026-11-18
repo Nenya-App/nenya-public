@@ -13,6 +13,11 @@
   VITE_LENS_COPY = "on"
   VITE_LENS_TRAY = "on"
   VITE_TERMS_FIRST = "on"
+  # The two lens activities (tapestry, path of movement) and the "Request a summary" button (the button needs the server switch COACH_SUMMARY_REQUEST=on in the site's own
+  # Netlify settings: a function variable cannot be set from this file; without it the button hides itself). "What has come up so far" stays off until its wording is approved.
+  VITE_LENS_TAPESTRY = "on"
+  VITE_LENS_PATH = "on"
+  VITE_SUMMARY_REQUEST = "on"
 
 # The /coach demo's relay function (see netlify/functions/coach.mts).
 [functions]
