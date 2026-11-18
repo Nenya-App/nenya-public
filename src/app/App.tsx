@@ -693,6 +693,7 @@ export default function App() {
           {currentScreen === 'sight' && (
             <SightGatewayPage
               onComplete={(data) => handleGatewayComplete('sight', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'sight')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('sight')}
               totalGateways={selectedGateways.length}

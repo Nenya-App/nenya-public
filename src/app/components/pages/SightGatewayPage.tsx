@@ -28,6 +28,8 @@ import {
 } from '../ui/dialog';
 
 import { WordPicker } from '../WordPicker';
+import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { L } from '../../../lib/vocabulary';
 interface SightGatewayPageProps {
   onComplete: (data: UserColors & { gradientDirection?: string }) => void;
@@ -42,6 +44,8 @@ interface SightGatewayPageProps {
   melodyShared?: boolean;
   /** Whether the Sound gateway is still to come in this session (so a kept palette can be marked for it). */
   soundComesLater?: boolean;
+  /** Tray mode: what was added before, so Edit opens with it. */
+  initialData?: any;
 }
 
 const generateRandomColor = () => {
@@ -107,8 +111,10 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap, melodyColors, melodyShared = false, soundComesLater = true }: SightGatewayPageProps) {
+export default function SightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, bodyMapData, onUpdateBodyMap, melodyColors, melodyShared = false, soundComesLater = true, initialData }: SightGatewayPageProps) {
   const { theme } = useTheme();
+  const tray = lensTrayOn();
+  const init = tray && initialData && initialData.color1 ? initialData : null;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<PairStage>('present');
   useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
@@ -129,15 +135,17 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
 
   // Set default colors based on theme: dark mode = white, light mode = black
   // The usual start is white (dark mode) or black (light mode). If a melody was made first and the person chose to bring it here, its two colors are the start.
-  const [color1, setColor1] = useState(melodyShared && melodyColors ? melodyColors.color1 : theme === 'dark' ? '#FFFFFF' : '#000000');
-  const [color2, setColor2] = useState(melodyShared && melodyColors ? melodyColors.color2 : theme === 'dark' ? '#FFFFFF' : '#000000');
-  const [color1Name, setColor1Name] = useState('');
-  const [color2Name, setColor2Name] = useState('');
-  const [generatedPalettes, setGeneratedPalettes] = useState<GeneratedPalette[]>([]);
-  const [color1Qualities, setColor1Qualities] = useState<string[]>([]);
-  const [color2Qualities, setColor2Qualities] = useState<string[]>([]);
-  const [color1Intensity, setColor1Intensity] = useState<number[]>(() => unsetSlider());
-  const [color2Intensity, setColor2Intensity] = useState<number[]>(() => unsetSlider());
+  const [color1, setColor1] = useState(init?.color1 ?? (melodyShared && melodyColors ? melodyColors.color1 : theme === 'dark' ? '#FFFFFF' : '#000000'));
+  const [color2, setColor2] = useState(init?.color2 ?? (melodyShared && melodyColors ? melodyColors.color2 : theme === 'dark' ? '#FFFFFF' : '#000000'));
+  const [color1Name, setColor1Name] = useState(init?.color1Name ?? '');
+  const [color2Name, setColor2Name] = useState(init?.color2Name ?? '');
+  const [generatedPalettes, setGeneratedPalettes] = useState<GeneratedPalette[]>(init?.generatedPalettes ?? []);
+  const [color1Qualities, setColor1Qualities] = useState<string[]>(init?.color1Qualities ?? []);
+  const [color2Qualities, setColor2Qualities] = useState<string[]>(init?.color2Qualities ?? []);
+  // The soft limit of three words on a color (tray mode): the fourth waits for a yes.
+  const [pendingQuality, setPendingQuality] = useState<{ n: 1 | 2; q: string } | null>(null);
+  const [color1Intensity, setColor1Intensity] = useState<number[]>(() => (typeof init?.color1Intensity === 'number' ? [init.color1Intensity] : unsetSlider()));
+  const [color2Intensity, setColor2Intensity] = useState<number[]>(() => (typeof init?.color2Intensity === 'number' ? [init.color2Intensity] : unsetSlider()));
   const [gradientDirection] = useState('to-right');
   const [activeColorPicker, setActiveColorPicker] = useState<'present' | 'potential' | null>(null);
   // bodyMapData/onUpdateBodyMap come from props -- shared App-level state
@@ -175,6 +183,11 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   };
 
   const toggleQuality = (colorNum: 1 | 2, quality: string) => {
+    const have = colorNum === 1 ? color1Qualities : color2Qualities;
+    if (tray && !have.includes(quality) && needsFewerWarning(have.length)) { setPendingQuality({ n: colorNum, q: quality }); return; }
+    flipQuality(colorNum, quality);
+  };
+  const flipQuality = (colorNum: 1 | 2, quality: string) => {
     if (colorNum === 1) {
       setColor1Qualities(prev =>
         prev.includes(quality)
@@ -223,7 +236,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                   Sight - Chromesthesia
                   <GatewaySubtitleLink href="https://en.wikipedia.org/wiki/Chromesthesia" />
                 </h1>
-                <GatewayProgress index={currentIndex} total={totalGateways} />
+                {!tray && <GatewayProgress index={currentIndex} total={totalGateways} />}
               </div>
             </div>
 
@@ -253,6 +266,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                     <p className="text-muted-foreground">
                       {INSTRUCTION_CARDS[instructionCardIndex].detail}
                     </p>
+                    {tray && instructionCardIndex === 0 && <FewerNote />}
                     <div className="flex items-center justify-between pt-4">
                       <div className="flex items-center gap-3">
                         <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
@@ -373,6 +387,28 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       <ColorNameSuggest label="Current state" hex={color1} onUse={(n) => setColor1Name(n.slice(0, MAX_DESCRIPTION_LENGTH))} />
                     </div>
 
+                    {tray ? (
+                      <>
+                        <SnappingSlider
+                          value={color1Intensity}
+                          onValueChange={setColor1Intensity}
+                          label="Intensity"
+                          leftLabel="Faint"
+                          rightLabel="Strong"
+                          max={100}
+                        />
+                        <MoreDescriptions>
+                          <div className="space-y-2">
+                            <Label className="text-sm">Quality of this light (choose any; three is a soft limit)</Label>
+                            <WordPicker category="lightQuality" idPrefix="color1Qualities" selected={color1Qualities} onToggle={(t) => toggleQuality(1, t)} />
+                            {pendingQuality?.n === 1 && (
+                              <FewerWarning onAdd={() => { flipQuality(1, pendingQuality.q); setPendingQuality(null); }} onKeep={() => setPendingQuality(null)} />
+                            )}
+                          </div>
+                        </MoreDescriptions>
+                      </>
+                    ) : (
+                      <>
                     {/* Light Qualities */}
                     <div className="space-y-2">
                       <Label className="text-sm">Quality of this light (optional)</Label>
@@ -387,6 +423,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       rightLabel="Strong"
                       max={100}
                     />
+                      </>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -448,6 +486,28 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       <ColorNameSuggest label="Wish" hex={color2} onUse={(n) => setColor2Name(n.slice(0, MAX_DESCRIPTION_LENGTH))} />
                     </div>
 
+                    {tray ? (
+                      <>
+                        <SnappingSlider
+                          value={color2Intensity}
+                          onValueChange={setColor2Intensity}
+                          label="Intensity"
+                          leftLabel="Faint"
+                          rightLabel="Strong"
+                          max={100}
+                        />
+                        <MoreDescriptions>
+                          <div className="space-y-2">
+                            <Label className="text-sm">Quality of this light (choose any; three is a soft limit)</Label>
+                            <WordPicker category="lightQuality" idPrefix="color2Qualities" selected={color2Qualities} onToggle={(t) => toggleQuality(2, t)} />
+                            {pendingQuality?.n === 2 && (
+                              <FewerWarning onAdd={() => { flipQuality(2, pendingQuality.q); setPendingQuality(null); }} onKeep={() => setPendingQuality(null)} />
+                            )}
+                          </div>
+                        </MoreDescriptions>
+                      </>
+                    ) : (
+                      <>
                     {/* Light Qualities */}
                     <div className="space-y-2">
                       <Label className="text-sm">Quality of this light (optional)</Label>
@@ -462,6 +522,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                       rightLabel="Strong"
                       max={100}
                     />
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               </StageSlot>
@@ -486,7 +548,10 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               <StageNav stage={stage} onChange={setStage} />
 
 {/* Next Button */}
-              {stage === 'wish' && (
+              {stage === 'wish' && tray && (
+                <AddToReport name="Sight" added={!!init} onAdd={handleNext} onPutDown={onBack} />
+              )}
+              {stage === 'wish' && !tray && (
               <div className="flex justify-center pt-4">
                 <Button
                   size="lg"

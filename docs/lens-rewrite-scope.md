@@ -102,3 +102,6 @@ Camera cliché (always show the beam and the medium, not only glass); the word i
 
 ### Step 1 built (2026-11-18), behind `VITE_LENS_TRAY` (off)
 `src/app/components/pages/LensTrayPage.tsx` shows the six lenses with status (not opened / examined / added) and Open or Edit, Take out, See my report. `App.tsx` holds `examined` beside `gatewayData`; opening marks a lens examined, finishing a lens adds it and returns to the tray, and the old pick-then-go flow is untouched when the switch is off. Not yet done: lens pages still show "Gateway n of m" and their old single page (step 2), the report line "Examined, not included" (step 3), saving `examined` (step 4), the Terms sentence (step 5).
+
+### Step 2, Sight built (2026-11-18), behind `VITE_LENS_TRAY`
+In tray mode Sight hides "Gateway n of m", opens with the shared line, keeps the two Intensity sliders up front and tucks the light-quality words under "More descriptions" with the soft limit of three (warning, never a block), reopens with what was added (Edit), and ends with Add this to my report / Update my report and Put this down. Shared pieces live in `src/app/components/LensCardParts.tsx` for the other lenses. Not yet: Sight's separate palette card and "Add Sight to your report?" summary card from the wireframe (the page's own Present/Wish steps and palette panel remain). Next: Sound.

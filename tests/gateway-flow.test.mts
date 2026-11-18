@@ -21,7 +21,7 @@ ok('the progress bar is a labelled progressbar that says "Gateway n of N"', /rol
 ok('every gateway shows it in its header', GATEWAYS.every((f) => /<GatewayProgress index=\{currentIndex\} total=\{totalGateways\} \/>/.test(src(f))));
 
 ok('every gateway asks the Present state first and the Wish state second, one at a time', GATEWAYS.every((f) => { const s = src(f); return /<StageSlot stage="present" current=\{stage\}>/.test(s) && /<StageSlot stage="wish" current=\{stage\}>/.test(s) && !/grid md:grid-cols-2 gap-6 md:gap-8/.test(s) && /<StageNav /.test(s); }));
-ok('the gateway\'s own next button appears only on the Wish step', GATEWAYS.every((f) => /\{stage === 'wish' && \(\s*<div className="flex justify-center pt-4">\s*<Button/.test(src(f))));
+ok('the gateway\'s own next button appears only on the Wish step', GATEWAYS.every((f) => /\{stage === 'wish'(?: && !tray)? && \(\s*<div className="flex justify-center pt-4">\s*<Button/.test(src(f))));
 ok('the Present state stays in the page while hidden, so going back loses nothing', /hidden=\{stage !== current\}/.test(src('src/app/components/GatewayStages.tsx')));
 ok('the Sight gateway keeps its palettes and body map for the Wish step', /stage === 'wish' && \(\s*<>\s*<PalettePanel/.test(src(GATEWAYS[0])));
 
