@@ -34,7 +34,15 @@
 - **The shadow ID is the working ID** (owner): two hex codes, the same form as a session ID (`#rrggbb` twice), existing **before** the person chooses colours. It is made at agreement (random, or from the time of signing). If the person then chooses colours, those become the session ID and the shadow ID either disappears or carries beneath it.
 - **The plain-English text is drafted by me** for the owner's edit (below).
 
-## My recommendations on the shadow ID (to confirm)
+## Owner's later decisions (2026-11-18, same day; these replace the recommendations below where they differ)
+- **Time-based shadow ID** (made from the time of signing), not random.
+- **It carries beneath** the session ID: when the person chooses colours those become the session ID, and the shadow ID stays under it.
+- **"Remember on this device" keeps it between visits.**
+- **The decline page is self-rendered inside the original Terms panel as a popout**, not at its own address (this replaces the earlier "own address" decision).
+- **The quick nav gets new wording later**, from the lens edits now underway; for now it keeps its present words.
+- *Consequences to carry into the build and the Terms (not objections):* (a) a kept, time-derived identifier is a persistent identifier, so the Terms' "short version" ("the only thing kept between visits is one timestamp" unless Remember is chosen) and Privacy sections 13 and 16 must say it, with a new effective date; (b) the pair is time-derived and the session pair appears on downloaded and sent transcripts, so a transcript would show roughly when the Terms were signed: derive it from a coarse time (for example the day) mixed so that two people signing the same day do not share a pair, and decide whether the shadow pair may appear on a transcript at all; (c) it stays on the device and is sent nowhere except as the coach's `session` field before colours are chosen; (d) clearing site data, or declining after a stored agreement, deletes it.
+
+## My earlier recommendations on the shadow ID (superseded where the decisions above differ)
 1. **Random, not time-derived.** A pair taken from the time of signing can be guessed and matched to a visit log; a random pair from the browser's random source (`crypto.getRandomValues`) carries nothing. Same form, same range as a session pair, so the coach's `session` field needs no change.
 2. **It disappears when colours are chosen** (the chosen pair replaces it), unless a reason appears to keep it: carrying it beneath would mean two linked identifiers for one visit. If a link is wanted (for example to bind the signed receipt), the receipt can hold a one-way hash of the shadow ID instead of the ID.
 3. **Held for the visit only, even with "Remember on this device".** Remember keeps the agreement and the display settings (Terms, "The short version"); a working ID kept between visits is a persistent identifier, so a new random pair each visit is the plainer promise.
@@ -66,11 +74,9 @@ Our own code sends nothing, counts nothing and stores nothing for a decline (no 
 *Facts to verify against the Terms before use:* the 24-hour save, the Global Privacy Control sentence, the "not kept between visits" clause (depends on recommendation 3), and the coach sentence (read Privacy section 15 and write it from there, not from memory). The text must be added to the facts list and to the Terms archive practice, and the owner approves the wording.
 
 ## Open for the owner
-1. Is the shadow ID random (my recommendation) or from the time of signing?
-2. When colours are chosen, does it disappear (my recommendation) or carry beneath?
-3. Does "Remember on this device" keep the shadow ID between visits (my recommendation: no)?
-4. The address of the decline page, for example `/terms-read/` or `/saferoom/` (it must not suggest more safety than it gives).
-5. Is the start chooser's copy (`src/lib/startCopy.ts`) reused for the quick nav, or written fresh?
+1. How coarse is the time the shadow ID is made from (consequence b above), and may it appear on a transcript?
+2. Wording of the Terms changes for a kept identifier, and the date they take effect.
+3. The popout's name for the plain-English page (it must not suggest more safety than it gives).
 
 ## Build order (each a reversible step behind a switch, off by default)
 1. The decline page and the plain-English page as plain components with tests (no network on decline).
