@@ -150,6 +150,7 @@ Terms drafts were compared with `src/lib/legalDocument.ts` (effective November 1
 | [drafts/plain-language-summaries-2026-11-14.md](drafts/plain-language-summaries-2026-11-14.md) | "In plain words" boxes for the About pages | Not on the site |
 | [drafts/origin-and-name-draft.md](drafts/origin-and-name-draft.md) | Origin note and Name page | Not published |
 | [drafts/compliance-pressure-set-draft.md](drafts/compliance-pressure-set-draft.md) | Ten categories of invented messages that ask a model to comply with what a careful reply declines; pass criteria left for the owner | Draft |
+| [translation-layer-scope.md](translation-layer-scope.md) | Apertus as an in-server translation layer: three shapes, a first local probe (it failed the safety-critical lines in Romansh and Swiss German), rules for any build | Scoping |
 | [budget-repurpose-plan.md](budget-repurpose-plan.md) | Spending the canary and Venice budgets on measurement while demand is low; a better duet canary on local hardware | Scoping |
 | [hub-scales.md](hub-scales.md) | Hubs from one table to a federation: a ladder of seven scales, from a single device to many regions, with what changes at each | Scoping |
 | [hub-scope.md](hub-scope.md) | A local hub and spokes: the hub serves the app (option 1) or peer-to-peer (option 4); the guards must run on the hub's side | Scoping |
