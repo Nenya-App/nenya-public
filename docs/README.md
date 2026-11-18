@@ -153,6 +153,7 @@ Terms drafts were compared with `src/lib/legalDocument.ts` (effective November 1
 | [translation-layer-scope.md](translation-layer-scope.md) | Apertus as an in-server translation layer: three shapes, a first local probe (it failed the safety-critical lines in Romansh and Swiss German), rules for any build | Scoping |
 | [budget-repurpose-plan.md](budget-repurpose-plan.md) | Spending the canary and Venice budgets on measurement while demand is low; a better duet canary on local hardware | Scoping |
 | [hub-scales.md](hub-scales.md) | Hubs from one table to a federation: a ladder of seven scales, from a single device to many regions, with what changes at each | Scoping |
+| [merge-checklist-2026-11-18.md](merge-checklist-2026-11-18.md) | What dev holds that staging and production do not; what a visitor would notice; switches; checks on staging; approvals needed | Ready for the owner |
 | [hub-scope.md](hub-scope.md) | A local hub and spokes: the hub serves the app (option 1) or peer-to-peer (option 4); the guards must run on the hub's side | Scoping |
 | [expanded-buildout-scope.md](expanded-buildout-scope.md) | The technical workstreams after 2026-11-17: outer layers, local models, lens rewrite, Terms batching, evidence | Scoping |
 | [lens-rebuild-audit.md](lens-rebuild-audit.md) | The six lens pages as they are (sliders, stages, shared state), the card model, the method for rebuilding one lens at a time | Scoping |

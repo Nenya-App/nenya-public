@@ -738,10 +738,10 @@ export const ANSWERS: Answer[] = [
   {
     id: 'c-memory', part: 'coach', title: 'Will you remember me? Do you keep this?',
     asked: ['will you remember me', 'do you remember our last chat', 'will you remember this', 'can you remember me next time', 'will you think about this afterward', 'will you think about me later', 'if I tell you this will you think about it afterward'],
-    short: 'Not after this conversation. While it lasts, up to five exchanges, I hold on to what you tell me. At the end I give a short summary of the feelings and needs I heard, with some encouragement, and the signed transcript you can download keeps exactly what was said. When it ends, or you close the tab, I won\'t remember it, and Nenya doesn\'t keep it.',
+    short: 'Not after this conversation. While it lasts, up to five exchanges, I hold on to what you tell me. At the end I say back what I heard, in your words, and the signed transcript you can download keeps exactly what was said. When it ends, or you close the tab, I won\'t remember it, and Nenya doesn\'t keep it.',
     full: [
       'While this conversation lasts, up to five exchanges, I can see everything you have said in it and I use it, so you do not have to repeat yourself. That is the whole of my memory: it holds for this conversation and no longer.',
-      'At the end I give a short summary of the feelings and needs I heard in what you said, in your words, with some encouragement. That summary is my reading, so for exactly what was said, download the transcript (a readable file, or a signed one): it keeps your words and mine as they were, and it stays with you. After the end I won\'t remember it, I can\'t think about it afterward, and I can\'t greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.',
+      'At the end I say back what I heard in what you said, in your words. That is my reading, so for exactly what was said, download the transcript (a readable file, or a signed one): it keeps your words and mine as they were, and it stays with you. After the end I won\'t remember it, I can\'t think about it afterward, and I can\'t greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.',
       'The signed transcript also lets you change or delete what you send us later, if you ever send it. The services that carry the conversation have their own logs and policies, which is why I say Nenya doesn\'t keep it and not that nothing is kept anywhere.',
     ],
     links: [{ label: 'What happens to what I type', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
@@ -750,7 +750,8 @@ export const ANSWERS: Answer[] = [
       { claim: 'the instructions: no memory; the conversation is not kept', file: COACH, has: 'you will not remember this conversation, and Nenya does not keep it' },
       { claim: 'never promise to remember, be there later, or miss them', file: COACH, has: 'never promise to remember them, to be there later or to miss them' },
       { claim: 'a conversation is five exchanges, so the span of what I hold is five', file: COACH, has: 'const MAX_TURNS = 5' },
-      { claim: 'on the last exchange the coach summarizes the feelings and needs it heard, encourages, and points to the downloadable transcript, which keeps exactly what was said', file: COACH, has: 'names the feelings and needs you heard from them across it' },
+      { claim: 'on the last exchange the coach says back, in their own words, what it heard', file: COACH, has: 'Say in their own words what you heard' },
+      { claim: 'with COACH_FINAL_SUMMARY=on the last exchange is a summary of the feelings and needs heard, with encouragement and a pointer to the downloadable transcript, which keeps exactly what was said', file: COACH, has: 'names the feelings and needs you heard from them across it' },
       { claim: 'the signed transcript keeps the exact messages', file: 'src/coach/TranscriptTools.tsx', has: 'signedJson' },
       { claim: 'the person can download a readable or signed transcript', file: 'src/coach/TranscriptTools.tsx', has: 'const readableText' },
       { claim: 'the Terms: we do not store messages or replies', file: TERMS, has: 'We do not store your messages or the replies' },

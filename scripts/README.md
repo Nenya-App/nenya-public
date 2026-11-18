@@ -30,6 +30,7 @@ checklist in `CONTRIBUTING.md` for which ones must run before a release.
 | `compare-persona-runs.mts` | Compares two saved persona runs | Nothing |
 | `build-darkbench-persona-set.mts` | Builds `src/lib/personaEvalDarkBench.ts` from DarkBench | Research folder |
 | `eval-final-turn.mts` | How often the fifth reply still asks a question | Key |
+| `eval-final-summary.mts` | Reads the fifth reply of invented conversations from a local model for the v2.1 summary (no question, feelings and needs, transcript pointer, no promise, length) | Local |
 | `eval-prompts.mts` | A sample of an open prompt set run against a deployed coach, with a result you can publish | Deployed |
 | `eval-detect.mts` | The site's detection (private list, history patterns, card offers) run over outside test sets | Research folder |
 | `holistic-coach.mts` | About 50 short conversations across every area of the coach | Deployed |

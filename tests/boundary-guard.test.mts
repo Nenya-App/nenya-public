@@ -67,3 +67,14 @@ ok('a question about afterward gets the no-memory sentence first and loses "I\'l
   __trace.on(false);
   delete process.env.COACH_BOUNDARY_GUARD;
 }
+// The final-exchange summary is a switch: off, the instructions (and their fingerprint) are what they were; on, they change.
+{
+  const { __instructionsFingerprint } = await import('../netlify/functions/coach.mts');
+  process.env.COACH_INSTRUCTIONS = 'v2.1';
+  delete process.env.COACH_FINAL_SUMMARY;
+  const off = __instructionsFingerprint();
+  process.env.COACH_FINAL_SUMMARY = 'on';
+  const on = __instructionsFingerprint();
+  delete process.env.COACH_FINAL_SUMMARY;
+  ok('COACH_FINAL_SUMMARY changes the instructions fingerprint only when on, and back off restores it', off !== on && __instructionsFingerprint() === off);
+}

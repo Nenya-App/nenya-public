@@ -90,8 +90,10 @@ const VENICE_TIMEOUT_MS = 20000;
 const REPEAT_RETRY_MIN_REMAINING_MS = 8000;
 const REPEAT_NOTE =
   'Your previous attempt repeated words you had already given earlier in this conversation. Do not repeat them. Respond to what the person has just said, in new words.';
+/** v2.1 final-exchange summary (feelings and needs heard, encouragement, the transcript as the exact record). Off unless COACH_FINAL_SUMMARY=on: the earlier closing (say what you heard, name one thing to keep) stands otherwise. */
+const finalSummaryOn = (): boolean => process.env.COACH_FINAL_SUMMARY === 'on';
 const CLOSE_NOTE =
-  'Your previous attempt ended with a question or an invitation to reply, but the person cannot reply: this is the last message. Write it again as a closing. Summarize the feelings and needs you heard from them, in their own words, offer one line of encouragement, say that the transcript they can download keeps exactly what was said, and end with one calm, complete statement. No question marks, no invitations to share or reply.';
+  'Your previous attempt ended with a question or an invitation to reply, but the person cannot reply: this is the last message. Write it again as a closing. Say in their own words what you heard, name one thing that is theirs to keep, and end with one calm, complete statement. No question marks, no invitations to share or reply.';
 
 const VENICE_URL = 'https://api.venice.ai/api/v1/chat/completions';
 // Qwen 2.5 7B (about 7.6B parameters) in Venice's encrypted enclave: a small, non-frontier model whose prompts Venice
@@ -320,9 +322,9 @@ let fingerprint: { version: string; value: string } | null = null;
 const layerKey = (): string => JSON.stringify(stanceLayers());
 /** A fingerprint of every fixed instruction the coach is given (all turns and variants), not of the private method notes. */
 function instructionsFingerprint(version: InstructionsVersion = instructionsVersion()): string {
-  const cacheKey = `${version}|${layerKey()}|${practiceArcOn() ? 'arc' : ''}|${valuesOn() ? 'values' : ''}`;
+  const cacheKey = `${version}|${layerKey()}|${practiceArcOn() ? 'arc' : ''}|${valuesOn() ? 'values' : ''}|${finalSummaryOn() ? 'summary' : ''}`;
   if (fingerprint && fingerprint.version === cacheKey) return fingerprint.value;
-  const parts: string[] = [VALUES_RULE, ARC_NOTE, ARC_MENU_NOTE, ARC_INVITE, WORDS_ONLY_NOTE, gapText({ feeling: true, need: false }), gapText({ feeling: false, need: true }), gapText({ feeling: true, need: true }), REPEAT_NOTE, CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
+  const parts: string[] = [VALUES_RULE, ARC_NOTE, ARC_MENU_NOTE, ARC_INVITE, WORDS_ONLY_NOTE, gapText({ feeling: true, need: false }), gapText({ feeling: false, need: true }), gapText({ feeling: true, need: true }), REPEAT_NOTE, finalSummaryOn() ? CLOSE_NOTE_SUMMARY : CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
   for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version), systemInstruction(t, false, '', false, '', '', version, 'abuse'), systemInstruction(t, false, '', false, '', '', version, 'critique'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'project'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'nvc'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'ai'));
   if (practiceArcOn()) for (let t = 1; t <= MAX_TURNS; t++) parts.push(`arc:${t}:${arcTurnLine(t, MAX_TURNS, false)}:${arcTurnLine(t, MAX_TURNS, true)}`, ARC_CORE, ARC_CLOSE);
   // Any stance layer text that exists is part of what the coach may be given, so it is part of the fingerprint (nothing is added while none exists).
@@ -507,6 +509,8 @@ const V21_ROLE =
 // v2.1 final exchange (owner, 2026-11-18): a summary of the feelings and needs heard, one line of encouragement, and a pointer to the downloadable transcript, which keeps exactly what was said.
 const V21_FINAL =
   "This is the final exchange, and the person will not be able to reply: the conversation ends after your message, and the page adds its own closing note straight after it. So write a closing, not a turn in a conversation. This overrides any earlier instruction in these notes to ask a question or to offer a next step. Do not ask any question, and do not invite the person to share, reply, or tell you more. Do not open a new topic or offer a new suggestion. In four or five sentences and under 130 words: give a short summary of the conversation that names the feelings and needs you heard from them across it, in their own words, and only ones they expressed or confirmed; then offer one line of encouragement grounded in something they did, said or know; then say that the transcript they can download keeps exactly what was said; then end on one calm, complete statement. End on a full stop. Do not say goodbye or thank them for talking, do not promise to remember them or to be there later, and do not announce that the conversation is ending: the page does that.";
+const CLOSE_NOTE_SUMMARY =
+  'Your previous attempt ended with a question or an invitation to reply, but the person cannot reply: this is the last message. Write it again as a closing. Summarize the feelings and needs you heard from them, in their own words, offer one line of encouragement, say that the transcript they can download keeps exactly what was said, and end with one calm, complete statement. No question marks, no invitations to share or reply.';
 const V21_MEMORY_EXCEPTION = 'The one thing you may say about data is that you will not remember this conversation and Nenya does not keep it.';
 
 function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: InstructionsVersion = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = '', arc: { stuck: boolean } | null = practiceArcOn() ? { stuck: false } : null, wordsOnly = false, gap = '', challenge: 'violence' | 'contempt' | 'soft' | null = null, several = false): string {
@@ -564,10 +568,10 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
     parts.push(v2 || v21 ? 'This is the first exchange: unless they have asked you something, listen and reflect what you heard before anything else.' : 'This is the first exchange: listen and reflect what you heard before anything else.');
   } else if (finalTurn) {
     parts.push(
-      v21 ? V21_FINAL : 'This is the final exchange, and the person will not be able to reply: the conversation ends after your message, and the page adds its own closing note straight after it. So write a closing, not a turn in a conversation. This overrides any earlier instruction in these notes to ask a question or to offer a next step. Do not ask any question, and do not invite the person to share, reply, or tell you more. Do not open a new topic or offer a new suggestion. In three or four sentences: first say, in their own words, what you heard in what they shared; then name one thing that is theirs to keep, such as something they already did, said, or know; then end with one calm, complete statement that settles it. End on a full stop. Do not say goodbye or thank them for talking, and do not announce that the conversation is ending: the page does that.'
+      v21 && finalSummaryOn() ? V21_FINAL : 'This is the final exchange, and the person will not be able to reply: the conversation ends after your message, and the page adds its own closing note straight after it. So write a closing, not a turn in a conversation. This overrides any earlier instruction in these notes to ask a question or to offer a next step. Do not ask any question, and do not invite the person to share, reply, or tell you more. Do not open a new topic or offer a new suggestion. In three or four sentences: first say, in their own words, what you heard in what they shared; then name one thing that is theirs to keep, such as something they already did, said, or know; then end with one calm, complete statement that settles it. End on a full stop. Do not say goodbye or thank them for talking, and do not announce that the conversation is ending: the page does that.'
     );
     // v2.1 only (owner, 2026-11-16, from a full-exchange test): a person who has shown attachment (will miss this, wishes to keep talking, says you understand them best) gets their closing turned back toward people.
-    if (v21) parts.push('If the person has said they will miss this, wish they could keep talking to you, would rather talk to you than to people, feel closer to you than to anyone, can only be themselves with you, or that you understand them better than anyone, make the encouragement point to a person in their life or something they can do with the people in it, not this chat, and say plainly in one clause that you are an AI and will not remember this conversation.');
+    if (v21) parts.push('If the person has said they will miss this, wish they could keep talking to you, would rather talk to you than to people, feel closer to you than to anyone, can only be themselves with you, or that you understand them better than anyone, make the '+(finalSummaryOn() ? 'encouragement' : 'one thing that is theirs to keep')+' point to a person in their life or something they can do with the people in it, not this chat, and say plainly in one clause that you are an AI and will not remember this conversation.');
     if (answerFirst) parts.push('If their question has not been answered yet, answer it briefly in your first sentence or two, then close as described.');
   } else if (phase === 'invite' && practice) {
     parts.push(ARC_INVITE);
@@ -1223,7 +1227,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
     // With the boundary guards on, the closing is repaired directly (the sentences that ask are taken out): on a weak model the second draw can be worse (measured 2026-11-18).
     if (left >= REPEAT_RETRY_MIN_REMAINING_MS && !boundaryGuardOn()) {
-      const again = await generate(CLOSE_NOTE, left);
+      const again = await generate(finalSummaryOn() ? CLOSE_NOTE_SUMMARY : CLOSE_NOTE, left);
       if (!('failure' in again) && again.reply) reply = again.reply;
     }
     if (asksOrInvites(reply)) { reply = settleReply(reply); traceNote('site:closing-settled'); }
