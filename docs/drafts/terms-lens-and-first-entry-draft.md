@@ -1,4 +1,6 @@
-# Terms revision for the lenses and the Terms-first entry (DRAFT for the owner's edit, 2026-11-18)
+# Terms revision for the lenses and the Terms-first entry. APPLIED 2026-11-18 (approved by the owner as written); kept as a record of the decisions.
+
+**As applied:** `src/lib/legalDocument.ts`, effective November 18, 2026; the outgoing text is `docs/legal/archive/terms-and-privacy-until-2026-11-18.md`. The new sentences in sections 2 to 5 appear only when their switch is on (`VITE_LENS_TRAY`, `VITE_TERMS_FIRST`); with both off the text is the November 16 text. Section 1's three word changes follow `VITE_LENS_COPY`. The data-register rows (section 7) are in `docs/data-register.md` for the counts and Save and return; the working-pair row is added below in the register.
 
 **Status.** A draft, not applied. Nothing in `src/lib/legalDocument.ts` has changed. The wording is the owner's to approve. It ships in one same-day revision with the switch flips (`VITE_LENS_COPY`, `VITE_LENS_TRAY`, `VITE_TERMS_FIRST`), following the practice in `docs/hosted-model-swap-scope.md`: archive the outgoing text in `docs/legal/archive/`, set `LEGAL_EFFECTIVE_DATE` to that day (everyone agrees again), and only then turn the switches on. Each change below lists the line it replaces so the owner can see old and new together. The "facts to check" at the end must be true of the build on the day.
 

@@ -27,8 +27,9 @@ export const PLAIN_ENGLISH: PlainItem[] = [
     text: 'We do not count or keep anything about you here. Our web host keeps ordinary connection logs, as any website’s host does. You can come back and read, or agree, whenever you like.' },
 ];
 
-/** The lines the draft says that the Terms do not yet say in these words (the owner decides). */
+/** The lines the draft says that the Terms did not say in these words when the page was written. Since the 2026-11-18 revision the Terms say both when `VITE_TERMS_FIRST` is on
+ *  (Section 15 "Your session colors" for the pair made at agreement; Section 16 for what a decline leaves), so these hold exactly when this page is shown. */
 export const PLAIN_UNVERIFIED = [
-  'The working pair "is made when you agree": the Terms say only "a random pair you can change" (Section 15, "Your session colors"); the one-clause change is an open decision in docs/terms-first-entry-scope.md.',
-  '"We do not count or keep anything about you here" for a decline is a statement about this build (nothing is sent, counted or stored by our code); the Terms do not describe a decline.',
+  'The working pair "is made when you agree": stated in Section 15 ("Your session colors") when VITE_TERMS_FIRST is on.',
+  '"We do not count or keep anything about you here" for a decline: stated in Section 16 when VITE_TERMS_FIRST is on; a statement about this build as well.',
 ];
