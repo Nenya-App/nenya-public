@@ -26,6 +26,8 @@ interface GatewayReviewPageProps {
   bodyMapData: BodyMapData;
   /** "Sign Our Guestbook", where the guestbook is on (VITE_GUESTBOOK). */
   onGuestbook?: () => void;
+  /** Tray mode: "Examined, not included: …", the one line about lenses opened but not added. */
+  examinedLine?: string;
 }
 
 const gatewayIcons = {
@@ -45,6 +47,7 @@ export default function GatewayReviewPage({
   onBack,
   bodyMapData,
   onGuestbook,
+  examinedLine,
 }: GatewayReviewPageProps) {
   const bodyMapUsed = isBodyMapUsed(bodyMapData);
 
@@ -71,6 +74,8 @@ export default function GatewayReviewPage({
       });
       report += `\n`;
     });
+
+    if (examinedLine) report += `\n${examinedLine}\n`;
 
     if (bodyMapUsed) {
       report += `\nBODY MAP\n`;
@@ -104,7 +109,7 @@ export default function GatewayReviewPage({
   };
 
   const downloadPDFReport = () => {
-    downloadNenyaPdfReport(gatewayData, gatewayTitles, formatGatewayData, bodyMapUsed ? bodyMapData : undefined, formatBodyMapLines);
+    downloadNenyaPdfReport(gatewayData, gatewayTitles, formatGatewayData, bodyMapUsed ? bodyMapData : undefined, formatBodyMapLines, examinedLine);
   };
   
   return (
@@ -192,6 +197,7 @@ export default function GatewayReviewPage({
           </div>
 
           {/* Gateway Cards */}
+          {examinedLine && <p className="text-sm text-muted-foreground" data-examined-line>{examinedLine}</p>}
           <div className="grid gap-4">
             {gatewayData.map((gd) => {
               const Icon = gatewayIcons[gd.gateway];

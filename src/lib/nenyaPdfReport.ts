@@ -134,7 +134,9 @@ export async function downloadNenyaPdfReport(
   gatewayTitles: Record<Gateway, string>,
   formatGatewayData: (gateway: Gateway, data: any) => string[],
   bodyMapData?: BodyMapData,
-  formatBodyMapLines?: (bodyMapData: BodyMapData) => string[]
+  formatBodyMapLines?: (bodyMapData: BodyMapData) => string[],
+  /** The tray's one plain line, "Examined, not included: …" (empty or absent when there is nothing to say). */
+  examinedLine?: string
 ) {
   const { jsPDF } = await import('jspdf');
   const [fonts, logoDataUrl] = await Promise.all([loadFonts(), loadLogo()]);
@@ -382,6 +384,20 @@ export async function downloadNenyaPdfReport(
 
     y += 6;
   });
+
+  // Lenses the person opened but did not add (the tray): one plain line, so the report says what it leaves out.
+  if (examinedLine) {
+    if (y > pageHeight - 32) y = newContentPage();
+    doc.setFont('Manrope', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.textMuted);
+    doc.splitTextToSize(examinedLine, contentWidth - 8).forEach((l: string) => {
+      if (y > pageHeight - 26) y = newContentPage();
+      doc.text(l, margin + 4, y);
+      y += 5.6;
+    });
+    y += 6;
+  }
 
   // ---------------------------------------------------------------
   // Body Map -- shared across every gateway rather than owned by one, so

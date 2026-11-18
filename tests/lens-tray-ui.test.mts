@@ -42,3 +42,9 @@ ok('Pattern (the Insight page), in tray mode, hides "Gateway n of m", shows the 
 ok('Pattern warns before a fourth drawing, pattern word or perspective on each card (six lists), and never blocks', (insight.match(/<FewerWarning/g) ?? []).length === 6 && /needsFewerWarning/.test(insight) && /soft=\{tray\}/.test(insight));
 ok('Pattern keeps drawings, Clarity and Depth up front and tucks pattern words, perspective, drawing pad and words under More descriptions', /return tray \? \[b\[0\], b\[2\], b\[3\], <MoreDescriptions/.test(insight) && (insight.match(/\{b\[1\]\}\{b\[4\]\}\{b\[5\]\}\{b\[6\]\}/g) ?? []).length === 2);
 ok('Pattern reopens with what was added, including the drawn pattern', /initialData/.test(insight) && /initialDataUrl=\{init\?\.currentPatternDrawing\}/.test(insight) && /initialDataUrl=\{init\?\.potentialPatternDrawing\}/.test(insight) && /initialData=\{gatewayData\.find\(\(g\) => g\.gateway === 'insight'\)/.test(app));
+
+const review = readFileSync('src/app/components/pages/GatewayReviewPage.tsx', 'utf8');
+const pdf = readFileSync('src/lib/nenyaPdfReport.ts', 'utf8');
+ok('the review page shows the "Examined, not included" line, writes it into the text report, and gives it to the PDF', /examinedLine\?: string/.test(review) && /\{examinedLine && <p[^>]*data-examined-line>/.test(review) && /if \(examinedLine\) report \+= /.test(review) && /formatBodyMapLines, examinedLine\)/.test(review));
+ok('the PDF draws the line after the lens sections and before the body map, only when there is one', /examinedLine\?: string/.test(pdf) && /if \(examinedLine\) \{/.test(pdf) && pdf.indexOf('if (examinedLine) {') < pdf.indexOf("Body Map -- shared across every gateway"));
+ok('App passes the line only in tray mode, from the tray state', /examinedLine=\{lensTrayOn\(\) \? reportShape\(trayState\)\.line : undefined\}/.test(app));

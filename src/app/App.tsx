@@ -1,4 +1,4 @@
-import { lensTrayOn, openLens, addLens, removeLens, LENS_ORDER, type LensId, type LensState, type LensAdded } from '../lib/lensState';
+import { lensTrayOn, openLens, addLens, removeLens, reportShape, LENS_ORDER, type LensId, type LensState, type LensAdded } from '../lib/lensState';
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { setSessionMarkId } from '../lib/sessionMarkStore';
 import SkipLink from './components/SkipLink';
@@ -783,6 +783,7 @@ export default function App() {
             <GatewayReviewPage
               gatewayData={gatewayData}
               selectedGateways={selectedGateways}
+              examinedLine={lensTrayOn() ? reportShape(trayState).line : undefined}
               onContinue={handleContinueFromReview}
               onGuestbook={guestbookOn() ? () => navigateTo('guestbook') : undefined}
               onEditGateway={handleEditGateway}
