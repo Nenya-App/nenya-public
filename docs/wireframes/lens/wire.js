@@ -137,3 +137,47 @@ document.querySelectorAll('[data-body]').forEach((root) => {
   const set = () => { const v = document.querySelector('[name=basis]:checked').value; title.textContent = V[v][0]; text.textContent = V[v][1]; };
   radios.forEach((r) => r.addEventListener('change', set)); set();
 })();
+
+// Soft limit (every lens): choosing fewer can be more helpful. A warning comes before a fourth choice; "Add it anyway" lets it through; nothing is ever blocked.
+document.querySelectorAll('[data-limit]').forEach((group) => {
+  const note = document.getElementById(group.dataset.limit), key = group.dataset.limit.split('-')[0];
+  const boxes = [...group.querySelectorAll('input[type=checkbox]')], count = document.getElementById(key + '-count');
+  let pending = null, allowed = false;
+  const names = () => boxes.filter((b) => b.checked).map((b) => b.value);
+  const sum = () => { const n = names(); if (count) count.textContent = n.length ? `${n.length}: ${n.join(', ')}` : 'none yet'; document.querySelectorAll(`[data-sum="${key}"]`).forEach((s) => { s.textContent = n.length ? n.join(', ') : 'no shape chosen'; }); if (key === 'A') document.querySelectorAll('#c3-now').forEach((s) => { s.textContent = n.length ? n.join(', ') : 'none chosen'; }); };
+  boxes.forEach((b) => b.addEventListener('change', () => {
+    if (b.checked && names().length > 3 && !allowed) { b.checked = false; pending = b; note.hidden = false; note.querySelector('[data-limit-yes]').focus(); return; }
+    sum();
+  }));
+  note.querySelector('[data-limit-yes]').addEventListener('click', () => { allowed = true; if (pending) pending.checked = true; note.hidden = true; sum(); pending && pending.focus(); });
+  note.querySelector('[data-limit-no]').addEventListener('click', () => { note.hidden = true; pending && pending.focus(); });
+  // Layout: all shapes, or one at a time with Previous and Next.
+  const card = group.closest('.frame'), cards = [...group.querySelectorAll('.shapecard')]; let cur = 0;
+  const show = () => cards.forEach((c, i) => { c.hidden = card.dataset.one === '1' && i !== cur; });
+  const nav = document.createElement('div'); nav.className = 'row'; nav.hidden = true;
+  nav.innerHTML = '<button type="button" data-prev>Previous shape</button><button type="button" data-next>Next shape</button>'; group.after(nav);
+  nav.querySelector('[data-prev]').addEventListener('click', () => { cur = (cur + cards.length - 1) % cards.length; show(); });
+  nav.querySelector('[data-next]').addEventListener('click', () => { cur = (cur + 1) % cards.length; show(); });
+  card.querySelectorAll('[data-layout]').forEach((b) => b.addEventListener('click', () => { card.dataset.one = b.dataset.layout === 'one' ? '1' : '0'; card.querySelectorAll('[data-layout]').forEach((o) => o.setAttribute('aria-pressed', String(o === b))); nav.hidden = card.dataset.one !== '1'; show(); }));
+  sum();
+});
+
+// Movement and Pattern: the words and sliders act on one preview and a text twin; reduced motion gives a still.
+document.querySelectorAll('[data-move-form],[data-pattern-form]').forEach((form) => {
+  const move = form.hasAttribute('data-move-form'), prev = document.getElementById(form.dataset.prev), out = document.getElementById(form.dataset.out);
+  const WS = move ? ['glacial', 'slow', 'steady', 'fast', 'frenetic'] : ['foggy', 'hazy', 'fairly clear', 'sharp', 'crystal clear'], WE = move ? ['depleted', 'low', 'moderate', 'strong', 'surging'] : ['surface', 'shallow', 'middling', 'deep', 'profound'];
+  const DIR = { upward: [0, -1], downward: [0, 1], inward: [0, 0], outward: [0, 0], spiraling: [1, -1], oscillating: [1, 0], flowing: [1, 0], stuck: [0, 0], still: [0, 0] };
+  const set = () => {
+    const a = +form.querySelector('[name=' + (move ? 'speed' : 'clarity') + ']').value, b = +form.querySelector('[name=' + (move ? 'energy' : 'depth') + ']').value;
+    const words = [...form.querySelectorAll('input[type=checkbox]:checked')].filter((c) => !c.closest('details')).map((c) => c.value.toLowerCase());
+    if (move) {
+      const d = DIR[words[0]] || [0, 0];
+      prev.style.setProperty('--dur', `${[9, 5, 2.5, 1.2, 0.5][a]}s`); prev.style.setProperty('--amp', `${8 + b * 10}px`); prev.style.setProperty('--dx', String(d[0])); prev.style.setProperty('--dy', String(d[1]));
+      prev.style.opacity = String(0.45 + b * 0.14); prev.classList.toggle('still', words[0] === 'still' || words[0] === 'stuck');
+    } else {
+      prev.style.filter = `blur(${(4 - a) * 1.5}px)`; [...prev.children].forEach((s, i) => { s.hidden = i >= 1 + Math.floor(b / 2); });
+    }
+    out.textContent = [...words.slice(0, 3), WS[a], WE[b]].join(', ');
+  };
+  form.addEventListener('input', set); set();
+});

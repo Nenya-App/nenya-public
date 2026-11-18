@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { ok } from './helpers.mts';
 const dir = 'docs/wireframes/lens';
 const pages = readdirSync(dir).filter((f) => f.endsWith('.html'));
-ok('there are wireframes for the index, the tray, Sight, Sound and Touch', ['index.html', 'tray.html', 'sight.html', 'sound.html', 'touch.html', 'body.html', 'essence.html'].every((f) => pages.includes(f)));
+ok('there are wireframes for the index, the tray, Sight, Sound and Touch', ['index.html', 'tray.html', 'sight.html', 'sound.html', 'touch.html', 'body.html', 'essence.html', 'movement.html', 'pattern.html'].every((f) => pages.includes(f)));
 for (const f of pages) {
   const h = readFileSync(`${dir}/${f}`, 'utf8');
   ok(`${f}: language, title, viewport, a skip link and one main`, /<html lang="en">/.test(h) && /<title>[^<]+<\/title>/.test(h) && /name="viewport"/.test(h) && /class="skip"/.test(h) && (h.match(/<main\b/g) ?? []).length === 1);
@@ -17,7 +17,7 @@ for (const f of pages) {
   if (f !== 'index.html') {
     const cards = h.split(/<div class="frame"[^>]*>/).slice(1);
     ok(`${f}: Emergency Exit is the first button in every frame`, cards.length >= 1 && cards.every((c) => /^\s*<div class="bar"><button type="button">(?:<img [^>]*>)?Emergency Exit<\/button>/.test(c)));
-    if (['sight.html', 'sound.html', 'touch.html', 'essence.html'].includes(f)) ok(`${f}: at least three cards, and the last has Add, Update and Remove`, cards.length >= 3 && /Add this to my report/.test(h) && /Update my report/.test(h) && /Remove from my report/.test(h));
+    if (['sight.html', 'sound.html', 'touch.html', 'essence.html', 'movement.html', 'pattern.html'].includes(f)) ok(`${f}: at least three cards, and the last has Add, Update and Remove`, cards.length >= 3 && /Add this to my report/.test(h) && /Update my report/.test(h) && /Remove from my report/.test(h));
     else if (f === 'body.html') ok(`${f}: every place can be set from a labelled list as well as the drawing, and a text twin says what is where`, /<select id="r-/.test(h) && /data-for=/.test(h) && /role="status"/.test(h) && /one map for the whole report/i.test(h));
     else ok(`${f}: the tray names every state in words, keeps the coach apart, and the report lists examined lenses separately`, /Not opened/.test(h) && /Looked at, not in your report/.test(h) && /In your report/.test(h) && /a lens of its own/.test(h) && /Examined, not included/.test(h));
   }
@@ -71,4 +71,13 @@ ok('the stylesheet respects reduced motion and has a visible focus style', /pref
 {
   const es = readFileSync(`${dir}/essence.html`, 'utf8');
   ok('Essence: three starting points (a memory, a mood, a small thing to try) as a labelled choice, and a small thing to try on the last card', /Where would you like to start\?/.test(es) && ['memory', 'mood', 'try'].every((v) => new RegExp(`name="basis" value="${v}"`).test(es)) && /<label for="ess-try">/.test(es));
+}
+
+for (const f of ['movement.html', 'pattern.html']) {
+  const h = readFileSync(`${dir}/${f}`, 'utf8');
+  ok(`${f}: five cards, every one with the opening instruction on card 1 that fewer can be more helpful`, (h.match(/<div class="frame"/g) ?? []).length === 5 && /Choosing fewer can be more helpful than choosing many/.test(h));
+  ok(`${f}: both shape groups have a soft limit of three, with a warning that offers "Add it anyway" and "Keep three" (never a block)`, (h.match(/data-limit="[AB]-lim"/g) ?? []).length === 2 && (h.match(/Add it anyway/g) ?? []).length >= 2 && (h.match(/Keep three/g) ?? []).length >= 2 && /role="alert"/.test(h));
+  ok(`${f}: shapes can be laid out or taken one at a time`, /data-layout="all"/.test(h) && /data-layout="one"/.test(h) && /Show all/.test(h) && /One at a time/.test(h));
+  ok(`${f}: the controls that act on the preview are labelled, the preview is a named image with a text twin, and More descriptions holds the optional words and free text`, /<label for="A-(speed|clarity)">/.test(h) && /<label for="A-(energy|depth)">/.test(h) && /role="img" aria-label="[^"]+"/.test(h) && /id="A-out" role="status"/.test(h) && /<details><summary>More descriptions<\/summary>/.test(h) && /<label for="A-free">/.test(h));
+  ok(`${f}: an optional activity, and the report states Examined, not included`, /\(optional\)/.test(h) && /Examined, not included/.test(h));
 }

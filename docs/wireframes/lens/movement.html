@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: the Movement lens</title>
+<link rel="stylesheet" href="wire.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the wireframes</a>
+<header class="page">
+  <h1>The Movement lens: five cards</h1>
+  <p><a href="index.html">All wireframes</a> · <a href="pattern.html">Pattern</a> · Draft 2026-11-17 · plan: <code>docs/lens-audit-movement-pattern.md</code></p>
+</header>
+<main id="main">
+<div class="legend">
+  <h2>How to read these</h2>
+  <p>Movement and Pattern share one template. Each card is a real page of controls on the left (try the keyboard) and its notes on the right. Every card has <strong>Emergency Exit</strong> first in the tab order. Nothing here sends anything, makes a sound or saves.</p>
+  <p class="mini">Every lens opens with: <em>choosing fewer can be more helpful than choosing many.</em> Where you may choose several, three is a soft limit: a warning comes before a fourth, never a block. Try it on card 1.</p>
+</div>
+
+<section class="card" aria-labelledby="c1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Movement · card 1 of 5</span><button type="button">Put this down</button></div>
+    <h2 id="c1">Pick a shape for now</h2>
+    <p>Choosing fewer can be more helpful than choosing many. Pick the ones that fit.</p>
+    <div class="row"><button type="button" aria-pressed="true" data-layout="all">Show all</button><button type="button" aria-pressed="false" data-layout="one">One at a time</button></div>
+    <fieldset data-limit="A-lim" ><legend>Shapes for now (24 in all; eight shown here)</legend>
+<label class="shapecard"><input type="checkbox" name="A-shape" value="Rising"> <span class="pic" aria-hidden="true">drawing</span> <strong>Rising</strong><span class="mini">Three arrows side by side, all pointing straight up, the middle one the longest.</span></label>
+<label class="shapecard"><input type="checkbox" name="A-shape" value="Falling"> <span class="pic" aria-hidden="true">drawing</span> <strong>Falling</strong><span class="mini">Three arrows side by side, all pointing straight down, the middle one the longest.</span></label>
+<label class="shapecard"><input type="checkbox" name="A-shape" value="Outward"> <span class="pic" aria-hidden="true">drawing</span> <strong>Outward</strong><span class="mini">Eight arrows pointing away from a small circle in the middle, one in each direction.</span></label>
+<label class="shapecard"><input type="checkbox" name="A-shape" value="Inward"> <span class="pic" aria-hidden="true">drawing</span> <strong>Inward</strong><span class="mini">Eight arrows pointing toward a small circle in the middle, one from each direction.</span></label>
+<label class="shapecard"><input type="checkbox" name="A-shape" value="Spiral out"> <span class="pic" aria-hidden="true">drawing</span> <strong>Spiral out</strong><span class="mini">A line that starts at a point in the middle and winds outward in a spiral, ending in an arrowhead.</span></label>
+<label class="shapecard"><input type="checkbox" name="A-shape" value="Back and forth"> <span class="pic" aria-hidden="true">drawing</span> <strong>Back and forth</strong><span class="mini">A smooth wave running from left to right, rising and falling four times.</span></label>
+<label class="shapecard"><input type="checkbox" name="A-shape" value="Swaying"> <span class="pic" aria-hidden="true">drawing</span> <strong>Swaying</strong><span class="mini">A curved line like a swing’s path, with three straight lines from the top reaching down to dots at the left, middle and right of the curve.</span></label>
+<label class="shapecard"><input type="checkbox" name="A-shape" value="Rocking"> <span class="pic" aria-hidden="true">drawing</span> <strong>Rocking</strong><span class="mini">A shallow bowl shape with a ball resting in it and a small curved arrow on each side tipping toward the ball.</span></label>
+</fieldset>
+    <div id="A-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have chosen three. Add a fourth anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div>
+    <p class="mini">Chosen: <span id="A-count" role="status">none yet</span></p>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Show all, One at a time</li><li>The shapes, each a checkbox with its drawing named</li><li>Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>Each shape is a checkbox named by its label, then its one-sentence description of the drawing (never a feeling).</li><li>The count under the shapes is polite.</li><li>At a fourth choice the notice is announced once and focus moves to “Add it anyway”. “Keep three” returns focus to the shape.</li></ul>
+    <h3>Responds live</h3><ul><li>“One at a time” shows one shape with Previous and Next, for people who want fewer things on screen.</li></ul>
+    <h3>Not drawn here</h3><p>The 24 shapes are the ones already in the site; eight are listed to show the pattern. Each keeps its drawing and its plain description.</p>
+  </aside>
+</section>
+
+<section class="card" aria-labelledby="c2">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Movement · card 2 of 5</span><button type="button">Put this down</button></div>
+    <h2 id="c2">Shape it (optional)</h2>
+    <p>Your shape for now comes alive. Change the controls and watch it.</p>
+    <div data-movement-form="A" data-out="A-out" data-prev="A-prev">
+<div class="prevbox"><div class="prev movement" id="A-prev" role="img" aria-label="A shape that moves; the text below says how"><span></span><span></span><span></span></div></div>
+<p class="mini">Now: <span id="A-out" role="status"></span></p>
+<fieldset><legend>Direction words: Which way is it moving? (choose any)</legend><label><input type="checkbox" name="A-w" value="Upward"> Upward</label><label><input type="checkbox" name="A-w" value="Downward"> Downward</label><label><input type="checkbox" name="A-w" value="Inward"> Inward</label><label><input type="checkbox" name="A-w" value="Outward"> Outward</label><label><input type="checkbox" name="A-w" value="Spiraling"> Spiraling</label><label><input type="checkbox" name="A-w" value="Oscillating"> Oscillating</label><label><input type="checkbox" name="A-w" value="Flowing"> Flowing</label><label><input type="checkbox" name="A-w" value="Stuck"> Stuck</label><label><input type="checkbox" name="A-w" value="Still"> Still</label></fieldset>
+<label for="A-speed">Speed</label>
+<input type="range" id="A-speed" name="speed" min="0" max="4" value="2">
+<div class="ends"><span>Glacial</span><span>Frenetic</span></div>
+<label for="A-energy">Energy</label>
+<input type="range" id="A-energy" name="energy" min="0" max="4" value="2">
+<div class="ends"><span>Depleted</span><span>Surging</span></div>
+
+<details><summary>More descriptions</summary><fieldset><legend>Quality words: It moves in a way that is (choose any)</legend><label><input type="checkbox" name="A-q" value="Fluid"> Fluid</label><label><input type="checkbox" name="A-q" value="Jerky"> Jerky</label><label><input type="checkbox" name="A-q" value="Graceful"> Graceful</label><label><input type="checkbox" name="A-q" value="Forceful"> Forceful</label><label><input type="checkbox" name="A-q" value="Hesitant"> Hesitant</label><label><input type="checkbox" name="A-q" value="Determined"> Determined</label><label><input type="checkbox" name="A-q" value="Gentle"> Gentle</label><label><input type="checkbox" name="A-q" value="Turbulent"> Turbulent</label></fieldset>
+<label for="A-free">In your own words (optional)</label><input type="text" id="A-free">
+<label><input type="checkbox" id="vibon"> Let this device vibrate to the speed (off until you switch it on; only where supported; never the only signal)</label></details>
+</div>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Direction words (checkboxes)</li><li>Speed, Energy</li><li>More descriptions (closed by default), then what is inside</li><li>Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>The preview is a named image. The status line under it says the same thing in words every time a control changes: “upward, fast, very strong”. It never moves focus.</li><li>“More descriptions” is a button with an expanded or collapsed state.</li></ul>
+    <h3>Responds live <strong>(try it)</strong></h3><ul><li>Speed sets how fast it moves. Energy sets how far and how bright. The direction words set which way. Under reduced motion it is a still with trails, and the words still change.</li></ul>
+    <h3>Tucked into More descriptions</h3><p>Quality words, the free-text line, and the vibration opt-in (off until switched on, only where the device can, never the only signal). Skipping them never blocks adding the lens.</p>
+  </aside>
+</section>
+
+<section class="card" aria-labelledby="c3">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Movement · card 3 of 5</span><button type="button">Put this down</button></div>
+    <h2 id="c3">Pick a shape for the life you want</h2>
+    <p>The same shapes. Fewer can be more helpful here too. Your shape for now stays in view to compare.</p>
+    <p class="mini">For now: <span id="c3-now">none chosen</span></p>
+    <fieldset data-limit="B-lim" ><legend>Shapes for wish (24 in all; eight shown here)</legend>
+<label class="shapecard"><input type="checkbox" name="B-shape" value="Rising"> <span class="pic" aria-hidden="true">drawing</span> <strong>Rising</strong><span class="mini">Three arrows side by side, all pointing straight up, the middle one the longest.</span></label>
+<label class="shapecard"><input type="checkbox" name="B-shape" value="Falling"> <span class="pic" aria-hidden="true">drawing</span> <strong>Falling</strong><span class="mini">Three arrows side by side, all pointing straight down, the middle one the longest.</span></label>
+<label class="shapecard"><input type="checkbox" name="B-shape" value="Outward"> <span class="pic" aria-hidden="true">drawing</span> <strong>Outward</strong><span class="mini">Eight arrows pointing away from a small circle in the middle, one in each direction.</span></label>
+<label class="shapecard"><input type="checkbox" name="B-shape" value="Inward"> <span class="pic" aria-hidden="true">drawing</span> <strong>Inward</strong><span class="mini">Eight arrows pointing toward a small circle in the middle, one from each direction.</span></label>
+<label class="shapecard"><input type="checkbox" name="B-shape" value="Spiral out"> <span class="pic" aria-hidden="true">drawing</span> <strong>Spiral out</strong><span class="mini">A line that starts at a point in the middle and winds outward in a spiral, ending in an arrowhead.</span></label>
+<label class="shapecard"><input type="checkbox" name="B-shape" value="Back and forth"> <span class="pic" aria-hidden="true">drawing</span> <strong>Back and forth</strong><span class="mini">A smooth wave running from left to right, rising and falling four times.</span></label>
+<label class="shapecard"><input type="checkbox" name="B-shape" value="Swaying"> <span class="pic" aria-hidden="true">drawing</span> <strong>Swaying</strong><span class="mini">A curved line like a swing’s path, with three straight lines from the top reaching down to dots at the left, middle and right of the curve.</span></label>
+<label class="shapecard"><input type="checkbox" name="B-shape" value="Rocking"> <span class="pic" aria-hidden="true">drawing</span> <strong>Rocking</strong><span class="mini">A shallow bowl shape with a ball resting in it and a small curved arrow on each side tipping toward the ball.</span></label>
+</fieldset>
+    <div id="B-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have chosen three. Add a fourth anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div>
+    <p class="mini">Chosen: <span id="B-count" role="status">none yet</span></p>
+    <h3>Shape it (optional)</h3>
+    <div data-movement-form="B" data-out="B-out" data-prev="B-prev">
+<div class="prevbox"><div class="prev movement" id="B-prev" role="img" aria-label="A shape that moves; the text below says how"><span></span><span></span><span></span></div></div>
+<p class="mini">Wish: <span id="B-out" role="status"></span></p>
+<fieldset><legend>Direction words: Which way is it moving? (choose any)</legend><label><input type="checkbox" name="B-w" value="Upward"> Upward</label><label><input type="checkbox" name="B-w" value="Downward"> Downward</label><label><input type="checkbox" name="B-w" value="Inward"> Inward</label><label><input type="checkbox" name="B-w" value="Outward"> Outward</label><label><input type="checkbox" name="B-w" value="Spiraling"> Spiraling</label><label><input type="checkbox" name="B-w" value="Oscillating"> Oscillating</label><label><input type="checkbox" name="B-w" value="Flowing"> Flowing</label><label><input type="checkbox" name="B-w" value="Stuck"> Stuck</label><label><input type="checkbox" name="B-w" value="Still"> Still</label></fieldset>
+<label for="B-speed">Speed</label>
+<input type="range" id="B-speed" name="speed" min="0" max="4" value="2">
+<div class="ends"><span>Glacial</span><span>Frenetic</span></div>
+<label for="B-energy">Energy</label>
+<input type="range" id="B-energy" name="energy" min="0" max="4" value="2">
+<div class="ends"><span>Depleted</span><span>Surging</span></div>
+
+<details><summary>More descriptions</summary><fieldset><legend>Quality words: It moves in a way that is (choose any)</legend><label><input type="checkbox" name="B-q" value="Fluid"> Fluid</label><label><input type="checkbox" name="B-q" value="Jerky"> Jerky</label><label><input type="checkbox" name="B-q" value="Graceful"> Graceful</label><label><input type="checkbox" name="B-q" value="Forceful"> Forceful</label><label><input type="checkbox" name="B-q" value="Hesitant"> Hesitant</label><label><input type="checkbox" name="B-q" value="Determined"> Determined</label><label><input type="checkbox" name="B-q" value="Gentle"> Gentle</label><label><input type="checkbox" name="B-q" value="Turbulent"> Turbulent</label></fieldset>
+<label for="B-free">In your own words (optional)</label><input type="text" id="B-free">
+</details>
+</div>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Notes</h3><ul><li>Exactly the same controls as cards 1 and 2, so there is one thing to learn.</li><li>The shape for now stays in view as text (“For now: …”), so comparing needs no memory.</li><li>Tab order: Emergency Exit, Put this down, the shapes, the controls, More descriptions, Skip, Next.</li></ul>
+  </aside>
+</section>
+
+<section class="card" aria-labelledby="c4">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Movement · card 4 of 5</span><button type="button">Put this down</button></div>
+    <h2 id="c4">A path of motion (optional)</h2>
+    <p>Draw a line with the pad. It replays as a moving trail. Pointer or touch only: the words above are the full alternative.</p>
+    <div class="drawpad" role="img" aria-label="A blank pad for drawing. Optional. The words on the earlier cards say the same things."><span aria-hidden="true">drawing pad (the existing one)</span></div>
+    <div class="row"><button type="button">Undo</button><button type="button">Clear</button></div>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Notes</h3><ul><li>Optional and skippable. Nothing here is needed to add the lens.</li><li>Pointer or touch only; the words are the full alternative, and the report holds the words, not the picture, unless the person adds the picture.</li><li>Reduced motion: the replay is a still of the finished line.</li></ul>
+  </aside>
+</section>
+
+<section class="card" aria-labelledby="c5">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Movement · card 5 of 5</span><button type="button">Put this down</button></div>
+    <h2 id="c5">Add Movement to your report?</h2>
+    <p>This is what would be added:</p>
+    <ul><li>Now: <span data-sum="A">no shape chosen</span></li><li>Wish: <span data-sum="B">no shape chosen</span></li><li>Body: none marked</li></ul>
+    <div class="row"><button type="button" class="primary" data-added="added-state">Add this to my report</button><button type="button">Put this down</button></div>
+    <p id="added-state" hidden role="status"><strong>Added.</strong> You can come back and change it. <button type="button">Update my report</button> <button type="button">Remove from my report</button></p>
+    <p class="state-label">If put down without adding</p>
+    <p class="mini">Your report will say: “Examined, not included: Movement.” Anything you chose stays here, marked “not in your report yet”, until you leave. It is never saved unless you add it.</p>
+  </div>
+  <aside class="note">
+    <h3>States</h3><ul><li><strong>Before:</strong> as drawn.</li><li><strong>Added:</strong> the card reopens with Update and Remove.</li><li><strong>Examined:</strong> one report line, kept on the device only.</li></ul>
+    <h3>Playful, within the limits</h3><p>A still “added” state and, if motion is allowed, one soft settle of the shape. No points, streaks or badges.</p>
+  </aside>
+</section>
+</main>
+<script src="wire.js"></script>
+</body>
+</html>
