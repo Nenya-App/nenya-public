@@ -150,6 +150,7 @@ Terms drafts were compared with `src/lib/legalDocument.ts` (effective November 1
 | [drafts/plain-language-summaries-2026-11-14.md](drafts/plain-language-summaries-2026-11-14.md) | "In plain words" boxes for the About pages | Not on the site |
 | [drafts/origin-and-name-draft.md](drafts/origin-and-name-draft.md) | Origin note and Name page | Not published |
 | [drafts/compliance-pressure-set-draft.md](drafts/compliance-pressure-set-draft.md) | Ten categories of invented messages that ask a model to comply with what a careful reply declines; pass criteria left for the owner | Draft |
+| [hub-scope.md](hub-scope.md) | A local hub and spokes: the hub serves the app (option 1) or peer-to-peer (option 4); the guards must run on the hub's side | Scoping |
 | [expanded-buildout-scope.md](expanded-buildout-scope.md) | The technical workstreams after 2026-11-17: outer layers, local models, lens rewrite, Terms batching, evidence | Scoping |
 | [lens-rebuild-audit.md](lens-rebuild-audit.md) | The six lens pages as they are (sliders, stages, shared state), the card model, the method for rebuilding one lens at a time | Scoping |
 | [wireframes/lens/index.html](wireframes/lens/index.html) | Plain-HTML wireframes for Sight and Sound (four cards each), built to be tested by keyboard and screen reader; make no sound and send nothing | Draft for the owner |
