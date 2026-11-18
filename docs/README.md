@@ -153,6 +153,7 @@ Terms drafts were compared with `src/lib/legalDocument.ts` (effective November 1
 | [expanded-buildout-scope.md](expanded-buildout-scope.md) | The technical workstreams after 2026-11-17: outer layers, local models, lens rewrite, Terms batching, evidence | Scoping |
 | [lens-rebuild-audit.md](lens-rebuild-audit.md) | The six lens pages as they are (sliders, stages, shared state), the card model, the method for rebuilding one lens at a time | Scoping |
 | [wireframes/lens/index.html](wireframes/lens/index.html) | Plain-HTML wireframes for Sight and Sound (four cards each), built to be tested by keyboard and screen reader; make no sound and send nothing | Draft for the owner |
+| [lens-audit-movement-pattern.md](lens-audit-movement-pattern.md) | Movement and Pattern (was Insight) audited together: two near-identical pages with 24 drawn shapes each that already work as decks; a shared card plan and optional activities | Draft for the owner |
 | [lens-audit-essence.md](lens-audit-essence.md) | Essence as it is (word lists, no imagery), what the lens must get right (people who cannot smell or taste), three directions, a recommendation | Draft for the owner |
 | [lens-audit-touch.md](lens-audit-touch.md) | Touch as it is (283 texture photos, ten sliders that change nothing), a card plan, and the shared-body-map finding | Draft for the owner |
 | [lens-audit-sight-sound.md](lens-audit-sight-sound.md) | Sight and Sound as they are, what to fix, and a draft card plan for each | Draft for the owner |
