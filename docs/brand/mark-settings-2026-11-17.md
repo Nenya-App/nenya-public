@@ -40,3 +40,6 @@ Animation:
 - **The fidget:** pointing at the mark starts 16 half turns, one randomly chosen e at a time, in colours from the palette; it keeps going while the pointer stays; a tap plays one run; Escape stops it; a keyboard user gets a "Play the mark" button (visible on focus) that also stops it. With reduced motion it does not turn or fidget and shows only its resting state.
 - **Decided against (owner, 2026-11-17):** adding the shadow ID or the mark to signed transcripts. A transcript's `session` record is always the pair the person picked in the coach, so the shadow ID never appears in one; transcripts stay as they are.
 - **Not done:** the weave and flips are editor options only; the mark appears only where the footer does.
+
+## Animation removed (owner, 2026-11-18)
+"The animation looks messy and ugly when used on small sized text, so remove it completely for now." The mark no longer turns on first sight, no longer fidgets, and has no play button or pointer or key handlers. It shows its resting state only: the placement is still exactly the editor's settings above (nudge, rise and space after per face; the gold e in front; each e centred on its own ink so the upside-down e rests where the editor puts it). The timings and the fidget plan stay in `src/lib/nameMark.ts`, unused, so the animation can return. Behind `VITE_NAME_MARK=on`, as before.

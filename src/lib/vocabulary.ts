@@ -3,7 +3,8 @@
 // keys and types keep their old names (a saved draft still reads), so only what a person reads or hears goes through here.
 // Structural changes (the tray, "of six", Add this to my report) belong to the lens rewrite, not to this word swap.
 
-export const lensCopyOn = (): boolean => import.meta.env?.VITE_LENS_COPY === 'on';
+// ON by default (owner, 2026-11-18: the lens words go across the whole site). VITE_LENS_COPY=off is the only way back to the old words.
+export const lensCopyOn = (): boolean => import.meta.env?.VITE_LENS_COPY !== 'off';
 
 const OLD_LENS_WORDS = /gateways?/i;
 

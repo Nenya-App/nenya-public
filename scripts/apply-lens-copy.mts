@@ -4,7 +4,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { L } from '../src/lib/vocabulary.ts';
 
-if (process.env.VITE_LENS_COPY !== 'on') { console.log('apply-lens-copy: off, nothing changed'); process.exit(0); }
+if (process.env.VITE_LENS_COPY === 'off') { console.log('apply-lens-copy: off, nothing changed'); process.exit(0); }
 const FILES = ['about-nenya.html', 'why-nenya.html', 'llms.txt'];
 for (const f of FILES) {
   const p = `dist/${f}`;

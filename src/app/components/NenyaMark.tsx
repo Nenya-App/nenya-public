@@ -1,21 +1,19 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 
-// The mark (owner, 2026-11-15; settings from the editor 2026-11-17): "nenya.biz" with four e's stacked in one letter space. The white e stays; a gold e (in front)
-// turns half a circle when the mark first comes into view and rests upside down, so the mark reads nənya.biz, "nunya biz": none of your business. The schwa lives only in
-// this mark; everywhere else the name is plain "Nenya". Screen readers hear "nenya.biz".
-// It is also a visual form of the session ID: the colours come from the session's two colours, the arrangement of the other e's from the ID. Pointing at the mark (or a tap,
-// or its keyboard button) starts a fidget: a series of half turns of one e at a time, chosen at random, in colours from that pair; it keeps going while the pointer stays.
-// A demonstration, nothing to do with security. With reduced motion it only shows its resting state. Behind VITE_NAME_MARK=on until approved on staging.
+// The mark (owner, 2026-11-15; settings from the editor 2026-11-17): "nenya.biz" with four e's stacked in one letter space. The white e stays; a gold e (in front) rests
+// turned half a circle (upside down), so the mark reads nənya.biz, "nunya biz": none of your business. The schwa lives only in this mark; everywhere else the name is plain
+// "Nenya". Screen readers hear "nenya.biz". It is also a visual form of the session ID: the colours come from the session's two colours, which of the other e's rest upside
+// down from the ID. NO ANIMATION (owner, 2026-11-18: it looked messy and ugly on small text, "remove it completely for now"): no turn on first sight, no fidget, no play button.
+// The resting placement is exactly the editor's (nudge, rise and space after, per face, in src/lib/nameMark.ts). The timings and the fidget stay in nameMark.ts, unused, for if
+// the animation returns. Behind VITE_NAME_MARK=on.
 
-import {
-  MARK_FIDGET, MARK_LAYERS, MARK_MOTION, MARK_SETTINGS, SETTLE, fidgetPlan, hexToRgb, markArrangement, markColourIndexes, markPalette, type MarkFace as Face, type Rgb,
-} from '../../lib/nameMark';
+import { MARK_LAYERS, MARK_MOTION, MARK_SETTINGS, hexToRgb, markArrangement, markColourIndexes, markPalette, type MarkFace as Face, type Rgb } from '../../lib/nameMark';
 import { getSessionMarkId, subscribeSessionMark } from '../../lib/sessionMarkStore';
 export { nameMarkOn } from '../../lib/nameMark';
 
 const Z = [2, 3, 0, 0]; // the white e; the gold e in front of it; the two more under the white one
 
-// The turning point is the middle of the e's own ink in this font and size (measured on a canvas), so it turns in place.
+// The point an upside-down e is turned about is the middle of the e's own ink in this font and size (measured on a canvas), so it rests in place, where the editor puts it.
 function centreOnInk(el: HTMLElement) {
   const cs = getComputedStyle(el);
   const ctx = document.createElement('canvas').getContext('2d');
@@ -43,152 +41,45 @@ export function NenyaMark({ face = 'body', className = '' }: { face?: Face; clas
   const id = useSyncExternalStore(subscribeSessionMark, getSessionMarkId, getSessionMarkId);
   const markRef = useRef<HTMLSpanElement>(null);
   const layers = useRef<(HTMLSpanElement | null)[]>([]);
-  const [canPlay, setCanPlay] = useState(false);
-  const [playing, setPlaying] = useState(false);
-  const control = useRef<{ start: (hold: boolean) => void; stop: () => void } | null>(null);
 
+  // Rest only: each e is placed once (and again if the session's colours change or the font arrives). An e that rests upside down gets the owner's nudge and rise.
   useEffect(() => {
     const mark = markRef.current;
     const els = layers.current.slice(0, MARK_LAYERS) as HTMLSpanElement[];
     if (!mark || els.length < MARK_LAYERS || els.some((e) => !e)) return;
-    const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const motion = MARK_MOTION[face], fidgetSet = MARK_FIDGET[face], place = MARK_SETTINGS[face];
-    const palette = () => markPalette(id, pageColour(mark));
-    // Each e rests at a whole number of half turns: an odd number leaves it upside down, and then it gets the owner's nudge and rise so it sits in the letter space.
-    const angles = [0, 0, 0, 0];
-    const tf = (a: number, scale = 1) => {
-      const odd = Math.abs(a % 180) < 1 && Math.abs(Math.round(a / 180)) % 2 === 1;
-      return `translate(${odd ? place.nudge : 0}em, ${odd ? -place.rise : 0}em) rotate(${a}deg) scale(${scale})`;
-    };
-    let tokens = 0;
-    let hovering = false;
+    const place = MARK_SETTINGS[face];
     let disposed = false;
-    const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-    const colours: (string | null)[] = [null, null, null, null]; // null: the page ink
-    const paint = (i: number) => { els[i].style.transform = tf(angles[i]); els[i].style.color = colours[i] ?? ''; };
     const rest = () => {
-      const turned = markArrangement(id, face), pal = palette(), pick = markColourIndexes(id, face);
-      for (let i = 0; i < MARK_LAYERS; i++) {
-        angles[i] = turned[i] ? motion.way * motion.degrees : 0;
-        colours[i] = i === 0 ? null : i === 1 ? (motion.goldColour === 'same' ? null : pal[0]) : pal[pick[i]];
-        paint(i);
-      }
-    };
-    els.forEach(centreOnInk);
-    rest();
-
-    // The single turn of the gold e, once, when the mark first comes into view.
-    let started = false;
-    const firstTurn = () => {
-      if (started || disposed) return;
-      started = true;
-      if (reduce || typeof els[1].animate !== 'function') return;
-      const end = angles[1];
-      angles[1] = 0;
-      const ink = getComputedStyle(els[1]).color;
-      const to = motion.goldColour === 'turns' ? palette()[0] : ink;
-      const quarter = motion.way * 90;
-      const frames: Keyframe[] = [{ offset: 0, transform: tf(0), color: ink }];
-      const pausing = motion.pauseMs > 0;
-      if (pausing) {
-        const hold = Math.min(0.5, motion.pauseMs / motion.durationMs), o1 = Math.min(0.45, 0.5 * (1 - hold));
-        frames.push({ offset: o1, transform: tf(quarter, motion.lift), color: ink }, { offset: o1 + hold, transform: tf(quarter, motion.lift), color: to });
-      } else if (motion.lift !== 1) frames.push({ offset: 0.5, transform: tf(end / 2, motion.lift), color: ink });
-      frames.push({ offset: 1, transform: tf(end), color: to });
-      const a = els[1].animate(frames, { duration: motion.durationMs, delay: motion.delayMs, easing: motion.easing, fill: 'forwards' });
-      a.onfinish = () => { angles[1] = end; colours[1] = motion.goldColour === 'turns' ? to : null; paint(1); a.cancel(); };
-    };
-
-    // The fidget: half turns of one e at a time, in colours from the session's pair; held for as long as it is pointed at, or a fixed number of turns.
-    const turn = async (i: number, way: 1 | -1, colour: string): Promise<void> => {
-      const from = angles[i], to = from + way * 180;
-      angles[i] = to;
-      const colourNow = getComputedStyle(els[i]).color;
-      colours[i] = colour;
-      if (typeof els[i].animate !== 'function') { paint(i); return; }
-      els[i].getAnimations().forEach((x) => x.cancel());
-      const x = els[i].animate([{ transform: tf(from), color: colourNow }, { transform: tf(to), color: colour }], { duration: fidgetSet.turnMs, easing: SETTLE, fill: 'forwards' });
-      await new Promise<void>((res) => { x.onfinish = () => { paint(i); x.cancel(); res(); }; x.oncancel = () => res(); });
-    };
-    const stop = () => { tokens++; hovering = false; setPlaying(false); };
-    const start = async (hold: boolean) => {
-      if (reduce || disposed) return;
-      const my = ++tokens;
-      setPlaying(true);
-      const pal = palette();
-      const plan = fidgetPlan(face);
-      for (let n = 0; tokens === my && !disposed; n++) {
-        if (!hold && n >= plan.length) break;
-        const step = plan[n % plan.length];
-        await turn(step.layer, step.way, pal[step.colour]);
-        if (tokens !== my) return;
-        await sleep(fidgetSet.pauseMs);
-        if (hold && !hovering) break;
-      }
-      if (tokens === my) setPlaying(false);
-    };
-    control.current = { start: (hold) => { hovering = hold; void start(hold); }, stop };
-
-    const enter = () => { hovering = true; void start(true); };
-    const leave = () => { hovering = false; };
-    const tap = () => { if (!hovering) void start(false); };
-    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') stop(); };
-    mark.addEventListener('pointerenter', enter);
-    mark.addEventListener('pointerleave', leave);
-    mark.addEventListener('pointerdown', tap);
-    window.addEventListener('keydown', esc);
-    setCanPlay(!reduce);
-
-    let observer: IntersectionObserver | null = null;
-    const ready = typeof document !== 'undefined' && document.fonts ? document.fonts.ready : Promise.resolve();
-    void ready.then(() => {
-      if (disposed) return;
+      const turned = markArrangement(id, face), pal = markPalette(id, pageColour(mark)), pick = markColourIndexes(id, face);
       els.forEach(centreOnInk);
-      if (typeof IntersectionObserver === 'undefined') return firstTurn();
-      observer = new IntersectionObserver((entries) => { if (entries.some((e) => e.isIntersecting)) { observer?.disconnect(); firstTurn(); } });
-      observer.observe(mark);
-    });
-    return () => {
-      disposed = true; tokens++;
-      observer?.disconnect();
-      mark.removeEventListener('pointerenter', enter);
-      mark.removeEventListener('pointerleave', leave);
-      mark.removeEventListener('pointerdown', tap);
-      window.removeEventListener('keydown', esc);
-      els.forEach((e) => e.getAnimations?.().forEach((x) => x.cancel()));
-      control.current = null;
+      els.forEach((el, i) => {
+        el.style.transform = turned[i] ? `translate(${place.nudge}em, ${-place.rise}em) rotate(${MARK_MOTION[face].way * 180}deg)` : 'none';
+        el.style.color = i === 0 ? '' : i === 1 ? (MARK_MOTION[face].goldColour === 'same' ? '' : pal[0]) : pal[pick[i]]; // the white e is the page ink; the gold e per the editor (Cormorant: the ink; Manrope: the pair's first colour)
+      });
     };
+    rest();
+    const ready = typeof document !== 'undefined' && document.fonts ? document.fonts.ready : Promise.resolve();
+    void ready.then(() => { if (!disposed) rest(); });
+    return () => { disposed = true; };
   }, [face, id]);
 
   return (
-    <>
-      <span
-        ref={markRef}
-        role="img"
-        aria-label="nenya.biz"
-        className={`whitespace-nowrap ${className}`}
-        style={face === 'lyric' ? { fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic' } : undefined}
-      >
-        n
-        <span aria-hidden="true" className="relative inline-grid leading-none" style={{ marginRight: `${MARK_SETTINGS[face].after}em` }}>
-          {Z.map((z, i) => (
-            <span key={i} ref={(el) => { layers.current[i] = el; }} className="relative inline-block leading-none" style={{ gridArea: '1 / 1', zIndex: z }}>
-              e
-            </span>
-          ))}
-        </span>
-        nya.biz
+    <span
+      ref={markRef}
+      role="img"
+      aria-label="nenya.biz"
+      className={`whitespace-nowrap ${className}`}
+      style={face === 'lyric' ? { fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic' } : undefined}
+    >
+      n
+      <span aria-hidden="true" className="relative inline-grid leading-none" style={{ marginRight: `${MARK_SETTINGS[face].after}em` }}>
+        {Z.map((z, i) => (
+          <span key={i} ref={(el) => { layers.current[i] = el; }} className="relative inline-block leading-none" style={{ gridArea: '1 / 1', zIndex: z }}>
+            e
+          </span>
+        ))}
       </span>
-      {canPlay && (
-        <button
-          type="button"
-          aria-pressed={playing}
-          onClick={() => (playing ? control.current?.stop() : control.current?.start(false))}
-          className="sr-only focus-visible:not-sr-only focus-visible:ml-2 focus-visible:rounded focus-visible:px-2 focus-visible:text-xs focus-visible:underline"
-        >
-          {playing ? 'Stop the mark' : 'Play the mark'}
-        </button>
-      )}
-    </>
+      nya.biz
+    </span>
   );
 }

@@ -7,10 +7,9 @@
   # site: see docs/branches-and-previews.md ("Node 24").
   NODE_VERSION = "24"
 
-# The dev branch's deploys (Netlify's branch-deploy context named for the branch) build with the lens vocabulary, the lens tray and the Terms-first entry ON,
-# so the owner can walk them end to end before anything is turned on in production (owner, 2026-11-18). Production is unaffected: its variables are set in
-# Netlify (docs/production-env.md) and it builds main. To turn one off for dev, set it to "off" here or in the site's environment.
-[context.dev.environment]
+  # The lens tray, the Terms-first entry and the lens words are ON in every build of this repository (owner, 2026-11-18). They are set here, for all deploy contexts,
+  # because the dev site may build as its own site's "production" (so a branch-only setting would not reach it). A variable set in a site's own Netlify settings
+  # overrides these; set one to "off" there to turn it off for that site. The lens words are also on by default in the code (VITE_LENS_COPY=off turns them off).
   VITE_LENS_COPY = "on"
   VITE_LENS_TRAY = "on"
   VITE_TERMS_FIRST = "on"

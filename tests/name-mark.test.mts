@@ -50,12 +50,17 @@ off();
 const src = readFileSync('src/app/components/NenyaMark.tsx', 'utf8') + readFileSync('src/lib/nameMark.ts', 'utf8');
 ok('screen readers hear "nenya.biz"; the letters themselves are hidden from them', /role="img"\s+aria-label="nenya\.biz"/.test(src) && /aria-hidden="true"/.test(src));
 ok('the gold e is in front of the white one, and the two extras are under it', /const Z = \[2, 3, 0, 0\]/.test(src));
-ok('the single turn happens once, on first sight, and the mark holds still under reduced motion (no turn, no fidget)', /if \(started \|\| disposed\) return;/.test(src) && /if \(reduce \|\| typeof els\[1\]\.animate !== 'function'\) return;/.test(src) && /if \(reduce \|\| disposed\) return;/.test(src) && /setCanPlay\(!reduce\)/.test(src));
-ok('pointing at the mark starts the fidget and keeps it going while the pointer stays; a tap plays one run; it stops on Escape', /addEventListener\('pointerenter', enter\)/.test(src) && /hovering = true; void start\(true\)/.test(src) && /addEventListener\('pointerdown', tap\)/.test(src) && /e\.key === 'Escape'/.test(src));
-ok('a keyboard user has a button to play the mark and the same button stops it (WCAG 2.2.2)', /aria-pressed=\{playing\}/.test(src) && /Play the mark/.test(src) && /Stop the mark/.test(src));
-ok('the space after the stack moves only the letters after it; the nudge and rise move only an upside-down e', /marginRight: `\$\{MARK_SETTINGS\[face\]\.after\}em`/.test(src) && /odd \? place\.nudge : 0/.test(src) && /odd \? -place\.rise : 0/.test(src));
+ok('the space after the stack moves only the letters after it; the nudge and rise move only an upside-down e', /marginRight: `\$\{MARK_SETTINGS\[face\]\.after\}em`/.test(src) && /turned\[i\] \? `translate\(\$\{place\.nudge\}em, \$\{-place\.rise\}em\)/.test(src));
 ok('the colours are kept readable against the page the mark sits on, and come from the session ID', /markPalette\(id, pageColour\(mark\)\)/.test(src) && /useSyncExternalStore\(subscribeSessionMark, getSessionMarkId/.test(src));
 const footer = readFileSync('src/app/components/AppFooter.tsx', 'utf8');
 ok('the footer shows the mark only with VITE_NAME_MARK=on, and the plain name otherwise', /nameMarkOn\(\) \? <NenyaMark face="body"/.test(footer) && /: <span className="text-sm font-medium">Nenya<\/span>/.test(footer));
 ok('the copyright line keeps the plain name', /<p>© 2025 Nenya<\/p>/.test(footer));
 ok('the main app and the coach tell the mark which session ID to use', /setSessionMarkId\(sessionId( \|\| null)?\)/.test(readFileSync('src/app/App.tsx', 'utf8')) && /setSessionMarkId\(colors \? sessionIdFrom\(colors\.color1, colors\.color2\) : null\)/.test(readFileSync('src/coach/CoachPage.tsx', 'utf8')));
+
+// Owner, 2026-11-18: the animation looked messy and ugly on small text and is removed for now. The resting mark and its exact placement stay.
+{
+  const comp = readFileSync('src/app/components/NenyaMark.tsx', 'utf8').split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+  ok('the mark does not animate: no turn on first sight, no fidget, no play button, no pointer or key handlers', !/\.animate\(|getAnimations|IntersectionObserver|addEventListener|Play the mark|Stop the mark|aria-pressed|pointerenter|fidgetPlan/.test(comp));
+  ok('the resting placement is the editor\'s: the turned e is nudged and raised per face, the stack\'s space after is set, the gold e is in front', /translate\(\$\{place\.nudge\}em, \$\{-place\.rise\}em\)/.test(comp) && /marginRight: `\$\{MARK_SETTINGS\[face\]\.after\}em`/.test(comp) && /const Z = \[2, 3, 0, 0\]/.test(comp));
+  ok('it still centres each e on its own ink so the upside-down e rests where the editor puts it', /centreOnInk/.test(comp) && /measureText\('e'\)/.test(comp));
+}
