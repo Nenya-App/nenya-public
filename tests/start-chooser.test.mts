@@ -13,7 +13,7 @@ ok('the coach option says it is US-only for now, and its "Learn more" that it is
 ok('it suggests breathing without choosing for anyone, and names crisis help', /Breathing is a gentle place to begin/.test(START_COPY.notSure) && /988/.test(START_COPY.crisis));
 
 const flow = readFileSync('src/app/components/OnboardingFlow.tsx', 'utf8');
-ok('with the switch on, the panel opens on the chooser (not on a link straight to another page)', /const chooser = startChooserOn\(\) && !skipRhythm;/.test(flow) && /useState<OnboardingStep>\(chooser \? 'start' :/.test(flow));
+ok('with the switch on, the panel opens on the chooser (not on a link straight to another page)', /const chooser = startChooserOn\(\) && !skipRhythm && !termsFirst;/.test(flow) && /useState<OnboardingStep>\(chooser \? 'start' :/.test(flow));
 ok('breathing goes to the rhythm, the others straight to the Terms', /setStep\(c === 'breathing' \? 'rhythm' : 'terms'\)/.test(flow));
 const triad = readFileSync('src/app/components/StartTriad.tsx', 'utf8');
 ok('nothing is preselected: three ring buttons in a triangle (Breathe on top), and one closed "Learn more" for all three', /<StartTriad onChoose=\{choose\} \/>/.test(flow) && /onClick=\{\(\) => onChoose\(id\)\}/.test(triad) && !/aria-pressed|aria-checked/.test(triad) && /<RingButton id="breathing"[\s\S]{0,200}<RingButton id="reflection"[\s\S]{0,80}<RingButton id="coach"/.test(triad) && /<details className="rounded-xl border border-border/.test(triad));
