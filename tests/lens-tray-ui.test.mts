@@ -17,7 +17,7 @@ ok('the soft limit is a warning, never a block (the fourth waits for Add it anyw
 
 const sound = readFileSync('src/app/components/pages/SoundGatewayPage.tsx', 'utf8');
 ok('Sound, in tray mode, hides "Gateway n of m", offers Add / Put this down, and warns before a fourth word', /!tray && <GatewayProgress/.test(sound) && /<AddToReport name="Sound"/.test(sound) && /needsFewerWarning/.test(sound) && /<FewerWarning/.test(sound));
-ok('Sound keeps Pitch and Volume up front and tucks words and sounds under More descriptions', (sound.match(/<MoreDescriptions>/g) ?? []).length === 2 && /label="Pitch"/.test(sound));
+ok('Sound is a run of separate cards (pitch and volume, timbre and rhythm words, your own words), the present state then the wish, then add; not one long card', /part: 'sliders', title: 'Pitch and volume'/.test(sound) && /part: 'words'/.test(sound) && /part: 'desc'/.test(sound) && /<LensCardNav index=\{trayIndex\}/.test(sound) && /trayOn\('present', 'words'\)/.test(sound) && /trayOn\('wish', 'desc'\)/.test(sound) && !/<MoreDescriptions/.test(sound.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')));
 ok('Sound reopens with what was added', /initialData/.test(sound) && /initialData=\{gatewayData\.find\(\(g\) => g\.gateway === 'sound'\)/.test(app));
 
 const touch = readFileSync('src/app/components/pages/TouchGatewayPage.tsx', 'utf8');

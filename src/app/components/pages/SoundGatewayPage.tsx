@@ -33,7 +33,7 @@ import {
 } from '../../../lib/audio';
 
 import { WordPicker } from '../WordPicker';
-import { PutThisDown, FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { PutThisDown, FewerNote, FewerWarning, AddToReport, LensCardNav } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { PhraseMelody, type Active } from '../PhraseMelody';
 import { ChordPrototype } from '../ChordPrototype';
@@ -179,6 +179,21 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<PairStage>('present');
   useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
+  // Tray mode: each activity is its own card (owner, 2026-11-18): pitch and volume, the timbre and rhythm words, your own words; the present state first, then the wish, then add.
+  type TrayCard = { stage: 'present' | 'wish' | 'add'; part: 'sliders' | 'words' | 'desc' | 'add'; title: string };
+  const cards: TrayCard[] = tray ? [
+    ...(['present', 'wish'] as const).flatMap((st) => [
+      { stage: st, part: 'sliders', title: 'Pitch and volume' } as TrayCard,
+      { stage: st, part: 'words', title: 'Timbre and rhythm, in words' } as TrayCard,
+      { stage: st, part: 'desc', title: 'The sounds, in your own words' } as TrayCard,
+    ]),
+    { stage: 'add', part: 'add', title: 'Add to your report' },
+  ] : [];
+  const [trayIndex, setTrayIndex] = useState(0);
+  const cur = tray ? cards[Math.min(trayIndex, cards.length - 1)] : null;
+  const activeStage = tray ? cur!.stage : stage;
+  const trayOn = (st: 'present' | 'wish', part: TrayCard['part']) => !tray || (cur!.stage === st && cur!.part === part);
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [trayIndex]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -739,8 +754,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               </Button>
             </div>
             <div className="mx-auto w-full max-w-2xl">
-              <StageIntro stage={stage} />
-              <StageSlot stage="present" current={stage}>
+              {!tray && <StageIntro stage={stage} />}
+              <StageSlot stage="present" current={activeStage as PairStage}>
               {/* Current State Card */}
               <Card
                 style={
@@ -754,11 +769,17 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                   <CardDescription>The sonic qualities of where you are now</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
+                  {trayOn('present', 'sliders') && (
+                    <>
                   <SnappingSlider value={currentPitch} onValueChange={setCurrentPitch} label="Pitch" leftLabel="Deep Bass" rightLabel="High Treble" max={100} />
                   <SnappingSlider value={currentVolume} onValueChange={setCurrentVolume} label="Volume" leftLabel="Whisper" rightLabel="Roar" max={100} />
+                    </>
+                  )}
 
                   {tray ? (
-                    <MoreDescriptions>
+                    <>
+                      {trayOn('present', 'words') && (
+                        <>
                   <div className="space-y-2">
                     <Label className="text-sm">Timbre (optional)</Label>
                     <WordPicker category="timbre" idPrefix="currentTimbres" selected={currentTimbres} onToggle={(t) => handleCheckboxChange(t, !currentTimbres.includes(t), currentTimbres, setCurrentTimbres)} other={{ value: currentTimbreOther, onChange: setCurrentTimbreOther, placeholder: "Describe…" }} />
@@ -769,14 +790,20 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                     <WordPicker category="rhythm" idPrefix="currentRhythms" selected={currentRhythms} onToggle={(t) => handleCheckboxChange(t, !currentRhythms.includes(t), currentRhythms, setCurrentRhythms)} other={{ value: currentRhythmOther, onChange: setCurrentRhythmOther, placeholder: "Describe…" }} />
                   </div>
 
+                      {pendingWord && [currentTimbres,currentRhythms].includes(pendingWord.list) && (
+                        <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />
+                      )}
+                        </>
+                      )}
+                      {trayOn('present', 'desc') && (
+                        <>
                   <div className="space-y-2">
                     <Label className="text-sm">Describe the sounds (optional)</Label>
                     <Textarea placeholder="What song or sounds come to mind?" value={currentDescription} onChange={(e) => setCurrentDescription(e.target.value)} className="min-h-20 resize-none text-sm" />
                   </div>
-                      {pendingWord && [currentTimbres,currentRhythms].includes(pendingWord.list) && (
-                        <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />
+                        </>
                       )}
-                    </MoreDescriptions>
+                    </>
                   ) : (
                     <>
                   <div className="space-y-2">
@@ -799,7 +826,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
               </Card>
 
               </StageSlot>
-              <StageSlot stage="wish" current={stage}>
+              <StageSlot stage="wish" current={activeStage as PairStage}>
               {/* Wish State Card */}
               <Card
                 style={
@@ -813,11 +840,17 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                   <CardDescription>The sonic qualities of how you wish to feel</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
+                  {trayOn('wish', 'sliders') && (
+                    <>
                   <SnappingSlider value={potentialPitch} onValueChange={setPotentialPitch} label="Pitch" leftLabel="Deep Bass" rightLabel="High Treble" max={100} />
                   <SnappingSlider value={potentialVolume} onValueChange={setPotentialVolume} label="Volume" leftLabel="Whisper" rightLabel="Roar" max={100} />
+                    </>
+                  )}
 
                   {tray ? (
-                    <MoreDescriptions>
+                    <>
+                      {trayOn('wish', 'words') && (
+                        <>
                   <div className="space-y-2">
                     <Label className="text-sm">Timbre (optional)</Label>
                     <WordPicker category="timbre" idPrefix="potentialTimbres" selected={potentialTimbres} onToggle={(t) => handleCheckboxChange(t, !potentialTimbres.includes(t), potentialTimbres, setPotentialTimbres)} other={{ value: potentialTimbreOther, onChange: setPotentialTimbreOther, placeholder: "Describe…" }} />
@@ -828,14 +861,20 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                     <WordPicker category="rhythm" idPrefix="potentialRhythms" selected={potentialRhythms} onToggle={(t) => handleCheckboxChange(t, !potentialRhythms.includes(t), potentialRhythms, setPotentialRhythms)} other={{ value: potentialRhythmOther, onChange: setPotentialRhythmOther, placeholder: "Describe…" }} />
                   </div>
 
+                      {pendingWord && [potentialTimbres,potentialRhythms].includes(pendingWord.list) && (
+                        <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />
+                      )}
+                        </>
+                      )}
+                      {trayOn('wish', 'desc') && (
+                        <>
                   <div className="space-y-2">
                     <Label className="text-sm">Describe the sounds (optional)</Label>
                     <Textarea placeholder="What sounds would you like to move toward?" value={potentialDescription} onChange={(e) => setPotentialDescription(e.target.value)} className="min-h-20 resize-none text-sm" />
                   </div>
-                      {pendingWord && [potentialTimbres,potentialRhythms].includes(pendingWord.list) && (
-                        <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />
+                        </>
                       )}
-                    </MoreDescriptions>
+                    </>
                   ) : (
                     <>
                   <div className="space-y-2">
@@ -857,10 +896,23 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 </CardContent>
               </Card>
             </StageSlot>
-              <StageNav stage={stage} onChange={setStage} />
+              {!tray && <StageNav stage={stage} onChange={setStage} />}
+              {tray && cur && cur.stage !== 'add' && (
+                <>
+                  <p className="text-center text-sm">{cur.title}</p>
+                  <LensCardNav index={trayIndex} total={cards.length} onBack={() => setTrayIndex(Math.max(0, trayIndex - 1))} onNext={() => setTrayIndex(trayIndex + 1)} />
+                </>
+              )}
+              {tray && cur && cur.stage === 'add' && (
+                <div className="mx-auto w-full max-w-2xl space-y-4">
+                  <h2 className="text-xl">Add Sound to your report?</h2>
+                  <p className="text-sm text-muted-foreground">Everything you chose stays here until you add it. If you put it down without adding, your report says: &ldquo;Examined, not included: Sound.&rdquo;</p>
+                  <AddToReport name="Sound" added={!!init} onAdd={handleNext} onPutDown={onBack} />
+                  <Button variant="ghost" onClick={() => setTrayIndex(Math.max(0, trayIndex - 1))}>Back</Button>
+                </div>
+              )}
             </div>
 
-            {stage === 'wish' && tray && <AddToReport name="Sound" added={!!init} onAdd={handleNext} onPutDown={onBack} />}
             {stage === 'wish' && !tray && (
             <div className="flex justify-center pt-4">
               <Button size="lg" onClick={handleNext} className="px-12">
