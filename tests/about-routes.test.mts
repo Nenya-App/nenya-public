@@ -19,4 +19,5 @@ ok('every item of the menu has a route', [...menu.matchAll(/id: '([a-z-]+)',\s*\
 const toml = readFileSync(new URL('../netlify.toml', import.meta.url), 'utf8');
 const sitemap = readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8');
 ok('the host rewrites every other path to the app', /from = "\/\*"\s*\n\s*to = "\/index.html"/.test(toml));
-ok('the sitemap lists the About menu and each page', sitemap.includes('https://nenya.biz/about</loc>') && ABOUT_IDS.every((id) => sitemap.includes(`https://nenya.biz/about/${id}</loc>`)));
+ok('the sitemap lists the About menu and each page', sitemap.includes('https://nenya.biz/about</loc>') && ABOUT_IDS.every((id) => sitemap.includes(`https://nenya.biz/about/${aboutPath(id).slice('/about/'.length)}</loc>`)));
+ok('the Six Lenses page has the address /about/six-lenses, and the old /about/six-gateways still opens it', aboutPath('six-gateways') === '/about/six-lenses' && aboutSectionFromLocation('/about/six-lenses') === 'six-gateways' && aboutSectionFromLocation('/about/six-gateways') === 'six-gateways' && aboutSectionFromLocation('/?about=six-gateways'.split('?')[0], '?about=six-gateways') === 'six-gateways');

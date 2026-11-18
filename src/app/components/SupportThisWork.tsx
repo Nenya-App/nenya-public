@@ -3,7 +3,6 @@ import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { ShareNenya } from './ShareNenya';
 
-import { L } from '../../lib/vocabulary';
 // The "Support This Work" section shown on the front page and on the coach page.
 // One copy, so the wording and the donation link cannot drift apart.
 export function SupportThisWork() {
@@ -34,7 +33,7 @@ export function SupportThisWork() {
             Nenya is a hybrid work of visual art, literature, and contemplative
             technology — a digital sanctuary built for reflection, emotional
             regulation, and ethical self-inquiry. The breathing interface, the
-            color {L('gateways')}, the guided reflection: each element is designed to
+            six lenses, the guided reflection: each element is designed to
             leave you more present than when you arrived.
           </p>
           <p className="text-muted-foreground leading-relaxed">

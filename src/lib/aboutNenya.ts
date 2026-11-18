@@ -1,4 +1,3 @@
-import { L } from './vocabulary.ts';
 // Pre-written answers about Nenya and about the coach: the single source for the coach's cards, the About pages and the tutorials. Written 2026-11-08;
 // the wording is the owner's to edit. Only answers with status 'ready' may be used live (liveAnswers); 'owner' and 'pending' wait for a decision or a feature.
 // STEP 1 and 2 of docs/about-nenya-questions-scope.md: the content and the detector. The coach function uses them (aboutAnswerFor, aboutAnswerWithin in netlify/functions/coach.mts; COACH_ABOUT_ANSWERS=off turns them off).
@@ -56,10 +55,10 @@ export const ANSWERS: Answer[] = [
     asked: ['what is Nenya', 'what is this site', 'what does this do', 'what is this for'],
     short: 'Nenya is an interactive space for personal reflection: a place to pause, breathe, and look at your own thoughts, feelings and needs through structured, sensory activities. It is best understood as interactive art, a mirror for your own thoughts rather than a source of answers.',
     full: [
-      L('Nenya is an interactive digital environment designed as a tool for personal reflection and sensory exploration. You can pause and breathe, choose colors and sounds, work through the Six Gateways, and, if you choose, try a short conversation with the coach.'),
+      'Nenya is an interactive digital environment designed as a tool for personal reflection and sensory exploration. You can pause and breathe, choose colors and sounds, pick up any of the six lenses in any order, and, if you choose, try a short conversation with the coach.',
       'It is best understood as a form of interactive art. It is a mirror for your own thoughts, not a source of answers, and it is not a medical device, a therapy service, or a substitute for professional care.',
     ],
-    links: [{ label: 'Terms of Use & Privacy Policy', page: 'terms' }, { label: L('The Six Gateways'), page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }],
+    links: [{ label: 'Terms of Use & Privacy Policy', page: 'terms' }, { label: 'The Six Lenses', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }],
     tutorial: 'Start here: what Nenya is and is not (first lesson of any Nenya tutorial).',
     checks: [
       { claim: 'a tool for personal reflection and sensory exploration; interactive art; a mirror, not a source of answers', file: TERMS, has: 'It is a mirror for your own thoughts, not a source of answers' },
@@ -279,7 +278,7 @@ export const ANSWERS: Answer[] = [
     short: 'Your colors stay on your device. Suggesting a name and making a palette or a bridge happen in your browser and send nothing. One optional button, "Ask The Color API," sends a single color, as a hex code, through our server to that outside service to make a palette; nothing else is sent, and we store nothing.',
     full: [
       'The colors you choose, and the names you give them, stay in your browser. When you ask for a name suggestion, the names come from a list of 5,000 color names that ships with this site (color-name-list, MIT license) and is loaded only when you ask. Making a palette "on my device," or a bridge from your current color to your wish color, is calculated in your browser and sends nothing anywhere.',
-      L('There is one exception, and it is your choice each time. If you press "Ask The Color API" in the Sight gateway, your page sends one color, as a hex code, and the kind of palette you picked, to our server, which asks The Color API (thecolorapi.com, by Josh Beckman) over a secure connection for a palette and returns five colors. That service sees our server and the color, and nothing else: not your address, a cookie, or anything you wrote. It is separate from Nenya and its own terms apply. We do not store or log the color or the request. If the service is unavailable, the page makes the same kind of palette on your device and says so.'),
+      'There is one exception, and it is your choice each time. If you press "Ask The Color API" in the Sight lens, your page sends one color, as a hex code, and the kind of palette you picked, to our server, which asks The Color API (thecolorapi.com, by Josh Beckman) over a secure connection for a palette and returns five colors. That service sees our server and the color, and nothing else: not your address, a cookie, or anything you wrote. It is separate from Nenya and its own terms apply. We do not store or log the color or the request. If the service is unavailable, the page makes the same kind of palette on your device and says so.',
       'If you keep a palette it goes into your report as colors of your own, marked with where it was made. If you later bring that part of your report to the coach, it is shared like the rest of what you choose.',
     ],
     links: [{ label: 'Terms, Section 14', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
@@ -321,7 +320,7 @@ export const ANSWERS: Answer[] = [
     full: [
       'For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands. The replies are written by a model that Venice AI runs, and Venice AI\'s terms say its service is intended for people located in the United States; our own terms promise to respect theirs.',
       'Our host, Netlify, works out the country from your connection\'s IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.',
-      L('Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can make from them.'),
+      'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six lenses, and the report you can make from them.',
     ],
     links: [{ label: 'Where the Coach Is Open', page: 'coach-region' }, { label: 'Terms, Section 15: The coach demo', page: 'terms' }],
     tutorial: 'Privacy lesson: what an IP address is, and what Nenya does with yours.',
@@ -339,7 +338,7 @@ export const ANSWERS: Answer[] = [
       full: [
         'For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands, while we work out what offering it elsewhere would require.',
         'Our host, Netlify, works out the country from your connection\'s IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.',
-        L('Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can make from them.'),
+        'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six lenses, and the report you can make from them.',
       ],
       checks: [
         { claim: 'US-only for now, while offering it elsewhere is worked out', file: WAI_TERMS, has: 'while we work out what offering it elsewhere would require' },
@@ -686,14 +685,14 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'n-else', part: 'nenya', title: 'What else is here',
-    asked: ['what can this do', L('what are the gateways'), 'what is the breathing tool', 'where do I start'],
-    short: L('Nenya has a breathing tool you can use on its own, the Six Gateways reflection that works through sight, sound and the senses, a place to explore needs and colors, and an optional short conversation with the coach. Everything except the coach runs in your browser.'),
+    asked: ['what can this do', 'what are the lenses', 'what is the breathing tool', 'where do I start'],
+    short: 'Nenya has a breathing tool you can use on its own, the six lenses, which you can pick up in any order and in any number, a place to explore needs and colors, and an optional short conversation with the coach. Everything except the coach runs in your browser.',
     full: [
-      L('The breathing tool is a paced breathing animation you can open at any time, with optional tones. The Six Gateways is a guided reflection; you can download a sensory report from it, created on your own device.'),
+      'The breathing tool is a paced breathing animation you can open at any time, with optional tones. The six lenses are a guided reflection: you choose which to open and what to add to your report, and you can download a sensory report from it, created on your own device. A lens you only looked through is left out, and the report says so in one line.',
       'The About section explains the ideas behind the project: the Pantheon of Needs, the power of color, the NVC+ method, our name and structure, and our privacy promise. The optional coach demo is a short conversation, limited to five exchanges.',
       'Everything except the coach and the optional form runs in your browser, and what you enter there is not sent to us.',
     ],
-    links: [{ label: L('The Six Gateways'), page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }, { label: 'The Pantheon of Needs', page: 'pantheon-of-needs' }],
+    links: [{ label: 'The Six Lenses', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }, { label: 'The Pantheon of Needs', page: 'pantheon-of-needs' }],
     tutorial: 'The welcome tour: a map of what is here (the existing tour is the start).',
     checks: [
       { claim: 'the reflection is created in the browser; a report is generated on your device', file: TERMS, has: 'A PDF report is made on your own device' },
