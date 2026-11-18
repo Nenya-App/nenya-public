@@ -25,7 +25,8 @@ import type { StartChoice } from '../lib/startCopy';
 import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
 import { guestbookOn } from '../lib/guestbook';
 import { SaveReflectionContext, type SaveReflectionApi } from './components/SaveReflection';
-import { normalizeId, openReflection, purgeExpired, saveReflection, saveReflectionOn, sessionIdFrom, shadowId, type SavedPayload } from '../lib/savedReflection';
+import { normalizeId, openReflection, purgeExpired, saveReflection, saveReflectionOn, type SavedPayload } from '../lib/savedReflection';
+import { newShadow, sessionIdFor, termsFirstOn } from '../lib/shadowSession';
 import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
 
@@ -369,18 +370,18 @@ export default function App() {
   // "Save and return later" (VITE_SAVE_REFLECTION=on; src/lib/savedReflection.ts). The session ID is the two colors from Sight (or Sound's
   // melody colors); before either, a random "shadow" pair kept for this visit only. Neither the ID nor the passcode is ever stored.
   const saveOn = saveReflectionOn();
-  const [shadow, setShadow] = useState(() => shadowId());
+  // With VITE_TERMS_FIRST the pair is made at agreement, kept in memory for the whole session and made again on request (src/lib/shadowSession.ts).
+  const termsFirst = termsFirstOn();
+  const [shadow, setShadow] = useState(() => (termsFirst && !termsAgreed ? '' : newShadow()));
+  useEffect(() => { if (termsFirst && termsAgreed && !shadow) setShadow(newShadow()); }, [termsFirst, termsAgreed, shadow]);
   useEffect(() => {
     if (saveOn) purgeExpired();
   }, [saveOn]);
   const sightDone = gatewayData.find((g) => g.gateway === 'sight')?.data;
   const soundDone = gatewayData.find((g) => g.gateway === 'sound')?.data;
-  const sessionId =
-    (sightDone && sessionIdFrom(sightDone.color1, sightDone.color2)) ||
-    (soundDone && sessionIdFrom(soundDone.melodyColor1, soundDone.melodyColor2)) ||
-    shadow;
+  const sessionId = sessionIdFor(sightDone, soundDone, shadow);
   // The mark in the footer is a visual form of the session ID (src/lib/nameMark.ts).
-  useEffect(() => { setSessionMarkId(sessionId); }, [sessionId]);
+  useEffect(() => { setSessionMarkId(sessionId || null); }, [sessionId]);
   const saveApi: SaveReflectionApi = {
     on: saveOn,
     canSave: gatewayData.length > 0,

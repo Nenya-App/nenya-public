@@ -64,7 +64,7 @@ ok('every line reads at grade 8 or below', worst.g <= 8, `${worst.g.toFixed(1)}:
 ok('the panel states the limits plainly', /stops a glance/.test(SAVE_COPY.limits) && /no other way back in/.test(SAVE_COPY.saved) && /Nothing is sent to Nenya/.test(SAVE_COPY.intro));
 
 const app = readFileSync('src/app/App.tsx', 'utf8');
-ok('the ID comes from Sight, then Sound, then a shadow pair; it is never stored', /sessionIdFrom\(sightDone\.color1, sightDone\.color2\)\) \|\|\s*\(soundDone && sessionIdFrom\(soundDone\.melodyColor1, soundDone\.melodyColor2\)\) \|\|\s*shadow/.test(app) && !/localStorage[^\n]*sessionId/.test(app));
+ok('the ID comes from Sight, then Sound, then a shadow pair; it is never stored', /sessionIdFor\(sightDone, soundDone, shadow\)/.test(app) && /sessionIdFrom\(sight\.color1, sight\.color2\)\) \|\|\s*\(sound && sessionIdFrom\(sound\.melodyColor1, sound\.melodyColor2\)\) \|\|\s*shadow/.test(readFileSync('src/lib/shadowSession.ts', 'utf8')) && !/localStorage[^\n]*sessionId/.test(app));
 ok('an expired save is cleared on every visit; an opened one resumes at the next unfinished gateway or the review', /if \(saveOn\) purgeExpired\(\);/.test(app) && /navigateTo\(next \?\? 'gateway-review'\)/.test(app));
 ok('the links sit in every gateway header, on the review, and "Continue" on the gateway choice', /<SaveReflectionLink \/>/.test(readFileSync('src/app/components/GatewayProgress.tsx', 'utf8')) && /<SaveReflectionLink \/>/.test(readFileSync('src/app/components/pages/GatewayReviewPage.tsx', 'utf8')) && /<ContinueSavedLink \/>/.test(readFileSync('src/app/components/pages/GatewaysPage.tsx', 'utf8')));
 {

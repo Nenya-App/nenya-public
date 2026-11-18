@@ -2,11 +2,11 @@
 import { ok } from './helpers.mts';
 import { TRANSCRIPT_LINES, assembleFinal, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_SYSTEM } from '../src/lib/finalSummary.ts';
 
-const GOOD = 'You came in feeling worn down and unheard, and what you were reaching for sounds like rest and being understood by the people close to you. You also named how much you care about doing right by your family. It took honesty to say all of that out loud.';
+const GOOD = 'You felt worn down and unheard at home. You were looking for rest and for being understood by the people close to you. You also named how much you care about doing right by your family. It took honesty to say all of that out loud.';
 ok('a plain summary of feelings and needs passes', summaryProblems(GOOD).length === 0, summaryProblems(GOOD).join());
 ok('a question, an invitation, a promise, advice, a list, a mention of the transcript, a very short and an overlong text are each named', [
   [GOOD + ' What do you want to do next?', 'asks'], [GOOD + " I'll remember you.", 'promise-or-persona'], [GOOD + ' You should try to talk to them tonight.', 'advice'],
-  ['- tired\n- unheard\n' + GOOD, 'list-or-heading'], [GOOD + ' The transcript keeps it.', 'mentions-transcript'], ['You are tired.', 'too-short'], [GOOD + ' ' + GOOD + ' ' + GOOD, 'too-long'], ['', 'empty'],
+  ['- tired\n- unheard\n' + GOOD, 'list-or-heading'], [GOOD + ' The transcript keeps it.', 'mentions-transcript'], ['You are tired.', 'too-short'], [GOOD + ' ' + GOOD + ' ' + GOOD, 'too-long'], ['', 'empty'], ['You are tired and alone and it has been a long week for you at home with everyone.', 'no-feelings'], ['You felt tired and alone and it has been a long week for you at home with everyone.', 'no-needs'],
 ].every(([t, n]) => summaryProblems(t as string).includes(n as string)));
 ok('the summary call sees only the person\'s messages and the instruction', (() => { const m = summaryMessages(['one', 'two']); return m.system === SUMMARY_SYSTEM && m.messages.length === 1 && /Message 1: one/.test(m.messages[0].content) && /Message 2: two/.test(m.messages[0].content); })());
 ok('the transcript sentence is stable for a conversation and varies across conversations; every variant states the same fact and passes the summary checks', (() => {

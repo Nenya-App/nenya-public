@@ -11,9 +11,12 @@ import { present } from './personaChecks.ts';
 /** The instruction for the summary call. The model sees nothing else of the conversation, so it cannot echo the coach or answer the last message. */
 export const SUMMARY_SYSTEM =
   'You write the last part of a short conversation with an AI listening companion. You will be given only what the person wrote, message by message. ' +
-  'Write a summary of three or four sentences, under 90 words, addressed to the person as "you". ' +
-  'First name the feelings and then the needs you can hear in what they wrote, using their own words where you can, and only ones they expressed or clearly implied: do not add feelings or events they did not mention, and do not diagnose or explain them. ' +
-  'Then add one sentence of encouragement grounded in something they said or did, not general advice. ' +
+  'Summarize the conversation as a whole, as one piece: not message by message, and not by topic. Address the person as "you". Write four sentences in this order, under 90 words in all: ' +
+  '(1) "You felt" followed by the feelings you can hear across what they wrote, in their own words where you can. ' +
+  '(2) "You were looking for" followed by the needs under those feelings, such as rest, being heard, understanding, connection or respect. ' +
+  '(3) One sentence naming something they did or said that shows care for themselves or others. ' +
+  '(4) One sentence of encouragement grounded in that, not general advice. ' +
+  'Use only feelings and needs they expressed or clearly implied: do not add feelings or events they did not mention, and do not diagnose or explain them. ' +
   'Do not ask a question and do not invite a reply: they cannot answer. Do not say goodbye or thank them, do not promise to remember them or to be there later, do not mention transcripts or downloads, and do not suggest what to do next. ' +
   'Write plain sentences only: no lists, no headings, no quotation marks around the whole text. End on a full stop.';
 
@@ -55,6 +58,8 @@ export function summaryProblems(text: string): string[] {
   if (/\b(transcript|download)\b/i.test(t)) out.push('mentions-transcript');
   if (/^\s*(?:[-*•]|\d+[.)])\s/m.test(t) || /^#/m.test(t)) out.push('list-or-heading');
   if (/\b(?:you should|you could try|try to|i suggest|i recommend|next step)\b/i.test(t)) out.push('advice');
+  if (!/\b(?:felt|feel|feeling|feelings)\b/i.test(t)) out.push('no-feelings');
+  if (!/\b(?:looking for|needs?|needing|longing|wanting)\b/i.test(t)) out.push('no-needs');
   if (words(t) > 110) out.push('too-long');
   if (words(t) < 15) out.push('too-short');
   if (!/[.!]["”’)]?$/.test(t)) out.push('unfinished');
