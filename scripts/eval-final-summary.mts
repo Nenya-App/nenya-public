@@ -6,7 +6,9 @@
 //
 // --guards off (default) measures the instructions alone (the closing guard and the boundary guards are switched off); on shows what a visitor would see with the boundary guards on.
 import { randomBytes } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { asksOrInvites } from '../src/lib/coachClosing.ts';
 import { pullsAgainstPeople } from '../src/lib/boundaryGuard.ts';
@@ -15,15 +17,18 @@ import { WORKERS_AI_STYLE_NOTE } from '../src/lib/coachProvider.ts';
 
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
+const waiModel = flag('--workers-ai-model'); // a Workers AI model id (spends Neurons from the day's unused allowance, through the signed-in cf CLI), instead of a local model
 const localUrl = flag('--local-url');
-const model = flag('--model');
+const model = waiModel ?? flag('--model');
+const CF = process.env.CF_BIN ?? join(homedir(), '.npm-global/bin/cf');
+let neurons = 0;
 const privateDir = flag('--private');
 const guards = flag('--guards') ?? 'off';
 const only = Number(flag('--only') ?? 0);
 const jsonOut = flag('--json');
 const dumpPrompt = flag('--dump-prompt'); // writes the last request's messages (instructions included) to a file, to read what the model was actually given
-if (!localUrl || !model || !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(localUrl)) {
-  console.error('Give --local-url (localhost only) and --model (the local model name).');
+if (!model || (!waiModel && (!localUrl || !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(localUrl)))) {
+  console.error('Give --local-url (localhost only) and --model (the local model name), or --workers-ai-model <id>.');
   process.exit(2);
 }
 if (privateDir && !existsSync(join(privateDir, 'modules.json'))) {
@@ -36,7 +41,7 @@ process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
 process.env.COACH_PROVIDER = 'workers-ai';
 process.env.CF_AI_ACCOUNT_ID = '0'.repeat(32);
 process.env.CF_AI_TOKEN = 'local';
-process.env.COACH_MODEL = `@cf/local/${model.replace(/[^a-z0-9._-]/gi, '-')}`;
+process.env.COACH_MODEL = waiModel ?? `@cf/local/${model.replace(/[^a-z0-9._-]/gi, '-')}`;
 process.env.COACH_INSTRUCTIONS = 'v2.1';
 process.env.COACH_DISTRESS_TEXT = 'on';
 process.env.COACH_VALUES = 'on';
@@ -58,8 +63,21 @@ const realFetch = globalThis.fetch;
   // The Workers AI path adds a brevity note (two to four sentences, under 80 words) that production on Venice never sends, and it overrides the final-exchange summary. Taken out here so the run reads like Venice's prompt; --keep-style-note leaves it in.
   if (!args.includes('--keep-style-note')) for (const msg of body.messages ?? []) if (msg.role === 'system' && typeof msg.content === 'string') msg.content = msg.content.replace(WORKERS_AI_STYLE_NOTE, '').trim();
   if (dumpPrompt) writeFileSync(dumpPrompt, JSON.stringify(body.messages, null, 2));
+  if (waiModel) {
+    const file = join(mkdtempSync(join(tmpdir(), 'nenya-final-')), 'req.json');
+    writeFileSync(file, JSON.stringify(body));
+    const out = spawnSync(CF, ['ai', 'run', waiModel, '--body', `@${file}`], { encoding: 'utf8', timeout: 120_000 });
+    rmSync(file, { force: true });
+    try {
+      const j: any = JSON.parse(out.stdout);
+      neurons += Number(j.usage?.neurons ?? j.result?.usage?.neurons ?? 0);
+      return new Response(JSON.stringify(j), { status: 200, headers: { 'content-type': 'application/json' } });
+    } catch {
+      return new Response('{}', { status: 502 });
+    }
+  }
   try {
-    const r = await realFetch(`${localUrl.replace(/\/$/, '')}/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, messages: body.messages, temperature: body.temperature, top_p: body.top_p, max_tokens: body.max_tokens }) });
+    const r = await realFetch(`${localUrl!.replace(/\/$/, '')}/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, messages: body.messages, temperature: body.temperature, top_p: body.top_p, max_tokens: body.max_tokens }) });
     if (!r.ok) return new Response('{}', { status: 502 });
     return new Response(JSON.stringify(await r.json()), { status: 200, headers: { 'content-type': 'application/json' } });
   } catch {
@@ -127,4 +145,6 @@ for (const [i, user] of CONVERSATIONS.entries()) {
 const n = rows.length || 1;
 const c = (f: (r: Row) => boolean): number => rows.filter(f).length;
 console.log(`\nOf ${rows.length} final replies: ask or invite ${c((r) => r.asks)}; name feelings or needs ${c((r) => r.feelingsNeeds)}/${n}; point to the transcript ${c((r) => r.transcript)}/${n}; a promise or bond ${c((r) => r.promise)}; over 150 words ${c((r) => r.tooLong)}.`);
+if (waiModel) console.log(`Neurons spent: ${neurons}`);
+if (waiModel && !args.includes('--no-record')) console.log((await import('./record-neurons.mts')).recordNeurons(neurons));
 if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), model, guards, rows }, null, 2));
