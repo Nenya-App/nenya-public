@@ -69,7 +69,8 @@ const realFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestI
   }
   return res;
 };
-const veniceGet = async (path: string): Promise<any> => { try { const r = await plainFetch(`https://api.venice.ai/api/v1/${path}`, { headers: { Authorization: `Bearer ${veniceKey}` } }); return r.ok ? await r.json() : { error: r.status }; } catch (e) { return { error: (e as Error).message }; } };
+// Billing reads need an admin key (VENICE_ADMIN_KEY, optional, used only for these GETs and never sent with a chat call); the model list works with the testing key.
+const veniceGet = async (path: string): Promise<any> => { try { const r = await plainFetch(`https://api.venice.ai/api/v1/${path}`, { headers: { Authorization: `Bearer ${path.startsWith('billing/') && process.env.VENICE_ADMIN_KEY ? process.env.VENICE_ADMIN_KEY : veniceKey}` } }); return r.ok ? await r.json() : { error: r.status }; } catch (e) { return { error: (e as Error).message }; } };
 const balanceBefore = await veniceGet('billing/balance');
 (globalThis as { fetch: typeof fetch }).fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
