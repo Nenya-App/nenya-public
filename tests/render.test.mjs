@@ -24,7 +24,8 @@ globalThis.window ??= {
 const require = createRequire(root + 'package.json');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
-const vite = await createServer({ root, server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' });
+// mode 'test' so the dev switches in .env.development (the lens tray, lens words, Terms-first) do not change what these pages render; each switch's own page is tested where it is set.
+const vite = await createServer({ root, mode: 'test', server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' });
 
 const render = (Component, props) => {
   try { return renderToString(React.createElement(Component, props)); } catch (e) { return { error: e.message }; }
