@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { ok } from './helpers.mts';
 const dir = 'docs/wireframes/lens';
 const pages = readdirSync(dir).filter((f) => f.endsWith('.html'));
-ok('there are wireframes for the index, the tray, Sight, Sound and Touch', ['index.html', 'tray.html', 'sight.html', 'sound.html', 'touch.html', 'body.html', 'essence.html', 'movement.html', 'pattern.html'].every((f) => pages.includes(f)));
+ok('there are wireframes for the index, the tray, Sight, Sound and Touch', ['index.html', 'tray.html', 'sight.html', 'sound.html', 'touch.html', 'body.html', 'essence.html', 'movement.html', 'pattern.html', 'pattern-tapestry.html', 'movement-path.html'].every((f) => pages.includes(f)));
 for (const f of pages) {
   const h = readFileSync(`${dir}/${f}`, 'utf8');
   ok(`${f}: language, title, viewport, a skip link and one main`, /<html lang="en">/.test(h) && /<title>[^<]+<\/title>/.test(h) && /name="viewport"/.test(h) && /class="skip"/.test(h) && (h.match(/<main\b/g) ?? []).length === 1);
@@ -18,6 +18,7 @@ for (const f of pages) {
     const cards = h.split(/<div class="frame"[^>]*>/).slice(1);
     ok(`${f}: Emergency Exit is the first button in every frame`, cards.length >= 1 && cards.every((c) => /^\s*<div class="bar"><button type="button">(?:<img [^>]*>)?Emergency Exit<\/button>/.test(c)));
     if (['sight.html', 'sound.html', 'touch.html', 'essence.html', 'movement.html', 'pattern.html'].includes(f)) ok(`${f}: at least three cards, and the last has Add, Update and Remove`, cards.length >= 3 && /Add this to my report/.test(h) && /Update my report/.test(h) && /Remove from my report/.test(h));
+    else if (f === 'pattern-tapestry.html' || f === 'movement-path.html') ok(`${f}: two cards, the last can keep or skip, and Update and Remove are offered once kept`, cards.length === 2 && /Skip it/.test(h) && /Update my report/.test(h) && /Remove from my report/.test(h));
     else if (f === 'body.html') ok(`${f}: every place can be set from a labelled list as well as the drawing, and a text twin says what is where`, /<select id="r-/.test(h) && /data-for=/.test(h) && /role="status"/.test(h) && /one map for the whole report/i.test(h));
     else ok(`${f}: the tray names every state in words, keeps the coach apart, and the report lists examined lenses separately`, /Not opened/.test(h) && /Looked at, not in your report/.test(h) && /In your report/.test(h) && /a lens of its own/.test(h) && /Examined, not included/.test(h));
   }
@@ -89,4 +90,14 @@ for (const f of ['sight.html', 'sound.html', 'touch.html', 'essence.html']) {
 for (const [f, keys] of [['sight.html', ['P', 'F1', 'F2']], ['essence.html', ['N']]] as const) {
   const h = readFileSync(`${dir}/${f}`, 'utf8');
   ok(`${f}: each choose-several group has the soft limit of three and its warning (Add it anyway, Keep three)`, keys.every((k) => new RegExp(`data-limit="${k}-lim"`).test(h) && new RegExp(`id="${k}-lim" class="limit" role="alert"`).test(h)) && !/choose up to three/i.test(h));
+}
+
+{
+  const t = readFileSync(`${dir}/pattern-tapestry.html`, 'utf8');
+  const p = readFileSync(`${dir}/movement-path.html`, 'utf8');
+  const js = readFileSync(`${dir}/wire.js`, 'utf8');
+  ok('Tapestry: a labelled base and layer list, a soft limit of three layers with a warning (Add it anyway, Keep three), a named picture with a text twin, and Remove on every layer', /<label for="T-base">/.test(t) && /<label for="T-next">/.test(t) && /id="T-lim" class="limit" role="alert"/.test(t) && /Add it anyway/.test(t) && /Keep three/.test(t) && /id="T-out" role="status"/.test(t) && /role="img" aria-label="A small woven design/.test(t) && /Remove \$\{/.test(js));
+  ok('Path of movement: step buttons are the full alternative to the pointer pad, with a labelled feel list, a text twin, and a still finished line under reduced motion', ['up', 'down', 'left', 'right'].every((d) => new RegExp(`data-step="${d}"`).test(p)) && /<label for="P-feel">/.test(p) && /id="P-out" role="status"/.test(p) && /role="img" aria-label="A pad for a path/.test(p) && /prefers-reduced-motion: reduce/.test(js));
+  ok('both activities are optional (Skip, "optional"), say the report keeps words not the picture, and promise no points, streaks or badges', [t, p].every((h) => /\(optional\)/.test(h) && /words, not the picture/.test(h) && /No points, streaks or badges/.test(h)));
+  ok('both activities live inside the existing lens and say so', /Pattern’s “More descriptions”/.test(t) && /Movement’s “More descriptions”/.test(p));
 }

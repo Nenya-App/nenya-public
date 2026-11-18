@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: the Pattern tapestry</title>
+<link rel="stylesheet" href="wire.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the wireframes</a>
+<header class="page">
+  <h1>The Pattern tapestry: an optional activity</h1>
+  <p><a href="index.html">All wireframes</a> · <a href="pattern.html">Pattern</a> · <a href="movement-path.html">Path of movement</a> · Draft 2026-11-18 · plan: <code>docs/lens-audit-movement-pattern.md</code> section 4</p>
+</header>
+<main id="main">
+<div class="legend">
+  <h2>How to read this</h2>
+  <p>The tapestry lives inside Pattern’s “More descriptions”. It is optional, and Pattern can be added to the report without it. Each card is a real page of controls on the left (try the keyboard) and its notes on the right. Every card has <strong>Emergency Exit</strong> first in the tab order. Nothing here sends anything, makes a sound or saves.</p>
+  <p class="mini">Choosing fewer can be more helpful than choosing many. A tapestry has a base and up to three layers above it; a fourth layer gets a warning, never a block.</p>
+</div>
+
+<section class="card" aria-labelledby="c1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Tapestry · card 1 of 2</span><button type="button">Put this down</button></div>
+    <h2 id="c1">Weave a tapestry (optional)</h2>
+    <p>Pick a pattern for the base. Then add layers on top, one at a time. Take your time. There is no right tapestry.</p>
+    <div data-tapestry="T" data-out="T-out" data-limit-note="T-lim" data-count="T-count" data-list="T-layers">
+      <div class="tapbox"><div class="tapestry" id="T-art" role="img" aria-label="A small woven design made of your layers; the text below says what is in it"></div></div>
+      <p class="mini">Your tapestry: <span id="T-out" role="status">nothing woven yet</span></p>
+      <label for="T-base">Base pattern</label>
+      <select id="T-base"><option value="">Not chosen</option><option>fragmented</option><option>linear</option><option>branching</option><option>circular</option><option>layered</option><option>web-like</option><option>crystalline</option><option>fractal</option><option>spiraling</option><option>chaotic</option><option>unified</option></select>
+      <label for="T-next">Add a layer on top</label>
+      <div class="row"><select id="T-next"><option>fragmented</option><option>linear</option><option>branching</option><option>circular</option><option>layered</option><option>web-like</option><option>crystalline</option><option>fractal</option><option>spiraling</option><option>chaotic</option><option>unified</option></select><button type="button" data-tap-add>Add this layer</button></div>
+      <div id="T-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have a base and three layers. Add another anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div>
+      <p class="mini">Layers: <span id="T-count" role="status">none yet</span></p>
+      <ol id="T-layers" class="taplist" aria-label="Your layers, from the base up"></ol>
+      <div class="row"><button type="button" data-tap-undo>Take off the top layer</button><button type="button" data-tap-clear>Start again</button></div>
+    </div>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Base pattern, Add a layer (list, then button)</li><li>Each layer’s Remove button</li><li>Take off the top layer, Start again</li><li>Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>The picture is a named image. The line under it says the same thing in words every time something changes: “base: layered, then branching, then circular”. It never moves focus.</li><li>At a fourth layer the notice is announced once and focus moves to “Add it anyway”. “Keep three” returns focus to the Add button.</li></ul>
+    <h3>Responds live <strong>(try it)</strong></h3><ul><li>Each layer is drawn on top of the one before it. Under reduced motion layers appear at once, with no fade.</li><li>Every control is a plain list or button. Nothing needs a pointer.</li></ul>
+    <h3>Not drawn here</h3><p>The real shapes come from Pattern’s own drawings; these stripes only show where each layer goes.</p>
+  </aside>
+</section>
+
+<section class="card" aria-labelledby="c2">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Tapestry · card 2 of 2</span><button type="button">Put this down</button></div>
+    <h2 id="c2">Keep this tapestry in Pattern?</h2>
+    <p>This is what would be kept with Pattern:</p>
+    <ul><li>Words: <span data-sum="T">nothing woven yet</span></li></ul>
+    <p class="mini">The report keeps the words, not the picture. The picture is only for you.</p>
+    <div class="row"><button type="button" class="primary" data-added="tap-added">Keep this tapestry</button><button type="button">Skip it</button></div>
+    <p id="tap-added" hidden role="status"><strong>Kept with Pattern.</strong> You can come back and change it. <button type="button">Update my report</button> <button type="button">Remove from my report</button></p>
+    <p class="state-label">If skipped</p>
+    <p class="mini">Pattern is added exactly as it would be without a tapestry. Nothing is lost and nothing is asked again.</p>
+  </div>
+  <aside class="note">
+    <h3>States</h3><ul><li><strong>Before:</strong> as drawn.</li><li><strong>Kept:</strong> Pattern reopens with the tapestry as you left it.</li><li><strong>Skipped:</strong> no tapestry words in the report.</li></ul>
+    <h3>Playful, within the limits</h3><p>No points, streaks or badges. A tapestry is never graded.</p>
+  </aside>
+</section>
+</main>
+<script src="wire.js"></script>
+</body>
+</html>
