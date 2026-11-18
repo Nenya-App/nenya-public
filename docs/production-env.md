@@ -94,6 +94,7 @@ These exist for testing, diagnosis, or turning a guard off in an emergency. Unse
 | `COACH_INCLUDE_VENICE_PROMPT` | off | Adds Venice's own system prompt; leave off |
 | `COACH_METHOD_NOTES` | none | Short method notes (the Blobs key `method-notes` is used first) |
 | `COACH_BOUNDARY_GUARD` | unset (off) | `on` enables the two boundary guards (a medication directive; a promise to be there or to remember, or standing in for the person's people): asked again once, then the offending sentences are taken out, or the site's fixed sentence replaces the reply. **Owner to approve the two fixed sentences in `src/lib/boundaryGuard.ts` first.** |
+| `VITE_BOUNDARY_GUARD` | unset (off) | The same two boundary guards on the **sealed** (encrypted) path, which runs in the browser: a build-time switch (Builds scope). The relay cannot read the reply, so it cannot ask the model again: the offending sentences are taken out, or the fixed sentence replaces the reply. Set it together with `COACH_BOUNDARY_GUARD`. |
 | `COACH_FORM_CHECK`, `COACH_ABOUT_ANSWERS`, `COACH_LANE_GUARD`, `COACH_ARC_GUARD`, `COACH_CLOSING_GUARD`, `COACH_PERSONA_GUARD`, `COACH_NAME_GUARD`, `COACH_INFRA_GUARD`, `COACH_CARE_GUARD` | on | `off` turns that check off. For emergencies only. |
 | `PALETTE_DAILY_CAP`, `PALETTE_PER_CONNECTION` | 300, 20 | Limits for The Color API button |
 

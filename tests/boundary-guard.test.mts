@@ -39,3 +39,8 @@ ok('the fixed sentences do not themselves trip the guards', !claimsMedicalDirect
   __trace.on(false);
   delete process.env.COACH_BOUNDARY_GUARD;
 }
+{
+  const sealed = await import('../src/lib/sealedCoach.ts');
+  ok('the sealed path has the guards behind its own build switch (off in the tests)', sealed.boundaryGuardOnSealed() === false && /VITE_BOUNDARY_GUARD === 'on'/.test((await import('node:fs')).readFileSync('src/lib/sealedCoach.ts', 'utf8')) && /BOUNDARY_GUARDS\) if \(g\.test\(r\)\) r = g\.repair\(r\)\.reply/.test((await import('node:fs')).readFileSync('src/lib/sealedCoach.ts', 'utf8')));
+  ok('with the switch off, guardReply leaves a medication directive alone', /stop taking your medication/.test(sealed.guardReply('You should stop taking your medication. It sounds hard.', ['I feel flat'])));
+}
