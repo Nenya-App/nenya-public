@@ -11,19 +11,36 @@ document.querySelectorAll('[data-say]').forEach((form) => {
   form.addEventListener('input', say); say();
 });
 document.querySelectorAll('[data-added]').forEach((b) => b.addEventListener('click', () => { const t = document.getElementById(b.dataset.added); t.hidden = false; t.setAttribute('tabindex', '-1'); t.focus(); }));
-// Touch: five sliders move one swatch and a text twin. (The real card shows the chosen surface; here a pattern stands in for the photograph.)
+// Touch: five sliders move one orb (a stand-in for a quick 2D or 3D render of the chosen surface) and a text twin.
 document.querySelectorAll('[data-touch]').forEach((form) => {
-  const sw = document.getElementById(form.dataset.touch), out = document.getElementById(form.dataset.out);
+  const sw = document.getElementById(form.dataset.touch), sh = document.getElementById(form.dataset.shadow), out = document.getElementById(form.dataset.out);
   const W = { texture: ['very smooth', 'smooth', 'lightly textured', 'textured', 'rough'], temp: ['frozen', 'cool', 'neutral', 'warm', 'burning'], pressure: ['loose', 'light', 'firm', 'tight', 'compressed'], weight: ['weightless', 'light', 'medium', 'heavy', 'very heavy'], sharp: ['blunt', 'soft-edged', 'neutral', 'pointed', 'sharp'] };
   const v = (n) => +form.querySelector(`[name=${n}]`).value;
+  const star = (inner) => { const pts = []; for (let k = 0; k < 24; k++) { const r = k % 2 ? inner : 50, a = (k / 24) * Math.PI * 2; pts.push(`${(50 + r * Math.cos(a)).toFixed(1)}% ${(50 + r * Math.sin(a)).toFixed(1)}%`); } return `polygon(${pts.join(',')})`; };
   const set = () => {
     const t = v('texture'), c = v('temp'), p = v('pressure'), w = v('weight'), s = v('sharp');
     sw.style.setProperty('--grain', t);
     sw.style.filter = c < 2 ? `hue-rotate(${(2 - c) * 40}deg) saturate(${0.9 - (2 - c) * 0.15})` : `sepia(${(c - 2) * 0.4}) saturate(${1 + (c - 2) * 0.5})`;
-    sw.style.transform = `translateY(${w * 5}px) scale(${1 - p * 0.04})`;
-    sw.style.boxShadow = `inset 0 0 ${p * 7}px rgba(0,0,0,.45)`;
-    sw.style.borderRadius = `${50 - s * 11}%`;
+    sw.style.transform = `translateY(${w * 5}px) scale(${1 + p * 0.06}, ${1 - p * 0.09})`;
+    sw.style.borderRadius = s ? '0' : '50%';
+    sw.style.clipPath = s ? star(50 - s * 9) : 'none';
+    sh.style.transform = `scaleX(${0.7 + w * 0.15})`; sh.style.opacity = String(0.15 + w * 0.15);
     out.textContent = [W.texture[t], W.temp[c], W.pressure[p], W.weight[w], W.sharp[s]].join(', ');
   };
   form.addEventListener('input', set); set();
+});
+// Body map: one paint at a time (a color or a texture), applied to regions by the list (the full alternative) or by the drawing; a text twin lists what is where.
+document.querySelectorAll('[data-body]').forEach((root) => {
+  const out = document.getElementById(root.dataset.out), marks = {};
+  const paint = () => root.querySelector('[name=paint]:checked');
+  const redraw = () => {
+    root.querySelectorAll('[data-region]').forEach((r) => { const m = marks[r.dataset.region]; r.style.fill = m ? m.fill : 'transparent'; });
+    root.querySelectorAll('select[data-for]').forEach((sel) => { sel.value = marks[sel.dataset.for] ? marks[sel.dataset.for].label : ''; });
+    const list = Object.entries(marks).map(([k, m]) => `${k}: ${m.label}`); out.textContent = list.length ? list.join('. ') + '.' : 'Nothing marked yet.';
+  };
+  const apply = (region) => { const p = paint(); if (!p) return; if (marks[region] && marks[region].label === p.value) delete marks[region]; else marks[region] = { label: p.value, fill: p.dataset.fill }; redraw(); };
+  root.querySelectorAll('[data-region]').forEach((r) => { r.addEventListener('click', () => apply(r.dataset.region)); r.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); apply(r.dataset.region); } }); });
+  root.querySelectorAll('select[data-for]').forEach((sel) => sel.addEventListener('change', () => { const p = root.querySelector(`[name=paint][value="${sel.value}"]`); if (!sel.value) delete marks[sel.dataset.for]; else if (p) marks[sel.dataset.for] = { label: sel.value, fill: p.dataset.fill }; redraw(); }));
+  root.querySelector('[data-clear]')?.addEventListener('click', () => { Object.keys(marks).forEach((k) => delete marks[k]); redraw(); });
+  redraw();
 });

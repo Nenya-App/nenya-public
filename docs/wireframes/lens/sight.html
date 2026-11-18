@@ -9,7 +9,7 @@
 <body>
 <a class="skip" href="#main">Skip to the wireframes</a>
 <header class="page">
-  <h1>The Sight lens: four cards</h1>
+  <h1>The Sight lens: three cards</h1>
   <p><a href="index.html">All wireframes</a> · <a href="sound.html">Sound</a> · Draft 2026-11-17 · plan: <code>docs/lens-audit-sight-sound.md</code></p>
 </header>
 <main id="main">
@@ -22,7 +22,7 @@
 <!-- CARD 1 -->
 <section class="card" aria-labelledby="s1">
   <div class="frame">
-    <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 1 of 4</span><button type="button">Put this down</button></div>
+    <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 1 of 3</span><button type="button">Put this down</button></div>
     <h2 id="s1">Pick two colors</h2>
     <p>One for how you feel now. One for how you wish to feel.</p>
     <div class="row"><button type="button">Surprise me</button><button type="button">Start from my melody’s colors</button></div>
@@ -73,7 +73,7 @@
 <!-- CARD 2 -->
 <section class="card" aria-labelledby="s2">
   <div class="frame">
-    <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 2 of 4</span><button type="button">Put this down</button></div>
+    <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 2 of 3</span><button type="button">Put this down</button></div>
     <h2 id="s2">A palette from your colors (optional)</h2>
     <p>A palette is a starting point, not a measurement. Make one, or skip.</p>
     <div class="row"><button type="button">Make a palette here, on this device</button></div>
@@ -96,25 +96,8 @@
 <!-- CARD 3 -->
 <section class="card" aria-labelledby="s3">
   <div class="frame">
-    <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 3 of 4</span><button type="button">Put this down</button></div>
-    <h2 id="s3">Where do you feel it? (optional)</h2>
-    <p>Mark the places in your body, or choose them from a list.</p>
-    <div class="map" role="img" aria-label="A body outline you can mark. The list below does the same thing.">[body map drawing area]</div>
-    <fieldset><legend>Or choose from a list</legend><label><input type="checkbox"> Head</label><label><input type="checkbox"> Throat</label><label><input type="checkbox"> Chest</label><label><input type="checkbox"> Stomach</label><label><input type="checkbox"> Hands</label></fieldset>
-    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
-  </div>
-  <aside class="note">
-    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>The map’s tools</li><li>The list alternative</li><li>Skip, Next</li></ol>
-    <h3>A screen reader says</h3><ul><li>The drawing is announced as optional, with the list named as the same thing in another form. Choosing from the list is a full alternative, not a fallback.</li></ul>
-    <h3>Notes</h3><ul><li>The existing body map (<code>BodyMapAvatar</code>) goes on its own card. It already saves as you go.</li><li>The list alternative is new if the map does not already have one: confirm in the audit of that component.</li></ul>
-  </aside>
-</section>
-
-<!-- CARD 4 -->
-<section class="card" aria-labelledby="s4">
-  <div class="frame">
-    <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 4 of 4</span><button type="button">Put this down</button></div>
-    <h2 id="s4">Add Sight to your report?</h2>
+    <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 3 of 3</span><button type="button">Put this down</button></div>
+    <h2 id="s3">Add Sight to your report?</h2>
     <p>This is what would be added:</p>
     <ul><li>Now: steel blue, medium strength</li><li>Wish: warm amber, medium strength</li><li>Palettes: none</li><li>Body: none marked</li></ul>
     <div class="row"><button type="button" class="primary" data-added="added-state">Add this to my report</button><button type="button">Put this down</button></div>

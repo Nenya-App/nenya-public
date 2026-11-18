@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: the body map</title>
+<link rel="stylesheet" href="wire.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the wireframes</a>
+<header class="page">
+  <h1>The body map: one map for the whole report</h1>
+  <p><a href="index.html">All wireframes</a> · <a href="tray.html">Tray</a> · <a href="touch.html">Touch</a> · Draft 2026-11-17 · audit: <code>docs/lens-audit-touch.md</code></p>
+</header>
+<main id="main">
+<div class="legend">
+  <h2>What this is</h2>
+  <p>Decided (owner, 2026-11-17): there is <strong>one body map for the whole report</strong>, not one per lens. It works the way the color picker does: pick a <strong>paint</strong>, then put it on a place. A paint is a color or a surface the person added in a lens (or any color from the picker). The map is reached from the tray and from each lens's last card, and it appears in the report as its own section.</p>
+</div>
+
+<section class="card" aria-labelledby="b1">
+  <div class="frame" data-body="map" data-out="body-out">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Body map</span><button type="button">Back to the lenses</button></div>
+    <h2 id="b1">Where do you feel it? (optional)</h2>
+    <p>Pick a paint, then choose where it goes. Choose the same place again to take it off.</p>
+    <fieldset><legend>Paint with</legend>
+      <label><input type="radio" name="paint" value="steel blue (color, now)" data-fill="#4a6fa5" checked> Steel blue (your color for now)</label>
+      <label><input type="radio" name="paint" value="warm amber (color, wish)" data-fill="#e0a458"> Warm amber (your color for wish)</label>
+      <label><input type="radio" name="paint" value="wool (surface, now)" data-fill="#9b8f7c"> Wool (your surface for now)</label>
+      <label><input type="radio" name="paint" value="silk (surface, wish)" data-fill="#6f7f86"> Silk (your surface for wish)</label>
+      <label><input type="radio" name="paint" value="another color" data-fill="#7a8a5c"> Another color <button type="button">Choose a color</button></label>
+    </fieldset>
+    <div class="bodywrap">
+      <fieldset style="flex:1;min-width:260px"><legend>Choose the places (the whole map, as a list)</legend>
+        <table class="regions"><caption class="mini">Each place has the paint it carries.</caption>
+          <thead><tr><th scope="col">Place</th><th scope="col">Paint</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><label for="r-head">Head</label></th><td><select id="r-head" data-for="head"><option value="">Nothing</option><option>steel blue (color, now)</option><option>warm amber (color, wish)</option><option>wool (surface, now)</option><option>silk (surface, wish)</option><option>another color</option></select></td></tr>
+            <tr><th scope="row"><label for="r-throat">Throat</label></th><td><select id="r-throat" data-for="throat"><option value="">Nothing</option><option>steel blue (color, now)</option><option>warm amber (color, wish)</option><option>wool (surface, now)</option><option>silk (surface, wish)</option><option>another color</option></select></td></tr>
+            <tr><th scope="row"><label for="r-chest">Chest</label></th><td><select id="r-chest" data-for="chest"><option value="">Nothing</option><option>steel blue (color, now)</option><option>warm amber (color, wish)</option><option>wool (surface, now)</option><option>silk (surface, wish)</option><option>another color</option></select></td></tr>
+            <tr><th scope="row"><label for="r-stomach">Stomach</label></th><td><select id="r-stomach" data-for="stomach"><option value="">Nothing</option><option>steel blue (color, now)</option><option>warm amber (color, wish)</option><option>wool (surface, now)</option><option>silk (surface, wish)</option><option>another color</option></select></td></tr>
+            <tr><th scope="row"><label for="r-hands">Hands</label></th><td><select id="r-hands" data-for="hands"><option value="">Nothing</option><option>steel blue (color, now)</option><option>warm amber (color, wish)</option><option>wool (surface, now)</option><option>silk (surface, wish)</option><option>another color</option></select></td></tr>
+          </tbody></table>
+      </fieldset>
+      <svg class="bodysvg" viewBox="0 0 170 340" role="group" aria-label="A body outline. Each place is a button; the list beside it does the same thing.">
+        <circle data-region="head" cx="85" cy="32" r="22" role="button" tabindex="0" aria-label="Head"/>
+        <rect data-region="throat" x="75" y="55" width="20" height="18" role="button" tabindex="0" aria-label="Throat"/>
+        <rect data-region="chest" x="50" y="75" width="70" height="60" rx="14" role="button" tabindex="0" aria-label="Chest"/>
+        <rect data-region="stomach" x="55" y="138" width="60" height="55" rx="14" role="button" tabindex="0" aria-label="Stomach"/>
+        <circle data-region="hands" cx="30" cy="190" r="14" role="button" tabindex="0" aria-label="Hands"/>
+      </svg>
+    </div>
+    <p class="mini">On the map now: <span id="body-out" role="status"></span></p>
+    <div class="row"><button type="button" data-clear>Clear the map</button><button type="button">Skip</button><button type="button" class="primary">Done</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Back to the lenses</li><li>Paint (one radio group, arrow keys), Choose a color</li><li>The list of places (a table of selects: the full alternative)</li><li>The drawing's places, then Clear, Skip, Done</li></ol>
+    <h3>A screen reader says</h3><ul><li>The list is the primary way, not a fallback: each place is a labelled select with the paint it carries. The drawing repeats it and is described as doing the same thing. “On the map now” is the text twin and updates politely.</li></ul>
+    <h3>Responds live (<strong>try it</strong>)</h3><ul><li>Pick a paint, then press a place on the drawing or choose from the list. The place fills with the color, or with the surface shown as its color in this wireframe (the real map shows the texture, applied the way the picker applies a color).</li></ul>
+    <h3>How it fits</h3><ul><li>Paints come from what the person <strong>added</strong> in Sight and Touch, plus any color from the picker. If no lens has been added yet, only the picker is offered.</li><li>The map belongs to the report, not to a lens: it shows in the report as its own section, with Update and Remove. Removing a lens does not remove the map; a mark that used a removed lens's paint keeps its color or texture.</li><li>Optional, and never needed for anything else.</li></ul>
+    <h3>Copy draft</h3><p>“Where do you feel it? Pick a paint, then choose where it goes.”</p>
+    <h3>Open</h3><p>Places: the drawing here has five for the wireframe; the real map keeps the existing body regions. Should it also allow a pointer-drawn brush (as the current map does), beside the places?</p>
+  </aside>
+</section>
+</main>
+<script src="wire.js"></script>
+</body>
+</html>

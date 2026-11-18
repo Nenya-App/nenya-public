@@ -108,3 +108,7 @@ Nenya is built to screen messages to the coach with a small hate-speech classifi
 - Licence: [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/), as stated on the model's page. The model was fine-tuned by its authors on 13 published hate-speech datasets, which its page lists.
 - What we changed: we converted the model to the ONNX format and quantized its weights to 8-bit integers so it fits in a small server function, and we choose our own score threshold from our own tests. We have not retrained or fine-tuned it. Its score alone never ends a conversation or reaches anyone: it can only change the tone of a reply or offer a short card, as described in the Terms.
 - The authors have not endorsed Nenya.
+
+## Material Symbols (icons)
+Google's Material Symbols, outlined, weight 400, from the npm package `@material-symbols/svg-400` version 0.49.0, licensed under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0); the symbols are at https://fonts.google.com/icons and https://github.com/google/material-design-icons. Sixteen icons are copied unmodified into `docs/wireframes/lens/icons/` for the lens wireframes (visibility, hearing, touch_app, spa, directions_walk, lightbulb, forum, air, accessibility_new, arrow_back, logout, settings, add, remove, check, close), downloaded on 2026-11-17 with the owner's approval. The site is self-hosted, so icons are bundled as SVG and never loaded from Google. When they enter the site's build the same credit applies, and only the icons used are included.
+

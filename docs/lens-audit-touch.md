@@ -23,7 +23,18 @@ Two cards for the surfaces (rather than one for both) because the choice is larg
 - **Simple mode is the model.** Touch already has the plain intro, the one-picture step and the "more detail" disclosure; the rebuild turns the disclosure's sliders into an active step instead of changing the opening.
 - **Haptics:** vibration works on some Android browsers and not on iOS; it must never be the only signal.
 
-## 4. Decisions needed
+## 4. Decisions (owner, 2026-11-17)
+- **One body map for the whole report** (option a). It works like the color picker: the person picks a **paint** (a color or a surface they added, or any color) and puts it on places on the body. Wireframe: `docs/wireframes/lens/body.html`. It is reached from the tray and from each lens's last card, and appears in the report as its own section. This takes the body card out of Sight (now three cards).
+- **Two surface cards** (now, wish): the cards make sense as drawn.
+- **The surface is shown as an object with the sliders acting on it**, in a quick render. The default shape is an **orb**. The wireframe orb shows how: texture changes the grain, temperature the tint, pressure squashes it, weight sinks it and grows its shadow, sharpness turns the circle into a pointed star. Drawn in 2D (CSS and canvas) so the first visit does not grow; a 3D version is possible later (the gem already uses WebGL), and other shapes can be offered later.
+- **Icons:** Google's Material Symbols, downloaded and credited (see `ATTRIBUTIONS.md`).
+
+## 5. Still open
+1. "Feel it more" for both states, or the present state first?
+2. Keep the vibration idea (off by default), or leave haptics out of the first rebuild?
+3. Body map: should it keep a pointer-drawn brush beside the places, as the current map does?
+
+## 6. The decisions that were asked (kept for the record)
 1. The body map: (a), (b) or (c) above.
 2. Surface cards: two (now, wish), or both on one card with a smaller chooser?
 3. "Feel it more": for both states, or the present state first and the wish on request?

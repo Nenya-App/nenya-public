@@ -73,10 +73,10 @@
   <div class="frame">
     <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 3 of 4</span><button type="button">Put this down</button></div>
     <h2 id="c3">Feel it more (optional)</h2>
-    <p>Move the sliders. The surface changes as you go.</p>
+    <p>Move the sliders. The orb changes as you go.</p>
     <div class="row" style="align-items:flex-start;gap:20px">
-      <div style="min-width:170px;min-height:150px;display:grid;place-items:center"><div class="tswatch" id="tsw" role="img" aria-label="The surface you picked, changing as you move the sliders. The line below says the same in words."></div></div>
-      <form data-touch="tsw" data-out="tout" style="flex:1;min-width:240px">
+      <div class="orbwrap"><div class="orbshadow" id="tshadow"></div><div class="orb" id="tsw" role="img" aria-label="The surface you picked, shown as an orb, changing as you move the sliders. The line below says the same in words."></div></div>
+      <form data-touch="tsw" data-shadow="tshadow" data-out="tout" style="flex:1;min-width:240px">
         <label for="texture">Texture</label><input type="range" id="texture" name="texture" min="0" max="4" value="1"><div class="ends"><span>Smooth</span><span>Rough</span></div>
         <label for="temp">Temperature</label><input type="range" id="temp" name="temp" min="0" max="4" value="2"><div class="ends"><span>Frozen</span><span>Burning</span></div>
         <label for="pressure">Pressure</label><input type="range" id="pressure" name="pressure" min="0" max="4" value="1"><div class="ends"><span>Loose</span><span>Compressed</span></div>
@@ -90,7 +90,7 @@
   <aside class="note">
     <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Texture, temperature, pressure, weight, sharpness (sliders)</li><li>Back to the original surface, Skip, Next</li></ol>
     <h3>A screen reader says</h3><ul><li>Each slider: “Temperature, frozen to burning, neutral.” The line “It feels: …” is the text twin and updates politely.</li></ul>
-    <h3>Responds live (<strong>try it</strong>)</h3><ul><li><strong>Texture</strong>: how grainy the surface looks. <strong>Temperature</strong>: cool to warm tint. <strong>Pressure</strong>: the surface is squeezed (smaller, with an inner shadow). <strong>Weight</strong>: it sinks lower. <strong>Sharpness</strong>: the shape goes from round to pointed.</li><li>Reduced motion: the change is instant.</li><li>Optional later: a short vibration on a phone that supports it, off unless asked.</li></ul>
+    <h3>Responds live (<strong>try it</strong>)</h3><ul><li>The surface you picked is wrapped on an <strong>orb</strong> (the default shape; here a pattern stands in for the picture and a flat gradient for the light). <strong>Texture</strong>: how grainy it looks. <strong>Temperature</strong>: cool to warm tint. <strong>Pressure</strong>: the orb is squashed. <strong>Weight</strong>: it sinks and its shadow grows. <strong>Sharpness</strong>: the orb turns from round to a pointed star.</li><li>The real card draws this in 2D (CSS and canvas): no 3D engine, so the first visit does not grow. A 3D version (the gem already uses WebGL) is possible later; other shapes (a pebble, a cube) can be offered later.</li><li>Reduced motion: the change is instant.</li><li>Optional later: a short vibration on a phone that supports it, off unless asked.</li></ul>
     <h3>Notes</h3><ul><li>Today these are the five sliders inside “Add more detail” (ten in all, five for each state), recorded and described afterwards. Here they act on the surface.</li><li>Each slider can be left unset: choosing nothing is a choice (an unset state, as in the code).</li><li>Now and wish each get this card if the person opens it.</li></ul>
     <h3>Copy draft</h3><p>“Move the sliders. The surface changes as you go.”</p>
   </aside>
@@ -110,7 +110,7 @@
   </div>
   <aside class="note">
     <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down (top)</li><li>The summary (a list)</li><li>The free-text box</li><li>Add this to my report, Put this down</li></ol>
-    <h3>Notes</h3><ul><li>The same last card as Sight and Sound.</li><li><strong>The body map is not drawn on this lens</strong>: see the audit. All six lenses share one body map today, which does not fit add, update and remove per lens. Decision needed.</li></ul>
+    <h3>Notes</h3><ul><li>The same last card as Sight and Sound.</li><li>The body map is not part of this lens: it is one map for the whole report (<a href="body.html">drawn here</a>), and the textures a person adds here are available as paints on it.</li></ul>
   </aside>
 </section>
 </main>
