@@ -29,10 +29,12 @@ Two cards for the surfaces (rather than one for both) because the choice is larg
 - **The surface is shown as an object with the sliders acting on it**, in a quick render. The default shape is an **orb**. The wireframe orb shows how: texture changes the grain, temperature the tint, pressure squashes it, weight sinks it and grows its shadow, sharpness turns the circle into a pointed star. Drawn in 2D (CSS and canvas) so the first visit does not grow; a 3D version is possible later (the gem already uses WebGL), and other shapes can be offered later.
 - **Icons:** Google's Material Symbols, downloaded and credited (see `ATTRIBUTIONS.md`).
 
-## 5. Still open
-1. "Feel it more" for both states, or the present state first?
-2. Keep the vibration idea (off by default), or leave haptics out of the first rebuild?
-3. Body map: should it keep a pointer-drawn brush beside the places, as the current map does?
+## 5. Decided (owner, 2026-11-17, later)
+- **"Feel it more" is for both states** (a Now / Wish choice on the card; each keeps its own settings).
+- **The vibration idea is in.** A labelled switch, off until chosen, shown only where the device can vibrate; pressure sets the strength, texture the pattern, weight the length; the text line always says the same; never the only signal; Android browsers only (iOS has no vibration).
+- **The body map keeps a pointer-drawn brush** (with a size slider and undo) **beside the places list**; the list stays the full alternative for keyboard and screen-reader users.
+
+Still open: nothing for Touch beyond the copy pass.
 
 ## 6. The decisions that were asked (kept for the record)
 1. The body map: (a), (b) or (c) above.

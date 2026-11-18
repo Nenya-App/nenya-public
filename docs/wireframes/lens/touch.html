@@ -74,6 +74,7 @@
     <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 3 of 4</span><button type="button">Put this down</button></div>
     <h2 id="c3">Feel it more (optional)</h2>
     <p>Move the sliders. The orb changes as you go.</p>
+    <fieldset><legend>Feel it for</legend><label><input type="radio" name="which" value="now" checked> Now</label> <label><input type="radio" name="which" value="wish"> How I would like it to feel</label></fieldset>
     <div class="row" style="align-items:flex-start;gap:20px">
       <div class="orbwrap"><div class="orbshadow" id="tshadow"></div><div class="orb" id="tsw" role="img" aria-label="The surface you picked, shown as an orb, changing as you move the sliders. The line below says the same in words."></div></div>
       <form data-touch="tsw" data-shadow="tshadow" data-out="tout" style="flex:1;min-width:240px">
@@ -85,13 +86,14 @@
       </form>
     </div>
     <p class="mini">It feels: <span id="tout" role="status"></span></p>
+    <fieldset id="vibe" hidden><legend>On your phone (optional)</legend><label><input type="checkbox" id="vibon"> Let me feel it as a vibration</label> <button type="button" data-vibrate>Try the vibration</button> <span class="mini" role="status" id="vibout"></span></fieldset>
     <div class="row"><button type="button">Back to the original surface</button><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
   </div>
   <aside class="note">
     <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Texture, temperature, pressure, weight, sharpness (sliders)</li><li>Back to the original surface, Skip, Next</li></ol>
     <h3>A screen reader says</h3><ul><li>Each slider: “Temperature, frozen to burning, neutral.” The line “It feels: …” is the text twin and updates politely.</li></ul>
-    <h3>Responds live (<strong>try it</strong>)</h3><ul><li>The surface you picked is wrapped on an <strong>orb</strong> (the default shape; here a pattern stands in for the picture and a flat gradient for the light). <strong>Texture</strong>: how grainy it looks. <strong>Temperature</strong>: cool to warm tint. <strong>Pressure</strong>: the orb is squashed. <strong>Weight</strong>: it sinks and its shadow grows. <strong>Sharpness</strong>: the orb turns from round to a pointed star.</li><li>The real card draws this in 2D (CSS and canvas): no 3D engine, so the first visit does not grow. A 3D version (the gem already uses WebGL) is possible later; other shapes (a pebble, a cube) can be offered later.</li><li>Reduced motion: the change is instant.</li><li>Optional later: a short vibration on a phone that supports it, off unless asked.</li></ul>
-    <h3>Notes</h3><ul><li>Today these are the five sliders inside “Add more detail” (ten in all, five for each state), recorded and described afterwards. Here they act on the surface.</li><li>Each slider can be left unset: choosing nothing is a choice (an unset state, as in the code).</li><li>Now and wish each get this card if the person opens it.</li></ul>
+    <h3>Responds live (<strong>try it</strong>)</h3><ul><li>The surface you picked is wrapped on an <strong>orb</strong> (the default shape; here a pattern stands in for the picture and a flat gradient for the light). <strong>Texture</strong>: how grainy it looks. <strong>Temperature</strong>: cool to warm tint. <strong>Pressure</strong>: the orb is squashed. <strong>Weight</strong>: it sinks and its shadow grows. <strong>Sharpness</strong>: the orb turns from round to a pointed star.</li><li>The real card draws this in 2D (CSS and canvas): no 3D engine, so the first visit does not grow. A 3D version (the gem already uses WebGL) is possible later; other shapes (a pebble, a cube) can be offered later.</li><li>Reduced motion: the change is instant.</li><li><strong>Vibration</strong> (decided: yes): where the phone supports it, a switch (off until chosen) lets the person feel the surface. Pressure sets the strength, texture the pattern (smooth is one long soft pulse; rough is quick short ones), weight the length. It appears only if the device can vibrate, never carries meaning alone (the text line always says the same), and stops under reduced motion or when the person turns it off. Android browsers support it; iOS does not.</li></ul>
+    <h3>Notes</h3><ul><li>Today these are the five sliders inside “Add more detail” (ten in all, five for each state), recorded and described afterwards. Here they act on the surface.</li><li>Each slider can be left unset: choosing nothing is a choice (an unset state, as in the code).</li><li><strong>Both states get this card</strong> (decided): a Now / Wish choice at the top switches which state the sliders shape, and each keeps its own settings.</li></ul>
     <h3>Copy draft</h3><p>“Move the sliders. The surface changes as you go.”</p>
   </aside>
 </section>

@@ -23,6 +23,7 @@
     <div class="bar"><button type="button">Emergency Exit</button><span>Body map</span><button type="button">Back to the lenses</button></div>
     <h2 id="b1">Where do you feel it? (optional)</h2>
     <p>Pick a paint, then choose where it goes. Choose the same place again to take it off.</p>
+    <fieldset><legend>How to paint</legend><label><input type="checkbox" id="brushon"> Draw with a brush on the picture (pointer only; the places list does the same thing)</label><label for="brushsize">Brush size</label><input type="range" id="brushsize" min="3" max="20" value="8"><div class="ends"><span>Fine</span><span>Wide</span></div><div class="row"><button type="button" data-undo>Undo the last stroke</button></div></fieldset>
     <fieldset><legend>Paint with</legend>
       <label><input type="radio" name="paint" value="steel blue (color, now)" data-fill="#4a6fa5" checked> Steel blue (your color for now)</label>
       <label><input type="radio" name="paint" value="warm amber (color, wish)" data-fill="#e0a458"> Warm amber (your color for wish)</label>
@@ -42,7 +43,7 @@
             <tr><th scope="row"><label for="r-hands">Hands</label></th><td><select id="r-hands" data-for="hands"><option value="">Nothing</option><option>steel blue (color, now)</option><option>warm amber (color, wish)</option><option>wool (surface, now)</option><option>silk (surface, wish)</option><option>another color</option></select></td></tr>
           </tbody></table>
       </fieldset>
-      <svg class="bodysvg" viewBox="0 0 170 340" role="group" aria-label="A body outline. Each place is a button; the list beside it does the same thing.">
+      <svg class="bodysvg" id="bodysvg" viewBox="0 0 170 340" role="group" aria-label="A body outline. Each place is a button; the list beside it does the same thing.">
         <circle data-region="head" cx="85" cy="32" r="22" role="button" tabindex="0" aria-label="Head"/>
         <rect data-region="throat" x="75" y="55" width="20" height="18" role="button" tabindex="0" aria-label="Throat"/>
         <rect data-region="chest" x="50" y="75" width="70" height="60" rx="14" role="button" tabindex="0" aria-label="Chest"/>
@@ -56,10 +57,10 @@
   <aside class="note">
     <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Back to the lenses</li><li>Paint (one radio group, arrow keys), Choose a color</li><li>The list of places (a table of selects: the full alternative)</li><li>The drawing's places, then Clear, Skip, Done</li></ol>
     <h3>A screen reader says</h3><ul><li>The list is the primary way, not a fallback: each place is a labelled select with the paint it carries. The drawing repeats it and is described as doing the same thing. “On the map now” is the text twin and updates politely.</li></ul>
-    <h3>Responds live (<strong>try it</strong>)</h3><ul><li>Pick a paint, then press a place on the drawing or choose from the list. The place fills with the color, or with the surface shown as its color in this wireframe (the real map shows the texture, applied the way the picker applies a color).</li></ul>
+    <h3>Responds live (<strong>try it</strong>)</h3><ul><li><strong>The brush</strong> (decided: yes, beside the places): turn on “Draw with a brush”, then drag on the picture; the marks are in the chosen paint and the size slider sets the width. The brush is for pointers and touch only; keyboard and screen-reader users have the places list, which is the full alternative. The text line counts the brush marks by paint (“12 dabs of steel blue”) so they are in words too. Undo removes the last stroke.</li><li>Pick a paint, then press a place on the drawing or choose from the list. The place fills with the color, or with the surface shown as its color in this wireframe (the real map shows the texture, applied the way the picker applies a color).</li></ul>
     <h3>How it fits</h3><ul><li>Paints come from what the person <strong>added</strong> in Sight and Touch, plus any color from the picker. If no lens has been added yet, only the picker is offered.</li><li>The map belongs to the report, not to a lens: it shows in the report as its own section, with Update and Remove. Removing a lens does not remove the map; a mark that used a removed lens's paint keeps its color or texture.</li><li>Optional, and never needed for anything else.</li></ul>
     <h3>Copy draft</h3><p>“Where do you feel it? Pick a paint, then choose where it goes.”</p>
-    <h3>Open</h3><p>Places: the drawing here has five for the wireframe; the real map keeps the existing body regions. Should it also allow a pointer-drawn brush (as the current map does), beside the places?</p>
+    <h3>Notes</h3><p>Places: the drawing here has five for the wireframe; the real map keeps the existing body regions and the existing brush.</p>
   </aside>
 </section>
 </main>

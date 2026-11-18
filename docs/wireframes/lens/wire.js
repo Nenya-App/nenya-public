@@ -44,3 +44,33 @@ document.querySelectorAll('[data-body]').forEach((root) => {
   root.querySelector('[data-clear]')?.addEventListener('click', () => { Object.keys(marks).forEach((k) => delete marks[k]); redraw(); });
   redraw();
 });
+
+// Vibration (Touch): shown only where the device can vibrate; the pattern follows the sliders; the text twin always says the same.
+(() => {
+  const box = document.getElementById('vibe'); if (!box) return;
+  if (typeof navigator.vibrate === 'function') box.hidden = false;
+  const form = document.querySelector('[data-touch]'), out = document.getElementById('vibout');
+  const v = (n) => +form.querySelector(`[name=${n}]`).value;
+  box.querySelector('[data-vibrate]').addEventListener('click', () => {
+    if (!document.getElementById('vibon').checked) { out.textContent = 'Switch the vibration on first.'; return; }
+    const rough = v('texture'), strength = 20 + v('pressure') * 25, len = 60 + v('weight') * 60;
+    const pattern = rough > 2 ? [strength, 40, strength, 40, strength, 40, strength] : [len * 2];
+    navigator.vibrate(pattern); out.textContent = rough > 2 ? 'Quick short pulses (rough).' : 'One long soft pulse (smooth).';
+  });
+})();
+
+// Body brush: pointer-drawn dabs in the chosen paint, counted in words; places still work from the list and the drawing.
+(() => {
+  const svg = document.getElementById('bodysvg'); if (!svg) return;
+  const on = document.getElementById('brushon'), size = document.getElementById('brushsize'), root = svg.closest('[data-body]'), say = document.getElementById(root.dataset.out);
+  const strokes = []; let current = null, down = false;
+  const note = () => { const c = {}; strokes.flat().forEach((d) => (c[d.label] = (c[d.label] || 0) + 1)); const t = Object.entries(c).map(([k, n]) => `${n} dab${n > 1 ? 's' : ''} of ${k}`).join(', '); let span = document.getElementById('brush-note'); if (!span) { span = document.createElement('span'); span.id = 'brush-note'; say.after(span); } span.textContent = t ? ` Brush: ${t}.` : ''; };
+  const at = (e) => { const r = svg.getBoundingClientRect(), p = svg.viewBox.baseVal; return { x: (e.clientX - r.left) * p.width / r.width, y: (e.clientY - r.top) * p.height / r.height }; };
+  const dab = (e) => { const p = root.querySelector('[name=paint]:checked'); const { x, y } = at(e); const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', size.value); c.setAttribute('fill', p.dataset.fill); c.setAttribute('aria-hidden', 'true'); c.dataset.brush = '1'; svg.appendChild(c); current.push({ el: c, label: p.value }); };
+  svg.addEventListener('pointerdown', (e) => { if (!on.checked) return; down = true; current = []; strokes.push(current); svg.setPointerCapture(e.pointerId); dab(e); });
+  svg.addEventListener('pointermove', (e) => { if (down) dab(e); });
+  svg.addEventListener('pointerup', () => { down = false; note(); });
+  root.querySelector('[data-undo]').addEventListener('click', () => { const s = strokes.pop(); if (s) s.forEach((d) => d.el.remove()); note(); });
+  root.querySelector('[data-clear]').addEventListener('click', () => { strokes.splice(0).forEach((s) => s.forEach((d) => d.el.remove())); note(); });
+  on.addEventListener('change', () => { svg.style.touchAction = on.checked ? 'none' : 'auto'; svg.style.cursor = on.checked ? 'crosshair' : 'default'; });
+})();

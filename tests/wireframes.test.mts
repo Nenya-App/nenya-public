@@ -44,3 +44,11 @@ ok('the stylesheet respects reduced motion and has a visible focus style', /pref
     ok(`${name}: no button fill is pure white or pure black`, !['#ffffff', '#000000'].includes(v('btn-bg').toLowerCase()) && !['#ffffff', '#000000'].includes(v('sel-bg').toLowerCase()));
   });
 }
+
+{
+  const touch = readFileSync(`${dir}/touch.html`, 'utf8');
+  const body = readFileSync(`${dir}/body.html`, 'utf8');
+  const js = readFileSync(`${dir}/wire.js`, 'utf8');
+  ok('Touch: "feel it more" serves both states, and the vibration is a labelled opt-in that shows only where the device can vibrate', /name="which"[^>]*value="wish"/.test(touch) && /Let me feel it as a vibration/.test(touch) && /id="vibe" hidden/.test(touch) && /typeof navigator\.vibrate === 'function'/.test(js));
+  ok('Body map: a pointer-drawn brush with a labelled size beside the places list, with the brush marks counted in words', /id="brushon"/.test(body) && /<label for="brushsize">/.test(body) && /Draw with a brush/.test(body) && /dab/.test(js) && /<select id="r-/.test(body));
+}
