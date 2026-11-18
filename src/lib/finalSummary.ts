@@ -57,6 +57,9 @@ export function summaryMessages(turns: readonly Turn[]): { system: string; messa
 /** A sentence that ends on one of these words has been cut off or never finished. */
 const DANGLING_END = /\b(?:to|by|of|and|or|but|the|a|an|in|on|at|for|with|from|that|which|as|so|if|when|because|than|your|my|their|his|her|our|its|about|into|toward|towards|while|who|whose|where)$/i;
 
+/** A sentence that ends on a verb that needs a complement ("by wanting", "you hoped", "you decided"). A relative clause that ends on one is whole ("what you need", "all they want"), and "a try" is a noun, so those are left alone. */
+const DANGLING_VERB = /(?:\b(?:wanting|needing|trying|hoping|wishing|planning|deciding|starting|beginning|learning|choosing|intending|preparing|continuing|attempting)|(?<!\b(?:what|all|everything|something|anything|whatever|that|which))\s(?:you|they)\s(?:wanted|hoped|wished|planned|decided|started|began|intended|attempted|chose|tried|needed|want|hope|wish|plan|decide|try|start|begin|need))$/i;
+
 const words = (t: string): number => t.trim().split(/\s+/).filter(Boolean).length;
 
 /** What is wrong with a summary, as short names (empty = usable). Phrase checks, like the persona checks: they catch the common failures, not every one. */
@@ -79,7 +82,7 @@ export function summaryProblems(text: string): string[] {
   if (words(t) > 110) out.push('too-long');
   if (words(t) < 15) out.push('too-short');
   if (!/[.!]["”’)]?$/.test(t)) out.push('unfinished');
-  if (sentences(t).some((x) => DANGLING_END.test(x.replace(/[.!?"”’)]+$/, '').trim()))) out.push('fragment'); // a sentence that stops on a function word ("...by wanting to.")
+  if (sentences(t).some((x) => { const y = x.replace(/[.!?"”’)]+$/, '').trim(); return DANGLING_END.test(y) || DANGLING_VERB.test(y); })) out.push('fragment'); // a sentence that stops on a function word ("...by wanting to.") or on a verb that needs something after it ("...by wanting.")
   return out;
 }
 
