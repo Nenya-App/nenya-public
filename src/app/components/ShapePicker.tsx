@@ -10,11 +10,13 @@ interface Props {
   onToggle: (id: string) => void;
   /** Distinguishes the present and wish pickers on one page. */
   idPrefix: string;
+  /** Tray mode: three is a soft limit (a warning before a fourth, set by the page), not a block. */
+  soft?: boolean;
 }
 
-export function ShapePicker({ set, selected, onToggle, idPrefix }: Props) {
+export function ShapePicker({ set, selected, onToggle, idPrefix, soft = false }: Props) {
   const shapes = shapesFor(set);
-  const full = selected.length >= MAX_SHAPES;
+  const full = !soft && selected.length >= MAX_SHAPES;
   return (
     <div className="space-y-2">
       <div role="group" aria-labelledby={`${idPrefix}-shapes-label`} className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
@@ -39,7 +41,7 @@ export function ShapePicker({ set, selected, onToggle, idPrefix }: Props) {
         })}
       </div>
       <p className="text-xs text-muted-foreground" role="status">
-        {selected.length === 0 ? 'None chosen. You can choose up to three, or skip this.' : `${selected.length} of ${MAX_SHAPES} chosen${full ? '. Unchoose one to pick another.' : '.'}`}
+        {soft ? (selected.length === 0 ? 'None chosen. You can skip this.' : `${selected.length} chosen.`) : selected.length === 0 ? 'None chosen. You can choose up to three, or skip this.' : `${selected.length} of ${MAX_SHAPES} chosen${full ? '. Unchoose one to pick another.' : '.'}`}
       </p>
     </div>
   );

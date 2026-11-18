@@ -114,3 +114,6 @@ In tray mode Touch uses the existing simpler card (one surface choice up front; 
 
 ### Step 2, Essence built (2026-11-18), behind `VITE_LENS_TRAY`
 Same treatment: no "Gateway n of m", the opening line, taste words, scent words and Intensity up front on each card, the description under "More descriptions", the soft limit of three on each word list (warning, never a block), Edit reopens with what was added, and Add this to my report / Put this down at the end. Not built: the wireframe's editable tasting note and extra dials (still open questions). Next: Movement, then Pattern.
+
+### Step 2, Movement built (2026-11-18), behind `VITE_LENS_TRAY`
+In tray mode Movement hides "Gateway n of m", opens with the shared line, keeps the drawings to choose from plus Energy and Speed up front, tucks direction words, quality words, the drawing pad and the description under "More descriptions", has the soft limit of three on drawings, directions and qualities (warning, never a block; the drawing picker's hard cap of three applies only outside the tray), reopens with what was added including the drawn pattern, and ends with Add this to my report / Put this down. Not built: the wireframe's live preview of the motion, the tapestry and path-of-motion activities (open questions in `lens-audit-movement-pattern.md`). Next: Pattern.

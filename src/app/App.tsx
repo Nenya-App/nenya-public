@@ -749,6 +749,7 @@ export default function App() {
           {currentScreen === 'movement' && (
             <MovementGatewayPage
               onComplete={(data) => handleGatewayComplete('movement', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'movement')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('movement')}
               totalGateways={selectedGateways.length}

@@ -15,6 +15,8 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
+import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { ShapePicker, MAX_SHAPES } from '../ShapePicker';
 import { L } from '../../../lib/vocabulary';
 interface MovementGatewayPageProps {
@@ -25,6 +27,8 @@ interface MovementGatewayPageProps {
   userColors?: { color1?: string; color2?: string };
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
+  /** Tray mode: what was added before, so Edit opens with it. */
+  initialData?: any;
 }
 
 
@@ -47,7 +51,11 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function MovementGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: MovementGatewayPageProps) {
+export default function MovementGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap, initialData }: MovementGatewayPageProps) {
+  const tray = lensTrayOn();
+  const init = tray && initialData && ('currentEnergy' in initialData || 'currentMovementShapes' in initialData) ? initialData : null;
+  // The soft limit of three in one list (tray mode): the fourth waits for a yes.
+  const [pendingWord, setPendingWord] = useState<{ value: string; list: string[]; setter: (v: string[]) => void } | null>(null);
   // Step state
   const [step, setStep] = useState<'instructions' | 'selection'>('instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
@@ -64,26 +72,26 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   }, [step]);
 
   // Current state
-  const [currentMovementShapes, setCurrentMovementShapes] = useState<string[]>([]);
-  const [currentDirections, setCurrentDirections] = useState<string[]>([]);
-  const [currentDirectionOther, setCurrentDirectionOther] = useState('');
-  const [currentEnergy, setCurrentEnergy] = useState(() => unsetSlider());
-  const [currentSpeed, setCurrentSpeed] = useState(() => unsetSlider());
-  const [currentQualities, setCurrentQualities] = useState<string[]>([]);
-  const [currentQualityOther, setCurrentQualityOther] = useState('');
-  const [currentDescription, setCurrentDescription] = useState('');
-  const [currentMovementDrawing, setCurrentMovementDrawing] = useState<string | null>(null);
+  const [currentMovementShapes, setCurrentMovementShapes] = useState<string[]>(init?.currentMovementShapes ?? []);
+  const [currentDirections, setCurrentDirections] = useState<string[]>(init?.currentDirections ?? []);
+  const [currentDirectionOther, setCurrentDirectionOther] = useState(init?.currentDirectionOther ?? '');
+  const [currentEnergy, setCurrentEnergy] = useState(() => (typeof init?.currentEnergy === 'number' ? [init.currentEnergy] : unsetSlider()));
+  const [currentSpeed, setCurrentSpeed] = useState(() => (typeof init?.currentSpeed === 'number' ? [init.currentSpeed] : unsetSlider()));
+  const [currentQualities, setCurrentQualities] = useState<string[]>(init?.currentQualities ?? []);
+  const [currentQualityOther, setCurrentQualityOther] = useState(init?.currentQualityOther ?? '');
+  const [currentDescription, setCurrentDescription] = useState(init?.currentDescription ?? '');
+  const [currentMovementDrawing, setCurrentMovementDrawing] = useState<string | null>(init?.currentMovementDrawing ?? null);
 
   // Potential state
-  const [potentialMovementShapes, setPotentialMovementShapes] = useState<string[]>([]);
-  const [potentialDirections, setPotentialDirections] = useState<string[]>([]);
-  const [potentialDirectionOther, setPotentialDirectionOther] = useState('');
-  const [potentialEnergy, setPotentialEnergy] = useState(() => unsetSlider());
-  const [potentialSpeed, setPotentialSpeed] = useState(() => unsetSlider());
-  const [potentialQualities, setPotentialQualities] = useState<string[]>([]);
-  const [potentialQualityOther, setPotentialQualityOther] = useState('');
-  const [potentialDescription, setPotentialDescription] = useState('');
-  const [potentialMovementDrawing, setPotentialMovementDrawing] = useState<string | null>(null);
+  const [potentialMovementShapes, setPotentialMovementShapes] = useState<string[]>(init?.potentialMovementShapes ?? []);
+  const [potentialDirections, setPotentialDirections] = useState<string[]>(init?.potentialDirections ?? []);
+  const [potentialDirectionOther, setPotentialDirectionOther] = useState(init?.potentialDirectionOther ?? '');
+  const [potentialEnergy, setPotentialEnergy] = useState(() => (typeof init?.potentialEnergy === 'number' ? [init.potentialEnergy] : unsetSlider()));
+  const [potentialSpeed, setPotentialSpeed] = useState(() => (typeof init?.potentialSpeed === 'number' ? [init.potentialSpeed] : unsetSlider()));
+  const [potentialQualities, setPotentialQualities] = useState<string[]>(init?.potentialQualities ?? []);
+  const [potentialQualityOther, setPotentialQualityOther] = useState(init?.potentialQualityOther ?? '');
+  const [potentialDescription, setPotentialDescription] = useState(init?.potentialDescription ?? '');
+  const [potentialMovementDrawing, setPotentialMovementDrawing] = useState<string | null>(init?.potentialMovementDrawing ?? null);
 
   const handleCheckboxChange = (
     value: string,
@@ -91,6 +99,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
     currentValues: string[],
     setter: (values: string[]) => void
   ) => {
+    if (checked && tray && needsFewerWarning(currentValues.length)) { setPendingWord({ value, list: currentValues, setter }); return; }
     if (checked) {
       setter([...currentValues, value]);
     } else {
@@ -99,6 +108,11 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   };
 
   const toggleShape = (id: string, list: string[], set: (v: string[]) => void) => {
+    if (tray) {
+      if (!list.includes(id) && needsFewerWarning(list.length)) { setPendingWord({ value: id, list, setter: set }); return; }
+      set(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
+      return;
+    }
     set(list.includes(id) ? list.filter((x) => x !== id) : list.length < MAX_SHAPES ? [...list, id] : list);
   };
 
@@ -160,7 +174,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                 Movement - Kinesthesia
                 <GatewaySubtitleLink href="https://open.lib.umn.edu/sensationandperception/chapter/kinesthesia-and-prorioception/" />
               </h1>
-              <GatewayProgress index={currentIndex} total={totalGateways} />
+              {!tray && <GatewayProgress index={currentIndex} total={totalGateways} />}
             </div>
           </div>
           
@@ -190,6 +204,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   <p className="text-muted-foreground">
                     {INSTRUCTION_CARDS[instructionCardIndex].detail}
                   </p>
+                  {tray && instructionCardIndex === 0 && <FewerNote />}
                   <div className="flex items-center justify-between pt-4">
                     <div className="flex items-center gap-3">
                       <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
@@ -243,48 +258,48 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   <CardDescription>The kinesthetic qualities of where you are now</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
+                  {(() => {
+                    const b = [
+                  <div key="m0" className="space-y-2">
                     <Label id="currentMovement-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
-                    <ShapePicker set="movement" idPrefix="currentMovement" selected={currentMovementShapes} onToggle={(id) => toggleShape(id, currentMovementShapes, setCurrentMovementShapes)} />
-                  </div>
-
-                  <div className="space-y-2">
+                    <ShapePicker soft={tray} set="movement" idPrefix="currentMovement" selected={currentMovementShapes} onToggle={(id) => toggleShape(id, currentMovementShapes, setCurrentMovementShapes)} />
+                    {pendingWord && pendingWord.list === currentMovementShapes && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <div key="m1" className="space-y-2">
                     <Label className="text-sm">Direction (optional)</Label>
                     <WordPicker category="direction" idPrefix="currentDirections" selected={currentDirections} onToggle={(t) => handleCheckboxChange(t, !currentDirections.includes(t), currentDirections, setCurrentDirections)} other={{ value: currentDirectionOther, onChange: setCurrentDirectionOther, placeholder: "Describe..." }} />
-                  </div>
-
-                  <SnappingSlider
+                    {pendingWord && pendingWord.list === currentDirections && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <SnappingSlider key="m2"
                     value={currentEnergy}
                     onValueChange={setCurrentEnergy}
                     label="Energy"
                     leftLabel="Depleted"
                     rightLabel="Surging"
                     max={100}
-                  />
-
-                  <SnappingSlider
+                  />,
+                  <SnappingSlider key="m3"
                     value={currentSpeed}
                     onValueChange={setCurrentSpeed}
                     label="Speed"
                     leftLabel="Glacial"
                     rightLabel="Frenetic"
                     max={100}
-                  />
-
-                  <div className="space-y-2">
+                  />,
+                  <div key="m4" className="space-y-2">
                     <Label className="text-sm">Quality (optional)</Label>
                     <WordPicker category="quality" idPrefix="currentQualities" selected={currentQualities} onToggle={(t) => handleCheckboxChange(t, !currentQualities.includes(t), currentQualities, setCurrentQualities)} other={{ value: currentQualityOther, onChange: setCurrentQualityOther, placeholder: "Describe..." }} />
-                  </div>
-
-                  <div className="space-y-2">
+                    {pendingWord && pendingWord.list === currentQualities && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <div key="m5" className="space-y-2">
                     <Label className="text-sm">Draw your movement pattern (optional)</Label>
                     <DrawingCanvas
                       strokeColor={color1}
+                      initialDataUrl={init?.currentMovementDrawing}
                       onChange={setCurrentMovementDrawing}
                     />
-                  </div>
-
-                  <div className="space-y-2">
+                  </div>,
+                  <div key="m6" className="space-y-2">
                     <Label className="text-sm">Describe the movement (optional)</Label>
                     <Textarea
                       placeholder="Describe the kinesthetic qualities..."
@@ -293,6 +308,9 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                    ];
+                    return tray ? [b[0], b[2], b[3], <MoreDescriptions key="more"><>{b[1]}{b[4]}{b[5]}{b[6]}</></MoreDescriptions>] : b;
+                  })()}
                 </CardContent>
               </Card>
 
@@ -316,49 +334,49 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   <CardDescription>The kinesthetic qualities of where you're moving toward</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
+                  {(() => {
+                    const b = [
+                  <div key="m0" className="space-y-2">
                     <Label id="potentialMovement-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
-                    <ShapePicker set="movement" idPrefix="potentialMovement" selected={potentialMovementShapes} onToggle={(id) => toggleShape(id, potentialMovementShapes, setPotentialMovementShapes)} />
-                  </div>
-
-                  <div className="space-y-2">
+                    <ShapePicker soft={tray} set="movement" idPrefix="potentialMovement" selected={potentialMovementShapes} onToggle={(id) => toggleShape(id, potentialMovementShapes, setPotentialMovementShapes)} />
+                    {pendingWord && pendingWord.list === potentialMovementShapes && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <div key="m1" className="space-y-2">
                     <Label className="text-sm">Direction (optional)</Label>
                     <WordPicker category="direction" idPrefix="potentialDirections" selected={potentialDirections} onToggle={(t) => handleCheckboxChange(t, !potentialDirections.includes(t), potentialDirections, setPotentialDirections)} other={{ value: potentialDirectionOther, onChange: setPotentialDirectionOther, placeholder: "Describe..." }} />
-                  </div>
-
-                  <SnappingSlider
+                    {pendingWord && pendingWord.list === potentialDirections && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <SnappingSlider key="m2"
                     value={potentialEnergy}
                     onValueChange={setPotentialEnergy}
                     label="Energy"
                     leftLabel="Depleted"
                     rightLabel="Surging"
                     max={100}
-                  />
-
-                  <SnappingSlider
+                  />,
+                  <SnappingSlider key="m3"
                     value={potentialSpeed}
                     onValueChange={setPotentialSpeed}
                     label="Speed"
                     leftLabel="Glacial"
                     rightLabel="Frenetic"
                     max={100}
-                  />
-
-                  <div className="space-y-2">
+                  />,
+                  <div key="m4" className="space-y-2">
                     <Label className="text-sm">Quality (optional)</Label>
                     <WordPicker category="quality" idPrefix="potentialQualities" selected={potentialQualities} onToggle={(t) => handleCheckboxChange(t, !potentialQualities.includes(t), potentialQualities, setPotentialQualities)} other={{ value: potentialQualityOther, onChange: setPotentialQualityOther, placeholder: "Describe..." }} />
-                  </div>
-
-                  <div className="space-y-2">
+                    {pendingWord && pendingWord.list === potentialQualities && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <div key="m5" className="space-y-2">
                     <Label className="text-sm">Draw your movement pattern (optional)</Label>
                     <DrawingCanvas
                       strokeColor={color2}
+                      initialDataUrl={init?.potentialMovementDrawing}
                       onChange={setPotentialMovementDrawing}
                       placeholder="Trace the shape you're moving toward instead."
                     />
-                  </div>
-
-                  <div className="space-y-2">
+                  </div>,
+                  <div key="m6" className="space-y-2">
                     <Label className="text-sm">Describe the movement (optional)</Label>
                     <Textarea
                       placeholder="Describe the kinesthetic qualities you're moving toward..."
@@ -367,6 +385,9 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                    ];
+                    return tray ? [b[0], b[2], b[3], <MoreDescriptions key="more"><>{b[1]}{b[4]}{b[5]}{b[6]}</></MoreDescriptions>] : b;
+                  })()}
                 </CardContent>
               </Card>
             </StageSlot>
@@ -374,7 +395,8 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
             </div>
 
             {/* Next Button */}
-            {stage === 'wish' && (
+            {stage === 'wish' && tray && <AddToReport name="Movement" added={!!init} onAdd={handleNext} onPutDown={onBack} />}
+            {stage === 'wish' && !tray && (
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"

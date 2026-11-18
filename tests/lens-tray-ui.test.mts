@@ -28,3 +28,11 @@ const essence = readFileSync('src/app/components/pages/EssenceGatewayPage.tsx', 
 ok('Essence, in tray mode, hides "Gateway n of m", shows the opening line, offers Add / Put this down and warns before a fourth word', /!tray && <GatewayProgress/.test(essence) && /<FewerNote \/>/.test(essence) && /<AddToReport name="Essence"/.test(essence) && /needsFewerWarning/.test(essence) && (essence.match(/<FewerWarning/g) ?? []).length === 4);
 ok('Essence keeps taste, scent and intensity up front and tucks the description under More descriptions', (essence.match(/<MoreDescriptions>/g) ?? []).length === 2 && /label="Intensity"/.test(essence));
 ok('Essence reopens with what was added', /initialData/.test(essence) && /initialData=\{gatewayData\.find\(\(g\) => g\.gateway === 'essence'\)/.test(app));
+
+const movement = readFileSync('src/app/components/pages/MovementGatewayPage.tsx', 'utf8');
+const shapePicker = readFileSync('src/app/components/ShapePicker.tsx', 'utf8');
+ok('Movement, in tray mode, hides "Gateway n of m", shows the opening line, offers Add / Put this down', /!tray && <GatewayProgress/.test(movement) && /<FewerNote \/>/.test(movement) && /<AddToReport name="Movement"/.test(movement));
+ok('Movement warns before a fourth drawing, direction or quality on each card (six lists), and never blocks', (movement.match(/<FewerWarning/g) ?? []).length === 6 && /needsFewerWarning/.test(movement) && /soft=\{tray\}/.test(movement));
+ok('the drawing picker keeps its hard limit of three outside the tray and is soft inside it', /const full = !soft && selected\.length >= MAX_SHAPES/.test(shapePicker));
+ok('Movement keeps drawings, Energy and Speed up front and tucks direction, quality, drawing and words under More descriptions', /return tray \? \[b\[0\], b\[2\], b\[3\], <MoreDescriptions/.test(movement) && (movement.match(/\{b\[1\]\}\{b\[4\]\}\{b\[5\]\}\{b\[6\]\}/g) ?? []).length === 2);
+ok('Movement reopens with what was added, including the drawn pattern', /initialData/.test(movement) && /initialDataUrl=\{init\?\.currentMovementDrawing\}/.test(movement) && /initialDataUrl=\{init\?\.potentialMovementDrawing\}/.test(movement) && /initialData=\{gatewayData\.find\(\(g\) => g\.gateway === 'movement'\)/.test(app));
