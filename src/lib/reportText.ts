@@ -1,5 +1,6 @@
 // The text of a sensory report, one function per part: the review page, the downloads (text and PDF) and the coach hand-off
 // (src/lib/reportShare.ts) all use these, so what the person sees, downloads and may share is the same words.
+import { cleanV2, essenceReportLines } from './flavour.ts';
 import { surfaceLine } from './touchTextures.ts';
 import { getNoteNames, TONAL_SYSTEM_LABELS, type TonalSystem } from './audio.ts';
 import { describePalettePlainly } from './colorSchemes.ts';
@@ -157,6 +158,8 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       break;
       
     case 'essence':
+      // The tray's Essence (src/lib/flavour.ts): the flavor of your life now and the one you want, in words.
+      { const v2 = cleanV2(data); if (v2) { info.push(...essenceReportLines(v2)); break; } }
       if (data.currentTastes && Array.isArray(data.currentTastes) && data.currentTastes.length > 0) {
         info.push(`Present Taste: ${data.currentTastes.join(', ')}`);
       } else if (data.currentTaste) {
