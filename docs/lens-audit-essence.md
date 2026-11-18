@@ -58,7 +58,7 @@ Questions about food are asked as tastes and memories, never as what a person ea
 2. **Draw a card for how you would like it to feel.**
 3. **Add this to my report / Put this down** (the answers, with their words and strengths).
 
-**The same deck for other lenses?** The deck is a component: Sound, Movement and Insight could each have a deck of their own prompts instead of (or beside) their current controls. Worth trying on Essence first.
+**The same deck for other lenses (owner, 2026-11-17: yes for Movement and Pattern, the lens formerly called Insight).** The deck is a component, with two views: **laid out** (all the cards visible) or **drawn from** (one at a time). See `docs/lens-rewrite-scope.md`, section 3-ter.
 
 ## 5. Questions for the owner
 1. The five themes (Memory, Comfort, Tension, Wish, Place): right, or others (for example Season, Shared meals)?
