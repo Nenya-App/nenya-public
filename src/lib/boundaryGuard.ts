@@ -130,14 +130,22 @@ const ASKS_AFTERWARD = [
   /\bpromise\b[^.!?]{0,30}\b(?:here|remember|always)\b/i,
 ];
 const KEEP_IN_MIND = /\bI(?:'ll| will) keep (?:that|this|it) in mind\b/i;
+// The span is the conversation's own: five exchanges (MAX_TURNS in the coach function). The sentence says where the person is in it, because that is what the coach can honestly hold.
 export const NO_MEMORY =
-  "I'm an AI, so I won't remember this conversation, and I can't think about it afterward; it is yours to keep, and you could share it with someone in your life.";
-/** The person asks whether the coach will remember, miss or be there afterward and the reply never says it will not: that is said first, and an "I'll keep that in mind" goes (it reads as a promise there). */
-export function withNoMemory(reply: string, lastUserText: string | undefined): { reply: string; changed: boolean } {
+  "I'm an AI, so I won't remember this conversation once it ends. Until then I hold on to what you tell me, and you can download a copy to keep.";
+const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+/** The same sentence with the conversation's span: how many exchanges there are and which one this is. */
+export function noMemorySentence(span?: { turn: number; max: number }): string {
+  if (!span || span.max < 1 || span.max > 10 || span.turn < 1) return NO_MEMORY;
+  const where = span.turn >= span.max ? 'and this is the last one' : `and this is number ${WORDS[Math.min(span.turn, 10)]}`;
+  return `I'm an AI, so I won't remember this conversation once it ends. It lasts up to ${WORDS[span.max]} exchanges, ${where}, so until then I hold on to what you tell me, and you can download a copy to keep.`;
+}
+/** The person asks whether the coach will remember, miss or be there afterward and the reply never says it will not: that is said first, with the span, and an "I'll keep that in mind" goes (it reads as a promise there). */
+export function withNoMemory(reply: string, lastUserText: string | undefined, span?: { turn: number; max: number }): { reply: string; changed: boolean } {
   if (!lastUserText || !ASKS_AFTERWARD.some((re) => re.test(lastUserText))) return { reply, changed: false };
   const kept = sentences(reply).filter((x) => !KEEP_IN_MIND.test(x)).join(' ').trim();
   if (SAYS_NO_MEMORY.test(kept) || /\b(?:don(?:'|’)?t|do not|can(?:'|’)?t|cannot|won(?:'|’)?t) (?:think about|hold onto|carry)\b/i.test(kept)) return { reply: kept === reply ? reply : kept, changed: kept !== reply };
-  return { reply: `${NO_MEMORY} ${kept}`.trim(), changed: true };
+  return { reply: `${noMemorySentence(span)} ${kept}`.trim(), changed: true };
 }
 
 export const MEDICAL_NOTE =

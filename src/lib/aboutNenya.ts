@@ -736,17 +736,21 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'c-memory', part: 'coach', title: 'Will you remember me? Do you keep this?',
-    asked: ['will you remember me', 'do you remember our last chat', 'will you remember this', 'can you remember me next time'],
-    short: 'No. I won\'t remember this conversation, and Nenya doesn\'t keep it. When you close the tab it is gone, unless you chose to download a transcript, which stays with you.',
+    asked: ['will you remember me', 'do you remember our last chat', 'will you remember this', 'can you remember me next time', 'will you think about this afterward', 'will you think about me later', 'if I tell you this will you think about it afterward'],
+    short: 'Not after this conversation. While it lasts, up to five exchanges, I hold on to what you tell me, and at the end I will say back what I heard and name one thing that is yours to keep. When it ends, or you close the tab, I won\'t remember it, and Nenya doesn\'t keep it. You can download a transcript, which stays with you.',
     full: [
-      'I won\'t remember this conversation, and I can\'t greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.',
-      'The services that carry the conversation have their own logs and policies, which is why I say Nenya doesn\'t keep it and not that nothing is kept anywhere. If you want a record, you can download a transcript, and that file stays with you.',
+      'While this conversation lasts, up to five exchanges, I can see everything you have said in it and I use it, so you do not have to repeat yourself. That is the whole of my memory: it holds for this conversation and no longer.',
+      'At the end I will say back, in your own words, what I heard, and name one thing that is yours to keep. After that I won\'t remember it, I can\'t think about it afterward, and I can\'t greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.',
+      'If you want a record, you can download a transcript (a readable file, or a signed one), and that file stays with you. The services that carry the conversation have their own logs and policies, which is why I say Nenya doesn\'t keep it and not that nothing is kept anywhere.',
     ],
-    links: [{ label: 'What happens to what I type', page: 'terms' }],
+    links: [{ label: 'What happens to what I type', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
     tutorial: 'Coach tutorial lesson 2 (privacy): what the coach does and does not remember.',
     checks: [
       { claim: 'the instructions: no memory; the conversation is not kept', file: COACH, has: 'you will not remember this conversation, and Nenya does not keep it' },
       { claim: 'never promise to remember, be there later, or miss them', file: COACH, has: 'never promise to remember them, to be there later or to miss them' },
+      { claim: 'a conversation is five exchanges, so the span of what I hold is five', file: COACH, has: 'const MAX_TURNS = 5' },
+      { claim: 'at the end the coach says back what it heard and names one thing that is theirs to keep', file: COACH, has: 'name one thing that is theirs to keep' },
+      { claim: 'the person can download a readable or signed transcript', file: 'src/coach/TranscriptTools.tsx', has: 'const readableText' },
       { claim: 'the Terms: we do not store messages or replies', file: TERMS, has: 'We do not store your messages or the replies' },
     ],
     status: 'ready',
@@ -974,7 +978,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\bcan\s+i\s+trust\s+(?:you|nenya|this\s+(?:site|app|tool|coach|place|demo))\b|\bcan\s+i\s+trust\s+this\s*\?*\s*$|\b(?:is\s+(?:this|nenya)|are\s+you)\s+legit(?:imate)?\s*[?.!]*\s*$/i,
   ],
   'c-memory': [
-    /\b(?:will|do|can|would|could)\s+you\s+remember\s+(?:me|us|this|that|it|our|what\s+i|anything|my\s+(?:name|story|last|previous|chat)|the\s+(?:chat|conversation))\b|\bremember\s+(?:me|this\s+conversation|our\s+(?:last|previous)|what\s+i)\b|\bwill\s+you\s+(?:forget|recall)\b/i,
+    /\b(?:will|do|can|would|could)\s+you\s+remember\s+(?:me|us|this|that|it|our|what\s+i|anything|my\s+(?:name|story|last|previous|chat)|the\s+(?:chat|conversation))\b|\bremember\s+(?:me|this\s+conversation|our\s+(?:last|previous)|what\s+i)\b|\bwill\s+you\s+(?:forget|recall)\b|\bwill\s+you\s+(?:think|reflect)\s+(?:about|on|of)\s+(?:this|me|it|that|what\s+i)\b[^.?!]{0,30}\b(?:afterwards?|later|tomorrow|after\s+(?:this|we|today))\b/i,
   ],
   'c-ai': [
     /\bare\s+(?:you|u)\s+(?:a\s+|an\s+)?(?:real(?:\s+person)?|person|human|bot|robot|ai|a\.i\.|artificial(?:\s+intelligence)?|machine|program|alive|chatbot|computer)\b/i,

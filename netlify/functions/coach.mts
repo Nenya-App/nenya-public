@@ -34,7 +34,7 @@ import { createHash, createHmac, createPrivateKey, createPublicKey, randomBytes,
 import { checkConversation, detectFlag, explainConversation } from '../../src/lib/safetyFlags.ts';
 import { checkMessageForm } from '../../src/lib/messageGate.ts';
 import { checkNotesFor, siteMessagesFor, type SiteEdit } from '../../src/lib/siteMessages.ts';
-import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/aboutNenya.ts';
+import { ANSWERS, aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/aboutNenya.ts';
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
@@ -1170,13 +1170,16 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     if (claimsPersona(reply)) { reply = PERSONA_FALLBACK; tally('coach.guard.persona.replaced'); }
   }
   // Boundaries (COACH_BOUNDARY_GUARD=on; src/lib/boundaryGuard.ts): a medication directive, or a promise to be there or to remember, or standing in for the person's people. Ask once more, then the site's sentence.
+  // The guards' sentences about remembering are backed by a site answer: when one is said, its card (sources and detail) goes with the reply.
+  let memoryCardWanted = false;
   const runBoundaries = async (): Promise<void> => {
     if (!boundaryGuardOn()) return;
     // Being "here": a promise of presence is replaced, straight away, by a sentence that says how the coach is here (and thanks by a way to keep or share the experience).
     const here = rewritePresence(reply, { lastUserText: lastText, final: turn >= MAX_TURNS });
     if (here.changed) { reply = here.reply; tally('coach.guard.presence.rewritten'); }
-    const mem = withNoMemory(reply, lastText);
+    const mem = withNoMemory(reply, lastText, { turn, max: MAX_TURNS });
     if (mem.changed) { reply = mem.reply; tally('coach.guard.memory.added'); }
+    if (mem.changed || (here.changed && turn >= MAX_TURNS)) memoryCardWanted = true;
     const diag = withNotDiagnosis(reply, lastText);
     if (diag.changed) { reply = diag.reply; tally('coach.guard.diagnosis.added'); }
     for (const g of BOUNDARY_GUARDS) {
@@ -1292,6 +1295,14 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     reply = `${withinFilled.short}\n\n${reply.length > room ? trimToSentence(reply.slice(0, Math.max(0, room))) : reply}`;
     withinCard = { id: within.id, title: within.title, more: withinFilled.full, links: withinFilled.links, partial: true };
     tally(`coach.turn.about-first.${within.id}`);
+  }
+  if (!withinCard && memoryCardWanted) {
+    const memoryAnswer = ANSWERS.find((x) => x.id === 'c-memory');
+    if (memoryAnswer) {
+      const f = fillAnswer(memoryAnswer, { model, provider: coachProvider(), label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit });
+      withinCard = { id: memoryAnswer.id, title: memoryAnswer.title, more: f.full, links: f.links, partial: true };
+      tally('coach.guard.memory.card');
+    }
   }
 
   // A flag in the shared report text: the site's sentence pointing to people is added once, to the first reply, as for a flagged message.
