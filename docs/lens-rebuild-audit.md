@@ -31,6 +31,8 @@ Owner's examples: **Sight:** pick your colours, then pick a palette, then the bo
 ## 4. The rules every card follows
 One task per card; at most a few short sentences (grade 8 or below, `src/lib/readingLevel.ts`); fully keyboard-operable with a visible focus and a logical order; sound optional, off until asked, with a visual or textual equivalent; every slider has a live preview and a text value, and an "unset" state so choosing nothing is a choice; reduced motion gives a still that still shows the change; no timers; charming and a little playful in motion and sound, never at the cost of calm; nothing here says what a colour, sound or texture "means".
 
+**Fewer can be more helpful (owner, 2026-11-17; every lens).** Every lens opens with one plain instruction: choosing fewer can be more helpful than choosing many. Where a card lets you choose several things (shapes, colors, words, surfaces, layers), the soft limit is **3**. It is a warning, not a block: before the fourth is added, a short notice says that fewer can be more helpful and asks "Add it anyway?" (Add it anyway / Keep three). It is shown once per card per visit, shared by keyboard and pointer, and read out politely to a screen reader. Nobody is ever stopped, and nothing is scored. Tests: each multi-choice card has the instruction, warns at the fourth, and allows going past it.
+
 ## 5. Method: one lens at a time
 For each lens, in this order, with the owner at each stop:
 1. **Audit:** read the page fully; list every control, every instruction card, every piece of data it stores.

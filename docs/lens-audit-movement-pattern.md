@@ -20,7 +20,7 @@ Each state (present, then wish) holds its own copy of all of it. Every shape alr
 - **Too much on one screen:** shapes, two word lists, two sliders, free text and a drawing pad, twice (present and wish).
 
 ## 3. Card plan (one template for both lenses; draft)
-1. **Pick a shape for now** (the deck: laid out or drawn from; choose as many as fit, no maximum).
+1. **Pick a shape for now** (the deck: laid out or drawn from; a soft limit of 3: a warning before a fourth, never a block).
 2. **Shape it** (optional). The chosen shape comes alive and the controls act on it, with a text twin:
    - **Movement:** *Direction* words set which way it moves (upward, downward, inward, outward, spiraling, oscillating...); *Speed* sets how fast; *Energy* sets how big and bright the motion is; *Quality* words set the feel (fluid, jerky, gentle, forceful...). Under reduced motion it becomes a still with motion trails, so the change still reads. Optional vibration, as in Touch: speed sets the rhythm of the pulses.
    - **Pattern:** *Pattern* words choose how the shape repeats (branching, layered, circular...); *Clarity* sets how sharp or foggy it is; *Depth* sets how many layers show and how far it zooms; *Perspective* words set the framing (narrow, panoramic, telescopic, microscopic...).
@@ -41,14 +41,14 @@ One rule for every lens: **one shape (or one main choice) and two sliders up fro
 Option for Direction and Pattern words: one "which way" / "how it repeats" picker on the card, with the full eleven words under the disclosure.
 
 ## 4. Optional activities in the same spirit as Touch's landscape (proposals)
-- **Pattern: weave a tapestry.** Layer as many pattern shapes as you like (a base, then each one above it, no maximum) and shape each; the result is a small woven design, with a text line ("base: layered, middle: branching...").
+- **Pattern: weave a tapestry.** Layer pattern shapes (a base, then each one above it; the same soft limit of 3 with a warning before more) and shape each; the result is a small woven design, with a text line ("base: layered, middle: branching...").
 - **Movement: draw a path of motion.** Draw a line with the pad and the chosen quality; the path replays as a moving trail. Pointer only, with the words as the alternative.
 Both are optional and skippable; neither is needed to add the lens.
 
 ## 5. Questions for the owner
 1. One template for both lenses (recommended: half the work, one set of tests), or let them differ?
 2. Shape it: are those mappings right (direction words set the direction of the motion; clarity sets the sharpness; depth sets the layers)?
-3. ~~Choose up to how many shapes per state?~~ Decided (owner, 2026-11-17): no maximum. The text twin and the report list every shape chosen; the preview layers or tiles them, and the card says how many are chosen.
+3. ~~Choose up to how many shapes per state?~~ Decided (owner, 2026-11-17): no hard maximum, but every lens says choosing fewer can be more helpful, with a soft limit of 3 and a warning before going past it (rule in `lens-rebuild-audit.md` section 4). The text twin and the report list every shape chosen; the preview layers or tiles them, and the card says how many are chosen.
 4. Keep the optional activities (tapestry, path of motion), drop them, or only one?
 5. Is the existing drawing pad kept as an optional activity?
 6. Vibration for Movement (speed sets the pulse rhythm), yes or no? (Same rules as Touch: off until chosen, only where supported, never the only signal.)
