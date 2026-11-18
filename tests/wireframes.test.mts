@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { ok } from './helpers.mts';
 const dir = 'docs/wireframes/lens';
 const pages = readdirSync(dir).filter((f) => f.endsWith('.html'));
-ok('there are wireframes for the index, Sight and Sound', ['index.html', 'sight.html', 'sound.html'].every((f) => pages.includes(f)));
+ok('there are wireframes for the index, the tray, Sight and Sound', ['index.html', 'tray.html', 'sight.html', 'sound.html'].every((f) => pages.includes(f)));
 for (const f of pages) {
   const h = readFileSync(`${dir}/${f}`, 'utf8');
   ok(`${f}: language, title, viewport, a skip link and one main`, /<html lang="en">/.test(h) && /<title>[^<]+<\/title>/.test(h) && /name="viewport"/.test(h) && /class="skip"/.test(h) && (h.match(/<main\b/g) ?? []).length === 1);
@@ -16,8 +16,9 @@ for (const f of pages) {
   ok(`${f}: ids are unique`, new Set(ids).size === ids.length);
   if (f !== 'index.html') {
     const cards = h.split('<div class="frame">').slice(1);
-    ok(`${f}: Emergency Exit is the first button in every card`, cards.length >= 4 && cards.every((c) => /^\s*<div class="bar"><button type="button">Emergency Exit<\/button>/.test(c)));
-    ok(`${f}: every card ends with an Add or Next action, and the last card has Add and Update and Remove`, /Add this to my report/.test(h) && /Update my report/.test(h) && /Remove from my report/.test(h));
+    ok(`${f}: Emergency Exit is the first button in every frame`, cards.length >= 4 && cards.every((c) => /^\s*<div class="bar"><button type="button">Emergency Exit<\/button>/.test(c)));
+    if (f !== 'tray.html') ok(`${f}: the last card has Add, Update and Remove`, /Add this to my report/.test(h) && /Update my report/.test(h) && /Remove from my report/.test(h));
+    else ok(`${f}: the tray names every state in words, keeps the coach apart, and the report lists examined lenses separately`, /Not opened/.test(h) && /Looked at, not in your report/.test(h) && /In your report/.test(h) && /a lens of its own/.test(h) && /Examined, not included/.test(h));
   }
 }
 function isInsideLabel(html: string, at: number): boolean {

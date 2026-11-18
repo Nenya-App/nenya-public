@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: the entry, the tray and the report</title>
+<link rel="stylesheet" href="wire.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the wireframes</a>
+<header class="page">
+  <h1>The entry, the tray and the report</h1>
+  <p><a href="index.html">All wireframes</a> · <a href="sight.html">Sight</a> · <a href="sound.html">Sound</a> · Draft 2026-11-17 · scope: <code>docs/lens-rewrite-scope.md</code></p>
+</header>
+<main id="main">
+<div class="legend">
+  <h2>The shape of a visit</h2>
+  <p><strong>Breathing</strong> is the default way in and is not a lens. From it a person can go on to <strong>reflect</strong>, which opens the <strong>tray</strong> of six lenses (picked up and put down in any order), or to <strong>the coach</strong>, a seventh lens held apart. The <strong>report</strong> is built from the lenses a person added.</p>
+</div>
+
+<!-- ENTRY -->
+<section class="card" aria-labelledby="e1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Entry</span><button type="button">Settings</button></div>
+    <h2 id="e1">Breathe</h2>
+    <div class="map" role="img" aria-label="The breathing gem, slowly growing and shrinking. The counter below says the same in words.">[the gem, breathing]</div>
+    <p class="mini" role="status">Breathe in … (the counter says “in” and “out” in words)</p>
+    <p>You can stay here as long as you like.</p>
+    <nav aria-label="Ways on">
+      <ul class="row" style="list-style:none;padding:0">
+        <li><button type="button">Reflect with the lenses</button></li>
+        <li><button type="button">Talk with the coach</button></li>
+      </ul>
+    </nav>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Settings</li><li>(the breathing area is not a stop; the counter is read politely)</li><li>Reflect with the lenses</li><li>Talk with the coach</li></ol>
+    <h3>A screen reader says</h3><ul><li>The gem is described once; the counter says “in” and “out”. The two ways on are in a labelled navigation list.</li></ul>
+    <h3>What this replaces</h3><p>The three-door triangle (breathe, reflect, coach). Breathing is the screen itself; the other two doors are the two quiet buttons. The glow and the three ring colors can stay as a visual accent.</p>
+    <h3>Open question</h3><p><strong>Does “Reflect” go straight to the tray (drawn here) or open the first lens?</strong> Recommended: the tray, because the person chooses as they go.</p>
+    <h3>Copy draft</h3><p>“Breathe. You can stay here as long as you like.”</p>
+  </aside>
+</section>
+
+<!-- TRAY: FRESH -->
+<section class="card" aria-labelledby="t1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Tray</span><button type="button">Back to breathing</button></div>
+    <h2 id="t1">Pick up a lens</h2>
+    <p>Pick up any lens, in any order. Put it down when you like. Nothing is kept unless you add it to your report.</p>
+    <p class="mini"><a href="#coach-apart">Skip to the coach</a> · <a href="#report-link">Skip to my report</a></p>
+    <ul style="list-style:none;padding:0" aria-label="The six lenses">
+      <li class="row"><button type="button">Sight</button> <span>Not opened</span></li>
+      <li class="row"><button type="button">Sound</button> <span>Not opened</span></li>
+      <li class="row"><button type="button">Touch</button> <span>Not opened</span></li>
+      <li class="row"><button type="button">Essence</button> <span>Not opened</span></li>
+      <li class="row"><button type="button">Movement</button> <span>Not opened</span></li>
+      <li class="row"><button type="button">Insight</button> <span>Not opened</span></li>
+    </ul>
+    <p id="report-link"><button type="button" disabled>Make my report</button> <span class="mini">Add a lens first.</span></p>
+    <hr>
+    <section aria-labelledby="coach-apart" id="coach-apart"><h3>The coach: a lens of its own</h3>
+      <p class="mini">Kept apart from the six. A short conversation (five exchanges) with an AI. It is not therapy.</p>
+      <button type="button">Talk with the coach</button></section>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Back to breathing</li><li>Two skip links (the coach, my report)</li><li>The six lenses, in a fixed order, each a button</li><li>Make my report</li><li>Talk with the coach</li></ol>
+    <h3>A screen reader says</h3><ul><li>A list of six items, each “Sight, not opened” (the state is in the same line, never only a color or an icon).</li><li>The coach is a separate region with its own heading, announced as kept apart.</li></ul>
+    <h3>Design points</h3><ul><li>The lens marks (to be drawn) sit beside the names; every lens is distinguishable without color.</li><li>The coach is visibly apart: a divider, a different shape, its own heading.</li><li>No “step 3 of 6”, no “complete all”, no required order.</li></ul>
+    <h3>Copy draft</h3><p>“Pick up any lens, in any order. Put it down when you like.”</p>
+  </aside>
+</section>
+
+<!-- TRAY: MID-VISIT -->
+<section class="card" aria-labelledby="t2">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Tray, partway</span><button type="button">Back to breathing</button></div>
+    <h2 id="t2">Pick up a lens</h2>
+    <ul style="list-style:none;padding:0" aria-label="The six lenses">
+      <li class="row"><button type="button">Sight</button> <span><strong>In your report</strong> (two colors, a body map)</span></li>
+      <li class="row"><button type="button">Sound</button> <span>Looked at, not in your report</span></li>
+      <li class="row"><button type="button">Touch</button> <span>Not opened</span></li>
+      <li class="row"><button type="button">Essence</button> <span>Not opened</span></li>
+      <li class="row"><button type="button">Movement</button> <span>Not opened</span></li>
+      <li class="row"><button type="button">Insight</button> <span>Not opened</span></li>
+    </ul>
+    <p><button type="button" class="primary">Make my report</button> <span class="mini">1 lens added.</span></p>
+    <p class="mini">Save and return later is in Settings.</p>
+    <hr>
+    <h3>The coach: a lens of its own</h3>
+    <button type="button">Talk with the coach</button>
+  </div>
+  <aside class="note">
+    <h3>States, in words</h3><ul><li><strong>In your report:</strong> added, with a few words of what is in it.</li><li><strong>Looked at, not in your report:</strong> opened, nothing added (the “examined” state). Anything left on the page is kept for this visit and is not in the report or the saved draft.</li><li><strong>Not opened.</strong></li></ul>
+    <h3>Behaviour</h3><ul><li>Picking up an added lens reopens it with its answers, with Update and Remove.</li><li>“Make my report” is available as soon as one lens is added, and can be pressed at any time.</li></ul>
+    <h3>Counted (plain totals only, if the Terms allow)</h3><p>Examined and included, per lens, with no order or timing. Not shown to the person.</p>
+  </aside>
+</section>
+
+<!-- REPORT -->
+<section class="card" aria-labelledby="r1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Report</span><button type="button">Back to the lenses</button></div>
+    <h2 id="r1">Your report</h2>
+    <p>This is what you added. It is made on your device.</p>
+    <h3>Sight</h3><p>Now: steel blue, medium. Wish: warm amber, medium.</p>
+    <p><button type="button">Update Sight</button> <button type="button">Remove Sight</button></p>
+    <h3>Examined, not included</h3><p>Sound.</p>
+    <div class="row"><button type="button" class="primary">Download my report</button><button type="button">Save and return later</button></div>
+    <details><summary>Share this with us (optional)</summary><p>You choose what is sent, you see it first, and you get a code that deletes it. Nothing is sent unless you press the button inside.</p><button type="button">Review what would be sent</button></details>
+    <p class="mini">Closing this page erases everything unless you saved it.</p>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Back to the lenses</li><li>Each added lens: Update, Remove</li><li>Download, Save and return</li><li>The sharing disclosure</li></ol>
+    <h3>A screen reader says</h3><ul><li>One heading per added lens with its plain-language summary; “Examined, not included” as its own heading and a one-line list.</li></ul>
+    <h3>Notes</h3><ul><li>Only added lenses appear in full; examined lenses get one line; not-opened lenses are not mentioned.</li><li>The report is available at any time, not only at the end.</li><li>Sharing with us stays a separate, later, explained choice (the existing “share mine”).</li></ul>
+  </aside>
+</section>
+</main>
+</body>
+</html>
