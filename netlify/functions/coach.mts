@@ -61,7 +61,7 @@ import { E2eeError, MAX_SEALED_HEX, attestationFor, e2eeChat, isE2eeModel, seale
 import { aboutTheWorld, detectDirectQuestion, hasSeveralQuestions, MULTI_QUESTION_NOTE } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
-import { assembleFinal, buildPicked, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_RETRY } from '../../src/lib/finalSummary.ts';
+import { assembleFinal, buildPicked, withoutEffectClaims, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_RETRY } from '../../src/lib/finalSummary.ts';
 import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
@@ -1271,6 +1271,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   if (summaryDraw) {
     const sum = await summaryDraw;
     if (sum) {
+      const tidy = withoutEffectClaims(reply);
+      if (tidy !== reply) { reply = tidy; traceNote('site:closing-effect-claim-removed'); }
       reply = assembleFinal(reply, sum, pickTranscriptLine(summaryUser));
       tally('coach.final.summary.added');
       traceNote('site:summary-added');

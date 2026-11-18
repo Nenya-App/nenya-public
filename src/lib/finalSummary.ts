@@ -4,7 +4,7 @@
 // the exact record. A conversation always gets the same one (chosen from its own words), so a reader of several conversations sees different wording.
 // Pure functions, no model: the function (netlify/functions/coach.mts) calls them, and tests read them. Switch: COACH_FINAL_SUMMARY=call.
 import { createHash } from 'node:crypto';
-import { asksOrInvites } from './coachClosing.ts';
+import { asksOrInvites, sentences } from './coachClosing.ts';
 import { pullsAgainstPeople } from './boundaryGuard.ts';
 import { present } from './personaChecks.ts';
 import { CNVC_LINK, wordsOf } from './feelingsNeeds.ts';
@@ -128,3 +128,13 @@ export function buildPicked(p: Picks): string | null {
 /** The credit the page shows under a summary made in the picked form (the words are CNVC's, unchanged); the link is CNVC's page for the inventory. */
 export const SUMMARY_CREDIT = 'The feeling and need words come from the Center for Nonviolent Communication\'s Feelings and Needs Inventory (cnvc.org).';
 export const SUMMARY_CREDIT_LINK = CNVC_LINK;
+
+/** Sentences of the coach's own closing that claim what something does for the person or what it shows about them ("it helps you", "this will build the bridge", "it suggests a desire"). */
+const EFFECT_CLAIM = /\b(?:helps?|helped|can help|could help)\s+you\b|\b(?:will|would|should)\s+(?:\w+\s+){0,2}(?:help|ease|make|allow|bring|give|lead|improve|reduce|build|create|open|strengthen|deepen|heal|bridge|grow|change|turn|become|show)\b|\b(?:suggests?|indicates?|implies|seems? to need|a need for|a desire to)\b/i;
+
+/** The closing without its effect-claim sentences, used when a separate summary follows (the summary carries the reading; the closing only answers the last message). Never empties the closing: if every sentence would go, it is left as it was. */
+export function withoutEffectClaims(closing: string): string {
+  const parts = sentences(closing);
+  const kept = parts.filter((x) => !EFFECT_CLAIM.test(x));
+  return kept.length && kept.length < parts.length ? kept.join(' ') : closing;
+}
