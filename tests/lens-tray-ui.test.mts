@@ -79,3 +79,10 @@ ok('on the breathing page Reflect leads to the start screen, which is the tray w
   const tc = readFileSync('src/app/components/TextureChooser.tsx', 'utf8');
   ok('the surface chooser has a labelled search that looks at name, kind, group and feel, with every word typed, and a Clear', /Search surfaces/.test(tc) && /words\.every\(\(w\) => `\$\{t\.title\} \$\{t\.kind\} \$\{t\.group\} \$\{t\.feel\}`/.test(tc) && /onClick=\{\(\) => setQuery\(''\)\}>Clear/.test(tc) && /htmlFor=\{searchId\}/.test(tc));
 }
+
+// The Movement and Pattern drawings are animated, not static (owner, 2026-11-18): each line draws itself in turn, still under reduced motion, with a pause button.
+{
+  const sp = readFileSync('src/app/components/ShapePicker.tsx', 'utf8');
+  ok('the drawings animate: each line draws itself, staggered, in a loop', /@keyframes shapeDraw/.test(sp) && /animation: shapeDraw 4\.5s ease-in-out infinite/.test(sp) && /animation-delay: \.25s/.test(sp) && /pathLength="100"/.test(sp));
+  ok('under reduced motion the drawings are still, and a button pauses them (WCAG 2.2.2); a chosen drawing stays drawn', /@media \(prefers-reduced-motion: reduce\)/.test(sp) && /Pause the drawings/.test(sp) && /aria-pressed=\{paused\}/.test(sp) && /shape-chosen/.test(sp) && /min-h-11/.test(sp));
+}
