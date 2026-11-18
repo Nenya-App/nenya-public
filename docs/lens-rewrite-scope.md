@@ -111,3 +111,6 @@ Same treatment as Sight: no "Gateway n of m", the opening line, Pitch and Volume
 
 ### Step 2, Touch built (2026-11-18), behind `VITE_LENS_TRAY`
 In tray mode Touch uses the existing simpler card (one surface choice up front; the five sliders and own words under "Add more detail"), shows the opening line, hides "Gateway n of m", reopens with what was added, and ends with Add this to my report / Put this down. Touch has no pick-several word lists, so no soft-limit warning is needed. The wireframe's orb preview and the vibration option under "More descriptions" are not built. Next: Essence.
+
+### Step 2, Essence built (2026-11-18), behind `VITE_LENS_TRAY`
+Same treatment: no "Gateway n of m", the opening line, taste words, scent words and Intensity up front on each card, the description under "More descriptions", the soft limit of three on each word list (warning, never a block), Edit reopens with what was added, and Add this to my report / Put this down at the end. Not built: the wireframe's editable tasting note and extra dials (still open questions). Next: Movement, then Pattern.

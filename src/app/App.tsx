@@ -736,6 +736,7 @@ export default function App() {
           {currentScreen === 'essence' && (
             <EssenceGatewayPage
               onComplete={(data) => handleGatewayComplete('essence', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'essence')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('essence')}
               totalGateways={selectedGateways.length}

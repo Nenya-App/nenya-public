@@ -23,3 +23,8 @@ ok('Sound reopens with what was added', /initialData/.test(sound) && /initialDat
 const touch = readFileSync('src/app/components/pages/TouchGatewayPage.tsx', 'utf8');
 ok('Touch, in tray mode, uses the simpler card, hides "Gateway n of m", shows the opening line and Add / Put this down', /simpleGatewaysOn\(\) \|\| tray/.test(touch) && /!tray && <GatewayProgress/.test(touch) && /<FewerNote \/>/.test(touch) && /<AddToReport name="Touch"/.test(touch));
 ok('Touch reopens with what was added', /initialData/.test(touch) && /initialData=\{gatewayData\.find\(\(g\) => g\.gateway === 'touch'\)/.test(app));
+
+const essence = readFileSync('src/app/components/pages/EssenceGatewayPage.tsx', 'utf8');
+ok('Essence, in tray mode, hides "Gateway n of m", shows the opening line, offers Add / Put this down and warns before a fourth word', /!tray && <GatewayProgress/.test(essence) && /<FewerNote \/>/.test(essence) && /<AddToReport name="Essence"/.test(essence) && /needsFewerWarning/.test(essence) && (essence.match(/<FewerWarning/g) ?? []).length === 4);
+ok('Essence keeps taste, scent and intensity up front and tucks the description under More descriptions', (essence.match(/<MoreDescriptions>/g) ?? []).length === 2 && /label="Intensity"/.test(essence));
+ok('Essence reopens with what was added', /initialData/.test(essence) && /initialData=\{gatewayData\.find\(\(g\) => g\.gateway === 'essence'\)/.test(app));
