@@ -61,7 +61,8 @@ import { E2eeError, MAX_SEALED_HEX, attestationFor, e2eeChat, isE2eeModel, seale
 import { aboutTheWorld, detectDirectQuestion, hasSeveralQuestions, MULTI_QUESTION_NOTE } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
-import { assembleFinal, assembleSummaryText, buildPicked, summaryFormFor, SUMMARY_FLAGGED_LEAD, withoutEffectClaims, withoutReflectionOpening, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_RETRY } from '../../src/lib/finalSummary.ts';
+import { needFocusOn, withNeedFocus } from '../../src/lib/needFocus.ts';
+import { assembleFinal, assembleSummaryText, buildPicked, withSummaryNeedFocus, summaryFormFor, SUMMARY_FLAGGED_LEAD, withoutEffectClaims, withoutReflectionOpening, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_RETRY } from '../../src/lib/finalSummary.ts';
 import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
@@ -987,7 +988,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       } else {
         const win = summaryMessages(scrubbed);
         const raw = await summaryModelCall({ provider, apiKey, model: smodel, system: attempt ? `${win.system}\n\n${SUMMARY_RETRY}` : win.system, messages: win.messages, timeoutMs: VENICE_TIMEOUT_MS, tally });
-        summary = raw && summaryProblems(raw).length === 0 ? raw.trim() : null;
+        summary = raw && summaryProblems(raw).length === 0 ? withSummaryNeedFocus(raw.trim()) : null;
       }
     }
     if (!summary) {
@@ -1277,7 +1278,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
             const r = await generate(undefined, VENICE_TIMEOUT_MS, attempt ? { system: `${input.system}\n\n${SUMMARY_RETRY}`, messages: input.messages } : input);
             if ('failure' in r || !r.reply) continue;
             const bad = summaryProblems(r.reply);
-            if (!bad.length) return r.reply.trim();
+            if (!bad.length) return withSummaryNeedFocus(r.reply.trim());
             traceNote(`site:summary-rejected:${bad.join(',')}`);
             if (__trace.text) traceNote(`site:summary-text:${r.reply.replace(/\s+/g, ' ').slice(0, 500)}`); // for measurement scripts only (the trace is off in production)
           }
@@ -1440,6 +1441,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   if (hostile === 'critique') { const thanked = withCritiqueThanks(reply); if (thanked !== reply) { reply = thanked; tally('coach.turn.hostile.thanks-added'); } }
   // A last look, with no more asking: a guard that draws again (names, closing) can bring back what an earlier one took out (steer-1, 2026-11-18).
   if (process.env.COACH_PERSONA_GUARD !== 'off' && claimsPersona(reply)) { reply = PERSONA_FALLBACK; tally('coach.guard.persona.final'); }
+  // Several needs named in one message: one plain sentence recommends one to three (src/lib/needFocus.ts). COACH_NEED_FOCUS=on; off by default.
+  if (needFocusOn()) { const nf = withNeedFocus(reply, lastText); if (nf.changed) { reply = nf.reply; tally('coach.guard.needfocus'); traceNote('site:need-focus'); } }
   if (reply.length > MAX_ASSISTANT_CHARS) { reply = trimToSentence(reply.slice(0, MAX_ASSISTANT_CHARS)); traceNote('site:length-trim'); }
   // A possible-distress flag: the site adds the sentence that names a person and the crisis line (the model does not, reliably). It is added
   // after the trimming so it cannot be cut off, and it is part of the reply: a turn like any other, kept in the conversation. Off unless

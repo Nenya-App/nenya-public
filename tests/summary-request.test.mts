@@ -17,7 +17,7 @@ let summaryCalls = 0;
 let lastSummaryInput = '';
 (globalThis as any).fetch = async (_u: string, init: any) => {
   const system = JSON.parse(init.body).messages[0].content as string;
-  const isSummary = /^You (?:write the last part|read a short conversation)/.test(system);
+  const isSummary = /^You (?:write the last part|read what a person wrote)/.test(system);
   if (isSummary) { summaryCalls++; lastSummaryInput = JSON.parse(init.body).messages[1].content; }
   return new Response(JSON.stringify({ choices: [{ message: { content: isSummary ? (summaries.shift() ?? '') : 'That sounds like a lot to hold, and you said it plainly.' } }] }), { status: 200 });
 };

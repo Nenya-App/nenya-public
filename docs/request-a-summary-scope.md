@@ -73,3 +73,8 @@ The browser-side encrypted route (`VITE_BOUNDARY_GUARD`'s sealed path, `src/lib/
 - **Not yet:** the signed addendum (step 2), the page (step 3), About answers and Terms wording (step 4), the sealed route (phase 2). One summary per conversation is limited today only by the cap, because the function is stateless; the page keeps the first and offers no second.
 
 - **Page wording approved (owner, 2026-11-18, "approve all"):** the button, the block label, the note, the cap and error sentences (`src/lib/summaryRequest.ts`), `SUMMARY_FAILED_TEXT` and `SUMMARY_FLAGGED_LEAD`. Step 3 (the page, `VITE_SUMMARY_REQUEST`, off) is built and on dev; the Terms wording for the summary and the About answer are step 4.
+
+## Small models: the focused call, and the "one to three needs" recommendation (owner, 2026-11-18)
+- **Focused call (built):** for models under 20B the picked form's call now sees **only the person's messages** and the two CNVC word lists, never the coach's replies. On E2B the whole-conversation version failed or fell back in 2 of 6 conversations; the focused call keeps the small model's task narrow. The 26B (written form) still reads the whole conversation.
+- **Several needs (built, off):** a message naming four or more needs gets one site sentence recommending one to three (`COACH_NEED_FOCUS=on`, `src/lib/needFocus.ts`), and a summary in which more than three needs came up (the model picked more than three valid needs, or the written summary names four) ends with the same recommendation. Draft wording for approval; Terms sentence in `docs/drafts/terms-summary-request-draft.md`, section 8.
+- **A running tally of topics:** scoped in `docs/need-tally-scope.md` (not built; the owner decides where it may live).

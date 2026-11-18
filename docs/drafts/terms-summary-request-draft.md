@@ -42,7 +42,12 @@ These are numbers only, counted after you agree and not under Global Privacy Con
 **Now:** "Things leave your device only when you choose: the report form (Section 14), a palette from The Color API (Section 14), the coach demo (Section 15), and the signed note when you agree to these Terms (Section 16)."
 **Proposed:** "…the coach demo, and a summary of it if you ask for one (Section 15), …"
 
-## 8. No other change
+## 8. Words the site writes, not the AI: the "several needs" sentence (a second addition to the same paragraph; goes with `COACH_NEED_FOCUS`)
+**Proposed, a new sentence in the same list (before "All of these are fixed texts…"):**
+> "When a message of yours names four or more needs, our server adds one plain sentence after the reply recommending that you choose one to three to focus on, because that helps you see what is really pressing for you. The same sentence ends a summary in which more than three needs came up."
+The sentence itself (draft, `NEED_FOCUS_REPLY` and `NEED_FOCUS_SUMMARY` in `src/lib/needFocus.ts`): "You have named several needs. Choosing one to three to focus on is recommended: it helps you see what is really pressing for you." / "Several needs came up in what you wrote. Focusing on one to three is recommended: it helps you see what is really pressing for you."
+
+## 9. No other change
 - **Who gets your words:** still Venice AI, the same provider, for the same kind of call; no second company (Cloudflare Turnstile is unchanged). If the coach ever runs on another provider, the existing sentence about changing the model applies to the summary too.
 - **Legal basis, age, crisis text:** unchanged. The summary does not give anyone more of your words than the conversation already did.
 - **The About answers** (`c-memory` and the transcript answers) should say the same words as these sentences, and are changed in the same step (`docs/request-a-summary-scope.md`, step 4).

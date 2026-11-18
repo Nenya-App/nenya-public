@@ -8,6 +8,7 @@ import { asksOrInvites, sentences } from './coachClosing.ts';
 import { pullsAgainstPeople } from './boundaryGuard.ts';
 import { present } from './personaChecks.ts';
 import { wordsOf } from './feelingsNeeds.ts';
+import { MANY_NEEDS, NEED_FOCUS_SUMMARY, needsNamed } from './needFocus.ts';
 
 /** The instruction for the summary call. The model sees nothing else of the conversation, so it cannot echo the coach or answer the last message. */
 export const SUMMARY_SYSTEM =
@@ -88,19 +89,19 @@ export function assembleFinal(closing: string, summary: string, transcriptLine: 
 // and every word is a real, credited one. The model also writes one short sentence of care or encouragement, which is used only if it passes the checks.
 
 export const PICK_SYSTEM =
-  'You read a short conversation between a person and a coach (an AI) and choose words for what the person felt and needed. You will be given the whole conversation and two word lists. ' +
-  'Choose up to three feelings and up to three needs that you can hear in what the person wrote, across the whole conversation. The words of the coach are context, not evidence about the person: do not choose a word only the coach named unless the person agreed with it. Use ONLY words from the lists, spelled exactly as listed. Choose only what the person expressed or clearly implied. ' +
+  'You read what a person wrote in a short conversation and choose words for what they felt and needed. You will be given only their messages, and two word lists. ' +
+  'Choose up to three feelings and up to three needs that you can hear in what the person wrote, across all of their messages. Use ONLY words from the lists, spelled exactly as listed. Choose only what they expressed or clearly implied. ' +
   'Then write one short sentence (under 30 words) addressed to the person as "you" that names something they said or did that shows care for themselves or others, and ends with encouragement grounded in it. No question, no advice, no prediction, no promise, no goodbye. ' +
   'Answer in exactly this form and nothing else:\nFeelings: word, word, word\nNeeds: word, word, word\nCare: one sentence.';
 
-/** The messages for the picking call: the instruction with both lists, and the whole conversation as data. */
+/** The messages for the picking call. A focused call for small models (owner, 2026-11-18): it sees ONLY the person's messages, not the coach's replies, which a small model confuses with the person's own words. */
 export function pickMessages(turns: readonly Turn[]): { system: string; messages: { role: 'user'; content: string }[] } {
-  const body = conversationBlock(turns);
+  const body = turns.filter((t) => t.role === 'user').map((t, i) => `Message ${i + 1}: ${t.content.trim()}`).join('\n\n');
   const lists = `Feeling words: ${wordsOf('feeling').join(', ')}\n\nNeed words: ${wordsOf('need').join(', ')}`;
-  return { system: PICK_SYSTEM, messages: [{ role: 'user', content: `${lists}\n\nHere is the conversation.\n\n${body}\n\nAnswer in the form given.` }] };
+  return { system: PICK_SYSTEM, messages: [{ role: 'user', content: `${lists}\n\nHere is what the person wrote.\n\n${body}\n\nAnswer in the form given.` }] };
 }
 
-export interface Picks { feelings: string[]; needs: string[]; care: string }
+export interface Picks { feelings: string[]; needs: string[]; care: string; /** More than three valid needs were chosen: the summary then recommends focusing on one to three. */ moreNeeds?: boolean }
 
 const splitWords = (line: string): string[] => line.split(/,|\band\b|;/i).map((w) => w.trim().replace(/^["'“”‘’.]+|["'“”‘’.]+$/g, '').toLowerCase()).filter(Boolean);
 
@@ -111,11 +112,12 @@ export function parsePicks(raw: string): Picks {
   const feelingSet = expand(wordsOf('feeling')), needSet = expand(wordsOf('need'));
   const line = (label: string): string => (raw.match(new RegExp(`^\\s*${label}\\s*:\\s*(.+)$`, 'im'))?.[1] ?? '').trim();
   // "to matter" and the like do not fit the site's sentence ("looking for ..."); a slash word is shown by its first part ("rest" for "rest/sleep").
-  const pick = (label: string, set: Set<string>): string[] => [...new Set(splitWords(line(label)).filter((w) => set.has(w) && !/^to /.test(w)).map((w) => w.split('/')[0]))].slice(0, 3);
+  const pick = (label: string, set: Set<string>): string[] => [...new Set(splitWords(line(label)).filter((w) => set.has(w) && !/^to /.test(w)).map((w) => w.split('/')[0]))];
   const care = line('Care');
   const careSentences = care.split(/(?<=[.!?])\s+/).filter(Boolean);
   const careOk = care.length > 0 && care.split(/\s+/).length >= 6 && care.split(/\s+/).length <= 40 && careSentences.every((x) => x.split(/\s+/).length >= 4) && summaryProblems(`${care} You felt it. You were looking for need.`).every((p) => p === 'too-short' || p === 'no-feelings' || p === 'no-needs');
-  return { feelings: pick('Feelings', feelingSet), needs: pick('Needs', needSet), care: careOk ? care : '' };
+  const needsAll = pick('Needs', needSet);
+  return { feelings: pick('Feelings', feelingSet).slice(0, 3), needs: needsAll.slice(0, 3), care: careOk ? care : '', ...(needsAll.length >= MANY_NEEDS ? { moreNeeds: true } : {}) };
 }
 
 const joinWords = (w: string[]): string => (w.length <= 1 ? (w[0] ?? '') : `${w.slice(0, -1).join(', ')} and ${w[w.length - 1]}`);
@@ -126,6 +128,7 @@ export function buildPicked(p: Picks): string | null {
   const parts: string[] = [];
   if (p.feelings.length) parts.push(`You felt ${joinWords(p.feelings)}.`);
   if (p.needs.length) parts.push(`You were looking for ${joinWords(p.needs)}.`);
+  if (p.moreNeeds) parts.push(NEED_FOCUS_SUMMARY);
   if (p.care) parts.push(/[.!]$/.test(p.care) ? p.care : `${p.care}.`);
   return parts.join(' ');
 }
@@ -167,3 +170,6 @@ export { SUMMARY_FAILED_TEXT } from './summaryWords.ts';
 
 /** The requested summary as shown and as signed into a transcript: the summary and the site's sentence about the transcript, in one paragraph. */
 export const assembleSummaryText = (summary: string, transcriptLine: string): string => `${summary.trim()} ${transcriptLine.trim()}`;
+
+/** A written summary that names four or more needs gets the same recommendation to focus on one to three. */
+export const withSummaryNeedFocus = (summary: string): string => (needsNamed(summary).length >= MANY_NEEDS && !/\bone to three\b/i.test(summary) ? `${summary.trim()} ${NEED_FOCUS_SUMMARY}` : summary);
