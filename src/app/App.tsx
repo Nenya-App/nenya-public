@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { setSessionMarkId } from '../lib/sessionMarkStore';
 import SkipLink from './components/SkipLink';
 import { ThemeProvider } from './components/ThemeProvider';
 import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
@@ -374,6 +375,8 @@ export default function App() {
     (sightDone && sessionIdFrom(sightDone.color1, sightDone.color2)) ||
     (soundDone && sessionIdFrom(soundDone.melodyColor1, soundDone.melodyColor2)) ||
     shadow;
+  // The mark in the footer is a visual form of the session ID (src/lib/nameMark.ts).
+  useEffect(() => { setSessionMarkId(sessionId); }, [sessionId]);
   const saveApi: SaveReflectionApi = {
     on: saveOn,
     canSave: gatewayData.length > 0,

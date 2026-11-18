@@ -1,6 +1,6 @@
 # The nənya.biz mark: the owner's settings "for now" (2026-11-17)
 
-Copied from the editor (`Nenya Marketing/press-kit/nenya-name-forms.html`, "Copy settings"). **Not yet wired into the site**: the site still uses the placement in `src/lib/nameMark.ts` and the single turn in `src/app/components/NenyaMark.tsx`. These are design choices to build from, not a record of what is live.
+Copied from the editor (`Nenya Marketing/press-kit/nenya-name-forms.html`, "Copy settings"). **Built into the site behind `VITE_NAME_MARK=on` on 2026-11-17** (`src/lib/nameMark.ts`, `src/lib/sessionMarkStore.ts`, `src/app/components/NenyaMark.tsx`; tests in `tests/name-mark.test.mts`). Off, the footer shows the plain name "Nenya".
 
 ```
 Stacked mark settings.
@@ -33,3 +33,9 @@ Animation:
    - **What the shadow ID is and where it lives:** random, per session, held only in the tab (the site stores nothing); whether it appears in a signed transcript's `session` record next to `color1`/`color2` (it would let a transcript be matched to the mark it was made under, and to nothing else); how it is shown (the mark alone, or also as a short readable string for people who cannot see it).
    - **It is a recognisable signature, not proof of anything:** letters that overlap hide each other, so far fewer marks are visibly different than are possible; the shadow ID, not the picture, stays the identifier.
 4. **Where the mark shows:** today only in the footer, behind `VITE_NAME_MARK=on`.
+
+## Built 2026-11-17 (behind VITE_NAME_MARK=on, staging first)
+- **Four e's:** the white e (page ink), the gold e in front of it (turns once when the mark first comes into view, then rests upside down), and two more under the white e. Placement, timings and directions are the settings above.
+- **The session ID:** the mark is drawn from the session ID, which is already two colours (`src/lib/savedReflection.ts`): the visitor's own pair from Sight or Sound or the coach's picker, or a random shadow pair. The palette is those two colours and two between them, each kept at least 3:1 against the page. The gold e and the white e are always the mark; the two extra e's rest upright or upside down, and take their colours, from the ID, so two sessions with the same colours can still differ.
+- **The fidget:** pointing at the mark starts 16 half turns, one randomly chosen e at a time, in colours from the palette; it keeps going while the pointer stays; a tap plays one run; Escape stops it; a keyboard user gets a "Play the mark" button (visible on focus) that also stops it. With reduced motion it does not turn or fidget and shows only its resting state.
+- **Not done:** the shadow ID is not added to signed transcripts (a separate decision); the weave and flips are editor options only; the mark appears only where the footer does.
