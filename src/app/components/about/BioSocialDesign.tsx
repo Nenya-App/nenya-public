@@ -11,6 +11,7 @@ import HumanCenteredDesign from './HumanCenteredDesign';
 import TheoryU from './TheoryU';
 import { AppFooter } from '../AppFooter';
 
+import { L } from '../../../lib/vocabulary';
 interface BioSocialDesignProps {
   onBack: () => void;
 }
@@ -426,13 +427,13 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
               <div className="p-2 md:p-3 bg-nenya-gold/20 rounded-lg">
                 <Eye className="size-5 md:size-6 text-nenya-gold-text dark:text-nenya-gold" />
               </div>
-              <h2 className="text-xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">The Design of Nenya: Logo, Gateways & Sense-Making</h2>
+              <h2 className="text-xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">The Design of Nenya: Logo, {L('Gateways')} & Sense-Making</h2>
             </div>
 
             <Card className="p-4 md:p-8 bg-muted/50 backdrop-blur-sm border-border">
               <div className="space-y-3 md:space-y-6 text-foreground leading-relaxed text-sm md:text-base">
                 <p>
-                  Every element of Nenya—from the pulsing logo to the multi-sensory gateways—is intentionally designed to support emotional regulation and sense-making.
+                  Every element of Nenya—from the pulsing logo to the multi-sensory {L('gateways')}—is intentionally designed to support emotional regulation and sense-making.
                 </p>
                 
                 <div className="flex justify-center my-6">
@@ -450,9 +451,9 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
                   </div>
 
                   <div>
-                    <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold mb-2">The Six Gateways: Multi-Sensory Access to Inner Experience</h3>
+                    <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold mb-2">The Six {L('Gateways')}: Multi-Sensory Access to Inner Experience</h3>
                     <p className="text-xs md:text-sm text-muted-foreground">
-                      We designed Nenya around the recognition that people connect to their emotional world through different sensory modalities. Some resonate with <strong>visual color symbolism</strong>, others with <strong>sound, touch, essence (scent/atmosphere), movement, or cognitive insight</strong>. The Six Gateways ensure accessibility across neurotypes and cultural backgrounds, honoring that there is no single "correct" way to begin the journey inward.
+                      We designed Nenya around the recognition that people connect to their emotional world through different sensory modalities. Some resonate with <strong>visual color symbolism</strong>, others with <strong>sound, touch, essence (scent/atmosphere), movement, or cognitive insight</strong>. The Six {L('Gateways')} ensure accessibility across neurotypes and cultural backgrounds, honoring that there is no single "correct" way to begin the journey inward.
                     </p>
                   </div>
 
@@ -466,7 +467,7 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
                   <div>
                     <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold mb-2">Progressive Disclosure: Emotional First, Intellectual Later</h3>
                     <p className="text-xs md:text-sm text-muted-foreground">
-                      The entire interface is designed around <strong>progressive disclosure</strong>: you encounter the gateway ritual first, the NVC+ practice second, and all the philosophical/scientific justification only if you choose to explore it. This respects that emotional healing doesn't begin with intellectual understanding—it begins with <em>feeling felt</em>.
+                      The entire interface is designed around <strong>progressive disclosure</strong>: you encounter the {L('gateway')} ritual first, the NVC+ practice second, and all the philosophical/scientific justification only if you choose to explore it. This respects that emotional healing doesn't begin with intellectual understanding—it begins with <em>feeling felt</em>.
                     </p>
                   </div>
                 </div>

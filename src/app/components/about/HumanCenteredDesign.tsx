@@ -6,6 +6,7 @@ import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import React from 'react';
 
+import { L } from '../../../lib/vocabulary';
 interface HumanCenteredDesignProps {
   onBack: () => void;
 }
@@ -69,7 +70,7 @@ export default function HumanCenteredDesign({ onBack }: HumanCenteredDesignProps
                   Empathy First
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  We designed the Six Gateways after observing that not everyone resonates with visual color symbolism. Some people are more attuned to sound, touch, or movement.
+                  We designed the Six {L('Gateways')} after observing that not everyone resonates with visual color symbolism. Some people are more attuned to sound, touch, or movement.
                 </p>
               </Card>
 
@@ -87,7 +88,7 @@ export default function HumanCenteredDesign({ onBack }: HumanCenteredDesignProps
                   Accessibility
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Multi-modal gateways ensure the experience is accessible to people with different cognitive styles, sensory preferences, and neurodivergent experiences.
+                  Multi-modal {L('gateways')} ensure the experience is accessible to people with different cognitive styles, sensory preferences, and neurodivergent experiences.
                 </p>
               </Card>
 

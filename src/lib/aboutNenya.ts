@@ -1085,7 +1085,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
   ],
   'n-else': [
     new RegExp(`\\bwhat\\s+can\\s+(?:${SITE}|nenya)\\s+(?:do|offer|have)\\b|\\bwhat\\s+else\\s+(?:is\\s+(?:here|there)|can\\s+i\\s+do\\s+here)\\b`, 'i'),
-    /\bwhat\s+are\s+the\s+(?:six\s+)?gateways\b|\bwhat\s+is\s+the\s+breathing\s+tool\b|\bwhere\s+do\s+i\s+start\b|\bwhat\s+features\b/i,
+    /\bwhat\s+are\s+the\s+(?:six\s+)?(?:gateways|lenses)\b|\bwhat\s+is\s+the\s+breathing\s+tool\b|\bwhere\s+do\s+i\s+start\b|\bwhat\s+features\b/i,
   ],
   'n-what': [
     new RegExp(`\\bwhat\\s+does\\s+(?:${SITE}|nenya)\\s+do\\b|\\bwhat(?:'s|\\s+is|\\s+are)\\s+(?:nenya|${SITE})\\b|\\bwhat\\s+is\\s+nenya\\s+(?:about|for)\\b|\\btell\\s+me\\s+about\\s+(?:nenya|${SITE})\\b`, 'i'),

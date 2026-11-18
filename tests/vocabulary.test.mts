@@ -11,10 +11,7 @@ ok('on: the word Insight alone, with no lens around it, is left alone', L('This 
 ok('on: a string without the old words is unchanged', L('Breathe slowly', true) === 'Breathe slowly');
 
 // Scan: string literals that say gateway (with a space around it, so not ids or routes) must be inside L(...), except in the About pages still to be rewritten.
-const PENDING = new Set([
-  'src/app/components/about/SixGateways.tsx', 'src/app/components/about/BioSocialDesign.tsx', 'src/app/components/about/HumanCenteredDesign.tsx', 'src/app/components/about/TheoryU.tsx',
-  'src/app/components/about/NamePhilosophy.tsx', 'src/app/components/about/PrivacyPromise.tsx', 'src/app/components/SupportThisWork.tsx', 'src/app/components/about/SupportUs.tsx', 'src/lib/aboutEvalCorpus.ts',
-]);
+const PENDING = new Set(['src/lib/aboutEvalCorpus.ts']); // keeps the phrases people type (old and new), so a person asking either way is understood
 const walk = (d: string): string[] => readdirSync(d).flatMap((n) => { const p = `${d}/${n}`; return statSync(p).isDirectory() ? walk(p) : /\.(ts|tsx)$/.test(p) ? [p] : []; });
 const lit = /'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`/g;
 const strays: string[] = [];
@@ -32,5 +29,5 @@ for (const f of walk('src')) {
     }
   });
 }
-ok('no visitor-facing string says gateway outside L() (except the listed About pages)', strays.length === 0, strays.slice(0, 5).join(' | '));
-ok('the About pages still to be rewritten are the only ones that keep the old word in prose', [...PENDING].every((f) => /ateway/.test(readFileSync(f, 'utf8'))));
+ok('no visitor-facing string says gateway outside L() (except the question phrases people may still type)', strays.length === 0, strays.slice(0, 5).join(' | '));
+ok('the question phrases keep the old word as well as the new', [...PENDING].every((f) => /ateway/.test(readFileSync(f, 'utf8'))));

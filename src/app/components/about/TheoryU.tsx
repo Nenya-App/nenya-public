@@ -6,6 +6,7 @@ import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import React from 'react';
 
+import { L } from '../../../lib/vocabulary';
 interface TheoryUProps {
   onBack: () => void;
 }
@@ -73,7 +74,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
                       Descending: Sensing & Observing
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      The gateway rituals (color, sound, touch, etc.) guide you inward. You begin by observing your current emotional state without judgment—suspending habitual patterns of thought.
+                      The {L('gateway')} rituals (color, sound, touch, etc.) guide you inward. You begin by observing your current emotional state without judgment—suspending habitual patterns of thought.
                     </p>
                   </div>
                 </div>

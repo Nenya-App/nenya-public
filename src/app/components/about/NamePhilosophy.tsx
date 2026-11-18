@@ -11,6 +11,7 @@ import { ScrollHint } from '../ScrollHint';
 import { AppFooter } from '../AppFooter';
 import { LOGO_ALT_LONG } from '../../../lib/altText';
 
+import { L } from '../../../lib/vocabulary';
 interface NamePhilosophyProps {
   onBack: () => void;
 }
@@ -182,7 +183,7 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
                   The Harp of Móru, which gives this project its foundational metaphor, was made with the ground's consent. The first question asked was not "what can I make from this?" but "may I?" The distinction is not between use and non-use. It is between <strong className="text-nenya-gold-text dark:text-nenya-gold-light">extraction</strong> and <strong className="text-nenya-gold-text dark:text-nenya-gold-light">invitation</strong>.
                 </p>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
-                  The six gateways are strategies you are trying on — in NVC terms, the specific actions we take in service of what we need. They exist for the duration of a session. They belong entirely to you.
+                  The six {L('gateways')} are strategies you are trying on — in NVC terms, the specific actions we take in service of what we need. They exist for the duration of a session. They belong entirely to you.
                 </p>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
                   That is the architecture. Not a feature. The foundation.
