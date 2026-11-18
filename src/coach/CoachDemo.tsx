@@ -32,6 +32,8 @@ import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
 import { SummaryRequest } from './SummaryRequest';
+import { NeedTally } from './NeedTally';
+import { needTallyOn } from '../lib/needTallyView';
 import { summaryRequestOn } from '../lib/summaryRequest';
 import { FailureNotice } from './FailureNotice';
 import { RegionNotice } from './RegionGate';
@@ -857,6 +859,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 <div ref={endRef} />
               </div>
 
+              {/* VITE_NEED_TALLY: the person's own feelings and needs so far; quiet, optional, page state only. Not shown after a safety notice. */}
+              {needTallyOn() && !flag && <NeedTally userTexts={messages.filter((m) => m.role === 'user').map((m) => m.content)} />}
               {flag && <FlagNotice flag={flag} flaggedMessage={flaggedText} />}
               {contextFlag && !flag && <FlagNotice flag={contextFlag} flaggedMessage="" source="report" />}
               {sharedDropped && !shared && (
