@@ -118,7 +118,9 @@ Examples: **a coffee shop** (the idea that started this), a **library table**, a
 7. **Charter, localisation and governance.** Rung 6.
 
 ## Decisions for the owner
-1. First pilot: a facilitated circle, a pop-up table, or something else?
+**Answered 2026-11-18 (owner):** no first pilot is decided. At the micro level the only user is the owner (rungs 0 and 1). Beyond that, the owner hands out cards and has a negligible Facebook presence; the site is not widely publicised and the live site is the part changing quickly. So nothing above rung 1 is planned, and a hub copy of the site (option 1) would go stale quickly: if a hub is ever shared, route 2 (the live page calls the hub) fits better than a pinned copy.
+
+1. ~~First pilot~~ (answered above).
 2. Is a public venue (rung 3) acceptable at all before an organisation (rung 4) has run one?
 3. Under-18 users: out of scope for every hub until separately decided?
 4. Does any hub give the operator a way to add their own "tell your counsellor" text (rung 4)? If yes, who reviews it?
