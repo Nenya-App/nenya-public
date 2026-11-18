@@ -17,6 +17,8 @@ import { DrawingCanvas } from '../DrawingCanvas';
 import { WordPicker } from '../WordPicker';
 import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
+import { lensTapestryOn, cleanLayers, tapestryWords } from '../../../lib/lensActivities';
+import { TapestryActivity } from '../LensActivities';
 import { ShapePicker, MAX_SHAPES } from '../ShapePicker';
 import { L, sixthLensName } from '../../../lib/vocabulary';
 interface InsightGatewayPageProps {
@@ -80,6 +82,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [currentPerspectives, setCurrentPerspectives] = useState<string[]>(init?.currentPerspectives ?? []);
   const [currentPerspectiveOther, setCurrentPerspectiveOther] = useState(init?.currentPerspectiveOther ?? '');
   const [currentDescription, setCurrentDescription] = useState(init?.currentDescription ?? '');
+  const [tapestryLayers, setTapestryLayers] = useState<string[]>(() => cleanLayers(init?.tapestryLayers));
   const [currentPatternDrawing, setCurrentPatternDrawing] = useState<string | null>(init?.currentPatternDrawing ?? null);
 
   // Potential state
@@ -143,7 +146,9 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
       potentialPerspectives: potentialPerspectives.length > 0 ? potentialPerspectives : null,
       potentialPerspectiveOther: potentialPerspectiveOther || null,
       potentialDescription: potentialDescription || null,
-      potentialPatternDrawing: potentialPatternDrawing || null
+      potentialPatternDrawing: potentialPatternDrawing || null,
+      // The optional tapestry (VITE_LENS_TAPESTRY): words for the report and the coach, layers for the PDF thumbnail and for reopening. Old drafts have neither key.
+      ...(lensTapestryOn() && tapestryLayers.length ? { tapestryLayers, tapestryWords: tapestryWords(tapestryLayers) } : {})
     });
   };
 
@@ -310,7 +315,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                     />
                   </div>
                     ];
-                    return tray ? [b[0], b[2], b[3], <MoreDescriptions key="more"><>{b[1]}{b[4]}{b[5]}{b[6]}</></MoreDescriptions>] : b;
+                    return tray ? [b[0], b[2], b[3], <MoreDescriptions key="more"><>{b[1]}{b[4]}{b[5]}{b[6]}{lensTapestryOn() && <TapestryActivity layers={tapestryLayers} onChange={setTapestryLayers} />}</></MoreDescriptions>] : b;
                   })()}
                 </CardContent>
               </Card>
