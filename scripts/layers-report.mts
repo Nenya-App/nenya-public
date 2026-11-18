@@ -6,20 +6,24 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { summarizeLayers, type LayerRecord } from '../src/lib/layerTrace.ts';
+import { modelEntry } from '../src/lib/modelRegistry.ts';
 
 const args = process.argv.slice(2);
 const out = args.includes('--out') ? args[args.indexOf('--out') + 1] : undefined;
 const files = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--out');
 if (!files.length) { console.error('Give one or more saved runs made with --layers.'); process.exit(2); }
 
-const lines: string[] = ['# What the outer layers add', '', '| Run | Model | Instructions | Cases | First reply failed | Failed after layers | Rescued | Made worse | Nothing caught | Turns asked again |', '|---|---|---|---|---|---|---|---|---|---|'];
+const lines: string[] = ['# What the outer layers add', '', '| Run | Model | Family and tuning | Runs on | Instructions | Cases | First reply failed | Failed after layers | Rescued | Made worse | Nothing caught | Turns asked again |', '|---|---|---|---|---|---|---|---|---|---|---|---|'];
 const detail: string[] = [];
 for (const f of files) {
   const j = JSON.parse(readFileSync(f, 'utf8'));
   const rows = (j.results ?? []) as { id: string; outcome: string; layers?: LayerRecord; failures?: string[] }[];
   const s = summarizeLayers(rows.map((r) => ({ result: r, layers: r.layers })));
-  if (!s.cases) { lines.push(`| ${basename(f)} | ${j.model ?? '?'} | ${j.instructions ?? '?'} | no layer records (run it with --layers) | | | | | | |`); continue; }
-  lines.push(`| ${basename(f)} | ${j.model ?? '?'} | ${j.instructions ?? '?'} | ${s.cases} | ${s.rawFailed} | ${s.finalFailed} | ${s.rescued} | ${s.broken} | ${s.stillFailing} | ${s.askedAgain} |`);
+  const reg = modelEntry(j.model ?? '');
+  const fam = reg ? `${reg.family} ${reg.activeB ?? '?'}B active, ${reg.tuning}` : 'not in the registry';
+  const on = reg ? reg.runsOn : '?';
+  if (!s.cases) { lines.push(`| ${basename(f)} | ${j.model ?? '?'} | ${fam} | ${on} | ${j.instructions ?? '?'} | no layer records (run it with --layers) | | | | | | |`); continue; }
+  lines.push(`| ${basename(f)} | ${j.model ?? '?'} | ${fam} | ${on} | ${j.instructions ?? '?'} | ${s.cases} | ${s.rawFailed} | ${s.finalFailed} | ${s.rescued} | ${s.broken} | ${s.stillFailing} | ${s.askedAgain} |`);
   const rescued = rows.filter((r) => r.layers?.rawOutcome === 'fail' && r.outcome !== 'fail');
   const still = rows.filter((r) => r.layers?.rawOutcome === 'fail' && r.outcome === 'fail');
   const worse = rows.filter((r) => r.layers?.rawOutcome === 'pass' && r.outcome === 'fail');
