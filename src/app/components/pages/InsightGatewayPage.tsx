@@ -15,8 +15,10 @@ import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
+import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { ShapePicker, MAX_SHAPES } from '../ShapePicker';
-import { L } from '../../../lib/vocabulary';
+import { L, sixthLensName } from '../../../lib/vocabulary';
 interface InsightGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -25,6 +27,8 @@ interface InsightGatewayPageProps {
   userColors?: { color1?: string; color2?: string };
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
+  /** Tray mode: what was added before, so Edit opens with it. */
+  initialData?: any;
 }
 
 
@@ -47,7 +51,11 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function InsightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: InsightGatewayPageProps) {
+export default function InsightGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap, initialData }: InsightGatewayPageProps) {
+  const tray = lensTrayOn();
+  const init = tray && initialData && ('currentClarity' in initialData || 'currentPatternShapes' in initialData) ? initialData : null;
+  // The soft limit of three in one list (tray mode): the fourth waits for a yes.
+  const [pendingWord, setPendingWord] = useState<{ value: string; list: string[]; setter: (v: string[]) => void } | null>(null);
   // Step state
   const [step, setStep] = useState<'instructions' | 'selection'>('instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
@@ -64,26 +72,26 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   }, [step]);
 
   // Current state
-  const [currentPatternShapes, setCurrentPatternShapes] = useState<string[]>([]);
-  const [currentPatterns, setCurrentPatterns] = useState<string[]>([]);
-  const [currentPatternOther, setCurrentPatternOther] = useState('');
-  const [currentClarity, setCurrentClarity] = useState(() => unsetSlider());
-  const [currentDepth, setCurrentDepth] = useState(() => unsetSlider());
-  const [currentPerspectives, setCurrentPerspectives] = useState<string[]>([]);
-  const [currentPerspectiveOther, setCurrentPerspectiveOther] = useState('');
-  const [currentDescription, setCurrentDescription] = useState('');
-  const [currentPatternDrawing, setCurrentPatternDrawing] = useState<string | null>(null);
+  const [currentPatternShapes, setCurrentPatternShapes] = useState<string[]>(init?.currentPatternShapes ?? []);
+  const [currentPatterns, setCurrentPatterns] = useState<string[]>(init?.currentPatterns ?? []);
+  const [currentPatternOther, setCurrentPatternOther] = useState(init?.currentPatternOther ?? '');
+  const [currentClarity, setCurrentClarity] = useState(() => (typeof init?.currentClarity === 'number' ? [init.currentClarity] : unsetSlider()));
+  const [currentDepth, setCurrentDepth] = useState(() => (typeof init?.currentDepth === 'number' ? [init.currentDepth] : unsetSlider()));
+  const [currentPerspectives, setCurrentPerspectives] = useState<string[]>(init?.currentPerspectives ?? []);
+  const [currentPerspectiveOther, setCurrentPerspectiveOther] = useState(init?.currentPerspectiveOther ?? '');
+  const [currentDescription, setCurrentDescription] = useState(init?.currentDescription ?? '');
+  const [currentPatternDrawing, setCurrentPatternDrawing] = useState<string | null>(init?.currentPatternDrawing ?? null);
 
   // Potential state
-  const [potentialPatternShapes, setPotentialPatternShapes] = useState<string[]>([]);
-  const [potentialPatterns, setPotentialPatterns] = useState<string[]>([]);
-  const [potentialPatternOther, setPotentialPatternOther] = useState('');
-  const [potentialClarity, setPotentialClarity] = useState(() => unsetSlider());
-  const [potentialDepth, setPotentialDepth] = useState(() => unsetSlider());
-  const [potentialPerspectives, setPotentialPerspectives] = useState<string[]>([]);
-  const [potentialPerspectiveOther, setPotentialPerspectiveOther] = useState('');
-  const [potentialDescription, setPotentialDescription] = useState('');
-  const [potentialPatternDrawing, setPotentialPatternDrawing] = useState<string | null>(null);
+  const [potentialPatternShapes, setPotentialPatternShapes] = useState<string[]>(init?.potentialPatternShapes ?? []);
+  const [potentialPatterns, setPotentialPatterns] = useState<string[]>(init?.potentialPatterns ?? []);
+  const [potentialPatternOther, setPotentialPatternOther] = useState(init?.potentialPatternOther ?? '');
+  const [potentialClarity, setPotentialClarity] = useState(() => (typeof init?.potentialClarity === 'number' ? [init.potentialClarity] : unsetSlider()));
+  const [potentialDepth, setPotentialDepth] = useState(() => (typeof init?.potentialDepth === 'number' ? [init.potentialDepth] : unsetSlider()));
+  const [potentialPerspectives, setPotentialPerspectives] = useState<string[]>(init?.potentialPerspectives ?? []);
+  const [potentialPerspectiveOther, setPotentialPerspectiveOther] = useState(init?.potentialPerspectiveOther ?? '');
+  const [potentialDescription, setPotentialDescription] = useState(init?.potentialDescription ?? '');
+  const [potentialPatternDrawing, setPotentialPatternDrawing] = useState<string | null>(init?.potentialPatternDrawing ?? null);
 
   const handleCheckboxChange = (
     value: string,
@@ -91,6 +99,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
     currentValues: string[],
     setter: (values: string[]) => void
   ) => {
+    if (checked && tray && needsFewerWarning(currentValues.length)) { setPendingWord({ value, list: currentValues, setter }); return; }
     if (checked) {
       setter([...currentValues, value]);
     } else {
@@ -99,6 +108,11 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   };
 
   const toggleShape = (id: string, list: string[], set: (v: string[]) => void) => {
+    if (tray) {
+      if (!list.includes(id) && needsFewerWarning(list.length)) { setPendingWord({ value: id, list, setter: set }); return; }
+      set(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
+      return;
+    }
     set(list.includes(id) ? list.filter((x) => x !== id) : list.length < MAX_SHAPES ? [...list, id] : list);
   };
 
@@ -160,7 +174,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                 Insight - Noesis
                 <GatewaySubtitleLink href="https://en.wikipedia.org/wiki/Noesis" />
               </h1>
-              <GatewayProgress index={currentIndex} total={totalGateways} />
+              {!tray && <GatewayProgress index={currentIndex} total={totalGateways} />}
             </div>
           </div>
           
@@ -190,6 +204,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   <p className="text-muted-foreground">
                     {INSTRUCTION_CARDS[instructionCardIndex].detail}
                   </p>
+                  {tray && instructionCardIndex === 0 && <FewerNote />}
                   <div className="flex items-center justify-between pt-4">
                     <div className="flex items-center gap-3">
                       <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
@@ -243,49 +258,49 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   <CardDescription>The patterns of understanding where you are now</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                  <div className="space-y-2">
+                  {(() => {
+                    const b = [
+                  <div key="p0" className="space-y-2">
                     <Label id="currentPattern-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
-                    <ShapePicker set="pattern" idPrefix="currentPattern" selected={currentPatternShapes} onToggle={(id) => toggleShape(id, currentPatternShapes, setCurrentPatternShapes)} />
-                  </div>
-
-                  <div className="space-y-2">
+                    <ShapePicker soft={tray} set="pattern" idPrefix="currentPattern" selected={currentPatternShapes} onToggle={(id) => toggleShape(id, currentPatternShapes, setCurrentPatternShapes)} />
+                    {pendingWord && pendingWord.list === currentPatternShapes && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <div key="p1" className="space-y-2">
                     <Label className="text-sm">Pattern (optional)</Label>
                     <WordPicker category="pattern" idPrefix="currentPatterns" selected={currentPatterns} onToggle={(t) => handleCheckboxChange(t, !currentPatterns.includes(t), currentPatterns, setCurrentPatterns)} other={{ value: currentPatternOther, onChange: setCurrentPatternOther, placeholder: "Describe..." }} />
-                  </div>
-
-                  <SnappingSlider
+                    {pendingWord && pendingWord.list === currentPatterns && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <SnappingSlider key="p2"
                     value={currentClarity}
                     onValueChange={setCurrentClarity}
                     label="Clarity"
                     leftLabel="Foggy"
                     rightLabel="Crystal Clear"
                     max={100}
-                  />
-
-                  <SnappingSlider
+                  />,
+                  <SnappingSlider key="p3"
                     value={currentDepth}
                     onValueChange={setCurrentDepth}
                     label="Depth"
                     leftLabel="Surface"
                     rightLabel="Profound"
                     max={100}
-                  />
-
-                  <div className="space-y-2">
+                  />,
+                  <div key="p4" className="space-y-2">
                     <Label className="text-sm">Perspective (optional)</Label>
                     <WordPicker category="perspective" idPrefix="currentPerspectives" selected={currentPerspectives} onToggle={(t) => handleCheckboxChange(t, !currentPerspectives.includes(t), currentPerspectives, setCurrentPerspectives)} other={{ value: currentPerspectiveOther, onChange: setCurrentPerspectiveOther, placeholder: "Describe..." }} />
-                  </div>
-
-                  <div className="space-y-2">
+                    {pendingWord && pendingWord.list === currentPerspectives && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <div key="p5" className="space-y-2">
                     <Label className="text-sm">Draw the shape of this pattern (optional)</Label>
                     <DrawingCanvas
                       strokeColor={color1}
+                      initialDataUrl={init?.currentPatternDrawing}
                       onChange={setCurrentPatternDrawing}
                       placeholder="Spiraling, fragmented, web-like, layered — trace it."
                     />
-                  </div>
-
-                  <div className="space-y-2">
+                  </div>,
+                  <div key="p6" className="space-y-2">
                     <Label className="text-sm">Describe the patterns (optional)</Label>
                     <Textarea
                       placeholder="Describe the patterns and perspectives..."
@@ -294,6 +309,9 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                    ];
+                    return tray ? [b[0], b[2], b[3], <MoreDescriptions key="more"><>{b[1]}{b[4]}{b[5]}{b[6]}</></MoreDescriptions>] : b;
+                  })()}
                 </CardContent>
               </Card>
 
@@ -317,49 +335,49 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   <CardDescription>The patterns of understanding you're moving toward</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                  <div className="space-y-2">
+                  {(() => {
+                    const b = [
+                  <div key="p0" className="space-y-2">
                     <Label id="potentialPattern-shapes-label" className="text-sm">Choose a drawing that is close (optional)</Label>
-                    <ShapePicker set="pattern" idPrefix="potentialPattern" selected={potentialPatternShapes} onToggle={(id) => toggleShape(id, potentialPatternShapes, setPotentialPatternShapes)} />
-                  </div>
-
-                  <div className="space-y-2">
+                    <ShapePicker soft={tray} set="pattern" idPrefix="potentialPattern" selected={potentialPatternShapes} onToggle={(id) => toggleShape(id, potentialPatternShapes, setPotentialPatternShapes)} />
+                    {pendingWord && pendingWord.list === potentialPatternShapes && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <div key="p1" className="space-y-2">
                     <Label className="text-sm">Pattern (optional)</Label>
                     <WordPicker category="pattern" idPrefix="potentialPatterns" selected={potentialPatterns} onToggle={(t) => handleCheckboxChange(t, !potentialPatterns.includes(t), potentialPatterns, setPotentialPatterns)} other={{ value: potentialPatternOther, onChange: setPotentialPatternOther, placeholder: "Describe..." }} />
-                  </div>
-
-                  <SnappingSlider
+                    {pendingWord && pendingWord.list === potentialPatterns && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <SnappingSlider key="p2"
                     value={potentialClarity}
                     onValueChange={setPotentialClarity}
                     label="Clarity"
                     leftLabel="Foggy"
                     rightLabel="Crystal Clear"
                     max={100}
-                  />
-
-                  <SnappingSlider
+                  />,
+                  <SnappingSlider key="p3"
                     value={potentialDepth}
                     onValueChange={setPotentialDepth}
                     label="Depth"
                     leftLabel="Surface"
                     rightLabel="Profound"
                     max={100}
-                  />
-
-                  <div className="space-y-2">
+                  />,
+                  <div key="p4" className="space-y-2">
                     <Label className="text-sm">Perspective (optional)</Label>
                     <WordPicker category="perspective" idPrefix="potentialPerspectives" selected={potentialPerspectives} onToggle={(t) => handleCheckboxChange(t, !potentialPerspectives.includes(t), potentialPerspectives, setPotentialPerspectives)} other={{ value: potentialPerspectiveOther, onChange: setPotentialPerspectiveOther, placeholder: "Describe..." }} />
-                  </div>
-
-                  <div className="space-y-2">
+                    {pendingWord && pendingWord.list === potentialPerspectives && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
+                  </div>,
+                  <div key="p5" className="space-y-2">
                     <Label className="text-sm">Draw the shape of this pattern (optional)</Label>
                     <DrawingCanvas
                       strokeColor={color2}
+                      initialDataUrl={init?.potentialPatternDrawing}
                       onChange={setPotentialPatternDrawing}
                       placeholder="What shape would you rather your thinking take?"
                     />
-                  </div>
-
-                  <div className="space-y-2">
+                  </div>,
+                  <div key="p6" className="space-y-2">
                     <Label className="text-sm">Describe the patterns (optional)</Label>
                     <Textarea
                       placeholder="Describe the patterns and perspectives you're moving toward..."
@@ -368,6 +386,9 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                    ];
+                    return tray ? [b[0], b[2], b[3], <MoreDescriptions key="more"><>{b[1]}{b[4]}{b[5]}{b[6]}</></MoreDescriptions>] : b;
+                  })()}
                 </CardContent>
               </Card>
             </StageSlot>
@@ -375,7 +396,8 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
             </div>
 
             {/* Next Button */}
-            {stage === 'wish' && (
+            {stage === 'wish' && tray && <AddToReport name={sixthLensName()} added={!!init} onAdd={handleNext} onPutDown={onBack} />}
+            {stage === 'wish' && !tray && (
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"

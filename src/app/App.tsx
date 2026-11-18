@@ -762,6 +762,7 @@ export default function App() {
           {currentScreen === 'insight' && (
             <InsightGatewayPage
               onComplete={(data) => handleGatewayComplete('insight', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'insight')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('insight')}
               totalGateways={selectedGateways.length}
