@@ -146,3 +146,13 @@ export function summaryFormFor(model: string, setting?: string): 'written' | 'pi
   const sizes = [...model.toLowerCase().matchAll(/(?:^|[^a-z0-9.])(?:e|a)?(\d+(?:\.\d+)?)b(?![a-z0-9])/g)].map((m) => Number(m[1]));
   return sizes.length && Math.max(...sizes) < 20 ? 'picked' : 'written';
 }
+
+/** Opening reflection sentences ("It sounds like...", "It seems...", "I hear...") that the separate summary now carries. */
+const REFLECTION_OPENING = /^\s*["“]?(?:it\s+(?:sounds|seems|feels|looks)\b|i\s+(?:can\s+)?hear\b|what\s+i\s+hear\b)/i;
+
+/** The closing without its "It sounds like..." sentences, used when a separate summary follows (owner, 2026-11-18). Never empties the closing. */
+export function withoutReflectionOpening(closing: string): string {
+  const parts = sentences(closing);
+  const kept = parts.filter((x) => !REFLECTION_OPENING.test(x));
+  return kept.length && kept.length < parts.length ? kept.join(' ') : closing;
+}
