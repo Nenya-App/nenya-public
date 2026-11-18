@@ -19,7 +19,7 @@ import { checkConversation, type SafetyFlag } from './safetyFlags.ts';
 import { detectHostility, type Hostility } from './hostility.ts';
 import { claimsInfrastructure, INFRA_FALLBACK } from './infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK } from './personaGuard.ts';
-import { BOUNDARY_GUARDS, rewritePresence } from './boundaryGuard.ts';
+import { BOUNDARY_GUARDS, rewritePresence, withNoMemory, withNotDiagnosis } from './boundaryGuard.ts';
 
 /** The boundary guards (src/lib/boundaryGuard.ts) on the sealed path: a build-time switch, VITE_BOUNDARY_GUARD=on, since this runs in the browser. Off unless set. The relay cannot ask the model again (it cannot read the reply), so a reply that does it has only the offending sentences taken out, or the fixed sentence if nothing is left. */
 export const boundaryGuardOnSealed = (): boolean => import.meta.env?.VITE_BOUNDARY_GUARD === 'on';
@@ -140,7 +140,10 @@ export function guardReply(reply: string, userTexts: string[]): string {
   if (claimsInfrastructure(r)) r = INFRA_FALLBACK;
   if (claimsPersona(r)) r = PERSONA_FALLBACK;
   if (boundaryGuardOnSealed()) {
-    r = rewritePresence(r, { lastUserText: userTexts[userTexts.length - 1] }).reply;
+    const lastUser = userTexts[userTexts.length - 1];
+    r = rewritePresence(r, { lastUserText: lastUser }).reply;
+    r = withNoMemory(r, lastUser).reply;
+    r = withNotDiagnosis(r, lastUser).reply;
     for (const g of BOUNDARY_GUARDS) if (g.test(r)) r = g.repair(r).reply;
   }
   const names = echoedNames(userTexts, r);

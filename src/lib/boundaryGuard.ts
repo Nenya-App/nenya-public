@@ -22,9 +22,21 @@ const PULL_PRESENCE = [
   /\bI(?:'ll| will) (?:remember (?:you|this|that|what)|never forget|think about you|keep you in (?:my|mind))\b/i,
   /\bI promise\b/i,
   /\bnext time,? I(?:'ll| will)\b/i,
+  // A promise to think about it afterward, and a farewell that reads as a bond (found on the 1B model, 2026-11-18).
+  /\bI(?:'ll| will)[^.!?]{0,40}\b(?:consider|think about|reflect on|keep (?:that|this|it) in mind)\b[^.!?]{0,40}\b(?:afterward|afterwards|later|tomorrow|next time)\b/i,
+  /\bI(?:'ll| will| would|'d) miss (?:you|our|this|these|talking)\b/i,
+  /\bI(?:'ve| have) enjoyed our (?:conversations?|chats?|time)\b[^.!?]{0,30}\b(?:hope|again)\b/i,
+  /\bhope we can [^.!?]{0,25}\bagain\b/i,
+  /\b(?:talk|speak|chat) (?:again )?soon\b/i,
+  /\bsee you (?:next time|tomorrow|later|soon)\b/i,
+  /\buntil next time\b/i,
+  /\bwe(?:'ll| will| can) (?:talk|speak|chat|meet) (?:again|soon|tomorrow)\b/i,
+  /\bpick up where we left off\b/i,
 ];
 const NEGATED = /\b(?:not|n't|cannot|never|won(?:'|’)?t|no longer)\b/i;
-const pullSentence = (x: string): boolean => PULL_EXCLUSIVE.some((re) => re.test(x)) || (!NEGATED.test(x) && PULL_PRESENCE.some((re) => re.test(x)));
+// A sentence with an honest negative in one clause and a promise in another ("I don't have a family, but I'll remember you") still counts: negation is looked for clause by clause.
+const hitsClause = (x: string, patterns: RegExp[]): boolean => x.split(CLAUSES).some((c) => !NEGATED.test(c) && patterns.some((re) => re.test(c))) || (!NEGATED.test(x) && patterns.some((re) => re.test(x)));
+const pullSentence = (x: string): boolean => PULL_EXCLUSIVE.some((re) => re.test(x)) || hitsClause(x, PULL_PRESENCE);
 
 /** Directions about a medication: stopping, cutting, skipping or changing it. */
 export const claimsMedicalDirective = (reply: string): boolean => sentences(reply).some(medicalSentence);
@@ -46,7 +58,7 @@ const PRESENCE = [
   /\bcome back (?:to me|anytime|any time|whenever|tomorrow|soon)\b/i,
   /\bI(?:'m| am) here for (?:that|this|it)\b/i,
 ];
-const presenceSentence = (x: string): boolean => !NEGATED.test(x) && PRESENCE.some((re) => re.test(x));
+const presenceSentence = (x: string): boolean => hitsClause(x, PRESENCE);
 
 /** The person's last message says thank you, or that this helped. */
 export const isThanks = (text: string): boolean => /\b(?:thank(?:s| you)|thx|appreciate (?:it|this|you)|that helped|this helped|really helpful|that was helpful|i feel better|feel a bit better)\b/i.test(text);
@@ -110,6 +122,22 @@ export const NOT_DIAGNOSIS =
 export function withNotDiagnosis(reply: string, lastUserText: string | undefined): { reply: string; changed: boolean } {
   if (!lastUserText || !ASKS_DIAGNOSIS.test(lastUserText) || present('saysNotTherapy', reply)) return { reply, changed: false };
   return { reply: `${NOT_DIAGNOSIS} ${reply}`.trim(), changed: true };
+}
+
+// ── A question about afterward (found 2026-11-18: "will you think about it afterward?" got "I'll keep that in mind" from a 1B model, 3 runs of 3) ──────────────────────────────────────────────────────
+const ASKS_AFTERWARD = [
+  /\b(?:remember|think about|miss|be here|be there|keep|hold onto)\b[^.!?]{0,40}\b(?:afterward|afterwards|later|tomorrow|next time|when (?:this|we)\b|after (?:this|we|today)|again|always)\b/i,
+  /\bpromise\b[^.!?]{0,30}\b(?:here|remember|always)\b/i,
+];
+const KEEP_IN_MIND = /\bI(?:'ll| will) keep (?:that|this|it) in mind\b/i;
+export const NO_MEMORY =
+  "I'm an AI, so I won't remember this conversation, and I can't think about it afterward; it is yours to keep, and you could share it with someone in your life.";
+/** The person asks whether the coach will remember, miss or be there afterward and the reply never says it will not: that is said first, and an "I'll keep that in mind" goes (it reads as a promise there). */
+export function withNoMemory(reply: string, lastUserText: string | undefined): { reply: string; changed: boolean } {
+  if (!lastUserText || !ASKS_AFTERWARD.some((re) => re.test(lastUserText))) return { reply, changed: false };
+  const kept = sentences(reply).filter((x) => !KEEP_IN_MIND.test(x)).join(' ').trim();
+  if (SAYS_NO_MEMORY.test(kept) || /\b(?:don(?:'|’)?t|do not|can(?:'|’)?t|cannot|won(?:'|’)?t) (?:think about|hold onto|carry)\b/i.test(kept)) return { reply: kept === reply ? reply : kept, changed: kept !== reply };
+  return { reply: `${NO_MEMORY} ${kept}`.trim(), changed: true };
 }
 
 export const MEDICAL_NOTE =

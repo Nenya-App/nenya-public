@@ -38,7 +38,7 @@ import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/abo
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
-import { BOUNDARY_GUARDS, boundaryGuardOn, rewritePresence, withNotDiagnosis } from '../../src/lib/boundaryGuard.ts';
+import { BOUNDARY_GUARDS, boundaryGuardOn, rewritePresence, withNoMemory, withNotDiagnosis } from '../../src/lib/boundaryGuard.ts';
 import { allCards, registerExtraCards } from '../../src/lib/learningCards.ts';
 import { OFFER_MAP, historyHits, offerFor } from '../../src/lib/learningOffer.ts';
 import { askScreen } from '../../src/lib/screenClient.ts';
@@ -1175,6 +1175,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     // Being "here": a promise of presence is replaced, straight away, by a sentence that says how the coach is here (and thanks by a way to keep or share the experience).
     const here = rewritePresence(reply, { lastUserText: lastText, final: turn >= MAX_TURNS });
     if (here.changed) { reply = here.reply; tally('coach.guard.presence.rewritten'); }
+    const mem = withNoMemory(reply, lastText);
+    if (mem.changed) { reply = mem.reply; tally('coach.guard.memory.added'); }
     const diag = withNotDiagnosis(reply, lastText);
     if (diag.changed) { reply = diag.reply; tally('coach.guard.diagnosis.added'); }
     for (const g of BOUNDARY_GUARDS) {
