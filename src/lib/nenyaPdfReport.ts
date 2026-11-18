@@ -9,6 +9,8 @@ import { shapeToPng } from './shapeImages';
 import type { Gateway, GatewayData } from '../app/App';
 import type { BodyMapData } from '../app/components/BodyMapAvatar';
 import { getNoteNames, TonalSystem } from './audio';
+import { drawPathThumb, drawTapestryThumb } from './pdfActivities';
+import { cleanLayers, cleanPoints } from './lensActivities';
 
 import { L } from './vocabulary.ts';
 import {
@@ -352,6 +354,18 @@ export async function downloadNenyaPdfReport(
         doc.text(shapeById(id)!.label, x + 12, y + 28, { align: 'center' });
       });
       y += 33;
+    }
+
+    // The two optional activities, as small pictures beside their words (the words are in the lines below; the coach reads words only).
+    const tapestry = gd.gateway === 'insight' ? cleanLayers(gd.data?.tapestryLayers) : [];
+    const path = gd.gateway === 'movement' ? cleanPoints(gd.data?.movementPath) : [];
+    if (tapestry.length || path.length >= 2) {
+      if (y + 32 > pageHeight - 26) {
+        y = newContentPage();
+      }
+      if (tapestry.length) drawTapestryThumb(doc as any, tapestry, margin + 4, y, 28);
+      if (path.length >= 2) drawPathThumb(doc as any, path, margin + 4, y, 28, Array.isArray(gd.data?.currentQualities) ? gd.data.currentQualities : []);
+      y += 32;
     }
 
     dataLines.forEach((line) => {
