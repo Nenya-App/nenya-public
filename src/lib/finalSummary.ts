@@ -162,3 +162,6 @@ export const SUMMARY_FLAGGED_LEAD = 'I will not write a summary of this conversa
 
 /** What the page shows when a requested summary could not be written (draft wording, for the owner's approval). */
 export const SUMMARY_FAILED_TEXT = 'A summary could not be written this time. The transcript you can download still has everything that was said.';
+
+/** The requested summary as shown and as signed into a transcript: the summary and the site's sentence about the transcript, in one paragraph. */
+export const assembleSummaryText = (summary: string, transcriptLine: string): string => `${summary.trim()} ${transcriptLine.trim()}`;

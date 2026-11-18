@@ -61,7 +61,7 @@ import { E2eeError, MAX_SEALED_HEX, attestationFor, e2eeChat, isE2eeModel, seale
 import { aboutTheWorld, detectDirectQuestion, hasSeveralQuestions, MULTI_QUESTION_NOTE } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
-import { assembleFinal, buildPicked, summaryFormFor, SUMMARY_FLAGGED_LEAD, withoutEffectClaims, withoutReflectionOpening, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_RETRY } from '../../src/lib/finalSummary.ts';
+import { assembleFinal, assembleSummaryText, buildPicked, summaryFormFor, SUMMARY_FLAGGED_LEAD, withoutEffectClaims, withoutReflectionOpening, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_RETRY } from '../../src/lib/finalSummary.ts';
 import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
@@ -258,6 +258,19 @@ function signingKey() {
 const offerProof = (secret: string, history: Msg[], id: string): string =>
   createHmac('sha256', secret).update(`offer|${sha256(JSON.stringify(history.map((m) => ({ role: m.role, content: m.content }))))}|${id}`).digest('hex');
 
+/** Proof that THIS server wrote this summary text for exactly this finished conversation (a keyed hash over all ten messages and the text): nobody can attach a summary to a transcript it was not made for, or put other words in it. */
+const summaryProof = (secret: string, done: Msg[], text: string): string =>
+  createHmac('sha256', secret).update(`summary|${sha256(JSON.stringify(done.map((m) => ({ role: m.role, content: m.content }))))}|${sha256(text)}`).digest('hex');
+
+/** The requested summary a receipt may carry: only text this server made for this conversation, on a finished one (the page sends the text and its proof; anything else is ignored). */
+function provenSummary(secret: string, raw: unknown, done: Msg[]): string | null {
+  const x = raw as { text?: unknown; proof?: unknown } | null;
+  if (!x || typeof x.text !== 'string' || typeof x.proof !== 'string' || done.length !== MAX_TURNS * 2 || x.text.length < 1 || x.text.length > 1500) return null;
+  const want = Buffer.from(summaryProof(secret, done, x.text));
+  const got = Buffer.from(x.proof);
+  return want.length === got.length && timingSafeEqual(want, got) ? x.text : null;
+}
+
 /** Proof that THIS server edited the reply that ends `history` (a sentence added, or `n` sentences removed): a keyed hash over the conversation up to and including the reply. */
 const editProof = (secret: string, history: Msg[], kind: string, n: number): string =>
   createHmac('sha256', secret).update(`edit|${sha256(JSON.stringify(history.map((m) => ({ role: m.role, content: m.content }))))}|${kind}|${n}`).digest('hex');
@@ -309,13 +322,13 @@ interface TranscriptMeta {
 
 // The transcript exactly as it is hashed and signed (version 3). Documented in docs/coach-transcripts.md. The key order
 // matters, because the hash is of JSON.stringify of this object, and the page writes the object out unchanged.
-const buildTranscript = (messages: Msg[], session: Session, context: string, meta: TranscriptMeta, offered: { after: number; title: string }[] = [], edited: SiteEdit[] = []) => ({
+const buildTranscript = (messages: Msg[], session: Session, context: string, meta: TranscriptMeta, offered: { after: number; title: string }[] = [], edited: SiteEdit[] = [], summary: string | null = null) => ({
   v: 3,
   session,
   meta,
   ...(context ? { context } : {}),
   // What the site itself showed besides the messages (greeting, safety notice, closing), rebuilt here from the same public source the page uses.
-  site: siteMessagesFor(messages, MAX_TURNS, answeredIn(messages), context, offered, edited),
+  site: siteMessagesFor(messages, MAX_TURNS, answeredIn(messages), context, offered, edited, summary),
   // Process notes: why the site's check flagged each message it flagged (present only when it flagged any).
   ...(checkNotesFor(messages, context).length ? { checks: checkNotesFor(messages, context) } : {}),
   messages: messages.map((m) => ({ role: m.role, content: m.content })),
@@ -924,7 +937,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       instructions: instructionsFingerprint(),
       ...(termsFacts ? { terms: termsFacts } : {}),
     };
-    const transcript = buildTranscript(done, session, context, meta, provenOffers(secret, (body as { offers?: unknown }).offers, done), provenEdits(secret, (body as { edits?: unknown }).edits, done));
+    const transcript = buildTranscript(done, session, context, meta, provenOffers(secret, (body as { offers?: unknown }).offers, done), provenEdits(secret, (body as { edits?: unknown }).edits, done), provenSummary(secret, (body as { summary?: unknown }).summary, done));
     const hash = sha256(JSON.stringify(transcript));
     const issuedAt = new Date().toISOString();
     const signature = edSign(null, Buffer.from(`nenya-coach-transcript-v3\n${hash}\n${issuedAt}`), k.key).toString('base64');
@@ -979,7 +992,10 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       return json(200, { refused: 'failed' });
     }
     tally('coach.summary.served');
-    return json(200, { summary, transcriptLine: pickTranscriptLine(userTexts), form, ...(form === 'picked' ? { credit: true } : {}) });
+    const transcriptLine = pickTranscriptLine(userTexts);
+    // The text as the page shows it and the signed transcript will carry it (the summary and the site's sentence), with the proof that this server wrote it for this conversation.
+    const text = assembleSummaryText(summary, transcriptLine);
+    return json(200, { summary, transcriptLine, text, proof: summaryProof(secret, done, text), form, ...(form === 'picked' ? { credit: true } : {}) });
   }
 
   const messages = parseMessages(body.messages);
