@@ -156,3 +156,9 @@ export function withoutReflectionOpening(closing: string): string {
   const kept = parts.filter((x) => !REFLECTION_OPENING.test(x));
   return kept.length && kept.length < parts.length ? kept.join(' ') : closing;
 }
+
+/** The one new fixed sentence for a conversation the safety checks flagged (draft wording, for the owner's approval): no model summary is written; the site's existing distress sentence for the category follows it (src/lib/distressText.ts). */
+export const SUMMARY_FLAGGED_LEAD = 'I will not write a summary of this conversation: what you shared matters too much to be reduced to one, and people can hold it better than I can.';
+
+/** What the page shows when a requested summary could not be written (draft wording, for the owner's approval). */
+export const SUMMARY_FAILED_TEXT = 'A summary could not be written this time. The transcript you can download still has everything that was said.';

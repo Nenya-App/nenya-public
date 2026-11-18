@@ -64,3 +64,8 @@ The browser-side encrypted route (`VITE_BOUNDARY_GUARD`'s sealed path, `src/lib/
 ## Still open
 - **Who builds it:** the tray session owns `App.tsx` and the page; the function, the module and the transcript changes fit the tests session. The page step waits for the Terms-first and tray steps (shared `App.tsx`/`CoachPage.tsx` territory).
 - The exact wording of the block's label, the failure sentence and the Terms clause (owner approval).
+
+## Progress
+- **Step 1 built (2026-11-18), function only, off (`COACH_SUMMARY_REQUEST`):** `action: "summary"` in `netlify/functions/coach.mts`. Accepts only a finished conversation (ten messages) with its signed ticket (tampered, altered, early or wrong-session requests get 400); recomputes the safety check turn by turn from the person's messages (a message flagged at any point refuses, with the fixed sentence `SUMMARY_FLAGGED_LEAD` and the site's existing distress sentence; no model call); counts one turn against the daily cap (refused as `cap` when reached); calls the model once or twice (written form, retried once on failed checks) or in the picked form; returns `{ summary, transcriptLine, form, credit? }` or `{ refused: 'flagged' | 'cap' | 'failed' }`. Counts: `coach.summary.requested`, `.served`, `.failed`, `.refused.flagged`, `.refused.cap`. Tests: `tests/summary-request.test.mts`.
+- **Wording to approve:** `SUMMARY_FLAGGED_LEAD` and `SUMMARY_FAILED_TEXT` in `src/lib/finalSummary.ts`.
+- **Not yet:** the signed addendum (step 2), the page (step 3), About answers and Terms wording (step 4), the sealed route (phase 2). One summary per conversation is limited today only by the cap, because the function is stateless; the page keeps the first and offers no second.

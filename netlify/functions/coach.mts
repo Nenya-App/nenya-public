@@ -61,7 +61,7 @@ import { E2eeError, MAX_SEALED_HEX, attestationFor, e2eeChat, isE2eeModel, seale
 import { aboutTheWorld, detectDirectQuestion, hasSeveralQuestions, MULTI_QUESTION_NOTE } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
-import { assembleFinal, buildPicked, summaryFormFor, withoutEffectClaims, withoutReflectionOpening, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_RETRY } from '../../src/lib/finalSummary.ts';
+import { assembleFinal, buildPicked, summaryFormFor, SUMMARY_FLAGGED_LEAD, withoutEffectClaims, withoutReflectionOpening, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_RETRY } from '../../src/lib/finalSummary.ts';
 import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
@@ -743,6 +743,50 @@ async function handleSealed(
   }
 }
 
+// One plain model call for a requested summary (the "Request a summary" step, docs/request-a-summary-scope.md): the same three routes as the coach (Venice, Venice's encrypted models, Workers AI), no persona, no tools, no
+// conversation: only the instruction and the person's messages. Returns the text, or null on any failure (the page then says the summary could not be written).
+async function summaryModelCall(args: { provider: string; apiKey: string; model: string; system: string; messages: Msg[]; timeoutMs: number; tally: (e: string) => void }): Promise<string | null> {
+  const { provider, apiKey, model, system, messages, timeoutMs, tally } = args;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  const chatMessages = [{ role: 'system' as const, content: system }, ...messages];
+  const params = { temperature: 0.5, top_p: 0.9, repetition_penalty: 1.1, max_completion_tokens: 400 };
+  try {
+    let raw = '';
+    let finish: string | undefined;
+    if (provider === 'workers-ai') {
+      const res = await fetch(workersAiUrl(process.env.CF_AI_ACCOUNT_ID ?? '', model)!, { method: 'POST', signal: ctrl.signal, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` }, body: JSON.stringify(workersAiBody(chatMessages, params)) });
+      if (!res.ok) return null;
+      const out = readWorkersAi(await res.json());
+      raw = out.content;
+      finish = out.finish;
+      tally('coach.model.workers-ai');
+    } else if (isE2eeModel(model)) {
+      const out = await e2eeChat({ apiKey, model, messages: chatMessages, params, signal: ctrl.signal, encryptAssistant: true });
+      raw = out.content;
+      finish = out.finishReason;
+    } else {
+      const res = await fetch(VENICE_URL, {
+        method: 'POST',
+        signal: ctrl.signal,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model, messages: chatMessages, ...params, stream: false, venice_parameters: { character_slug: process.env.COACH_CHARACTER_SLUG || DEFAULT_CHARACTER_SLUG, include_venice_system_prompt: process.env.COACH_INCLUDE_VENICE_PROMPT === 'true', enable_web_search: 'off', enable_web_scraping: false, enable_web_citations: false, strip_thinking_response: true } }),
+      });
+      if (!res.ok) return null;
+      const data = (await res.json()) as { choices?: { message?: { content?: string }; finish_reason?: string }[] };
+      raw = data.choices?.[0]?.message?.content ?? '';
+      finish = data.choices?.[0]?.finish_reason;
+    }
+    let text = clean(raw.replace(/<think>[\s\S]*?<\/think>/gi, ''));
+    if (finish === 'length') text = trimToSentence(text);
+    return dropOffBrand(text) || null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | undefined, track: (p: Promise<unknown>) => void): Promise<Response> {
   // A store that cannot be reached means no limits and no counts, never a locked-out visitor.
   const store = (): CounterStore | null => {
@@ -892,6 +936,50 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       transcript,
       receipt: { version: 3, algorithm: 'Ed25519', keyId: k.keyId, publicKey: k.publicKey, hash, issuedAt, signature },
     });
+  }
+
+  if ((body as { action?: unknown }).action === 'summary') {
+    // A requested summary of a FINISHED conversation (COACH_SUMMARY_REQUEST=on; docs/request-a-summary-scope.md). Stateless like the receipt: the conversation and its signed ticket come with the request, and only a
+    // ticket for all five exchanges is accepted. A flagged conversation gets the site's fixed sentence and no model call. The request counts against the daily cap as one turn.
+    if (process.env.COACH_SUMMARY_REQUEST !== 'on') return fail(503, 'off');
+    const done = parseMessages(body.messages, 'assistant');
+    if (!done || done.length !== MAX_TURNS * 2) return fail(400, 'messages');
+    if (verify(secret, body.ticket, done.length / 2, done, session, context) === null) return fail(400, 'ticket');
+    tally('coach.summary.requested');
+    const userTexts = done.filter((m) => m.role === 'user').map((m) => m.content);
+    // The safety check as each turn saw it: the whole conversation up to that message, so a message flagged at any point counts (a soften flag is only seen on the latest message of a turn).
+    let flagged: ReturnType<typeof checkConversation> = null;
+    for (let i = 1; i <= userTexts.length && !flagged; i++) flagged = checkConversation(userTexts.slice(0, i));
+    if (flagged || userTexts.some((t) => looksLikeManipulation(t))) {
+      tally('coach.summary.refused.flagged');
+      return json(200, { refused: 'flagged', text: flagged ? withDistressText(flagged.category, SUMMARY_FLAGGED_LEAD, MAX_ASSISTANT_CHARS, flagged.kind) : SUMMARY_FLAGGED_LEAD });
+    }
+    const st = store();
+    if (st && !(await countTurn(st, capFromEnv(process.env.COACH_DAILY_CAP), true))) {
+      tally('coach.summary.refused.cap');
+      return json(200, { refused: 'cap' });
+    }
+    const scrubbed = userTexts.map((t) => neutralize(scrubPII(t).text));
+    const smodel = coachModel();
+    const form = summaryFormFor(smodel, process.env.COACH_SUMMARY_FORM);
+    let summary: string | null = null;
+    for (let attempt = 0; attempt < 2 && !summary; attempt++) {
+      if (form === 'picked') {
+        const pin = pickMessages(scrubbed);
+        const raw = await summaryModelCall({ provider, apiKey, model: smodel, system: pin.system, messages: pin.messages, timeoutMs: VENICE_TIMEOUT_MS, tally });
+        summary = raw ? buildPicked(parsePicks(raw)) : null;
+      } else {
+        const win = summaryMessages(scrubbed);
+        const raw = await summaryModelCall({ provider, apiKey, model: smodel, system: attempt ? `${win.system}\n\n${SUMMARY_RETRY}` : win.system, messages: win.messages, timeoutMs: VENICE_TIMEOUT_MS, tally });
+        summary = raw && summaryProblems(raw).length === 0 ? raw.trim() : null;
+      }
+    }
+    if (!summary) {
+      tally('coach.summary.failed');
+      return json(200, { refused: 'failed' });
+    }
+    tally('coach.summary.served');
+    return json(200, { summary, transcriptLine: pickTranscriptLine(userTexts), form, ...(form === 'picked' ? { credit: true } : {}) });
   }
 
   const messages = parseMessages(body.messages);
