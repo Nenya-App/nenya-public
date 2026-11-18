@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { ArrowLeft } from 'lucide-react';
@@ -14,11 +15,14 @@ interface Props {
   onRemove: (lens: LensId) => void;
   onReport: () => void;
   onBack: () => void;
+  /** "Forget who I was": make a new random working name for this visit (the pair under the footer mark). It changes nothing a person has added. */
+  onNewName?: () => void;
 }
 
 const STATUS_TEXT = { 'not-opened': 'Not opened', examined: 'Examined, not added', included: 'Added to my report' } as const;
 
-export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack }: Props) {
+export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack, onNewName }: Props) {
+  const [renamed, setRenamed] = useState(false);
   const shape = reportShape(state);
   return (
     <div className="size-full flex flex-col overflow-auto scroll-container">
@@ -56,6 +60,13 @@ export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack
             })}
           </ul>
           {shape.line && <p className="text-sm text-center text-muted-foreground">{shape.line}</p>}
+          {onNewName && (
+            <div className="text-center">
+              <Button variant="ghost" size="sm" className="min-h-11" onClick={() => { onNewName(); setRenamed(true); }}>Forget who I was</Button>
+              <p className="text-xs text-muted-foreground">Makes a new random working name for this visit. Nothing you added changes.</p>
+              <p role="status" aria-live="polite" className="text-xs">{renamed ? 'A new working name was made.' : ''}</p>
+            </div>
+          )}
           {shape.included.length > 0 && (
             <div className="flex justify-center pt-2"><Button size="lg" onClick={onReport}>See my report</Button></div>
           )}

@@ -18,6 +18,7 @@ import { MoreDetail } from '../MoreDetail';
 import { PutThisDown, FewerNote, AddToReport, LensCardNav } from '../LensCardParts';
 import { lensTrayOn } from '../../../lib/lensState';
 import { TouchOrb } from '../TouchOrb';
+import { TouchVibrate } from '../TouchVibrate';
 import type { OrbShape } from '../../../lib/touchOrb';
 import { simpleGatewaysOn, STEP_NAMES, TOUCH_COPY } from '../../../lib/gatewayCopy';
 
@@ -270,6 +271,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <MoreDetail simple={simple && !tray} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
                   {trayOn('present', 'sliders') && (
                     <>
+                      <TouchVibrate values={{ texture: sliderValue(currentTexture), temperature: sliderValue(currentTemperature), pressure: sliderValue(currentPressure), weight: sliderValue(currentWeight), sharpness: sliderValue(currentSharpness) }} />
 
                   <SnappingSlider
                     value={currentTexture}
@@ -365,6 +367,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <MoreDetail simple={simple && !tray} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
                   {trayOn('wish', 'sliders') && (
                     <>
+                      <TouchVibrate values={{ texture: sliderValue(potentialTexture), temperature: sliderValue(potentialTemperature), pressure: sliderValue(potentialPressure), weight: sliderValue(potentialWeight), sharpness: sliderValue(potentialSharpness) }} />
 
                   <SnappingSlider
                     value={potentialTexture}

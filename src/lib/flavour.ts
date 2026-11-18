@@ -19,6 +19,9 @@ export const BASES = [
 ] as const;
 export type BasisId = (typeof BASES)[number]['id'];
 
+/** A few prompts for "need an idea?": plain things to think of, not a quiz. No food or hunger language. */
+export const IDEAS = ['Think of a season or a place. What flavor would it be?', 'Think of a time you felt at ease. What was in the air, and what lingered after?', 'Is your life more like something sharp, something soft, something dark, or something light?'] as const;
+
 export const NOTES = ['smoky', 'citrus', 'earthy', 'floral', 'toasted', 'herbal'] as const;
 export const MOUTH = ['creamy', 'dry', 'juicy', 'thin', 'syrupy', 'tingly'] as const;
 export const LINGERS = ['a warmth', 'a sweetness', 'a bitterness', 'a coolness', 'smoke', 'nothing much'] as const;

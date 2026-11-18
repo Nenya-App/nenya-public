@@ -686,7 +686,7 @@ export default function App() {
 
           {currentScreen === 'home' && lensTrayOn() && (
             <Suspense fallback={null}>
-              <LensTrayPage state={trayState} onOpen={handleOpenLens} onRemove={handleRemoveLens} onReport={() => navigateTo('gateway-review')} onBack={() => navigateBack('welcome')} />
+              <LensTrayPage state={trayState} onOpen={handleOpenLens} onRemove={handleRemoveLens} onReport={() => navigateTo('gateway-review')} onBack={() => navigateBack('welcome')} onNewName={() => setShadow(newShadow())} />
             </Suspense>
           )}
 

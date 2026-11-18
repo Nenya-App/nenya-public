@@ -22,3 +22,10 @@ const comp = readFileSync('src/app/components/EssenceFlavour.tsx', 'utf8'), page
 ok('five cards: start, now, notes, wish, add; each with Put this down in the header and a words twin that updates politely', ['start', 'now', 'notes', 'wish', 'add'].every((c) => new RegExp(`card === '${c}'`).test(comp)) && (comp.match(/role="status" aria-live="polite"/g) ?? []).length >= 4 && /\{tray \? \(\s*\/\/ The tray's Essence/.test(page) || /EssenceFlavour initial=/.test(page));
 ok('the soft limit of three on notes warns and never blocks; no food or hunger words', /needsFewerWarning\(notes\.length\)/.test(comp) && /FewerWarning/.test(comp) && !/\b(eat|meal|diet|hungry|hunger)\b/i.test(comp.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')));
 ok('the tray shows the new Essence in place of the old taste and scent page; the old flow is untouched when off', /EssenceFlavour initial=\{initialData\}/.test(page) && /\) : step === 'instructions' \? \(/.test(page));
+
+// The starting point sets the order of the two flavors, and Need an idea? offers a few prompts.
+{
+  const { IDEAS } = await import('../src/lib/flavour.ts');
+  ok('a mood begins with now; a memory or a small thing to try begins with the flavor you want', /basis === 'mood' \? 'now' : 'wish'/.test(comp) && /\['start', 'now', 'notes', 'wish', 'add'\]/.test(comp) && /\['start', 'wish', 'notes', 'now', 'add'\]/.test(comp));
+  ok('Need an idea? gives a few plain prompts with no food or hunger words', IDEAS.length === 3 && /Need an idea\?/.test(comp) && !IDEAS.some((i) => /\b(eat|meal|diet|hungry|hunger)\b/i.test(i)));
+}

@@ -8,10 +8,10 @@ export const summaryRequestOn = (): boolean => import.meta.env?.VITE_SUMMARY_REQ
 /** The words on the page: the block label, the button, the loading line, the note and the cap sentence. Approved by the owner 2026-11-18 ("approve all"). */
 export const SUMMARY_UI = {
   button: 'Request a summary',
-  buttonNote: 'Optional. A summary is the AI’s reading of what you wrote, not a record. The signed transcript is the exact record.',
+  buttonNote: 'Optional. The AI reads back what you wrote. It is not a record. Your signed transcript is the exact record.',
   loading: 'Writing a summary…',
   label: 'Summary of this conversation, written by the AI',
-  note: 'This is the AI’s reading of what you wrote, not a record of it. The signed transcript is the exact record, and it includes this summary only if you ask for it there.',
+  note: 'This is how the AI read what you wrote. It is not a record. Your signed transcript is the exact record, and it holds this summary only if you ask for it there.',
   cap: 'The free summaries for today are used up. The transcript you can download still has everything that was said.',
   error: 'A summary could not be asked for just now. The transcript you can download still has everything that was said.',
 } as const;

@@ -5,7 +5,7 @@ import { WordPicker } from './WordPicker';
 import { FewerNote, FewerWarning, MoreDescriptions, AddToReport, PutThisDown } from './LensCardParts';
 import { needsFewerWarning } from '../../lib/lensState';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { BASES, DIALS, LINGERS, MOUTH, NOTES, cleanV2, dialSays, dialsLine, differenceLine, emptyDials, figurePoints, randomDials, tastingNote, type BasisId, type Dials, type EssenceV2 } from '../../lib/flavour';
+import { BASES, DIALS, IDEAS, LINGERS, MOUTH, NOTES, cleanV2, dialSays, dialsLine, differenceLine, emptyDials, figurePoints, randomDials, tastingNote, type BasisId, type Dials, type EssenceV2 } from '../../lib/flavour';
 
 // Essence in the tray (docs/wireframes/lens/essence.html; docs/lens-audit-essence.md): five short cards, not one long page. Where to start, the flavor of your life now (five dials and a shape
 // drawn from them), what else is in it and what lingers (notes, feel in the mouth, a tasting note), the flavor you want (two shapes, now dashed and wish solid, and how they differ), and add or put down.
@@ -47,7 +47,12 @@ export function EssenceFlavour({ initial, onAdd, onPutDown, added }: { initial: 
   const [small, setSmall] = useState(init?.smallThing ?? '');
   const [extra, setExtra] = useState(init?.extra ?? '');
   const [imagine, setImagine] = useState(false);
-  const composed = tastingNote({ now, notes, mouth, lingers });
+  // The starting point sets the order of the two flavors (owner, 2026-11-17): a mood begins with now; a memory or a small thing to try begins with the flavor you want. The notes describe the first one.
+  const first: 'now' | 'wish' = basis === 'mood' ? 'now' : 'wish';
+  const order: Card[] = first === 'now' ? ['start', 'now', 'notes', 'wish', 'add'] : ['start', 'wish', 'notes', 'now', 'add'];
+  const at = order.indexOf(card);
+  const go = (d: 1 | -1) => setCard(order[Math.max(0, Math.min(order.length - 1, at + d))]);
+  const composed = tastingNote({ now: first === 'now' ? now : wish, notes, mouth, lingers });
   const shownNote = note ?? composed;
   const wishLine = dialsLine(wish);
   const basisInfo = BASES.find((b) => b.id === basis)!;
@@ -56,13 +61,13 @@ export function EssenceFlavour({ initial, onAdd, onPutDown, added }: { initial: 
     if (needsFewerWarning(notes.length)) return setPending(n);
     setNotes([...notes, n]);
   };
-  const nav = (back: Card | null, next: Card, nextLabel = 'Next') => (
+  const nav = (nextLabel = 'Next') => (
     <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-      {back ? <Button variant="ghost" onClick={() => setCard(back)} className="gap-2"><ArrowLeft className="size-4" /> Back</Button> : <span />}
-      <Button onClick={() => setCard(next)} className="gap-2">{nextLabel}<ArrowRight className="size-4" /></Button>
+      <Button variant="ghost" onClick={() => go(-1)} className="gap-2"><ArrowLeft className="size-4" /> Back</Button>
+      <Button onClick={() => go(1)} className="gap-2">{nextLabel}<ArrowRight className="size-4" /></Button>
     </div>
   );
-  const index = { start: 0, now: 1, notes: 2, wish: 3, add: 4 }[card];
+  const index = at;
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-5 px-4 py-6">
@@ -81,7 +86,7 @@ export function EssenceFlavour({ initial, onAdd, onPutDown, added }: { initial: 
               </label>
             ))}
           </fieldset>
-          <div className="flex flex-wrap justify-between gap-3"><Button variant="outline" onClick={onPutDown}>Skip this lens for now</Button><Button onClick={() => setCard('now')} className="gap-2">Begin<ArrowRight className="size-4" /></Button></div>
+          <div className="flex flex-wrap justify-between gap-3"><Button variant="outline" onClick={onPutDown}>Skip this lens for now</Button><Button onClick={() => go(1)} className="gap-2">Begin<ArrowRight className="size-4" /></Button></div>
         </section>
       )}
 
@@ -91,14 +96,15 @@ export function EssenceFlavour({ initial, onAdd, onPutDown, added }: { initial: 
           <p className="text-sm">{basisInfo.ask}</p>
           <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={imagine} onChange={(e) => setImagine(e.target.checked)} /> I can&rsquo;t taste or smell right now: imagine instead</label>
           {imagine && <p className="text-sm text-muted-foreground">That works too. Nothing here needs to be tasted.</p>}
+          <details className="rounded-md border border-border p-3 text-sm"><summary className="flex min-h-11 cursor-pointer items-center">Need an idea?</summary><ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">{IDEAS.map((i) => <li key={i}>{i}</li>)}</ul></details>
           <Figure now={now} showNow />
           <div className="grid gap-3 sm:grid-cols-2">{DIALS.map((k) => <DialRow key={k} name={k} value={now[k]} onChange={(v) => setNow({ ...now, [k]: v })} />)}</div>
           <p className="text-sm">Right now: <span role="status" aria-live="polite">{dialsLine(now)}</span></p>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Button variant="outline" onClick={() => setNow(randomDials())}>Surprise me</Button>
-            <span className="flex gap-2"><Button variant="ghost" onClick={() => setCard('notes')}>Skip</Button><Button onClick={() => setCard('notes')} className="gap-2">Next<ArrowRight className="size-4" /></Button></span>
+            <span className="flex gap-2"><Button variant="ghost" onClick={() => go(1)}>Skip</Button><Button onClick={() => go(1)} className="gap-2">Next<ArrowRight className="size-4" /></Button></span>
           </div>
-          <Button variant="ghost" onClick={() => setCard('start')} className="gap-2"><ArrowLeft className="size-4" /> Back</Button>
+          <Button variant="ghost" onClick={() => go(-1)} className="gap-2"><ArrowLeft className="size-4" /> Back</Button>
         </section>
       )}
 
@@ -122,7 +128,7 @@ export function EssenceFlavour({ initial, onAdd, onPutDown, added }: { initial: 
             <div className="flex flex-wrap gap-3"><label className="flex min-h-11 items-center gap-2 text-sm"><input type="radio" name="ess-ling" checked={lingers === null} onChange={() => setLingers(null)} /> Skip</label>
               {LINGERS.map((m) => <label key={m} className="flex min-h-11 items-center gap-2 text-sm"><input type="radio" name="ess-ling" checked={lingers === m} onChange={() => setLingers(m)} /> {m}</label>)}</div></fieldset>
           <p className="text-sm">Your tasting note so far: <span role="status" aria-live="polite">{composed || 'nothing yet'}</span></p>
-          {nav('now', 'wish')}
+          {nav()}
         </section>
       )}
 
@@ -137,9 +143,9 @@ export function EssenceFlavour({ initial, onAdd, onPutDown, added }: { initial: 
           <table className="sr-only"><caption>The ten dial values</caption><thead><tr><th>Taste</th><th>Now</th><th>Want</th></tr></thead><tbody>{DIALS.map((k) => <tr key={k}><td>{k}</td><td>{now[k]} of 4</td><td>{wish[k]} of 4</td></tr>)}</tbody></table>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Button variant="outline" onClick={() => setWish({ ...now })}>Start from my now</Button>
-            <span className="flex gap-2"><Button variant="ghost" onClick={() => setCard('add')}>Skip</Button><Button onClick={() => setCard('add')} className="gap-2">Next<ArrowRight className="size-4" /></Button></span>
+            <span className="flex gap-2"><Button variant="ghost" onClick={() => go(1)}>Skip</Button><Button onClick={() => go(1)} className="gap-2">Next<ArrowRight className="size-4" /></Button></span>
           </div>
-          <Button variant="ghost" onClick={() => setCard('notes')} className="gap-2"><ArrowLeft className="size-4" /> Back</Button>
+          <Button variant="ghost" onClick={() => go(-1)} className="gap-2"><ArrowLeft className="size-4" /> Back</Button>
         </section>
       )}
 
@@ -154,7 +160,7 @@ export function EssenceFlavour({ initial, onAdd, onPutDown, added }: { initial: 
           <MoreDescriptions><div className="space-y-1 text-sm"><label htmlFor="ess-extra" className="block">Anything to change or add? (optional)</label><Textarea id="ess-extra" value={extra} onChange={(e) => setExtra(e.target.value)} className="min-h-20 resize-none text-sm" /></div></MoreDescriptions>
           <AddToReport name="Essence" added={added} onPutDown={onPutDown} onAdd={() => onAdd({ v: 2, basis, now, wish, notes, mouth, lingers, tastingNote: shownNote, smallThing: small.trim(), extra: extra.trim() })} />
           <p className="text-xs text-muted-foreground">If you put it down without adding, your report says: &ldquo;Examined, not included: Essence.&rdquo; Anything you chose stays here for the visit and is never saved unless you add it.</p>
-          <Button variant="ghost" onClick={() => setCard('wish')} className="gap-2"><ArrowLeft className="size-4" /> Back</Button>
+          <Button variant="ghost" onClick={() => go(-1)} className="gap-2"><ArrowLeft className="size-4" /> Back</Button>
         </section>
       )}
       <div className="sr-only" aria-hidden="true"><PutThisDown onClick={onPutDown} /></div>

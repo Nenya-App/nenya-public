@@ -14,7 +14,7 @@ export const PLAIN_ENGLISH: PlainItem[] = [
   { heading: 'What stays with you', from: 'The short version; Section 16',
     text: 'What you enter in the reflection tools (colors, melodies, drawings, writing) stays in your browser and is gone when you close the tab, unless you choose “Save and return later”: then it is kept on your own device, locked with your passcode, for at most 24 hours. A PDF report is made on your own device.' },
   { heading: 'What we do not do', from: 'The short version; Section 16',
-    text: 'No accounts, no advertising, no tracking cookies, nothing that follows you around the internet.' },
+    text: 'No accounts. No advertising. No tracking cookies. Nothing follows you around the internet.' },
   { heading: 'What we do see', from: 'Section 13',
     text: 'Our web host keeps ordinary connection logs, as any website’s host does, and gives us visit totals. We keep our own daily totals too: numbers only, nothing about who. They start only after you agree, and not at all if your browser sends the Global Privacy Control signal.' },
   { heading: 'What leaves your device', from: 'The short version; Sections 14, 15 and 16',

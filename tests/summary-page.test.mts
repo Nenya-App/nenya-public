@@ -19,7 +19,7 @@ ok('a flagged conversation shows the site\'s own text, as given', fl.kind === 'f
 ok('a cap shows a plain sentence and a failure shows the site\'s failure text', readSummaryAnswer(200, { refused: 'cap' }).kind === 'cap' && (readSummaryAnswer(200, { refused: 'failed' }) as any).text === SUMMARY_FAILED_TEXT);
 ok('a switched-off server (503) means show nothing', readSummaryAnswer(503, { error: 'off' }).kind === 'off');
 ok('anything unexpected is a plain error sentence, never a half-shown summary', ['{}', 'null', '"x"'].every((x) => readSummaryAnswer(200, JSON.parse(x)).kind === 'error') && readSummaryAnswer(400, { error: 'bad' }).kind === 'error' && readSummaryAnswer(200, { summary: 's', text: 't', proof: 'short' }).kind === 'error' && readSummaryAnswer(200, { summary: '', text: 't', proof }).kind === 'error');
-ok('the words say what a summary is and is not', /reading of what you wrote, not a record/.test(SUMMARY_UI.note) && /exact record/.test(SUMMARY_UI.note) && /Summary of this conversation, written by the AI/.test(SUMMARY_UI.label));
+ok('the words say what a summary is and is not', /how the AI read what you wrote\. It is not a record/.test(SUMMARY_UI.note) && /exact record/.test(SUMMARY_UI.note) && /Summary of this conversation, written by the AI/.test(SUMMARY_UI.label));
 
 const comp = readFileSync('src/coach/SummaryRequest.tsx', 'utf8');
 const demo = readFileSync('src/coach/CoachDemo.tsx', 'utf8');

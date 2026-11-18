@@ -66,3 +66,12 @@ export function orbStyle(v: OrbValues, pictureUrl: string | null, shape: OrbShap
     shadow: { transform: `scaleX(${(0.7 + l.weight * 0.15).toFixed(2)})`, opacity: String((0.15 + l.weight * 0.15).toFixed(2)) },
   };
 }
+
+/** The optional vibration (the wireframe's "Let me feel it"): only where the device can vibrate, off until chosen, never the only way the surface is told. Pressure sets the strength, weight the
+ *  length, texture the pattern (smooth is one long soft pulse, rough is quick short ones). Under reduced motion nothing vibrates. Returns milliseconds on and off, as navigator.vibrate takes them. */
+export function vibrationPattern(v: OrbValues): { pattern: number[]; says: string } {
+  const l = orbLevels(v), strength = 20 + l.pressure * 25, len = 60 + l.weight * 60;
+  return l.texture > 2
+    ? { pattern: [strength, 40, strength, 40, strength, 40, strength], says: 'Quick short pulses (rough).' }
+    : { pattern: [len * 2], says: 'One long soft pulse (smooth).' };
+}

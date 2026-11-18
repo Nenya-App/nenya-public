@@ -20,3 +20,15 @@ ok('the words say only what was set, and say so when nothing was', orbWords(none
 const comp = readFileSync('src/app/components/TouchOrb.tsx', 'utf8'), page = readFileSync('src/app/components/pages/TouchGatewayPage.tsx', 'utf8');
 ok('the display has a text twin that updates politely, is a labelled image, and the change is instant under reduced motion', /role="status" aria-live="polite"/.test(comp) && /role="img"/.test(comp) && /motion-safe:transition/.test(comp) && !/[^-]transition-all|\btransition duration/.test(comp.replace(/motion-safe:transition[^"]*/g, '')));
 ok('Touch shows it on both state cards in tray mode, from that card\'s sliders, with a sphere or flat circle choice', (page.match(/<TouchOrb /g) ?? []).length === 2 && /\{tray && \(trayOn\('present', 'surface'\) \|\| trayOn\('present', 'sliders'\)\)/.test(page) && /sliderValue\(currentTexture\)/.test(page) && /sliderValue\(potentialSharpness\)/.test(page) && /a flat circle/.test(page) && /a sphere/.test(page));
+
+// The optional vibration and "Forget who I was".
+{
+  const { vibrationPattern } = await import('../src/lib/touchOrb.ts');
+  const smooth = vibrationPattern({ texture: 100, temperature: null, pressure: 0, weight: 100, sharpness: null }), rough = vibrationPattern({ texture: 0, temperature: null, pressure: 100, weight: 0, sharpness: null });
+  ok('a smooth surface is one long soft pulse; a rough one is quick short pulses, harder with more pressure', smooth.pattern.length === 1 && smooth.pattern[0] === 600 && rough.pattern.length === 7 && rough.pattern[0] === 120 && /smooth/.test(smooth.says) && /rough/.test(rough.says));
+  const vib = readFileSync('src/app/components/TouchVibrate.tsx', 'utf8');
+  ok('the vibration shows only where the device can vibrate, is off until chosen, says the same in words, and does nothing under reduced motion', /typeof navigator\.vibrate === 'function'/.test(vib) && /if \(!can\) return null/.test(vib) && /useState\(false\)/.test(vib) && /Switch the vibration on first/.test(vib) && /prefers-reduced-motion: reduce/.test(vib) && /role="status" aria-live="polite"/.test(vib) && /min-h-11/.test(vib));
+  ok('Touch carries it on the sliders card of both states', (page.match(/<TouchVibrate /g) ?? []).length === 2);
+  const tray = readFileSync('src/app/components/pages/LensTrayPage.tsx', 'utf8'), appSrc = readFileSync('src/app/App.tsx', 'utf8');
+  ok('the tray has Forget who I was: a new random working name for the visit, announced, changing nothing added', /Forget who I was/.test(tray) && /aria-live="polite"/.test(tray) && /onNewName=\{\(\) => setShadow\(newShadow\(\)\)\}/.test(appSrc));
+}

@@ -18,7 +18,7 @@ ok('the decline statement is the one the Terms\' own wording supports', /do not 
 ok('age: 13 and the under-18 coach consent are in the Terms', /13/.test(all) && /aged 13 and older/.test(terms) && /under 18/.test(terms) && /under 18/.test(all));
 ok('crisis lines: 988 and findahelpline.com are in the Terms', /988/.test(all) && /988/.test(terms) && /findahelpline\.com/.test(all) && /findahelpline\.com/.test(terms));
 ok('the 24-hour save is in the Terms', /24 hours/.test(all) && /at most 24 hours/.test(terms));
-ok('no accounts, no advertising, no tracking cookies is in the Terms', /No accounts, no advertising, no tracking cookies/.test(all) && /No accounts, no advertising, no tracking cookies/.test(terms));
+ok('no accounts, no advertising, no tracking cookies is in the Terms', /No accounts\. No advertising\. No tracking cookies/.test(all) && /No accounts, no advertising, no tracking cookies/.test(terms));
 ok('daily totals start after agreement and not with Global Privacy Control, as the Terms say', /Global Privacy Control/.test(all) && /only after you agree to these terms, and not at all if your browser sends the Global Privacy Control/.test(terms));
 ok('the coach: Venice AI, not stored by us, United States only, as Section 15 says', /Venice AI/.test(all) && /We do not store your messages/.test(terms) && /United States/.test(all) && /open only to connections our host places in the United States/.test(terms));
 ok('what leaves the device matches the short version (report, The Color API, coach, signed note)', /Color API/.test(all) && /signed note/.test(all) && /the signed note when you agree/.test(terms));
