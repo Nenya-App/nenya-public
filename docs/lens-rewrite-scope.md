@@ -105,3 +105,6 @@ Camera cliché (always show the beam and the medium, not only glass); the word i
 
 ### Step 2, Sight built (2026-11-18), behind `VITE_LENS_TRAY`
 In tray mode Sight hides "Gateway n of m", opens with the shared line, keeps the two Intensity sliders up front and tucks the light-quality words under "More descriptions" with the soft limit of three (warning, never a block), reopens with what was added (Edit), and ends with Add this to my report / Update my report and Put this down. Shared pieces live in `src/app/components/LensCardParts.tsx` for the other lenses. Not yet: Sight's separate palette card and "Add Sight to your report?" summary card from the wireframe (the page's own Present/Wish steps and palette panel remain). Next: Sound.
+
+### Step 2, Sound built (2026-11-18), behind `VITE_LENS_TRAY`
+Same treatment as Sight: no "Gateway n of m", the opening line, Pitch and Volume up front on each card, timbre words, rhythm words and the sound description under "More descriptions" with the soft limit of three, Edit reopens with the saved melody, words and sliders, and Add this to my report / Put this down at the end. In tray mode Sound offers to bring its melody's colors to Sight whenever Sight has not been added. Next: Touch.

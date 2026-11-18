@@ -33,6 +33,8 @@ import {
 } from '../../../lib/audio';
 
 import { WordPicker } from '../WordPicker';
+import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { PhraseMelody, type Active } from '../PhraseMelody';
 import { ChordPrototype } from '../ChordPrototype';
 import { chordsOn } from '../../../lib/chords';
@@ -49,6 +51,8 @@ interface SoundGatewayPageProps {
   onUpdateBodyMap: (data: BodyMapData) => void;
   /** Whether the Sight gateway is still to come in this session (so the melody's colors can be brought to it). */
   sightComesLater?: boolean;
+  /** Tray mode: what was added before, so Edit opens with it. */
+  initialData?: any;
 }
 
 
@@ -161,7 +165,11 @@ function ColorSwatch({ hex, label, muted }: { hex: string; label: string; muted:
   );
 }
 
-export default function SoundGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap, sightComesLater = true }: SoundGatewayPageProps) {
+export default function SoundGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap, sightComesLater = true, initialData }: SoundGatewayPageProps) {
+  const tray = lensTrayOn();
+  const init = tray && initialData && Array.isArray(initialData.melody) ? initialData : null;
+  // The soft limit of three words in one list (tray mode): the fourth waits for a yes.
+  const [pendingWord, setPendingWord] = useState<{ value: string; list: string[]; setter: (v: string[]) => void; key: string } | null>(null);
   const hasValidColors = !!userColors?.color1 && !!userColors?.color2 && isValidHex(userColors.color1) && isValidHex(userColors.color2);
   const [showBodyMap, setShowBodyMap] = useState(false);
 
@@ -180,7 +188,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   }, [step]);
 
   // Tonal system state
-  const [tonalSystem, setTonalSystem] = useState<TonalSystem>('western');
+  const [tonalSystem, setTonalSystem] = useState<TonalSystem>(init?.tonalSystem ?? 'western');
   const scale = getScale(tonalSystem);
   const noteNames = getNoteNames(tonalSystem);
 
@@ -192,7 +200,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
     () => (hasValidColors && melodyConnected ? colorsToMelody(userColors!.color1!, userColors!.color2!, scale.length) : Array(6).fill(null)),
     [hasValidColors, melodyConnected, userColors, scale.length]
   );
-  const [melody, setMelody] = useState<(number | null)[]>(seedMelody);
+  const [melody, setMelody] = useState<(number | null)[]>(init?.melody ?? seedMelody);
   useEffect(() => {
     if (melodyConnected && hasValidColors) {
       setMelody(colorsToMelody(userColors!.color1!, userColors!.color2!, scale.length));
@@ -332,22 +340,22 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
   };
 
   // Current state
-  const [currentPitch, setCurrentPitch] = useState(() => unsetSlider());
-  const [currentVolume, setCurrentVolume] = useState(() => unsetSlider());
-  const [currentTimbres, setCurrentTimbres] = useState<string[]>([]);
-  const [currentTimbreOther, setCurrentTimbreOther] = useState('');
-  const [currentRhythms, setCurrentRhythms] = useState<string[]>([]);
-  const [currentRhythmOther, setCurrentRhythmOther] = useState('');
-  const [currentDescription, setCurrentDescription] = useState('');
+  const [currentPitch, setCurrentPitch] = useState(() => (typeof init?.currentPitch === 'number' ? [init.currentPitch] : unsetSlider()));
+  const [currentVolume, setCurrentVolume] = useState(() => (typeof init?.currentVolume === 'number' ? [init.currentVolume] : unsetSlider()));
+  const [currentTimbres, setCurrentTimbres] = useState<string[]>(init?.currentTimbres ?? []);
+  const [currentTimbreOther, setCurrentTimbreOther] = useState(init?.currentTimbreOther ?? '');
+  const [currentRhythms, setCurrentRhythms] = useState<string[]>(init?.currentRhythms ?? []);
+  const [currentRhythmOther, setCurrentRhythmOther] = useState(init?.currentRhythmOther ?? '');
+  const [currentDescription, setCurrentDescription] = useState(init?.currentDescription ?? '');
 
   // Potential state
-  const [potentialPitch, setPotentialPitch] = useState(() => unsetSlider());
-  const [potentialVolume, setPotentialVolume] = useState(() => unsetSlider());
-  const [potentialTimbres, setPotentialTimbres] = useState<string[]>([]);
-  const [potentialTimbreOther, setPotentialTimbreOther] = useState('');
-  const [potentialRhythms, setPotentialRhythms] = useState<string[]>([]);
-  const [potentialRhythmOther, setPotentialRhythmOther] = useState('');
-  const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialPitch, setPotentialPitch] = useState(() => (typeof init?.potentialPitch === 'number' ? [init.potentialPitch] : unsetSlider()));
+  const [potentialVolume, setPotentialVolume] = useState(() => (typeof init?.potentialVolume === 'number' ? [init.potentialVolume] : unsetSlider()));
+  const [potentialTimbres, setPotentialTimbres] = useState<string[]>(init?.potentialTimbres ?? []);
+  const [potentialTimbreOther, setPotentialTimbreOther] = useState(init?.potentialTimbreOther ?? '');
+  const [potentialRhythms, setPotentialRhythms] = useState<string[]>(init?.potentialRhythms ?? []);
+  const [potentialRhythmOther, setPotentialRhythmOther] = useState(init?.potentialRhythmOther ?? '');
+  const [potentialDescription, setPotentialDescription] = useState(init?.potentialDescription ?? '');
 
   const handleCheckboxChange = (
     value: string,
@@ -355,6 +363,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
     currentValues: string[],
     setter: (values: string[]) => void
   ) => {
+    if (checked && tray && needsFewerWarning(currentValues.length)) { setPendingWord({ value, list: currentValues, setter, key: '' }); return; }
     if (checked) {
       setter([...currentValues, value]);
     } else {
@@ -414,7 +423,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 Sound · Audition
                 <GatewaySubtitleLink href="https://bio.libretexts.org/Bookshelves/Human_Biology/Human_Anatomy_Lab/13:_The_Somatic_Nervous_System_(Special_Senses)/13.03:_Audition_(Hearing)" />
               </h1>
-              <GatewayProgress index={currentIndex} total={totalGateways} />
+              {!tray && <GatewayProgress index={currentIndex} total={totalGateways} />}
             </div>
           </div>
 
@@ -434,6 +443,7 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">{INSTRUCTION_CARDS[instructionCardIndex].detail}</p>
+                  {tray && instructionCardIndex === 0 && <FewerNote />}
                   <div className="flex items-center justify-between pt-4">
                     <div className="flex items-center gap-3">
                       <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
@@ -740,6 +750,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                   <SnappingSlider value={currentPitch} onValueChange={setCurrentPitch} label="Pitch" leftLabel="Deep Bass" rightLabel="High Treble" max={100} />
                   <SnappingSlider value={currentVolume} onValueChange={setCurrentVolume} label="Volume" leftLabel="Whisper" rightLabel="Roar" max={100} />
 
+                  {tray ? (
+                    <MoreDescriptions>
                   <div className="space-y-2">
                     <Label className="text-sm">Timbre (optional)</Label>
                     <WordPicker category="timbre" idPrefix="currentTimbres" selected={currentTimbres} onToggle={(t) => handleCheckboxChange(t, !currentTimbres.includes(t), currentTimbres, setCurrentTimbres)} other={{ value: currentTimbreOther, onChange: setCurrentTimbreOther, placeholder: "Describe…" }} />
@@ -754,6 +766,28 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                     <Label className="text-sm">Describe the sounds (optional)</Label>
                     <Textarea placeholder="What song or sounds come to mind?" value={currentDescription} onChange={(e) => setCurrentDescription(e.target.value)} className="min-h-20 resize-none text-sm" />
                   </div>
+                      {pendingWord && [currentTimbres,currentRhythms].includes(pendingWord.list) && (
+                        <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />
+                      )}
+                    </MoreDescriptions>
+                  ) : (
+                    <>
+                  <div className="space-y-2">
+                    <Label className="text-sm">Timbre (optional)</Label>
+                    <WordPicker category="timbre" idPrefix="currentTimbres" selected={currentTimbres} onToggle={(t) => handleCheckboxChange(t, !currentTimbres.includes(t), currentTimbres, setCurrentTimbres)} other={{ value: currentTimbreOther, onChange: setCurrentTimbreOther, placeholder: "Describe…" }} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Rhythm (optional)</Label>
+                    <WordPicker category="rhythm" idPrefix="currentRhythms" selected={currentRhythms} onToggle={(t) => handleCheckboxChange(t, !currentRhythms.includes(t), currentRhythms, setCurrentRhythms)} other={{ value: currentRhythmOther, onChange: setCurrentRhythmOther, placeholder: "Describe…" }} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Describe the sounds (optional)</Label>
+                    <Textarea placeholder="What song or sounds come to mind?" value={currentDescription} onChange={(e) => setCurrentDescription(e.target.value)} className="min-h-20 resize-none text-sm" />
+                  </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
@@ -775,6 +809,8 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                   <SnappingSlider value={potentialPitch} onValueChange={setPotentialPitch} label="Pitch" leftLabel="Deep Bass" rightLabel="High Treble" max={100} />
                   <SnappingSlider value={potentialVolume} onValueChange={setPotentialVolume} label="Volume" leftLabel="Whisper" rightLabel="Roar" max={100} />
 
+                  {tray ? (
+                    <MoreDescriptions>
                   <div className="space-y-2">
                     <Label className="text-sm">Timbre (optional)</Label>
                     <WordPicker category="timbre" idPrefix="potentialTimbres" selected={potentialTimbres} onToggle={(t) => handleCheckboxChange(t, !potentialTimbres.includes(t), potentialTimbres, setPotentialTimbres)} other={{ value: potentialTimbreOther, onChange: setPotentialTimbreOther, placeholder: "Describe…" }} />
@@ -789,13 +825,36 @@ export default function SoundGatewayPage({ onComplete, onBack, currentIndex, tot
                     <Label className="text-sm">Describe the sounds (optional)</Label>
                     <Textarea placeholder="What sounds would you like to move toward?" value={potentialDescription} onChange={(e) => setPotentialDescription(e.target.value)} className="min-h-20 resize-none text-sm" />
                   </div>
+                      {pendingWord && [potentialTimbres,potentialRhythms].includes(pendingWord.list) && (
+                        <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />
+                      )}
+                    </MoreDescriptions>
+                  ) : (
+                    <>
+                  <div className="space-y-2">
+                    <Label className="text-sm">Timbre (optional)</Label>
+                    <WordPicker category="timbre" idPrefix="potentialTimbres" selected={potentialTimbres} onToggle={(t) => handleCheckboxChange(t, !potentialTimbres.includes(t), potentialTimbres, setPotentialTimbres)} other={{ value: potentialTimbreOther, onChange: setPotentialTimbreOther, placeholder: "Describe…" }} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Rhythm (optional)</Label>
+                    <WordPicker category="rhythm" idPrefix="potentialRhythms" selected={potentialRhythms} onToggle={(t) => handleCheckboxChange(t, !potentialRhythms.includes(t), potentialRhythms, setPotentialRhythms)} other={{ value: potentialRhythmOther, onChange: setPotentialRhythmOther, placeholder: "Describe…" }} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Describe the sounds (optional)</Label>
+                    <Textarea placeholder="What sounds would you like to move toward?" value={potentialDescription} onChange={(e) => setPotentialDescription(e.target.value)} className="min-h-20 resize-none text-sm" />
+                  </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </StageSlot>
               <StageNav stage={stage} onChange={setStage} />
             </div>
 
-            {stage === 'wish' && (
+            {stage === 'wish' && tray && <AddToReport name="Sound" added={!!init} onAdd={handleNext} onPutDown={onBack} />}
+            {stage === 'wish' && !tray && (
             <div className="flex justify-center pt-4">
               <Button size="lg" onClick={handleNext} className="px-12">
                 {currentIndex + 1 < totalGateways ? L('Next Gateway') : 'Continue'}

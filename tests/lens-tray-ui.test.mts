@@ -14,3 +14,8 @@ ok('Sight, in tray mode, hides "Gateway n of m", offers Add / Put this down, and
 ok('Sight tucks the word list under More descriptions in tray mode', /<MoreDescriptions>[\s\S]{0,300}WordPicker/.test(sight));
 ok('Sight reopens with what was added (Edit)', /initialData/.test(sight) && /initialData=\{gatewayData\.find/.test(app));
 ok('the soft limit is a warning, never a block (the fourth waits for Add it anyway)', /Add it anyway/.test(parts) && /Keep three/.test(parts));
+
+const sound = readFileSync('src/app/components/pages/SoundGatewayPage.tsx', 'utf8');
+ok('Sound, in tray mode, hides "Gateway n of m", offers Add / Put this down, and warns before a fourth word', /!tray && <GatewayProgress/.test(sound) && /<AddToReport name="Sound"/.test(sound) && /needsFewerWarning/.test(sound) && /<FewerWarning/.test(sound));
+ok('Sound keeps Pitch and Volume up front and tucks words and sounds under More descriptions', (sound.match(/<MoreDescriptions>/g) ?? []).length === 2 && /label="Pitch"/.test(sound));
+ok('Sound reopens with what was added', /initialData/.test(sound) && /initialData=\{gatewayData\.find\(\(g\) => g\.gateway === 'sound'\)/.test(app));

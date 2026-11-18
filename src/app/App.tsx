@@ -708,13 +708,14 @@ export default function App() {
           {currentScreen === 'sound' && (
             <SoundGatewayPage
               onComplete={(data) => handleGatewayComplete('sound', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'sound')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('sound')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
               bodyMapData={bodyMapData}
               onUpdateBodyMap={setBodyMapData}
-              sightComesLater={selectedGateways.includes('sight') && !gatewayData.some((g) => g.gateway === 'sight')}
+              sightComesLater={lensTrayOn() ? !gatewayData.some((g) => g.gateway === 'sight') : selectedGateways.includes('sight') && !gatewayData.some((g) => g.gateway === 'sight')}
             />
           )}
 
