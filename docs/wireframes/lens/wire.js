@@ -181,3 +181,66 @@ document.querySelectorAll('[data-move-form],[data-pattern-form]').forEach((form)
   };
   form.addEventListener('input', set); set();
 });
+
+// Pattern tapestry (optional activity): a base and layers above it, drawn as stacked bands and said in words. Soft limit of three layers above the base.
+document.querySelectorAll('[data-tapestry]').forEach((box) => {
+  const art = box.querySelector('.tapestry'), out = document.getElementById(box.dataset.out), note = document.getElementById(box.dataset.limitNote), count = document.getElementById(box.dataset.count), list = document.getElementById(box.dataset.list);
+  const base = box.querySelector('select[id$="-base"]'), next = box.querySelector('select[id$="-next"]'), add = box.querySelector('[data-tap-add]');
+  let layers = [], allowed = false;
+  const words = () => (layers.length ? `base: ${layers[0]}${layers.slice(1).map((l) => `, then ${l}`).join('')}` : 'nothing woven yet');
+  const draw = () => {
+    art.replaceChildren(...layers.map((l, i) => { const d = document.createElement('div'); d.className = 'tl'; d.dataset.pat = l; d.style.inset = `${i * 14}px`; return d; }));
+    list.replaceChildren(...layers.map((l, i) => { const li = document.createElement('li'); li.append(`${i ? `Layer ${i}` : 'Base'}: ${l} `); const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Remove'; b.setAttribute('aria-label', `Remove ${i ? `layer ${i}` : 'the base'}: ${l}`); b.addEventListener('click', () => { layers.splice(i, 1); base.value = layers[0] || ''; draw(); add.focus(); }); li.append(b); return li; }));
+    out.textContent = words(); count.textContent = layers.length ? `${layers.length - 1 < 0 ? 0 : layers.length - 1} above the base` : 'none yet';
+    document.querySelectorAll('[data-sum="' + box.dataset.tapestry + '"]').forEach((s) => { s.textContent = words(); });
+  };
+  const push = (v) => { if (!layers.length) { layers = [v]; base.value = v; } else layers.push(v); draw(); };
+  base.addEventListener('change', () => { if (base.value) { if (layers.length) layers[0] = base.value; else layers = [base.value]; } else layers = layers.slice(1); draw(); });
+  add.addEventListener('click', () => { if (layers.length > 3 && !allowed) { note.hidden = false; note.querySelector('[data-limit-yes]').focus(); return; } push(next.value); });
+  note.querySelector('[data-limit-yes]').addEventListener('click', () => { allowed = true; note.hidden = true; push(next.value); add.focus(); });
+  note.querySelector('[data-limit-no]').addEventListener('click', () => { note.hidden = true; add.focus(); });
+  box.querySelector('[data-tap-undo]').addEventListener('click', () => { layers.pop(); base.value = layers[0] || ''; draw(); });
+  box.querySelector('[data-tap-clear]').addEventListener('click', () => { layers = []; base.value = ''; allowed = false; note.hidden = true; draw(); });
+  draw();
+});
+
+// Path of movement (optional activity): a pointer line or step buttons make the same path and the same words. Reduced motion shows the finished line, not a moving dot.
+document.querySelectorAll('[data-path]').forEach((box) => {
+  const pad = box.querySelector('svg'), line = pad.querySelector('polyline'), dot = pad.querySelector('circle'), out = document.getElementById(box.dataset.out), feel = box.querySelector('select');
+  let pts = [], drawing = false, timer = 0;
+  const at = (e) => { const r = pad.getBoundingClientRect(); return [Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100)), Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100))]; };
+  const dir = (a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1]; return Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'); };
+  const FEEL = { jerky: '4 3', hesitant: '2 4' }, WIDTH = { forceful: 4, gentle: 1 };
+  const words = () => {
+    if (pts.length < 2) return pts.length ? 'a start, and no steps yet' : 'nothing drawn yet';
+    const keep = [pts[0]]; pts.forEach((p) => { const l = keep[keep.length - 1]; if (Math.hypot(p[0] - l[0], p[1] - l[1]) >= 12) keep.push(p); });
+    const runs = []; for (let i = 1; i < keep.length; i++) { const d = dir(keep[i - 1], keep[i]); if (runs[runs.length - 1] !== d) runs.push(d); }
+    const x = pts[0][0], where = x < 34 ? 'left' : x > 66 ? 'right' : 'middle', shown = runs.slice(0, 6);
+    return `starts at the ${where}, goes ${shown.join(', then ')}${runs.length > 6 ? ', and more' : ''}${feel.value ? `; ${feel.value}` : ''}`;
+  };
+  const draw = () => {
+    line.setAttribute('points', pts.map((p) => p.map((n) => n.toFixed(1)).join(',')).join(' '));
+    line.setAttribute('stroke-dasharray', FEEL[feel.value] || 'none'); line.setAttribute('stroke-width', String(WIDTH[feel.value] || 2));
+    dot.hidden = true; out.textContent = words();
+    document.querySelectorAll('[data-sum="' + box.dataset.path + '"]').forEach((s) => { s.textContent = words(); });
+  };
+  pad.style.touchAction = 'none';
+  pad.addEventListener('pointerdown', (e) => { drawing = true; pad.setPointerCapture(e.pointerId); pts = [at(e)]; draw(); });
+  pad.addEventListener('pointermove', (e) => { if (drawing) { pts.push(at(e)); draw(); } });
+  const end = () => { drawing = false; };
+  pad.addEventListener('pointerup', end); pad.addEventListener('pointercancel', end);
+  box.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => {
+    const l = pts[pts.length - 1] || [10, 50], d = { up: [0, -20], down: [0, 20], left: [-20, 0], right: [20, 0] }[b.dataset.step];
+    if (!pts.length) pts = [l]; pts.push([Math.max(0, Math.min(100, l[0] + d[0])), Math.max(0, Math.min(100, l[1] + d[1]))]); draw();
+  }));
+  feel.addEventListener('change', draw);
+  box.querySelector('[data-path-undo]').addEventListener('click', () => { pts.pop(); draw(); });
+  box.querySelector('[data-path-clear]').addEventListener('click', () => { pts = []; draw(); });
+  box.querySelector('[data-path-replay]').addEventListener('click', () => {
+    if (pts.length < 2) return; clearInterval(timer); dot.hidden = false;
+    const place = (i) => { dot.setAttribute('cx', pts[i][0]); dot.setAttribute('cy', pts[i][1]); };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { place(pts.length - 1); return; }
+    let i = 0; place(0); timer = setInterval(() => { i += 1; if (i >= pts.length) { clearInterval(timer); return; } place(i); }, Math.max(8, 2500 / pts.length));
+  });
+  draw();
+});

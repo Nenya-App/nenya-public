@@ -224,6 +224,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       if (data.potentialMovementDrawing) info.push(`  Drawing: captured`);
       info.push(...shapeLine('wish', data.potentialMovementShapes));
+      if (typeof data.movementPathWords === 'string' && data.movementPathWords) info.push(`Path of movement: ${data.movementPathWords}`); // words only: the picture never goes into the text (or to the coach)
       break;
 
     case 'insight':
@@ -262,6 +263,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       if (data.potentialPatternDrawing) info.push(`  Drawing: captured`);
       info.push(...shapeLine('wish', data.potentialPatternShapes));
+      if (typeof data.tapestryWords === 'string' && data.tapestryWords) info.push(`Tapestry: ${data.tapestryWords}`); // words only: the picture never goes into the text (or to the coach)
       break;
   }
   

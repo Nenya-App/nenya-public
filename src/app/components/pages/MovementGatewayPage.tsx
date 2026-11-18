@@ -17,6 +17,8 @@ import { DrawingCanvas } from '../DrawingCanvas';
 import { WordPicker } from '../WordPicker';
 import { FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
+import { lensPathOn, cleanPoints, simplifyPoints, pathWords, type PathPoint } from '../../../lib/lensActivities';
+import { PathActivity } from '../LensActivities';
 import { ShapePicker, MAX_SHAPES } from '../ShapePicker';
 import { L } from '../../../lib/vocabulary';
 interface MovementGatewayPageProps {
@@ -80,6 +82,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [currentQualities, setCurrentQualities] = useState<string[]>(init?.currentQualities ?? []);
   const [currentQualityOther, setCurrentQualityOther] = useState(init?.currentQualityOther ?? '');
   const [currentDescription, setCurrentDescription] = useState(init?.currentDescription ?? '');
+  const [movementPath, setMovementPath] = useState<PathPoint[]>(() => cleanPoints(init?.movementPath));
   const [currentMovementDrawing, setCurrentMovementDrawing] = useState<string | null>(init?.currentMovementDrawing ?? null);
 
   // Potential state
@@ -143,7 +146,9 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
       potentialQualities: potentialQualities.length > 0 ? potentialQualities : null,
       potentialQualityOther: potentialQualityOther || null,
       potentialDescription: potentialDescription || null,
-      potentialMovementDrawing: potentialMovementDrawing || null
+      potentialMovementDrawing: potentialMovementDrawing || null,
+      // The optional path (VITE_LENS_PATH): words for the report and the coach, points for the PDF thumbnail and for reopening. Old drafts have neither key.
+      ...(lensPathOn() && movementPath.length ? { movementPath: simplifyPoints(movementPath), movementPathWords: pathWords(movementPath, currentQualities) } : {})
     });
   };
 
@@ -309,7 +314,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                     />
                   </div>
                     ];
-                    return tray ? [b[0], b[2], b[3], <MoreDescriptions key="more"><>{b[1]}{b[4]}{b[5]}{b[6]}</></MoreDescriptions>] : b;
+                    return tray ? [b[0], b[2], b[3], <MoreDescriptions key="more"><>{b[1]}{b[4]}{b[5]}{b[6]}{lensPathOn() && <PathActivity points={movementPath} feel={currentQualities} onChange={setMovementPath} />}</></MoreDescriptions>] : b;
                   })()}
                 </CardContent>
               </Card>
