@@ -34,7 +34,13 @@
 - **The shadow ID is the working ID** (owner): two hex codes, the same form as a session ID (`#rrggbb` twice), existing **before** the person chooses colours. It is made at agreement (random, or from the time of signing). If the person then chooses colours, those become the session ID and the shadow ID either disappears or carries beneath it.
 - **The plain-English text is drafted by me** for the owner's edit (below).
 
-## Owner's later decisions (2026-11-18, same day; these replace the recommendations below where they differ)
+## Owner's final decision on the shadow ID (2026-11-18, replaces the time-based, carries-beneath and kept-between-visits decisions below)
+- **Completely random** (from the browser's random source), made at agreement. Not time-derived.
+- **Never stored between visits.** With "Remember on this device" a returning visitor gets a **new random pair regenerated on load**; the device keeps the agreement and display settings only, as the Terms already say.
+- **Dropped, not carried beneath:** it is discarded as soon as the person chooses colours (those become the session ID) or makes a melody. It is never sent anywhere except as the coach's `session` field while no colours have been chosen.
+- *Consequences (all lighter than before):* the Terms' "short version" is unchanged (nothing new is kept); only a clause is needed that the working pair exists from agreement; no timing is revealed on a transcript; consequences (a) and (b) below no longer apply, and (d) is trivially true.
+
+## Owner's earlier decisions of the same day (superseded where the final decision above differs)
 - **Time-based shadow ID** (made from the time of signing), not random.
 - **It carries beneath** the session ID: when the person chooses colours those become the session ID, and the shadow ID stays under it.
 - **"Remember on this device" keeps it between visits.**
@@ -74,8 +80,8 @@ Our own code sends nothing, counts nothing and stores nothing for a decline (no 
 *Facts to verify against the Terms before use:* the 24-hour save, the Global Privacy Control sentence, the "not kept between visits" clause (depends on recommendation 3), and the coach sentence (read Privacy section 15 and write it from there, not from memory). The text must be added to the facts list and to the Terms archive practice, and the owner approves the wording.
 
 ## Open for the owner
-1. How coarse is the time the shadow ID is made from (consequence b above), and may it appear on a transcript?
-2. Wording of the Terms changes for a kept identifier, and the date they take effect.
+1. May the shadow pair appear on a transcript while no colours have been chosen (it is the coach's session field then)? Or must a transcript wait for chosen colours?
+2. The one-clause Terms change (the working pair exists from agreement) and whether it can wait to batch with other Terms changes.
 3. The popout's name for the plain-English page (it must not suggest more safety than it gives).
 
 ## Build order (each a reversible step behind a switch, off by default)
