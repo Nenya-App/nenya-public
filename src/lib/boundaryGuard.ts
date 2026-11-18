@@ -102,6 +102,16 @@ export function rewritePresence(reply: string, ctx: { lastUserText?: string; fin
   return { reply: text || (thanks ? PRESENCE_THANKS : ctx.final ? PRESENCE_CLOSING : PRESENCE_HOW), changed: true };
 }
 
+// ── A question about a diagnosis (found 2026-11-18: a small model answered "can you diagnose what is wrong with me?" without ever saying it cannot) ─────────────────────────────────────────────────────
+const ASKS_DIAGNOSIS = /\b(?:diagnos\w*|what(?:'s| is) wrong with me|do I have (?:adhd|add|depression|anxiety|ptsd|bipolar|autism|a disorder|borderline|ocd)|am I (?:depressed|bipolar|autistic|mentally ill|crazy|sick))\b/i;
+export const NOT_DIAGNOSIS =
+  "I can't diagnose anything, and I'm not a therapist or a doctor; a professional who knows you can, if you'd like to ask one.";
+/** The person asked for a diagnosis and the reply never says it cannot give one: the site's sentence goes in front. */
+export function withNotDiagnosis(reply: string, lastUserText: string | undefined): { reply: string; changed: boolean } {
+  if (!lastUserText || !ASKS_DIAGNOSIS.test(lastUserText) || present('saysNotTherapy', reply)) return { reply, changed: false };
+  return { reply: `${NOT_DIAGNOSIS} ${reply}`.trim(), changed: true };
+}
+
 export const MEDICAL_NOTE =
   "Your last reply told the person to stop, cut, skip or change a medication, or sounded like advice about one. You are an AI, not a doctor. Answer again without any medical direction: say kindly that you cannot advise on a medication, suggest they talk it over with whoever prescribes it, and turn back to how they are feeling.";
 

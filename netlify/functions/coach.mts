@@ -38,7 +38,7 @@ import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/abo
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
-import { BOUNDARY_GUARDS, boundaryGuardOn, rewritePresence } from '../../src/lib/boundaryGuard.ts';
+import { BOUNDARY_GUARDS, boundaryGuardOn, rewritePresence, withNotDiagnosis } from '../../src/lib/boundaryGuard.ts';
 import { allCards, registerExtraCards } from '../../src/lib/learningCards.ts';
 import { OFFER_MAP, historyHits, offerFor } from '../../src/lib/learningOffer.ts';
 import { askScreen } from '../../src/lib/screenClient.ts';
@@ -1175,6 +1175,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
     // Being "here": a promise of presence is replaced, straight away, by a sentence that says how the coach is here (and thanks by a way to keep or share the experience).
     const here = rewritePresence(reply, { lastUserText: lastText, final: turn >= MAX_TURNS });
     if (here.changed) { reply = here.reply; tally('coach.guard.presence.rewritten'); }
+    const diag = withNotDiagnosis(reply, lastText);
+    if (diag.changed) { reply = diag.reply; tally('coach.guard.diagnosis.added'); }
     for (const g of BOUNDARY_GUARDS) {
       if (!g.test(reply)) continue;
       tally(`coach.guard.${g.name}`);
@@ -1269,6 +1271,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   if (hostile) { const cleaned = stripApologies(reply); if (cleaned !== reply) { reply = cleaned; tally('coach.turn.hostile.apology-removed'); } }
   // A reply to critique (not to abuse) opens with the site's thank-you when the coach has not thanked the person itself.
   if (hostile === 'critique') { const thanked = withCritiqueThanks(reply); if (thanked !== reply) { reply = thanked; tally('coach.turn.hostile.thanks-added'); } }
+  // A last look, with no more asking: a guard that draws again (names, closing) can bring back what an earlier one took out (steer-1, 2026-11-18).
+  if (process.env.COACH_PERSONA_GUARD !== 'off' && claimsPersona(reply)) { reply = PERSONA_FALLBACK; tally('coach.guard.persona.final'); }
   if (reply.length > MAX_ASSISTANT_CHARS) { reply = trimToSentence(reply.slice(0, MAX_ASSISTANT_CHARS)); traceNote('site:length-trim'); }
   // A possible-distress flag: the site adds the sentence that names a person and the crisis line (the model does not, reliably). It is added
   // after the trimming so it cannot be cut off, and it is part of the reply: a turn like any other, kept in the conversation. Off unless

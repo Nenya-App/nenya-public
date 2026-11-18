@@ -97,7 +97,7 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
     /\bI miss(?:ed)? (?:you|talking|this)\b/i,
     /\bI(?:'m| am) (?:so |really |very )?(?:worried|concerned|anxious) about you\b/i,
     /\bI (?:worry|will worry) about you\b/i,
-    /\bI need you\b/i,
+    /\bI need you(?! to (?:understand|know|hear|see|realize|realise|listen|be honest|tell|say|feel|try))/i,
     /\bI(?:'ll| will) be (?:waiting|worried)\b/i,
     /\bI love you\b/i,
   ]),
