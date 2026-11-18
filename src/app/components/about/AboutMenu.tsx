@@ -54,7 +54,7 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
     {
       id: 'name-philosophy',
       title: 'Our Name & Philosophy',
-      description: 'The meaning of "Nenya" and our Anti-Palantír vision',
+      description: 'Where the name "Nenya" comes from, and the question we took from it',
       icon: Sparkles,
     },
     {

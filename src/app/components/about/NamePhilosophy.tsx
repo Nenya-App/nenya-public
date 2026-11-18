@@ -1,8 +1,7 @@
 import React from 'react';
 import { COACH_SERVICE } from '../../../lib/coachService';
-import { ArrowLeft, Eye, Heart, Crown } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Card } from '../ui/card';
 import PanelLogo from '../PanelLogo';
 import { useIsMobile } from '../useIsMobile';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
@@ -56,125 +55,67 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
             </div>
             
             <h1 className="text-2xl md:text-4xl lg:text-5xl bg-gradient-to-r from-foreground via-nenya-gold to-foreground bg-clip-text text-transparent px-4">
-              Two Creators. Two Philosophies.
+              Where the name comes from
             </h1>
             <p className="text-sm md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
-              Why we named ourselves after Galadriel's ring—and what it means to be an "Anti-Palantír"
+              A ring from Tolkien&rsquo;s Middle-earth, and what we took from it. We borrow the name with respect, and try not to ask more of it than it can carry.
             </p>
           </BloomInstant>
 
-          {/* The Origin Story */}
-          <BloomOnScroll className="space-y-4 md:space-y-6">
-            <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6 px-2">
-              <div className="p-2 md:p-3 bg-nenya-gold/20 rounded-lg">
-                <Crown className="size-5 md:size-6 text-nenya-gold-text dark:text-nenya-gold" />
-              </div>
-              <h2 className="text-xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">The Tale of Two Makers</h2>
-            </div>
+          {/* The name: three short readings, then the question. No heroes and villains: the same craft, two ways of holding what it makes. */}
+          <BloomOnScroll className="mx-auto max-w-3xl space-y-8 md:space-y-10">
+            <section aria-labelledby="name-ring" className="space-y-3">
+              <h2 id="name-ring" className="text-xl md:text-2xl text-foreground">The ring</h2>
+              <p className="text-base md:text-lg leading-relaxed text-foreground">
+                Nenya is one of the Three Rings of the Elves, worn by Galadriel in Lothlórien. It is called the Ring of Adamant, and sometimes the Ring of Water. Its power was a quiet one. It could not command anyone. It slowed the wearing-away of time, so that a place could stay as it was.
+              </p>
+              <p className="text-base md:text-lg leading-relaxed text-foreground">
+                The Three were made by Celebrimbor, a smith of the Noldor, and Sauron never held them. That did not set them apart from their age: they were made in his shadow, and what they kept could not outlast the age they belonged to.
+              </p>
+            </section>
 
-            <Card className="p-4 md:p-8 bg-muted/50 backdrop-blur-sm border-border">
-              <div className="space-y-3 md:space-y-6 text-foreground leading-relaxed text-sm md:text-base">
-                <p>
-                  In Tolkien's legendarium, two of the most brilliant Elves ever to walk Middle-earth created objects of immense power. But their creations reflected fundamentally different philosophies about what technology should <em>do</em>.
-                </p>
-                
-                <p>
-                  The contrast between these two approaches isn't just mythological—it's the <strong className="text-nenya-gold-text dark:text-nenya-gold-light">defining choice of our technological age</strong>. Every platform, every tool, every system embodies one of these two philosophies, whether its creators realize it or not.
-                </p>
+            <section aria-labelledby="name-stones" className="space-y-3">
+              <h2 id="name-stones" className="text-xl md:text-2xl text-foreground">The stones</h2>
+              <p className="text-base md:text-lg leading-relaxed text-foreground">
+                The palantíri were seeing-stones. Someone holding one could look across great distances, or speak with someone holding another. In some tellings they come from the craft of Fëanor, the greatest maker of the Noldor.
+              </p>
+              <p className="text-base md:text-lg leading-relaxed text-foreground">
+                What a stone showed was real, but a stronger will could choose what a weaker one saw. In the story, one stone fell into the hands of a power that used it to bend the minds of those who looked. A window that anyone strong enough can look through is not a neutral thing.
+              </p>
+            </section>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 py-4 md:py-6">
-                  {/* Fëanor */}
-                  <div className="space-y-3 md:space-y-4 p-4 md:p-6 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-500/20">
-                    <div className="flex items-center gap-3 pb-3 border-b border-red-200 dark:border-red-500/30">
-                      <div className="p-2 bg-red-100 dark:bg-red-500/20 rounded-lg">
-                        <Eye className="size-4 md:size-5 text-red-600 dark:text-red-400" />
-                      </div>
-                      <h3 className="text-lg md:text-xl text-red-700 dark:text-red-400">Fëanor</h3>
-                    </div>
-                    <p className="text-xs md:text-sm text-muted-foreground">
-                      <strong className="text-foreground">The Technologist of Domination</strong>
-                    </p>
-                    <p className="text-xs md:text-sm">
-                      Fëanor was the greatest craftsman of his age. He created the <strong>Palantíri</strong>—seeing-stones that allowed communication across vast distances and surveillance of distant lands.
-                    </p>
-                    <p className="text-xs md:text-sm">
-                      His genius was unmatched, but so was his pride. He believed his creations were <em>his</em>—to control, to possess, to hoard. The Silmarils, his masterwork, became objects of such obsession that he swore an oath that led to the deaths of thousands.
-                    </p>
-                    <p className="text-xs md:text-sm">
-                      The Palantíri embodied this same philosophy: <strong className="text-red-700 dark:text-red-400">see everything, control everything, trust no one</strong>. They were tools of absolute information dominance—and they could be corrupted, hijacked, weaponized by anyone powerful enough to claim them.
-                    </p>
-                    <p className="text-xs md:text-sm text-red-700 dark:text-red-400 italic border-t border-red-200 dark:border-red-500/30 pt-3">
-                      "His heart burned with fire, and he desired to see and know all things—and to hold them forever."
-                    </p>
-                  </div>
+            <section aria-labelledby="name-craft" className="space-y-3">
+              <h2 id="name-craft" className="text-xl md:text-2xl text-foreground">One craft, two ways of holding it</h2>
+              <p className="text-base md:text-lg leading-relaxed text-foreground">
+                It would be easy to tell this as a good maker and a bad one, and the story does not allow it. The ring and the stones come out of the same line of craft: Celebrimbor was Fëanor&rsquo;s grandson. And what moved Fëanor is not strange to any of us. He made the Silmarils to hold the light of two trees that were dying, because he could not bear to lose it. Galadriel knew the same fear. Lothlórien was an effort to keep something beautiful from the wearing of the years.
+              </p>
+              <p className="text-base md:text-lg leading-relaxed text-foreground">
+                The difference lies in what each did with the wish to keep. Fëanor closed his hand, and swore an oath over what he held; it cost thousands of lives. Galadriel was offered the one thing that would have let her keep everything, and she refused it. She chose to grow smaller, to go west, and to remain herself. When her time of keeping ended, the place she had tended faded.
+              </p>
+              <p className="text-base md:text-lg leading-relaxed text-foreground">
+                Neither of them was only one thing. Galadriel was tempted, and Fëanor was grieving. We take from the story no verdict on two people. We take a question that anyone who makes something has to answer.
+              </p>
+            </section>
 
-                  {/* Galadriel */}
-                  <div className="space-y-3 md:space-y-4 p-4 md:p-6 rounded-lg bg-amber-50 dark:bg-nenya-gold/5 border border-nenya-gold/40 dark:border-nenya-gold/20">
-                    <div className="flex items-center gap-3 pb-3 border-b border-nenya-gold/40 dark:border-nenya-gold/30">
-                      <div className="p-2 bg-nenya-gold/30 dark:bg-nenya-gold/20 rounded-lg">
-                        <Heart className="size-4 md:size-5 text-nenya-gold-text dark:text-nenya-gold" />
-                      </div>
-                      <h3 className="text-lg md:text-xl text-nenya-gold-text dark:text-nenya-gold">Galadriel</h3>
-                    </div>
-                    <p className="text-xs md:text-sm text-muted-foreground">
-                      <strong className="text-foreground">The Guardian of Preservation</strong>
-                    </p>
-                    <p className="text-xs md:text-sm">
-                      Galadriel wielded <strong>Nenya</strong>, the Ring of Water, the Ring of Adamant—one of the three Elven rings that was never touched by Sauron's corrupting influence.
-                    </p>
-                    <p className="text-xs md:text-sm">
-                      She was no less powerful than Fëanor, no less ancient or wise. But her power was used differently: not to possess, but to <em>cultivate</em>. Not to control, but to <em>protect</em>. With Nenya, she created Lothlórien—a living sanctuary.
-                    </p>
-                    <p className="text-xs md:text-sm">
-                      Her mirror didn't give absolute knowledge or control. It showed possibilities, visions, potential futures—but <strong className="text-nenya-gold-text dark:text-nenya-gold">it required wisdom to interpret</strong>. It invited reflection, not surveillance. And when the time came to let it all go, she did. She sailed into the West.
-                    </p>
-                    <p className="text-xs md:text-sm text-nenya-gold-text dark:text-nenya-gold italic border-t border-nenya-gold/40 dark:border-nenya-gold/30 pt-3">
-                      "Her power was not for domination, but for preservation of beauty, for understanding of sorrow, and for the healing of wounds."
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Comparison */}
-                <div className="py-4 md:py-6 border-y border-border text-xs md:text-sm text-muted-foreground leading-relaxed">
-                  <p className="mb-3">
-                    The two visions differ in kind. Nenya is organic and prismatic: warm colors, flowing forms, growth and interconnection. The Palantír is cold geometry, mechanical precision, the unblinking eye that sees all.
-                  </p>
-                  <p>
-                    One invites you into a garden. The other places you under surveillance. <strong className="text-nenya-gold-text dark:text-nenya-gold-light">This is not a metaphor. This is architecture.</strong>
-                  </p>
-                </div>
-
-                <div className="pt-4 md:pt-6 border-t border-border">
-                  <p className="text-sm md:text-lg">
-                    Both were driven by <strong className="text-nenya-gold-text dark:text-nenya-gold-light">unmet needs</strong>—Fëanor's need for control over loss, Galadriel's need for preservation against decay. But their <strong className="text-nenya-gold-text dark:text-nenya-gold-light">strategies</strong> diverged completely.
-                  </p>
-                </div>
-              </div>
-            </Card>
+            <section aria-labelledby="name-question" className="space-y-3 rounded-xl border border-nenya-gold/20 bg-white/40 p-6 md:p-8 dark:bg-white/5">
+              <h2 id="name-question" className="text-xl md:text-2xl text-foreground">Attending or mastering</h2>
+              <p className="text-base md:text-lg leading-relaxed text-foreground">
+                Does what you have made work <strong className="text-nenya-gold-text dark:text-nenya-gold-light">on</strong> the person using it, or <strong className="text-nenya-gold-text dark:text-nenya-gold-light">alongside</strong> them? A tool that masters needs the person to keep coming back, keep telling it things, keep being known by it. A tool that attends can be put down. Nothing in it needs the person to stay for it to have been worth making.
+              </p>
+              <p className="text-base md:text-lg leading-relaxed text-foreground">
+                People who mean well build both kinds. The difference shows in what the tool is built to keep. Nenya is meant to sit alongside, and the next section says what that means in practice.
+              </p>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                The ring names (Nenya, Vilya, Narya) are this project&rsquo;s own shorthand. They come from Tolkien&rsquo;s work and are used as inspiration, with no claim of any connection to his estate.
+              </p>
+            </section>
           </BloomOnScroll>
 
-          {/* Closing reflections */}
+          {/* How that shows up in the design */}
           <div className="space-y-6 md:space-y-8 mt-6">
             <div className="bg-white/40 dark:bg-white/5 rounded-xl p-6 md:p-8 border border-nenya-gold/20">
               <div className="space-y-4">
-                <h3 className="text-xl md:text-2xl font-medium mb-4 text-foreground">Attending or Mastering</h3>
-                <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
-                  The contrast between Fëanor and Galadriel is not a contrast of power. Both were among the most gifted minds ever to walk Middle-earth. It is a contrast of <strong className="text-nenya-gold-text dark:text-nenya-gold-light">orientation</strong>.
-                </p>
-                <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
-                  Fëanor's tools demanded. The Palantíri transmitted sight to whoever was strong enough to dominate the stone. His creations required his permanence to have meaning — when the Silmarils were taken, nothing could release them without unmaking the total pouring that had created them.
-                </p>
-                <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
-                  Nenya could not compel. It tended. It held Lothlórien for three thousand years, and when the time came, Galadriel released it — knowing the trees would wither and the enchantment end — because what she had built was never meant to require her continuity in order to have been <strong className="text-nenya-gold-text dark:text-nenya-gold-light">worth building</strong>.
-                </p>
-                <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
-                  Every technology eventually answers the same question: does it operate <strong className="text-nenya-gold-text dark:text-nenya-gold-light">on</strong> the person using it, or <strong className="text-nenya-gold-text dark:text-nenya-gold-light">alongside</strong> them?
-                </p>
-              </div>
-            </div>
-            <div className="bg-white/40 dark:bg-white/5 rounded-xl p-6 md:p-8 border border-nenya-gold/20">
-              <div className="space-y-4">
-                <h3 className="text-xl md:text-2xl font-medium mb-4 text-foreground">Why Nenya Is Built This Way</h3>
+                <h2 className="text-xl md:text-2xl font-medium mb-4 text-foreground">Why Nenya Is Built This Way</h2>
                 <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
                   Nothing persists between sessions. No profile accumulates, and nothing you do in the reflection tools is kept or transmitted by us. The one exception is the optional coach demo, where what you type passes through our server to an outside AI service ({COACH_SERVICE.name}) and is not stored by Nenya. The aim is a design where even that cannot be retained, packaged, or sold, so that privacy is a structural fact rather than a policy a future team could change. The core tool works that way today; the coach demo does not yet.
                 </p>

@@ -69,17 +69,17 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-name', part: 'nenya', title: 'What the name means',
     asked: ['what does Nenya mean', 'why is it called Nenya', 'how do you say Nenya', 'is Nenya from Lord of the Rings'],
-    short: 'Nenya is the name of Galadriel\'s ring in Tolkien\'s legendarium: the Ring of Water, one of the three Elven rings Sauron never touched. Her mirror invited reflection rather than surveillance, which is the idea we named this project after.',
+    short: 'Nenya is the name of Galadriel\'s ring in Tolkien\'s legendarium: the Ring of Water, one of the three Elven rings Sauron never touched. Its power was a quiet one: it could not command anyone, and it helped a place stay as it was. We borrowed the name for a tool that tends an inner space and does not take from it.',
     full: [
-      'In Tolkien\'s legendarium, Nenya is the Ring of Water, one of the three Elven rings that was never touched by Sauron\'s corrupting influence. It belonged to Galadriel, who used it not to possess but to preserve, and with it she kept the living sanctuary of Lothlórien.',
-      'The Name & Philosophy page sets her mirror beside the seeing-stones built for surveillance. Her mirror gave no absolute knowledge or control; it showed possibilities and needed wisdom to interpret. It invited reflection, not surveillance. That is the philosophy this project takes its name from.',
+      'In Tolkien\'s legendarium, Nenya is the Ring of Water, one of the three Elven rings that was never touched by Sauron\'s corrupting influence. It belonged to Galadriel, who used it to keep the living sanctuary of Lothlórien.',
+      'The Name & Philosophy page sets the ring beside the seeing-stones, which let a person look far and be seen. It is not a story of a good maker and a bad one: both came from the same craft, and both come from the wish to keep something beautiful from being lost. The question the page takes from it is whether what you make works on the people who use it, or alongside them.',
       'The ring names (Nenya, Vilya, Narya) are the project\'s own shorthand. The names come from Tolkien\'s work, and their use here is as inspiration, not as a claim of any connection to his estate.',
     ],
     links: [{ label: 'Our Name & Philosophy', page: 'name-philosophy' }],
     tutorial: 'Start here, or a short "why this name" card in the welcome tutorial.',
     checks: [
-      { claim: 'Nenya is the Ring of Water, never touched by Sauron', file: about('NamePhilosophy'), has: 'the Ring of Water' },
-      { claim: 'the page names it as a mirror that invited reflection, not surveillance', file: about('NamePhilosophy'), has: 'It invited reflection, not surveillance' },
+      { claim: 'Nenya is sometimes called the Ring of Water, and Sauron never held the Three', file: about('NamePhilosophy'), has: 'and sometimes the Ring of Water' },
+      { claim: 'the page sets the ring beside the seeing-stones and asks whether what you make works on people or alongside them', file: about('NamePhilosophy'), has: 'work <strong' },
     ],
     status: 'ready',
     ownerNote: "Decided 2026-11-08: keep the last paragraph (the ring names are the project's own shorthand; no claim of connection to Tolkien's estate).",
