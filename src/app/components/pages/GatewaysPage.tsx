@@ -13,7 +13,7 @@ interface GatewaysPageProps {
   onBack: () => void;
 }
 
-const gatewayCards = [
+export const gatewayCards = [
   {
     id: 'sight' as Gateway,
     name: 'Sight',

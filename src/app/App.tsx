@@ -1,3 +1,4 @@
+import { lensTrayOn, openLens, addLens, removeLens, LENS_ORDER, type LensId, type LensState, type LensAdded } from '../lib/lensState';
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { setSessionMarkId } from '../lib/sessionMarkStore';
 import SkipLink from './components/SkipLink';
@@ -32,6 +33,7 @@ import { BodyMapData } from './components/BodyMapAvatar';
 // only ever does the breathing exercise shouldn't pay for the Sound
 // gateway's audio engine, jsPDF, or the About essays up front.
 const GatewaysPage = lazy(() => import('./components/pages/GatewaysPage'));
+const LensTrayPage = lazy(() => import('./components/pages/LensTrayPage'));
 const SightGatewayPage = lazy(() => import('./components/pages/SightGatewayPage'));
 const SoundGatewayPage = lazy(() => import('./components/pages/SoundGatewayPage'));
 const TouchGatewayPage = lazy(() => import('./components/pages/TouchGatewayPage'));
@@ -173,6 +175,8 @@ export default function App() {
   // Gateway system state
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
   const [gatewayData, setGatewayData] = useState<GatewayData[]>([]);
+  // Tray mode only (VITE_LENS_TRAY): lenses opened but not added. gatewayData is the added list.
+  const [examined, setExamined] = useState<LensId[]>([]);
   // Read by the Back/Forward handler, which is set up before this state exists.
   const gatewayDataRef = useRef<GatewayData[]>([]);
   gatewayDataRef.current = gatewayData;
@@ -401,6 +405,20 @@ export default function App() {
     },
   };
 
+  const trayState: LensState = { added: gatewayData as LensAdded[], examined };
+  const handleOpenLens = (lens: LensId) => {
+    const opened = openLens(trayState, lens);
+    setExamined(opened.examined);
+    setSelectedGateways([...new Set([...gatewayData.map((g) => g.gateway), lens])].sort((a, b) => LENS_ORDER.indexOf(a as LensId) - LENS_ORDER.indexOf(b as LensId)) as Gateway[]);
+    navigateTo(lens as ScreenType);
+  };
+  const handleRemoveLens = (lens: LensId) => {
+    const next = removeLens(trayState, lens);
+    setGatewayData(next.added as GatewayData[]);
+    setExamined(next.examined);
+    setSelectedGateways(next.added.map((a) => a.gateway as Gateway));
+  };
+
   const handleGatewaysSelected = (gateways: Gateway[]) => {
     setSelectedGateways(gateways);
     setGatewayData([]);
@@ -409,6 +427,15 @@ export default function App() {
 
   // Complete a gateway and move to next
   const handleGatewayComplete = (gateway: Gateway, data: any) => {
+    if (lensTrayOn()) {
+      const next = addLens({ added: gatewayData, examined }, gateway as LensId, data);
+      setGatewayData(next.added as GatewayData[]);
+      setExamined(next.examined);
+      setSelectedGateways(next.added.map((a) => a.gateway as Gateway));
+      if (gateway === 'sight' && data.color1 && data.color2) setInterfaceColors(data);
+      navigateTo('home');
+      return;
+    }
     const wasAlreadyComplete = gatewayData.length === selectedGateways.length;
     const existingIndex = gatewayData.findIndex(g => g.gateway === gateway);
 
@@ -501,6 +528,7 @@ export default function App() {
     setAboutSection(undefined);
     setSelectedGateways([]);
     setGatewayData([]);
+    setExamined([]);
     setInterfaceColors({ color1: '#7A9B9E', color2: '#DAC682' });
     setCellCode('');
   };
@@ -649,7 +677,13 @@ export default function App() {
             </Suspense>
           )}
 
-          {currentScreen === 'home' && (
+          {currentScreen === 'home' && lensTrayOn() && (
+            <Suspense fallback={null}>
+              <LensTrayPage state={trayState} onOpen={handleOpenLens} onRemove={handleRemoveLens} onReport={() => navigateTo('gateway-review')} onBack={() => navigateBack('welcome')} />
+            </Suspense>
+          )}
+
+          {currentScreen === 'home' && !lensTrayOn() && (
             <GatewaysPage
               onGatewaysSelected={handleGatewaysSelected}
               onBack={() => navigateBack('welcome')}

@@ -4,6 +4,9 @@
 // A lens is in one of three states: not opened, examined (opened, nothing added) or included (added to the report). Nothing is in the report until it is added; a lens put
 // down without adding is "examined, not included". Lenses are picked up in any order, any number, and any lens can be added again (update) or removed.
 
+// The tray replaces the pick-several-then-go-in-order flow only when VITE_LENS_TRAY=on (off by default).
+export const lensTrayOn = (): boolean => import.meta.env?.VITE_LENS_TRAY === 'on';
+
 export const LENS_ORDER = ['sight', 'sound', 'touch', 'essence', 'movement', 'insight'] as const;
 export type LensId = (typeof LENS_ORDER)[number];
 export type LensStatus = 'not-opened' | 'examined' | 'included';
