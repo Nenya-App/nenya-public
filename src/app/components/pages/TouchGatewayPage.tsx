@@ -17,6 +17,8 @@ import { TouchSurfaceField } from '../TouchSurfaceField';
 import { MoreDetail } from '../MoreDetail';
 import { PutThisDown, FewerNote, AddToReport } from '../LensCardParts';
 import { lensTrayOn } from '../../../lib/lensState';
+import { TouchOrb } from '../TouchOrb';
+import type { OrbShape } from '../../../lib/touchOrb';
 import { simpleGatewaysOn, STEP_NAMES, TOUCH_COPY } from '../../../lib/gatewayCopy';
 
 import { L } from '../../../lib/vocabulary';
@@ -61,6 +63,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   const [showBodyMap, setShowBodyMap] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<PairStage>('present');
+  const [orbShape, setOrbShape] = useState<OrbShape>('sphere'); // the display: a sphere or a flat circle (tray mode)
   useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
 
   // Advancing between steps swaps content inside this same persistently-
@@ -215,6 +218,14 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   </details>
                 </div>
               )}
+              {tray && (
+                <fieldset className="mb-4 flex flex-wrap items-center justify-center gap-4 text-sm">
+                  <legend className="sr-only">Shape of the display</legend>
+                  <span aria-hidden="true">Show it as</span>
+                  <label className="flex min-h-11 items-center gap-2"><input type="radio" name="touch-orb-shape" checked={orbShape === 'sphere'} onChange={() => setOrbShape('sphere')} /> a sphere</label>
+                  <label className="flex min-h-11 items-center gap-2"><input type="radio" name="touch-orb-shape" checked={orbShape === 'flat'} onChange={() => setOrbShape('flat')} /> a flat circle</label>
+                </fieldset>
+              )}
               <StageIntro stage={stage} />
               <StageSlot stage="present" current={stage}>
               {/* Present State Card */}
@@ -236,6 +247,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <TouchSurfaceField stateName="Present" value={currentSurface} onChange={setCurrentSurface} slider={currentTexture[0]} onMatchSlider={(v) => setCurrentTexture([v])} />
+
+                  {tray && <TouchOrb stateName="Present" surfaceId={currentSurface} shape={orbShape} values={{ texture: sliderValue(currentTexture), temperature: sliderValue(currentTemperature), pressure: sliderValue(currentPressure), weight: sliderValue(currentWeight), sharpness: sliderValue(currentSharpness) }} />}
 
                   <MoreDetail simple={simple} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
 
@@ -319,6 +332,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <TouchSurfaceField stateName="Wish" value={potentialSurface} onChange={setPotentialSurface} slider={potentialTexture[0]} onMatchSlider={(v) => setPotentialTexture([v])} />
+
+                  {tray && <TouchOrb stateName="Wish" surfaceId={potentialSurface} shape={orbShape} values={{ texture: sliderValue(potentialTexture), temperature: sliderValue(potentialTemperature), pressure: sliderValue(potentialPressure), weight: sliderValue(potentialWeight), sharpness: sliderValue(potentialSharpness) }} />}
 
                   <MoreDetail simple={simple} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
 
