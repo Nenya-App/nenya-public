@@ -23,8 +23,8 @@ Animation:
 - **The single turn** (4.0 to 4.2 s, clockwise for Cormorant and counterclockwise for Manrope, with a 1.10 lift) is still set, but with the fidget as the way the mark plays, it is the motion the editor's "Play this font" shows when fidget is off.
 - **Gold in front** of the white e in both fonts; the weave is off.
 
-## To settle before building it into the site (nothing here is decided)
+## To settle before building it into the site (nothing here is decided; the colour source is decided as in point 3, the rest are open)
 1. **Reduced motion:** with a request for reduced motion the mark should show its resting state and not fidget. Both would need to hold still.
 2. **Keyboard and touch:** pointing starts the fidget; a tap does on touch. A keyboard user needs a way to start it (focus or a press) and a way to stop it (WCAG 2.2.2).
-3. **Colours:** Cormorant's list has `#ffffff` twice, which disappears on a light page; "colour any" is kept readable at 3:1, but listed colours are used as given. Palette 1 colours are kept readable the same way.
+3. **Colours come from the person, not from the settings** (owner, 2026-11-17): the colour lists in the settings line above are only what the editor happened to hold. On the site the e's take their colours from the session's own colours or palette, and a whole palette can load as the pool the random turns draw from (the editor's "theme" colour mode already does this with the 16 palettes, or a session pair). Without session colours the mark uses the page ink and gold. Whatever the source, random colours are kept readable against the page (the editor's "readable at least" setting, 3:1 here). Still to decide: which palette applies (the one the person picked in a gateway, or the session pair), and what the mark does before they have picked any.
 4. **Where the mark shows:** today only in the footer, behind `VITE_NAME_MARK=on`.
