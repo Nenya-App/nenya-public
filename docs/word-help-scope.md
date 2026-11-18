@@ -27,3 +27,13 @@ Layer 2 first (longer lists, no risk), then layer 1 (on-device Find a word), the
 2. Layer 3: build it, wait, or never? If build: Datamuse, the Free Dictionary API, or both?
 3. Which free-text fields get the box? (Recommended: all that exist, always under More descriptions.)
 4. Longer-lists target (about 25 to 40 per group) and who reviews the words (you, as with the other word lists)?
+
+## Multilingual, behind switches (owner, 2026-11-17)
+**Aim:** every layer works in more than English, as far as the sources allow, with each language switched on separately so none is offered before it is checked.
+- **A language choice beside the box.** Under More descriptions, a labelled "Language" select (default: the page's language). Changing it changes the lists, the box and the lookup together. Every word shown carries its own `lang` attribute (WCAG 3.1.2, AAA), and right-to-left languages set `dir` on the words and the field.
+- **Switches.** `WORD_HELP_LANGS` (a list such as `en,es`, default `en`) says which languages appear. A language is added only when its lists, its review and its licenses are done. A second switch per layer (`WORD_HELP_ENABLED` for lookups) stays separate, so a language can have on-device help without any outside lookup.
+- **Layer 1 and 2, on-device.** Longer lists are authored fresh per language, not machine-translated from English, because many feeling, taste and texture words do not map one to one. The Open Multilingual Wordnet gives near words for many languages, but each language's data has its own license (some are CC BY, some more restrictive): check each before bundling and record it in `ATTRIBUTIONS.md`. Bundle only the languages switched on, to keep the page small.
+- **Layer 3, lookups.** To verify per service at build time: Datamuse covers English and Spanish only; the Free Dictionary API (Wiktionary) covers a limited set of languages (about a dozen). A language without a service simply has no "Look it up" button, and the on-device help still works.
+- **Review per language.** The owner reviews English. Each added language needs a fluent reviewer for the lists and for the slur and harm screen (the slur-list rebuild is English now; each language needs its own sources). Reading-level checks (`readingLevel.ts`) are English only: other languages get a plain-words review instead.
+- **Fits the larger goal.** The coach's later languages, the interface and the word help share one list of supported languages, so a language is turned on in one place.
+- **Decision for the owner:** which two or three languages come first, and who reviews them?
