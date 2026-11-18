@@ -36,6 +36,7 @@ A starting list, short on purpose (add or remove tomorrow):
 - `page.view.<screen>`: once each time a screen is shown in a visit (welcome, each gateway, the review page, the coach, each About page). Not on every re-render, and not remembered between visits.
 - `onboarding.rhythm.<name>`: which breathing rhythm is chosen in the opening flow (four values, including box breathing).
 - `onboarding.terms.accepted`: the opening flow was completed.
+- `lens.opened.<id>` and `lens.added.<id>` (tray, `VITE_LENS_TRAY`; added 2026-11-18): the first time each of the six lenses is opened in a visit, and the first time it is added to a report. A plain total per lens: no order, no time, nothing about one person's path; only after agreement and never under Global Privacy Control. The Terms (Section 13) name them in the same revision as the tray (`docs/drafts/terms-lens-and-first-entry-draft.md`).
 - `tour.accepted`, `tour.declined`, `tour.completed`.
 - Later: `tones.on` when the breathing-tones switch is turned on (see `docs/accessibility-audio-scope.md`).
 

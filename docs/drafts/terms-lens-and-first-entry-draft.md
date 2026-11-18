@@ -50,7 +50,7 @@ Proposed addition (one short paragraph, Section 16): "If you decline, nothing ab
 
 ## 8. Facts to check on the day (the facts list)
 1. The Terms-first entry is on, and the chooser is off (or the start clause stays in the sentence in 2).
-2. **Per-lens counts are built.** They are not built today. Needed: `lens.examined.<id>` and `lens.included.<id>` added to `BROWSER_FIXED_EVENTS` (`src/lib/counters.ts`) and the admin labels (`src/admin/labels.ts`), counted in `App.tsx` on open and on add, after agreement only and never under Global Privacy Control. Until then, section 2's per-lens clause must stay out of the Terms.
+2. **Per-lens counts are built (2026-11-18, behind the tray switch).** `lens.opened.<id>` (first time a lens is opened in a visit) and `lens.added.<id>` (first time it is added) are known events (`src/lib/counters.ts`), named in the admin page (`src/admin/labels.ts`) and counted in `App.tsx` only in tray mode, after agreement and never under Global Privacy Control; the data register and `docs/site-metrics-scope.md` have the row. The Terms clause in section 2 is now true once the tray is on.
 3. The rhythm is no longer counted at agreement under Terms-first (done: `App.tsx`).
 4. The saved draft is version 2 in tray mode and its sealed copy shows nothing about the examined list (done and tested).
 5. The pair is made at agreement and kept in memory only (done: `src/lib/shadowSession.ts`, behind `VITE_TERMS_FIRST`).
@@ -59,5 +59,5 @@ Proposed addition (one short paragraph, Section 16): "If you decline, nothing ab
 
 ## Open for the owner
 - Approve or edit the wording in sections 2 to 5.
-- Whether to build the per-lens counts now (a small change, needs a go) or ship the revision without them and drop that clause.
+- (Decided and built: the per-lens counts; see the facts above.)
 - Whether the revision waits for the Terms-first entry or goes with the lens flip alone (each can ship without the other: section 3 and 5 belong to Terms-first, sections 2's per-lens clause and 4 to the tray).

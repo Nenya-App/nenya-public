@@ -105,3 +105,15 @@ ok('a failed send is ignored', !threw);
 (globalThis as any).fetch = async () => { throw new Error('should not be called'); };
 countEvents([]); await settle();
 ok('no events means no request', true);
+
+// Per-lens totals (tray): a plain total per lens, opened and added; nothing else is accepted under those names.
+{
+  const { LENS_IDS } = await import('../src/lib/counters.ts');
+  const { label, groupTitle } = await import('../src/admin/labels.ts');
+  const { readFileSync } = await import('node:fs');
+  ok('every lens has an opened and an added total, and nothing else is accepted under those names', LENS_IDS.every((l) => isKnownEvent(`lens.opened.${l}`) && isKnownEvent(`lens.added.${l}`)) && !isKnownEvent('lens.opened.gateway') && !isKnownEvent('lens.opened.') && !isKnownEvent('lens.examined.sight') && !isKnownEvent('lens.added.sight.2') && !isKnownEvent('lens.opened.sight?x=1'));
+  ok('the admin page groups them as Lenses and names the sixth Pattern', groupTitle('lens.opened.sight') === 'Lenses' && label('lens.added.insight') === 'Lens added to a report: Pattern' && label('lens.opened.sound') === 'Lens opened: Sound');
+  const app = readFileSync('src/app/App.tsx', 'utf8');
+  ok('App counts a lens the first time it is opened and the first time it is added, in tray mode only', /lensStatus\(trayState, lens\) === 'not-opened'\) countEvent\(`lens\.opened\.\$\{lens\}`\)/.test(app) && /if \(lensTrayOn\(\)\) \{\s*\n\s*if \(lensStatus\([^\n]*!== 'included'\) countEvent\(`lens\.added\.\$\{gateway\}`\)/.test(app));
+  ok('the counts carry no sequence or time: one fixed name per lens, nothing else sent', !/lens\.[a-z]+\.\$\{[^}]*\}\.|Date\.now|performance\.now/.test(app.slice(app.indexOf('const handleOpenLens'), app.indexOf('const handleOpenLens') + 700)));
+}

@@ -1,4 +1,4 @@
-import { lensTrayOn, openLens, addLens, removeLens, reportShape, readSavedDraft, LENS_ORDER, type LensId, type LensState, type LensAdded } from '../lib/lensState';
+import { lensTrayOn, openLens, addLens, removeLens, reportShape, readSavedDraft, lensStatus, LENS_ORDER, type LensId, type LensState, type LensAdded } from '../lib/lensState';
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { setSessionMarkId } from '../lib/sessionMarkStore';
 import SkipLink from './components/SkipLink';
@@ -424,6 +424,8 @@ export default function App() {
 
   const trayState: LensState = { added: gatewayData as LensAdded[], examined };
   const handleOpenLens = (lens: LensId) => {
+    // A plain total per lens (docs/lens-rewrite-scope.md 3c): the first time it is opened in this visit. No order, no time.
+    if (lensStatus(trayState, lens) === 'not-opened') countEvent(`lens.opened.${lens}`);
     const opened = openLens(trayState, lens);
     setExamined(opened.examined);
     setSelectedGateways([...new Set([...gatewayData.map((g) => g.gateway), lens])].sort((a, b) => LENS_ORDER.indexOf(a as LensId) - LENS_ORDER.indexOf(b as LensId)) as Gateway[]);
@@ -445,6 +447,7 @@ export default function App() {
   // Complete a gateway and move to next
   const handleGatewayComplete = (gateway: Gateway, data: any) => {
     if (lensTrayOn()) {
+      if (lensStatus({ added: gatewayData as LensAdded[], examined }, gateway as LensId) !== 'included') countEvent(`lens.added.${gateway}`);
       const next = addLens({ added: gatewayData, examined }, gateway as LensId, data);
       setGatewayData(next.added as GatewayData[]);
       setExamined(next.examined);
