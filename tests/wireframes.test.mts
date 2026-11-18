@@ -16,7 +16,7 @@ for (const f of pages) {
   ok(`${f}: ids are unique`, new Set(ids).size === ids.length);
   if (f !== 'index.html') {
     const cards = h.split(/<div class="frame"[^>]*>/).slice(1);
-    ok(`${f}: Emergency Exit is the first button in every frame`, cards.length >= 1 && cards.every((c) => /^\s*<div class="bar"><button type="button">Emergency Exit<\/button>/.test(c)));
+    ok(`${f}: Emergency Exit is the first button in every frame`, cards.length >= 1 && cards.every((c) => /^\s*<div class="bar"><button type="button">(?:<img [^>]*>)?Emergency Exit<\/button>/.test(c)));
     if (['sight.html', 'sound.html', 'touch.html'].includes(f)) ok(`${f}: at least three cards, and the last has Add, Update and Remove`, cards.length >= 3 && /Add this to my report/.test(h) && /Update my report/.test(h) && /Remove from my report/.test(h));
     else if (f === 'body.html') ok(`${f}: every place can be set from a labelled list as well as the drawing, and a text twin says what is where`, /<select id="r-/.test(h) && /data-for=/.test(h) && /role="status"/.test(h) && /one map for the whole report/i.test(h));
     else ok(`${f}: the tray names every state in words, keeps the coach apart, and the report lists examined lenses separately`, /Not opened/.test(h) && /Looked at, not in your report/.test(h) && /In your report/.test(h) && /a lens of its own/.test(h) && /Examined, not included/.test(h));
