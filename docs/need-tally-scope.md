@@ -24,3 +24,8 @@
 1. Is A (this conversation only) enough for now?
 2. Should B exist at all, and under "Remember on this device"?
 3. Is C ever acceptable, and if so at what grain?
+
+## Progress (2026-11-18): option A, owner decision "build option 1 with your recommendations"
+- **Built (module, no page):** `src/lib/conversationTally.ts`: `tallyOf(userTexts)` (the person's own words that are in CNVC's inventory, most often named first, at most eight each, everyday words such as cold, lost, still, open, safe not counted), `manyNeedsSoFar` (four or more different needs), `tallyLine`. Pure page state: the module has no storage, network or cookie (a test reads the source for that). Tests: `tests/conversation-tally.test.mts`.
+- **Used by the summary:** the picking call is given "Words the person used that are on the lists" as a hint (the small model stays close to the person's own words); a summary gets the one-to-three recommendation when four different needs came up in the person's messages, or when it names four itself (`withSummaryNeedFocus`).
+- **Not built (handed to the tray session, which owns the page files):** the strip. A quiet, optional "What has come up so far" control in the coach page that shows `tallyOf` of the person's messages (their feelings and needs, in their own words, with the CNVC credit), updates after each message (`aria-live="polite"`), never stored, never sent; at four different needs it also shows the recommendation (`NEED_FOCUS_SUMMARY`). Wording of the control and its label is the owner's to approve. B (browser, with consent) and C (server) remain not built.

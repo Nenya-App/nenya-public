@@ -984,11 +984,12 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       if (form === 'picked') {
         const pin = pickMessages(scrubbed);
         const raw = await summaryModelCall({ provider, apiKey, model: smodel, system: pin.system, messages: pin.messages, timeoutMs: VENICE_TIMEOUT_MS, tally });
-        summary = raw ? buildPicked(parsePicks(raw)) : null;
+        const built = raw ? buildPicked(parsePicks(raw)) : null;
+        summary = built ? withSummaryNeedFocus(built, userTexts) : null;
       } else {
         const win = summaryMessages(scrubbed);
         const raw = await summaryModelCall({ provider, apiKey, model: smodel, system: attempt ? `${win.system}\n\n${SUMMARY_RETRY}` : win.system, messages: win.messages, timeoutMs: VENICE_TIMEOUT_MS, tally });
-        summary = raw && summaryProblems(raw).length === 0 ? withSummaryNeedFocus(raw.trim()) : null;
+        summary = raw && summaryProblems(raw).length === 0 ? withSummaryNeedFocus(raw.trim(), userTexts) : null;
       }
     }
     if (!summary) {
@@ -1268,7 +1269,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
               const r = await generate(undefined, VENICE_TIMEOUT_MS, pin);
               if ('failure' in r || !r.reply) continue;
               const built = buildPicked(parsePicks(r.reply));
-              if (built) return built;
+              if (built) return withSummaryNeedFocus(built, summaryUser);
               traceNote('site:summary-rejected:no-picks');
             }
             return null;
@@ -1278,7 +1279,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
             const r = await generate(undefined, VENICE_TIMEOUT_MS, attempt ? { system: `${input.system}\n\n${SUMMARY_RETRY}`, messages: input.messages } : input);
             if ('failure' in r || !r.reply) continue;
             const bad = summaryProblems(r.reply);
-            if (!bad.length) return withSummaryNeedFocus(r.reply.trim());
+            if (!bad.length) return withSummaryNeedFocus(r.reply.trim(), summaryUser);
             traceNote(`site:summary-rejected:${bad.join(',')}`);
             if (__trace.text) traceNote(`site:summary-text:${r.reply.replace(/\s+/g, ' ').slice(0, 500)}`); // for measurement scripts only (the trace is off in production)
           }

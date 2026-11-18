@@ -9,6 +9,7 @@ import { pullsAgainstPeople } from './boundaryGuard.ts';
 import { present } from './personaChecks.ts';
 import { wordsOf } from './feelingsNeeds.ts';
 import { MANY_NEEDS, NEED_FOCUS_SUMMARY, needsNamed } from './needFocus.ts';
+import { tallyLine, tallyOf } from './conversationTally.ts';
 
 /** The instruction for the summary call. The model sees nothing else of the conversation, so it cannot echo the coach or answer the last message. */
 export const SUMMARY_SYSTEM =
@@ -96,9 +97,11 @@ export const PICK_SYSTEM =
 
 /** The messages for the picking call. A focused call for small models (owner, 2026-11-18): it sees ONLY the person's messages, not the coach's replies, which a small model confuses with the person's own words. */
 export function pickMessages(turns: readonly Turn[]): { system: string; messages: { role: 'user'; content: string }[] } {
-  const body = turns.filter((t) => t.role === 'user').map((t, i) => `Message ${i + 1}: ${t.content.trim()}`).join('\n\n');
+  const mine = turns.filter((t) => t.role === 'user').map((t) => t.content);
+  const body = mine.map((t, i) => `Message ${i + 1}: ${t.trim()}`).join('\n\n');
+  const used = tallyLine(tallyOf(mine)); // the list words the person themselves used: a hint, so the choice stays close to their own words
   const lists = `Feeling words: ${wordsOf('feeling').join(', ')}\n\nNeed words: ${wordsOf('need').join(', ')}`;
-  return { system: PICK_SYSTEM, messages: [{ role: 'user', content: `${lists}\n\nHere is what the person wrote.\n\n${body}\n\nAnswer in the form given.` }] };
+  return { system: PICK_SYSTEM, messages: [{ role: 'user', content: `${lists}\n\nHere is what the person wrote.\n\n${body}${used ? `\n\nWords the person used that are on the lists (prefer these when they fit): ${used}` : ''}\n\nAnswer in the form given.` }] };
 }
 
 export interface Picks { feelings: string[]; needs: string[]; care: string; /** More than three valid needs were chosen: the summary then recommends focusing on one to three. */ moreNeeds?: boolean }
@@ -171,5 +174,9 @@ export { SUMMARY_FAILED_TEXT } from './summaryWords.ts';
 /** The requested summary as shown and as signed into a transcript: the summary and the site's sentence about the transcript, in one paragraph. */
 export const assembleSummaryText = (summary: string, transcriptLine: string): string => `${summary.trim()} ${transcriptLine.trim()}`;
 
-/** A written summary that names four or more needs gets the same recommendation to focus on one to three. */
-export const withSummaryNeedFocus = (summary: string): string => (needsNamed(summary).length >= MANY_NEEDS && !/\bone to three\b/i.test(summary) ? `${summary.trim()} ${NEED_FOCUS_SUMMARY}` : summary);
+/** The recommendation to focus on one to three needs is added to a summary (once) when the summary names four or more, or when four or more different needs have come up in the person's own messages (the running tally). */
+export function withSummaryNeedFocus(summary: string, userTexts: readonly string[] = []): string {
+  if (/\bone to three\b/i.test(summary)) return summary;
+  const many = needsNamed(summary).length >= MANY_NEEDS || tallyOf(userTexts).needs.length >= MANY_NEEDS;
+  return many ? `${summary.trim()} ${NEED_FOCUS_SUMMARY}` : summary;
+}
