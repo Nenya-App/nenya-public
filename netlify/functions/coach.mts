@@ -972,7 +972,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       tally('coach.summary.refused.cap');
       return json(200, { refused: 'cap' });
     }
-    const scrubbed = userTexts.map((t) => neutralize(scrubPII(t).text));
+    // The whole conversation, both speakers (owner, 2026-11-18); the person's words are scrubbed as for the coach, the coach's replies are our own model's, already checked.
+    const scrubbed = done.map((m) => (m.role === 'user' ? { ...m, content: neutralize(scrubPII(m.content).text) } : m));
     const smodel = coachModel();
     const form = summaryFormFor(smodel, process.env.COACH_SUMMARY_FORM);
     let summary: string | null = null;
@@ -1253,12 +1254,13 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   const startedAt = Date.now();
   // COACH_FINAL_SUMMARY=call, last exchange only: the summary is drawn at the same time as the closing, from the person's own messages alone (scrubbed as for the main call).
   const summaryUser = messages.filter((m) => m.role === 'user').map((m) => neutralize(scrubPII(m.content).text));
+  const summaryTurns = messages.map((m) => (m.role === 'user' ? { ...m, content: neutralize(scrubPII(m.content).text) } : m)); // the whole conversation so far (the fifth reply is being drawn at the same time)
   const summaryDraw: Promise<string | null> | null =
     turn >= MAX_TURNS && finalSummaryCallOn() && instructionsVersion() === 'v2.1' && !flag && !hostile
       ? (async () => {
           // The picked form (COACH_SUMMARY_FORM=picked, or automatically for models under 20B, src/lib/finalSummary.ts): the model chooses words from CNVC's inventory and the site writes the sentences (src/lib/finalSummary.ts, for small models).
           if (summaryFormFor(model, process.env.COACH_SUMMARY_FORM) === 'picked') {
-            const pin = pickMessages(summaryUser);
+            const pin = pickMessages(summaryTurns);
             for (let attempt = 0; attempt < 2; attempt++) {
               const r = await generate(undefined, VENICE_TIMEOUT_MS, pin);
               if ('failure' in r || !r.reply) continue;
@@ -1268,7 +1270,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
             }
             return null;
           }
-          const input = summaryMessages(summaryUser);
+          const input = summaryMessages(summaryTurns);
           for (let attempt = 0; attempt < 2; attempt++) {
             const r = await generate(undefined, VENICE_TIMEOUT_MS, attempt ? { system: `${input.system}\n\n${SUMMARY_RETRY}`, messages: input.messages } : input);
             if ('failure' in r || !r.reply) continue;

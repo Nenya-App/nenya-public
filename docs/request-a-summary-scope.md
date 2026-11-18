@@ -12,7 +12,7 @@ A sixth exchange would change what the site promises (five), the ticket and mess
 
 ## How it works (design, to read against the code before building)
 1. **Endpoint:** a new function (for example `/api/coach-summary`) taking the finished conversation and its **signed ticket**. It accepts only a ticket for a **completed** conversation (five exchanges), verified with the same signing as the coach; a tampered, early or wrong-length request is refused.
-2. **Model call:** the existing summary call (`src/lib/finalSummary.ts`: the two-part form "You felt… / You were looking for… / one sentence of care / one of encouragement", with its checks and one retry). Input: the person's messages, scrubbed as for the coach. **Open:** whether "the conversation as a whole" should also show the coach's replies; the first build keeps the person's messages only (chosen 2026-11-18), with the other tested separately.
+2. **Model call:** the existing summary call (`src/lib/finalSummary.ts`: the two-part form "You felt… / You were looking for… / one sentence of care / one of encouragement", with its checks and one retry). Input: the whole conversation, both speakers (the person's messages scrubbed as for the coach).
 3. **Guards:** the summary's own checks; the persona and boundary guards on the result; and **no summary at all if anything in the conversation was flagged** (crisis, harm, abuse at the coach): the person gets the site's fixed sentence pointing to people instead, never a model summary of a flagged conversation.
 4. **Limits:** one summary per conversation. The function is stateless, so the repeat is limited by the signed result (the page keeps the first and does not offer a second request) and by the existing per-day limiter; a replay costs one model call, bounded by that limiter. **Open:** whether it counts against `COACH_DAILY_CAP` (recommended: yes, as a fraction or as one turn, so a visitor buffer holds).
 5. **The transcript sentence** (site-written, from the approved pool) is added by the site, as now. Wording approved by the owner.
@@ -28,7 +28,7 @@ A sixth exchange would change what the site promises (five), the ticket and mess
 - Nothing in the signed conversation itself changes. **Check before building:** the verify page and the transcript policy (`src/lib/transcriptPolicy.ts`) on how an addendum is shown.
 
 ## Data, Terms and About
-- **Same provider, same words, once more.** The person's messages go to the model provider a second time for this one call; no new processor. The Privacy section on the coach ("Where your words go") already covers it in principle, but the sentence should say that a requested summary is one more call. Batch with other Terms changes (the lens words, the shadow-ID clause); the owner approves wording.
+- **Same provider, same words, once more.** The whole conversation (the person's messages and the coach's replies) goes to the model provider a second time for this one call; no new processor. The Privacy section on the coach ("Where your words go") already covers it in principle, but the sentence should say that a requested summary is one more call. Batch with other Terms changes (the lens words, the shadow-ID clause); the owner approves wording.
 - **About answers:** `c-memory` and the transcript answers should name the summary ("you can ask for a summary of the five exchanges") once it exists, and say that it is the AI's reading, not a record. The merge checklist already lists the update.
 - **Counts:** a plain daily count of summaries requested and refused (numbers only, after agreement, not under Global Privacy Control).
 
@@ -56,7 +56,7 @@ The browser-side encrypted route (`VITE_BOUNDARY_GUARD`'s sealed path, `src/lib/
 
 ## Decided (owner, 2026-11-18: "yes to all five recommendations")
 1. **The request counts against the daily cap** (the exact weight, one turn or a fraction, is set when the endpoint is built and tested, so a visitor buffer holds).
-2. **After the first tested version, the summary may also see the coach's replies**; the first build uses the person's messages only, and the two are compared on the same conversations before either is chosen.
+2. **The summary is of the whole conversation, both speakers (owner, 2026-11-18, corrected: I had built it from the person's messages only).** The call is given the conversation with both sides labelled ("The person" / "The coach"), and told that the feelings and needs named are the person's: the coach's words are context, not evidence, so a feeling or need only the coach named is not given to the person unless they agreed with it.
 3. **Both:** the summary on the page, and a signed addendum in the downloaded transcript **only if the person requested it**.
 4. **A flagged conversation gets the site's fixed sentence**, never a model summary.
 5. **`COACH_FINAL_SUMMARY=call` is retired once this ships.**

@@ -14,10 +14,11 @@ process.env.COACH_SIGNING_KEY = generateKeyPairSync('ed25519').privateKey.export
 process.env.COACH_INSTRUCTIONS = 'v2.1'; delete process.env.COACH_EXTRA_HOSTS; delete process.env.COACH_FINAL_SUMMARY; delete process.env.COACH_SUMMARY_FORM;
 let summaries: string[] = [];
 let summaryCalls = 0;
+let lastSummaryInput = '';
 (globalThis as any).fetch = async (_u: string, init: any) => {
   const system = JSON.parse(init.body).messages[0].content as string;
-  const isSummary = /^You (?:write the last part|read what a person wrote)/.test(system);
-  if (isSummary) summaryCalls++;
+  const isSummary = /^You (?:write the last part|read a short conversation)/.test(system);
+  if (isSummary) { summaryCalls++; lastSummaryInput = JSON.parse(init.body).messages[1].content; }
   return new Response(JSON.stringify({ choices: [{ message: { content: isSummary ? (summaries.shift() ?? '') : 'That sounds like a lot to hold, and you said it plainly.' } }] }), { status: 200 });
 };
 const { default: handler, __useStoreForTests } = await import('../netlify/functions/coach.mts');
@@ -47,6 +48,7 @@ process.env.COACH_SUMMARY_REQUEST = 'on';
 summaries = [GOOD];
 let r = await ask();
 ok('on, a finished conversation with its ticket gets one summary and a transcript sentence from the pool', r.status === 200 && r.j.summary === GOOD && TRANSCRIPT_LINES.includes(r.j.transcriptLine) && r.j.form === 'written' && summaryCalls === 1, JSON.stringify(r.j));
+ok('the summary call is given the whole conversation: both the person\'s messages and the coach\'s replies, labelled', /The person: I have been feeling tired/.test(lastSummaryInput) && /The coach: That sounds like a lot to hold/.test(lastSummaryInput));
 ok('the response carries the text as shown (summary and the site\'s sentence) and a proof', r.j.text === `${GOOD} ${r.j.transcriptLine}` && /^[0-9a-f]{64}$/.test(r.j.proof));
 const receiptWith = async (summary: unknown, msgs = finished.msgs, ticket = finished.ticket) => (await post({ action: 'receipt', session: SESSION, messages: msgs, ticket, ...(summary !== undefined ? { summary } : {}) })).j;
 {

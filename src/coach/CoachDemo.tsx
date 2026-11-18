@@ -31,6 +31,8 @@ import { isStuck, namedParts } from '../lib/practiceArc';
 import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
+import { SummaryRequest } from './SummaryRequest';
+import { summaryRequestOn } from '../lib/summaryRequest';
 import { FailureNotice } from './FailureNotice';
 import { RegionNotice } from './RegionGate';
 import { suggestsBreath } from '../lib/breathOffer';
@@ -227,6 +229,9 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const notes = signatureNotes(color1, color2);
   useEffect(() => () => stopSignature.current?.(), []);
   const [flag, setFlag] = useState<SafetyFlag | null>(null);
+  // The summary the person asked for (VITE_SUMMARY_REQUEST), with the server's proof: kept here for the visit, sent only with the signed transcript if they ask for it there.
+  const [summary, setSummary] = useState<{ text: string; proof: string } | null>(null);
+  useEffect(() => { if (messages.length === 0) setSummary(null); }, [messages.length]);
   const [flaggedText, setFlaggedText] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -845,6 +850,9 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </p>
                 )}
                 {stage === 'done' && !flag && pageBubble(CLOSING)}
+                {stage === 'done' && !flag && summaryRequestOn() && !!ticket && messages.filter((m) => m.role === 'user').length === MAX_TURNS && (
+                  <SummaryRequest input={{ session, messages: toWire(messages), ticket, ...(shared ? { context: shared.text } : {}) }} headers={ownerHeader()} onSummary={setSummary} />
+                )}
                 {stage === 'done' && !flag && siteMessagesFor(toWire(messages), MAX_TURNS).filter((x) => x.kind === 'invitation').map((x) => <Fragment key="invitation">{pageBubble(x.text)}</Fragment>)}
                 <div ref={endRef} />
               </div>
@@ -872,7 +880,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </summary>
                   <div className="pt-3">
                     <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))}
-                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} summary={summary} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
                   </div>
                 </details>
               )}
@@ -1039,7 +1047,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
               {stage === 'done' && (
                 <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))}
-                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} summary={summary} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
               )}
             </>
           )}
