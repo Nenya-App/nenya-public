@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { ok } from './helpers.mts';
 const dir = 'docs/wireframes/lens';
 const pages = readdirSync(dir).filter((f) => f.endsWith('.html'));
-ok('there are wireframes for the index, the tray, Sight and Sound', ['index.html', 'tray.html', 'sight.html', 'sound.html'].every((f) => pages.includes(f)));
+ok('there are wireframes for the index, the tray, Sight, Sound and Touch', ['index.html', 'tray.html', 'sight.html', 'sound.html', 'touch.html'].every((f) => pages.includes(f)));
 for (const f of pages) {
   const h = readFileSync(`${dir}/${f}`, 'utf8');
   ok(`${f}: language, title, viewport, a skip link and one main`, /<html lang="en">/.test(h) && /<title>[^<]+<\/title>/.test(h) && /name="viewport"/.test(h) && /class="skip"/.test(h) && (h.match(/<main\b/g) ?? []).length === 1);
@@ -27,3 +27,19 @@ function isInsideLabel(html: string, at: number): boolean {
 }
 const css = readFileSync(`${dir}/wire.css`, 'utf8');
 ok('the stylesheet respects reduced motion and has a visible focus style', /prefers-reduced-motion: reduce/.test(css) && /:focus-visible/.test(css));
+
+// Buttons are accessible but subtle: text 7:1 or better, the edge of a control 3:1 or better against the page, and no pure white or pure black fills (owner, 2026-11-17).
+{
+  const lum = (h: string) => { const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const blocks = [css.slice(css.indexOf(':root {'), css.indexOf('@media (prefers-color-scheme: dark)')), css.slice(css.indexOf('@media (prefers-color-scheme: dark)'), css.indexOf('* { box-sizing'))];
+  blocks.forEach((b, i) => {
+    const v = (n: string) => new RegExp(`--${n}:\\s*(#[0-9a-fA-F]{6})`).exec(b)?.[1] ?? '#000000';
+    const name = i ? 'dark' : 'light';
+    ok(`${name}: page text is 7:1 or better`, ratio(v('ink'), v('paper')) >= 7);
+    ok(`${name}: a button's text on its fill is 7:1 or better`, ratio(v('btn-ink'), v('btn-bg')) >= 7, String(ratio(v('btn-ink'), v('btn-bg'))));
+    ok(`${name}: a selected control's text on its fill is 7:1 or better`, ratio(v('sel-ink'), v('sel-bg')) >= 7);
+    ok(`${name}: the edge of a control and the filled button stand out from the page (3:1 or better)`, ratio(v('edge'), v('paper')) >= 3 && ratio(v('btn-bg'), v('paper')) >= 3);
+    ok(`${name}: no button fill is pure white or pure black`, !['#ffffff', '#000000'].includes(v('btn-bg').toLowerCase()) && !['#ffffff', '#000000'].includes(v('sel-bg').toLowerCase()));
+  });
+}

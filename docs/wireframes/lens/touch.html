@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: the Touch lens</title>
+<link rel="stylesheet" href="wire.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the wireframes</a>
+<header class="page">
+  <h1>The Touch lens: four cards</h1>
+  <p><a href="index.html">All wireframes</a> · <a href="tray.html">Tray</a> · <a href="sight.html">Sight</a> · <a href="sound.html">Sound</a> · Draft 2026-11-17 · audit: <code>docs/lens-audit-touch.md</code></p>
+</header>
+<main id="main">
+<div class="legend">
+  <h2>How to read these</h2>
+  <p>Controls work with the keyboard; notes give the tab order, what a screen reader says, what responds live, and the copy draft. <strong>Emergency Exit</strong> is first in every tab order. In the real lens the surfaces are the existing texture pictures (each with its own description); here a pattern stands in for the picture.</p>
+</div>
+
+<!-- CARD 1: NOW -->
+<section class="card" aria-labelledby="c1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 1 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="c1">How does it feel now?</h2>
+    <p>Imagine you could touch this feeling. Pick the surface that is closest. One is enough.</p>
+    <fieldset><legend>Kind of surface</legend><label><input type="radio" name="grp" checked> Soft and woven</label> <label><input type="radio" name="grp"> Leather and skin-like</label> <label><input type="radio" name="grp"> Plant and wood</label> <label><input type="radio" name="grp"> Stone, earth and cold</label></fieldset>
+    <fieldset><legend>Surfaces</legend>
+      <div class="choices">
+        <label><span class="surface" role="img" aria-label="Wool: lightly textured, soft, woven"></span><span><input type="radio" name="surf" checked> Wool</span></label>
+        <label><span class="surface b" role="img" aria-label="Silk: very smooth"></span><span><input type="radio" name="surf"> Silk</span></label>
+        <label><span class="surface c" role="img" aria-label="Bark: rough, ridged"></span><span><input type="radio" name="surf"> Bark</span></label>
+        <label><span class="surface d" role="img" aria-label="Slate: smooth, cold, fine grain"></span><span><input type="radio" name="surf"> Slate</span></label>
+      </div>
+    </fieldset>
+    <p class="mini" role="status">You picked: Wool, lightly textured.</p>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Kind of surface (one radio group, arrow keys)</li><li>Surfaces (one radio group, arrow keys)</li><li>Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>Each surface is named and described in words, never only a picture: “Wool: lightly textured, soft, woven”. The existing descriptions (<code>textureAlt</code>) are used.</li><li>Choosing one says what was picked, politely.</li></ul>
+    <h3>Responds live</h3><ul><li>The picked surface is shown larger, with its description, and the choice list stays small (one group at a time instead of 283 pictures at once).</li></ul>
+    <h3>Copy draft (already grade 5 in simple mode)</h3><p>“Imagine you could touch this feeling. Pick the surface that is closest. One is enough.”</p>
+    <h3>Notes</h3><ul><li>Card 2 is the same card for how you would like it to feel. Two cards, because the surface choice is large.</li><li>The texture photographs (283 files, about 5 MB, each loaded only when shown) are content, not identity imagery; keep them (see the audit for the one conflict with the brief).</li></ul>
+  </aside>
+</section>
+
+<!-- CARD 2: WISH -->
+<section class="card" aria-labelledby="c2">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 2 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="c2">How would you like it to feel?</h2>
+    <p>Pick the surface closest to how you would like it to feel. One is enough.</p>
+    <fieldset><legend>Surfaces (the same kinds as the last card)</legend>
+      <div class="choices">
+        <label><span class="surface" role="img" aria-label="Wool: lightly textured, soft, woven"></span><span><input type="radio" name="surf2"> Wool</span></label>
+        <label><span class="surface b" role="img" aria-label="Silk: very smooth"></span><span><input type="radio" name="surf2" checked> Silk</span></label>
+        <label><span class="surface c" role="img" aria-label="Bark: rough, ridged"></span><span><input type="radio" name="surf2"> Bark</span></label>
+        <label><span class="surface d" role="img" aria-label="Slate: smooth, cold, fine grain"></span><span><input type="radio" name="surf2"> Slate</span></label>
+      </div>
+    </fieldset>
+    <p class="mini" role="status">You picked: Silk, very smooth.</p>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Same as card 1</h3><p>The same controls and the same notes, for the second state. The kind-of-surface choice is on this card too (not drawn again). Both states can be skipped.</p>
+    <h3>Copy draft</h3><p>“Pick the surface closest to how you would like it to feel.”</p>
+  </aside>
+</section>
+
+<!-- CARD 3: SHAPE IT -->
+<section class="card" aria-labelledby="c3">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 3 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="c3">Feel it more (optional)</h2>
+    <p>Move the sliders. The surface changes as you go.</p>
+    <div class="row" style="align-items:flex-start;gap:20px">
+      <div style="min-width:170px;min-height:150px;display:grid;place-items:center"><div class="tswatch" id="tsw" role="img" aria-label="The surface you picked, changing as you move the sliders. The line below says the same in words."></div></div>
+      <form data-touch="tsw" data-out="tout" style="flex:1;min-width:240px">
+        <label for="texture">Texture</label><input type="range" id="texture" name="texture" min="0" max="4" value="1"><div class="ends"><span>Smooth</span><span>Rough</span></div>
+        <label for="temp">Temperature</label><input type="range" id="temp" name="temp" min="0" max="4" value="2"><div class="ends"><span>Frozen</span><span>Burning</span></div>
+        <label for="pressure">Pressure</label><input type="range" id="pressure" name="pressure" min="0" max="4" value="1"><div class="ends"><span>Loose</span><span>Compressed</span></div>
+        <label for="weight">Weight</label><input type="range" id="weight" name="weight" min="0" max="4" value="2"><div class="ends"><span>Weightless</span><span>Heavy</span></div>
+        <label for="sharp">Sharpness</label><input type="range" id="sharp" name="sharp" min="0" max="4" value="1"><div class="ends"><span>Blunt</span><span>Sharp</span></div>
+      </form>
+    </div>
+    <p class="mini">It feels: <span id="tout" role="status"></span></p>
+    <div class="row"><button type="button">Back to the original surface</button><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Texture, temperature, pressure, weight, sharpness (sliders)</li><li>Back to the original surface, Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>Each slider: “Temperature, frozen to burning, neutral.” The line “It feels: …” is the text twin and updates politely.</li></ul>
+    <h3>Responds live (<strong>try it</strong>)</h3><ul><li><strong>Texture</strong>: how grainy the surface looks. <strong>Temperature</strong>: cool to warm tint. <strong>Pressure</strong>: the surface is squeezed (smaller, with an inner shadow). <strong>Weight</strong>: it sinks lower. <strong>Sharpness</strong>: the shape goes from round to pointed.</li><li>Reduced motion: the change is instant.</li><li>Optional later: a short vibration on a phone that supports it, off unless asked.</li></ul>
+    <h3>Notes</h3><ul><li>Today these are the five sliders inside “Add more detail” (ten in all, five for each state), recorded and described afterwards. Here they act on the surface.</li><li>Each slider can be left unset: choosing nothing is a choice (an unset state, as in the code).</li><li>Now and wish each get this card if the person opens it.</li></ul>
+    <h3>Copy draft</h3><p>“Move the sliders. The surface changes as you go.”</p>
+  </aside>
+</section>
+
+<!-- CARD 4 -->
+<section class="card" aria-labelledby="c4">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Touch · card 4 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="c4">Add Touch to your report?</h2>
+    <p>This is what would be added:</p>
+    <ul><li>Now: wool, lightly textured, a little cool, a little heavy</li><li>How you would like it to feel: silk, very smooth, warm, light</li></ul>
+    <label for="words">Anything more to say? (optional)</label><input type="text" id="words">
+    <div class="row"><button type="button" class="primary" data-added="added-touch">Add this to my report</button><button type="button">Put this down</button></div>
+    <p id="added-touch" hidden role="status"><strong>Added.</strong> You can come back and change it. <button type="button">Update my report</button> <button type="button">Remove from my report</button></p>
+    <p class="mini">If put down without adding, your report says: “Examined, not included: Touch.” Anything you chose stays here for the visit, marked “not in your report yet”, and is never saved unless you add it.</p>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down (top)</li><li>The summary (a list)</li><li>The free-text box</li><li>Add this to my report, Put this down</li></ol>
+    <h3>Notes</h3><ul><li>The same last card as Sight and Sound.</li><li><strong>The body map is not drawn on this lens</strong>: see the audit. All six lenses share one body map today, which does not fit add, update and remove per lens. Decision needed.</li></ul>
+  </aside>
+</section>
+</main>
+<script src="wire.js"></script>
+</body>
+</html>
