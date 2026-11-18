@@ -61,7 +61,7 @@ import { E2eeError, MAX_SEALED_HEX, attestationFor, e2eeChat, isE2eeModel, seale
 import { aboutTheWorld, detectDirectQuestion, hasSeveralQuestions, MULTI_QUESTION_NOTE } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
 import { asksOrInvites, closingPhase, settleReply } from '../../src/lib/coachClosing.ts';
-import { assembleFinal, buildPicked, withoutEffectClaims, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_RETRY } from '../../src/lib/finalSummary.ts';
+import { assembleFinal, buildPicked, summaryFormFor, withoutEffectClaims, parsePicks, pickMessages, pickTranscriptLine, summaryMessages, summaryProblems, SUMMARY_RETRY } from '../../src/lib/finalSummary.ts';
 import { buildLabel } from '../../src/lib/buildInfo.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
 import { distressTextOn, selfInjuryNote, withDistressText } from '../../src/lib/distressText.ts';
@@ -325,7 +325,7 @@ let fingerprint: { version: string; value: string } | null = null;
 const layerKey = (): string => JSON.stringify(stanceLayers());
 /** A fingerprint of every fixed instruction the coach is given (all turns and variants), not of the private method notes. */
 function instructionsFingerprint(version: InstructionsVersion = instructionsVersion()): string {
-  const cacheKey = `${version}|${layerKey()}|${practiceArcOn() ? 'arc' : ''}|${valuesOn() ? 'values' : ''}|${finalSummaryOn() ? 'summary' : ''}|${finalSummaryCallOn() ? 'summarycall' + (process.env.COACH_SUMMARY_FORM === 'picked' ? ':picked' : '') : ''}`;
+  const cacheKey = `${version}|${layerKey()}|${practiceArcOn() ? 'arc' : ''}|${valuesOn() ? 'values' : ''}|${finalSummaryOn() ? 'summary' : ''}|${finalSummaryCallOn() ? 'summarycall' + (process.env.COACH_SUMMARY_FORM ?? 'auto') : ''}`;
   if (fingerprint && fingerprint.version === cacheKey) return fingerprint.value;
   const parts: string[] = [VALUES_RULE, ARC_NOTE, ARC_MENU_NOTE, ARC_INVITE, WORDS_ONLY_NOTE, gapText({ feeling: true, need: false }), gapText({ feeling: false, need: true }), gapText({ feeling: true, need: true }), REPEAT_NOTE, finalSummaryOn() ? CLOSE_NOTE_SUMMARY : CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
   for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version), systemInstruction(t, false, '', false, '', '', version, 'abuse'), systemInstruction(t, false, '', false, '', '', version, 'critique'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'project'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'nvc'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'ai'));
@@ -1152,8 +1152,8 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   const summaryDraw: Promise<string | null> | null =
     turn >= MAX_TURNS && finalSummaryCallOn() && instructionsVersion() === 'v2.1' && !flag && !hostile
       ? (async () => {
-          // COACH_SUMMARY_FORM=picked: the model chooses words from CNVC's inventory and the site writes the sentences (src/lib/finalSummary.ts, for small models).
-          if (process.env.COACH_SUMMARY_FORM === 'picked') {
+          // The picked form (COACH_SUMMARY_FORM=picked, or automatically for models under 20B, src/lib/finalSummary.ts): the model chooses words from CNVC's inventory and the site writes the sentences (src/lib/finalSummary.ts, for small models).
+          if (summaryFormFor(model, process.env.COACH_SUMMARY_FORM) === 'picked') {
             const pin = pickMessages(summaryUser);
             for (let attempt = 0; attempt < 2; attempt++) {
               const r = await generate(undefined, VENICE_TIMEOUT_MS, pin);

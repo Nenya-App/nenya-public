@@ -138,3 +138,11 @@ export function withoutEffectClaims(closing: string): string {
   const kept = parts.filter((x) => !EFFECT_CLAIM.test(x));
   return kept.length && kept.length < parts.length ? kept.join(' ') : closing;
 }
+
+/** Which form of the summary a model gets (owner, 2026-11-18: written for the 26B, picked for small models). COACH_SUMMARY_FORM=written or picked forces one; unset or "auto" goes by the size in the model's name
+ *  (the largest "<n>b" in it): 20 billion parameters or more is written, smaller is picked. A name with no size is written (the coach's own models all name it). */
+export function summaryFormFor(model: string, setting?: string): 'written' | 'picked' {
+  if (setting === 'written' || setting === 'picked') return setting;
+  const sizes = [...model.toLowerCase().matchAll(/(?:^|[^a-z0-9.])(?:e|a)?(\d+(?:\.\d+)?)b(?![a-z0-9])/g)].map((m) => Number(m[1]));
+  return sizes.length && Math.max(...sizes) < 20 ? 'picked' : 'written';
+}
