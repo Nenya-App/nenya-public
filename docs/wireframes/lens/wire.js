@@ -124,3 +124,16 @@ document.querySelectorAll('[data-body]').forEach((root) => {
   };
   root.addEventListener('input', draw); draw();
 })();
+
+// Essence: the starting point changes the first question and says which flavor comes first.
+(() => {
+  const radios = document.querySelectorAll('[name=basis]'); if (!radios.length) return;
+  const title = document.querySelector('[data-basis-title]'), text = document.querySelector('[data-basis-text]');
+  const V = {
+    memory: ['Think of a time that tasted good. What was the flavor of it?', 'Pick a smell or taste that takes you back. Then say how much of each taste was in that time. You can’t taste or smell right now? Imagine it.'],
+    mood: ['What is the flavor of your life right now?', 'If your life were a flavor, how much of each taste is in it? You can’t taste or smell right now? Imagine it. That works too.'],
+    try: ['What is the flavor you would like your life to have?', 'Start with the flavor you want. You can’t taste or smell right now? Imagine it. At the end you can pick one small thing to bring a little of it into today.']
+  };
+  const set = () => { const v = document.querySelector('[name=basis]:checked').value; title.textContent = V[v][0]; text.textContent = V[v][1]; };
+  radios.forEach((r) => r.addEventListener('change', set)); set();
+})();

@@ -67,3 +67,8 @@ ok('the stylesheet respects reduced motion and has a visible focus style', /pref
   const es = readFileSync(`${dir}/essence.html`, 'utf8');
   ok('Essence: five labelled taste dials for now and for wish, an imagine-instead switch, a text twin for the shape, and a tasting note', ['sweet', 'sour', 'salty', 'bitter', 'umami'].every((t) => new RegExp(`<label for="now-${t}">`).test(es) && new RegExp(`<label for="wish-${t}">`).test(es)) && /I can’t taste or smell right now: imagine instead/.test(es) && /data-say-taste="wish" role="status"/.test(es) && /data-tasting-now/.test(es) && /role="img" aria-label="A five-pointed shape/.test(es));
 }
+
+{
+  const es = readFileSync(`${dir}/essence.html`, 'utf8');
+  ok('Essence: three starting points (a memory, a mood, a small thing to try) as a labelled choice, and a small thing to try on the last card', /Where would you like to start\?/.test(es) && ['memory', 'mood', 'try'].every((v) => new RegExp(`name="basis" value="${v}"`).test(es)) && /<label for="ess-try">/.test(es));
+}
