@@ -1277,6 +1277,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
             const bad = summaryProblems(r.reply);
             if (!bad.length) return r.reply.trim();
             traceNote(`site:summary-rejected:${bad.join(',')}`);
+            if (process.env.COACH_TRACE_TEXT === 'on') traceNote(`site:summary-text:${r.reply.replace(/\s+/g, ' ').slice(0, 500)}`); // for measurement scripts only (the trace is off in production)
           }
           return null;
         })()

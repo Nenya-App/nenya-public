@@ -16,6 +16,7 @@ ok('the transcript sentence is stable for a conversation and varies across conve
 })());
 ok('the final reply is the closing, a blank line, the summary and the transcript sentence', assembleFinal('That is a lot to carry.', GOOD, TRANSCRIPT_LINES[0]) === `That is a lot to carry.\n\n${GOOD} ${TRANSCRIPT_LINES[0]}`);
 
+ok('a report of what already helped, in the person\'s own account, is allowed; "helps you" and "can help you" are not', !summaryProblems(GOOD + ' Speaking your intentions aloud has already helped you feel steadier.').includes('prediction') && summaryProblems(GOOD + ' Writing it down can help you cope.').includes('prediction'));
 ok('imperatives and "helps you" are caught as advice and effect claims', summaryProblems(GOOD + ' Allow yourself the permission to rest now.').includes('advice') && summaryProblems(GOOD + ' Writing it down helps you cope.').includes('prediction'));
 {
   const r = parsePicks('Feelings: Tired, anxious, banana, hurt, tired\nNeeds: rest/sleep, understanding and to matter\nCare: You asked for two minutes, which shows you care about being heard, and that took courage.');

@@ -65,7 +65,7 @@ export function summaryProblems(text: string): string[] {
   if (/^\s*(?:[-*•]|\d+[.)])\s/m.test(t) || /^#/m.test(t)) out.push('list-or-heading');
   if (/\b(?:you should|you could|you can try|you might|you may want|try to|i suggest|i recommend|next step)\b/i.test(t)) out.push('advice');
   if (/(?:^|[.!;:]\s+|,\s+(?:and|so)\s+)(?:allow|try|take|consider|remember|give|let|keep|start|make|write|ask|talk|reach|set|trust|honou?r|notice|breathe|rest|be)\b/i.test(t)) out.push('advice');
-  if (/\b(?:helps?|helped|can help|could help)\s+you\b/i.test(t)) out.push('prediction');
+  if (/\b(?:helps?|can help|could help)\s+you\b/i.test(t)) out.push('prediction'); // "has helped you feel steadier" reports what the person said and is allowed
   if (/\b(?:will|would|should)\s+(?:\w+\s+){0,2}(?:help|ease|make|allow|bring|give|lead|improve|reduce|build|create|open|strengthen|deepen|heal|bridge|grow|change|turn|become|bring|show)\b/i.test(t)) out.push('prediction');
   if (/\b(?:suggests?|indicates?|seems? to need|implies|a need for)\b/i.test(t)) out.push('interprets');
   if (/\blooking for (?:to|being)\b/i.test(t)) out.push('grammar');

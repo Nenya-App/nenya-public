@@ -90,7 +90,8 @@ if (privateDir) {
   privateText.set('modules', readFileSync(join(privateDir, 'modules.json'), 'utf8'));
   for (const [key, file] of [['method-notes', 'method-notes.txt'], ['learn-icarus', 'learn-icarus.txt']]) if (existsSync(join(privateDir, file))) privateText.set(key, readFileSync(join(privateDir, file), 'utf8'));
 }
-const { default: handler, __useStoreForTests } = await import('../netlify/functions/coach.mts');
+const { default: handler, __useStoreForTests, __trace } = await import('../netlify/functions/coach.mts');
+if (args.includes('--trace')) { __trace.on(true); process.env.COACH_TRACE_TEXT = 'on'; } // prints what the site did to each final reply (summary rejected, closing tidied, and so on)
 {
   // An in-memory store: the private text when --private is given, and the counters the function writes (kept only for this run).
   const mem = new Map<string, { v: string; e: number }>();
@@ -128,6 +129,7 @@ for (const [i, user] of CONVERSATIONS.entries()) {
     ticket = j.ticket;
     last = j.reply;
   }
+  if (args.includes('--trace')) console.log(`  trace: ${__trace.take().events.filter((e: string) => e.startsWith('site:') || e.startsWith('coach.final')).join(' ')}`);
   if (!last) continue;
   const row: Row = {
     n: i + 1,
