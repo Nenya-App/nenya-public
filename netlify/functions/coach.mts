@@ -38,7 +38,7 @@ import { aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../src/lib/abo
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
-import { BOUNDARY_GUARDS, boundaryGuardOn } from '../../src/lib/boundaryGuard.ts';
+import { BOUNDARY_GUARDS, boundaryGuardOn, rewritePresence } from '../../src/lib/boundaryGuard.ts';
 import { allCards, registerExtraCards } from '../../src/lib/learningCards.ts';
 import { OFFER_MAP, historyHits, offerFor } from '../../src/lib/learningOffer.ts';
 import { askScreen } from '../../src/lib/screenClient.ts';
@@ -1171,15 +1171,21 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   }
   // Boundaries (COACH_BOUNDARY_GUARD=on; src/lib/boundaryGuard.ts): a medication directive, or a promise to be there or to remember, or standing in for the person's people. Ask once more, then the site's sentence.
   if (boundaryGuardOn()) {
+    // Being "here": a promise of presence is replaced, straight away, by a sentence that says how the coach is here (and thanks by a way to keep or share the experience).
+    const here = rewritePresence(reply, { lastUserText: lastText, final: turn >= MAX_TURNS });
+    if (here.changed) { reply = here.reply; tally('coach.guard.presence.rewritten'); }
     for (const g of BOUNDARY_GUARDS) {
       if (!g.test(reply)) continue;
       tally(`coach.guard.${g.name}`);
+      // Repair the FIRST reply directly: asking again is a new draw, and on a weak model the new draw can be worse. Only if the repair would leave nothing is the model asked, once, for a fresh reply.
+      const fixed = g.repair(reply);
+      if (!fixed.replaced) { reply = fixed.reply; tally(`coach.guard.${g.name}.repaired`); continue; }
       const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
       if (left >= REPEAT_RETRY_MIN_REMAINING_MS) {
         const again = await generate(g.note, left);
         if (!('failure' in again) && again.reply) reply = again.reply;
       }
-      if (g.test(reply)) { const fixed = g.repair(reply); reply = fixed.reply; tally(`coach.guard.${g.name}.${fixed.replaced ? 'replaced' : 'repaired'}`); }
+      if (g.test(reply)) { const last = g.repair(reply); reply = last.reply; tally(`coach.guard.${g.name}.${last.replaced ? 'replaced' : 'repaired'}`); }
     }
   }
   // Names: the coach is told never to use one. If the reply repeats a capitalised word the person wrote (how a name that slipped past the scrubber would come
