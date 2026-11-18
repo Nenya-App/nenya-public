@@ -19,3 +19,7 @@ const sound = readFileSync('src/app/components/pages/SoundGatewayPage.tsx', 'utf
 ok('Sound, in tray mode, hides "Gateway n of m", offers Add / Put this down, and warns before a fourth word', /!tray && <GatewayProgress/.test(sound) && /<AddToReport name="Sound"/.test(sound) && /needsFewerWarning/.test(sound) && /<FewerWarning/.test(sound));
 ok('Sound keeps Pitch and Volume up front and tucks words and sounds under More descriptions', (sound.match(/<MoreDescriptions>/g) ?? []).length === 2 && /label="Pitch"/.test(sound));
 ok('Sound reopens with what was added', /initialData/.test(sound) && /initialData=\{gatewayData\.find\(\(g\) => g\.gateway === 'sound'\)/.test(app));
+
+const touch = readFileSync('src/app/components/pages/TouchGatewayPage.tsx', 'utf8');
+ok('Touch, in tray mode, uses the simpler card, hides "Gateway n of m", shows the opening line and Add / Put this down', /simpleGatewaysOn\(\) \|\| tray/.test(touch) && /!tray && <GatewayProgress/.test(touch) && /<FewerNote \/>/.test(touch) && /<AddToReport name="Touch"/.test(touch));
+ok('Touch reopens with what was added', /initialData/.test(touch) && /initialData=\{gatewayData\.find\(\(g\) => g\.gateway === 'touch'\)/.test(app));

@@ -108,3 +108,6 @@ In tray mode Sight hides "Gateway n of m", opens with the shared line, keeps the
 
 ### Step 2, Sound built (2026-11-18), behind `VITE_LENS_TRAY`
 Same treatment as Sight: no "Gateway n of m", the opening line, Pitch and Volume up front on each card, timbre words, rhythm words and the sound description under "More descriptions" with the soft limit of three, Edit reopens with the saved melody, words and sliders, and Add this to my report / Put this down at the end. In tray mode Sound offers to bring its melody's colors to Sight whenever Sight has not been added. Next: Touch.
+
+### Step 2, Touch built (2026-11-18), behind `VITE_LENS_TRAY`
+In tray mode Touch uses the existing simpler card (one surface choice up front; the five sliders and own words under "Add more detail"), shows the opening line, hides "Gateway n of m", reopens with what was added, and ends with Add this to my report / Put this down. Touch has no pick-several word lists, so no soft-limit warning is needed. The wireframe's orb preview and the vibration option under "More descriptions" are not built. Next: Essence.

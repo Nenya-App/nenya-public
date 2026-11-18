@@ -722,6 +722,7 @@ export default function App() {
           {currentScreen === 'touch' && (
             <TouchGatewayPage
               onComplete={(data) => handleGatewayComplete('touch', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'touch')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('touch')}
               totalGateways={selectedGateways.length}

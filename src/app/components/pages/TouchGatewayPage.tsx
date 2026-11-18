@@ -15,6 +15,8 @@ import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { TouchSurfaceField } from '../TouchSurfaceField';
 import { MoreDetail } from '../MoreDetail';
+import { FewerNote, AddToReport } from '../LensCardParts';
+import { lensTrayOn } from '../../../lib/lensState';
 import { simpleGatewaysOn, STEP_NAMES, TOUCH_COPY } from '../../../lib/gatewayCopy';
 
 import { L } from '../../../lib/vocabulary';
@@ -26,6 +28,8 @@ interface TouchGatewayPageProps {
   userColors?: { color1?: string; color2?: string };
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
+  /** Tray mode: what was added before, so Edit opens with it. */
+  initialData?: any;
 }
 
 const INSTRUCTION_CARDS = [
@@ -46,9 +50,11 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function TouchGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: TouchGatewayPageProps) {
+export default function TouchGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap, initialData }: TouchGatewayPageProps) {
+  const tray = lensTrayOn();
+  const init = tray && initialData && ('currentSurface' in initialData || 'potentialSurface' in initialData) ? initialData : null;
   // The simpler version (VITE_GATEWAYS_SIMPLE=on): no instruction cards, one main choice per step, the rest under "Add more detail".
-  const simple = simpleGatewaysOn();
+  const simple = simpleGatewaysOn() || tray; // the tray uses the simpler card: one main choice, the rest under the disclosure
   // Step state
   const [step, setStep] = useState<'instructions' | 'selection'>(simple ? 'selection' : 'instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
@@ -65,22 +71,22 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   }, [step]);
 
   // Current state
-  const [currentSurface, setCurrentSurface] = useState<string | null>(null);
-  const [currentTexture, setCurrentTexture] = useState(() => unsetSlider());
-  const [currentTemperature, setCurrentTemperature] = useState(() => unsetSlider());
-  const [currentPressure, setCurrentPressure] = useState(() => unsetSlider());
-  const [currentWeight, setCurrentWeight] = useState(() => unsetSlider());
-  const [currentSharpness, setCurrentSharpness] = useState(() => unsetSlider());
-  const [currentDescription, setCurrentDescription] = useState('');
+  const [currentSurface, setCurrentSurface] = useState<string | null>(init?.currentSurface ?? null);
+  const [currentTexture, setCurrentTexture] = useState(() => (typeof init?.currentTexture === 'number' ? [init.currentTexture] : unsetSlider()));
+  const [currentTemperature, setCurrentTemperature] = useState(() => (typeof init?.currentTemperature === 'number' ? [init.currentTemperature] : unsetSlider()));
+  const [currentPressure, setCurrentPressure] = useState(() => (typeof init?.currentPressure === 'number' ? [init.currentPressure] : unsetSlider()));
+  const [currentWeight, setCurrentWeight] = useState(() => (typeof init?.currentWeight === 'number' ? [init.currentWeight] : unsetSlider()));
+  const [currentSharpness, setCurrentSharpness] = useState(() => (typeof init?.currentSharpness === 'number' ? [init.currentSharpness] : unsetSlider()));
+  const [currentDescription, setCurrentDescription] = useState(init?.currentDescription ?? '');
 
   // Potential state
-  const [potentialSurface, setPotentialSurface] = useState<string | null>(null);
-  const [potentialTexture, setPotentialTexture] = useState(() => unsetSlider());
-  const [potentialTemperature, setPotentialTemperature] = useState(() => unsetSlider());
-  const [potentialPressure, setPotentialPressure] = useState(() => unsetSlider());
-  const [potentialWeight, setPotentialWeight] = useState(() => unsetSlider());
-  const [potentialSharpness, setPotentialSharpness] = useState(() => unsetSlider());
-  const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialSurface, setPotentialSurface] = useState<string | null>(init?.potentialSurface ?? null);
+  const [potentialTexture, setPotentialTexture] = useState(() => (typeof init?.potentialTexture === 'number' ? [init.potentialTexture] : unsetSlider()));
+  const [potentialTemperature, setPotentialTemperature] = useState(() => (typeof init?.potentialTemperature === 'number' ? [init.potentialTemperature] : unsetSlider()));
+  const [potentialPressure, setPotentialPressure] = useState(() => (typeof init?.potentialPressure === 'number' ? [init.potentialPressure] : unsetSlider()));
+  const [potentialWeight, setPotentialWeight] = useState(() => (typeof init?.potentialWeight === 'number' ? [init.potentialWeight] : unsetSlider()));
+  const [potentialSharpness, setPotentialSharpness] = useState(() => (typeof init?.potentialSharpness === 'number' ? [init.potentialSharpness] : unsetSlider()));
+  const [potentialDescription, setPotentialDescription] = useState(init?.potentialDescription ?? '');
 
   const handleNextInstructionCard = () => {
     if (instructionCardIndex < INSTRUCTION_CARDS.length - 1) {
@@ -134,7 +140,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                 Touch - Somatosensation
                 <GatewaySubtitleLink href="https://www.ncbi.nlm.nih.gov/books/NBK583711/" />
               </h1>
-              <GatewayProgress index={currentIndex} total={totalGateways} />
+              {!tray && <GatewayProgress index={currentIndex} total={totalGateways} />}
             </div>
           </div>
 
@@ -200,6 +206,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
               {simple && (
                 <div className="mb-6 space-y-3">
                   <p className="text-center">{TOUCH_COPY.intro}</p>
+                  {tray && <div className="text-center"><FewerNote /></div>}
                   <details className="mx-auto max-w-xl rounded-lg border border-border p-3 text-sm">
                     <summary className="flex min-h-11 cursor-pointer items-center underline underline-offset-4">{TOUCH_COPY.howTitle}</summary>
                     <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
@@ -379,7 +386,8 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
 
             {/* Next Button */}
             <TextureCredits />
-            {stage === 'wish' && (
+            {stage === 'wish' && tray && <AddToReport name="Touch" added={!!init} onAdd={handleNext} onPutDown={onBack} />}
+            {stage === 'wish' && !tray && (
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"
