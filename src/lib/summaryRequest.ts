@@ -5,7 +5,7 @@ import { SUMMARY_CREDIT, SUMMARY_CREDIT_LINK, SUMMARY_FAILED_TEXT } from './summ
 /** VITE_SUMMARY_REQUEST (off by default): the button on the coach page. The server's own switch is COACH_SUMMARY_REQUEST. */
 export const summaryRequestOn = (): boolean => import.meta.env?.VITE_SUMMARY_REQUEST === 'on';
 
-/** The words on the page. DRAFTS for the owner to approve: the block label, the button, the loading line, the note and the cap sentence. */
+/** The words on the page: the block label, the button, the loading line, the note and the cap sentence. Approved by the owner 2026-11-18 ("approve all"). */
 export const SUMMARY_UI = {
   button: 'Request a summary',
   buttonNote: 'Optional. A summary is the AI’s reading of what you wrote, not a record. The signed transcript is the exact record.',

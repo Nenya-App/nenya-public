@@ -1,5 +1,5 @@
 // "Nenya in plain English" (docs/terms-first-entry-scope.md): a short summary of the Terms and the privacy promise, in everyday words. A summary, not the Terms; the full
-// Terms of Use and Privacy Policy (src/lib/legalDocument.ts) are the binding text, and this page says so. DRAFT for the owner's edit: every line carries the Terms section
+// Terms of Use and Privacy Policy (src/lib/legalDocument.ts) are the binding text, and this page says so. Approved by the owner 2026-11-18 ("approve all"). Every line carries the Terms section
 // it was written from (`from`), so a change to the Terms shows which lines to check. The words are the owner's to approve; it follows the Terms' archive and effective-date practice.
 
 export interface PlainItem { heading: string; text: string; from: string }

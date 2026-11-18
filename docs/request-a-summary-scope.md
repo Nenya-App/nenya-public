@@ -71,3 +71,5 @@ The browser-side encrypted route (`VITE_BOUNDARY_GUARD`'s sealed path, `src/lib/
 - **Terms wording drafted (2026-11-18), not applied:** `docs/drafts/terms-summary-request-draft.md` (seven changes in Privacy section 15, the counts sentence and the short version, each beside the current sentence; four decisions for the owner).
 - **Wording to approve:** `SUMMARY_FLAGGED_LEAD` and `SUMMARY_FAILED_TEXT` in `src/lib/finalSummary.ts`.
 - **Not yet:** the signed addendum (step 2), the page (step 3), About answers and Terms wording (step 4), the sealed route (phase 2). One summary per conversation is limited today only by the cap, because the function is stateless; the page keeps the first and offers no second.
+
+- **Page wording approved (owner, 2026-11-18, "approve all"):** the button, the block label, the note, the cap and error sentences (`src/lib/summaryRequest.ts`), `SUMMARY_FAILED_TEXT` and `SUMMARY_FLAGGED_LEAD`. Step 3 (the page, `VITE_SUMMARY_REQUEST`, off) is built and on dev; the Terms wording for the summary and the About answer are step 4.
