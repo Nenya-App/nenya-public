@@ -48,3 +48,8 @@ const pdf = readFileSync('src/lib/nenyaPdfReport.ts', 'utf8');
 ok('the review page shows the "Examined, not included" line, writes it into the text report, and gives it to the PDF', /examinedLine\?: string/.test(review) && /\{examinedLine && <p[^>]*data-examined-line>/.test(review) && /if \(examinedLine\) report \+= /.test(review) && /formatBodyMapLines, examinedLine\)/.test(review));
 ok('the PDF draws the line after the lens sections and before the body map, only when there is one', /examinedLine\?: string/.test(pdf) && /if \(examinedLine\) \{/.test(pdf) && pdf.indexOf('if (examinedLine) {') < pdf.indexOf("Body Map -- shared across every gateway"));
 ok('App passes the line only in tray mode, from the tray state', /examinedLine=\{lensTrayOn\(\) \? reportShape\(trayState\)\.line : undefined\}/.test(app));
+
+const quick = readFileSync('src/app/components/QuickNav.tsx', 'utf8');
+ok('the quick nav keeps its present words (Breathe, Reflect, Coach) and marks the part you are in', />Breathe</.test(quick) && />Reflect</.test(quick) && />Coach</.test(quick) && /current === 'breathe'/.test(quick) && /current === 'reflect'/.test(quick));
+ok('the tray page carries the quick nav, marked Reflect, with Breathe going back; Coach stays its own page', /<QuickNav current="reflect" onBreathe=\{onBack\}/.test(tray) && /coachHref = '\/coach\/'/.test(quick));
+ok('on the breathing page Reflect leads to the start screen, which is the tray when the tray switch is on', /onReflect=\{onContinue\}/.test(readFileSync('src/app/components/pages/WelcomePage.tsx', 'utf8')) && /currentScreen === 'home' && lensTrayOn\(\)/.test(app));

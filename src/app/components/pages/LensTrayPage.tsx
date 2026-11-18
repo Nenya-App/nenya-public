@@ -2,6 +2,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { AppFooter } from '../AppFooter';
+import QuickNav from '../QuickNav';
 import { gatewayCards } from './GatewaysPage';
 import { L } from '../../../lib/vocabulary';
 import { lensStatus, reportShape, type LensId, type LensState } from '../../../lib/lensState';
@@ -61,6 +62,8 @@ export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack
         </div>
       </div>
       <AppFooter />
+      {/* The same three places as on the breathing page: Breathe goes back, Reflect is here, Coach is its own page. */}
+      <QuickNav current="reflect" onBreathe={onBack} onReflect={() => undefined} />
     </div>
   );
 }
