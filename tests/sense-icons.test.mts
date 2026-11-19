@@ -20,3 +20,5 @@ ok('the icon is decorative (hidden from screen readers, not focusable) and takes
 const welcome = readFileSync('src/app/components/pages/WelcomePage.tsx', 'utf8');
 ok('the opening page shows the icon beside each name in the senses list, inside its term, so the list stays a list of names and sentences', /<dt className="flex items-center gap-2 font-medium"><SenseIcon id=\{g\.id\} \/>\{g\.name\}<\/dt>/.test(welcome));
 ok('the public files are plain svg with one path each', ids.every((id) => (readFileSync(`public/icons/material/${SENSE_ICONS[id].symbol}.svg`, 'utf8').match(/<path /g) ?? []).length === 1 && !/<script|<image|href=/.test(readFileSync(`public/icons/material/${SENSE_ICONS[id].symbol}.svg`, 'utf8'))));
+const tray = readFileSync('src/app/components/pages/LensTrayPage.tsx', 'utf8');
+ok('the tray shows the same icon in each lens\'s badge, in place of the earlier line icon', /<SenseIcon id=\{c\.id as SenseId\} \/>/.test(tray) && !/const Icon = c\.icon/.test(tray));

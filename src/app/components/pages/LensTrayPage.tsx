@@ -5,6 +5,8 @@ import { ArrowLeft } from 'lucide-react';
 import { AppFooter } from '../AppFooter';
 import QuickNav from '../QuickNav';
 import { gatewayCards } from './GatewaysPage';
+import { SenseIcon } from '../SenseIcon';
+import type { SenseId } from '../../../lib/senseIcons';
 import { L } from '../../../lib/vocabulary';
 import { lensStatus, reportShape, type LensId, type LensState } from '../../../lib/lensState';
 
@@ -39,13 +41,12 @@ export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack
           </div>
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 list-none p-0">
             {gatewayCards.map((c) => {
-              const Icon = c.icon;
               const st = lensStatus(state, c.id as LensId);
               return (
                 <li key={c.id}>
                   <Card className={`p-4 sm:p-6 h-full space-y-3 ${st === 'included' ? 'border-nenya-accent-warm bg-nenya-accent-warm/10' : 'border-border'}`}>
                     <div className="flex items-center gap-3">
-                      <div className="p-3 rounded-full bg-muted text-muted-foreground"><Icon className="size-6" aria-hidden="true" /></div>
+                      <div className="p-3 rounded-full bg-muted text-muted-foreground"><SenseIcon id={c.id as SenseId} /></div>
                       <h2 className="text-xl">{c.name}</h2>
                     </div>
                     <p className="text-sm text-muted-foreground">{c.description}</p>
