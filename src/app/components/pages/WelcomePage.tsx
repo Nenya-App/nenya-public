@@ -9,6 +9,7 @@ import { SupportThisWork } from '../SupportThisWork';
 import { ContactSection } from '../ContactSection';
 import { LOGO_ALT_NO_ORBS, LOGO_ALT_SHORT } from '../../../lib/altText';
 import { GATEWAY_SUMMARIES } from '../../../lib/gatewaySummaries';
+import { SenseIcon } from '../SenseIcon';
 
 import { L } from '../../../lib/vocabulary';
 interface WelcomePageProps {
@@ -179,7 +180,7 @@ export default function WelcomePage({
             <dl className="space-y-3">
               {GATEWAY_SUMMARIES.map((g) => (
                 <div key={g.id}>
-                  <dt className="font-medium">{g.name}</dt>
+                  <dt className="flex items-center gap-2 font-medium"><SenseIcon id={g.id} />{g.name}</dt>
                   <dd className="text-muted-foreground">{g.summary}</dd>
                 </div>
               ))}
