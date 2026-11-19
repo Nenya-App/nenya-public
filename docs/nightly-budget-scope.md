@@ -26,6 +26,18 @@ Same priority as the repurpose plan, so a spare credit has a ready use:
 5. Anything else only after those.
 A **menu file** (`canary/menu`) lists tasks with an estimated cost; the runner takes tasks from the top until the night's spendable amount is used. Tasks that do not fit are skipped, not shrunk.
 
+## 3b. Which budget runs which task (owner, 2026-11-19: split by best fit so no credit is wasted)
+Each budget has what it is good at; a task goes to the cheapest budget that can do it well, and anything left over flows to the next.
+| Task | Best fit | Why |
+|---|---|---|
+| Persona set, layer measurements, page and persona checks on a hosted 26B | **Workers AI, nightly** (free, expires daily) | Fixed cost per turn, no rollover: the free allowance should never be left |
+| Many short conversations with a small model playing the adversary or person | **Workers AI or the local machine** | Cheap, high volume; local costs nothing |
+| Baseline of the live model, troll-arena pairs, anything that must be what visitors get | **Venice, monthly spend-down before 12/9** | Only Venice runs the live model; price per turn is tiny, so the month's leftover buys many runs |
+| Drafting paraphrase variants of failures, new briefs, held-out sets, judge-side reading | **Claude API, weekly before Thursday** | Writing and judgement tasks; output goes to the owner for review, never straight into a set |
+| Long, slow, unattended runs on small models | **The owner's machine (LM Studio), overnight** | Free; needs power, and runs in an idle window |
+Overflow order, so nothing expires: a task that does not fit its best budget moves down this list (Workers AI first, then local, then Venice, then Claude) if it can run there without changing what it measures. A task never moves to a budget that would change the result (the live-model baseline never runs on Workers AI).
+The runner reads the menu (`canary/menu`: task, best budget, estimated cost) and fills each budget's spendable amount from the top; unspent amounts and skipped tasks are written to the digest so the owner sees what was left.
+
 ## 4. Claude credit at a cycle end
 - **Allowed (owner, 2026-11-19):** a weekly API call that spends down the week's usage before Thursday morning's reset, or monthly like Venice. It runs once, never nightly, with its own ceiling and ledger.
 - **Limit:** I cannot read the plan's usage from a script, so the job spends a fixed, owner-set amount up to the ceiling; it cannot know what is truly left. The simplest safe form is a weekly ceiling the owner sets from what the usage screen shows.
