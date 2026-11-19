@@ -64,6 +64,7 @@ decision is set in `maintenance-plan.md`.
 
 | Variable (on value) | What it does | Blocked on | Scope record |
 | --- | --- | --- | --- |
+| `COACH_BOUNDARY_GUARD` (`on`) | Two guards from the 2026-11-17 layer measurements: a reply that directs a medication change, or promises to be there or to remember or stands in for the person's people, is asked for again once, then replaced by a fixed site sentence | Owner approval of the two sentences (`src/lib/boundaryGuard.ts`) | `outer-layers-scope.md` |
 | `COACH_DISTRESS_TEXT` (`on`) | The site's sentence, after a reply to distress, naming a person and the crisis line | Wording is a draft. Outside review invited | `coach-instructions-v2.md`, `drafts/terms-revision-2026-11-09.md` §3 |
 | `COACH_VALUES` (`on`) | The stance on mass violence and contempt for a group, the mirror guard, and the site's challenge sentence | Owner decision. Measured detection is uneven across groups | `triggers-and-escalation-checkin.md` §4, `drafts/history-and-violence-text-draft.md` |
 | `COACH_LEARNING_OFFERS` (`on`), `COACH_JUDGMENT_CARDS` (`on`), `COACH_LEARNING_MIN_SEVERITY` | Offers of short learning cards | Approved cards, Terms draft | `learning-cards-scope.md`, `drafts/terms-learning-cards-draft.md` |

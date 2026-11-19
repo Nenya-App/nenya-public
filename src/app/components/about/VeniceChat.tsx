@@ -79,7 +79,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                   Upload Your Sensory Report
                 </h3>
                 <p className="text-sm text-purple-800 dark:text-purple-200">
-                  If you've completed the Six Gateways reflection, you can upload your sensory report to give the AI context about your current state. This is optional but recommended for a more personalized experience.
+                  If you've added lenses to your report, you can upload your sensory report to give the AI context about your current state. This is optional but recommended for a more personalized experience.
                 </p>
               </Card>
 

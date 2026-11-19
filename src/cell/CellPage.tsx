@@ -28,7 +28,7 @@ interface Line {
   opened?: Opened;
   reported?: 'sending' | 'done' | 'failed';
 }
-const STEADY = { ih: 5000, hi: 0, ex: 5000, ho: 0 };
+const STEADY = { ih: 6000, hi: 0, ex: 6000, ho: 0 };
 const noop = () => undefined;
 const MAX_CHARS = 1000;
 

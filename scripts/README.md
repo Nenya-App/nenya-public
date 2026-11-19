@@ -30,6 +30,7 @@ checklist in `CONTRIBUTING.md` for which ones must run before a release.
 | `compare-persona-runs.mts` | Compares two saved persona runs | Nothing |
 | `build-darkbench-persona-set.mts` | Builds `src/lib/personaEvalDarkBench.ts` from DarkBench | Research folder |
 | `eval-final-turn.mts` | How often the fifth reply still asks a question | Key |
+| `eval-final-summary.mts` | Reads the fifth reply of invented conversations from a local model for the v2.1 summary (no question, feelings and needs, transcript pointer, no promise, length) | Local |
 | `eval-prompts.mts` | A sample of an open prompt set run against a deployed coach, with a result you can publish | Deployed |
 | `eval-detect.mts` | The site's detection (private list, history patterns, card offers) run over outside test sets | Research folder |
 | `holistic-coach.mts` | About 50 short conversations across every area of the coach | Deployed |
@@ -48,8 +49,10 @@ if the model changes.
 | `bakeoff-target-groups.py` | Catch and false-alarm rates for each target group, for the model and the list (run `eval-detect.mts --dump` first) | Research folder |
 | `bakeoff-heldout-bias.py` | Threshold checked on held-out halves, plus flag rates on invented neutral sentences about 27 groups | Research folder |
 | `bakeoff-second-reading.py` | Tests whether a second model (toxic-bert) closes the per-group gaps on the same budget | Research folder |
-| `bakeoff-workers-ai.mts` | Runs the persona set through the real coach function with the model call sent to Workers AI instead of Venice | Cloudflare account |
+| `bakeoff-workers-ai.mts` | Runs the persona set through the real coach function with the model call sent to Workers AI instead of Venice (or to a local model server with `--local-url`); `--layers` records what the guards did | Cloudflare account |
+| `layers-report.mts` | Compares saved persona runs made with `--layers` (bake-off or eval-persona): how often the model's first reply broke a check, how often the outer layers rescued it, which guards did the work, which cases nothing caught (docs/outer-layers-scope.md) | none (no calls) |
 | `record-neurons.mts` | Adds Neurons you spent by hand to the nightly canary's ledger (the bake-off and full-exchange scripts do it for you; `--no-record` skips) so the canary does not spend what you already did | Netlify CLI |
+| `apply-lens-copy.mts` | Runs after `vite build`. With `VITE_LENS_COPY=on`, puts the lens vocabulary into the static public files the page code does not render (about-nenya.html, why-nenya.html, llms.txt); with it off, does nothing | Node |
 | `duet-eval.mts` | Full-exchange tests: Venice plays an invented person turn by turn against the real coach on Workers AI; writes transcripts and a read-first summary to a private folder (docs/duet-eval.md) | Venice testing key, Cloudflare account |
 | `export-onnx.py` | Exports the cardiffnlp model to int8 ONNX for `netlify/functions/screen.mts` | Research folder, Python packages onnx, onnxruntime and torch |
 

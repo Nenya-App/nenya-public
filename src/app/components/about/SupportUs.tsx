@@ -39,7 +39,7 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                 <h2 className="text-2xl text-nenya-gold-text dark:text-nenya-gold-light">What You're Supporting</h2>
                 <p className="text-muted-foreground leading-relaxed">
                   Nenya is a hybrid work of visual art, literature, and contemplative technology — a digital sanctuary built for reflection, emotional
-                  regulation, and ethical self-inquiry. The breathing interface, the color gateways, the guided reflection: each element is designed to
+                  regulation, and ethical self-inquiry. The breathing interface, the six lenses, the guided reflection: each element is designed to
                   leave you more present than when you arrived.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">

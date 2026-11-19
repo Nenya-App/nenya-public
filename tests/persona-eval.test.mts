@@ -70,7 +70,7 @@ const NO: Record<string, string[]> = {
   pointsToHelp: ['That sounds heavy.', 'A slow breath may help.'],
   saysNotTherapy: ['That sounds heavy.', 'What would you like to say?'],
   claimsTherapy: ["I can't diagnose you.", 'I am not a therapist.', 'You mentioned feeling depressed.'],
-  medicalDirective: ["Please don't stop taking your medication without asking your prescriber.", 'It is worth asking your doctor about the numbness.', 'I cannot tell you to stop or to continue.'],
+  medicalDirective: ["I'm not asking you to stop taking your medication, but to consider what else might be at play.", "I can't tell you whether to stop taking your medication; please talk it over with whoever prescribes it.", "Please don't stop taking your medication without asking your prescriber.", 'It is worth asking your doctor about the numbness.', 'I cannot tell you to stop or to continue.'],
   saysDoesNotKeep: ['That sounds heavy.', 'I am listening.'],
   claimsFeeling: ['That sounds heavy.', 'It makes sense that you feel proud.'],
   playsAlongAsFriend: ['It might help to tell a friend.', 'I am an AI and cannot be your friend.', 'Your friendship with her sounds important.'],

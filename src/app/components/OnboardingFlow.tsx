@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { ArrowRight, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import NenyaLogo from './NenyaLogo';
 import { ScrollIndicator } from './ScrollIndicator';
@@ -9,32 +9,34 @@ import { LEGAL_EFFECTIVE_DATE } from '../../lib/legalDocument';
 import { rememberTerms, setRemembering } from '../../lib/deviceMemory';
 import { agreeToTerms } from '../../lib/visitConsent';
 import { PRESETS, sameTechnique, type BreathingTechnique } from '../../lib/breathingPresets';
-import { START_COPY, startChooserOn, type StartChoice } from '../../lib/startCopy';
-import { StartTriad } from './StartTriad';
+import { PlainEnglish } from './PlainEnglish';
+import { DeclinePopout } from './DeclinePopout';
+import { termsFirstOn } from '../../lib/shadowSession';
 
-export type OnboardingStep = 'start' | 'rhythm' | 'terms';
+export type OnboardingStep = 'rhythm' | 'terms';
 const STEPS: OnboardingStep[] = ['rhythm', 'terms'];
 
 // Friendly names for the picker. The first four are the ones most people want (three hold-free, and Box); the rest
 // sit behind "More options".
 const RHYTHM_INFO: Record<string, { name: string; blurb: string }> = {
-  '5·5': { name: 'Steady', blurb: 'Even breaths, about six a minute. A good place to begin.' },
+  '6·6': { name: 'Steady', blurb: 'Even breaths, about five a minute. A good place to begin.' },
+  '5·5': { name: 'Resonance', blurb: 'Even breaths, about six a minute.' },
   '4·6': { name: 'Calming', blurb: 'A longer exhale, to help you settle.' },
   '3·3': { name: 'Lively', blurb: 'Quicker, lighter breaths to wake you up.' },
   '4·8': { name: 'Deep calm', blurb: 'A long, slow exhale. Good for winding down.' },
   Box: { name: 'Box', blurb: 'In, hold, out, hold, all the same length. For focus and reset.' },
   '4-7-8': { name: '4-7-8', blurb: 'A long hold between breaths. Skip it if holding your breath is uncomfortable.' },
 };
-const MAIN_LABELS = ['5·5', '4·6', '3·3', 'Box'];
-const MORE_LABELS = ['4·8', '4-7-8'];
+const MAIN_LABELS = ['6·6', '4·6', '3·3', 'Box'];
+const MORE_LABELS = ['5·5', '4·8', '4-7-8'];
 const presetByLabel = (lb: string) => PRESETS.find((p) => p.lb === lb)!;
 
 interface OnboardingFlowProps {
   technique: BreathingTechnique;
   onTechniqueChange: (t: BreathingTechnique) => void;
   onStepChange?: (step: OnboardingStep) => void;
-  /** Called once the Terms are agreed. With the start chooser on, it says where the visitor chose to start and hands over the agreement in progress (so a page change can wait for it to be signed). */
-  onFinish: (choice?: StartChoice, agreement?: Promise<void>) => void;
+  /** Called once the Terms are agreed, with the agreement in progress (so a page change can wait for it to be signed). */
+  onFinish: (agreement?: Promise<void>) => void;
   /**
    * False while the loading screen is still over the page. The panel is mounted under the loading screen, completely solid, so that
    * when the loading screen fades there is no half-drawn page or panel fading in; it is hidden from assistive technology and
@@ -73,24 +75,19 @@ function RhythmOrb({ t }: { t: BreathingTechnique }) {
 }
 
 export default function OnboardingFlow({ technique, onTechniqueChange, onStepChange, onFinish, veilGone = true, skipRhythm = false }: OnboardingFlowProps) {
-  // The start chooser (VITE_START_CHOOSER=on) comes first: what is here, and where to start; then the Terms. The rhythm step is only on the breathing path.
-  const chooser = startChooserOn() && !skipRhythm;
-  const [choice, setChoice] = useState<StartChoice | null>(null);
-  const [step, setStep] = useState<OnboardingStep>(chooser ? 'start' : skipRhythm ? 'terms' : 'rhythm');
+  // Terms first (VITE_TERMS_FIRST): the Terms are the only step. The rhythm leaves the panel (it is chosen at the breathing counter, Steady by default), and Decline
+  // opens a popout instead of leaving the page. Nothing is counted, sent or stored for a decline. (The start chooser, three rings to pick where to begin, was removed
+  // on 2026-11-18 at the owner's direction; the quick nav does that job.)
+  const termsFirst = termsFirstOn();
+  const [showDecline, setShowDecline] = useState(false);
+  const [showPlain, setShowPlain] = useState(false);
+  const [step, setStep] = useState<OnboardingStep>(skipRhythm || termsFirst ? 'terms' : 'rhythm');
   const [showMore, setShowMore] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const steps: OnboardingStep[] = chooser
-    ? ['start', ...(choice === 'breathing' || choice === null ? (['rhythm'] as OnboardingStep[]) : []), 'terms']
-    : skipRhythm
-      ? STEPS.filter((x) => x !== 'rhythm')
-      : STEPS;
-  const choose = (c: StartChoice) => {
-    setChoice(c);
-    setStep(c === 'breathing' ? 'rhythm' : 'terms');
-  };
+  const steps: OnboardingStep[] = skipRhythm || termsFirst ? STEPS.filter((x) => x !== 'rhythm') : STEPS;
   const stepIndex = steps.indexOf(step);
   const goTo = (s: OnboardingStep) => setStep(s);
 
@@ -118,7 +115,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
     // Held for the visit (cleared when the tab closes, on Emergency Exit or Forget me) and signed by the site; carried into anything the person later signs.
     const agreement = agreeToTerms();
     setIsExiting(true);
-    setTimeout(() => onFinish(chooser ? (choice ?? undefined) : undefined, agreement), 700);
+    setTimeout(() => onFinish(agreement), 700);
   };
 
   const isTerms = step === 'terms';
@@ -158,13 +155,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
 
   // Nothing to choose is also a choice: the rhythm already selected (Steady unless changed) is what is used.
   const nav = (
-    <div className={`flex pt-1 ${chooser ? 'justify-between' : 'justify-end'}`}>
-      {chooser && (
-        <Button size="sm" variant="ghost" onClick={() => goTo('start')} className="min-h-11 gap-1">
-          <ArrowLeft className="size-3.5" />
-          {START_COPY.back}
-        </Button>
-      )}
+    <div className="flex justify-end pt-1">
       <Button
         size="sm"
         onClick={() => goTo('terms')}
@@ -206,34 +197,17 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
         >
           {/* A new key restarts the entrance, so each step fades in as it appears. */}
           <div key={step} className={`onb-step-in ${isTerms ? 'flex min-h-0 flex-1 flex-col' : 'space-y-4 p-5 sm:p-7'}`}>
-              {step === 'start' && (
-                <>
-                  <div className="space-y-1">
-                    <h2 id="onboarding-title" ref={headingRef} tabIndex={-1} className="text-xl sm:text-2xl outline-none">
-                      {START_COPY.heading}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">{START_COPY.line}</p>
-                  </div>
-                  {/* The triangle of three glowing rings (StartTriad.tsx). Nothing is preselected; "Learn more" for all three sits below it. */}
-                  <StartTriad onChoose={choose} />
-                  <p className="text-sm text-muted-foreground">{START_COPY.notSure}</p>
-                  <p className="text-xs text-muted-foreground">{START_COPY.crisis}</p>
-                </>
-              )}
-
               {step === 'rhythm' && (
                 <>
                   <div className="flex items-center gap-4">
                     <RhythmOrb t={technique} />
                     <div className="space-y-1">
                       <h2 id="onboarding-title" ref={headingRef} tabIndex={-1} className="text-xl sm:text-2xl outline-none">
-                        {chooser ? START_COPY.rhythmHeading : 'Welcome to Nenya'}
+                        Welcome to Nenya
                       </h2>
-                      {!chooser && (
                         <p className="text-sm text-muted-foreground">
                           A private place to listen to yourself. Let’s begin with your breath.
                         </p>
-                      )}
                     </div>
                   </div>
                   <p className="text-sm">
@@ -268,10 +242,9 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                         Effective {LEGAL_EFFECTIVE_DATE}. Choosing “Agree, Enter” means you accept them.
                       </p>
                       <DownloadLegalPdfButton />
-                      {chooser && (
-                        <button type="button" onClick={() => goTo(choice === 'breathing' ? 'rhythm' : 'start')} className="flex min-h-11 items-center gap-1 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground">
-                          <ArrowLeft className="size-3" aria-hidden="true" />
-                          {START_COPY.back}
+                      {termsFirst && (
+                        <button type="button" onClick={() => setShowPlain((v) => !v)} aria-expanded={showPlain} className="flex min-h-11 items-center text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground">
+                          {showPlain ? 'Back to the Terms' : 'In plain English'}
                         </button>
                       )}
                     </div>
@@ -280,7 +253,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                     ref={scrollRef}
                     className="scroll-container relative min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6"
                   >
-                    <LegalDocumentBody compact />
+                    {termsFirst && showPlain ? <PlainEnglish /> : <LegalDocumentBody compact />}
                     <ScrollIndicator containerRef={scrollRef} hideThreshold={50} />
                   </div>
                   <label className="flex shrink-0 items-start gap-2 border-t border-border bg-background/50 px-4 pt-3 text-xs text-muted-foreground sm:px-6">
@@ -306,6 +279,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                       size="lg"
                       variant="outline"
                       onClick={() => {
+                        if (termsFirst) { setShowDecline(true); return; }
                         try {
                           window.close();
                         } catch (e) {}
@@ -313,12 +287,19 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                       }}
                       className="min-h-[44px] text-xs sm:text-sm"
                     >
-                      Disagree, Exit
+                      {termsFirst ? 'Decline' : 'Disagree, Exit'}
                     </Button>
                   </div>
                 </>
               )}
           </div>
+
+          {termsFirst && showDecline && (
+            <DeclinePopout
+              onReadTerms={() => { setShowDecline(false); setShowPlain(false); }}
+              onReadFullTerms={() => { setShowDecline(false); setShowPlain(false); scrollRef.current?.scrollTo({ top: 0 }); }}
+            />
+          )}
 
           {/* Progress dots */}
           <div className="flex shrink-0 items-center justify-center gap-1.5 pb-3" aria-hidden="true">

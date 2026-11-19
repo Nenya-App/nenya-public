@@ -9,7 +9,11 @@ import { shapeToPng } from './shapeImages';
 import type { Gateway, GatewayData } from '../app/App';
 import type { BodyMapData } from '../app/components/BodyMapAvatar';
 import { getNoteNames, TonalSystem } from './audio';
+import { drawPathThumb, drawTapestryThumb } from './pdfActivities';
+import { swatchBlock } from './pdfLayout';
+import { cleanLayers, cleanPoints } from './lensActivities';
 
+import { L } from './vocabulary.ts';
 import {
   COLORS,
   loadFonts,
@@ -37,11 +41,31 @@ function drawColorSwatches(
   doc: any,
   x: number,
   y: number,
-  swatches: { hex: string; label: string; caption?: string }[]
+  swatches: { hex: string; label: string; caption?: string }[],
+  contentWidth = 140
 ): number {
   const size = 13;
   const gap = 8;
-  let extra = 0;
+  const block = swatchBlock(doc, swatches, contentWidth);
+  if (block.rows) {
+    let cy = y;
+    swatches.forEach((s, i) => {
+      const [r, g, b] = hexToRgbTuple(s.hex);
+      doc.setFillColor(r, g, b);
+      doc.setDrawColor(...COLORS.goldDark);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(x, cy, size, size, 1.5, 1.5, 'FD');
+      doc.setFont('ManropeSemiBold', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...COLORS.ink);
+      doc.text(s.label, x + size + 4, cy + 4);
+      doc.setFont('Manrope', 'normal');
+      doc.setTextColor(...COLORS.textMuted);
+      block.wrapped[i].forEach((line, li) => doc.text(line, x + size + 4, cy + 8 + li * 3.8));
+      cy += Math.max(size, block.wrapped[i].length * 3.8 + 2) + 4;
+    });
+    return block.height;
+  }
   swatches.forEach((s, i) => {
     const sx = x + i * (size + gap);
     const [r, g, b] = hexToRgbTuple(s.hex);
@@ -49,22 +73,18 @@ function drawColorSwatches(
     doc.setDrawColor(...COLORS.goldDark);
     doc.setLineWidth(0.3);
     doc.roundedRect(sx, y, size, size, 1.5, 1.5, 'FD');
-
     doc.setFont('ManropeSemiBold', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(...COLORS.ink);
     doc.text(s.label, sx + size / 2, y + size + 4, { align: 'center' });
-
     if (s.caption) {
       doc.setFont('Manrope', 'normal');
       doc.setFontSize(6.5);
       doc.setTextColor(...COLORS.textMuted);
-      const wrapped: string[] = doc.splitTextToSize(s.caption, size + gap - 1).slice(0, 3);
-      wrapped.forEach((line: string, li: number) => doc.text(line, sx + size / 2, y + size + 8 + li * 3, { align: 'center' }));
-      extra = Math.max(extra, (wrapped.length - 1) * 3);
+      block.wrapped[i].forEach((line, li) => doc.text(line, sx + size / 2, y + size + 8 + li * 3, { align: 'center' })); // every line, none cut off
     }
   });
-  return size + 13 + extra;
+  return block.height;
 }
 
 // A small melodic contour chart for the sound gateway's melody: each note
@@ -133,7 +153,9 @@ export async function downloadNenyaPdfReport(
   gatewayTitles: Record<Gateway, string>,
   formatGatewayData: (gateway: Gateway, data: any) => string[],
   bodyMapData?: BodyMapData,
-  formatBodyMapLines?: (bodyMapData: BodyMapData) => string[]
+  formatBodyMapLines?: (bodyMapData: BodyMapData) => string[],
+  /** The tray's one plain line, "Examined, not included: …" (empty or absent when there is nothing to say). */
+  examinedLine?: string
 ) {
   const { jsPDF } = await import('jspdf');
   const [fonts, logoDataUrl] = await Promise.all([loadFonts(), loadLogo()]);
@@ -223,7 +245,7 @@ export async function downloadNenyaPdfReport(
   doc.setFontSize(9.5);
   doc.setTextColor(...COLORS.textMuted);
   const introLines = doc.splitTextToSize(
-    'This report reflects a private session of self-exploration through Nenya’s six sensory gateways. It is offered as a starting point for your own reflection, or for a conversation with a therapist, spiritual counselor, or trusted guide — never as a diagnosis or a directive.',
+    L('This report reflects a private session of self-exploration through Nenya’s six sensory gateways. It is offered as a starting point for your own reflection, or for a conversation with a therapist, spiritual counselor, or trusted guide — never as a diagnosis or a directive.'),
     150
   );
   doc.text(introLines, centerX, 148, { align: 'center' });
@@ -289,13 +311,14 @@ export async function downloadNenyaPdfReport(
     y += 13;
 
     if (hasColorSwatches) {
-      if (y + 26 > pageHeight - 26) {
-        y = newContentPage();
-      }
-      const consumed = drawColorSwatches(doc, margin + 4, y, [
+      const sw = [
         { hex: gd.data.color1, label: 'Present', caption: gd.data.color1Name || gd.data.color1 },
         { hex: gd.data.color2, label: 'Wish', caption: gd.data.color2Name || gd.data.color2 },
-      ]);
+      ];
+      if (y + swatchBlock(doc, sw, contentWidth - 8).height > pageHeight - 26) {
+        y = newContentPage();
+      }
+      const consumed = drawColorSwatches(doc, margin + 4, y, sw, contentWidth - 8);
       y += consumed;
     }
 
@@ -351,6 +374,18 @@ export async function downloadNenyaPdfReport(
       y += 33;
     }
 
+    // The two optional activities, as small pictures beside their words (the words are in the lines below; the coach reads words only).
+    const tapestry = gd.gateway === 'insight' ? cleanLayers(gd.data?.tapestryLayers) : [];
+    const path = gd.gateway === 'movement' ? cleanPoints(gd.data?.movementPath) : [];
+    if (tapestry.length || path.length >= 2) {
+      if (y + 32 > pageHeight - 26) {
+        y = newContentPage();
+      }
+      if (tapestry.length) drawTapestryThumb(doc as any, tapestry, margin + 4, y, 28);
+      if (path.length >= 2) drawPathThumb(doc as any, path, margin + 4, y, 28, Array.isArray(gd.data?.currentQualities) ? gd.data.currentQualities : []);
+      y += 32;
+    }
+
     dataLines.forEach((line) => {
       if (y > pageHeight - 26) {
         y = newContentPage();
@@ -375,12 +410,33 @@ export async function downloadNenyaPdfReport(
       doc.setFont('ManropeSemiBold', 'normal');
       doc.setFontSize(10);
       doc.setTextColor(...COLORS.ink);
-      doc.text(line, margin + 4, y);
-      y += 5.6;
+      // Wrapped, never run off the page edge (a long line such as the path of movement used to).
+      const wrappedTop: string[] = doc.splitTextToSize(line, contentWidth - 8);
+      wrappedTop.forEach((wl) => {
+        if (y > pageHeight - 26) {
+          y = newContentPage();
+        }
+        doc.text(wl, margin + 4, y);
+        y += 5.6;
+      });
     });
 
     y += 6;
   });
+
+  // Lenses the person opened but did not add (the tray): one plain line, so the report says what it leaves out.
+  if (examinedLine) {
+    if (y > pageHeight - 32) y = newContentPage();
+    doc.setFont('Manrope', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.textMuted);
+    doc.splitTextToSize(examinedLine, contentWidth - 8).forEach((l: string) => {
+      if (y > pageHeight - 26) y = newContentPage();
+      doc.text(l, margin + 4, y);
+      y += 5.6;
+    });
+    y += 6;
+  }
 
   // ---------------------------------------------------------------
   // Body Map -- shared across every gateway rather than owned by one, so
@@ -447,8 +503,15 @@ export async function downloadNenyaPdfReport(
       doc.setFont('ManropeSemiBold', 'normal');
       doc.setFontSize(10);
       doc.setTextColor(...COLORS.ink);
-      doc.text(line, margin + 4, y);
-      y += 5.6;
+      // Wrapped, never run off the page edge (a long line such as the path of movement used to).
+      const wrappedTop: string[] = doc.splitTextToSize(line, contentWidth - 8);
+      wrappedTop.forEach((wl) => {
+        if (y > pageHeight - 26) {
+          y = newContentPage();
+        }
+        doc.text(wl, margin + 4, y);
+        y += 5.6;
+      });
     });
   }
 

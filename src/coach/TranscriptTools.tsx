@@ -41,6 +41,8 @@ interface TranscriptToolsProps {
   offers?: { after: number; id: string; proof: string }[];
   /** Changes the site made to replies, with the server's proof (recorded only when the server can prove them). */
   edits?: { after: number; kind: 'added' | 'removed' | 'removed-care'; n: number; proof: string }[];
+  /** The summary the person asked for (docs/request-a-summary-scope.md), with the server's proof. The signed transcript carries it only if it is here, and the server only if the proof checks. */
+  summary?: { text: string; proof: string } | null;
 }
 
 type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
@@ -49,7 +51,7 @@ type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
 // our server once more (it was already there, turn by turn) so it can confirm it
 // is untouched and date it. Nothing is stored. Sharing with Nenya shows exactly
 // what would be sent first.
-export function TranscriptTools({ messages, session, context = '', ticket, stopped = false, maxTurns = 5, answered = [], offers = [], edits = [] }: TranscriptToolsProps) {
+export function TranscriptTools({ messages, session, context = '', ticket, stopped = false, maxTurns = 5, answered = [], offers = [], edits = [], summary = null }: TranscriptToolsProps) {
   const editList = edits.map((e) => ({ after: e.after, kind: e.kind, n: e.n }));
   const offeredTitles = offers.flatMap((o) => { const t = cardById(o.id)?.title; return t ? [{ after: o.after, title: t }] : []; });
   const [receipt, setReceipt] = useState<Receipt | null>(null);
@@ -73,7 +75,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setShare('closed');
     setKeptKey(false);
     setNoKeyOk(false);
-  }, [messages.length]);
+  }, [messages.length, summary?.text]);
 
   // A conversation stopped on its first message has no earlier exchange, so it has no ticket and needs none.
   const canSign = stopped ? !!ticket || messages.length === 1 : !!ticket;
@@ -85,7 +87,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'receipt', messages, session, ...(termsReceiptForRequest() ? { terms: termsReceiptForRequest() } : {}), ...(offers.length ? { offers } : {}), ...(edits.length ? { edits } : {}), ...(context ? { context } : {}), ticket, ...(stopped ? { stopped: true } : {}) }),
+        body: JSON.stringify({ action: 'receipt', messages, session, ...(termsReceiptForRequest() ? { terms: termsReceiptForRequest() } : {}), ...(offers.length ? { offers } : {}), ...(edits.length ? { edits } : {}), ...(summary ? { summary: { text: summary.text, proof: summary.proof } } : {}), ...(context ? { context } : {}), ticket, ...(stopped ? { stopped: true } : {}) }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { receipt: Receipt; transcript: SignedTranscript };
@@ -111,7 +113,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
   };
 
   const readableText = (r: Receipt | null): string => {
-    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles, editList), signedRef.current?.checks ?? checkNotesFor(messages, context));
+    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles, editList, summary?.text ?? null), signedRef.current?.checks ?? checkNotesFor(messages, context));
     // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
     return r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
   };
@@ -158,7 +160,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setShare('preview');
   };
 
-  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles, editList), signed?.checks ?? checkNotesFor(messages, context));
+  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles, editList, summary?.text ?? null), signed?.checks ?? checkNotesFor(messages, context));
   const tooLong = shareText.length > MAX_SHARE_CHARS;
 
   // Only a signed transcript can be sent. The function checks the signature first, then forwards the readable text (rebuilt

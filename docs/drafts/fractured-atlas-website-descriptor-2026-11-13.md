@@ -1,6 +1,6 @@
 # The Fractured Atlas website descriptor (2,500 characters or fewer)
 
-> **SUPERSEDED 2026-11-16** by `fractured-atlas-about-2026-11-16.md`. This draft still says Venice AI runs the coach (it is Cloudflare Workers AI since the Terms of November 16, 2026) and that the server "removes names and contact details" (the page and the server replace common identifiers with placeholders, and names are often missed). Kept as a record; do not send it.
+> **SUPERSEDED 2026-11-16** by `fractured-atlas-human-scale-2026-11-18.md` (which also superseded `fractured-atlas-about-2026-11-16.md`). This draft still says Venice AI runs the coach (it is Cloudflare Workers AI since the Terms of November 16, 2026) and that the server "removes names and contact details" (the page and the server replace common identifiers with placeholders, and names are often missed). Kept as a record; do not send it.
 
 Drafted 2026-11-13 for the owner to edit and for Fractured Atlas to review. **Not published anywhere.** The text below is **2495 characters** including spaces (limit 2,500), counted by script. It replaces the older description of the project on the Fractured Atlas page and reflects how Nenya works now.
 

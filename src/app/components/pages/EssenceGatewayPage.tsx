@@ -12,7 +12,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { WordPicker } from '../WordPicker';
+import { PutThisDown, FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
+import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
+import { EssenceFlavour } from '../EssenceFlavour';
 
+import { L } from '../../../lib/vocabulary';
 interface EssenceGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -21,12 +25,14 @@ interface EssenceGatewayPageProps {
   userColors?: { color1?: string; color2?: string };
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
+  /** Tray mode: what was added before, so Edit opens with it. */
+  initialData?: any;
 }
 
 const INSTRUCTION_CARDS = [
   {
-    title: 'Welcome to the Essence Gateway',
-    description: 'Scent and taste evoke memory and emotion in profound ways. In this gateway, you\'ll explore the aromatic qualities of your inner atmosphere.',
+    title: L('Welcome to the Essence Gateway'),
+    description: L('Scent and taste evoke memory and emotion in profound ways. In this gateway, you\'ll explore the aromatic qualities of your inner atmosphere.'),
     detail: 'Consider the flavors and aromas that capture how you feel. What essences resonate with your current state?'
   },
   {
@@ -41,7 +47,11 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: EssenceGatewayPageProps) {
+export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap, initialData }: EssenceGatewayPageProps) {
+  const tray = lensTrayOn();
+  const init = tray && initialData && ('currentTastes' in initialData || 'potentialTastes' in initialData || 'currentIntensity' in initialData) ? initialData : null;
+  // The soft limit of three words in one list (tray mode): the fourth waits for a yes.
+  const [pendingWord, setPendingWord] = useState<{ value: string; list: string[]; setter: (v: string[]) => void } | null>(null);
   // Step state
   const [step, setStep] = useState<'instructions' | 'selection'>('instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
@@ -58,20 +68,20 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
   }, [step]);
 
   // Current state
-  const [currentTastes, setCurrentTastes] = useState<string[]>([]);
-  const [currentTasteOther, setCurrentTasteOther] = useState('');
-  const [currentScents, setCurrentScents] = useState<string[]>([]);
-  const [currentScentOther, setCurrentScentOther] = useState('');
-  const [currentIntensity, setCurrentIntensity] = useState(() => unsetSlider());
-  const [currentDescription, setCurrentDescription] = useState('');
+  const [currentTastes, setCurrentTastes] = useState<string[]>(init?.currentTastes ?? []);
+  const [currentTasteOther, setCurrentTasteOther] = useState(init?.currentTasteOther ?? '');
+  const [currentScents, setCurrentScents] = useState<string[]>(init?.currentScents ?? []);
+  const [currentScentOther, setCurrentScentOther] = useState(init?.currentScentOther ?? '');
+  const [currentIntensity, setCurrentIntensity] = useState(() => (typeof init?.currentIntensity === 'number' ? [init.currentIntensity] : unsetSlider()));
+  const [currentDescription, setCurrentDescription] = useState(init?.currentDescription ?? '');
 
   // Potential state
-  const [potentialTastes, setPotentialTastes] = useState<string[]>([]);
-  const [potentialTasteOther, setPotentialTasteOther] = useState('');
-  const [potentialScents, setPotentialScents] = useState<string[]>([]);
-  const [potentialScentOther, setPotentialScentOther] = useState('');
-  const [potentialIntensity, setPotentialIntensity] = useState(() => unsetSlider());
-  const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialTastes, setPotentialTastes] = useState<string[]>(init?.potentialTastes ?? []);
+  const [potentialTasteOther, setPotentialTasteOther] = useState(init?.potentialTasteOther ?? '');
+  const [potentialScents, setPotentialScents] = useState<string[]>(init?.potentialScents ?? []);
+  const [potentialScentOther, setPotentialScentOther] = useState(init?.potentialScentOther ?? '');
+  const [potentialIntensity, setPotentialIntensity] = useState(() => (typeof init?.potentialIntensity === 'number' ? [init.potentialIntensity] : unsetSlider()));
+  const [potentialDescription, setPotentialDescription] = useState(init?.potentialDescription ?? '');
 
   const handleCheckboxChange = (
     value: string,
@@ -79,6 +89,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
     currentValues: string[],
     setter: (values: string[]) => void
   ) => {
+    if (checked && tray && needsFewerWarning(currentValues.length)) { setPendingWord({ value, list: currentValues, setter }); return; }
     if (checked) {
       setter([...currentValues, value]);
     } else {
@@ -135,17 +146,20 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
             <PanelLogo size={32} />
             <div className="text-center">
               <h1 className="text-lg">Essence - Atmosphere</h1>
-              <GatewayProgress index={currentIndex} total={totalGateways} />
+              {!tray && <GatewayProgress index={currentIndex} total={totalGateways} />}
             </div>
           </div>
           
-          <div className="w-20" />
+          {tray ? <PutThisDown onClick={onBack} name={'Essence'} /> : <div className="w-20" />}
         </div>
       </div>
 
       {/* Main Content */}
       <div ref={scrollContainerRef} className="flex-1 overflow-auto scroll-container">
-        {step === 'instructions' ? (
+        {tray ? (
+          // The tray's Essence is the flavor of your life, in five short cards (src/app/components/EssenceFlavour.tsx), not the old taste and scent page.
+          <EssenceFlavour initial={initialData} added={!!initialData && 'essenceV2' in initialData} onPutDown={onBack} onAdd={(data) => onComplete({ essenceV2: data })} />
+        ) : step === 'instructions' ? (
           /* Instruction Cards */
           <div className="h-full flex items-center justify-center px-4 sm:px-6 py-8">
             <div className="max-w-2xl w-full">
@@ -165,6 +179,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                   <p className="text-muted-foreground">
                     {INSTRUCTION_CARDS[instructionCardIndex].detail}
                   </p>
+                  {tray && instructionCardIndex === 0 && <FewerNote />}
                   <div className="flex items-center justify-between pt-4">
                     <div className="flex items-center gap-3">
                       <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); if (instructionCardIndex > 0) setInstructionCardIndex(instructionCardIndex - 1); else onBack(); }}>
@@ -221,11 +236,13 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                   <div className="space-y-2">
                     <Label className="text-sm">Taste (optional)</Label>
                     <WordPicker category="taste" idPrefix="currentTastes" selected={currentTastes} onToggle={(t) => handleCheckboxChange(t, !currentTastes.includes(t), currentTastes, setCurrentTastes)} other={{ value: currentTasteOther, onChange: setCurrentTasteOther, placeholder: "Other taste..." }} />
+                    {pendingWord && pendingWord.list === currentTastes && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Scent (optional)</Label>
                     <WordPicker category="scent" idPrefix="currentScents" selected={currentScents} onToggle={(t) => handleCheckboxChange(t, !currentScents.includes(t), currentScents, setCurrentScents)} other={{ value: currentScentOther, onChange: setCurrentScentOther, placeholder: "Other scent..." }} />
+                    {pendingWord && pendingWord.list === currentScents && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>
 
                   <SnappingSlider
@@ -237,6 +254,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                     max={100}
                   />
 
+                  {tray ? <MoreDescriptions>
                   <div className="space-y-2">
                     <Label className="text-sm">Describe the essence (optional)</Label>
                     <Textarea
@@ -246,6 +264,17 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                  </MoreDescriptions> : (
+                  <div className="space-y-2">
+                    <Label className="text-sm">Describe the essence (optional)</Label>
+                    <Textarea
+                      placeholder="What aromas or flavors come to mind?"
+                      value={currentDescription}
+                      onChange={(e) => setCurrentDescription(e.target.value)}
+                      className="min-h-20 resize-none text-sm"
+                    />
+                  </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -272,11 +301,13 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                   <div className="space-y-2">
                     <Label className="text-sm">Taste (optional)</Label>
                     <WordPicker category="taste" idPrefix="potentialTastes" selected={potentialTastes} onToggle={(t) => handleCheckboxChange(t, !potentialTastes.includes(t), potentialTastes, setPotentialTastes)} other={{ value: potentialTasteOther, onChange: setPotentialTasteOther, placeholder: "Other taste..." }} />
+                    {pendingWord && pendingWord.list === potentialTastes && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Scent (optional)</Label>
                     <WordPicker category="scent" idPrefix="potentialScents" selected={potentialScents} onToggle={(t) => handleCheckboxChange(t, !potentialScents.includes(t), potentialScents, setPotentialScents)} other={{ value: potentialScentOther, onChange: setPotentialScentOther, placeholder: "Other scent..." }} />
+                    {pendingWord && pendingWord.list === potentialScents && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>
 
                   <SnappingSlider
@@ -288,6 +319,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                     max={100}
                   />
 
+                  {tray ? <MoreDescriptions>
                   <div className="space-y-2">
                     <Label className="text-sm">Describe the essence (optional)</Label>
                     <Textarea
@@ -297,6 +329,17 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                  </MoreDescriptions> : (
+                  <div className="space-y-2">
+                    <Label className="text-sm">Describe the essence (optional)</Label>
+                    <Textarea
+                      placeholder="What aromas or flavors would you like to move toward?"
+                      value={potentialDescription}
+                      onChange={(e) => setPotentialDescription(e.target.value)}
+                      className="min-h-20 resize-none text-sm"
+                    />
+                  </div>
+                  )}
                 </CardContent>
               </Card>
             </StageSlot>
@@ -304,7 +347,8 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
             </div>
 
             {/* Next Button */}
-            {stage === 'wish' && (
+            {stage === 'wish' && tray && <AddToReport name="Essence" added={!!init} onAdd={handleNext} onPutDown={onBack} />}
+            {stage === 'wish' && !tray && (
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"
@@ -312,7 +356,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
                 disabled={!canContinue}
                 className="px-12"
               >
-                {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
+                {currentIndex + 1 < totalGateways ? L('Next Gateway') : 'Continue'}
               </Button>
             </div>
             )}

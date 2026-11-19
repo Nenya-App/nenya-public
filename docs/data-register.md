@@ -12,11 +12,13 @@ Everything Nenya keeps, where, for how long, and what deletes it. **Keep this cu
 | Transcript alerts (`verified-transcript` form: fingerprint and choices only) | Netlify Forms and the owner's inbox | until deleted by hand | the owner (same habit) | the owner |
 | Public "witnessed" copies | private store | their showing time | `transcript-expiry`; withdrawal at once | everyone, after the owner's review |
 | Partner-practice cells | private store | short | `cell-cleanup` (hourly) | the two people (end-to-end encrypted) |
-| Daily totals | private store | no limit yet (proposal: 13 months, then monthly) | nothing yet | the owner (admin page) |
-| "Save and return later" | the visitor's own browser (encrypted) | 24 hours | the page itself; Forget me; Emergency Exit | the visitor, with ID and passcode |
+| Daily totals (including, in the tray, a total per lens of how often it is opened and added: `lens.opened.<id>`, `lens.added.<id>`; no order, no time) | private store | no limit yet (proposal: 13 months, then monthly) | nothing yet | the owner (admin page) |
+| Working pair (the random pair made at agreement under `VITE_TERMS_FIRST`) | the visitor's browser memory only | the visit | closing the tab; Forget me; Emergency Exit | nobody (shown to the visitor) |
+| "Save and return later" | the visitor's own browser (encrypted) | 24 hours | the page itself; Forget me; Emergency Exit | the visitor, with ID and passcode (in tray mode it also holds a note of which lenses were opened but not added; still sealed) |
 | Nightly canary archive (`canary/runs/<day>/<task>-<case>` and `meta`: the coach's replies to invented test cases, the model, instructions fingerprint, build and Neurons; never the prompt, never visitor text) | private store (staging, and production if the canary is switched on there) | kept until the owner trims it (about 170 KB a night); never public until the owner has read it, because a reply can echo the private notes | the owner, by hand | the owner |
 | Guestbook signatures (`guestbook/<day>/<random>`: one color, the centroid of the visitor's two chosen colors and the two of the moment) | private store | forever (owner, 2026-11-15) | nothing (by design); cannot be found again to remove | everyone (the guestbook page) |
 | Guestbook once-a-day markers (`c/<day>/g-<code>`) | private store | about 1.5 days | `coach-cleanup` (daily, with the connection records) | nobody (codes only) |
+| Word look-up (`/api/words`, only if a visitor presses "Look it up online"): the one word typed, passed to Datamuse and the Free Dictionary API | not kept by us (only a per-connection count for the day, as the palette keeps) | the moment the answer is returned | nothing to delete | nobody |
 | Settings ("Remember on this device") | the visitor's own browser | until turned off | Forget me; Emergency Exit | the visitor |
 | Older report-form submissions (before 2026-11-15) | Netlify Forms (`report-submission`) | until deleted | the owner, by hand: delete those older than 90 days now, the rest as they reach 90 days | the owner |
 | Host logs and visit statistics | Netlify | Netlify's practices | Netlify | Netlify; the owner sees totals |

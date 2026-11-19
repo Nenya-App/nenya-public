@@ -5,6 +5,9 @@ import { Button } from './ui/button';
 import { ValarBreathingLogo, type BreathingTechnique } from './ValarBreathingLogo';
 import { breathLengthMs } from '../../lib/breathClock';
 import { PRESETS, sameTechnique } from '../../lib/breathingPresets';
+import { CustomBreath } from './CustomBreath';
+import { paceLabel } from '../../lib/breathCustom';
+import { STEADY } from './PortableBreath';
 import NenyaLogo from './NenyaLogo';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
 
@@ -146,8 +149,10 @@ export function BreathingPopout({
                       })}
                     </div>
                     {technique && (
-                      <p className="text-xs text-muted-foreground text-center">{PRESETS.find((p) => sameTechnique(technique, p))?.desc ?? 'Your own pace'}</p>
+                      <p className="text-xs text-muted-foreground text-center">{PRESETS.find((p) => sameTechnique(technique, p))?.desc ?? `Your own pace: ${paceLabel(technique)} seconds`}</p>
                     )}
+                    <p className="text-xs text-muted-foreground text-center">Stop and return to normal breathing if you feel dizzy or lightheaded. If a pace feels too long, choose a shorter one and build up gradually.</p>
+                    <CustomBreath technique={technique} onApply={onTechniqueChange} steady={STEADY} />
                   </div>
                 )}
               </div>

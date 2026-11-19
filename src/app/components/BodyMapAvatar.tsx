@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { sanitizePlainText } from '../../lib/textSanitize';
 import { BODY_PARTS, FACE_PARTS, MAP_W, MAP_H, clamp, labelFor, type MapPin } from '../../lib/bodyMapParts';
 
+import { L } from '../../lib/vocabulary';
 interface ColorPlacement {
   bodyPartId: string;
   color: string;
@@ -491,7 +492,7 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
               {/* Info */}
               <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
                 <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <strong>How to use:</strong> Choose a body part where you feel an emotion or sensation, then pick its color in the window that opens. Expand any body part to add a short note, with or without a color. This map is shared across every gateway — open it from any of them to keep adding to the same picture.
+                  <strong>How to use:</strong> Choose a body part where you feel an emotion or sensation, then pick its color in the window that opens. Expand any body part to add a short note, with or without a color. This map is shared across every {L('gateway')} — open it from any of them to keep adding to the same picture.
                 </p>
               </Card>
             </div>

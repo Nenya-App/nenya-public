@@ -1,0 +1,16 @@
+// Word help for a word of your own (src/lib/wordHelp.ts, WordHelp.tsx): on the device first, an online look-up only per press and only where switched on.
+import { readFileSync } from 'node:fs';
+import { WORD_HELP_COPY, WORD_HELP_LANGS, cleanLookupWord, localNearWords, parseDatamuse, parseDictionary, wordHelpOn } from '../src/lib/wordHelp.ts';
+import { ok } from './helpers.mts';
+
+ok('the look-up is off by default and English only', wordHelpOn() === false && WORD_HELP_LANGS.join() === 'en');
+ok('one word only: letters, a hyphen or an apostrophe, 2 to 24 characters; anything else is not looked up', cleanLookupWord(' Tired ') === 'tired' && cleanLookupWord("don't") === "don't" && cleanLookupWord('two words') === null && cleanLookupWord('a1') === null && cleanLookupWord('<b>') === null && cleanLookupWord('a') === null && cleanLookupWord('x'.repeat(25)) === null && cleanLookupWord(5) === null);
+const near = localNearWords('tired');
+ok('near words come from the device: related words first, never the word itself, at most twelve', near.length > 0 && near.length <= 12 && !near.includes('tired') && near.includes('weary') && localNearWords('') .length === 0);
+ok('a word on the lens\'s own lists brings its group-mates (by category)', localNearWords('pulsing', 'lightQuality').length > 0 && !localNearWords('pulsing', 'lightQuality').includes('pulsing'));
+ok('what the services send is cut down to words and one meaning, and bad entries are dropped', JSON.stringify(parseDatamuse([{ word: 'weary' }, { word: '<x>' }, { nope: 1 }, { word: 5 }])) === '["weary"]' && parseDatamuse('x').length === 0 && parseDictionary([{ meanings: [{ partOfSpeech: 'noun', definitions: [{ definition: 'A thing.' }] }] }]) === 'noun: A thing.' && parseDictionary([]) === null);
+const comp = readFileSync('src/app/components/WordHelp.tsx', 'utf8'), pick = readFileSync('src/app/components/WordPicker.tsx', 'utf8'), fn = readFileSync('netlify/functions/words.mts', 'utf8');
+ok('the online look-up is a separate press that says what it sends, and appears only where the site has it on', /wordHelpOn\(\) && <Button/.test(comp) && /WORD_HELP_COPY\.sends\(word\)/.test(comp) && /Pressing this sends the one word/.test(WORD_HELP_COPY.sends('x')) && /nothing else/i.test(WORD_HELP_COPY.sends('x')) && /Nothing is kept/.test(WORD_HELP_COPY.sends('x')));
+ok('only the one word is sent, only from the press, and nothing is stored', /body: JSON\.stringify\(\{ word, lang: 'en' \}\)/.test(comp) && !/localStorage|sessionStorage|document\.cookie/.test(comp) && !/useEffect/.test(comp));
+ok('word help sits under "a word of your own" in every word list, closed until opened, with 44px targets and a polite live area', /<WordHelp/.test(pick) && /<details/.test(comp) && /min-h-11/.test(comp) && /aria-live="polite"/.test(comp));
+ok('the server function never logs and never stores the word', !/console\./.test(fn) && /the word, the address\) is stored or logged/.test(fn));

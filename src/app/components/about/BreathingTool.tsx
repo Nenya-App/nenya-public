@@ -35,11 +35,24 @@ export default function BreathingTool({ onBack }: BreathingToolProps) {
             guide your actual breath, using something called a <strong>resonance breathing technique</strong>.
           </p>
 
+          <Card className="bg-card/80 dark:bg-card/50 backdrop-blur-sm border-border p-6 space-y-3" aria-labelledby="breathing-safety">
+            <h2 id="breathing-safety" className="text-xl md:text-2xl text-center">Safety and sources</h2>
+            <p>Stop and return to normal breathing if you feel dizzy or lightheaded. If six seconds feels too long, choose a shorter count (for example four or five seconds each) and build up gradually. If you have asthma, COPD, a heart or lung condition, or are managing specific symptoms, check with a healthcare professional before practicing slow or paced breathing exercises.</p>
+            <p className="text-sm text-muted-foreground">What stands behind this, and where it stops:</p>
+            <ul className="list-disc space-y-2 pl-5 text-sm">
+              <li>Dizziness is a recognised sign of over-breathing, which lowers carbon dioxide in the blood. A review of breathing training in asthma notes that slow, controlled breathing instruction can increase over-breathing in some susceptible people, and that in more severe chronic lung disease some diaphragmatic breathing can increase breathlessness. Courtney R. “Breathing training for dysfunctional breathing in asthma: taking a multidimensional approach.” <em>ERJ Open Research</em> 2017;3(4):00065-2017. <a className="underline underline-offset-4" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5721258" target="_blank" rel="noopener noreferrer">Read it (opens in a new tab)</a>.</li>
+              <li>The Cleveland Clinic, in its guidance on pursed-lip breathing (a related technique, not this one), says to take a break if you feel dizzy, lightheaded or tired, and to make sure the technique is right for your situation. <a className="underline underline-offset-4" href="https://my.clevelandclinic.org/health/treatments/9443-pursed-lip-breathing" target="_blank" rel="noopener noreferrer">Read it (opens in a new tab)</a>.</li>
+              <li>The benefits described on this page come from studies of mostly healthy people, and the body of evidence is small. A systematic review of slow breathing (under ten breaths a minute): Zaccaro A. et al., <em>Frontiers in Human Neuroscience</em> 2018;12:353. <a className="underline underline-offset-4" href="https://pubmed.ncbi.nlm.nih.gov/30245619/" target="_blank" rel="noopener noreferrer">Read it (opens in a new tab)</a>.</li>
+              <li>The advice to check first if you have a heart condition is a general precaution. We did not find a source on paced breathing in heart conditions specifically, so we say so and do not claim one.</li>
+            </ul>
+            <p className="text-xs text-muted-foreground">This is general information, not medical advice. It does not replace the advice of your own healthcare professional.</p>
+          </Card>
+
           <Card className="bg-card/80 dark:bg-card/50 backdrop-blur-sm border-border p-6 space-y-4">
             <h2 className="text-xl md:text-2xl text-center">One Approach: Resonance Breathing</h2>
             <p className="text-lg md:text-xl">
-              The Breathing Tool pulses at a rhythm of <strong>around 6 breaths per minute</strong>. This
-              specific frequency is scientifically recognized for its profound effect on the nervous
+              The Breathing Tool starts at <strong>six seconds in and six seconds out, about 5 breaths per minute</strong>.
+              You can choose another pace, or set your own inside safe limits. Slow breathing in this range is scientifically recognized for its profound effect on the nervous
               system. Research, such as that cited by the National Institutes of Health, indicates that
               breathing at this pace:
             </p>

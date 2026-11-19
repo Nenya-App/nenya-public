@@ -1,5 +1,5 @@
 // One address per part of the site (owner, 2026-11-15): /breath, /senses, /coach; "/" shows the front page and becomes /breath; the whole
-// reflection stays at /senses; the coach after a reflection shows /coach. Behind VITE_START_CHOOSER.
+// reflection stays at /senses; the coach after a reflection shows /coach. Behind VITE_SECTION_ADDRESSES (or the lens tray).
 import { readFileSync } from 'node:fs';
 import { SECTION_PATHS, sectionOfPath, sectionOfScreen } from '../src/lib/sections.ts';
 import { ok } from './helpers.mts';

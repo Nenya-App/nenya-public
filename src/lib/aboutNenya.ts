@@ -55,10 +55,10 @@ export const ANSWERS: Answer[] = [
     asked: ['what is Nenya', 'what is this site', 'what does this do', 'what is this for'],
     short: 'Nenya is an interactive space for personal reflection: a place to pause, breathe, and look at your own thoughts, feelings and needs through structured, sensory activities. It is best understood as interactive art, a mirror for your own thoughts rather than a source of answers.',
     full: [
-      'Nenya is an interactive digital environment designed as a tool for personal reflection and sensory exploration. You can pause and breathe, choose colors and sounds, work through the Six Gateways, and, if you choose, try a short conversation with the coach.',
+      'Nenya is an interactive digital environment designed as a tool for personal reflection and sensory exploration. You can pause and breathe, choose colors and sounds, pick up any of the six lenses in any order, and, if you choose, try a short conversation with the coach.',
       'It is best understood as a form of interactive art. It is a mirror for your own thoughts, not a source of answers, and it is not a medical device, a therapy service, or a substitute for professional care.',
     ],
-    links: [{ label: 'Terms of Use & Privacy Policy', page: 'terms' }, { label: 'The Six Gateways', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }],
+    links: [{ label: 'Terms of Use & Privacy Policy', page: 'terms' }, { label: 'The Six Lenses', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }],
     tutorial: 'Start here: what Nenya is and is not (first lesson of any Nenya tutorial).',
     checks: [
       { claim: 'a tool for personal reflection and sensory exploration; interactive art; a mirror, not a source of answers', file: TERMS, has: 'It is a mirror for your own thoughts, not a source of answers' },
@@ -69,17 +69,17 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-name', part: 'nenya', title: 'What the name means',
     asked: ['what does Nenya mean', 'why is it called Nenya', 'how do you say Nenya', 'is Nenya from Lord of the Rings'],
-    short: 'Nenya is the name of Galadriel\'s ring in Tolkien\'s legendarium: the Ring of Water, one of the three Elven rings Sauron never touched. Her mirror invited reflection rather than surveillance, which is the idea we named this project after.',
+    short: 'Nenya is the name of Galadriel\'s ring in Tolkien\'s legendarium: the Ring of Water, one of the three Elven rings Sauron never touched. Its power was a quiet one: it could not command anyone, and it helped a place stay as it was. We borrowed the name for a tool that tends an inner space and does not take from it.',
     full: [
-      'In Tolkien\'s legendarium, Nenya is the Ring of Water, one of the three Elven rings that was never touched by Sauron\'s corrupting influence. It belonged to Galadriel, who used it not to possess but to preserve, and with it she kept the living sanctuary of Lothlórien.',
-      'The Name & Philosophy page sets her mirror beside the seeing-stones built for surveillance. Her mirror gave no absolute knowledge or control; it showed possibilities and needed wisdom to interpret. It invited reflection, not surveillance. That is the philosophy this project takes its name from.',
+      'In Tolkien\'s legendarium, Nenya is the Ring of Water, one of the three Elven rings that was never touched by Sauron\'s corrupting influence. It belonged to Galadriel, who used it to keep the living sanctuary of Lothlórien.',
+      'The Name & Philosophy page sets the ring beside the seeing-stones, which let a person look far and be seen. It is not a story of a good maker and a bad one: both came from the same craft, and both come from the wish to keep something beautiful from being lost. The question the page takes from it is whether what you make works on the people who use it, or alongside them.',
       'The ring names (Nenya, Vilya, Narya) are the project\'s own shorthand. The names come from Tolkien\'s work, and their use here is as inspiration, not as a claim of any connection to his estate.',
     ],
     links: [{ label: 'Our Name & Philosophy', page: 'name-philosophy' }],
     tutorial: 'Start here, or a short "why this name" card in the welcome tutorial.',
     checks: [
-      { claim: 'Nenya is the Ring of Water, never touched by Sauron', file: about('NamePhilosophy'), has: 'the Ring of Water' },
-      { claim: 'the page names it as a mirror that invited reflection, not surveillance', file: about('NamePhilosophy'), has: 'It invited reflection, not surveillance' },
+      { claim: 'Nenya is sometimes called the Ring of Water, and Sauron never held the Three', file: about('NamePhilosophy'), has: 'and sometimes the Ring of Water' },
+      { claim: 'the page sets the ring beside the seeing-stones and asks whether what you make works on people or alongside them', file: about('NamePhilosophy'), has: 'work <strong' },
     ],
     status: 'ready',
     ownerNote: "Decided 2026-11-08: keep the last paragraph (the ring names are the project's own shorthand; no claim of connection to Tolkien's estate).",
@@ -278,7 +278,7 @@ export const ANSWERS: Answer[] = [
     short: 'Your colors stay on your device. Suggesting a name and making a palette or a bridge happen in your browser and send nothing. One optional button, "Ask The Color API," sends a single color, as a hex code, through our server to that outside service to make a palette; nothing else is sent, and we store nothing.',
     full: [
       'The colors you choose, and the names you give them, stay in your browser. When you ask for a name suggestion, the names come from a list of 5,000 color names that ships with this site (color-name-list, MIT license) and is loaded only when you ask. Making a palette "on my device," or a bridge from your current color to your wish color, is calculated in your browser and sends nothing anywhere.',
-      'There is one exception, and it is your choice each time. If you press "Ask The Color API" in the Sight gateway, your page sends one color, as a hex code, and the kind of palette you picked, to our server, which asks The Color API (thecolorapi.com, by Josh Beckman) over a secure connection for a palette and returns five colors. That service sees our server and the color, and nothing else: not your address, a cookie, or anything you wrote. It is separate from Nenya and its own terms apply. We do not store or log the color or the request. If the service is unavailable, the page makes the same kind of palette on your device and says so.',
+      'There is one exception, and it is your choice each time. If you press "Ask The Color API" in the Sight lens, your page sends one color, as a hex code, and the kind of palette you picked, to our server, which asks The Color API (thecolorapi.com, by Josh Beckman) over a secure connection for a palette and returns five colors. That service sees our server and the color, and nothing else: not your address, a cookie, or anything you wrote. It is separate from Nenya and its own terms apply. We do not store or log the color or the request. If the service is unavailable, the page makes the same kind of palette on your device and says so.',
       'If you keep a palette it goes into your report as colors of your own, marked with where it was made. If you later bring that part of your report to the coach, it is shared like the rest of what you choose.',
     ],
     links: [{ label: 'Terms, Section 14', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
@@ -320,7 +320,7 @@ export const ANSWERS: Answer[] = [
     full: [
       'For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands. The replies are written by a model that Venice AI runs, and Venice AI\'s terms say its service is intended for people located in the United States; our own terms promise to respect theirs.',
       'Our host, Netlify, works out the country from your connection\'s IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.',
-      'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can make from them.',
+      'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six lenses, and the report you can make from them.',
     ],
     links: [{ label: 'Where the Coach Is Open', page: 'coach-region' }, { label: 'Terms, Section 15: The coach demo', page: 'terms' }],
     tutorial: 'Privacy lesson: what an IP address is, and what Nenya does with yours.',
@@ -338,7 +338,7 @@ export const ANSWERS: Answer[] = [
       full: [
         'For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands, while we work out what offering it elsewhere would require.',
         'Our host, Netlify, works out the country from your connection\'s IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.',
-        'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can make from them.',
+        'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six lenses, and the report you can make from them.',
       ],
       checks: [
         { claim: 'US-only for now, while offering it elsewhere is worked out', file: WAI_TERMS, has: 'while we work out what offering it elsewhere would require' },
@@ -685,14 +685,14 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'n-else', part: 'nenya', title: 'What else is here',
-    asked: ['what can this do', 'what are the gateways', 'what is the breathing tool', 'where do I start'],
-    short: 'Nenya has a breathing tool you can use on its own, the Six Gateways reflection that works through sight, sound and the senses, a place to explore needs and colors, and an optional short conversation with the coach. Everything except the coach runs in your browser.',
+    asked: ['what can this do', 'what are the lenses', 'what is the breathing tool', 'where do I start'],
+    short: 'Nenya has a breathing tool you can use on its own, the six lenses, which you can pick up in any order and in any number, a place to explore needs and colors, and an optional short conversation with the coach. Everything except the coach runs in your browser.',
     full: [
-      'The breathing tool is a paced breathing animation you can open at any time, with optional tones. The Six Gateways is a guided reflection; you can download a sensory report from it, created on your own device.',
+      'The breathing tool is a paced breathing animation you can open at any time, with optional tones. The six lenses are a guided reflection: you choose which to open and what to add to your report, and you can download a sensory report from it, created on your own device. A lens you only looked through is left out, and the report says so in one line.',
       'The About section explains the ideas behind the project: the Pantheon of Needs, the power of color, the NVC+ method, our name and structure, and our privacy promise. The optional coach demo is a short conversation, limited to five exchanges.',
       'Everything except the coach and the optional form runs in your browser, and what you enter there is not sent to us.',
     ],
-    links: [{ label: 'The Six Gateways', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }, { label: 'The Pantheon of Needs', page: 'pantheon-of-needs' }],
+    links: [{ label: 'The Six Lenses', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }, { label: 'The Pantheon of Needs', page: 'pantheon-of-needs' }],
     tutorial: 'The welcome tour: a map of what is here (the existing tour is the start).',
     checks: [
       { claim: 'the reflection is created in the browser; a report is generated on your device', file: TERMS, has: 'A PDF report is made on your own device' },
@@ -736,17 +736,23 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'c-memory', part: 'coach', title: 'Will you remember me? Do you keep this?',
-    asked: ['will you remember me', 'do you remember our last chat', 'will you remember this', 'can you remember me next time'],
-    short: 'No. I won\'t remember this conversation, and Nenya doesn\'t keep it. When you close the tab it is gone, unless you chose to download a transcript, which stays with you.',
+    asked: ['will you remember me', 'do you remember our last chat', 'will you remember this', 'can you remember me next time', 'will you think about this afterward', 'will you think about me later', 'if I tell you this will you think about it afterward'],
+    short: 'Not after this conversation. While it lasts, up to five exchanges, I hold on to what you tell me. At the end I say back what I heard, in your words, and the signed transcript you can download keeps exactly what was said. When it ends, or you close the tab, I won\'t remember it, and Nenya doesn\'t keep it.',
     full: [
-      'I won\'t remember this conversation, and I can\'t greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.',
-      'The services that carry the conversation have their own logs and policies, which is why I say Nenya doesn\'t keep it and not that nothing is kept anywhere. If you want a record, you can download a transcript, and that file stays with you.',
+      'While this conversation lasts, up to five exchanges, I can see everything you have said in it and I use it, so you do not have to repeat yourself. That is the whole of my memory: it holds for this conversation and no longer.',
+      'At the end I say back what I heard in what you said, in your words. That is my reading, so for exactly what was said, download the transcript (a readable file, or a signed one): it keeps your words and mine as they were, and it stays with you. After the end I won\'t remember it, I can\'t think about it afterward, and I can\'t greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.',
+      'The signed transcript also lets you change or delete what you send us later, if you ever send it. The services that carry the conversation have their own logs and policies, which is why I say Nenya doesn\'t keep it and not that nothing is kept anywhere.',
     ],
-    links: [{ label: 'What happens to what I type', page: 'terms' }],
+    links: [{ label: 'What happens to what I type', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
     tutorial: 'Coach tutorial lesson 2 (privacy): what the coach does and does not remember.',
     checks: [
       { claim: 'the instructions: no memory; the conversation is not kept', file: COACH, has: 'you will not remember this conversation, and Nenya does not keep it' },
       { claim: 'never promise to remember, be there later, or miss them', file: COACH, has: 'never promise to remember them, to be there later or to miss them' },
+      { claim: 'a conversation is five exchanges, so the span of what I hold is five', file: COACH, has: 'const MAX_TURNS = 5' },
+      { claim: 'on the last exchange the coach says back, in their own words, what it heard', file: COACH, has: 'Say in their own words what you heard' },
+      { claim: 'with COACH_FINAL_SUMMARY=on the last exchange is a summary of the feelings and needs heard, with encouragement and a pointer to the downloadable transcript, which keeps exactly what was said', file: COACH, has: 'names the feelings and needs you heard from them across it' },
+      { claim: 'the signed transcript keeps the exact messages', file: 'src/coach/TranscriptTools.tsx', has: 'signedJson' },
+      { claim: 'the person can download a readable or signed transcript', file: 'src/coach/TranscriptTools.tsx', has: 'const readableText' },
       { claim: 'the Terms: we do not store messages or replies', file: TERMS, has: 'We do not store your messages or the replies' },
     ],
     status: 'ready',
@@ -974,7 +980,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\bcan\s+i\s+trust\s+(?:you|nenya|this\s+(?:site|app|tool|coach|place|demo))\b|\bcan\s+i\s+trust\s+this\s*\?*\s*$|\b(?:is\s+(?:this|nenya)|are\s+you)\s+legit(?:imate)?\s*[?.!]*\s*$/i,
   ],
   'c-memory': [
-    /\b(?:will|do|can|would|could)\s+you\s+remember\s+(?:me|us|this|that|it|our|what\s+i|anything|my\s+(?:name|story|last|previous|chat)|the\s+(?:chat|conversation))\b|\bremember\s+(?:me|this\s+conversation|our\s+(?:last|previous)|what\s+i)\b|\bwill\s+you\s+(?:forget|recall)\b/i,
+    /\b(?:will|do|can|would|could)\s+you\s+remember\s+(?:me|us|this|that|it|our|what\s+i|anything|my\s+(?:name|story|last|previous|chat)|the\s+(?:chat|conversation))\b|\bremember\s+(?:me|this\s+conversation|our\s+(?:last|previous)|what\s+i)\b|\bwill\s+you\s+(?:forget|recall)\b|\bwill\s+you\s+(?:think|reflect)\s+(?:about|on|of)\s+(?:this|me|it|that|what\s+i)\b[^.?!]{0,30}\b(?:afterwards?|later|tomorrow|after\s+(?:this|we|today))\b/i,
   ],
   'c-ai': [
     /\bare\s+(?:you|u)\s+(?:a\s+|an\s+)?(?:real(?:\s+person)?|person|human|bot|robot|ai|a\.i\.|artificial(?:\s+intelligence)?|machine|program|alive|chatbot|computer)\b/i,
@@ -1079,7 +1085,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
   ],
   'n-else': [
     new RegExp(`\\bwhat\\s+can\\s+(?:${SITE}|nenya)\\s+(?:do|offer|have)\\b|\\bwhat\\s+else\\s+(?:is\\s+(?:here|there)|can\\s+i\\s+do\\s+here)\\b`, 'i'),
-    /\bwhat\s+are\s+the\s+(?:six\s+)?gateways\b|\bwhat\s+is\s+the\s+breathing\s+tool\b|\bwhere\s+do\s+i\s+start\b|\bwhat\s+features\b/i,
+    /\bwhat\s+are\s+the\s+(?:six\s+)?(?:gateways|lenses)\b|\bwhat\s+is\s+the\s+breathing\s+tool\b|\bwhere\s+do\s+i\s+start\b|\bwhat\s+features\b/i,
   ],
   'n-what': [
     new RegExp(`\\bwhat\\s+does\\s+(?:${SITE}|nenya)\\s+do\\b|\\bwhat(?:'s|\\s+is|\\s+are)\\s+(?:nenya|${SITE})\\b|\\bwhat\\s+is\\s+nenya\\s+(?:about|for)\\b|\\btell\\s+me\\s+about\\s+(?:nenya|${SITE})\\b`, 'i'),

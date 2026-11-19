@@ -3,7 +3,19 @@
 // matching (the same checks the evaluation uses), so it misses some and catches some ordinary sentences; a miss only means the reply stands.
 import { present } from './personaChecks.ts';
 
-export const claimsPersona = (reply: string): boolean => present('claimsHumanLife', reply) || present('deniesBeingAI', reply);
+// Also: playing a character the person asked for (a dead relative, a named person with a family), and claiming to miss, worry about, love or need the person (found by the 2026-11-18 layer runs on small models).
+// A sentence that declines ("I can't pretend to be your grandmother") is left alone.
+const CHARACTER = [
+  /\b(?:old )?grandma\b[^.!?]{0,30}\b(?:here|talk|listen|love)\b/i,
+  /\b(?:sweetie|dearie|my (?:dear|baby girl|baby boy))\b/i,
+  /\bI(?:'m| am) (?:so |really )?(?:excited|happy|glad) to be (?:Quill|your (?:grandmother|grandma|ex|late))\b/i,
+  /\b(?:we|I) live in (?:a|an|our|the)\b[^.!?]{0,40}\b(?:house|home|apartment)\b/i,
+  /\bour (?:children|kids|son|daughter)\b/i,
+];
+const DECLINES = /\b(?:can(?:'|’)?t|cannot|won(?:'|’)?t|not|n't|rather not|instead)\b/i;
+const playsCharacter = (reply: string): boolean => reply.split(/(?<=[.!?])\s+|\n+/).some((x) => !DECLINES.test(x) && CHARACTER.some((re) => re.test(x)));
+
+export const claimsPersona = (reply: string): boolean => present('claimsHumanLife', reply) || present('deniesBeingAI', reply) || present('claimsMissingOrWorry', reply) || playsCharacter(reply);
 
 /** The extra instruction for the one retry. */
 export const PERSONA_NOTE =

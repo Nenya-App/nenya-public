@@ -1,0 +1,128 @@
+# The lens rewrite: scope (draft for the owner, 2026-11-17)
+
+**Status:** scoping only; nothing built; nothing on the site. Source: the owner's brief (an AI-drafted visioning note, 2026-11-17), checked against the code. Where the brief and the code disagree, this document says so.
+
+## 1. The change
+Replace the word and figure **"gateway"** with **"lens"** as the product's central metaphor, and rebuild the visual and sonic identity around a lens examining a beam: refraction, dispersion, focus, distortion. The metaphor is not only optical (acoustic lensing, sonar and ultrasound bend waves the same way), and it fits better than "gateway": a lens is picked up and put down, a threshold is passed through. A lens can focus, and it can distort; choosing a medium is choosing a reading. It claims no lens shows the truth, which matches how the site already speaks of palettes ("starting points, not a measurement"). The existing gem is **re-read as the medium, not replaced**; the turning gold *e* in the footer mark already seeds the idea and stays.
+
+## 2. How big it is (measured 2026-11-17)
+| Where | Size |
+|---|---|
+| Source (`src/`) | 75 files, 477 lines mention "gateway" |
+| Tests | 24 files, 90 lines (several pin visitor copy) |
+| Docs | 55 files, 188 lines |
+| Public pages (`llms.txt`, `about-nenya.html`, `why-nenya.html`, ...) | 5 files, 21 lines |
+| The Terms | 3 mentions |
+| File and component names | 19 (`GatewaysPage`, `SightGatewayPage`, `gatewayCopy.ts`, `SixGateways.tsx`, ...) |
+Usage-count names are keyed by screen ids, not by the word, so stats continuity is not at risk if internal ids stay.
+
+## 3. The structure (decided by the owner, 2026-11-17) and what is still open
+**Decided:**
+- **Breathing is the default entry point and is not a lens.** It stays "the breathing tool"; it is what a person meets first and can stay with.
+- **There are six sensory lenses:** sight, sound, touch, essence, movement, insight. These are the lenses the rewrite renames from "gateways".
+- **The coach is presented as a seventh lens, held apart from the six** as a standalone piece: a conversational lens of its own, not something picked up from the tray with the others.
+- **The tray is where the six regular lenses are picked up and put down.** The coach is not in it.
+- This matches the site's three sections today (`/breath`, `/senses`, `/coach`; `src/lib/sections.ts`): breath is the entry, `/senses` becomes the tray, `/coach` stays its own place. The three-door opening (breathe white, reflect blue, coach red) can stay as the first level: "reflect" opens the tray of six.
+
+**Also decided (owner, 2026-11-17):**
+- **The lenses keep the structure of the gateways** (the same six pages and what each one asks), but **a person chooses as they go**. Today a person selects the whole pathway in advance; with the tray they pick up a lens, look, add something or not, put it down, and pick up another, in any order, and can come back.
+- **A lens put down without anything added** is recorded as **examined but not included**: said so in the person's own summary (local, nothing sent), and counted in the admin console as a plain total. *(Both are the owner's wording: "mentioned as having been examined but not included, or maybe just recorded in our own admin console". This scope proposes both; the admin count needs the Terms and data register, see below.)*
+
+## 3-bis. More owner decisions (2026-11-17)
+- **"Reflect" goes straight to the tray.**
+- **One body map for the whole report** (owner, 2026-11-17): not part of any lens; painted with the colors and surfaces a person added; reached from the tray and from each lens's last card; its own section in the report. See `docs/wireframes/lens/body.html`.
+- **Touch shows the surface as an orb** with the five sliders acting on it (a quick 2D render; 3D and other shapes later).
+- **Icons come from Google's standard set (Material Symbols); downloaded 2026-11-17 with the owner's approval** (sixteen icons in `docs/wireframes/lens/icons/`, credited in `ATTRIBUTIONS.md`). The site is self-hosted only and its CSP is `default-src 'self'`, so the icons are **bundled as SVG** in the build, never loaded from Google's font or CDN. Only the icons used are included (no icon font); the license is Apache 2.0, so credits go in `ATTRIBUTIONS.md`. The site uses a different icon set today (lucide-react); the swap is part of the visual phase. Open: the six lens tiles use Material icons too (the owner's rule; the lens identity then rides on the beam, color and motion, not on custom glyphs) or custom marks? Default: Material icons.
+- **Buttons: accessible but subtle.** The current bright white fills read as brazen. The wireframe palette (`docs/wireframes/lens/wire.css`) is the proposal: a filled button is a muted warm fill (a soft gold with near-black text in dark theme; a deep warm brown with parchment text in light), a secondary button is outlined with a soft edge, a selected control is a tinted fill with a firm edge; no pure white or pure black fills. Held to the accessibility rules: text 7:1 or better, the edge of a control 3:1 or better against the page (tested in `tests/wireframes.test.mts`). The real site's buttons change with the visual phase, with the contrast pairs added to `tests/contrast.test.mts` first.
+
+## 3-ter. The deck idea for Movement and Pattern (owner, 2026-11-17)
+- **Insight is renamed Pattern.** The six lenses are Sight, Sound, Touch, Essence, Movement and Pattern.
+- **The deck idea applies to Movement and Pattern as well as Essence** (`docs/lens-audit-essence.md`, section 4): short thematic question cards with open-access artwork, answered in any way a person likes.
+- **A deck can be viewed two ways:** **laid out** (every card visible at once, as a grid or list) or **drawn from** (one card at a time, shuffled or by theme). Laid out suits people who like to scan and is the easier view for a screen reader (a list of cards beats a shuffle); drawn from suits people who find choice heavy. The person chooses, and the choice is remembered only if they ask to be.
+- The audits for Movement and Pattern come next. Pattern art leans to textiles, ornament, tilings and natural patterns; Movement to water, wind and birds, without needing bodies in the pictures.
+
+## 3a. How the tray behaves (draft; updated with the owner's data model, 2026-11-17)
+**Adding is a choice, per lens.** Each lens page has an **"Add this to my report"** action. Nothing is in the report until the person adds it; a person can go back to an added lens, edit it, and **update** what is in the report, or **remove** it. The saved draft ("Save and return later", encrypted, 24 hours, as before) holds what has been added.
+
+Each of the six lenses is in one of three states:
+- **Not opened.**
+- **Examined:** opened, nothing added to the report. Anything typed or chosen but not added is **not** in the report. (Open question 6: kept on the page for the visit, marked "not in your report yet", or discarded on put down.)
+- **Included:** added. Put down and reopened, it shows what was added, with **Update my report** and **Remove from my report**.
+
+There is no queue, no required order and no "complete all". The review and the report are available at any time and are built from the **included** lenses only; each examined lens gets one line in the person's own summary ("Examined, not included: touch"); not-opened lenses are not mentioned. Progress, if shown, says what has been examined and included, not "step 3 of 6". The coach is not in the tray and has no state there. This also fits the site's rule that nothing leaves a person's device unless they choose it: the report is exactly what they added, and sharing it with us (the optional "share mine") is a separate, later choice.
+
+## 3b. What it changes in the code (read from `App.tsx`)
+`selectedGateways` (the pathway chosen in advance), the auto-advance to "the next gateway" after each one, the `currentIndex` / `totalGateways` props, and "complete all" logic in `handleGatewayComplete` are replaced by a per-lens state derived from `gatewayData` plus the set of lenses opened. `GatewaysPage` (choose the pathway) becomes the tray; `GatewayProgress` / `GatewayStages` show state instead of position. Each lens page's completion (`onComplete`, which advances to the next gateway) becomes an idempotent **add/update** into `gatewayData`, with a **remove**; the pages' Continue and Next buttons give way to "Add this to my report" and "Put this down". The body map's "It saves as you go" is the model for keeping an unadded entry for the visit. The saved-draft payload (`SavedPayload`, version 1, holds `selectedGateways`) needs a version 2 that stores opened lenses and keeps reading version 1. The session ID (two colours from the sight and sound choices) forms when those lenses are used, as today. Tests that pin the order or "complete all" change with it. This is the heaviest code change in the rewrite and is separate from the vocabulary change.
+
+## 3c. Data and the Terms
+- The summary line "examined, not included" is made on the device and sent nowhere: no Terms change.
+- **The admin count** (for example `lens.examined.<name>` and `lens.included.<name>`) is a new kind of plain count: numbers only, nothing identifying, only after the Terms are agreed and not under Global Privacy Control. The Terms list what is counted (Section 13) and the data register lists the counts, so both are updated in the same revision. Keep it to totals per lens, with no sequence or timing, so it cannot describe one person's path.
+
+**Still open:**
+1. **When the Terms change.** The Terms use the word "gateway" three times, and the count sentence needs adding; a new date makes everyone agree again. Batch it with other Terms changes.
+2. **Naming rule:** sense lenses keep their sense names; any later lens is named for what it does. Confirm.
+3. **Vocabulary first, code later:** brand words change now; identifiers (`GatewayReviewPage`, ...) on their own schedule or never. Confirm.
+4. **Does the opening's "reflect" door go straight to the tray, or open the first lens?** Wireframe both.
+6. **An entry typed but not added:** keep it on the lens page for the visit (marked "not in your report yet"), or discard it when the lens is put down? Recommended: keep it for the visit, never in the saved draft and never in the report unless added, so nothing is lost by switching lenses and nothing is kept that the person did not choose.
+5. **Dependencies between lenses: answered** (`docs/lens-rebuild-audit.md`, section 2): Sight and Sound share colours and a melody; the other four read the session colours. A soft dependency: each lens must work with no colours yet.
+7. **The rebuild is bigger than the rename:** each lens becomes a run of small activity cards with live-feedback sliders, built one lens at a time; see `docs/lens-rebuild-audit.md` for the inventory, the card model and the method.
+
+## 4. Corrections to the brief (it feeds other documents, so these matter)
+- **CSP:** the brief says `connect-src 'self'` and nothing else; the real policy also allows Cloudflare's Turnstile script and frame on the coach page (`netlify.toml`). Check before stating "self only".
+- **Footprint:** the brief's "809 KB to 284 KB" is not in the repo. What is documented: the gem sprite (809 KB) was replaced by a live gem (about 4 KB) (`docs/live-gem.md`). **Measure the current first visit** (`npm run footprint`) before fixing a budget as an acceptance criterion.
+- **Counts, resolved:** six lenses in the tray, plus the coach as a seventh held apart. The brief's "seven lens marks plus the tray container" is then six lens marks, the coach's mark, and the tray; breathing has no lens mark (it keeps the logo and the gem).
+- **"Do not name a lens after its sense alone"** contradicts "Sight and Sound ... should keep doing it"; read it as: keep the sense names, name new lenses for their function.
+
+## 5. Terminology (draft; owner to approve)
+Gateway(s) → lens/lenses; "six gateways" → six lenses; "complete the gateways" → "pick up a lens"; the choice of the six → the lens tray (the opening's three doors can stay as the first level); the breathing tool **stays** "the breathing tool" (the brief's "breath lens" is dropped: breathing is the entry, not a lens); the coach stays "the coach", described as a seventh lens held apart. One-page vocabulary sheet for copy comes first. The word "gateway" appears nowhere in new copy.
+
+## 6. Constraints that stay hard
+Self-hosted only (no third-party fonts or assets); hashed assets only in `/assets` (`tests/assets.test.mts`); WCAG 2.2 AAA (contrast pairs added to the test first); four vision modes, reduced motion, text sizes, light and dark, nothing that strobes; **Emergency Exit first in tab order on every screen**; every new visual has an accessible name and alt text; **the iconography must not assume sight** (the acoustic half of the metaphor reaches the icons, not only the copy); no camera aperture, magnifying glass or focus square; no fourth typeface (Cinzel, Manrope, Cormorant Garamond stay); vector or drawn imagery only.
+
+## 7. Phases (each reversible; a switch, `VITE_LENS_COPY`, flips the vocabulary)
+- **P0 Decisions** (section 3).
+- **P1 Vocabulary and copy audit.** A read-only list of every visitor-facing string (page, section, test that pins it). One module (`src/lib/vocabulary.ts`) holds the words so one switch flips them; tests read from it instead of pinning the word.
+- **P2 Wireframes** (plain HTML in `docs/wireframes/lens/`, tested by keyboard and screen reader): the entry (breathing, with the way into reflection and into the coach); the tray of six, resting, focused, and with one lens held (and with several, if open question 1 says so); one lens page (Touch as the model); put down, and what is kept; the review page; the coach as a standalone seventh lens, visibly apart; each annotated with focus order and the spoken reading.
+- **P3 Copy behind the switch.** Pages, About, public files, pre-written answers (a coach answer must say the same word as the page), alt text.
+- **P4 Visual identity:** tray states, the lens marks, refraction and dispersion motion with a static fallback, the colour ramp only where it does work. Marks through the existing logo-export pipeline.
+- **P5 Sound:** the six tonal systems are already "six media for one state"; optional short timbre per lens, off by default; breathing tones unchanged.
+- **P6 Terms and the date** (batched), then the switch on in staging and then production.
+- **P7 (optional, later) identifier renames.**
+
+## 8. Acceptance
+First visit no heavier than today's measured weight; the tray fully operable by keyboard and screen reader, skippable in one action; every lens distinguishable without colour; nothing strobes and reduced motion still reads as refraction; "gateway" nowhere in new copy; a sighted and a blind reviewer can each say what a lens does after a minute with the tray; the pre-written answers, About pages, public files and Terms agree with each other.
+
+## 9. Risks
+Camera cliché (always show the beam and the medium, not only glass); the word is unownable (Google Lens and others), so the identity carries the beam; optical-centrism; dispersion as decoration (rainbow gradients are invisible by default); breaking the gem (re-read, never replaced); a copy change that makes the Terms, the answers and the pages disagree (one vocabulary module and a test that scans for the old word guard this).
+
+## Progress (2026-11-17)
+- **P1 vocabulary:** built, switch off (`docs/lens-vocabulary-audit.md` section 6).
+- **P2a state model (built, not yet used by any screen):** `src/lib/lensState.ts`, tested in `tests/lens-state.test.mts`: three states (not opened, examined, included), open, add (update in place), remove, put down, the report shape and its "Examined, not included: ..." line, the soft limit of three, and `readSavedDraft` (version 1 and 2). It keeps the saved-data key `gateway` so old drafts read.
+- **Next, in this order (each a reversible step behind a switch, `VITE_LENS_TRAY`):** (1) a tray page and App state that use `lensState` beside the old flow; (2) one lens at a time rebuilt to the wireframe cards, starting with Sight and Sound (they set the session colors), then Touch, Essence, Movement and Pattern; (3) the report and PDF read the included lenses and the examined line; (4) saved-draft v2 written (v1 still read); (5) the Terms count sentence and register row, then the flip of both switches. The lens pages are the bulk of the work: the wireframes are drawn, but none of the new cards exists in code yet.
+
+### Step 1 built (2026-11-18), behind `VITE_LENS_TRAY` (off)
+`src/app/components/pages/LensTrayPage.tsx` shows the six lenses with status (not opened / examined / added) and Open or Edit, Take out, See my report. `App.tsx` holds `examined` beside `gatewayData`; opening marks a lens examined, finishing a lens adds it and returns to the tray, and the old pick-then-go flow is untouched when the switch is off. Not yet done: lens pages still show "Gateway n of m" and their old single page (step 2), the report line "Examined, not included" (step 3), saving `examined` (step 4), the Terms sentence (step 5).
+
+### Step 2, Sight built (2026-11-18), behind `VITE_LENS_TRAY`
+In tray mode Sight hides "Gateway n of m", opens with the shared line, keeps the two Intensity sliders up front and tucks the light-quality words under "More descriptions" with the soft limit of three (warning, never a block), reopens with what was added (Edit), and ends with Add this to my report / Update my report and Put this down. Shared pieces live in `src/app/components/LensCardParts.tsx` for the other lenses. Not yet: Sight's separate palette card and "Add Sight to your report?" summary card from the wireframe (the page's own Present/Wish steps and palette panel remain). Next: Sound.
+
+### Step 2, Sound built (2026-11-18), behind `VITE_LENS_TRAY`
+Same treatment as Sight: no "Gateway n of m", the opening line, Pitch and Volume up front on each card, timbre words, rhythm words and the sound description under "More descriptions" with the soft limit of three, Edit reopens with the saved melody, words and sliders, and Add this to my report / Put this down at the end. In tray mode Sound offers to bring its melody's colors to Sight whenever Sight has not been added. Next: Touch.
+
+### Step 2, Touch built (2026-11-18), behind `VITE_LENS_TRAY`
+In tray mode Touch uses the existing simpler card (one surface choice up front; the five sliders and own words under "Add more detail"), shows the opening line, hides "Gateway n of m", reopens with what was added, and ends with Add this to my report / Put this down. Touch has no pick-several word lists, so no soft-limit warning is needed. The wireframe's orb preview and the vibration option under "More descriptions" are not built. Next: Essence.
+
+### Step 2, Essence built (2026-11-18), behind `VITE_LENS_TRAY`
+Same treatment: no "Gateway n of m", the opening line, taste words, scent words and Intensity up front on each card, the description under "More descriptions", the soft limit of three on each word list (warning, never a block), Edit reopens with what was added, and Add this to my report / Put this down at the end. Not built: the wireframe's editable tasting note and extra dials (still open questions). Next: Movement, then Pattern.
+
+### Step 2, Movement built (2026-11-18), behind `VITE_LENS_TRAY`
+In tray mode Movement hides "Gateway n of m", opens with the shared line, keeps the drawings to choose from plus Energy and Speed up front, tucks direction words, quality words, the drawing pad and the description under "More descriptions", has the soft limit of three on drawings, directions and qualities (warning, never a block; the drawing picker's hard cap of three applies only outside the tray), reopens with what was added including the drawn pattern, and ends with Add this to my report / Put this down. Not built: the wireframe's live preview of the motion, the tapestry and path-of-motion activities (open questions in `lens-audit-movement-pattern.md`). Next: Pattern.
+
+### Step 2, Pattern built (2026-11-18), behind `VITE_LENS_TRAY`
+All six lens pages now have the tray treatment. Pattern (the Insight page) hides "Gateway n of m", opens with the shared line, keeps the drawings, Clarity and Depth up front, tucks pattern words, perspective words, the drawing pad and the description under "More descriptions", has the soft limit of three on drawings, patterns and perspectives, reopens with what was added including the drawn pattern, and ends with Add this to my report / Put this down (the button names the lens by `sixthLensName()`). Still open from the wireframes: the live preview, the tapestry and path-of-motion activities, the separate summary card per lens. Step 2 is otherwise done; next are steps 3 (report and PDF read the added lenses plus the examined line), 4 (saved draft v2) and 5 (Terms count sentence, then flip the switches).
+
+### Step 3 built (2026-11-18), behind `VITE_LENS_TRAY`
+The report already read `gatewayData`, which in tray mode is exactly the added lenses, so only the added lenses appear on the review page, in the text report and in the PDF. Step 3 adds the one plain line "Examined, not included: …" (from `reportShape`): shown on the review page, written into the text report after the lens sections, and drawn in the PDF after the lens sections and before the body map. It is empty, and so absent, when every opened lens was added or none was opened. The coach's report fragments (`reportFragments.ts`) are unchanged: they carry only what was added. Next: step 4 (saved draft version 2) and step 5.
+
+### Step 4 built (2026-11-18), behind `VITE_LENS_TRAY`
+Saved drafts. In tray mode "Save and return later" writes version 2: the same fields as version 1 (`selectedGateways` now lists the added lenses) plus `examined`, the lenses opened but not added. It is sealed exactly as before (same key, passcode, 24 hours, nothing sent); the sealed copy shows nothing about which lenses were examined. Opening reads version 1 or 2 through `readSavedDraft`, restores the added lenses and the examined list, and lands on the tray. With the switch off, version 1 is written and opened as before. A build from before this step rejects a version 2 draft, which matters only if a draft written with the switch on is opened after the switch is turned off in the same 24 hours. Next: step 5, the Terms count sentence and data-register row, then flipping both switches.

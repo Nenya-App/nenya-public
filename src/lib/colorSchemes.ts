@@ -3,6 +3,7 @@
 // what a screen can show. Nothing here makes a network request.
 import { toOklab } from './colorNames.ts';
 
+import { L } from './vocabulary.ts';
 export const SCHEME_MODES = ['monochrome', 'monochrome-dark', 'monochrome-light', 'analogic', 'complement', 'analogic-complement', 'triad', 'quad'] as const;
 export type SchemeMode = (typeof SCHEME_MODES)[number];
 
@@ -115,5 +116,5 @@ export const MAX_PALETTES = 2;
 export function describePalettePlainly(p: GeneratedPalette, n?: number): string {
   const how = p.kind === 'bridge' ? 'a bridge from the current color to the wish color' : `${MODE_LABELS[p.kind].label.toLowerCase()}, around the ${p.base === 'wish' ? 'wish' : 'current'} color`;
   const src = p.source === 'The Color API' ? 'generated with The Color API (thecolorapi.com)' : 'made on the device';
-  return `${n ? `Palette ${n} you made` : 'Palette you made'}: ${how}, ${src}: ${p.colors.map((c) => (c.name ? `${c.name} ${c.hex}` : c.hex)).join(', ')}${p.useInSound ? ' (also used in the Sound gateway)' : ''}`;
+  return `${n ? `Palette ${n} you made` : 'Palette you made'}: ${how}, ${src}: ${p.colors.map((c) => (c.name ? `${c.name} ${c.hex}` : c.hex)).join(', ')}${p.useInSound ? L(' (also used in the Sound gateway)') : ''}`;
 }

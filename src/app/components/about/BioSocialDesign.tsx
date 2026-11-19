@@ -426,13 +426,13 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
               <div className="p-2 md:p-3 bg-nenya-gold/20 rounded-lg">
                 <Eye className="size-5 md:size-6 text-nenya-gold-text dark:text-nenya-gold" />
               </div>
-              <h2 className="text-xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">The Design of Nenya: Logo, Gateways & Sense-Making</h2>
+              <h2 className="text-xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">The Design of Nenya: Logo, Lenses & Sense-Making</h2>
             </div>
 
             <Card className="p-4 md:p-8 bg-muted/50 backdrop-blur-sm border-border">
               <div className="space-y-3 md:space-y-6 text-foreground leading-relaxed text-sm md:text-base">
                 <p>
-                  Every element of Nenya—from the pulsing logo to the multi-sensory gateways—is intentionally designed to support emotional regulation and sense-making.
+                  Every element of Nenya—from the pulsing logo to the multi-sensory lenses—is intentionally designed to support emotional regulation and sense-making.
                 </p>
                 
                 <div className="flex justify-center my-6">
@@ -445,14 +445,14 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
                   <div>
                     <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold mb-2">The Breathing Logo: Synchronized Visual Anchor</h3>
                     <p className="text-xs md:text-sm text-muted-foreground">
-                      The Nenya logo pulses with a <strong>deliberate breathing rhythm</strong> — a gentle expand and contract that mirrors inhale and exhale, meant as a <strong>visual anchor</strong> you can follow rather than just a decoration. It's synchronized to a 0.1Hz breathing pattern (a 10-second cycle), and stays subtle and consistent whether you're in light or dark mode.
+                      The Nenya logo pulses with a <strong>deliberate breathing rhythm</strong> — a gentle expand and contract that mirrors inhale and exhale, meant as a <strong>visual anchor</strong> you can follow rather than just a decoration. It's synchronized to the breathing pace you choose (by default six seconds in and six out, a 12-second cycle), and stays subtle and consistent whether you're in light or dark mode.
                     </p>
                   </div>
 
                   <div>
-                    <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold mb-2">The Six Gateways: Multi-Sensory Access to Inner Experience</h3>
+                    <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold mb-2">The Six Lenses: Multi-Sensory Access to Inner Experience</h3>
                     <p className="text-xs md:text-sm text-muted-foreground">
-                      We designed Nenya around the recognition that people connect to their emotional world through different sensory modalities. Some resonate with <strong>visual color symbolism</strong>, others with <strong>sound, touch, essence (scent/atmosphere), movement, or cognitive insight</strong>. The Six Gateways ensure accessibility across neurotypes and cultural backgrounds, honoring that there is no single "correct" way to begin the journey inward.
+                      We designed Nenya around the recognition that people connect to their emotional world through different sensory modalities. Some resonate with <strong>visual color symbolism</strong>, others with <strong>sound, touch, essence (scent/atmosphere), movement, or cognitive insight</strong>. The Six Lenses ensure accessibility across neurotypes and cultural backgrounds, honoring that there is no single "correct" way to begin the journey inward.
                     </p>
                   </div>
 
@@ -466,7 +466,7 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
                   <div>
                     <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold mb-2">Progressive Disclosure: Emotional First, Intellectual Later</h3>
                     <p className="text-xs md:text-sm text-muted-foreground">
-                      The entire interface is designed around <strong>progressive disclosure</strong>: you encounter the gateway ritual first, the NVC+ practice second, and all the philosophical/scientific justification only if you choose to explore it. This respects that emotional healing doesn't begin with intellectual understanding—it begins with <em>feeling felt</em>.
+                      The entire interface is designed around <strong>progressive disclosure</strong>: you pick up a lens first, the NVC+ practice second, and all the philosophical/scientific justification only if you choose to explore it. This respects that emotional healing doesn't begin with intellectual understanding—it begins with <em>feeling felt</em>.
                     </p>
                   </div>
                 </div>

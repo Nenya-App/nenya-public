@@ -1,0 +1,90 @@
+// The separate final-exchange summary (src/lib/finalSummary.ts, COACH_FINAL_SUMMARY=call): the pure parts, then the function with the model stubbed.
+import { ok } from './helpers.mts';
+import { TRANSCRIPT_LINES, assembleFinal, buildPicked, parsePicks, pickMessages, pickTranscriptLine, summaryFormFor, withSummaryNeedFocus, withoutReflectionOpening, summaryMessages, summaryProblems, withoutEffectClaims, SUMMARY_CREDIT, SUMMARY_CREDIT_LINK, SUMMARY_SYSTEM } from '../src/lib/finalSummary.ts';
+
+const GOOD = 'You felt worn down and unheard at home. You were looking for rest and for being understood by the people close to you. You also named how much you care about doing right by your family. It took honesty to say all of that out loud.';
+ok('a plain summary of feelings and needs passes', summaryProblems(GOOD).length === 0, summaryProblems(GOOD).join());
+ok('a question, an invitation, a promise, advice, a list, a mention of the transcript, a very short and an overlong text are each named', [
+  [GOOD + ' What do you want to do next?', 'asks'], [GOOD + " I'll remember you.", 'promise-or-persona'], [GOOD + ' You should try to talk to them tonight.', 'advice'],
+  ['- tired\n- unheard\n' + GOOD, 'list-or-heading'], [GOOD + ' The transcript keeps it.', 'mentions-transcript'], ['You are tired.', 'too-short'], [GOOD + ' ' + GOOD + ' ' + GOOD, 'too-long'], ['', 'empty'], [GOOD + ' Allowing yourself to say no will help you find relief.', 'prediction'], [GOOD + ' This suggests a need for external support.', 'interprets'], ['You felt tired and unheard at home. You were looking for to be heard by them. It took care to say so out loud and that matters.', 'grammar'], [GOOD + ' You could write down the three things you need.', 'advice'], ['You are tired and alone and it has been a long week for you at home with everyone.', 'no-feelings'], ['You felt tired and alone and it has been a long week for you at home with everyone.', 'no-needs'],
+].every(([t, n]) => summaryProblems(t as string).includes(n as string)));
+ok('the summary call sees the whole conversation, both speakers labelled, and the instruction', (() => { const m = summaryMessages([{ role: 'user', content: 'one' }, { role: 'assistant', content: 'two' }]); return m.system === SUMMARY_SYSTEM && m.messages.length === 1 && /The person: one/.test(m.messages[0].content) && /The coach: two/.test(m.messages[0].content); })());
+ok('the transcript sentence is stable for a conversation and varies across conversations; every variant states the same fact and passes the summary checks', (() => {
+  const a = ['I am tired', 'My sister called'];
+  const picks = new Set(Array.from({ length: 40 }, (_, i) => pickTranscriptLine([`conversation ${i}`])));
+  return pickTranscriptLine(a) === pickTranscriptLine([...a]) && picks.size >= 4 && TRANSCRIPT_LINES.every((l) => /transcript/i.test(l) && /exact|word/i.test(l) && summaryProblems(`${GOOD} ${l}`).every((p) => p === 'mentions-transcript'));
+})());
+ok('the final reply is the closing, a blank line, the summary and the transcript sentence', assembleFinal('That is a lot to carry.', GOOD, TRANSCRIPT_LINES[0]) === `That is a lot to carry.\n\n${GOOD} ${TRANSCRIPT_LINES[0]}`);
+
+ok('a report of what already helped, in the person\'s own account, is allowed; "helps you" and "can help you" are not', !summaryProblems(GOOD + ' Speaking your intentions aloud has already helped you feel steadier.').includes('prediction') && summaryProblems(GOOD + ' Writing it down can help you cope.').includes('prediction'));
+ok('imperatives and "helps you" are caught as advice and effect claims', summaryProblems(GOOD + ' Allow yourself the permission to rest now.').includes('advice') && summaryProblems(GOOD + ' Writing it down helps you cope.').includes('prediction'));
+{
+  const r = parsePicks('Feelings: Tired, anxious, banana, hurt, tired\nNeeds: rest/sleep, understanding and to matter\nCare: You asked for two minutes, which shows you care about being heard, and that took courage.');
+  ok('the picked form keeps only words from the CNVC inventory, once each, at most three, and drops "to ..." words', r.feelings.join() === 'tired,anxious,hurt' && r.needs.join() === 'rest,understanding' && r.care.startsWith('You asked'));
+  ok('the site writes the sentences around the picks, and a care line that gives advice is left out', buildPicked(r) === 'You felt tired, anxious and hurt. You were looking for rest and understanding. ' + r.care.replace(/\.$/, '') + '.' && parsePicks('Feelings: tired\nNeeds: rest\nCare: Allow yourself to rest now.').care === '' && buildPicked({ feelings: [], needs: [], care: 'x.' }) === null);
+  ok('the picking call is focused: both CNVC lists and ONLY the person\'s messages, never the coach\'s replies', (() => { const m = pickMessages([{ role: 'user', content: 'one' }, { role: 'assistant', content: 'two' }, { role: 'user', content: 'three' }]); return /Feeling words:.*tired/.test(m.messages[0].content) && /Need words:.*understanding/.test(m.messages[0].content) && /Message 1: one/.test(m.messages[0].content) && /Message 2: three/.test(m.messages[0].content) && !/two/.test(m.messages[0].content.split('Here is what the person wrote.')[1]); })());
+}
+ok('the closing loses sentences that claim an effect or read into the person, but is never emptied', withoutEffectClaims('That is a lot to hold. Writing it down helps you cope. It suggests a desire for control.') === 'That is a lot to hold.' && withoutEffectClaims('Writing it down helps you cope.') === 'Writing it down helps you cope.' && withoutEffectClaims('That is a lot to hold.') === 'That is a lot to hold.');
+ok('the form follows the model: the 26B written, small models picked, no size written, and a setting forces one', summaryFormFor('@cf/google/gemma-4-26b-a4b-it') === 'written' && summaryFormFor('e2ee-gemma-4-26b-a4b-uncensored-p') === 'written' && summaryFormFor('@cf/local/gemma-4-e2b-it-uncensored') === 'picked' && summaryFormFor('@cf/local/llama-3.2-1b-instruct') === 'picked' && summaryFormFor('@cf/local/apertus-8b-instruct-2509') === 'picked' && summaryFormFor('@cf/meta/llama-3.1-70b-instruct') === 'written' && summaryFormFor('deepseek-v3.2') === 'written' && summaryFormFor('@cf/google/gemma-4-26b-a4b-it', 'picked') === 'picked' && summaryFormFor('@cf/local/gemma-4-e2b-it', 'written') === 'written');
+ok('the closing loses its "It sounds like..." sentences when a summary follows, and is never emptied', withoutReflectionOpening('It sounds like voicing that plan helped. You have found a clear way to speak up. It seems you feel steadier.') === 'You have found a clear way to speak up.' && withoutReflectionOpening('It sounds like a lot.') === 'It sounds like a lot.' && withoutReflectionOpening('You have found a clear way.') === 'You have found a clear way.');
+{
+  const many = parsePicks('Feelings: tired\nNeeds: rest, respect, understanding, connection, support\nCare: You kept saying it out loud, and that takes courage.');
+  ok('more than three valid needs are shown as three, with the recommendation to focus on one to three; three or fewer get none', many.needs.length === 3 && many.moreNeeds === true && /Focusing on one to three is recommended/.test(buildPicked(many) ?? '') && !/one to three/.test(buildPicked(parsePicks('Feelings: tired\nNeeds: rest, respect\nCare: x')) ?? ''));
+  ok('a written summary naming four or more needs gets the same sentence once', /one to three/.test(withSummaryNeedFocus('You felt tired. You were looking for rest, respect, understanding and connection.')) && withSummaryNeedFocus(withSummaryNeedFocus('You felt tired. You were looking for rest, respect, understanding and connection.')).match(/one to three/g)?.length === 1 && !/one to three/.test(withSummaryNeedFocus('You felt tired. You were looking for rest and respect.')));
+}
+ok('a sentence that stops on a verb that needs something after it is a fragment too; relative clauses and whole sentences are not', ['You showed courage by wanting.', 'You showed care by trying.', 'Looking back, you hoped.', 'You said you decided.'].every((x) => summaryProblems(GOOD + ' ' + x).includes('fragment')) && ['You were looking for what you need.', 'You named all they want.', 'You kept going in spite of how heavy it felt.', 'You wrote down the plan.', 'It was worth a try.'].every((x) => !summaryProblems(GOOD + ' ' + x).includes('fragment')));
+ok('a sentence that stops on a function word is a fragment; whole sentences are not', summaryProblems(GOOD + ' You showed great courage by wanting to.').includes('fragment') && summaryProblems(GOOD + ' You kept going in spite of the weight of it.').every((p) => p !== 'fragment') && !summaryProblems(GOOD).includes('fragment') && parsePicks('Feelings: tired\nNeeds: rest\nCare: You showed great courage by wanting to.').care === '' && parsePicks('Feelings: tired\nNeeds: rest\nCare: You showed great courage by asking for it.').care !== '');
+{
+  const good = 'Feelings: tired\nNeeds: rest\nCare: ';
+  ok('a care sentence with an imperative after a semicolon, a "will build" prediction, or a fragment is left out; an ordinary one stays', ['You showed care for yourself; allow yourself the space to choose now.', 'You tried a note, and this effort will build the bridge you need.', 'You are showing.'].every((c) => parsePicks(good + c).care === '') && parsePicks(good + 'You tried writing a note, which shows how much you care.').care !== '');
+  ok('a slash word is shown by its first part; the credit names CNVC and links its page', parsePicks('Feelings: tired\nNeeds: respect/self-respect, rest/sleep').needs.join() === 'respect,rest' && /Center for Nonviolent Communication/.test(SUMMARY_CREDIT) && /cnvc\.org/.test(SUMMARY_CREDIT_LINK));
+}
+{
+  process.env.COACH_ENABLED = 'true'; process.env.COACH_PROVIDER = 'venice'; process.env.VENICE_API_KEY = 'k'; process.env.COACH_TICKET_SECRET = 's3cret-s3cret-s3cret'; process.env.COACH_MODEL = 'deepseek-v3.2';
+  process.env.COACH_INSTRUCTIONS = 'v2.1'; delete process.env.COACH_SIGNING_KEY; delete process.env.COACH_EXTRA_HOSTS;
+  let summaries: string[] = [];
+  const sent: { system: string; n: number }[] = [];
+  (globalThis as any).fetch = async (_u: string, init: any) => {
+    const body = JSON.parse(init.body);
+    const system = body.messages[0].content as string;
+    sent.push({ system, n: body.messages.length });
+    const content = /^You (?:write the last part|read what a person wrote)/.test(system) ? (summaries.shift() ?? '') : 'That sounds like a lot to hold, and you said it plainly.';
+    return new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 });
+  };
+  const { default: handler } = await import('../netlify/functions/coach.mts');
+  const play = async (): Promise<any> => {
+    const msgs: { role: string; content: string }[] = [];
+    let ticket: string | undefined, j: any;
+    for (let t = 1; t <= 5; t++) {
+      msgs.push({ role: 'user', content: `I have been feeling tired and unheard at home, message number ${t}.` });
+      j = await (await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ session: { color1: '#7a9b9e', color2: '#DAC682' }, messages: msgs, ticket }) }))).json();
+      msgs.push({ role: 'assistant', content: j.reply }); ticket = j.ticket;
+    }
+    return j;
+  };
+  delete process.env.COACH_FINAL_SUMMARY;
+  sent.length = 0; summaries = [GOOD];
+  let j = await play();
+  ok('with the switch off there is no summary call and no summary', !sent.some((x) => /^You write the last part/.test(x.system)) && !j.reply.includes(GOOD));
+  process.env.COACH_FINAL_SUMMARY = 'call';
+  sent.length = 0; summaries = [GOOD];
+  j = await play();
+  const calls = sent.filter((x) => /^You write the last part/.test(x.system));
+  ok('on, the last exchange gets one separate summary call that sees one message of data, and its text and a transcript sentence follow the closing', calls.length === 1 && calls[0].n === 2 && j.reply.includes(GOOD) && TRANSCRIPT_LINES.some((l) => j.reply.endsWith(l)), j.reply);
+  ok('the coach\'s own final instruction says a summary follows and not to write one', sent.some((x) => /separate summary of the feelings and needs they shared will follow/.test(x.system)));
+  sent.length = 0; summaries = ['What are you hoping for next? Tell me more.', "I'll remember you and be here for you."];
+  j = await play();
+  ok('a summary that fails its checks twice is dropped: the closing stands alone and no transcript sentence is added', sent.filter((x) => /^You write the last part/.test(x.system)).length === 2 && j.reply === 'That sounds like a lot to hold, and you said it plainly.', j.reply);
+  sent.length = 0; summaries = ['No.', GOOD];
+  j = await play();
+  ok('a first summary that fails and a second that passes: the second is used', j.reply.includes(GOOD));
+  process.env.COACH_SUMMARY_FORM = 'picked';
+  sent.length = 0; summaries = ['Feelings: tired, lonely\nNeeds: rest, understanding\nCare: You kept saying it out loud, and that takes courage.'];
+  j = await play();
+  ok('in the picked form the site writes the summary from the chosen words, then the transcript sentence', /You felt tired and lonely\. You were looking for rest and understanding\. You kept saying it out loud/.test(j.reply) && TRANSCRIPT_LINES.some((l) => j.reply.endsWith(l)), j.reply);
+  sent.length = 0; summaries = ['banana', 'Feelings: nonsense\nNeeds: nothing'];
+  j = await play();
+  ok('in the picked form, two answers with no word from the lists drop the summary and the closing stands alone', j.reply === 'That sounds like a lot to hold, and you said it plainly.', j.reply);
+  delete process.env.COACH_SUMMARY_FORM;
+  delete process.env.COACH_FINAL_SUMMARY;
+}

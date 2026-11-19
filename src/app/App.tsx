@@ -1,4 +1,6 @@
+import { lensTrayOn, openLens, addLens, removeLens, reportShape, readSavedDraft, lensStatus, LENS_ORDER, type LensId, type LensState, type LensAdded } from '../lib/lensState';
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { setSessionMarkId } from '../lib/sessionMarkStore';
 import SkipLink from './components/SkipLink';
 import { ThemeProvider } from './components/ThemeProvider';
 import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
@@ -19,11 +21,11 @@ import { enableUsageCounts, countEvents, countEvent, countPageView } from '../li
 import { PRESETS, sameTechnique } from '../lib/breathingPresets';
 import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
 import OnboardingFlow from './components/OnboardingFlow';
-import type { StartChoice } from '../lib/startCopy';
 import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
 import { guestbookOn } from '../lib/guestbook';
 import { SaveReflectionContext, type SaveReflectionApi } from './components/SaveReflection';
-import { normalizeId, openReflection, purgeExpired, saveReflection, saveReflectionOn, sessionIdFrom, shadowId, type SavedPayload } from '../lib/savedReflection';
+import { normalizeId, openReflection, purgeExpired, saveReflection, saveReflectionOn, type SavedPayload } from '../lib/savedReflection';
+import { newShadow, sessionIdFor, termsFirstOn } from '../lib/shadowSession';
 import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
 
@@ -31,6 +33,7 @@ import { BodyMapData } from './components/BodyMapAvatar';
 // only ever does the breathing exercise shouldn't pay for the Sound
 // gateway's audio engine, jsPDF, or the About essays up front.
 const GatewaysPage = lazy(() => import('./components/pages/GatewaysPage'));
+const LensTrayPage = lazy(() => import('./components/pages/LensTrayPage'));
 const SightGatewayPage = lazy(() => import('./components/pages/SightGatewayPage'));
 const SoundGatewayPage = lazy(() => import('./components/pages/SoundGatewayPage'));
 const TouchGatewayPage = lazy(() => import('./components/pages/TouchGatewayPage'));
@@ -85,7 +88,7 @@ export default function App() {
       return null;
     }
   });
-  // With the section addresses on (VITE_START_CHOOSER), /senses opens the gateway choice; / and /breath the front page (src/lib/sections.ts).
+  // With the section addresses on (VITE_SECTION_ADDRESSES, or the lens tray), /senses opens the gateway choice; / and /breath the front page (src/lib/sections.ts).
   const [arrivedAtSenses] = useState(() => {
     try {
       return initialAbout === null && sectionsOn() && sectionOfPath(window.location.pathname) === 'senses';
@@ -103,7 +106,7 @@ export default function App() {
   });
   const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : arrivedAtGuestbook ? 'guestbook' : arrivedAtSenses ? 'home' : 'welcome');
   // Arrived on a page other than the welcome page (a link to an About page, or straight to /senses, which means reflection was chosen):
-  // the first-visit panel then skips the start chooser and the breathing-rhythm choice, and asks only the Terms.
+  // the first-visit panel then skips the breathing-rhythm choice, and asks only the Terms.
   const [arrivedElsewhere] = useState(initialAbout !== null || arrivedAtSenses || arrivedAtGuestbook);
   // Real navigation history instead of a single "previousScreen" value.
   // A single value can only ever answer "what screen came immediately
@@ -172,6 +175,8 @@ export default function App() {
   // Gateway system state
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
   const [gatewayData, setGatewayData] = useState<GatewayData[]>([]);
+  // Tray mode only (VITE_LENS_TRAY): lenses opened but not added. gatewayData is the added list.
+  const [examined, setExamined] = useState<LensId[]>([]);
   // Read by the Back/Forward handler, which is set up before this state exists.
   const gatewayDataRef = useRef<GatewayData[]>([]);
   gatewayDataRef.current = gatewayData;
@@ -247,29 +252,17 @@ export default function App() {
 
   // Counting begins only once the terms are agreed. Agreeing is the first thing counted, with the rhythm that was
   // chosen (nothing before this point is counted, so the rhythm is recorded here, not when it was picked).
-  // With the start chooser (VITE_START_CHOOSER=on), `choice` is where the visitor chose to start: it is counted here, at agreement, with the rhythm (only on
-  // the breathing path), and the visitor goes there. The tour is no longer offered on its own then; it stays in the help menu.
-  const handleOnboardingFinish = (choice?: StartChoice, agreement?: Promise<void>) => {
+  // (The start chooser was removed on 2026-11-18; where to go next is the quick nav's job.)
+  const handleOnboardingFinish = (_agreement?: Promise<void>) => {
     enableUsageCounts();
     const rhythm = PRESETS.find((p) => sameTechnique(breathingTechnique, p));
-    const rhythmName = rhythm && !arrivedElsewhere && (!choice || choice === 'breathing') ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
-    countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : []), ...(choice ? [`onboarding.start.${choice}`] : [])]);
+    const rhythmName = rhythm && !arrivedElsewhere && !termsFirstOn() ? ({ '6·6': 'steady', '5·5': 'resonance', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
+    countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : [])]);
     setBreathingCounterMinimized(true);
     setEntryUnlocked(true);
     setTermsAgreed(true);
-    if (choice === 'reflection') {
-      navigateTo('home');
-      return;
-    }
-    if (choice === 'coach') {
-      // The coach page reads the agreement held for this visit; wait for it to be signed (at most a few seconds) so the signed note is not lost.
-      const go = () => window.location.assign('/coach/');
-      if (agreement) void agreement.finally(go);
-      else go();
-      return;
-    }
-    // Only on the welcome screen, and only without the chooser: that is where the tour points.
-    if (!choice && currentScreen === 'welcome') setTourOffered(true);
+    // Only on the welcome screen: that is where the tour points.
+    if (currentScreen === 'welcome') setTourOffered(true);
   };
 
   // Track emergency exit to disable beforeunload warning
@@ -364,27 +357,45 @@ export default function App() {
   // "Save and return later" (VITE_SAVE_REFLECTION=on; src/lib/savedReflection.ts). The session ID is the two colors from Sight (or Sound's
   // melody colors); before either, a random "shadow" pair kept for this visit only. Neither the ID nor the passcode is ever stored.
   const saveOn = saveReflectionOn();
-  const [shadow, setShadow] = useState(() => shadowId());
+  // With VITE_TERMS_FIRST the pair is made at agreement, kept in memory for the whole session and made again on request (src/lib/shadowSession.ts).
+  const termsFirst = termsFirstOn();
+  const [shadow, setShadow] = useState(() => (termsFirst && !termsAgreed ? '' : newShadow()));
+  useEffect(() => { if (termsFirst && termsAgreed && !shadow) setShadow(newShadow()); }, [termsFirst, termsAgreed, shadow]);
   useEffect(() => {
     if (saveOn) purgeExpired();
   }, [saveOn]);
   const sightDone = gatewayData.find((g) => g.gateway === 'sight')?.data;
   const soundDone = gatewayData.find((g) => g.gateway === 'sound')?.data;
-  const sessionId =
-    (sightDone && sessionIdFrom(sightDone.color1, sightDone.color2)) ||
-    (soundDone && sessionIdFrom(soundDone.melodyColor1, soundDone.melodyColor2)) ||
-    shadow;
+  const sessionId = sessionIdFor(sightDone, soundDone, shadow);
+  // The mark in the footer is a visual form of the session ID (src/lib/nameMark.ts).
+  useEffect(() => { setSessionMarkId(sessionId || null); }, [sessionId]);
   const saveApi: SaveReflectionApi = {
     on: saveOn,
     canSave: gatewayData.length > 0,
     sessionId,
     save: (passcode) => {
-      const payload: SavedPayload = { v: 1, selectedGateways, gatewayData, bodyMapData, interfaceColors };
+      // Tray mode saves version 2: the added lenses (selectedGateways keeps the same meaning) plus the ones opened but not added. Off: version 1, as before.
+      const payload: SavedPayload = lensTrayOn()
+        ? { v: 2, selectedGateways: gatewayData.map((g) => g.gateway), examined, gatewayData, bodyMapData, interfaceColors }
+        : { v: 1, selectedGateways, gatewayData, bodyMapData, interfaceColors };
       return saveReflection(payload, sessionId, passcode);
     },
     open: async (id, passcode) => {
       const saved = await openReflection(id, passcode);
       if (!saved) return false;
+      if (lensTrayOn()) {
+        // A version 1 or 2 draft opens at the tray: what was added is back, and the lenses opened but not added are remembered.
+        const draft = readSavedDraft(saved);
+        if (!draft) return false;
+        setSelectedGateways(draft.gatewayData.map((g) => g.gateway as Gateway));
+        setGatewayData(draft.gatewayData as GatewayData[]);
+        setExamined(draft.examined);
+        setBodyMapData(saved.bodyMapData as BodyMapData);
+        setInterfaceColors(saved.interfaceColors);
+        setShadow(normalizeId(id) ?? shadow);
+        navigateTo('home');
+        return true;
+      }
       const gateways = saved.selectedGateways as Gateway[];
       const data = saved.gatewayData as GatewayData[];
       setSelectedGateways(gateways);
@@ -398,6 +409,22 @@ export default function App() {
     },
   };
 
+  const trayState: LensState = { added: gatewayData as LensAdded[], examined };
+  const handleOpenLens = (lens: LensId) => {
+    // A plain total per lens (docs/lens-rewrite-scope.md 3c): the first time it is opened in this visit. No order, no time.
+    if (lensStatus(trayState, lens) === 'not-opened') countEvent(`lens.opened.${lens}`);
+    const opened = openLens(trayState, lens);
+    setExamined(opened.examined);
+    setSelectedGateways([...new Set([...gatewayData.map((g) => g.gateway), lens])].sort((a, b) => LENS_ORDER.indexOf(a as LensId) - LENS_ORDER.indexOf(b as LensId)) as Gateway[]);
+    navigateTo(lens as ScreenType);
+  };
+  const handleRemoveLens = (lens: LensId) => {
+    const next = removeLens(trayState, lens);
+    setGatewayData(next.added as GatewayData[]);
+    setExamined(next.examined);
+    setSelectedGateways(next.added.map((a) => a.gateway as Gateway));
+  };
+
   const handleGatewaysSelected = (gateways: Gateway[]) => {
     setSelectedGateways(gateways);
     setGatewayData([]);
@@ -406,6 +433,16 @@ export default function App() {
 
   // Complete a gateway and move to next
   const handleGatewayComplete = (gateway: Gateway, data: any) => {
+    if (lensTrayOn()) {
+      if (lensStatus({ added: gatewayData as LensAdded[], examined }, gateway as LensId) !== 'included') countEvent(`lens.added.${gateway}`);
+      const next = addLens({ added: gatewayData, examined }, gateway as LensId, data);
+      setGatewayData(next.added as GatewayData[]);
+      setExamined(next.examined);
+      setSelectedGateways(next.added.map((a) => a.gateway as Gateway));
+      if (gateway === 'sight' && data.color1 && data.color2) setInterfaceColors(data);
+      navigateTo('home');
+      return;
+    }
     const wasAlreadyComplete = gatewayData.length === selectedGateways.length;
     const existingIndex = gatewayData.findIndex(g => g.gateway === gateway);
 
@@ -498,6 +535,7 @@ export default function App() {
     setAboutSection(undefined);
     setSelectedGateways([]);
     setGatewayData([]);
+    setExamined([]);
     setInterfaceColors({ color1: '#7A9B9E', color2: '#DAC682' });
     setCellCode('');
   };
@@ -646,7 +684,13 @@ export default function App() {
             </Suspense>
           )}
 
-          {currentScreen === 'home' && (
+          {currentScreen === 'home' && lensTrayOn() && (
+            <Suspense fallback={null}>
+              <LensTrayPage state={trayState} onOpen={handleOpenLens} onRemove={handleRemoveLens} onReport={() => navigateTo('gateway-review')} onBack={() => navigateBack('welcome')} onNewName={() => setShadow(newShadow())} />
+            </Suspense>
+          )}
+
+          {currentScreen === 'home' && !lensTrayOn() && (
             <GatewaysPage
               onGatewaysSelected={handleGatewaysSelected}
               onBack={() => navigateBack('welcome')}
@@ -656,6 +700,7 @@ export default function App() {
           {currentScreen === 'sight' && (
             <SightGatewayPage
               onComplete={(data) => handleGatewayComplete('sight', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'sight')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('sight')}
               totalGateways={selectedGateways.length}
@@ -670,19 +715,21 @@ export default function App() {
           {currentScreen === 'sound' && (
             <SoundGatewayPage
               onComplete={(data) => handleGatewayComplete('sound', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'sound')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('sound')}
               totalGateways={selectedGateways.length}
               userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
               bodyMapData={bodyMapData}
               onUpdateBodyMap={setBodyMapData}
-              sightComesLater={selectedGateways.includes('sight') && !gatewayData.some((g) => g.gateway === 'sight')}
+              sightComesLater={lensTrayOn() ? !gatewayData.some((g) => g.gateway === 'sight') : selectedGateways.includes('sight') && !gatewayData.some((g) => g.gateway === 'sight')}
             />
           )}
 
           {currentScreen === 'touch' && (
             <TouchGatewayPage
               onComplete={(data) => handleGatewayComplete('touch', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'touch')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('touch')}
               totalGateways={selectedGateways.length}
@@ -695,6 +742,7 @@ export default function App() {
           {currentScreen === 'essence' && (
             <EssenceGatewayPage
               onComplete={(data) => handleGatewayComplete('essence', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'essence')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('essence')}
               totalGateways={selectedGateways.length}
@@ -707,6 +755,7 @@ export default function App() {
           {currentScreen === 'movement' && (
             <MovementGatewayPage
               onComplete={(data) => handleGatewayComplete('movement', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'movement')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('movement')}
               totalGateways={selectedGateways.length}
@@ -719,6 +768,7 @@ export default function App() {
           {currentScreen === 'insight' && (
             <InsightGatewayPage
               onComplete={(data) => handleGatewayComplete('insight', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'insight')?.data}
               onBack={() => navigateBack('home')}
               currentIndex={selectedGateways.indexOf('insight')}
               totalGateways={selectedGateways.length}
@@ -739,6 +789,7 @@ export default function App() {
             <GatewayReviewPage
               gatewayData={gatewayData}
               selectedGateways={selectedGateways}
+              examinedLine={lensTrayOn() ? reportShape(trayState).line : undefined}
               onContinue={handleContinueFromReview}
               onGuestbook={guestbookOn() ? () => navigateTo('guestbook') : undefined}
               onEditGateway={handleEditGateway}

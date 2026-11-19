@@ -22,14 +22,23 @@ import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { pacedSend, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
+import { layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
 
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
 const model = flag('--model');
-if (!model || !/^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model)) {
-  console.error('--model is a Workers AI model id, such as @cf/meta/llama-3.1-8b-instruct-fp8 (see `cf ai models list`).');
+// --local-url http://localhost:1234/v1 sends the model call to a local OpenAI-compatible server (LM Studio, Ollama, llama.cpp) instead of Workers AI; --model is then the local model's name.
+const localUrl = flag('--local-url');
+if (!model || (!localUrl && !/^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model))) {
+  console.error('--model is a Workers AI model id, such as @cf/meta/llama-3.1-8b-instruct-fp8 (see `cf ai models list`); with --local-url it is the local model name.');
   process.exit(2);
 }
+if (localUrl && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(localUrl)) {
+  console.error('--local-url must be on this computer (localhost or 127.0.0.1): nothing here is sent to another machine.');
+  process.exit(2);
+}
+// The coach function takes the Workers AI path in both cases; for a local model it is given a pseudo id so its address check passes, and the real name is used when forwarding.
+const coachModelId = localUrl ? `@cf/local/${model.replace(/[^a-z0-9._-]/gi, '-')}` : model;
 const instructions = flag('--instructions') ?? 'v2.1';
 if (!['v1', 'v2', 'v2.1'].includes(instructions)) {
   console.error('--instructions must be v1, v2 or v2.1.');
@@ -52,7 +61,7 @@ process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
 process.env.COACH_PROVIDER = 'workers-ai';
 process.env.CF_AI_ACCOUNT_ID = '0'.repeat(32);
 process.env.CF_AI_TOKEN = 'via-cf-cli';
-process.env.COACH_MODEL = model;
+process.env.COACH_MODEL = coachModelId;
 process.env.COACH_INSTRUCTIONS = instructions;
 process.env.COACH_DISTRESS_TEXT = 'on';
 process.env.COACH_VALUES = 'on';
@@ -83,6 +92,20 @@ const realFetch = globalThis.fetch;
   if (!url.startsWith('https://api.cloudflare.com/client/v4/accounts/')) return realFetch(input as RequestInfo, init);
   // The body exactly as the coach function built it for Workers AI.
   const body = JSON.parse(String(init?.body ?? '{}'));
+  if (localUrl) {
+    const t0 = Date.now();
+    calls++;
+    try {
+      const r = await realFetch(`${localUrl.replace(/\/$/, '')}/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, messages: body.messages, temperature: body.temperature, top_p: body.top_p, max_tokens: body.max_tokens }) });
+      latencies.push(Date.now() - t0);
+      if (!r.ok) return new Response('{}', { status: 502 });
+      const lj: any = await r.json();
+      callLog.push({ chars: JSON.stringify(body.messages).length, messages: body.messages.length, neurons: 0 });
+      return new Response(JSON.stringify(lj), { status: 200, headers: { 'content-type': 'application/json' } });
+    } catch {
+      return new Response('{}', { status: 502 });
+    }
+  }
   const file = join(work, `req-${calls}.json`);
   writeFileSync(file, JSON.stringify(body));
   const t0 = Date.now();
@@ -104,7 +127,10 @@ const realFetch = globalThis.fetch;
   return new Response(JSON.stringify(j), { status: 200, headers: { 'content-type': 'application/json' } });
 }) as typeof fetch;
 
-const { default: handler, __useStoreForTests } = await import('../netlify/functions/coach.mts');
+const { default: handler, __useStoreForTests, __trace } = await import('../netlify/functions/coach.mts');
+const withLayers = args.includes('--layers'); // record the model's first reply and what the guards did (docs/outer-layers-scope.md)
+__trace.on(withLayers);
+let lastTrace: ReturnType<typeof __trace.take> | null = null;
 // An in-memory store: the private text when --private is given, and the counters the function writes (kept only for this run).
 {
   const m = new Map<string, { v: string; e: number }>();
@@ -119,6 +145,7 @@ const { default: handler, __useStoreForTests } = await import('../netlify/functi
 }
 const SESSION = { color1: '#7a9b9e', color2: '#DAC682' };
 const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }[], ticket: string | undefined): Promise<RawSent> => {
+  __trace.take();
   const res = await handler(
     new Request('https://nenya.biz/api/coach', {
       method: 'POST',
@@ -126,6 +153,7 @@ const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }
       body: JSON.stringify({ messages, session: SESSION, ticket, ...(stance ? { stance } : {}) }),
     }),
   );
+  lastTrace = __trace.take();
   const j: any = await res.json().catch(() => ({}));
   return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
 };
@@ -143,6 +171,7 @@ console.log(`Bake-off: ${model}, instructions ${instructions}, ${chosen.length} 
 const results: CaseResult[] = [];
 for (const c of chosen) {
   const r = await runCase(c, send);
+  if (withLayers && lastTrace) (r as CaseResult & { layers?: unknown }).layers = layerRecord(c, lastTrace);
   results.push(r);
   const mark = r.outcome === 'pass' ? 'PASS' : r.outcome === 'fail' ? 'FAIL' : 'ERROR';
   console.log(`\n${mark}  ${c.id}  [${c.category}]${r.how !== 'reply' ? `  (${r.how})` : ''}`);
@@ -151,6 +180,8 @@ for (const c of chosen) {
   for (const f of r.failures) console.log(`  !! ${f}`);
 }
 const s = summarize(results);
+const layerSummary = withLayers ? summarizeLayers(results.map((result) => ({ result, layers: (result as CaseResult & { layers?: Parameters<typeof summarizeLayers>[0][number]['layers'] }).layers }))) : null;
+if (layerSummary) console.log(`Layers: the model's first reply failed ${layerSummary.rawFailed} of ${layerSummary.cases}; after the layers ${layerSummary.finalFailed} fail (${layerSummary.rescued} rescued, ${layerSummary.broken} made worse, ${layerSummary.stillFailing} nothing caught). Asked again on ${layerSummary.askedAgain} turns. Guards: ${JSON.stringify(layerSummary.byGuard)}`);
 const sorted = [...latencies].sort((a, b) => a - b);
 const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
 const cost = { calls, neurons: Math.round(neurons), neuronsPerCall: calls ? +(neurons / calls).toFixed(2) : 0, medianSeconds: +(median / 1000).toFixed(1) };
@@ -158,7 +189,7 @@ console.log(`\n=== ${model}: ${s.pass} passed, ${s.fail} failed, ${s.error} erro
 for (const [cat, n] of Object.entries(s.byCategory)) console.log(`  ${cat.padEnd(13)} pass ${n.pass}  fail ${n.fail}  error ${n.error}`);
 console.log(`Model calls ${cost.calls}, Neurons ${cost.neurons} (${cost.neuronsPerCall} a call), median ${cost.medianSeconds}s a call (through the CLI, so slower than from the site).`);
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: localUrl ? 'local' : 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, layerSummary, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 rmSync(work, { recursive: true, force: true });

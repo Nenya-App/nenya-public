@@ -1,10 +1,11 @@
+import { L } from './vocabulary.ts';
 // Wording for "Save and return later" (docs/save-and-return-scope.md). Kept apart from the components so tests/save-reflection.test.mts
 // holds every line to reading grade 8 or below.
 
 export const SAVE_COPY = {
   link: 'Save and return later',
   title: 'Save and return later',
-  intro: 'Your finished gateways are kept on this device only, locked with a passcode, for 24 hours. Nothing is sent to Nenya.',
+  intro: L('Your finished gateways are kept on this device only, locked with a passcode, for 24 hours. Nothing is sent to Nenya.'),
   idLabel: 'Your session ID',
   idHelp: 'You need this and your passcode to come back. A password manager can keep both, or copy them somewhere safe.',
   passLabel: 'Passcode',
@@ -17,7 +18,7 @@ export const SAVE_COPY = {
   noSpace: 'This device has no room to save it. Your reflection is still here in this tab.',
   invalid: 'Enter a passcode first.',
   limits: 'A simple passcode stops a glance, not someone with time and this device.',
-  half: 'A gateway you are in the middle of is not saved; finish it first if you want it kept.',
+  half: L('A gateway you are in the middle of is not saved; finish it first if you want it kept.'),
   continueLink: 'Continue a saved reflection',
   continueTitle: 'Continue a saved reflection',
   continueIntro: 'Enter the session ID and passcode you saved it with.',

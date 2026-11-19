@@ -67,10 +67,14 @@ export const FIXED_EVENTS = [
 export const SCREENS = ['welcome', 'home', 'sight', 'sound', 'touch', 'essence', 'movement', 'insight', 'color-selection', 'gateway-review', 'session', 'cell-creation', 'cell-interface', 'about'] as const;
 
 /** The breathing rhythms of the opening flow, by a plain name. */
-export const RHYTHM_NAMES = ['steady', 'calming', 'lively', 'deep-calm', 'box', '478'] as const;
+export const RHYTHM_NAMES = ['steady', 'resonance', 'calming', 'lively', 'deep-calm', 'box', '478'] as const;
 
 /** Where a visitor chose to start, on the start chooser (owner, 2026-11-15). Counted at agreement, with nothing about who chose. */
 export const START_CHOICES = ['breathing', 'reflection', 'coach'] as const;
+
+/** The six lenses by their saved ids (the sixth keeps its old id `insight`; the page names it Pattern). Counted only as a total per lens, in the tray (VITE_LENS_TRAY):
+ *  `lens.opened.<id>` the first time a lens is opened in a visit, `lens.added.<id>` the first time it is added to a report. No order, no time, nothing about one person's path. */
+export const LENS_IDS = ['sight', 'sound', 'touch', 'essence', 'movement', 'insight'] as const;
 
 /** Counted from the browser, and only after the visitor has agreed to the terms (see src/lib/usageCounts.ts). */
 export const BROWSER_FIXED_EVENTS = ['onboarding.terms.accepted', 'tour.accepted', 'tour.declined', 'tour.completed', 'coach.pause.begun', 'coach.pause.returned.waited', 'coach.pause.returned.quiz'] as const;
@@ -81,7 +85,7 @@ const under = (name: string, prefix: string, allowed: readonly string[]): boolea
 export function isKnownEvent(name: string): boolean {
   if ((FIXED_EVENTS as readonly string[]).includes(name) || (BROWSER_FIXED_EVENTS as readonly string[]).includes(name)) return true;
   if (/^coach\.receipt\.issued\.[0-9a-f]{16}$/.test(name)) return true; // one per signing key
-  return under(name, 'coach.turn.blocked.', BLOCK_REASONS) || under(name, 'page.view.', SCREENS) || under(name, 'onboarding.rhythm.', RHYTHM_NAMES) || under(name, 'onboarding.start.', START_CHOICES);
+  return under(name, 'coach.turn.blocked.', BLOCK_REASONS) || under(name, 'page.view.', SCREENS) || under(name, 'onboarding.rhythm.', RHYTHM_NAMES) || under(name, 'onboarding.start.', START_CHOICES) || under(name, 'lens.opened.', LENS_IDS) || under(name, 'lens.added.', LENS_IDS);
 }
 
 export const eventKey = (day: string, event: string): string => `m/${day}/${event}`;

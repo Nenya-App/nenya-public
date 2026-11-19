@@ -1,6 +1,6 @@
 # Redraft: the Fractured Atlas "Our Structure" section, for Fractured Atlas to review
 
-> **SUPERSEDED 2026-11-16** by `fractured-atlas-about-2026-11-16.md`. This draft still says Venice AI runs the coach (it is Cloudflare Workers AI since the Terms of November 16, 2026) and that the server "removes names and contact details" (the page and the server replace common identifiers with placeholders, and names are often missed). Kept as a record; do not send it.
+> **SUPERSEDED 2026-11-16** by `fractured-atlas-human-scale-2026-11-18.md` (which also superseded `fractured-atlas-about-2026-11-16.md`). This draft still says Venice AI runs the coach (it is Cloudflare Workers AI since the Terms of November 16, 2026) and that the server "removes names and contact details" (the page and the server replace common identifiers with placeholders, and names are often missed). Kept as a record; do not send it.
 
 Written 2026-11-13 for the owner to edit, then to send to Fractured Atlas. **Nothing here is on the site.** The live text is `src/app/components/about/Structure.tsx` ("Our Structure": A Private Artistic Project, Fiscal Sponsorship: Fractured Atlas, Why This Approach, Core Commitments, Open Source), with shorter versions of the sponsorship paragraph in `SupportUs.tsx` and `SupportThisWork.tsx`. I read "our current model" as **how Nenya is organized and what it does now**, since the live text was written before the coach, the safety checks, the contributor invitation and the signed-transcript features existed. If you meant something else, say so.
 

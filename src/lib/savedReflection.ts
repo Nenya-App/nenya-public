@@ -16,11 +16,13 @@ const TTL_MS = SAVE_HOURS * 3600 * 1000;
 const ROUNDS = 600_000;
 
 export interface SavedPayload {
-  v: 1;
+  /** 1: the original draft. 2 (written only in tray mode, VITE_LENS_TRAY): the same plus `examined`, the lenses opened but not added. Version 1 still opens. */
+  v: 1 | 2;
   selectedGateways: string[];
   gatewayData: { gateway: string; data: unknown }[];
   bodyMapData: unknown;
   interfaceColors: { color1: string; color2: string };
+  examined?: string[];
 }
 
 interface SealedRecord {
@@ -131,7 +133,7 @@ export async function openReflection(id: string, passcode: string, now = Date.no
     const key = await keyFor(canon, passcode, unb64(r.salt));
     const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(r.iv) }, key, unb64(r.ct));
     const payload = JSON.parse(new TextDecoder().decode(plain)) as SavedPayload;
-    if (payload?.v !== 1 || !Array.isArray(payload.selectedGateways) || !Array.isArray(payload.gatewayData)) return null;
+    if ((payload?.v !== 1 && payload?.v !== 2) || !Array.isArray(payload.selectedGateways) || !Array.isArray(payload.gatewayData)) return null;
     store.remove();
     return payload;
   } catch {

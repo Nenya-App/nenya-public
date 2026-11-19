@@ -18,7 +18,7 @@ export default function CoachRegion({ onBack, onOpenTerms }: { onBack: () => voi
         <Card className="space-y-6 p-6 leading-relaxed">
           <p>
             For now, the coach demo is open only to connections our host places in the United States: {PLACES}. Everything
-            else on Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can
+            else on Nenya works everywhere and sends nothing: the breathing tool, the six lenses, and the report you can
             make from them.
           </p>
 

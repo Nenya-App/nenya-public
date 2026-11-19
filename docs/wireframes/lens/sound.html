@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: the Sound lens</title>
+<link rel="stylesheet" href="wire.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the wireframes</a>
+<header class="page">
+  <h1>The Sound lens: four cards</h1>
+  <p><a href="index.html">All wireframes</a> · <a href="sight.html">Sight</a> · Draft 2026-11-17 · plan: <code>docs/lens-audit-sight-sound.md</code></p>
+</header>
+<main id="main">
+<div class="legend">
+  <h2>How to read these</h2>
+  <p>Controls on the left work with the keyboard; notes on the right give the tab order, what a screen reader says, what responds, and the copy draft. <strong>Emergency Exit</strong> is first in every tab order. These wireframes make <strong>no sound</strong>: where the real card plays, a line of text shows what would be heard.</p>
+  <p class="mini">Sound starts from Sight’s colors if they were added or chosen there, and offers its colors back to Sight. Both are offers, never requirements.</p>
+</div>
+
+<!-- CARD 1 -->
+<section class="card" aria-labelledby="m1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Sound · card 1 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="m1">Make a melody</h2>
+    <p class="fewer">Choosing fewer can be more helpful than choosing many.</p>
+    <p>Six notes. The first three are for how you feel now. The last three are for how you wish to feel.</p>
+    <div class="row"><button type="button">Start from my colors</button><button type="button">Surprise me</button></div>
+    <label for="scale">Which scale?</label>
+    <div class="row"><select id="scale"><option>Western</option><option>Maqam Rast</option><option>Slendro</option><option>Bhairav</option><option>Miyako-bushi</option><option>Blues</option></select><button type="button">Hear this scale</button></div>
+    <fieldset><legend>Your six notes</legend>
+      <div class="slots" role="group" aria-label="Notes 1 to 3, for now"><button type="button" aria-label="Note 1 of 6, now: empty">·</button><button type="button" aria-label="Note 2 of 6, now: empty">·</button><button type="button" aria-label="Note 3 of 6, now: empty">·</button></div>
+      <div class="slots" role="group" aria-label="Notes 4 to 6, for wish"><button type="button" aria-label="Note 4 of 6, wish: empty">·</button><button type="button" aria-label="Note 5 of 6, wish: empty">·</button><button type="button" aria-label="Note 6 of 6, wish: empty">·</button></div>
+    </fieldset>
+    <fieldset><legend>Choose the next note</legend><div class="slots" role="group" aria-label="Notes of the scale"><button type="button">1</button><button type="button">2</button><button type="button">3</button><button type="button">4</button><button type="button">5</button><button type="button">6</button><button type="button">7</button></div></fieldset>
+    <div class="row"><button type="button">Play</button><button type="button">Undo</button><button type="button">Clear</button><button type="button" class="primary">Next</button></div>
+    <p class="mini" id="m1-text" role="status">What you would hear: the notes you have so far, in order.</p>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Start from my colors (only if colors exist), Surprise me</li><li>Scale (one select), Hear this scale</li><li>The six slots, then the seven note buttons</li><li>Play, Undo, Clear, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>Each slot is named with its place and state: “Note 1 of 6, now: empty”. Choosing a note says its name and which slot it went into, politely.</li><li>The scale is one select with one “hear” button, not six buttons at once.</li></ul>
+    <h3>Responds live</h3><ul><li>Choosing a note plays it (only if the person has switched sound on); each slot shows its note.</li><li>Sound is off until asked. Without it, the card still works and the text line says what would be heard.</li></ul>
+    <h3>Copy draft (about grade 5)</h3><p>“Make a melody. Six notes. The first three are for how you feel now. The last three are for how you wish to feel.” The two old instruction cards are folded into this card.</p>
+    <h3>Notes</h3><ul><li>Six tonal systems are kept; the select replaces six equal buttons (less choice at once).</li><li>The long mode moves to card 3.</li></ul>
+  </aside>
+</section>
+
+<!-- CARD 2 -->
+<section class="card" aria-labelledby="m2">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Sound · card 2 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="m2">Hear it your way</h2>
+    <p>Change the melody you made. You hear the change as you make it.</p>
+    <form data-say="say-out">
+      <fieldset><legend>Shape the melody for</legend><label><input type="radio" name="which" value="now" checked> Now</label> <label><input type="radio" name="which" value="wish"> Wish</label></fieldset>
+      <label for="pitch">Pitch</label><input type="range" id="pitch" name="pitch" min="-2" max="2" value="0" step="1"><div class="ends"><span>Lower</span><span>Higher</span></div>
+      <label for="volume">Volume</label><input type="range" id="volume" name="volume" min="-2" max="2" value="0" step="1"><div class="ends"><span>Softer</span><span>Louder</span></div>
+      <label for="speed">Speed</label><input type="range" id="speed" name="speed" min="-2" max="2" value="0" step="1"><div class="ends"><span>Slower</span><span>Faster</span></div>
+      <fieldset><legend>Sound</legend><label><input type="radio" name="sound" value="soft" checked> Soft</label> <label><input type="radio" name="sound" value="pure"> Pure</label> <label><input type="radio" name="sound" value="bell"> Bell</label> <label><input type="radio" name="sound" value="pluck"> Pluck</label> <label><input type="radio" name="sound" value="bowl"> Bowl</label></fieldset>
+      <fieldset><legend>Feel</legend><label><input type="radio" name="feel" value="steady" checked> Steady</label> <label><input type="radio" name="feel" value="flowing"> Flowing</label> <label><input type="radio" name="feel" value="light and separate"> Light and separate</label> <label><input type="radio" name="feel" value="swaying"> Swaying</label></fieldset>
+    </form>
+    <div class="row"><button type="button">Play</button><button type="button">Back to the original</button><button type="button" class="primary">Next</button></div>
+    <p class="mini">What you would hear: <span id="say-out" role="status"></span></p>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Now or wish (radio group)</li><li>Pitch, volume, speed (sliders)</li><li>Sound, feel (radio groups)</li><li>Play, Back to the original, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>Each slider: “Pitch, lower to higher, original.” Steps are five, with the original in the middle, named in words, never as numbers or notes.</li><li>The line “What you would hear” is the text twin of the sound and updates politely.</li></ul>
+    <h3>Responds live</h3><ul><li><strong>Pitch</strong> is a transposition of the whole melody (about an octave each way, intervals kept, so it works for all six scales). <strong>Volume</strong> sets loudness. <strong>Speed</strong> sets the tempo. <strong>Sound</strong> changes the instrument. <strong>Feel</strong> changes how the notes are played (steady, flowing, light and separate, swaying).</li><li>Moving a control plays a short sample if sound is on; Play plays the whole melody. Try the controls: the line of text updates.</li><li>Now and wish are shaped separately, so the two states can sound different.</li></ul>
+    <h3>New in the player</h3><p>Pitch (transposition) and the four feels are new in <code>melodyPlayer.ts</code>; speed, volume and timbre exist.</p>
+    <h3>Copy draft</h3><p>“Change the melody you made. You hear the change as you make it.”</p>
+  </aside>
+</section>
+
+<!-- CARD 3 -->
+<section class="card" aria-labelledby="m3">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Sound · card 3 of 4 (only when available)</span><button type="button">Put this down</button></div>
+    <h2 id="m3">Make it longer? (optional)</h2>
+    <p>You marked 2 palettes to be heard. Make a longer melody from them, one short phrase for each color.</p>
+    <div class="row"><button type="button">Make it longer</button><button type="button">Play it</button></div>
+    <p class="mini" role="status">What you would hear: one phrase for each of your 2 colors and 2 palettes, in order.</p>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>When it shows</h3><p>Only when palettes were marked for sound in Sight (or colors exist for phrases). Otherwise this card does not exist and the lens goes from card 2 to the last card.</p>
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Make it longer, Play it</li><li>Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>The count of palettes, then what each phrase is for. The longer melody reads as a short list of phrases with the same “what you would hear” text.</li></ul>
+    <h3>Notes</h3><p>This is the existing long mode (<code>longMelody</code>), moved off the first card so that card stays simple.</p>
+  </aside>
+</section>
+
+<!-- CARD 4 -->
+<section class="card" aria-labelledby="m4">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Sound · card 4 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="m4">Add Sound to your report?</h2>
+    <p>This is what would be added:</p>
+    <ul><li>Your melody: six notes, Western scale</li><li>Now: original pitch, medium volume, soft, steady</li><li>Wish: higher, softer, bell, flowing</li><li>A longer melody: none</li></ul>
+    <label for="more">Anything more to say about the sound? (optional)</label><input type="text" id="more">
+    <div class="row"><button type="button" class="primary" data-added="added-sound">Add this to my report</button><button type="button">Put this down</button></div>
+    <p id="added-sound" hidden role="status"><strong>Added.</strong> You can come back and change it. <button type="button">Update my report</button> <button type="button">Remove from my report</button></p>
+    <p class="mini">If put down without adding, your report says: “Examined, not included: Sound.” Anything you made stays here for the visit, marked “not in your report yet”, and is never saved unless you add it. The sound file stays an option on the report page, made on your device.</p>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down (top)</li><li>The summary (a list)</li><li>The free-text box</li><li>Add this to my report, Put this down</li></ol>
+    <h3>A screen reader says</h3><ul><li>The summary is a real list. After Add, focus moves to “Added.” and it is read once.</li></ul>
+    <h3>States</h3><p>Before, added (Update and Remove), examined only: the same three as Sight.</p>
+    <h3>Notes</h3><p>The free-text box is the old “describe it” step, now last and optional. The session colors form from colors <em>added</em> in Sight or Sound, never from anything merely tried.</p>
+  </aside>
+</section>
+</main>
+<script src="wire.js"></script>
+</body>
+</html>

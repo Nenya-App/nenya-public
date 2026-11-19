@@ -1,5 +1,6 @@
 // The text of a sensory report, one function per part: the review page, the downloads (text and PDF) and the coach hand-off
 // (src/lib/reportShare.ts) all use these, so what the person sees, downloads and may share is the same words.
+import { cleanV2, essenceReportLines } from './flavour.ts';
 import { surfaceLine } from './touchTextures.ts';
 import { getNoteNames, TONAL_SYSTEM_LABELS, type TonalSystem } from './audio.ts';
 import { describePalettePlainly } from './colorSchemes.ts';
@@ -7,6 +8,7 @@ import { shapeById } from './gatewayShapes.ts';
 import { isAnswered } from './optionalSlider.ts';
 import { labelFor, type MapPin } from './bodyMapParts.ts';
 
+import { L, sixthLensName } from './vocabulary.ts';
 export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight';
 export interface BodyMapLike {
   placements: { bodyPartId: string; color: string; colorName?: string }[];
@@ -34,7 +36,7 @@ export const gatewayTitles: Record<Gateway, string> = {
   touch: 'Touch - Somatosensation',
   essence: 'Essence - Aromatic Memory',
   movement: 'Movement - Kinesthesia',
-  insight: 'Insight - Noesis',
+  insight: `${sixthLensName()} - Noesis`,
 };
 
 // Helper function to get body part label from ID
@@ -132,7 +134,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
         info.push(`Melody: ${data.melody.filter((n: number | null) => n !== null).map((n: number) => soundNoteNames[n] || '').join(' – ')}`);
         // A longer melody, one phrase for each color: the colors and the note values, as the person set them (nothing here describes how it sounds).
         if (Array.isArray(data.melodyPhrases) && data.melodyPhrases.length > 0) {
-          info.push('Melody phrases, in playing order (the colors are the ones from the Sight gateway; the notes were set separately):');
+          info.push(L('Melody phrases, in playing order (the colors are the ones from the Sight gateway; the notes were set separately):'));
           data.melodyPhrases.forEach((p: any, i: number) => {
             const kind = p?.kind === 'present' ? 'Present' : p?.kind === 'wish' ? 'Wish' : 'Palette';
             const label = String(p?.label ?? '');
@@ -156,6 +158,8 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       break;
       
     case 'essence':
+      // The tray's Essence (src/lib/flavour.ts): the flavor of your life now and the one you want, in words.
+      { const v2 = cleanV2(data); if (v2) { info.push(...essenceReportLines(v2)); break; } }
       if (data.currentTastes && Array.isArray(data.currentTastes) && data.currentTastes.length > 0) {
         info.push(`Present Taste: ${data.currentTastes.join(', ')}`);
       } else if (data.currentTaste) {
@@ -223,6 +227,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       if (data.potentialMovementDrawing) info.push(`  Drawing: captured`);
       info.push(...shapeLine('wish', data.potentialMovementShapes));
+      if (typeof data.movementPathWords === 'string' && data.movementPathWords) info.push(`Path of movement: ${data.movementPathWords}`); // words only: the picture never goes into the text (or to the coach)
       break;
 
     case 'insight':
@@ -261,6 +266,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       if (data.potentialPatternDrawing) info.push(`  Drawing: captured`);
       info.push(...shapeLine('wish', data.potentialPatternShapes));
+      if (typeof data.tapestryWords === 'string' && data.tapestryWords) info.push(`Tapestry: ${data.tapestryWords}`); // words only: the picture never goes into the text (or to the coach)
       break;
   }
   
