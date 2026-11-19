@@ -8,12 +8,12 @@ export const CLARITY_WORDS = ['foggy', 'hazy', 'fairly clear', 'sharp', 'crystal
 export const DEPTH_WORDS = ['surface', 'shallow', 'middling', 'deep', 'profound'] as const;
 const DIR: Record<string, [number, number]> = { upward: [0, -1], downward: [0, 1], inward: [0, 0], outward: [0, 0], spiraling: [1, -1], oscillating: [1, 0], flowing: [1, 0], stuck: [0, 0], still: [0, 0] };
 
-export interface MovePreview { durationS: number; amplitudePx: number; dx: number; dy: number; opacity: number; still: boolean; words: string }
+export interface MovePreview { durationS: number; amplitudePx: number; dx: number; dy: number; opacity: number; still: boolean; words: string; /** How long a chosen drawing takes to draw itself, from Speed (a glacial drawing draws slowly; a frenetic one quickly). */ drawS: number; /** How heavy the drawing's line is, from Energy (depleted is thin, surging is bold). */ strokeWidth: number }
 /** How the shape drifts: Speed sets how long a drift takes, Energy how far and how strong it shows, the first direction word which way. */
 export function movePreview(speed: number | null, energy: number | null, direction: string | null): MovePreview {
   const a = lv(speed), b = lv(energy), d = (direction && DIR[direction.toLowerCase()]) || [0, 0];
   const still = !!direction && ['still', 'stuck'].includes(direction.toLowerCase());
-  return { durationS: [9, 5, 2.5, 1.2, 0.5][a], amplitudePx: 8 + b * 10, dx: d[0], dy: d[1], opacity: Number((0.45 + b * 0.14).toFixed(2)), still, words: [direction ? direction.toLowerCase() : null, SPEED_WORDS[a], ENERGY_WORDS[b]].filter(Boolean).join(', ') };
+  return { durationS: [9, 5, 2.5, 1.2, 0.5][a], drawS: [10, 6, 3.5, 2, 1][a], strokeWidth: [1.5, 2.2, 3, 4, 5.2][b], amplitudePx: 8 + b * 10, dx: d[0], dy: d[1], opacity: Number((0.45 + b * 0.14).toFixed(2)), still, words: [direction ? direction.toLowerCase() : null, SPEED_WORDS[a], ENERGY_WORDS[b]].filter(Boolean).join(', ') };
 }
 export interface PatternPreview { blurPx: number; layers: number; words: string }
 /** How the layers look: Clarity sets the blur (foggy is blurred), Depth how many layers show. */

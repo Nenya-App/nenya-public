@@ -13,3 +13,11 @@ ok('Clarity sets the blur and Depth how many layers show; the words say it', fog
 const comp = readFileSync('src/app/components/LensPreview.tsx', 'utf8'), mvp = readFileSync('src/app/components/pages/MovementGatewayPage.tsx', 'utf8'), ptp = readFileSync('src/app/components/pages/InsightGatewayPage.tsx', 'utf8');
 ok('the preview is a named image with a polite words line, still under reduced motion, and can be paused', /role="img"/.test(comp) && /role="status" aria-live="polite"/.test(comp) && /@media \(prefers-reduced-motion: reduce\)/.test(comp) && /Pause the preview/.test(comp) && /aria-pressed=\{paused\}/.test(comp) && /min-h-11/.test(comp));
 ok('Movement and Pattern show it on the sliders card of both states', (mvp.match(/<LensPreview /g) ?? []).length === 2 && (ptp.match(/<LensPreview /g) ?? []).length === 2 && /parts: \[2, 3, 8\]/.test(mvp) && /parts: \[2, 3, 8\]/.test(ptp));
+
+// Movement: the sliders edit how the chosen drawing is drawn and moved (owner's comment sheet, 2026-11-18).
+{
+  const slowThin = movePreview(0, 0, null), fastBold = movePreview(100, 100, null), unset = movePreview(null, null, null);
+  ok('Speed sets how fast a chosen drawing draws itself (glacial slow, frenetic quick); Energy how bold its line is', slowThin.drawS === 10 && fastBold.drawS === 1 && slowThin.strokeWidth === 1.5 && fastBold.strokeWidth === 5.2 && unset.drawS === 3.5 && unset.strokeWidth === 3);
+  ok('both stay in range for any input', [-50, 12, 49, 120, NaN].every((v) => { const m = movePreview(v, v, null); return m.drawS >= 1 && m.drawS <= 10 && m.strokeWidth >= 1.5 && m.strokeWidth <= 5.2; }));
+  ok('the preview shows the chosen drawing, drawn at that speed and line weight and moved by the same sliders, and a plain ring only until one is chosen; still under reduced motion', /shapeById\(props\.shapeId\)/.test(comp) && /--draw/.test(comp) && /--sw/.test(comp) && /lensDraw/.test(comp) && /prefers-reduced-motion: reduce\) \{ \.lens-shape/.test(comp) && (mvp.match(/shapeId=\{(current|potential)MovementShapes\[0\] \?\? null\}/g) ?? []).length === 2);
+}

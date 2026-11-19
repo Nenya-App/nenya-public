@@ -331,7 +331,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                     {currentDesc.edited && tray && <button type="button" onClick={currentDesc.reset} className="min-h-11 text-xs underline underline-offset-4 text-muted-foreground">Fill it from my choices again</button>}
                   </div>
                     ];
-                    b[8] = <LensPreview key="prev" kind="movement" speed={sliderValue(currentSpeed)} energy={sliderValue(currentEnergy)} direction={currentDirections[0] ?? null} />;
+                    b[8] = <LensPreview key="prev" kind="movement" speed={sliderValue(currentSpeed)} energy={sliderValue(currentEnergy)} direction={currentDirections[0] ?? null} shapeId={currentMovementShapes[0] ?? null} />;
                     b[7] = <PathActivity key="act" points={movementPath} feel={currentQualities} onChange={setMovementPath} />;
                     return tray ? (cur && cur.stage === 'present' ? cur.parts.map((n) => <React.Fragment key={n}>{b[n]}</React.Fragment>) : []) : b;
                   })()}
@@ -411,7 +411,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                     {potentialDesc.edited && tray && <button type="button" onClick={potentialDesc.reset} className="min-h-11 text-xs underline underline-offset-4 text-muted-foreground">Fill it from my choices again</button>}
                   </div>
                     ];
-                    b[8] = <LensPreview key="prev" kind="movement" speed={sliderValue(potentialSpeed)} energy={sliderValue(potentialEnergy)} direction={potentialDirections[0] ?? null} />;
+                    b[8] = <LensPreview key="prev" kind="movement" speed={sliderValue(potentialSpeed)} energy={sliderValue(potentialEnergy)} direction={potentialDirections[0] ?? null} shapeId={potentialMovementShapes[0] ?? null} />;
                     return tray ? (cur && cur.stage === 'wish' ? cur.parts.map((n) => <React.Fragment key={n}>{b[n]}</React.Fragment>) : []) : b;
                   })()}
                 </CardContent>
