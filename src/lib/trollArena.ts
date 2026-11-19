@@ -70,7 +70,7 @@ export const KIND_LABELS: Record<ActionKind, string> = {
   note: 'Noted',
 };
 
-const SKIP = /^(?:coach\.turn\.sent|coach\.turn\.answered|coach\.screen\..*|coach\.turn\.multi-question)$/;
+const SKIP = /^(?:coach\.conversation\.started|coach\.turn\.sent|coach\.turn\.answered|coach\.screen\..*|coach\.turn\.multi-question|coach\.model\..*|coach\.neurons\..*)$/;
 const GUARD_NAMES: Record<string, { label: string; layer: LayerId }> = {
   infrastructure: { label: 'infrastructure guard (claims about how Nenya runs)', layer: 'infra' },
   persona: { label: 'persona guard (human life, denying being an AI)', layer: 'persona' },
