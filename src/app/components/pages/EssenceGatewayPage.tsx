@@ -15,6 +15,7 @@ import { WordPicker } from '../WordPicker';
 import { PutThisDown, FewerNote, MoreDescriptions, FewerWarning, AddToReport } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { EssenceFlavour } from '../EssenceFlavour';
+import { cleanV2 } from '../../../lib/flavour';
 
 import { L } from '../../../lib/vocabulary';
 interface EssenceGatewayPageProps {
@@ -158,7 +159,7 @@ export default function EssenceGatewayPage({ onComplete, onBack, currentIndex, t
       <div ref={scrollContainerRef} className="flex-1 overflow-auto scroll-container">
         {tray ? (
           // The tray's Essence is the flavor of your life, in five short cards (src/app/components/EssenceFlavour.tsx), not the old taste and scent page.
-          <EssenceFlavour initial={initialData} added={!!initialData && 'essenceV2' in initialData} onPutDown={onBack} onAdd={(data) => onComplete({ essenceV2: data })} />
+          <EssenceFlavour initial={initialData} added={cleanV2(initialData) !== null} onPutDown={onBack} onAdd={(data) => onComplete(data)} />
         ) : step === 'instructions' ? (
           /* Instruction Cards */
           <div className="h-full flex items-center justify-center px-4 sm:px-6 py-8">

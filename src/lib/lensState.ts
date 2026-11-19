@@ -4,6 +4,8 @@
 // A lens is in one of three states: not opened, examined (opened, nothing added) or included (added to the report). Nothing is in the report until it is added; a lens put
 // down without adding is "examined, not included". Lenses are picked up in any order, any number, and any lens can be added again (update) or removed.
 
+import { unwrapEssence } from './flavour.ts';
+
 // The tray replaces the pick-several-then-go-in-order flow only when VITE_LENS_TRAY=on (off by default).
 export const lensTrayOn = (): boolean => import.meta.env?.VITE_LENS_TRAY === 'on';
 
@@ -64,7 +66,7 @@ export interface SavedPayloadV2 { v: 2; examined: LensId[]; gatewayData: LensAdd
 export function readSavedDraft(p: unknown): SavedPayloadV2 | null {
   const o = (p && typeof p === 'object' ? p : null) as Record<string, any> | null;
   if (!o || !Array.isArray(o.gatewayData) || (o.v !== 1 && o.v !== 2)) return null;
-  const data: LensAdded[] = o.gatewayData.filter((g: any) => g && isLens(g.gateway)).map((g: any) => ({ gateway: g.gateway as LensId, data: g.data })).sort((a: LensAdded, b: LensAdded) => byOrder(a.gateway, b.gateway));
+  const data: LensAdded[] = o.gatewayData.filter((g: any) => g && isLens(g.gateway)).map((g: any) => ({ gateway: g.gateway as LensId, data: g.gateway === 'essence' ? unwrapEssence(g.data) : g.data })).sort((a: LensAdded, b: LensAdded) => byOrder(a.gateway, b.gateway));
   const have = new Set(data.map((d) => d.gateway));
   const examined: LensId[] = o.v === 2 && Array.isArray(o.examined) ? (o.examined as unknown[]).filter(isLens).filter((l) => !have.has(l)).sort(byOrder) : [];
   return { v: 2, examined, gatewayData: data, bodyMapData: o.bodyMapData, interfaceColors: o.interfaceColors };
