@@ -14,7 +14,7 @@ import { formatBodyMapLines, formatGatewayData, gatewayTitles, isBodyMapUsed } f
 // "Download PDF Report" -- loaded on demand inside downloadNenyaPdfReport()
 // instead of shipped with every page.
 import { downloadNenyaPdfReport } from '../../../lib/nenyaPdfReport';
-import { BODY_MAP_ALT, DRAWING_ALT_PRESENT, DRAWING_ALT_WISH } from '../../../lib/altText';
+import { bodyMapAltFor, DRAWING_ALT_PRESENT, DRAWING_ALT_WISH } from '../../../lib/altText';
 
 import { L } from '../../../lib/vocabulary';
 interface GatewayReviewPageProps {
@@ -304,7 +304,7 @@ export default function GatewayReviewPage({
                   <User className="size-5 text-muted-foreground" />
                   <div>
                     <CardTitle className="text-lg">Body Map</CardTitle>
-                    <CardDescription className="mt-1">Colors and notes placed across your {L('gateways')}</CardDescription>
+                    <CardDescription className="mt-1">Colors, brush marks and notes placed across your {L('gateways')}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -332,7 +332,7 @@ export default function GatewayReviewPage({
                   <div className="bg-muted/30 rounded-lg p-4 flex justify-center">
                     <img
                       src={bodyMapData.imageDataUrl}
-                      alt={BODY_MAP_ALT}
+                      alt={bodyMapAltFor(bodyMapData.placements.length, bodyMapData.strokes?.length ?? 0)}
                       className="max-w-full h-auto rounded"
                       style={{ maxHeight: '300px' }}
                     />

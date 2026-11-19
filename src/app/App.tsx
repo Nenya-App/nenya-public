@@ -1,5 +1,5 @@
 import { lensTrayOn, openLens, addLens, removeLens, reportShape, readSavedDraft, lensStatus, LENS_ORDER, type LensId, type LensState, type LensAdded } from '../lib/lensState';
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { setSessionMarkId } from '../lib/sessionMarkStore';
 import SkipLink from './components/SkipLink';
 import { ThemeProvider } from './components/ThemeProvider';
@@ -28,6 +28,8 @@ import { normalizeId, openReflection, purgeExpired, saveReflection, saveReflecti
 import { newShadow, sessionIdFor, termsFirstOn } from '../lib/shadowSession';
 import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
+import { BodyMapBrushContext } from './components/BodyMapBrushContext';
+import { brushesFor, cleanStrokes, lensName } from '../lib/bodyMapBrush';
 
 // Everything past the welcome/breathing screen is code-split: a visitor who
 // only ever does the breathing exercise shouldn't pay for the Sound
@@ -390,7 +392,7 @@ export default function App() {
         setSelectedGateways(draft.gatewayData.map((g) => g.gateway as Gateway));
         setGatewayData(draft.gatewayData as GatewayData[]);
         setExamined(draft.examined);
-        setBodyMapData(saved.bodyMapData as BodyMapData);
+        setBodyMapData({ ...(saved.bodyMapData as BodyMapData), strokes: cleanStrokes((saved.bodyMapData as BodyMapData | undefined)?.strokes) });
         setInterfaceColors(saved.interfaceColors);
         setShadow(normalizeId(id) ?? shadow);
         navigateTo('home');
@@ -554,8 +556,15 @@ export default function App() {
   // Check if user has completed at least one gateway
   const userHasGatewayData = gatewayData.length > 0;
 
+  // The shared body map (lens tray only): the paintbrush is offered, with a brush for each color and surface the added lenses gave; the lenses it announced as picked up are kept here so the tray says it once.
+  const [pickedSeen, setPickedSeen] = useState<LensId[]>([]);
+  const brushValue = useMemo(() => ({ enabled: lensTrayOn(), brushes: lensTrayOn() ? brushesFor(gatewayData as LensAdded[]) : [], strokes: bodyMapData.strokes ?? [] }), [gatewayData, bodyMapData.strokes]);
+  // The report's copy of the map names the lenses it picked up (the same sentence on the review page, in the text and PDF reports and for the coach). Not kept with the map itself.
+  const reportBodyMap = useMemo<BodyMapData>(() => (lensTrayOn() ? { ...bodyMapData, pickedUp: gatewayData.map((g) => lensName(g.gateway as LensId)) } : bodyMapData), [bodyMapData, gatewayData]);
+
   return (
     <SaveReflectionContext.Provider value={saveApi}>
+    <BodyMapBrushContext.Provider value={brushValue}>
     <ThemeProvider defaultTheme="dark">
       <SkipLink />
       {/* First in the page, above every overlay: the header's Exit is out of reach behind the loading screen, the first-visit panel and the tour. */}
@@ -686,7 +695,7 @@ export default function App() {
 
           {currentScreen === 'home' && lensTrayOn() && (
             <Suspense fallback={null}>
-              <LensTrayPage state={trayState} onOpen={handleOpenLens} onRemove={handleRemoveLens} onReport={() => navigateTo('gateway-review')} onBack={() => navigateBack('welcome')} onNewName={() => setShadow(newShadow())} />
+              <LensTrayPage state={trayState} onOpen={handleOpenLens} onRemove={handleRemoveLens} onReport={() => navigateTo('gateway-review')} onBack={() => navigateBack('welcome')} onNewName={() => setShadow(newShadow())} bodyMapData={bodyMapData} onUpdateBodyMap={setBodyMapData} userColors={gatewayData.find((g) => g.gateway === 'sight')?.data} pickedSeen={pickedSeen} onPickedSeen={(next) => setPickedSeen((prev) => (prev.join(',') === next.join(',') ? prev : next))} />
             </Suspense>
           )}
 
@@ -794,7 +803,7 @@ export default function App() {
               onGuestbook={guestbookOn() ? () => navigateTo('guestbook') : undefined}
               onEditGateway={handleEditGateway}
               onBack={() => navigateBack('home')}
-              bodyMapData={bodyMapData}
+              bodyMapData={reportBodyMap}
             />
           )}
 
@@ -802,7 +811,7 @@ export default function App() {
             <RegionGate onBack={() => navigateBack('home')} onBreathe={() => handleGlobalNavigation('welcome')}>
             <CoachDemo
               colors={interfaceColors}
-              report={gatewayData.length > 0 ? { gatewayData: gatewayData.map((gd) => ({ gateway: gd.gateway, data: gd.data })), bodyMap: bodyMapData } : undefined}
+              report={gatewayData.length > 0 ? { gatewayData: gatewayData.map((gd) => ({ gateway: gd.gateway, data: gd.data })), bodyMap: reportBodyMap } : undefined}
               onBack={() => navigateBack('home')}
               onBreathe={() => handleGlobalNavigation('welcome')}
               onPartnerPractice={handleNavigateToCell}
@@ -864,6 +873,7 @@ export default function App() {
         />
       </div>
     </ThemeProvider>
+    </BodyMapBrushContext.Provider>
     </SaveReflectionContext.Provider>
   );
 }

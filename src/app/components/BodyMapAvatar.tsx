@@ -1,11 +1,14 @@
-import { useEffect, useState, useRef } from 'react';
+import { useContext, useEffect, useId, useState, useRef } from 'react';
 import { Button } from './ui/button';
-import { X, Download, ChevronDown, ChevronRight, ZoomIn, ZoomOut, Maximize2, MapPin as PinIcon, ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from 'lucide-react';
+import { X, Download, ChevronDown, ChevronRight, ZoomIn, ZoomOut, Maximize2, MapPin as PinIcon, ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Paintbrush, Undo2, Eraser, Redo2 } from 'lucide-react';
 import { Card } from './ui/card';
 import { ValarColorPicker } from './ValarColorPicker';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { sanitizePlainText } from '../../lib/textSanitize';
-import { BODY_PARTS, FACE_PARTS, MAP_W, MAP_H, clamp, labelFor, type MapPin } from '../../lib/bodyMapParts';
+import { BODY_PARTS, FACE_PARTS, MAP_W, MAP_H, clamp, labelFor, nearestPart, type MapPin } from '../../lib/bodyMapParts';
+import { BodyMapBrushContext } from './BodyMapBrushContext';
+import { SIZE_DEFAULT, SIZE_MAX, SIZE_MIN, MAX_STROKES, addPoint, cleanStrokes, describeStrokes, effectiveSize, lensName, round1, strokePath, strokesSummary, type BrushStroke, type Paint } from '../../lib/bodyMapBrush';
+import { texturePath } from '../../lib/touchTextures';
 
 import { L } from '../../lib/vocabulary';
 interface ColorPlacement {
@@ -19,6 +22,10 @@ export interface BodyMapData {
   notes: Record<string, string>; // bodyPartId (a part's id or a pin's id) -> sanitized note text
   /** Pins the person placed anywhere on the map; their colors and notes are in placements and notes, under the pin's id. */
   pins?: MapPin[];
+  /** Paintbrush marks (lens tray only; src/lib/bodyMapBrush.ts). */
+  strokes?: BrushStroke[];
+  /** Only in the report's copy of the map (lens tray): the names of the lenses it picked up. */
+  pickedUp?: string[];
   imageDataUrl?: string;
 }
 
@@ -31,13 +38,34 @@ interface BodyMapAvatarProps {
   initialPlacements?: ColorPlacement[];
   initialNotes?: Record<string, string>;
   initialPins?: MapPin[];
+  /** Paintbrush marks made before. When not given, the ones the app holds (BodyMapBrushContext) are used, so the lens pages need not pass them. */
+  initialStrokes?: BrushStroke[];
   /** Shown as a section of the page (the Sight gateway) instead of a full-screen window. It saves as the person goes, so there is nothing to close or save. */
   inline?: boolean;
 }
 
 const NOTE_MAX_LENGTH = 300;
+const BRUSH_PICKER = '__brush-picker';
+const texCache = new Map<string, Promise<string>>();
+/** A small embedded copy of a surface's picture, for the saved image of the map. Empty if it cannot be loaded. */
+function textureDataUrl(id: string): Promise<string> {
+  if (!id) return Promise.resolve('');
+  let p = texCache.get(id);
+  if (!p) {
+    p = new Promise<string>((resolve) => {
+      const img = new Image();
+      img.onload = () => { try { const c = document.createElement('canvas'); c.width = 96; c.height = 96; const x = c.getContext('2d'); if (!x) return resolve(''); x.drawImage(img, 0, 0, 96, 96); resolve(c.toDataURL('image/jpeg', 0.8)); } catch { resolve(''); } };
+      img.onerror = () => resolve('');
+      img.src = texturePath(id);
+    });
+    texCache.set(id, p);
+  }
+  return p;
+}
+const TILE = 24; // a surface's picture repeats every 24 map units inside a stroke
+const nearestPartId = (x: number, y: number): string => nearestPart(x, y).id;
 
-export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements = [], initialNotes = {}, initialPins = [], inline = false }: BodyMapAvatarProps) {
+export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements = [], initialNotes = {}, initialPins = [], initialStrokes, inline = false }: BodyMapAvatarProps) {
   const [placements, setPlacements] = useState<ColorPlacement[]>(initialPlacements);
   const [notes, setNotes] = useState<Record<string, string>>(initialNotes);
   const [pins, setPins] = useState<MapPin[]>(initialPins);
@@ -55,6 +83,33 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
   const [, setSelectedColorName] = useState<string | undefined>(userColors?.color1Name);
   const svgRef = useRef<SVGSVGElement>(null);
 
+  // ---- the paintbrush (lens tray only): paints come from the lenses added to the report, plus any color from the picker.
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const bm = useContext(BodyMapBrushContext);
+  const brushOn = bm.enabled;
+  const [strokes, setStrokes] = useState<BrushStroke[]>(() => cleanStrokes(initialStrokes ?? bm.strokes));
+  const [tool, setTool] = useState<'pins' | 'brush'>('pins');
+  const brushing = brushOn && tool === 'brush';
+  const [paintKey, setPaintKey] = useState<string>('');
+  const [customHex, setCustomHex] = useState<string>((userColors?.color1 || '#DDB88C').toUpperCase());
+  const [brushSize, setBrushSize] = useState(SIZE_DEFAULT);
+  const [openStroke, setOpenStroke] = useState<BrushStroke | null>(null);
+  const openRef = useRef<BrushStroke | null>(null);
+  const activePointer = useRef<number | null>(null);
+  const [cursor, setCursor] = useState({ x: MAP_W / 2, y: MAP_H / 2 });
+  const [brushDown, setBrushDown] = useState(false);
+  const [cursorShown, setCursorShown] = useState(false);
+  const [announce, setAnnounce] = useState('');
+  const [cleared, setCleared] = useState<BrushStroke[] | null>(null);
+  const [undone, setUndone] = useState<BrushStroke[]>([]);
+  const customPaint: Paint = { id: `picker-${customHex}`, kind: 'color', label: customHex, hex: customHex, from: 'the color picker' };
+  const paintChoices: { key: string; paint: Paint; lens?: string }[] = [
+    ...bm.brushes.map((b) => ({ key: b.paint.id, paint: b.paint, lens: lensName(b.lens) })),
+    { key: 'picker', paint: customPaint },
+  ];
+  const chosen = paintChoices.find((c) => c.key === paintKey) ?? paintChoices[0];
+  const paint = chosen.paint;
+
   // Choosing a body part opens the color picker for it (a popup), so there is no going back and forth on the screen.
   const [pickingPart, setPickingPart] = useState<string | null>(null);
 
@@ -70,6 +125,106 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
     const q = pt.matrixTransform(m.inverse());
     return { x: clamp(q.x, 0, MAP_W), y: clamp(q.y, 0, MAP_H) };
   };
+  // The brush. Points are in the map's own coordinates, so a stroke lands under the pointer at any zoom; the width is chosen on the screen and kept there (effectiveSize).
+  const say = (t: string) => setAnnounce(t);
+  const beginStroke = (x: number, y: number) => {
+    const s0: BrushStroke = { paint, size: effectiveSize(brushSize, view.z), pts: [[round1(x), round1(y)]] };
+    openRef.current = s0; setOpenStroke(s0);
+  };
+  const extendStroke = (x: number, y: number) => {
+    const cur = openRef.current; if (!cur) return;
+    const pts = addPoint(cur.pts, x, y); if (pts === cur.pts) return;
+    const next = { ...cur, pts }; openRef.current = next; setOpenStroke(next);
+  };
+  const endStroke = () => {
+    const cur = openRef.current; openRef.current = null; setOpenStroke(null);
+    if (!cur) return;
+    if (strokes.length >= MAX_STROKES) { say(`The map is full of brush strokes (${MAX_STROKES}). Undo some or clear them to paint more.`); return; }
+    const list = [...strokes, cur];
+    setStrokes(list); setUndone([]); setCleared(null);
+    say(`Stroke added in ${cur.paint.label}. ${strokesSummary(list)}`);
+  };
+  const undoStroke = () => {
+    openRef.current = null; setOpenStroke(null); setBrushDown(false);
+    if (!strokes.length) { say('There is no stroke to undo.'); return; }
+    const last = strokes[strokes.length - 1], list = strokes.slice(0, -1);
+    setStrokes(list); setUndone((u) => [...u, last]);
+    say(`Last stroke removed. ${strokesSummary(list)}`);
+  };
+  const redoStroke = () => {
+    if (!undone.length) return;
+    const back = undone[undone.length - 1], list = [...strokes, back];
+    setUndone((u) => u.slice(0, -1)); setStrokes(list);
+    say(`Stroke put back. ${strokesSummary(list)}`);
+  };
+  const clearStrokes = () => {
+    openRef.current = null; setOpenStroke(null); setBrushDown(false);
+    if (!strokes.length) return;
+    setCleared(strokes); setStrokes([]); setUndone([]);
+    say('All brush strokes cleared. You can put them back. Your colored places, pins and notes are untouched.');
+  };
+  const restoreStrokes = () => { if (cleared) { setStrokes(cleared); say(`Brush strokes put back. ${strokesSummary(cleared)}`); setCleared(null); } };
+  const brushPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (!brushing || (e.pointerType === 'mouse' && e.button !== 0) || activePointer.current !== null) return;
+    const q = mapPoint(e); if (!q) return;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    activePointer.current = e.pointerId; setCursorShown(false); beginStroke(q.x, q.y);
+  };
+  const brushPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (activePointer.current !== e.pointerId) return;
+    const evs = (e.nativeEvent as PointerEvent).getCoalescedEvents?.() ?? [];
+    for (const ev of evs.length ? evs : [e.nativeEvent as PointerEvent]) { const q = mapPoint(ev); if (q) extendStroke(q.x, q.y); }
+  };
+  const brushPointerEnd = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (activePointer.current !== e.pointerId) return;
+    activePointer.current = null;
+    if (e.type === 'pointerup') { const q = mapPoint(e); if (q) extendStroke(q.x, q.y); }
+    endStroke();
+  };
+  // Without a pointer: a cursor moved by the arrow keys or the buttons; Space or the button puts the brush down or lifts it; "Dab here" makes one dot.
+  const keepInView = (x: number, y: number) => ({ x: clamp(x, vx, vx + vw), y: clamp(y, vy, vy + vh) });
+  const moveCursor = (x: number, y: number) => {
+    const q = keepInView(x, y); setCursor(q); setCursorShown(true);
+    if (brushDown) extendStroke(q.x, q.y);
+    say(`Brush at ${Math.round((q.x / MAP_W) * 100)} percent across, ${Math.round((q.y / MAP_H) * 100)} percent down, near ${labelFor(nearestPartId(q.x, q.y), pins)}${brushDown ? ', painting' : ''}.`);
+  };
+  const nudgeCursor = (dx: number, dy: number, fine = false) => { const step = (fine ? 2 : 8) / Math.max(1, view.z); moveCursor(cursor.x + dx * step, cursor.y + dy * step); };
+  const toggleBrush = () => {
+    setCursorShown(true);
+    if (brushDown) { setBrushDown(false); endStroke(); }
+    else { setBrushDown(true); beginStroke(cursor.x, cursor.y); say(`Brush down in ${paint.label}.`); }
+  };
+  const dabHere = () => {
+    setCursorShown(true);
+    if (brushDown) { setBrushDown(false); endStroke(); }
+    const s0: BrushStroke = { paint, size: effectiveSize(brushSize, view.z), pts: [[round1(cursor.x), round1(cursor.y)]] };
+    if (strokes.length >= MAX_STROKES) { say(`The map is full of brush strokes (${MAX_STROKES}). Undo some or clear them to paint more.`); return; }
+    const list = [...strokes, s0]; setStrokes(list); setUndone([]); setCleared(null);
+    say(`Dab added in ${paint.label}. ${strokesSummary(list)}`);
+  };
+  const goToPlace = (id: string) => {
+    const part = [...BODY_PARTS, ...FACE_PARTS].find((p) => p.id === id); const pin = pins.find((p) => p.id === id);
+    const at = part ? part.position : pin ? { x: pin.x, y: pin.y } : null; if (!at) return;
+    if (part?.face && view.z < 2) { zoomTo(3.75, at.x, at.y); } else if (at.x < vx || at.x > vx + vw || at.y < vy || at.y > vy + vh) zoomTo(view.z, at.x, at.y);
+    setCursor(at); setCursorShown(true);
+    if (brushDown) extendStroke(at.x, at.y);
+    say(`Brush moved to ${labelFor(id, pins)}${brushDown ? ', painting' : ''}.`);
+  };
+  const onMapKeyDown = (e: React.KeyboardEvent<SVGSVGElement>) => {
+    if (!brushing || e.target !== e.currentTarget) return;
+    const k = e.key;
+    if (k === 'ArrowLeft') { e.preventDefault(); nudgeCursor(-1, 0, e.shiftKey); }
+    else if (k === 'ArrowRight') { e.preventDefault(); nudgeCursor(1, 0, e.shiftKey); }
+    else if (k === 'ArrowUp') { e.preventDefault(); nudgeCursor(0, -1, e.shiftKey); }
+    else if (k === 'ArrowDown') { e.preventDefault(); nudgeCursor(0, 1, e.shiftKey); }
+    else if (k === ' ' || k === 'Enter') { e.preventDefault(); toggleBrush(); }
+    else if (k === 'Escape' && brushDown) { e.preventDefault(); toggleBrush(); }
+    else if ((k === 'z' || k === 'Z') && (e.ctrlKey || e.metaKey)) { e.preventDefault(); undoStroke(); }
+  };
+  // A new view (zoom or move) keeps the cursor inside it; switching away from the brush lifts it.
+  useEffect(() => { setCursor((c) => keepInView(c.x, c.y)); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [view.z, view.cx, view.cy]);
+  useEffect(() => { if (!brushing && openRef.current) { setBrushDown(false); endStroke(); } /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [brushing]);
+
   const addPin = (x: number, y: number) => {
     const id = `pin-${nextPinId.current++}`;
     setPins((prev) => [...prev, { id, x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 }]);
@@ -87,6 +242,7 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
   const renamePin = (id: string, label: string) => setPins((prev) => prev.map((p) => (p.id === id ? { ...p, label: sanitizePlainText(label, 40) } : p)));
 
   const placeColor = (bodyPartId: string, color: string, colorName?: string) => {
+    if (bodyPartId === BRUSH_PICKER) { setCustomHex(color.toUpperCase()); setPaintKey('picker'); return; } // the color picker was opened for the brush, not for a place
     setSelectedColor(color);
     setSelectedColorName(colorName);
     setPlacements((prev) => [...prev.filter((p) => p.bodyPartId !== bodyPartId), { bodyPartId, color, colorName }]);
@@ -124,8 +280,14 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
 
       // The picture is always the whole body, whatever the zoom, with pins at their usual size and without the click-catching background.
       svgClone.setAttribute('viewBox', `0 0 ${MAP_W} ${MAP_H}`);
+      svgClone.removeAttribute('style'); // the paintbrush gives the live map a style attribute; a second one added below would make the picture unreadable
       svgClone.querySelectorAll('[data-pin-dot]').forEach((el) => el.setAttribute('r', '7'));
-      svgClone.querySelectorAll('[data-map-bg]').forEach((el) => el.remove());
+      svgClone.querySelectorAll('[data-map-bg], [data-brush-cursor]').forEach((el) => el.remove());
+      // A picture drawn inside an SVG that is turned into an image cannot load files, so each surface's picture is put in as a small embedded copy.
+      await Promise.all([...svgClone.querySelectorAll('image[data-tex]')].map(async (el) => {
+        const data = await textureDataUrl(el.getAttribute('data-tex') || '');
+        if (data) el.setAttribute('href', data); else el.remove(); // the pattern's rect under it carries the surface's average color
+      }));
 
       // Convert current color to actual color for the outline
       const computedStyle = getComputedStyle(svgRef.current);
@@ -209,6 +371,7 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
       placements,
       notes,
       pins,
+      ...(brushOn ? { strokes } : {}),
       imageDataUrl,
     };
 
@@ -226,11 +389,11 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
     let cancelled = false;
     const t = setTimeout(async () => {
       const imageDataUrl = await generateBodyMapImage();
-      if (!cancelled) onSave({ placements, notes, pins, imageDataUrl });
+      if (!cancelled) onSave({ placements, notes, pins, ...(brushOn ? { strokes } : {}), imageDataUrl });
     }, 700);
     return () => { cancelled = true; clearTimeout(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [placements, notes, pins, inline]);
+  }, [placements, notes, pins, strokes, inline]);
 
   // Everything that can hold a color or a note: the pins first, then the body, then the face's parts.
   const listItems: { id: string; label: string; group: 'pins' | 'body' | 'face'; pin?: MapPin }[] = [
@@ -264,6 +427,45 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
             <div className="space-y-4">
               <Card className="p-6">
                 <h3 className="mb-4">Your Body</h3>
+                {brushOn && (
+                  <div className="mb-4 space-y-3 rounded-lg border border-border p-3" data-brush-panel>
+                    <fieldset className="flex flex-wrap items-center gap-x-4">
+                      <legend className="text-sm font-medium">What a click or a drag does</legend>
+                      <label className="flex min-h-11 items-center gap-2 text-sm"><input type="radio" name="bm-tool" className="size-5" checked={tool === 'pins'} onChange={() => setTool('pins')} /> Place pins and choose body parts</label>
+                      <label className="flex min-h-11 items-center gap-2 text-sm"><input type="radio" name="bm-tool" className="size-5" checked={tool === 'brush'} onChange={() => setTool('brush')} data-tool-brush /> <Paintbrush className="size-4" aria-hidden /> Paintbrush: drag on the map to paint</label>
+                    </fieldset>
+                    {tool === 'brush' && (
+                      <>
+                        <fieldset className="space-y-1">
+                          <legend className="text-sm font-medium">Paint with</legend>
+                          <div className="flex flex-wrap gap-2">
+                          {paintChoices.map((c) => (
+                            <label key={c.key} className={`flex min-h-11 items-center gap-2 rounded-md border px-2 text-sm ${chosen.key === c.key ? 'border-foreground bg-muted' : 'border-border'}`}>
+                              <input type="radio" name="bm-paint" className="size-5" checked={chosen.key === c.key} onChange={() => setPaintKey(c.key)} data-paint={c.key} />
+                              {c.paint.surfaceId
+                                ? <img src={texturePath(c.paint.surfaceId)} alt="" width={28} height={28} className="size-7 rounded border border-border object-cover" />
+                                : <span aria-hidden className="inline-block size-7 rounded border border-border" style={{ background: c.paint.hex }} />}
+                              <span>{c.key === 'picker' ? 'Another color' : `${c.paint.label} (${c.paint.kind}, ${c.paint.from})`}</span>
+                              {c.key === 'picker' && <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => { setPaintKey('picker'); setPickingPart(BRUSH_PICKER); }}>Choose a color</Button>}
+                            </label>
+                          ))}
+                          </div>
+                          {bm.brushes.length === 0 && <p className="text-xs text-muted-foreground">When you add Sight (two colors) or Touch (a surface) to your report, they become paints here.</p>}
+                        </fieldset>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <label className="flex items-center gap-2 text-sm" htmlFor={`${uid}-size`}>Brush size
+                            <input id={`${uid}-size`} type="range" min={SIZE_MIN} max={SIZE_MAX} step={1} value={brushSize} onChange={(e) => setBrushSize(Number(e.target.value))} className="h-11 w-40" aria-valuetext={`${brushSize} of ${SIZE_MAX}`} data-brush-size />
+                          </label>
+                          <svg width="80" height="28" viewBox="0 0 80 28" aria-hidden="true">
+                            {paint.surfaceId && <defs><pattern id={`${uid}-prev`} patternUnits="userSpaceOnUse" width="24" height="24"><rect width="24" height="24" fill={paint.hex} /><image href={texturePath(paint.surfaceId)} width="24" height="24" preserveAspectRatio="xMidYMid slice" /></pattern></defs>}
+                            <path d="M8 14h64" stroke={paint.surfaceId ? `url(#${uid}-prev)` : paint.hex} strokeWidth={Math.min(26, effectiveSize(brushSize, view.z))} strokeLinecap="round" />
+                          </svg>
+                          <span className="text-xs text-muted-foreground">The brush keeps this size on the screen, so zoom in for finer marks.</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
                 <div role="group" aria-label="Zoom and move the map" className="mb-3 flex flex-wrap items-center gap-2">
                   <Button variant="outline" size="icon" aria-label="Zoom in" onClick={() => zoomTo(view.z * 1.5)} disabled={view.z >= 6}><ZoomIn className="size-4" /></Button>
                   <Button variant="outline" size="icon" aria-label="Zoom out" onClick={() => zoomTo(view.z / 1.5)} disabled={view.z <= 1}><ZoomOut className="size-4" /></Button>
@@ -288,18 +490,34 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
                     width="300"
                     height="420"
                     viewBox={`${vx} ${vy} ${vw} ${vh}`}
-                    className="max-w-full h-auto"
+                    className={`max-w-full h-auto ${brushing ? 'cursor-crosshair focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2' : ''}`}
+                    style={brushing ? { touchAction: 'none' } : undefined}
+                    {...(brushing ? { tabIndex: 0, role: 'group', 'aria-label': `Body map, paintbrush on, painting with ${paint.label}. Drag to paint. Or focus here and use the arrow keys to move the brush (Shift for small steps), Space to put it down or lift it, Control or Command + Z to undo. The buttons above do the same.` } : {})}
+                    onKeyDown={onMapKeyDown}
+                    onFocus={(e) => { if (brushing && e.target === e.currentTarget) setCursorShown(true); }}
+                    onPointerDown={brushPointerDown}
                     onPointerMove={(e) => {
+                      if (brushing) { brushPointerMove(e); return; }
                       const d = dragging.current; if (!d) return;
                       const q = mapPoint(e); if (!q) return;
                       d.moved = true; movePin(d.id, q.x, q.y);
                     }}
-                    onPointerUp={() => { dragging.current = null; }}
+                    onPointerUp={(e) => { dragging.current = null; brushPointerEnd(e); }}
+                    onPointerCancel={brushPointerEnd}
                     onPointerLeave={() => { dragging.current = null; }}
                   >
+                    {/* The surfaces in use, as patterns the brush can paint with (the color underneath is the surface's average, in case its picture is not there) */}
+                    <defs>
+                      {[...new Map([...strokes, ...(openStroke ? [openStroke] : [])].filter((st) => st.paint.surfaceId).map((st) => [st.paint.surfaceId as string, st.paint])).values()].map((pt) => (
+                        <pattern key={pt.surfaceId} id={`${uid}-tex-${pt.surfaceId}`} patternUnits="userSpaceOnUse" width={TILE} height={TILE}>
+                          <rect width={TILE} height={TILE} fill={pt.hex} />
+                          <image data-tex={pt.surfaceId} href={texturePath(pt.surfaceId as string)} width={TILE} height={TILE} preserveAspectRatio="xMidYMid slice" />
+                        </pattern>
+                      ))}
+                    </defs>
                     {/* Clicking an empty spot places a pin there */}
                     <rect data-map-bg x="0" y="0" width={MAP_W} height={MAP_H} fill="transparent" className="cursor-crosshair"
-                      onClick={(e) => { const q = mapPoint(e); if (q) addPin(q.x, q.y); }} />
+                      onClick={(e) => { if (brushing) return; const q = mapPoint(e); if (q) addPin(q.x, q.y); }} />
                     {/* Simple body outline */}
                     <g className="pointer-events-none">
                     <ellipse cx="150" cy="50" rx="35" ry="40" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -313,6 +531,14 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
                     <line x1="150" y1="230" x2="170" y2="300" stroke="currentColor" strokeWidth="2" />
                     <line x1="170" y1="300" x2="180" y2="370" stroke="currentColor" strokeWidth="2" />
                     </g>
+                    {/* The brush marks (the same marks are listed as text under the map) */}
+                    {brushOn && (
+                      <g aria-hidden="true" className="pointer-events-none" fill="none" strokeLinecap="round" strokeLinejoin="round" data-brush-strokes>
+                        {[...strokes, ...(openStroke ? [openStroke] : [])].map((st, i) => (
+                          <path key={i} d={strokePath(st.pts)} strokeWidth={st.size} stroke={st.paint.surfaceId ? `url(#${uid}-tex-${st.paint.surfaceId})` : st.paint.hex} opacity={0.9} data-stroke-paint={st.paint.id} />
+                        ))}
+                      </g>
+                    )}
                     {/* The face's outline, drawn lightly, when zoomed in */}
                     {showFace && (
                       <g className="pointer-events-none" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.5">
@@ -338,7 +564,7 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
                             strokeWidth={(hasNote && !placement ? 2.5 : 2) * (part.face ? 0.4 : 1)}
                             strokeDasharray={hasNote && !placement ? '4 2' : undefined}
                             opacity={placement ? 0.7 : hasNote ? 0.4 : 0.2}
-                            className="cursor-pointer hover:opacity-100 focus:opacity-100 transition-opacity"
+                            className={`${brushing ? 'pointer-events-none' : 'cursor-pointer'} hover:opacity-100 focus:opacity-100 transition-opacity`}
                             role="button"
                             tabIndex={0}
                             aria-label={`${part.label}: ${placement ? `color ${placement.colorName || placement.color}. ` : 'no color yet. '}Choose a color`}
@@ -376,7 +602,7 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
                             fill={placement?.color ?? selectedColor}
                             stroke="white"
                             strokeWidth={2 / view.z}
-                            className="cursor-grab active:cursor-grabbing focus:outline-none"
+                            className={`${brushing ? 'pointer-events-none' : 'cursor-grab active:cursor-grabbing'} focus:outline-none`}
                             style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.9))', touchAction: 'none' }}
                             role="button"
                             tabIndex={0}
@@ -398,8 +624,46 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
                         </g>
                       );
                     })}
+                    {brushing && cursorShown && (
+                      <g data-brush-cursor className="pointer-events-none" aria-hidden="true">
+                        <circle cx={cursor.x} cy={cursor.y} r={Math.max(1.5, effectiveSize(brushSize, view.z) / 2)} fill="none" stroke="white" strokeWidth={1.6 / view.z} />
+                        <circle cx={cursor.x} cy={cursor.y} r={Math.max(1.5, effectiveSize(brushSize, view.z) / 2)} fill="none" stroke="black" strokeWidth={0.8 / view.z} strokeDasharray={brushDown ? undefined : `${3 / view.z} ${2 / view.z}`} />
+                        <path d={`M${cursor.x - 4 / view.z} ${cursor.y}h${8 / view.z}M${cursor.x} ${cursor.y - 4 / view.z}v${8 / view.z}`} stroke="black" strokeWidth={1 / view.z} />
+                      </g>
+                    )}
                   </svg>
                 </div>
+                {brushOn && (
+                  <div className="mt-4 space-y-3" data-brush-below>
+                        <div role="group" aria-label="Paint without a pointer" className={`${tool === 'brush' ? 'flex' : 'hidden'} flex-wrap items-center gap-2`}>
+                          <Button type="button" variant={brushDown ? 'default' : 'outline'} size="sm" className="min-h-11 gap-2" aria-pressed={brushDown} onClick={toggleBrush} data-brush-toggle>{brushDown ? 'Lift the brush' : 'Put the brush down'}</Button>
+                          <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={dabHere} data-brush-dab>Dab here</Button>
+                          <Button type="button" variant="outline" size="icon" className="size-11" aria-label="Move the brush left" onClick={() => nudgeCursor(-1, 0)}><ArrowLeft className="size-4" /></Button>
+                          <Button type="button" variant="outline" size="icon" className="size-11" aria-label="Move the brush up" onClick={() => nudgeCursor(0, -1)}><ArrowUp className="size-4" /></Button>
+                          <Button type="button" variant="outline" size="icon" className="size-11" aria-label="Move the brush down" onClick={() => nudgeCursor(0, 1)}><ArrowDown className="size-4" /></Button>
+                          <Button type="button" variant="outline" size="icon" className="size-11" aria-label="Move the brush right" onClick={() => nudgeCursor(1, 0)}><ArrowRight className="size-4" /></Button>
+                          <label className="flex items-center gap-2 text-sm">Move the brush to
+                            <select className="h-11 rounded-md border border-border bg-input-background px-2 text-sm text-foreground" value="" onChange={(e) => e.target.value && goToPlace(e.target.value)} data-brush-goto>
+                              <option value="" disabled>Choose a place</option>
+                              {[...BODY_PARTS, ...FACE_PARTS].map((pt) => <option key={pt.id} value={pt.id}>{pt.label}</option>)}
+                              {pins.map((pin) => <option key={pin.id} value={pin.id}>{labelFor(pin.id, pins)}</option>)}
+                            </select>
+                          </label>
+                        </div>
+                    <p className="text-xs text-muted-foreground">These buttons (and the arrow keys with the map focused) paint without a pointer. Choose Paintbrush above to use them.</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" variant="ghost" size="sm" className="min-h-11 gap-2" onClick={undoStroke} disabled={!strokes.length} data-brush-undo><Undo2 className="size-4" />Undo the last stroke</Button>
+                      <Button type="button" variant="ghost" size="sm" className="min-h-11 gap-2" onClick={redoStroke} disabled={!undone.length}><Redo2 className="size-4" />Put the stroke back</Button>
+                      <Button type="button" variant="ghost" size="sm" className="min-h-11 gap-2" onClick={clearStrokes} disabled={!strokes.length} data-brush-clear><Eraser className="size-4" />Clear the brush marks</Button>
+                      {cleared && <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={restoreStrokes}>Put the cleared marks back</Button>}
+                    </div>
+                    <div role="status" aria-live="polite" className="sr-only" data-brush-live>{announce}</div>
+                    <div className="text-sm" data-brush-text>
+                      <span className="font-medium">Brush marks, in words: </span>
+                      {strokes.length ? describeStrokes(strokes).join('; ') + '.' : 'none yet.'}
+                    </div>
+                  </div>
+                )}
                 <p className="text-sm text-muted-foreground mt-4 text-center">
                   Click or tap anywhere on an empty spot to drop a pin there, or choose a body part to pick its color. Drag a pin to move it, or focus it and use the arrow keys. Zoom in to the face for its parts. A dashed outline means a part has a note but no color.
                 </p>
@@ -503,7 +767,7 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
       <Dialog open={pickingPart !== null} onOpenChange={(open) => !open && setPickingPart(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto w-[95vw] sm:w-auto">
           <DialogHeader>
-            <DialogTitle>Choose a color for {pickingPart ? labelFor(pickingPart, pins) : 'this body part'}</DialogTitle>
+            <DialogTitle>Choose a color for {pickingPart === BRUSH_PICKER ? 'the paintbrush' : pickingPart ? labelFor(pickingPart, pins) : 'this body part'}</DialogTitle>
             <DialogDescription>
               The color is placed as you choose it. Browse the sixteen palettes or enter a color of your own, then close this window.
             </DialogDescription>
@@ -519,7 +783,7 @@ export function BodyMapAvatar({ userColors, onClose, onSave, initialPlacements =
             </div>
           )}
           <ValarColorPicker
-            selectedColor={(pickingPart && getPlacementForBodyPart(pickingPart)?.color) || selectedColor}
+            selectedColor={pickingPart === BRUSH_PICKER ? customHex : (pickingPart && getPlacementForBodyPart(pickingPart)?.color) || selectedColor}
             onColorChange={(color) => pickingPart && placeColor(pickingPart, color)}
             size="md"
             onClose={() => setPickingPart(null)}
