@@ -2,6 +2,8 @@
 
 Nenya is written by one person, Estëlle, working with AI. Most of the code and a large share of the written text were drafted, and then redrafted many times, by AI models. That is a large part of why the project is open source: so anyone can see how it was made and check it.
 
+Nenya is a prototype: built quickly and well documented, not a finished or expert-reviewed product.
+
 ## What the AI did
 - **Code.** AI wrote most of the code in this repository, including the website, the server functions, the tests and the scripts, working inside Claude Code.
 - **Text.** AI drafted and revised large parts of the written material: documentation, scoping notes, wireframe notes, and many of the words visitors read. Some of it was redrafted many times.
