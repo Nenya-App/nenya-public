@@ -21,3 +21,12 @@ ok('Movement and Pattern show it on the sliders card of both states', (mvp.match
   ok('both stay in range for any input', [-50, 12, 49, 120, NaN].every((v) => { const m = movePreview(v, v, null); return m.drawS >= 1 && m.drawS <= 10 && m.strokeWidth >= 1.5 && m.strokeWidth <= 5.2; }));
   ok('the preview shows the chosen drawing, drawn at that speed and line weight and moved by the same sliders, and a plain ring only until one is chosen; still under reduced motion', /shapeById\(props\.shapeId\)/.test(comp) && /--draw/.test(comp) && /--sw/.test(comp) && /lensDraw/.test(comp) && /prefers-reduced-motion: reduce\) \{ \.lens-shape/.test(comp) && (mvp.match(/shapeId=\{(current|potential)MovementShapes\[0\] \?\? null\}/g) ?? []).length === 2);
 }
+
+// Pattern: the preview uses the chosen pattern and moves; the tapestry weaves (owner's comment sheet and the tests session's note, 2026-11-18).
+{
+  const ptp2 = readFileSync('src/app/components/pages/InsightGatewayPage.tsx', 'utf8'), acts = readFileSync('src/app/components/LensActivities.tsx', 'utf8');
+  ok('the Pattern preview shows the chosen drawing (it draws itself) or the chosen pattern word (its weave drifts), layered by Depth and blurred by Clarity, and only falls back to rings when nothing is chosen', /lens-pat-shape/.test(comp) && /PATTERN_BG\[props\.word\.toLowerCase\(\)\]/.test(comp) && /lensPatDrift/.test(comp) && /border-4 border-current/.test(comp) && /filter: `blur\(\$\{pt\.blurPx\}px\)`/.test(comp));
+  ok('it is still under reduced motion and can be paused, for Pattern as for Movement', /\(mv \|\| pt\) && <button/.test(comp) && /prefers-reduced-motion: reduce\) \{ \.lens-pat/.test(comp));
+  ok('Pattern passes it the chosen drawing and the chosen pattern word for each state', /shapeId=\{currentPatternShapes\[0\] \?\? null\}/.test(ptp2) && /shapeId=\{potentialPatternShapes\[0\] \?\? null\}/.test(ptp2) && /word=\{currentPatterns\[0\] \?\? null\}/.test(ptp2));
+  ok('the tapestry layers weave: each drifts its own way at its own pace, still under reduced motion, with a pause button', /@keyframes tapWeave/.test(acts) && /tap-layer/.test(acts) && /\['--wd' as string\]/.test(acts) && /@media \(prefers-reduced-motion: reduce\) \{ \.tap-layer/.test(acts) && /Pause the weaving/.test(acts));
+}

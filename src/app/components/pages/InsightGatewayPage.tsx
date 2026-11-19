@@ -16,6 +16,7 @@ import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
 import { LensPreview } from '../LensPreview';
+import { useAutoDescription } from '../useAutoDescription';
 import { PutThisDown, FewerNote, FewerWarning, AddToReport, LensCardNav } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { lensTapestryOn, cleanLayers, tapestryWords } from '../../../lib/lensActivities';
@@ -95,7 +96,6 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [currentDepth, setCurrentDepth] = useState(() => (typeof init?.currentDepth === 'number' ? [init.currentDepth] : unsetSlider()));
   const [currentPerspectives, setCurrentPerspectives] = useState<string[]>(init?.currentPerspectives ?? []);
   const [currentPerspectiveOther, setCurrentPerspectiveOther] = useState(init?.currentPerspectiveOther ?? '');
-  const [currentDescription, setCurrentDescription] = useState(init?.currentDescription ?? '');
   const [tapestryLayers, setTapestryLayers] = useState<string[]>(() => cleanLayers(init?.tapestryLayers));
   const [currentPatternDrawing, setCurrentPatternDrawing] = useState<string | null>(init?.currentPatternDrawing ?? null);
 
@@ -107,7 +107,9 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
   const [potentialDepth, setPotentialDepth] = useState(() => (typeof init?.potentialDepth === 'number' ? [init.potentialDepth] : unsetSlider()));
   const [potentialPerspectives, setPotentialPerspectives] = useState<string[]>(init?.potentialPerspectives ?? []);
   const [potentialPerspectiveOther, setPotentialPerspectiveOther] = useState(init?.potentialPerspectiveOther ?? '');
-  const [potentialDescription, setPotentialDescription] = useState(init?.potentialDescription ?? '');
+  // The description boxes follow the words chosen (and the words added with Add) until the person writes in them (owner's comment sheet, 2026-11-18).
+  const currentDesc = useAutoDescription(init?.currentDescription ?? '', [...currentPatterns, ...currentPerspectives]);
+  const potentialDesc = useAutoDescription(init?.potentialDescription ?? '', [...potentialPatterns, ...potentialPerspectives]);
   const [potentialPatternDrawing, setPotentialPatternDrawing] = useState<string | null>(init?.potentialPatternDrawing ?? null);
 
   const handleCheckboxChange = (
@@ -151,7 +153,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
       currentDepth: sliderValue(currentDepth),
       currentPerspectives: currentPerspectives.length > 0 ? currentPerspectives : null,
       currentPerspectiveOther: currentPerspectiveOther || null,
-      currentDescription: currentDescription || null,
+      currentDescription: currentDesc.value || null,
       currentPatternDrawing: currentPatternDrawing || null,
       potentialPatterns: potentialPatterns.length > 0 ? potentialPatterns : null,
       potentialPatternOther: potentialPatternOther || null,
@@ -159,7 +161,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
       potentialDepth: sliderValue(potentialDepth),
       potentialPerspectives: potentialPerspectives.length > 0 ? potentialPerspectives : null,
       potentialPerspectiveOther: potentialPerspectiveOther || null,
-      potentialDescription: potentialDescription || null,
+      potentialDescription: potentialDesc.value || null,
       potentialPatternDrawing: potentialPatternDrawing || null,
       // The optional tapestry (VITE_LENS_TAPESTRY): words for the report and the coach, layers for the PDF thumbnail and for reopening. Old drafts have neither key.
       ...(lensTapestryOn() && tapestryLayers.length ? { tapestryLayers, tapestryWords: tapestryWords(tapestryLayers) } : {})
@@ -286,7 +288,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   </div>,
                   <div key="p1" className="space-y-2">
                     <Label className="text-sm">Pattern (optional)</Label>
-                    <WordPicker category="pattern" idPrefix="currentPatterns" selected={currentPatterns} onToggle={(t) => handleCheckboxChange(t, !currentPatterns.includes(t), currentPatterns, setCurrentPatterns)} other={{ value: currentPatternOther, onChange: setCurrentPatternOther, placeholder: "Describe..." }} />
+                    <WordPicker category="pattern" idPrefix="currentPatterns" selected={currentPatterns} onToggle={(t) => handleCheckboxChange(t, !currentPatterns.includes(t), currentPatterns, setCurrentPatterns)} {...(tray ? { onAddText: currentDesc.add } : { other: { value: currentPatternOther, onChange: setCurrentPatternOther, placeholder: "Describe..." } })} />
                     {pendingWord && pendingWord.list === currentPatterns && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>,
                   <SnappingSlider key="p2"
@@ -307,7 +309,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   />,
                   <div key="p4" className="space-y-2">
                     <Label className="text-sm">Perspective (optional)</Label>
-                    <WordPicker category="perspective" idPrefix="currentPerspectives" selected={currentPerspectives} onToggle={(t) => handleCheckboxChange(t, !currentPerspectives.includes(t), currentPerspectives, setCurrentPerspectives)} other={{ value: currentPerspectiveOther, onChange: setCurrentPerspectiveOther, placeholder: "Describe..." }} />
+                    <WordPicker category="perspective" idPrefix="currentPerspectives" selected={currentPerspectives} onToggle={(t) => handleCheckboxChange(t, !currentPerspectives.includes(t), currentPerspectives, setCurrentPerspectives)} {...(tray ? { onAddText: currentDesc.add } : { other: { value: currentPerspectiveOther, onChange: setCurrentPerspectiveOther, placeholder: "Describe..." } })} />
                     {pendingWord && pendingWord.list === currentPerspectives && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>,
                   <div key="p5" className="space-y-2">
@@ -323,13 +325,14 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                     <Label className="text-sm">Describe the patterns (optional)</Label>
                     <Textarea
                       placeholder="Describe the patterns and perspectives..."
-                      value={currentDescription}
-                      onChange={(e) => setCurrentDescription(e.target.value)}
+                      value={currentDesc.value}
+                      onChange={(e) => currentDesc.setValue(e.target.value)}
                       className="min-h-20 resize-none text-sm"
                     />
+                    {currentDesc.edited && tray && <button type="button" onClick={currentDesc.reset} className="min-h-11 text-xs underline underline-offset-4 text-muted-foreground">Fill it from my choices again</button>}
                   </div>
                     ];
-                    b[8] = <LensPreview key="prev" kind="pattern" clarity={sliderValue(currentClarity)} depth={sliderValue(currentDepth)} word={currentPatterns[0] ?? null} />;
+                    b[8] = <LensPreview key="prev" kind="pattern" clarity={sliderValue(currentClarity)} depth={sliderValue(currentDepth)} word={currentPatterns[0] ?? null} shapeId={currentPatternShapes[0] ?? null} />;
                     b[7] = <TapestryActivity key="act" layers={tapestryLayers} onChange={setTapestryLayers} />;
                     return tray ? (cur && cur.stage === 'present' ? cur.parts.map((n) => <React.Fragment key={n}>{b[n]}</React.Fragment>) : []) : b;
                   })()}
@@ -365,7 +368,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   </div>,
                   <div key="p1" className="space-y-2">
                     <Label className="text-sm">Pattern (optional)</Label>
-                    <WordPicker category="pattern" idPrefix="potentialPatterns" selected={potentialPatterns} onToggle={(t) => handleCheckboxChange(t, !potentialPatterns.includes(t), potentialPatterns, setPotentialPatterns)} other={{ value: potentialPatternOther, onChange: setPotentialPatternOther, placeholder: "Describe..." }} />
+                    <WordPicker category="pattern" idPrefix="potentialPatterns" selected={potentialPatterns} onToggle={(t) => handleCheckboxChange(t, !potentialPatterns.includes(t), potentialPatterns, setPotentialPatterns)} {...(tray ? { onAddText: potentialDesc.add } : { other: { value: potentialPatternOther, onChange: setPotentialPatternOther, placeholder: "Describe..." } })} />
                     {pendingWord && pendingWord.list === potentialPatterns && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>,
                   <SnappingSlider key="p2"
@@ -386,7 +389,7 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                   />,
                   <div key="p4" className="space-y-2">
                     <Label className="text-sm">Perspective (optional)</Label>
-                    <WordPicker category="perspective" idPrefix="potentialPerspectives" selected={potentialPerspectives} onToggle={(t) => handleCheckboxChange(t, !potentialPerspectives.includes(t), potentialPerspectives, setPotentialPerspectives)} other={{ value: potentialPerspectiveOther, onChange: setPotentialPerspectiveOther, placeholder: "Describe..." }} />
+                    <WordPicker category="perspective" idPrefix="potentialPerspectives" selected={potentialPerspectives} onToggle={(t) => handleCheckboxChange(t, !potentialPerspectives.includes(t), potentialPerspectives, setPotentialPerspectives)} {...(tray ? { onAddText: potentialDesc.add } : { other: { value: potentialPerspectiveOther, onChange: setPotentialPerspectiveOther, placeholder: "Describe..." } })} />
                     {pendingWord && pendingWord.list === potentialPerspectives && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>,
                   <div key="p5" className="space-y-2">
@@ -402,13 +405,14 @@ export default function InsightGatewayPage({ onComplete, onBack, currentIndex, t
                     <Label className="text-sm">Describe the patterns (optional)</Label>
                     <Textarea
                       placeholder="Describe the patterns and perspectives you're moving toward..."
-                      value={potentialDescription}
-                      onChange={(e) => setPotentialDescription(e.target.value)}
+                      value={potentialDesc.value}
+                      onChange={(e) => potentialDesc.setValue(e.target.value)}
                       className="min-h-20 resize-none text-sm"
                     />
+                    {potentialDesc.edited && tray && <button type="button" onClick={potentialDesc.reset} className="min-h-11 text-xs underline underline-offset-4 text-muted-foreground">Fill it from my choices again</button>}
                   </div>
                     ];
-                    b[8] = <LensPreview key="prev" kind="pattern" clarity={sliderValue(potentialClarity)} depth={sliderValue(potentialDepth)} word={potentialPatterns[0] ?? null} />;
+                    b[8] = <LensPreview key="prev" kind="pattern" clarity={sliderValue(potentialClarity)} depth={sliderValue(potentialDepth)} word={potentialPatterns[0] ?? null} shapeId={potentialPatternShapes[0] ?? null} />;
                     return tray ? (cur && cur.stage === 'wish' ? cur.parts.map((n) => <React.Fragment key={n}>{b[n]}</React.Fragment>) : []) : b;
                   })()}
                 </CardContent>

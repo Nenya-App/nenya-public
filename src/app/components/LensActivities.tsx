@@ -10,7 +10,7 @@ const reduced = (): boolean => typeof window !== 'undefined' && !!window.matchMe
 const selectCls = 'min-h-11 rounded-md border border-border bg-background px-3 text-sm';
 
 /** A stripe look for each pattern word. Decorative: the words beside it are the real content. */
-const PATTERN_BG: Record<string, string> = {
+export const PATTERN_BG: Record<string, string> = {
   fragmented: 'linear-gradient(90deg, currentColor 0 20%, transparent 20% 30%, currentColor 30% 45%, transparent 45% 60%, currentColor 60% 70%, transparent 70%)',
   linear: 'repeating-linear-gradient(0deg, currentColor 0 2px, transparent 2px 10px)',
   branching: 'repeating-linear-gradient(60deg, currentColor 0 2px, transparent 2px 14px), repeating-linear-gradient(-60deg, currentColor 0 2px, transparent 2px 14px)',
@@ -24,12 +24,20 @@ const PATTERN_BG: Record<string, string> = {
   unified: 'linear-gradient(currentColor, currentColor)',
 };
 
+// The layers weave: each layer's pattern drifts slowly, in its own direction and at its own pace, so the design is seen as a living cloth (owner's comment sheet, 2026-11-18: not stripes with only a fade). Still
+// under reduced motion; it runs longer than five seconds, so the activity has a pause button.
+const WEAVE_CSS = `@keyframes tapWeave { from { background-position: 0 0; } to { background-position: var(--wx) var(--wy); } }
+.tap-layer { animation: tapWeave var(--wd) linear infinite; }
+.tap-paused .tap-layer { animation: none; }
+@media (prefers-reduced-motion: reduce) { .tap-layer { animation: none; } }`;
+
 /** The tapestry as a picture (also used by the PDF thumbnail request: see the hand-over note). */
 export function TapestryPicture({ layers, label }: { layers: string[]; label?: string }) {
   return (
-    <div role="img" aria-label={label ?? `A small woven design. ${tapestryWords(layers)}.`} className="relative mx-auto h-44 w-full max-w-xs overflow-hidden rounded border-2 border-foreground bg-background text-foreground">
+    <div role="img" aria-label={label ?? `A small woven design. ${tapestryWords(layers)}.`} className="tap-root relative mx-auto h-44 w-full max-w-xs overflow-hidden rounded border-2 border-foreground bg-background text-foreground">
+      <style>{WEAVE_CSS}</style>
       {layers.map((l, i) => (
-        <div key={i} className={`absolute rounded border-2 border-foreground bg-background ${reduced() ? '' : 'animate-in fade-in duration-300 motion-reduce:animate-none'}`} style={{ inset: i * 14, backgroundImage: PATTERN_BG[l.toLowerCase()] ?? 'none', backgroundSize: l === 'Fractal' ? '24px 24px' : undefined, opacity: l === 'Unified' ? 0.55 : 1 }} />
+        <div key={i} className={`tap-layer absolute rounded border-2 border-foreground bg-background ${reduced() ? '' : 'animate-in fade-in duration-300 motion-reduce:animate-none'}`} style={{ ['--wx' as string]: `${i % 2 ? -40 : 40}px`, ['--wy' as string]: `${i % 3 === 0 ? 0 : i % 3 === 1 ? 30 : -30}px`, ['--wd' as string]: `${7 + i * 2}s`, inset: i * 14, backgroundImage: PATTERN_BG[l.toLowerCase()] ?? 'none', backgroundSize: l === 'Fractal' ? '24px 24px' : undefined, opacity: l === 'Unified' ? 0.55 : 1 }} />
       ))}
     </div>
   );
@@ -38,13 +46,15 @@ export function TapestryPicture({ layers, label }: { layers: string[]; label?: s
 export function TapestryActivity({ layers, onChange }: { layers: string[]; onChange: (l: string[]) => void }) {
   const [next, setNext] = useState(TAPESTRY_PATTERNS[0]);
   const [warn, setWarn] = useState(false);
+  const [paused, setPaused] = useState(false);
   const addRef = useRef<HTMLButtonElement>(null);
   const push = (l: string) => { onChange([...layers, l]); setWarn(false); };
   return (
     <section className="space-y-3" aria-labelledby="tapestry-h" data-tapestry>
       <h3 id="tapestry-h" className="text-sm font-medium">Weave a tapestry (optional)</h3>
       <p className="text-sm text-muted-foreground">Pick a pattern for the base. Then add layers on top, one at a time. There is no right tapestry.</p>
-      <div className="rounded-md border border-border bg-muted p-3"><TapestryPicture layers={layers} /></div>
+      <div className={`rounded-md border border-border bg-muted p-3 ${paused ? 'tap-paused' : ''}`}><TapestryPicture layers={layers} /></div>
+      {layers.length > 0 && <button type="button" onClick={() => setPaused((p) => !p)} aria-pressed={paused} className="min-h-11 text-xs underline underline-offset-4 text-muted-foreground">{paused ? 'Play the weaving' : 'Pause the weaving'}</button>}
       <p className="text-sm">Your tapestry: <span role="status" data-tapestry-words>{tapestryWords(layers)}</span></p>
       <div className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1"><label htmlFor="tapestry-next" className="text-sm">{layers.length ? 'Add a layer on top' : 'Pick the base pattern'}</label>

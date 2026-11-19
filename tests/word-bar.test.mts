@@ -11,3 +11,9 @@ ok('Add chooses a word that is on the lists and sends any other to the text box 
 ok('the short lists are kept under Browse the word lists (open while searching), no longer the first thing on the card', /Browse the word lists/.test(pick) && /<details open=\{q \? true : undefined\}/.test(pick));
 ok('the box follows the choices until the person writes in it, then it is theirs; a saved description counts as theirs; they can hand it back', /useState\(!!initial\)/.test(hook) && /value: edited \? text : composed/.test(hook) && /reset: \(\) =>/.test(hook));
 ok('Movement: Add and the chosen words go into "Describe the movement", in tray mode the separate own-word boxes are gone, and the saved description is the box\'s text', (mv.match(/onAddText: currentDesc\.add/g) ?? []).length === 2 && (mv.match(/onAddText: potentialDesc\.add/g) ?? []).length === 2 && /currentDescription: currentDesc\.value \|\| null/.test(mv) && /Fill it from my choices again/.test(mv));
+
+// Pattern gets the same: Add and the chosen words go into its description.
+{
+  const ins = readFileSync('src/app/components/pages/InsightGatewayPage.tsx', 'utf8');
+  ok('Pattern: Add and the chosen patterns and perspectives go into the description, which follows them until the person writes in it; the own-word boxes are gone in the tray', (ins.match(/onAddText: currentDesc\.add/g) ?? []).length === 2 && (ins.match(/onAddText: potentialDesc\.add/g) ?? []).length === 2 && /currentDescription: currentDesc\.value \|\| null/.test(ins) && /Fill it from my choices again/.test(ins));
+}
