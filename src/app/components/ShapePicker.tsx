@@ -1,9 +1,14 @@
 // Line drawings to choose from in the Movement and Insight gateways (src/lib/gatewayShapes.ts): starting points, never a measurement, and always
 // optional. Each drawing has a name and a one-sentence description that a screen reader says; choosing is a plain toggle button. Up to three can be chosen.
-import { useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { shapesFor, type ShapeSet } from '../../lib/gatewayShapes';
+import { animatedArt, SHAPE_ANIM_CSS } from '../../lib/shapeAnimation';
 
 export const MAX_SHAPES = 3;
+
+// Each drawing is shown as a still picture that is always there (owner, 2026-11-18: the animation is an addition, not a replacement), with an animated copy laid over it:
+// each line draws itself in turn and the filled dots fade in, again and again, so the shape is seen being made (src/lib/shapeAnimation.ts). Under reduced motion, or when paused,
+// or once a drawing is chosen, only the still picture shows. Because the loop runs for more than five seconds there is a button to pause every drawing (WCAG 2.2.2).
 
 interface Props {
   set: ShapeSet;
@@ -15,26 +20,20 @@ interface Props {
   soft?: boolean;
 }
 
-// The drawings are animated (owner, 2026-11-18: not static): each line draws itself, rests, and is wiped away, again and again, a little later for each line, so the shape
-// is seen being made. Every path and circle gets pathLength 100 so one set of keyframes fits them all. Under reduced motion the drawings are still. Because the loop runs for
-// more than five seconds, there is a button to pause every drawing (WCAG 2.2.2), and a drawing a person has chosen stays drawn.
-const ANIM_CSS = `
-@keyframes shapeDraw { 0% { stroke-dashoffset: 100; } 45% { stroke-dashoffset: 0; } 82% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -100; } }
-.shape-anim .shape-art path, .shape-anim .shape-art circle { stroke-dasharray: 100; animation: shapeDraw 4.5s ease-in-out infinite; }
-.shape-anim .shape-art path:nth-child(2), .shape-anim .shape-art circle:nth-child(2) { animation-delay: .25s; }
-.shape-anim .shape-art path:nth-child(3), .shape-anim .shape-art circle:nth-child(3) { animation-delay: .5s; }
-.shape-anim .shape-art path:nth-child(4), .shape-anim .shape-art circle:nth-child(4) { animation-delay: .75s; }
-.shape-anim .shape-art path:nth-child(n+5), .shape-anim .shape-art circle:nth-child(n+5) { animation-delay: 1s; }
-.shape-anim.shape-paused .shape-art path, .shape-anim.shape-paused .shape-art circle, .shape-anim .shape-chosen path, .shape-anim .shape-chosen circle { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; }
-@media (prefers-reduced-motion: reduce) { .shape-anim .shape-art path, .shape-anim .shape-art circle { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; } }`;
-
 export function ShapePicker({ set, selected, onToggle, idPrefix, soft = false }: Props) {
   const [paused, setPaused] = useState(false);
-  const shapes = useMemo(() => shapesFor(set).map((x) => ({ ...x, art: x.svg.replace(/<(path|circle) /g, '<$1 pathLength="100" ') })), [set]);
+  const shapes = useMemo(() => shapesFor(set).map((x) => ({ ...x, live: animatedArt(x.svg).svg })), [set]);
+  const root = useRef<HTMLDivElement>(null);
+  // A line draws itself by its own length (measured here, so it does not depend on how a browser handles the path-length attribute).
+  useLayoutEffect(() => {
+    root.current?.querySelectorAll<SVGGeometryElement>('.sa-draw').forEach((el) => {
+      if (typeof el.getTotalLength === 'function') el.style.setProperty('--len', String(Math.ceil(el.getTotalLength()) + 2));
+    });
+  }, [shapes]);
   const full = !soft && selected.length >= MAX_SHAPES;
   return (
-    <div className={`space-y-2 shape-anim${paused ? ' shape-paused' : ''}`}>
-      <style>{ANIM_CSS}</style>
+    <div ref={root} className={`space-y-2 shape-anim${paused ? ' shape-paused' : ''}`}>
+      <style>{SHAPE_ANIM_CSS}</style>
       <button type="button" onClick={() => setPaused((p) => !p)} aria-pressed={paused} className="min-h-11 text-xs underline underline-offset-4 text-muted-foreground">
         {paused ? 'Play the drawings' : 'Pause the drawings'}
       </button>
@@ -53,7 +52,10 @@ export function ShapePicker({ set, selected, onToggle, idPrefix, soft = false }:
               onClick={() => onToggle(s.id)}
               className={`flex flex-col items-center gap-1 rounded-lg border p-2 text-center text-xs transition-colors disabled:opacity-40 ${on ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted/50'}`}
             >
-              <span aria-hidden className={`block size-14 shape-art${on ? ' shape-chosen' : ''}`} dangerouslySetInnerHTML={{ __html: s.art }} />
+              <span aria-hidden className={`relative block size-14 shape-art${on ? ' shape-chosen' : ''}`}>
+                <span className="shape-still block size-full" dangerouslySetInnerHTML={{ __html: s.svg }} />
+                <span className="shape-live" dangerouslySetInnerHTML={{ __html: s.live }} />
+              </span>
               <span>{s.label}</span>
             </button>
           );
