@@ -19,6 +19,7 @@ export const ABOUT_TITLES: Record<string, string> = {
   'venice-chat': 'Chat with Nenya\'s AI on Venice',
   witnessed: 'Witnessed Conversations',
   'where-we-stand': 'Where We Stand',
+  'about-coach': 'About the Coach',
   'how-checks-work': 'How the Checks Work',
   'coach-region': 'Where the Coach Is Open',
   'partner-practice': 'Partner Practice (Planned)',

@@ -15,7 +15,7 @@ export const ABOUT_SECTIONS: { key: string; title: string; blurb: string; ids: s
   { key: 'nenya', title: 'About Nenya', blurb: 'What Nenya is, where the name comes from, and who makes it.', ids: ['mellonamin', 'name-philosophy', 'about-founder', 'structure', 'support-us', 'contact-us'] },
   { key: 'how', title: 'How It Works', blurb: 'The practice itself: breathing, the six lenses, color, needs and the method behind them.', ids: ['breathing-tool', 'six-gateways', 'power-of-color', 'pantheon-of-needs', 'nvc-method'] },
   { key: 'ideas', title: 'Ideas Behind It', blurb: 'The research and thinking that shaped the design.', ids: ['bio-social-design', 'evolved-leader'] },
-  { key: 'coach', title: 'The Coach and What Is Planned', blurb: 'The optional AI coach demo, how it is checked, and what we hope to build next.', ids: ['how-checks-work', 'coach-region', 'venice-chat', 'witnessed', 'pii-scrubbing', 'partner-practice'] },
+  { key: 'coach', title: 'The Coach and What Is Planned', blurb: 'The optional AI coach demo, how it is checked, and what we hope to build next.', ids: ['about-coach', 'how-checks-work', 'coach-region', 'venice-chat', 'witnessed', 'pii-scrubbing', 'partner-practice'] },
   { key: 'trust', title: 'Privacy, Safety and Where We Stand', blurb: 'What we collect, what we promise, and the lines we will not cross.', ids: ['privacy-promise', 'where-we-stand', 'terms'] },
 ];
 
@@ -110,6 +110,12 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       title: 'Where We Stand',
       description: 'What we say about genocide, apartheid, occupation and colonization, and what we will not do',
       icon: Scroll,
+    },
+    {
+      id: 'about-coach',
+      title: 'About the Coach',
+      description: 'What the coach is, what it is built on, how its guidance was made, what is sent, and how to ask for something to be removed',
+      icon: MessageCircle,
     },
     {
       id: 'how-checks-work',

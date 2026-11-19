@@ -46,6 +46,7 @@ type AboutSection =
   | 'venice-chat'
   | 'witnessed'
   | 'where-we-stand'
+  | 'about-coach'
   | 'how-checks-work'
   | 'coach-region'
   | 'partner-practice'
@@ -57,6 +58,7 @@ import WitnessedConversations from './about/WitnessedConversations';
 import WhereWeStand from './about/WhereWeStand';
 import HowChecksWork from './about/HowChecksWork';
 import CoachRegion from './about/CoachRegion';
+import AboutCoach from './about/AboutCoach';
 import { aboutPath, aboutSectionFromLocation, aboutTitle } from '../../lib/aboutRoutes';
 
 export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOpenPartnerPreview }: AboutNenyaProps) {
@@ -183,6 +185,9 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOp
       )}
       {currentSection === 'how-checks-work' && (
         <HowChecksWork onBack={handleBackToMenu} />
+      )}
+      {currentSection === 'about-coach' && (
+        <AboutCoach onBack={handleBackToMenu} onOpenSection={(s) => setCurrentSection(s as AboutSection)} />
       )}
       {currentSection === 'coach-region' && (
         <CoachRegion onBack={handleBackToMenu} onOpenTerms={() => setCurrentSection('terms')} />
