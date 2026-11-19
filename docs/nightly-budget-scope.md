@@ -45,7 +45,7 @@ The runner reads the menu (`canary/menu`: task, best budget, estimated cost) and
 - **What it would run:** the same menu as section 3 (baselines, paraphrase variants, held-out sets), model-drafted variants held for the owner to review before they join any set.
 - **Needs:** an API key (created by the owner, never pasted in chat; stored as a private environment value) and the ceiling.
 
-## 5. Changes this implies (none made)
+## 5. Changes this implies (status 2026-11-19: items 1 and 2 built, `f0a7895`; item 3, the Venice ledger and `veniceAllowance`, built but not wired, `6aab329`; 4 and 5 not made)
 1. `canaryBudget.ts`: raise `NIGHTLY_CEILING` toward the full 10,000, drop the visitor-turn and 1,000-margin hold-backs (production is on Venice), keep only a small retry margin, and keep the run inside 23:00-23:59 UTC so it ends before the reset. Tests: with a whole 10,000 free the allowance is the whole of it less the margin; the ceiling still binds; never negative.
 2. The window is the limit (about 13 minutes of runs at roughly 30 seconds a task): widen it or run tasks that spend more per call before expecting the full 10,000 to be reached. Read the digests first.
 3. A `venice` ledger beside the Neuron one, a monthly cycle ending 12/9, and a `veniceAllowance()` pure function with tests, same shape as `canaryAllowance`.
