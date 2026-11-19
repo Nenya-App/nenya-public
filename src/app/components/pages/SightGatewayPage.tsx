@@ -3,6 +3,7 @@ import { StageSlot, StageIntro, StageNav, type PairStage } from '../GatewayStage
 import { GatewayProgress } from '../GatewayProgress';
 import { ColorNameSuggest } from '../ColorNameSuggest';
 import { PalettePanel } from '../PalettePanel';
+import { glowFor } from '../../../lib/glow';
 import type { GeneratedPalette } from '../../../lib/colorSchemes';
 import { Button } from '../ui/button';
 import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
@@ -341,8 +342,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 <Card
                   className="transition-all hover:shadow-lg overflow-hidden"
                   style={{
-                    boxShadow: `0 0 20px ${color1}40, 0 0 40px ${color1}20`,
-                    borderColor: `${color1}60`,
+                    boxShadow: glowFor(color1, sliderValue(color1Intensity)).boxShadow,
+                    borderColor: `${color1}${Math.round(glowFor(color1, sliderValue(color1Intensity)).borderAlpha * 255).toString(16).padStart(2, '0')}`,
                     borderWidth: '2px'
                   }}
                 >
@@ -440,8 +441,8 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
                 <Card
                   className="transition-all hover:shadow-lg overflow-hidden"
                   style={{
-                    boxShadow: `0 0 20px ${color2}40, 0 0 40px ${color2}20`,
-                    borderColor: `${color2}60`,
+                    boxShadow: glowFor(color2, sliderValue(color2Intensity)).boxShadow,
+                    borderColor: `${color2}${Math.round(glowFor(color2, sliderValue(color2Intensity)).borderAlpha * 255).toString(16).padStart(2, '0')}`,
                     borderWidth: '2px'
                   }}
                 >
@@ -540,7 +541,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
 
               {!tray && stage === 'wish' && (
               <>
-              <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} soundComesLater={soundComesLater} />
+              <PalettePanel color1={color1} color2={color2} color1Name={color1Name} color2Name={color2Name} values={generatedPalettes} onChange={setGeneratedPalettes} soundComesLater={soundComesLater} />
 
               <BodyMapAvatar
                 inline
@@ -558,7 +559,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               {tray && trayCard === 'palette' && (
                 <div className="mx-auto w-full max-w-2xl space-y-6">
                   <h2 className="text-xl">A palette from your colors (optional)</h2>
-                  <PalettePanel color1={color1} color2={color2} values={generatedPalettes} onChange={setGeneratedPalettes} soundComesLater={soundComesLater} />
+                  <PalettePanel color1={color1} color2={color2} color1Name={color1Name} color2Name={color2Name} values={generatedPalettes} onChange={setGeneratedPalettes} soundComesLater={soundComesLater} />
                   <div className="flex flex-wrap justify-between gap-3">
                     <Button variant="ghost" onClick={() => setTrayCard('colors')} className="gap-2"><ArrowLeft className="size-4" /> Back to your colors</Button>
                     <Button onClick={() => setTrayCard('bodymap')} className="gap-2">{generatedPalettes.length ? 'Next' : 'Skip'}<ArrowRightIcon className="size-4" /></Button>
