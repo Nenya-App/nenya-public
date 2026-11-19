@@ -1,0 +1,23 @@
+// The Sound sliders edit a drawing of the melody's sound wave (src/lib/soundWave.ts, SoundWave.tsx), and the sound description lives on the words card, filled from the choices (owner's comment sheet, 2026-11-18).
+import { readFileSync } from 'node:fs';
+import { NOTE_WINDOW_S, overtones, pitchFactor, volumeHeight, waveOf, waveWords, wavePath } from '../src/lib/soundWave.ts';
+import { ok } from './helpers.mts';
+
+ok('Pitch moves the notes two octaves each way: middle is unchanged, the ends are a quarter and four times; not set is unchanged', pitchFactor(50) === 1 && pitchFactor(0) === 0.25 && pitchFactor(100) === 4 && pitchFactor(null) === 1);
+ok('Volume sets the height from a tenth to the full box; not set is in the middle', volumeHeight(0) === 0.1 && volumeHeight(100) === 1 && volumeHeight(null) === 0.55);
+const mel = [261.63, 329.63, null, 392];
+const a = waveOf({ freqs: mel, pitch: null, volume: 100, timbre: null }, 100), b = waveOf({ freqs: mel, pitch: null, volume: 25, timbre: null }, 100);
+const peak = (w: typeof a) => Math.max(...w.points.map((p) => Math.abs(p[1])));
+ok('the wave has a piece for each note of the melody (an empty slot has none), in the order played, across the whole width', a.noteSpans.length === 3 && a.points.length === 300 && a.points[0][0] === 0 && a.points[a.points.length - 1][0] === 1);
+ok('a louder setting draws a taller wave of the same notes', peak(a) > peak(b) * 2 && peak(a) <= 1);
+const cycles = (w: ReturnType<typeof waveOf>, span: [number, number]) => { let n = 0; for (let k = span[0] + 1; k <= span[1]; k++) if (w.points[k - 1][1] < 0 && w.points[k][1] >= 0) n++; return n; };
+const lo = waveOf({ freqs: [261.63], pitch: 0, volume: 100, timbre: null }, 800), hi = waveOf({ freqs: [261.63], pitch: 100, volume: 100, timbre: null }, 800);
+ok('the notes are real waves: a higher note shows more cycles in the same room, and the Pitch slider changes how many', cycles(hi, hi.noteSpans[0]) > cycles(lo, lo.noteSpans[0]) * 8 && Math.abs(cycles(lo, lo.noteSpans[0]) - Math.round(261.63 * 0.25 * NOTE_WINDOW_S)) <= 1);
+ok('the timbre word sets the shape: bright adds overtones, warm a little, a bell inharmonic ones, an unknown word none', overtones('Bright').length === 3 && overtones('warm').length === 1 && overtones('bell').length === 2 && overtones('purple').length === 0 && overtones(null).length === 0);
+ok('with overtones the wave is not the plain sine, and it still stays inside the box', JSON.stringify(waveOf({ freqs: [330], pitch: null, volume: 100, timbre: 'bright' }, 60).points) !== JSON.stringify(waveOf({ freqs: [330], pitch: null, volume: 100, timbre: null }, 60).points) && waveOf({ freqs: [330], pitch: null, volume: 100, timbre: 'bright' }, 200).points.every((p) => Math.abs(p[1]) <= 1));
+ok('with no melody there is no wave and the words say so', waveOf({ freqs: [null, null], pitch: 50, volume: 50, timbre: null }).points.length === 0 && /No melody yet/.test(waveWords({ freqs: [], pitch: 1, volume: 1, timbre: null }, 0)) && wavePath(waveOf({ freqs: [], pitch: 1, volume: 1, timbre: null }), 100, 50) === '');
+ok('the words say the same as the drawing: the notes, the pitch, the volume, the shape', waveOf({ freqs: [261, 330], pitch: 100, volume: 0, timbre: 'bright' }).label === 'Your 2 notes, very high in pitch, a whisper in volume, bright shape with overtones.');
+const comp = readFileSync('src/app/components/SoundWave.tsx', 'utf8'), page = readFileSync('src/app/components/pages/SoundGatewayPage.tsx', 'utf8');
+ok('the drawing is a named image with a polite words twin, the scan line stands still under reduced motion and can be paused', /role="img"/.test(comp) && /role="status" aria-live="polite"/.test(comp) && /@media \(prefers-reduced-motion: reduce\)/.test(comp) && /Pause the scan line/.test(comp) && /aria-pressed=\{paused\}/.test(comp));
+ok('Sound shows it on the sliders card of both states, from that state\'s Pitch, Volume and first timbre word and the melody the person made', (page.match(/<SoundWave /g) ?? []).length === 2 && /pitch: sliderValue\(currentPitch\)/.test(page) && /volume: sliderValue\(potentialVolume\)/.test(page) && /timbre: potentialTimbres\[0\]/.test(page) && /longMode \? played!\.notes : melody/.test(page));
+ok('the description is on the words card with the choices, filled from them, and Add sends a word to it; there is no separate description card', !/part: 'desc'/.test(page) && /part: 'words', title: 'The sounds, in words'/.test(page) && (page.match(/onAddText=\{currentDesc\.add\}/g) ?? []).length === 2 && (page.match(/onAddText=\{potentialDesc\.add\}/g) ?? []).length === 2 && /currentDescription: currentDesc\.value \|\| null/.test(page));
