@@ -12,6 +12,7 @@
 // person's recent messages, so it needs the conversation, not one message: use checkConversation. detectFlag(text) checks one message alone.
 
 import { ABUSE_CANDIDATES, CANDIDATES } from './safetyPhrases.ts';
+import { STOP_LEAD } from './distressText.ts';
 import { classifyMention, RECENT, rungFor, SELF_INJURY } from './selfInjury.ts';
 
 export type FlagCategory = 'self-harm' | 'self-injury' | 'harm-others' | 'abuse' | 'distress';
@@ -350,6 +351,8 @@ const HARM_NOTICE: Record<string, string> = {
 export function noticeIntro(flag: SafetyFlag): string {
   if (flag.category === 'harm-others' && flag.kind && HARM_NOTICE[flag.kind]) return HARM_NOTICE[flag.kind];
   if (flag.category === 'self-injury' && flag.kind && SELF_INJURY_NOTICE[flag.kind]) return SELF_INJURY_NOTICE[flag.kind];
+  // Owner approved 2026-11-19: a stopped message about suicide or self-harm gets the warmer site-written lead, not the form-like sentence.
+  if (flag.category === 'self-harm' && flag.tier === 'stop') return STOP_LEAD;
   const subject =
     flag.tier === 'stop'
       ? `This message appears to contain ${flag.label} content.`

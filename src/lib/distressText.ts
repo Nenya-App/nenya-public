@@ -38,9 +38,9 @@ export const DISTRESS_APPEND: Record<FlagCategory, string> = {
 };
 
 /**
- * What the notice says first when a message is stopped (a "stop" flag: the message is not sent to the coach and the conversation ends).
- * A proposed replacement for the first sentence of noticeIntro in safetyFlags.ts, which today reads "This message appears to contain
- * ... content." Not wired: the page text changes only when the owner approves it.
+ * What the notice says when a message about suicide or self-harm is stopped (a "stop" flag: the message is not sent to the coach and the
+ * conversation ends). It replaces the generic "This message appears to contain ... content" notice for that category. Wired by the owner's
+ * approval of 2026-11-19. A clinician has not yet read it.
  */
 export const STOP_LEAD =
   "What you wrote sounds heavy, and it deserves a person, not an AI. I'm not able to help in a crisis. These numbers connect you with someone who can, any time of day:";
