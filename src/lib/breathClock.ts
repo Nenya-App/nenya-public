@@ -124,3 +124,18 @@ export function breathCounter(elapsedMs: number, t: BreathTiming): { count: numb
   if (d < ih + hi + ex) return { count: Math.max(1, Math.round(ex / 1000) - Math.floor((d - ih - hi) / 1000)), phase: 'e' };
   return { count: Math.floor((d - ih - hi - ex) / 1000) + 1, phase: 'h' };
 }
+
+/**
+ * How far the ring's own animation has drifted from the shared clock, and what to add to its time to bring it back. A CSS animation runs on the browser's animation timeline, the counter and the
+ * tones on the wall clock; a busy page, a hidden tab or a sleeping device lets the two come apart. `elapsedMs` is the time since the shared cycle start, `progress` the ring's progress through its
+ * current cycle (0 to 1), `cycleMs` the length of one cycle. Returns the signed correction in ms (the shortest way round the cycle), or 0 when within `toleranceMs` (a correction smaller than that is
+ * not worth a visible nudge).
+ */
+export function ringCorrection(elapsedMs: number, progress: number, cycleMs: number, toleranceMs = 30): number {
+  if (!(cycleMs > 0) || !Number.isFinite(elapsedMs) || !Number.isFinite(progress)) return 0;
+  const want = ((elapsedMs % cycleMs) + cycleMs) % cycleMs;
+  let d = want - progress * cycleMs;
+  if (d > cycleMs / 2) d -= cycleMs;
+  if (d < -cycleMs / 2) d += cycleMs;
+  return Math.abs(d) > toleranceMs ? d : 0;
+}
