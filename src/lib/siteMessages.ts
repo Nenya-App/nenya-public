@@ -86,7 +86,7 @@ export interface CheckNote {
   tier: 'stop' | 'soften';
   category: string;
   kind?: string;
-  source: 'phrase' | 'ladder';
+  source: 'phrase' | 'ladder' | 'accumulated';
   /** The words in the person's message that matched a phrase list (cut short). */
   matched?: string;
   /** For the self-injury ladder: its rung in words. */

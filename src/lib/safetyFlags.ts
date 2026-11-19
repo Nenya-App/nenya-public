@@ -16,6 +16,7 @@ import { evasionVariants } from './safetyNormalize.ts';
 import type { Rule as PhraseRule } from './safetyPhrases.ts';
 import { STOP_LEAD } from './distressText.ts';
 import { classifyMention, RECENT, rungFor, SELF_INJURY } from './selfInjury.ts';
+import { CONSTRUCT_LABELS, constructsIn, WINDOW, type Construct } from './safetyConstructs.ts';
 
 export type FlagCategory = 'self-harm' | 'self-injury' | 'harm-others' | 'abuse' | 'distress';
 export type FlagTier = 'stop' | 'soften';
@@ -133,10 +134,11 @@ const flagOf = (category: FlagCategory, tier: FlagTier, kind?: string): SafetyFl
 
 /** Why a message was flagged: the words that matched a phrase list, or the self-injury ladder's rung. A process note, not a verdict. */
 export interface FlagWhy {
-  source: 'phrase' | 'ladder';
-  /** The words in the person's own message that matched (cut short). */
+  source: 'phrase' | 'ladder' | 'accumulated';
+  /** The words in the person's own message that matched (cut short). For "accumulated": the kinds of sign found, in words. */
   matched?: string;
-  /** For the ladder: its rung, in words ("a present act or urge", "recurs", "escalates", "a general account", "about someone else", "a medical emergency"). */
+  /** For the ladder: its rung, in words ("a present act or urge", "recurs", "escalates", "a general account", "about someone else", "a medical emergency").
+   * For "accumulated": "two or more kinds of distress across the recent messages" or "a distress flag earlier in the conversation". */
   rung?: string;
   /** For the ladder: the numbers (1 = first) of the person's earlier messages that count toward it. */
   basedOn?: number[];
@@ -235,8 +237,42 @@ function pronounAdmission(userMessages: string[]): FlagExplained | null {
   return { flag: flagOf('harm-others', 'stop', 'admitted-partner'), why: { source: 'phrase', matched: cut(m[0]) } };
 }
 
-/** The same decision as checkConversation, with why: the words that matched, or the ladder's rung. */
+/**
+ * The same decision as checkConversation, with why: the words that matched, or the ladder's rung, or what added up across the messages.
+ *
+ * Carrying risk across turns without keeping anything (step 3 of the suicidal-ideation audit; draft: awaiting clinician review). The server is sent the
+ * person's messages on every request, so this is recomputed each time from the last WINDOW (10) of them; nothing is stored or logged. On top of
+ * the single-message decision (which is never lowered, and a stop is never changed):
+ *   - if that decision is no flag, and two or more different kinds of sign (src/lib/safetyConstructs.ts) appear anywhere in the window, or a
+ *     soften flag was raised on an earlier message in the window, the outcome is a soften flag (category "distress", so the same site sentence
+ *     as any distress soften; after an earlier suicide or self-harm soften, that category). It lasts while the window holds the earlier flag or the signs.
+ *   - one kind of sign alone, with nothing earlier, is no flag.
+ */
 export function explainConversation(userMessages: string[]): FlagExplained | null {
+  const single = explainSingle(userMessages);
+  if (single) return single; // a stop, or a soften that already stands: never changed here
+  const n = userMessages.length;
+  if (n === 0) return null;
+  const start = Math.max(0, n - WINDOW);
+  const named = (ks: Set<Construct>): string => [...ks].map((k) => CONSTRUCT_LABELS[k]).join(', ');
+  const kinds = new Set<Construct>();
+  for (let i = start; i < n; i++) for (const k of constructsIn(userMessages[i])) kinds.add(k);
+  if (kinds.size >= 2) return { flag: flagOf('distress', 'soften'), why: { source: 'accumulated', rung: 'two or more kinds of distress across the recent messages', matched: named(kinds) } };
+  // A soften flag on an earlier message of the window stays on (signs that had added up earlier are still in the window, so they are covered above).
+  for (let i = start; i < n - 1; i++) {
+    const earlier = explainSingle(userMessages.slice(0, i + 1));
+    // (Not the self-injury ladder's soften flags: the ladder has its own memory, the last few messages, by the owner's decision of 2026-11-08.)
+    if (earlier?.flag.tier === 'soften' && earlier.why.source === 'phrase') {
+      // The notice and the sentence stay the generic distress ones, except after a flag about suicide or self-harm, which keeps its own.
+      const category: FlagCategory = earlier.flag.category === 'self-harm' ? 'self-harm' : 'distress';
+      return { flag: flagOf(category, 'soften'), why: { source: 'accumulated', rung: 'a distress flag earlier in the conversation' } };
+    }
+  }
+  return null;
+}
+
+/** The decision for the latest message from the phrase lists, the pronoun rule and the self-injury ladder, without anything carried across turns. */
+function explainSingle(userMessages: string[]): FlagExplained | null {
   const latest = userMessages[userMessages.length - 1] ?? '';
   const single = detectSingleWhy(latest);
   if (single?.flag.tier === 'stop') return single;

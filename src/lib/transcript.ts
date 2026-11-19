@@ -82,7 +82,7 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
   };
   siteLines(-1);
   for (const c of checks.filter((y) => y.shared)) {
-    lines.push(`Process note (written by the site): the safety check flagged the report text the visitor chose to share, as ${c.category}${c.kind ? ` / ${c.kind}` : ''} (${c.tier}). The conversation was not ended for this. Why: ${c.source === 'phrase' ? `matched words${c.matched ? `: "${c.matched}"` : ''}` : `the self-injury ladder, rung: ${c.rung ?? 'unknown'}`}. This is simple phrase matching and can be wrong.`, '');
+    lines.push(`Process note (written by the site): the safety check flagged the report text the visitor chose to share, as ${c.category}${c.kind ? ` / ${c.kind}` : ''} (${c.tier}). The conversation was not ended for this. Why: ${c.source === 'phrase' ? `matched words${c.matched ? `: "${c.matched}"` : ''}` : c.source === 'accumulated' ? `${c.rung ?? 'several kinds of distress'}${c.matched ? ` (kinds found: ${c.matched})` : ''}` : `the self-injury ladder, rung: ${c.rung ?? 'unknown'}`}. This is simple phrase matching and can be wrong.`, '');
   }
   messages.forEach((m, i) => {
     lines.push(`${m.role === 'user' ? 'You' : 'Coach'}: ${m.content}`, '');
@@ -90,7 +90,9 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
       const what = `${c.category}${c.kind ? ` / ${c.kind}` : ''} (${c.tier})`;
       const why = c.source === 'phrase'
         ? `matched words in the message${c.matched ? `: "${c.matched}"` : ''}`
-        : `the self-injury ladder, rung: ${c.rung ?? 'unknown'}${c.matched ? `; matched words: "${c.matched}"` : ''}${c.basedOn?.length ? `; earlier messages counted: ${c.basedOn.join(', ')}` : ''}`;
+        : c.source === 'accumulated'
+        ? `${c.rung ?? 'earlier messages'}${c.matched ? ` (kinds found: ${c.matched})` : ''}, worked out again from the person's messages on each turn and not stored`
+        :`the self-injury ladder, rung: ${c.rung ?? 'unknown'}${c.matched ? `; matched words: "${c.matched}"` : ''}${c.basedOn?.length ? `; earlier messages counted: ${c.basedOn.join(', ')}` : ''}`;
       lines.push(`Process note (written by the site): the safety check flagged this message as ${what}. Why: ${why}. This is simple phrase matching and can be wrong.`, '');
     }
     siteLines(i);

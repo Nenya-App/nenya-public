@@ -39,9 +39,9 @@ export function signedProblem(signed: unknown, env: Record<string, string | unde
   }
   if (t.context !== undefined && (typeof t.context !== 'string' || t.context.length > 2500)) return 'shape';
   if (t.checks !== undefined) {
-    if (!Array.isArray(t.checks) || t.checks.length > 5) return 'shape';
+    if (!Array.isArray(t.checks) || t.checks.length > 6) return 'shape';
     for (const c of t.checks) {
-      if (!c || !Number.isInteger(c.message) || (c.message < 0 ? !(c.message === -1 && c.shared === true) : c.message >= t.messages.length) || (c.tier !== 'stop' && c.tier !== 'soften') || typeof c.category !== 'string' || (c.source !== 'phrase' && c.source !== 'ladder')) return 'shape';
+      if (!c || !Number.isInteger(c.message) || (c.message < 0 ? !(c.message === -1 && c.shared === true) : c.message >= t.messages.length) || (c.tier !== 'stop' && c.tier !== 'soften') || typeof c.category !== 'string' || (c.source !== 'phrase' && c.source !== 'ladder' && c.source !== 'accumulated')) return 'shape';
       if ((c.kind !== undefined && typeof c.kind !== 'string') || (c.matched !== undefined && (typeof c.matched !== 'string' || c.matched.length > 130)) || (c.rung !== undefined && typeof c.rung !== 'string') || (c.basedOn !== undefined && (!Array.isArray(c.basedOn) || c.basedOn.length > 5 || c.basedOn.some((n: unknown) => !Number.isInteger(n))))) return 'shape';
     }
   }
