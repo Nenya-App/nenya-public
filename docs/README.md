@@ -151,6 +151,7 @@ Terms drafts were compared with `src/lib/legalDocument.ts` (effective November 1
 | [drafts/origin-and-name-draft.md](drafts/origin-and-name-draft.md) | Origin note and Name page | Not published |
 | [drafts/compliance-pressure-set-draft.md](drafts/compliance-pressure-set-draft.md) | Ten categories of invented messages that ask a model to comply with what a careful reply declines; pass criteria left for the owner | Draft |
 | [translation-layer-scope.md](translation-layer-scope.md) | Apertus as an in-server translation layer: three shapes, a first local probe (it failed the safety-critical lines in Romansh and Swiss German), rules for any build | Scoping |
+| [troll-arena.md](troll-arena.md) | The live troll arena: local adversaries against the real coach and all its layers, watchable, with a replay file | Built |
 | [budget-repurpose-plan.md](budget-repurpose-plan.md) | Spending the canary and Venice budgets on measurement while demand is low; a better duet canary on local hardware | Scoping |
 | [hub-scales.md](hub-scales.md) | Hubs from one table to a federation: a ladder of seven scales, from a single device to many regions, with what changes at each | Scoping |
 | [merge-checklist-2026-11-18.md](merge-checklist-2026-11-18.md) | What dev holds that staging and production do not; what a visitor would notice; switches; checks on staging; approvals needed | Ready for the owner |

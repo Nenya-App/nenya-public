@@ -54,6 +54,7 @@ if the model changes.
 | `record-neurons.mts` | Adds Neurons you spent by hand to the nightly canary's ledger (the bake-off and full-exchange scripts do it for you; `--no-record` skips) so the canary does not spend what you already did | Netlify CLI |
 | `apply-lens-copy.mts` | Runs after `vite build`. With `VITE_LENS_COPY=on`, puts the lens vocabulary into the static public files the page code does not render (about-nenya.html, why-nenya.html, llms.txt); with it off, does nothing | Node |
 | `duet-eval.mts` | Full-exchange tests: Venice plays an invented person turn by turn against the real coach on Workers AI; writes transcripts and a read-first summary to a private folder (docs/duet-eval.md) | Venice testing key, Cloudflare account |
+| `troll-arena.mts` | The troll arena: a local model plays one of 30+ invented trolls against the real coach (every layer) while you watch a live page on 127.0.0.1; paired guards on/off arms; writes a counts-only digest and a self-contained replay.html to a private folder (docs/troll-arena.md). `run-troll-arena.sh` starts it from a fresh shell | LM Studio, Cloudflare account (Workers AI coach) |
 | `export-onnx.py` | Exports the cardiffnlp model to int8 ONNX for `netlify/functions/screen.mts` | Research folder, Python packages onnx, onnxruntime and torch |
 
 ## Private list and learning content
