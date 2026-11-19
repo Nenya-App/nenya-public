@@ -72,6 +72,10 @@ export function parseChoices(raw: unknown): Choices | null {
   return out;
 }
 
+/** The choices as one plain string, the same for the same choices whatever the order of the uses: how a resend with the same choices is recognized. */
+export const choicesKey = (c: { uses: readonly Use[]; keep: Keep; portions?: 'all' | number[]; showFor?: Keep }): string =>
+  [[...c.uses].sort().join(','), c.keep, c.portions === undefined ? '-' : c.portions === 'all' ? 'all' : c.portions.join('.'), c.showFor ?? '-'].join('|');
+
 /** The day it must be gone by (ISO date and time), or null for "until I ask". */
 export function keepUntil(keep: Keep, from: Date): string | null {
   return keep === 'until-asked' ? null : new Date(from.getTime() + DAYS[keep] * 86400e3).toISOString();
@@ -107,14 +111,22 @@ export interface TranscriptRecord {
   /** How long it may stay on the public page once up, and the day it must come down (set when a person approves it). */
   showFor?: Keep;
   publicUntil?: string | null;
+  /** The choices of every send of this transcript (choicesKey). Sending the same transcript again with choices already sent is refused as an identical repeat; new choices are an update. */
+  sentChoices?: string[];
   updatedAt: string;
+}
+
+/** Whether sending this transcript again with these choices is an identical repeat of one already on file (and so is refused). A deleted transcript sent again is a fresh decision. */
+export function isIdenticalResend(previous: TranscriptRecord | null, c: Choices): boolean {
+  if (!previous || previous.status !== 'active') return false;
+  return (previous.sentChoices ?? [choicesKey(previous)]).includes(choicesKey(c));
 }
 
 export const recordKey = (hash: string): string => `transcript/${hash}`;
 export const HASH = /^[0-9a-f]{64}$/;
 
 export function newRecord(hash: string, c: Choices, now: Date): TranscriptRecord {
-  return { hash, receivedAt: now.toISOString(), uses: [...c.uses], keep: c.keep, keepUntil: keepUntil(c.keep, now), status: 'active', publication: c.uses.includes('publish') ? 'pending-review' : 'none', ...(c.adult ? { adult: true as const, terms: c.terms } : {}), ...(c.portions ? { portions: c.portions } : {}), ...(c.showFor ? { showFor: c.showFor } : {}), updatedAt: now.toISOString() };
+  return { hash, receivedAt: now.toISOString(), uses: [...c.uses], keep: c.keep, keepUntil: keepUntil(c.keep, now), status: 'active', publication: c.uses.includes('publish') ? 'pending-review' : 'none', ...(c.adult ? { adult: true as const, terms: c.terms } : {}), ...(c.portions ? { portions: c.portions } : {}), ...(c.showFor ? { showFor: c.showFor } : {}), sentChoices: [choicesKey(c)], updatedAt: now.toISOString() };
 }
 
 export interface Revocation {
@@ -149,6 +161,7 @@ export function mergeResend(existing: TranscriptRecord, incoming: TranscriptReco
     ...(existing.publicUntil !== undefined ? { publicUntil: existing.publicUntil } : {}),
     publication: existing.uses.includes('publish') && incoming.uses.includes('publish') ? existing.publication : existing.publication === 'public' || existing.publication === 'pending-review' ? 'withdrawn' : existing.publication,
     keepUntil: earliest,
+    sentChoices: [...new Set([...(existing.sentChoices ?? [choicesKey(existing)]), ...(incoming.sentChoices ?? [])])].slice(-12),
     keep: earliest === existing.keepUntil ? existing.keep : incoming.keep,
     updatedAt: incoming.updatedAt,
   };

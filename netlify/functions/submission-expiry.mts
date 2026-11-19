@@ -4,7 +4,7 @@ import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
 import { addCount } from '../../src/lib/counters.ts';
 import type { CounterStore } from '../../src/lib/dailyCap.ts';
-import { PREFIX, isDue } from '../../src/lib/submissions.ts';
+import { DUP_PREFIX, PREFIX, isDue } from '../../src/lib/submissions.ts';
 
 let storeOverride: unknown = null;
 export const __useStoreForTests = (s: unknown): void => {
@@ -18,14 +18,15 @@ export async function expireSubmissions(now = new Date()): Promise<number> {
   let n = 0;
   for (const b of blobs) {
     // An unreadable record has no keeping date it can prove, so it is deleted like an expired one.
-    let rec: { keepUntil?: unknown } | null = null;
+    let rec: { keepUntil?: unknown; dup?: unknown } | null = null;
     try {
-      rec = (await st.get(b.key, { type: 'json' })) as { keepUntil?: unknown } | null;
+      rec = (await st.get(b.key, { type: 'json' })) as { keepUntil?: unknown; dup?: unknown } | null;
     } catch {
       rec = null;
     }
     if (isDue(rec, now)) {
       await st.delete(b.key);
+      if (rec && typeof rec.dup === 'string' && rec.dup.startsWith(DUP_PREFIX)) await st.delete(rec.dup);
       n++;
       try {
         await addCount(st as unknown as CounterStore, 'submission.deleted.expired', now);
@@ -33,6 +34,19 @@ export async function expireSubmissions(now = new Date()): Promise<number> {
         /* the deletion is what matters */
       }
     }
+  }
+  // Duplicate markers (src/lib/submissions.ts): any that has reached its date, or whose submission is gone (however it went), is deleted too, so a marker never outlives
+  // the submission it guards.
+  const { blobs: markers } = await st.list({ prefix: DUP_PREFIX });
+  for (const m of markers) {
+    let mark: { keepUntil?: unknown; sub?: unknown } | null = null;
+    try {
+      mark = (await st.get(m.key, { type: 'json' })) as { keepUntil?: unknown; sub?: unknown } | null;
+    } catch {
+      mark = null;
+    }
+    const orphan = !mark || typeof mark.sub !== 'string' || (await st.get(mark.sub)) === null;
+    if (orphan || isDue(mark, now)) await st.delete(m.key);
   }
   return n;
 }
