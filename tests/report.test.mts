@@ -150,7 +150,27 @@ ok('an altered stopped message breaks the signature', (await send(forgedStop)).s
 // ---- if our own form cannot be reached
 forwardStatus = 500;
 const vBefore = n('coach.report.verified');
-const down = await send(GOOD);
+const down = await send(GOOD, { choices: { adult: true, keep: '90d', uses: [] } }); // different choices from the first send: an update, not an identical repeat
 ok('if only the email alert fails, the transcript is still safely kept, the visitor is not failed, and the failed alert is counted', down.status < 300 && n('coach.report.verified') === vBefore + 1 && n('coach.report.alert-failed') >= 1 && !!inboxOf(rc.receipt.hash));
 forwardStatus = 200;
+
+// ---- 18 or older: required, checked here as well as on the page (owner, 2026-11-18)
+const noAdult = await send(GOOD, { choices: { keep: '1y', uses: [] } });
+ok('a transcript sent without the 18-or-older confirmation is refused', noAdult.status === 400 && noAdult.json.reason === 'choices');
+ok('"adult: false" or anything but true is refused too', (await send(GOOD, { choices: { adult: false, keep: '1y', uses: [] } })).status === 400 && (await send(GOOD, { choices: { adult: 'yes', keep: '1y', uses: [] } })).status === 400);
+ok('with the confirmation (and a choice not sent before) it is accepted', (await send(GOOD, { choices: { adult: true, keep: '1y', uses: [] } })).status < 300);
+
+// ---- an identical repeat is refused; a change of choices is an update; a deleted transcript may be sent again
+const sameChoices = { adult: true, keep: '90d', uses: ['evaluate'] };
+const first = await send(GOOD, { choices: sameChoices });
+ok('a new set of choices for a transcript already on file is accepted as an update', first.status < 300);
+const inboxBefore = JSON.stringify(inboxOf(rc.receipt.hash));
+const verifiedBefore = n('coach.report.verified');
+const repeat = await send(GOOD, { choices: { ...sameChoices, uses: ['evaluate'] }, note: 'same again' });
+ok('the same transcript with the same choices again is refused as a duplicate (409)', repeat.status === 409 && repeat.json.error === 'duplicate');
+ok('and nothing is kept, changed or counted as a new report', JSON.stringify(inboxOf(rc.receipt.hash)) === inboxBefore && n('coach.report.verified') === verifiedBefore && n('coach.report.duplicate-refused') === 1);
+ok('the first choices ever sent are refused too, even after later ones (the record keeps which were sent)', (await send(GOOD, { choices: { adult: true, keep: '30d', uses: [] } })).status === 409);
+const rec = store.json.get('transcript/' + rc.receipt.hash);
+store.json.set('transcript/' + rc.receipt.hash, { ...rec, status: 'deleted' });
+ok('once it was deleted, sending the same transcript with the same choices again is a fresh decision and is accepted', (await send(GOOD, { choices: sameChoices })).status < 300);
 coachStore(null); reportStore(null);

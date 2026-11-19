@@ -7,6 +7,8 @@ import { cardById } from '../lib/learningCards';
 import { stopLevelFlagged } from '../lib/publicCopy';
 import { TranscriptChoices, choicesToSend, emptyChoices, type ChoiceState } from './TranscriptChoices';
 import { Button } from '../app/components/ui/button';
+import { AfterSending } from '../app/components/DeletionCode';
+import { DUPLICATE_MESSAGE } from '../lib/reportSubmission';
 import { Textarea } from '../app/components/ui/textarea';
 import { readableWithBlock } from '../lib/verifyTranscript';
 import { checkNotesFor, siteMessagesFor } from '../lib/siteMessages';
@@ -45,7 +47,7 @@ interface TranscriptToolsProps {
   summary?: { text: string; proof: string } | null;
 }
 
-type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
+type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error' | 'duplicate';
 
 // Everything here is the visitor's choice. Signing sends the conversation back to
 // our server once more (it was already there, turn by turn) so it can confirm it
@@ -178,6 +180,11 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ signed: { transcript: signedRef.current, receipt }, note: note.trim(), choices: toSend }),
       });
+      // The same signed transcript with the same choices is already on file: nothing changed and nothing new was kept (netlify/functions/report.mts).
+      if (res.status === 409) {
+        setShare('duplicate');
+        return;
+      }
       if (!res.ok) throw new Error(String(res.status));
       // With a signing key the site answers with the person's consent receipt (what they agreed to, signed); they are offered it to keep.
       if (res.status === 200) {
@@ -283,6 +290,20 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
         </div>
       )}
       {share === 'sent' && <p className="text-xs text-muted-foreground" role="status">Thank you. Your transcript was sent{toSend ? `. You chose: ${describeChoices({ uses: toSend.uses, keep: toSend.keep, adult: true, terms: toSend.terms, portions: toSend.portions })}` : ''}. {keptKey ? ' To change or take back any of it, keep the signed file you downloaded and show it at nenya.biz/my-transcript.' : ''}</p>}
+      {share === 'duplicate' && (
+        <div role="status" className="space-y-2 rounded-lg border border-border p-3 text-xs">
+          <p>{DUPLICATE_MESSAGE.replace('the deletion code you were given still works', 'the signed file you hold still works at nenya.biz/my-transcript')}</p>
+          <p className="text-muted-foreground">If you want to send it with different choices, open the form again and change them.</p>
+          <AfterSending fromCoach />
+          <Button variant="outline" size="sm" onClick={() => setShare('closed')}>Close</Button>
+        </div>
+      )}
+      {share === 'sent' && (
+        <div className="space-y-1 text-xs">
+          <p className="text-muted-foreground">Your transcript page is where you take back or change what you sent. It needs the signed file.</p>
+          <AfterSending fromCoach />
+        </div>
+      )}
       {share === 'sent' && !keptKey && <KeepKeyNotice onDownload={downloadSigned} onShare={canShareFile ? shareToSelf : undefined} busy={busy} />}
       {share === 'sent' && consentReceipt && (
         <div className="space-y-1">

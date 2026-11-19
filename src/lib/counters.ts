@@ -57,6 +57,9 @@ export const FIXED_EVENTS = [
   'submission.deleted.expired',
   'submission.deleted.owner',
   'submission.alert-failed',
+  'submission.duplicate-refused', // an identical repeat was refused (nothing new kept)
+  'submission.refused.no-adult', // a send arrived without the 18-or-older confirmation (the page should never do this)
+  'coach.report.duplicate-refused', // the same signed transcript with the same choices was sent again and refused
   // The guestbook (src/lib/guestbook.ts): a signature, and a second one refused that day.
   'guestbook.signed',
   'guestbook.refused.once',

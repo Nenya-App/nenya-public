@@ -6,7 +6,7 @@ import { storeNameFrom } from '../../src/lib/originHosts.ts';
 import { ownerAllowed } from '../../src/lib/ownerGate.ts';
 import { addCount } from '../../src/lib/counters.ts';
 import type { CounterStore } from '../../src/lib/dailyCap.ts';
-import { PREFIX, type SubmissionRecord } from '../../src/lib/submissions.ts';
+import { DUP_PREFIX, PREFIX, type SubmissionRecord } from '../../src/lib/submissions.ts';
 
 let storeOverride: unknown = null;
 export const __useStoreForTests = (s: unknown): void => {
@@ -41,7 +41,10 @@ export default async (req: Request): Promise<Response> => {
       return json(400, { error: 'json' });
     }
     if (typeof body.delete !== 'string' || !/^[0-9a-f]{64}$/.test(body.delete)) return json(400, { error: 'id' });
-    await st.delete(`${PREFIX}${body.delete}`);
+    const key = `${PREFIX}${body.delete}`;
+    const rec = (await st.get(key, { type: 'json' })) as SubmissionRecord | null;
+    await st.delete(key);
+    if (rec && typeof rec.dup === 'string' && rec.dup.startsWith(DUP_PREFIX)) await st.delete(rec.dup); // the same words may be sent again
     try {
       await addCount(st as unknown as CounterStore, 'submission.deleted.owner');
     } catch {

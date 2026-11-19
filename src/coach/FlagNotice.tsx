@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { DeletionCode } from '../app/components/DeletionCode';
-import type { SubmitReceipt } from '../lib/reportSubmission';
+import { AlreadySent, DeletionCode } from '../app/components/DeletionCode';
+import { SendConsent } from '../app/components/SendConsent';
+import { useSendFlow } from '../app/components/useSendFlow';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { admitsHarm, noticeIntro, REPORTING_FACTS, resourcesFor, type SafetyFlag } from '../lib/safetyFlags';
-import { submitReport } from '../lib/reportSubmission';
 
 interface FlagNoticeProps {
   flag: SafetyFlag;
@@ -15,15 +15,17 @@ interface FlagNoticeProps {
   source?: 'message' | 'report';
 }
 
-type ReportState = 'closed' | 'open' | 'sending' | 'sent' | 'error';
-
 // What the visitor sees when a message is flagged: the notice, resources they can
 // tap, and an optional way to tell us the notice was wrong. Nothing is sent
 // anywhere unless they press Send on the report.
 export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNoticeProps) {
-  const [state, setState] = useState<ReportState>('closed');
-  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
+  const [open, setOpen] = useState(false);
   const [comment, setComment] = useState('');
+  const flow = useSendFlow('error-report', () => {
+    setComment('');
+    setOpen(false);
+  }); // the typed text is cleared once it is sent
+  const { phase, receipt } = flow;
   const [includeMessage, setIncludeMessage] = useState(false);
 
   const reportText = [
@@ -33,15 +35,9 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
     `Flagged message: ${includeMessage ? flaggedMessage : '(not included)'}`,
   ].join('\n');
 
-  const send = async () => {
-    if (state === 'sending') return;
-    setState('sending');
-    try {
-      setReceipt(await submitReport({ type: 'error-report', report: reportText }));
-      setState('sent');
-    } catch {
-      setState('error');
-    }
+  const send = () => {
+    if (phase === 'sending' || phase === 'sent') return;
+    void flow.begin(reportText); // opens the consent screen; nothing is sent yet
   };
 
   const stop = flag.tier === 'stop';
@@ -95,21 +91,21 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
         </details>
       )}
 
-      {state === 'closed' && (
+      {!open && phase === 'idle' && (
         <button
           type="button"
-          onClick={() => setState('open')}
+          onClick={() => setOpen(true)}
           className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
         >
           Report a problem with this notice
         </button>
       )}
 
-      {(state === 'open' || state === 'sending' || state === 'error') && (
+      {open && (phase === 'idle' || phase === 'duplicate') && (
         <div className="space-y-3 rounded-lg border border-border p-3">
           <p className="text-xs text-muted-foreground">
-            Was this notice wrong, or did something else go wrong? Tell us. Nothing is sent unless you press Send, and
-            this is exactly what we would receive:
+            Was this notice wrong, or did something else go wrong? Tell us. Before anything is sent, you will see exactly what we would receive, and
+            you decide then:
           </p>
           <label htmlFor="flag-comment" className="sr-only">
             Your comment
@@ -117,7 +113,10 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
           <Textarea
             id="flag-comment"
             value={comment}
-            onChange={(e) => setComment(e.target.value)}
+            onChange={(e) => {
+              setComment(e.target.value);
+              if (phase === 'duplicate') flow.reset();
+            }}
             maxLength={500}
             rows={3}
             placeholder="Optional: what went wrong?"
@@ -127,7 +126,10 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
             <input
               type="checkbox"
               checked={includeMessage}
-              onChange={(e) => setIncludeMessage(e.target.checked)}
+              onChange={(e) => {
+                setIncludeMessage(e.target.checked);
+                if (phase === 'duplicate') flow.reset();
+              }}
               className="mt-0.5"
             />
             <span>
@@ -135,29 +137,27 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
               remove names or other identifying details first.
             </span>
           </label>
-          <pre className="whitespace-pre-wrap rounded-md bg-muted p-2 text-xs text-foreground">{reportText}</pre>
           <div className="flex items-center gap-3">
-            <Button size="sm" onClick={send} disabled={state === 'sending'}>
-              {state === 'sending' ? 'Sending…' : 'Send report'}
+            <Button size="sm" onClick={send}>
+              Review and send
             </Button>
             <button
               type="button"
-              onClick={() => setState('closed')}
+              onClick={() => setOpen(false)}
               className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
             >
               Cancel
             </button>
           </div>
-          {state === 'error' && (
-            <p role="alert" className="text-xs text-destructive">
-              That did not send. You can email info@nenya.biz instead.
-            </p>
-          )}
         </div>
       )}
+      {phase === 'duplicate' && <AlreadySent fromCoach />}
+      {(phase === 'consent' || phase === 'sending' || phase === 'error') && flow.pending && (
+        <SendConsent kind="report" parts={[{ label: 'Your report', text: flow.pending.report }]} busy={phase === 'sending'} failed={phase === 'error'} onSend={flow.confirm} onCancel={flow.cancel} />
+      )}
 
-      {state === 'sent' && <p className="text-xs text-muted-foreground">Thank you. Your report was sent.</p>}
-      {state === 'sent' && <DeletionCode receipt={receipt} />}
+      {phase === 'sent' && <p className="text-xs text-muted-foreground">Thank you. Your report was sent.</p>}
+      {phase === 'sent' && <DeletionCode receipt={receipt} fromCoach />}
     </section>
   );
 }

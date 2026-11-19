@@ -25,6 +25,14 @@ Everything Nenya keeps, where, for how long, and what deletes it. **Keep this cu
 | Private configuration (method notes, module set, lexicon) | private store; backups in the owner's private folder | while in use | the owner | the server; the owner |
 | Owner-side copies (admin exports, the anonymized coach dataset, evaluation runs) | the owner's computer | see the private checklist | the owner | the owner |
 
+## Proposed rows (not applied; built in dev 2026-11-18, move into the table when this goes to production)
+| What | Where | Kept | Deleted by | Who can read it |
+|---|---|---|---|---|
+| Duplicate markers for reports and messages (`submission-dup/<one-way code of kind, text and comments>`; holds only its end date and the key of its submission, never the text) | private Blobs store | the same 90 days as the submission it guards | with the submission, by every route: the sender's code, the owner on the admin page, `submission-expiry` (which also sweeps any marker whose submission is gone) | nobody (a code only) |
+| Which choices were sent for a signed transcript (`sentChoices` in the existing `transcript/<fingerprint>` record: plain choices such as "evaluate / 90d", no text) | private store | as the transcript record | as the record | the owner |
+| "Already sent in this tab" (`nenya.sent-here` in `sessionStorage`: up to 20 SHA-256 codes of what this tab sent, never the text) | the visitor's own browser tab | until the tab closes | the browser, when the tab closes | the visitor's browser only |
+| Plain daily totals `submission.duplicate-refused`, `submission.refused.no-adult`, `coach.report.duplicate-refused` | private store (counters) | as the other daily totals | as the other daily totals | the owner (admin page) |
+
 ## Quarterly review (15 minutes)
 1. This table matches the code (new store keys, new forms, new browser storage).
 2. The jobs ran: the stats page shows `submission.deleted.expired` and the cleanup counts moving.

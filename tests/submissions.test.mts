@@ -24,15 +24,15 @@ const alerts: string[] = [];
 const submit = await import('../netlify/functions/submit.mts');
 const expiry = await import('../netlify/functions/submission-expiry.mts');
 const owner = await import('../netlify/functions/submissions.mts');
-const { KEEP_DAYS, PREFIX, isDue, keyForCode, makeCode, normalizeCode } = await import('../src/lib/submissions.ts');
+const { DUP_PREFIX, KEEP_DAYS, PREFIX, duplicateKey, isDue, keyForCode, makeCode, normalizeCode } = await import('../src/lib/submissions.ts');
 submit.__useStoreForTests(store);
 expiry.__useStoreForTests(store);
 owner.__useStoreForTests(store);
 owner.__useUserForTests(async () => null);
 import { ok } from './helpers.mts';
 
-const post = (body: unknown, origin = 'https://nenya.biz') =>
-  submit.default(new Request('https://nenya.biz/api/submit', { method: 'POST', headers: { 'content-type': 'application/json', origin }, body: JSON.stringify(body) }));
+const post = (body: Record<string, unknown>, origin = 'https://nenya.biz') =>
+  submit.default(new Request('https://nenya.biz/api/submit', { method: 'POST', headers: { 'content-type': 'application/json', origin }, body: JSON.stringify('adult' in body || body.action ? body : { adult: true, ...body }) }));
 const submissionKeys = () => [...data.keys()].filter((k) => k.startsWith(PREFIX));
 
 ok('a code is five groups of six easy-to-read characters', /^[a-z2-9]{6}(-[a-z2-9]{6}){4}$/.test(makeCode()) && !/[01ilo]/.test(makeCode()));
@@ -84,10 +84,92 @@ const client = readFileSync('src/lib/reportSubmission.ts', 'utf8');
 ok('the forms send to the site\'s own function, not Netlify Forms', /fetch\('\/api\/submit'/.test(client) && !/form-name/.test(client));
 const html = readFileSync('index.html', 'utf8');
 ok('the old report form is gone; the alert form holds no text fields', !/name="report-submission"/.test(html) && /name="submission-alert"/.test(html) && !/<textarea name="report"/.test(html));
-ok('all five forms show the deletion code', ['src/app/components/ReportModal.tsx', 'src/app/components/SubmitSensoryReportForm.tsx', 'src/app/components/ContactSection.tsx', 'src/coach/FailureNotice.tsx', 'src/coach/FlagNotice.tsx'].every((f) => /<DeletionCode receipt=\{receipt\} \/>/.test(readFileSync(f, 'utf8')) && /setReceipt\(await submitReport\(/.test(readFileSync(f, 'utf8'))));
+const FIVE = ['src/app/components/ReportModal.tsx', 'src/app/components/SubmitSensoryReportForm.tsx', 'src/app/components/ContactSection.tsx', 'src/coach/FailureNotice.tsx', 'src/coach/FlagNotice.tsx'];
+ok('all five forms show the deletion code', FIVE.every((f) => /<DeletionCode receipt=\{receipt\}/.test(readFileSync(f, 'utf8'))));
+ok('all five forms go through the consent screen: the button only opens it, and only Send there sends', FIVE.every((f) => { const t = readFileSync(f, 'utf8'); return /useSendFlow\(/.test(t) && /<SendConsent/.test(t) && /flow\.begin\(/.test(t) && !/submitReport\(\{/.test(t); }));
+ok('the coach forms show the way back to the conversation, the others do not need it', ['src/coach/FailureNotice.tsx', 'src/coach/FlagNotice.tsx'].every((f) => /<DeletionCode receipt=\{receipt\} fromCoach \/>/.test(readFileSync(f, 'utf8'))));
 ok('the sender can delete with the code on /my-transcript', /<DeleteSubmission \/>/.test(readFileSync('src/mytranscript/MyTranscriptPage.tsx', 'utf8')));
 {
   const { LEGAL_PARTS } = await import('../src/lib/legalDocument.ts');
   const t = JSON.stringify(LEGAL_PARTS);
   ok('the Terms say 90 days, the deletion code, and that the email carries no text; the old "no schedule" line is gone', /kept for 90 days and then deleted automatically/.test(t) && /deletion code/.test(t) && /never what it says/.test(t) && !/no automatic deletion schedule yet/.test(t));
+}
+
+// ---- 18 or older: the server refuses a send without the confirmation (owner, 2026-11-18)
+data.clear();
+res = await submit.default(new Request('https://nenya.biz/api/submit', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ type: 'contact-message', report: 'Hello' }) }));
+ok('a send without "adult: true" is refused and nothing is kept', res.status === 400 && (await res.json()).error === 'adult' && submissionKeys().length === 0);
+res = await post({ type: 'contact-message', report: 'Hello', adult: false });
+ok('"adult: false" and anything but true are refused', res.status === 400 && (await post({ type: 'contact-message', report: 'Hello', adult: 'true' })).status === 400 && submissionKeys().length === 0);
+res = await post({ type: 'contact-message', report: 'Hello', adult: true });
+ok('with the confirmation it is accepted', res.status === 200 && submissionKeys().length === 1);
+ok('the confirmation is not kept with the text: the record holds only what it held before, plus its one-way marker key', Object.keys(JSON.parse(data.get(submissionKeys()[0])!)).sort().join() === 'comments,dup,keepUntil,receivedAt,report,type');
+
+// ---- an identical repeat is refused (owner, 2026-11-18: "third identical report submitted after back button pressed")
+data.clear();
+alerts.length = 0;
+const markerKeys = () => [...data.keys()].filter((k) => k.startsWith(DUP_PREFIX));
+const same = { type: 'error-report', report: 'The coach kept going on after I said stop.', comments: 'second try' };
+const one = await (await post(same)).json();
+ok('the first send is kept and leaves one marker', typeof one.code === 'string' && submissionKeys().length === 1 && markerKeys().length === 1);
+ok('the marker holds no text: only its end date and the key of its submission', !/coach kept going|second try/.test(data.get(markerKeys()[0])!) && Object.keys(JSON.parse(data.get(markerKeys()[0])!)).sort().join() === 'keepUntil,sub' && !markerKeys()[0].includes('coach'));
+res = await post(same);
+ok('the same text again is refused with 409 duplicate', res.status === 409 && (await res.json()).error === 'duplicate');
+res = await post({ ...same, report: '  The coach kept going on after I said stop.\n' });
+ok('so is the same text with only spaces around it, and with markup the function would strip anyway', res.status === 409 && (await post({ ...same, report: '<b>The coach kept going on after I said stop.</b>' })).status === 409);
+ok('a refused repeat keeps nothing new, sends no alert and gives no new code', submissionKeys().length === 1 && markerKeys().length === 1 && alerts.length === 1);
+ok('a different kind with the same words is a different send', (await post({ ...same, type: 'contact-message' })).status === 200);
+ok('changed text is accepted', (await post({ ...same, report: 'The coach kept going on after I said stop. Again today.' })).status === 200 && (await post({ ...same, comments: 'third try' })).status === 200);
+ok('the marker key is one-way and depends on the text, the kind and the comments', duplicateKey('error-report', 'a', 'b') !== duplicateKey('error-report', 'a', 'c') && duplicateKey('error-report', 'a', 'b') !== duplicateKey('contact-message', 'a', 'b') && duplicateKey('error-report', 'a', 'b', 'secret') !== duplicateKey('error-report', 'a', 'b') && !duplicateKey('error-report', 'secretwords', '').includes('secretwords'));
+
+// every way of deleting a submission deletes its marker, so the same words may be sent again on purpose
+const resend = async (label: string) => ok(`${label}: the same words can then be sent again`, (await post(same)).status === 200 && markerKeys().length >= 1);
+data.clear();
+let sent1 = await (await post(same)).json();
+await post({ action: 'delete', code: sent1.code });
+ok('deleting with the sender\'s code removes the marker', markerKeys().length === 0 && submissionKeys().length === 0);
+await resend('after the sender\'s deletion');
+data.clear();
+await post(same);
+const idOwner = submissionKeys()[0].slice(PREFIX.length);
+await asOwner({ method: 'POST', body: JSON.stringify({ delete: idOwner }) });
+ok('deleting on the admin page removes the marker', markerKeys().length === 0);
+await resend('after the owner\'s deletion');
+data.clear();
+await post(same);
+const recKey = submissionKeys()[0];
+const aged = JSON.parse(data.get(recKey)!);
+data.set(recKey, JSON.stringify({ ...aged, keepUntil: '2020-01-01T00:00:00.000Z' }));
+await expiry.expireSubmissions(new Date('2026-11-18T12:00:00Z'));
+ok('the daily job removes the marker with the submission at 90 days', submissionKeys().length === 0 && markerKeys().length === 0);
+await resend('after the 90 days');
+data.clear();
+await post(same);
+data.delete(submissionKeys()[0]); // a submission removed some other way, leaving its marker behind
+res = await post(same);
+ok('a marker whose submission is gone does not block a send', res.status === 200);
+data.clear();
+await post(same);
+data.delete(submissionKeys()[0]);
+await expiry.expireSubmissions(new Date());
+ok('the daily job also sweeps a marker left without its submission', markerKeys().length === 0);
+data.clear();
+await post(same);
+const mk = markerKeys()[0];
+data.set(mk, JSON.stringify({ ...JSON.parse(data.get(mk)!), keepUntil: '2020-01-01T00:00:00.000Z' }));
+res = await post(same);
+ok('a marker past its date is ignored (the same 90 days as the submission)', res.status === 200);
+ok('the owner\'s list never shows markers', ((await (await asOwner()).json()).items as unknown[]).length === submissionKeys().length);
+
+// ---- the page: the guard against sending twice (src/app/components/useSendFlow.ts, src/lib/reportSubmission.ts)
+{
+  const flow = readFileSync('src/app/components/useSendFlow.ts', 'utf8');
+  const lib = readFileSync('src/lib/reportSubmission.ts', 'utf8');
+  const consent = readFileSync('src/app/components/SendConsent.tsx', 'utf8');
+  ok('the page sends only from confirm(), once at a time, and not again after it was sent', /if \(flying\.current \|\| done\.current \|\| !pending\) return/.test(flow) && /submitReport\(\{/.test(flow) && !/submitReport\(\{/.test(readFileSync('src/app/components/ReportModal.tsx', 'utf8')));
+  ok('a page restored from the back/forward cache (pageshow, persisted) is reset if a send was in flight, and a sent form stays a confirmation', /addEventListener\('pageshow'/.test(flow) && /e\.persisted/.test(flow) && /p === 'sending' \? 'idle'/.test(flow));
+  ok('the page remembers only a one-way code of what this tab sent, in sessionStorage, inside try/catch, never the text', /sessionStorage/.test(lib) && /crypto\.subtle\.digest\('SHA-256'/.test(lib) && !/sessionStorage\.setItem\([^)]*report[^_]/.test(lib) && /catch \{/.test(lib));
+  ok('a 409 from the function becomes the plain "already sent" message, with the link to the transcript page', /status === 409/.test(lib) && /You already sent exactly this\. It is on file, and the deletion code you were given still works\. Change it if you want to send something different\./.test(lib) && /<AfterSending/.test(readFileSync('src/app/components/DeletionCode.tsx', 'utf8')));
+  ok('the typed text is cleared after a successful send in every form', FIVE.every((f) => /useSendFlow\('[a-z-]+', \(\) =>/.test(readFileSync(f, 'utf8'))));
+  ok('the consent screen: text first, who reads it, what we may do, 90 days, the code shown once, an unticked 18+ box, Send off until it is ticked, Send and Don\'t send alike', consent.indexOf('exactly what we would receive') < consent.indexOf('Who reads it') && /90 days/.test(consent) && /deletion code/.test(consent) && /type="checkbox"[^>]*checked=\{adult\}/.test(consent) && /useState\(false\)/.test(consent) && /disabled=\{!adult \|\| busy\}/.test(consent) && (consent.match(/variant="outline" size="lg" className="min-w-36 border-2"/g) ?? []).length === 2 && /I am 18 or older/.test(consent));
 }
