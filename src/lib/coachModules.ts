@@ -10,6 +10,8 @@ export interface ModuleSet {
   core: string;
   /** id -> text. */
   modules: Record<string, string>;
+  /** Private record of where each module came from (`docs`: the provenance register; tags P podcast patterns, F ICARUS-VOLT, N NVC, O the owner's own). Kept in the same file so it stays true after edits. Never read by `buildNotes`, so it is never sent to a model. */
+  provenance?: Record<string, { tag: string; note?: string }>;
 }
 
 // Groups, in the order of attention: safety first, then the framework's lenses (what is blocking the person), then
