@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Button } from '../app/components/ui/button';
 import { SUMMARY_CREDIT, SUMMARY_CREDIT_LINK, SUMMARY_UI, readSummaryAnswer, summaryRequestBody, type SummaryOutcome, type SummaryRequestInput } from '../lib/summaryRequest';
+import { ExternalLink } from '../app/components/ExternalLink';
 
 // The "Request a summary" button and the summary block (docs/request-a-summary-scope.md, step 3; VITE_SUMMARY_REQUEST). Shown by the page only after the five exchanges and the closing
 // note, on a conversation that was not flagged. Never runs by itself. Order for a screen reader: the closing, the button, then the block. One summary per conversation: once there is one
@@ -57,7 +58,7 @@ export function SummaryRequest({ input, headers, onSummary }: { input: SummaryRe
           <p className="text-xs text-muted-foreground">{SUMMARY_UI.note}</p>
           {outcome.credit && (
             <p className="text-xs text-muted-foreground">
-              {SUMMARY_CREDIT} <a href={SUMMARY_CREDIT_LINK} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Feelings and Needs Inventory</a>
+              {SUMMARY_CREDIT} <ExternalLink href={SUMMARY_CREDIT_LINK} className="underline underline-offset-4">Feelings and Needs Inventory</ExternalLink>
             </p>
           )}
         </section>

@@ -87,16 +87,16 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-who', part: 'nenya', title: 'Who runs Nenya, and how it is structured',
     asked: ['who runs this', 'who made Nenya', 'is this a company', 'is this a nonprofit', 'who is behind this', 'who owns Nenya'],
-    short: 'Nenya is an independent artistic and technology project, run by its creator, Estëlle, as a sole proprietor. It is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit arts organization, which lets it receive tax-deductible donations.',
+    short: 'Nenya is an independent artistic and technology project, run by its creator, Estëlle Streiff, as a sole proprietor. It is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit arts organization, which lets it receive tax-deductible donations.',
     full: [
-      'Nenya is operated by Estëlle as a sole proprietor, and is fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity. It is an independent artistic and technology project: not a startup, not a platform company, and not a commercial product.',
+      'Nenya is operated by Estëlle Streiff as a sole proprietor, and is fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity. It is an independent artistic and technology project: not a startup, not a platform company, and not a commercial product.',
       'The project accepts no equity investors, grants no board seats or approval rights to funders, and does not accept federal government funding. Its direction is decided by its creator.',
       'Fiscal sponsorship means Fractured Atlas handles the financial administration for donations and gives the project a recognized nonprofit home, while Nenya keeps its creative and directional independence. Donations are tax-deductible to the extent the law permits.',
     ],
     links: [{ label: 'Our Structure', page: 'structure' }, { label: 'About the Designer', page: 'about-founder' }],
     tutorial: 'Trust lesson: who is behind this, and what funders cannot do.',
     checks: [
-      { claim: 'operated by Estëlle as a sole proprietor, fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity', file: TERMS, has: 'a project operated by Estëlle as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity' },
+      { claim: 'operated by Estëlle Streiff as a sole proprietor, fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity', file: TERMS, has: 'a project operated by Estëlle Streiff as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity' },
       { claim: 'no equity investors, no board seats or approval rights, no federal funding; direction set by the creator', file: about('Structure'), has: 'does not accept federal government funding' },
       { claim: 'not a startup, platform company or commercial product', file: about('Structure'), has: 'This is not a startup, a platform company, or a commercial product' },
     ],
@@ -105,15 +105,15 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-founder', part: 'nenya', title: 'Who is behind it',
     asked: ['who designed Nenya', 'who is Estelle', 'who is the founder', 'who is the designer'],
-    short: 'Nenya is built by Estëlle, a Minnesota-based designer, educator, and artist. The designer\'s page exists as a matter of transparency: Nenya is not an anonymous product.',
+    short: 'Nenya is built by Estëlle Streiff, a Minnesota-based designer, educator, and artist. The designer\'s page exists as a matter of transparency: Nenya is not an anonymous product.',
     full: [
-      'Nenya is built by Estëlle, a Minnesota-based designer, educator, and artist. The page about the designer exists mainly as a matter of transparency, because Nenya is not an anonymous product, though the intention has always been for the work to stand on its own.',
+      'Nenya is built by Estëlle Streiff, a Minnesota-based designer, educator, and artist. The page about the designer exists mainly as a matter of transparency, because Nenya is not an anonymous product, though the intention has always been for the work to stand on its own.',
       'The designer\'s page describes the background and the thinking behind the project, including the study of leadership and compassion and the interest in how technology can give more than it takes.',
     ],
     links: [{ label: 'About the Designer', page: 'about-founder' }],
     tutorial: 'Trust lesson (with n-who).',
     checks: [
-      { claim: 'built by Estëlle, a Minnesota-based designer, educator, and artist', file: about('AboutTheFounder'), has: 'Minnesota-based designer, educator, and artist' },
+      { claim: 'built by Estëlle Streiff, a Minnesota-based designer, educator, and artist', file: about('AboutTheFounder'), has: 'Minnesota-based designer, educator, and artist' },
       { claim: 'the page exists as a matter of transparency; Nenya is not anonymous', file: about('AboutTheFounder'), has: 'Nenya isn\'t an anonymous product' },
     ],
     status: 'ready',

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { AlertTriangle, ArrowUpRight, X, Info } from 'lucide-react';
 import { Button } from './ui/button';
 import { leaveNow } from '../../lib/emergencyExit';
+import { LinkedText } from './ExternalLink';
 
 interface EmergencyExitModalProps {
   isOpen: boolean;
@@ -161,7 +162,7 @@ function EmergencyExitModal({ isOpen, onClose, onLeaving }: EmergencyExitModalPr
               </div>
               <div>
                 <strong className="text-foreground">Other countries:</strong>
-                <div className="text-muted-foreground">findahelpline.com or iasp.info/resources/Crisis_Centres</div>
+                <div className="text-muted-foreground"><LinkedText text="findahelpline.com or iasp.info/resources/Crisis_Centres" className="underline underline-offset-4 hover:text-foreground" /></div>
               </div>
             </div>
           </div>

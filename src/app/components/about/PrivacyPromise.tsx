@@ -1,11 +1,12 @@
 import React from 'react';
 import { onWorkersAi } from '../../../lib/coachService';
-import { ArrowLeft, Shield, Brain, AlertTriangle, BookOpen, Users, TrendingDown, Scale, Eye, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Shield, Brain, AlertTriangle, BookOpen, Users, TrendingDown, Scale, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { ReturnToTop } from '../ReturnToTop';
 import { AppFooter } from '../AppFooter';
+import { AboutPageLink } from '../AboutPageLink';
 
 interface PrivacyPromiseProps {
   onBack: () => void;
@@ -51,14 +52,9 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                 Technology built to watch and to control often promises connection and convenience while taking something in return. Our name—<strong>Nenya</strong>—points the other way: a place to rest, built to protect and never to rule.
               </p>
               {onNavigateToNamePhilosophy && (
-                <Button 
-                  variant="outline" 
-                  onClick={onNavigateToNamePhilosophy}
-                  className="gap-2"
-                >
-                  <ExternalLink className="size-4" />
-                  Read more: Our Name & Philosophy
-                </Button>
+                <p>
+                  <AboutPageLink page="name-philosophy" detail="Our Name & Philosophy" onOpen={onNavigateToNamePhilosophy} />
+                </p>
               )}
             </div>
 

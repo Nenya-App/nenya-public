@@ -48,7 +48,7 @@ export default function Structure({ onBack }: StructureProps) {
                 </p>
                 <p>
                   Nenya accepts no equity investors, grants no board seats or approval rights to funders, and does not accept federal government
-                  funding. The project's direction is determined solely by its creator.
+                  funding. The project's direction is determined solely by its creator, Estëlle Streiff, who runs Nenya as a sole proprietor.
                 </p>
               </div>
             </Card>

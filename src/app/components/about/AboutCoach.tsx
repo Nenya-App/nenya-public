@@ -1,10 +1,12 @@
 import React from 'react';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ExternalLink as ExternalLinkIcon } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollIndicator } from '../ScrollIndicator';
 import { AppFooter } from '../AppFooter';
+import { AboutPageLink } from '../AboutPageLink';
+import { ExternalLink } from '../ExternalLink';
 
 // "About the Coach": what the coach is, what it is built on, how its guidance was made, what is sent, what it is not, and how to ask for removal.
 // The credit sentence is approved by the person it names, in writing, and is used word for word. Her wording is "source material for identifying
@@ -17,16 +19,7 @@ const link = 'underline underline-offset-2';
 export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => void; onOpenSection?: (section: string) => void }) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const scrollToTop = () => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  const goto = (section: string, label: string) =>
-    onOpenSection ? (
-      <button type="button" onClick={() => onOpenSection(section)} className={link}>
-        {label}
-      </button>
-    ) : (
-      <a href={`/about/${section}`} className={link}>
-        {label}
-      </a>
-    );
+  const goto = (section: string) => <AboutPageLink page={section} inline className={link} onOpen={onOpenSection ? () => onOpenSection(section) : undefined} />;
 
   return (
     <div ref={scrollContainerRef} className="size-full overflow-auto scroll-container bg-background">
@@ -57,7 +50,7 @@ export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => vo
           <p>Three things shape how the coach answers.</p>
           <ul className="list-disc space-y-2 pl-5">
             <li>
-              <strong>Nonviolent Communication (NVC).</strong> It was developed by Dr. Marshall Rosenberg. The coach looks for what happened, feelings, needs, and requests. Its feeling and need categories follow the Feelings and Needs Inventory of the Center for Nonviolent Communication, which is credited on {goto('nvc-method', 'Our NVC+ Method')}.
+              <strong>Nonviolent Communication (NVC).</strong> It was developed by Dr. Marshall Rosenberg. The coach looks for what happened, feelings, needs, and requests. Its feeling and need categories follow the Feelings and Needs Inventory of the Center for Nonviolent Communication, which is credited on the {goto('nvc-method')}, Our NVC+ Method.
             </li>
             <li>
               <strong>The owner&apos;s own lens framework.</strong> Nenya&apos;s owner developed a way of looking at a situation through different lenses. The coach uses it to ask what else might be true.
@@ -93,7 +86,7 @@ export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => vo
             The coach runs on a model hosted by an outside company. With each conversation, the guidance text is sent along with what you write. The raw calls are not sent. They are not part of Nenya at all.
           </p>
           <p>
-            {goto('terms', 'The Terms')} and {goto('coach-region', 'Where the Coach Is Open')} say more about what our host and the model host can see.
+            You can read about what our host and the model host can see on the {goto('terms')} and on the {goto('coach-region')}, Where the Coach Is Open.
           </p>
         </Card>
 
@@ -112,7 +105,7 @@ export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => vo
         <Card className="space-y-4 p-6 leading-relaxed" id="removal">
           <h2 className="text-xl">How to ask for something to be removed</h2>
           <p>
-            Write to <a href="mailto:info@nenya.biz" className={link}>info@nenya.biz</a>. If anyone asks, here is what we have promised:
+            Write to Estëlle Streiff, who runs Nenya, at <a href="mailto:info@nenya.biz" className={link}>info@nenya.biz</a>. If anyone asks, here is what we have promised:
           </p>
           <ul className="list-disc space-y-2 pl-5">
             <li>We will stop naming the person within 30 days.</li>
@@ -130,11 +123,10 @@ export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => vo
             A plain file in our public code says how much of Nenya was made with AI, and which models were used.
           </p>
           <p>
-            <a href={DISCLOSURE} target="_blank" rel="noopener noreferrer" className={`${link} inline-flex items-center gap-1`}>
+            <ExternalLink href={DISCLOSURE} className={`${link} inline-flex items-center gap-1`}>
               AI-DISCLOSURE.md on GitHub
-              <ExternalLink className="size-4" aria-hidden="true" />
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
+              <ExternalLinkIcon className="size-4" aria-hidden="true" />
+            </ExternalLink>
           </p>
         </Card>
 

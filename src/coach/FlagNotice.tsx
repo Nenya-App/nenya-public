@@ -5,6 +5,7 @@ import { useSendFlow } from '../app/components/useSendFlow';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
+import { LinkedText } from '../app/components/ExternalLink';
 import { admitsHarm, noticeIntro, REPORTING_FACTS, resourcesFor, type SafetyFlag } from '../lib/safetyFlags';
 
 interface FlagNoticeProps {
@@ -62,15 +63,18 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
         {resourcesFor(flag.category, flag.kind).map((r) => (
           <li key={r.name} className="rounded-lg border border-border bg-card p-3">
             <span className="block text-foreground">{r.name}</span>
+            {/* A web address in the words is its own link to the outside site; the rest keeps the phone or text link, so no link sits inside another. */}
             {r.href ? (
-              <a
-                href={r.href}
-                className="text-nenya-gold-text dark:text-nenya-accent-warm underline underline-offset-4 hover:text-foreground"
-              >
-                {r.detail}
-              </a>
+              <LinkedText
+                text={r.detail}
+                wrapText={(t) => (
+                  <a href={r.href} className="text-nenya-gold-text dark:text-nenya-accent-warm underline underline-offset-4 hover:text-foreground">
+                    {t}
+                  </a>
+                )}
+              />
             ) : (
-              <span className="text-muted-foreground">{r.detail}</span>
+              <span className="text-muted-foreground"><LinkedText text={r.detail} /></span>
             )}
           </li>
         ))}

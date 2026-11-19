@@ -28,6 +28,7 @@ import { WordPanel, type Picked } from './WordPanel';
 import { StancePicker } from './StancePicker';
 import { addWordToDraft } from '../lib/feelingsNeeds';
 import { isStuck, namedParts } from '../lib/practiceArc';
+import { ExternalLink, LinkedText } from '../app/components/ExternalLink';
 import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
@@ -434,7 +435,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         style={{ borderColor: `${color2}66` }}
       >
         <span className="mb-1 block text-xs text-muted-foreground">Coach</span>
-        {text}
+        <LinkedText text={text} />
       </div>
     </div>
   );
@@ -473,8 +474,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
           <li>
             You leave Nenya. Venice AI&rsquo;s{' '}
-            <a href={VENICE_TERMS_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>terms</a> and{' '}
-            <a href={VENICE_PRIVACY_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>privacy policy</a> apply,
+            <ExternalLink href={VENICE_TERMS_URL} className={linkClass}>terms</ExternalLink> and{' '}
+            <ExternalLink href={VENICE_PRIVACY_URL} className={linkClass}>privacy policy</ExternalLink> apply,
             not ours. {VENICE_DIFFERENCES}
           </li>
           <li>
@@ -487,19 +488,13 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         </ul>
       </div>
       <div className="flex flex-wrap items-center gap-4">
-        <a
-          href={VENICE_CHARACTER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm"
-          style={gradientButton}
-        >
+        <ExternalLink href={VENICE_CHARACTER_URL} className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm" style={gradientButton}>
           Continue on Venice AI
-          <ArrowRight className="size-4" />
-        </a>
-        <a href={VENICE_SIGNUP_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </ExternalLink>
+        <ExternalLink href={VENICE_SIGNUP_URL} className={linkClass}>
           Need a Venice account? Sign up
-        </a>
+        </ExternalLink>
       </div>
       <p className="text-xs text-muted-foreground">{REFERRAL_NOTE}</p>
     </section>
@@ -717,8 +712,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 <li>
                   The replies are written by an AI model run by {COACH_SERVICE.name}. They can be wrong, incomplete or offensive, and
                   they are not medical, legal, financial or mental health advice. {COACH_SERVICE.name}&rsquo;s own{' '}
-                  <a href={COACH_SERVICE.termsUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>terms</a> and{' '}
-                  <a href={COACH_SERVICE.privacyUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>privacy policy</a>{' '}
+                  <ExternalLink href={COACH_SERVICE.termsUrl} className={linkClass}>terms</ExternalLink> and{' '}
+                  <ExternalLink href={COACH_SERVICE.privacyUrl} className={linkClass}>privacy policy</ExternalLink>{' '}
                   apply to what it receives.
                 </li>
                 <li>
@@ -811,7 +806,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       <span className="mb-1 block text-xs text-muted-foreground">
                         {m.role === 'user' ? 'You' : 'Coach'}
                       </span>
-                      {m.content}
+                      {m.role === 'assistant' ? <LinkedText text={m.content} /> : m.content}
                       {m.note && <span className="mt-2 block text-xs italic text-muted-foreground">{m.note}</span>}
                     </div>
                   </div>

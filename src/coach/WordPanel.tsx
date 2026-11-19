@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { CNVC_CREDIT, CNVC_LINK, FEELINGS_MET, FEELINGS_UNMET, NEEDS, filterGroups, type WordGroup, type WordKind } from '../lib/feelingsNeeds';
+import { ExternalLink } from '../app/components/ExternalLink';
 
 // The feelings and needs word lists beside the message box. Quiet by design: groups are small pills, only one group's words show at a
 // time, and the whole panel folds away (and stays folded, on this device only). Choosing a word puts a sentence the person can edit
@@ -176,9 +177,9 @@ export function WordPanel({ open, onToggle, tab, onTab, picked, have, onPick, on
 
         <p className="text-xs text-muted-foreground">
           Nothing you pick is sent until you send your message, and then only the words in it. From the{' '}
-          <a href={CNVC_LINK} className="underline underline-offset-2" target="_blank" rel="noopener noreferrer">
+          <ExternalLink href={CNVC_LINK} className="underline underline-offset-2">
             Feelings and Needs Inventory
-          </a>
+          </ExternalLink>
           : {CNVC_CREDIT}. A starting point, not a complete list.
         </p>
       </div>

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { cardById, othersInSeries, type LearningCard } from '../lib/learningCards';
 import { draftCardsOn, loadDraftCards } from '../lib/draftCardsClient';
+import { ExternalLink } from '../app/components/ExternalLink';
 
 export function LearningOffer({ cardId }: { cardId: string }) {
   // On a dev site built with VITE_CARD_DRAFTS=on the draft cards are fetched once; nothing happens elsewhere.
@@ -45,9 +46,9 @@ export function LearningOffer({ cardId }: { cardId: string }) {
         {card.url && (
           <>
             {' '}
-            <a href={card.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-foreground">
-              Read the source<span className="sr-only"> (opens in a new tab)</span>
-            </a>
+            <ExternalLink href={card.url} className="underline underline-offset-4 hover:text-foreground">
+              Read the source
+            </ExternalLink>
           </>
         )}
       </p>

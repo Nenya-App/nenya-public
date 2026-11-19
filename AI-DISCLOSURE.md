@@ -1,6 +1,6 @@
 # How Nenya was made, and how much of it is AI
 
-Nenya is written by one person, Estëlle, working with AI. Most of the code and a large share of the written text were drafted, and then redrafted many times, by AI models. That is a large part of why the project is open source: so anyone can see how it was made and check it.
+Nenya is written by one person, Estëlle Streiff, working with AI. Most of the code and a large share of the written text were drafted, and then redrafted many times, by AI models. That is a large part of why the project is open source: so anyone can see how it was made and check it.
 
 Nenya is a prototype: built quickly and well documented, not a finished or expert-reviewed product.
 

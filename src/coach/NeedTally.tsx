@@ -3,6 +3,7 @@ import { manyNeedsSoFar, tallyOf, type TallyEntry } from '../lib/conversationTal
 import { NEED_FOCUS_SUMMARY } from '../lib/needFocus';
 import { NEED_TALLY_UI } from '../lib/needTallyView';
 import { SUMMARY_CREDIT, SUMMARY_CREDIT_LINK } from '../lib/summaryWords';
+import { ExternalLink } from '../app/components/ExternalLink';
 
 // The running tally (VITE_NEED_TALLY): a quiet, optional, closed-by-default control that shows the feelings and needs the person has named in their own messages so far. Computed here from
 // the messages the page already holds, on every render: never stored (no localStorage, sessionStorage or cookie), never sent, gone with the tab. Hidden when nothing has come up. The changes
@@ -21,7 +22,7 @@ export function NeedTally({ userTexts }: { userTexts: readonly string[] }) {
         {manyNeedsSoFar(tally) && <p>{NEED_FOCUS_SUMMARY}</p>}
         <p className="text-xs text-muted-foreground">{NEED_TALLY_UI.note}</p>
         <p className="text-xs text-muted-foreground">
-          {SUMMARY_CREDIT} <a href={SUMMARY_CREDIT_LINK} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Feelings and Needs Inventory</a>
+          {SUMMARY_CREDIT} <ExternalLink href={SUMMARY_CREDIT_LINK} className="underline underline-offset-4">Feelings and Needs Inventory</ExternalLink>
         </p>
       </div>
     </details>
