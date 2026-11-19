@@ -11,7 +11,8 @@
 // Hurting oneself on purpose is the exception to "clear statements stop": it is a ladder (src/lib/selfInjury.ts) worked out from the
 // person's recent messages, so it needs the conversation, not one message: use checkConversation. detectFlag(text) checks one message alone.
 
-import { ABUSE_CANDIDATES, CANDIDATES, IMMINENT_CANDIDATES } from './safetyPhrases.ts';
+import { ABUSE_CANDIDATES, CANDIDATES, IMMINENT_CANDIDATES, SLANG_CANDIDATES } from './safetyPhrases.ts';
+import { evasionVariants } from './safetyNormalize.ts';
 import type { Rule as PhraseRule } from './safetyPhrases.ts';
 import { STOP_LEAD } from './distressText.ts';
 import { classifyMention, RECENT, rungFor, SELF_INJURY } from './selfInjury.ts';
@@ -146,7 +147,7 @@ export interface FlagExplained {
 }
 const cut = (x: string | undefined): string | undefined => (x === undefined ? undefined : x.length > 120 ? x.slice(0, 117) + '...' : x);
 
-const ALL_PHRASES: PhraseRule[] = [...CANDIDATES, ...IMMINENT_CANDIDATES];
+const ALL_PHRASES: PhraseRule[] = [...CANDIDATES, ...IMMINENT_CANDIDATES, ...SLANG_CANDIDATES];
 
 /** The words a phrase rule matched, or null: a rule's "unless" (another person, a story, sport, a job farewell) in the same sentence cancels it. */
 function phraseHit(r: PhraseRule, t: string): string | null {
@@ -162,6 +163,21 @@ function phraseHit(r: PhraseRule, t: string): string | null {
 
 /** The most serious flag in one message, from the phrase lists alone (not the self-injury ladder), and the words that matched. Stop-tier rules win over soften-tier. */
 function detectSingleWhy(text: string): FlagExplained | null {
+  const own = detectOneSpelling(text);
+  if (own?.flag.tier === 'stop') return own;
+  // Common spelling tricks undone (k1ll, k i l l, su*cide, look-alike letters): the lists are matched against these other spellings too, for matching only
+  // (src/lib/safetyNormalize.ts). A variant can add a flag or raise a soften to a stop; it never removes one, and it is never stored or sent.
+  let best = own;
+  for (const v of evasionVariants(text)) {
+    const hit = detectOneSpelling(v);
+    if (!hit) continue;
+    if (hit.flag.tier === 'stop') return hit;
+    best ??= hit;
+  }
+  return best;
+}
+
+function detectOneSpelling(text: string): FlagExplained | null {
   const t = text.replace(/[‘’]/g, "'");
   // Plan, means, an act in progress, a goodbye: kind "imminent" (the notice leads with the emergency number). Looked at first so that
   // "I'm going to kill myself tonight" carries the kind too; each rule skips a sentence about someone else, a story, sport, a job farewell.

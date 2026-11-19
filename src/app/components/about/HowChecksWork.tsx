@@ -42,7 +42,7 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
             <li>None of them keeps your message, a score or a profile of you. We keep plain daily counts only, with nothing that identifies anyone.</li>
             <li>None of them reports you to anyone.</li>
             <li>Apart from the crisis and intent-to-harm stops above, no check ends a conversation, and no single signal from the small model ever does.</li>
-            <li>None is a safety system you should rely on. They are simple, they miss things, and they sometimes fire on ordinary sentences.</li>
+            <li>None is a safety system you should rely on. They are simple, they read English only, they miss things, and they sometimes fire on ordinary sentences.</li>
           </ul>
 
           <h2 className="text-xl">How we measure them</h2>
@@ -84,7 +84,7 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
           </div>
           <p>
             So hate about Muslims, immigrants and women is caught more than twice as often as hate about trans or disabled people, and most hate that is not a slur (comparisons, threats, quiet contempt) is missed. We are adding to the lists and measuring again.
-            Other limits: the examples are written, in English only; evasions such as spacing out or swapping letters get through; very short messages give the checks little to read; and a check can be wrong about a quote, a joke or a word reclaimed by the people it was aimed at.
+            Other limits: the examples are written, in English only; the crisis check undoes some common evasions (spaced-out letters, swapped digits, symbols) but not all, and the other lists do not; very short messages give the checks little to read; and a check can be wrong about a quote, a joke or a word reclaimed by the people it was aimed at.
           </p>
 
           <h2 className="text-xl">If a check was wrong about you</h2>

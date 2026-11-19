@@ -43,7 +43,7 @@ export const CANDIDATES: Rule[] = [
 const TIME = '(?:tonight|today|right now|now|this (?:weekend|evening|afternoon|morning|week)|before (?:morning|sunrise|dawn))';
 const SENT_START = '(?:^|[.!?\\n]\\s*)';
 const SENT_END = '\\s*(?:[.!]+|$)';
-const SELF_ACT = '(?:kill myself|end it(?: all)?|end my (?:own )?life|take my (?:own )?life|hang myself|shoot myself|overdose)';
+const SELF_ACT = '(?:kill myself|un-?alive myself|kys|sewer[ -]?slide|end it(?: all)?|end my (?:own )?life|take my (?:own )?life|hang myself|shoot myself|overdose)';
 const MEANS = '(?:gun|handgun|pistol|firearm|rope|noose|pills|sleeping pills|painkillers|stash of (?:pills|meds|medication|painkillers))';
 // Not about the person's own life: another person, a story, sport or hunting, a medicine for something ordinary, a farewell to a job, a move.
 const ELSEWHERE = /\b(?:him|her|them|my (?:boss|ex|husband|wife|neighbou?r)|novel|story|character|movie|film|game|dream|hunt\w*|deer|range|skeet|sport|target|collector|antique|museum|article|news|law|legislation|policy|violence|pool|lake|river|skydiv\w*|bungee|parachut\w*|trampoline|jump rope|dock|puddle|fence|stage)\b/i;
@@ -76,6 +76,37 @@ export const IMMINENT_CANDIDATES: Rule[] = [
 ];
 
 // ── abuse, partner violence, child abuse and assault ──────────────────────────────────────────────────────────
+// ── slang and euphemism (2026-11-19, step 2 of the suicidal-ideation audit) ─────────────────────────────────────────────────────────────────────
+// DRAFT: awaiting clinician review. "Unalive", "kys" (kill yourself, said of oneself) and "sewerslide" (a respelling of suicide) are words people use to get past
+// filters. Tiers follow the owner's principle above: first-person intent or an act with myself as the object is a STOP (the same as "I want to kill myself");
+// vague euphemism ("wish I didn't exist", "thinking of ending it", "life isn't worth living") is a SOFTEN. Nothing here fires on "kys" or "unalive" aimed at
+// someone else, on the third person ("he unalived himself"), or on a game ("unalive the boss"): the object must be myself, or the sentence must be a plain "I want to unalive".
+// English only. Other languages are not covered; that needs real translators and a clinician. The spelling tricks (k1ll, k i l l, su*cide) are undone in
+// src/lib/safetyNormalize.ts before any of these are matched.
+const UNALIVE = 'un-?aliv(?:e|ed|ing)';
+const SLANG_I = "\\bi(?:'m| am|'ll| will|'d| would|'ve been| have been)?\\s+";
+const SLANG_MODAL = "(?:(?:really|just|so|finally|seriously|probably|honestly)\\s+)*(?:want(?:ed)? to|wanna|need to|have to|going to|gonna|about to|plan(?:ning)? to|should|ready to|decided to|trying to|tried to|will|thinking (?:of|about)|considering)\\s+(?:(?:just|really|actually|finally)\\s+)*";
+const SLANG_PLAY = /\b(?:games?|gaming|minecraft|fortnite|roblox|gta|boss|npc|mobs?|enemy|enemies|raid|lyrics?|song|movie|film|novel|story|character|meme|anime|book|word|slang|term|means?|meaning|censor\w*|tiktok|youtube|algorithm|philosoph\w+|unexamined)\b/i;
+const SLANG_THIRD = /\b(?:he|she|they|him|her|them|his|hers|their|my (?:friend|boss|ex|brother|sister|dad|mom|mother|father|son|daughter|teacher)|people|someone|somebody|everyone|kids?|users?)\b/i;
+const SLANG_ELSEWHERE = /\b(?:with|relationship|marriage|partnership|friendship|contract|lease|subscription|membership|trial|boyfriend|girlfriend|partner|husband|wife|ex|him|her|them|business|band|show|series|project|job|work|story|novel|chapter|game|podcast|call|meeting|conversation|date|class|workout|session|email|letter|post|video|season|movie|film|song|lyrics?)\b/i;
+
+export const SLANG_CANDIDATES: Rule[] = [
+  // stop: myself as the object of "unalive", or first-person intent with "kys" or "sewerslide"
+  { tier: 'stop', why: 'slang for killing myself ("unalive myself")', pattern: new RegExp(`${SLANG_I}(?:${SLANG_MODAL})?${UNALIVE}\\s+(?:myself|me)\\b`, 'i') },
+  { tier: 'stop', why: 'slang for killing myself ("unalive myself", wish)', pattern: new RegExp(`\\bwish (?:that )?i (?:could|would|can) (?:just )?un-?alive (?:myself|me)\\b`, 'i') },
+  { tier: 'stop', why: 'first-person intent with "kys" (kill yourself, said of oneself)', pattern: new RegExp(`${SLANG_I}${SLANG_MODAL}kys\\b`, 'i') },
+  { tier: 'stop', why: 'first-person intent with "sewerslide" (a respelling of suicide)', pattern: new RegExp(`${SLANG_I}(?:${SLANG_MODAL})?(?:commit(?:ting)?\\s+)?sewer[ -]?slid(?:e|ing|ed)\\b`, 'i'), unless: SLANG_PLAY },
+  // soften: first-person wish with "unalive" and no object, "should I kys", the word "sewerslide" itself, and vague euphemism
+  { tier: 'soften', why: '"I want to unalive" (no object), first person', pattern: new RegExp(`${SLANG_I}(?:${SLANG_MODAL})${UNALIVE}\\s*(?:[.!?,;]|$)`, 'i'), unless: SLANG_PLAY },
+  { tier: 'soften', why: '"I unalived" said alone, first person', pattern: new RegExp(`${SLANG_I}(?:just )?unalived\\s*(?:[.!?,;]|$)`, 'i'), unless: SLANG_PLAY },
+  { tier: 'soften', why: '"should I kys"', pattern: /\bshould i (?:just )?kys\b/i },
+  { tier: 'soften', why: 'the word "sewerslide" (joined or hyphenated) in a sentence about oneself', pattern: /\bsewer-?slid(?:e|ing)\b/i, unless: either(SLANG_PLAY, SLANG_THIRD) },
+  { tier: 'soften', why: 'wish never to have existed or been born', pattern: /\bwish (?:that )?i (?:(?:had|was|were) )?(?:never|not) (?:been )?(?:born|exist(?:ed)?)\b|\bwish (?:that )?i (?:didn'?t|did not|hadn'?t|had not|wasn'?t|was not) (?:ever )?(?:exist(?:ed)?|(?:been )?born)\b|\bwish i never existed\b/i, unless: SLANG_PLAY },
+  { tier: 'soften', why: 'thinking of ending it (all)', pattern: /\bi(?:'m| am|'ve been| have been)? ?(?:thinking (?:of|about)|considering|contemplating) ending (?:it all|it|everything)\b/i, unless: SLANG_ELSEWHERE },
+  { tier: 'soften', why: 'life is not worth living', pattern: /\b(?:my |this )?life (?:is(?:n'?t| not)|'s not|ain'?t|just isn'?t|is just not|is no longer|isn'?t even) (?:really |even |no longer |just )?worth (?:living|going on|continuing)\b|\b(?:my |this )?life (?:is(?:n'?t| not)|'s not|isn'?t) (?:really |even )?worth it (?:any ?more|any longer)\b|\bnot worth living\b/i, unless: either(SLANG_PLAY, SLANG_THIRD) },
+  { tier: 'soften', why: 'wish to disappear or cease to exist, for good', pattern: /\b(?:wish i (?:could|would)|i (?:just )?(?:want|wanna|need) to)\s+(?:just\s+)?(?:disappear|vanish|fade away|be gone|cease to exist|stop existing)\s+(?:forever|for good|completely|permanently|entirely)\b|\b(?:wish i (?:could|would)|i (?:just )?(?:want|wanna) to)\s+(?:just\s+)?(?:cease to exist|stop existing)\b/i, unless: SLANG_PLAY },
+];
+
 export type AbuseKind = 'partner-or-family' | 'child-or-dependent' | 'sexual' | 'control-or-fear' | 'trafficking';
 export interface AbuseRule { tier: 'stop' | 'soften'; kind: AbuseKind; why: string; pattern: RegExp }
 
