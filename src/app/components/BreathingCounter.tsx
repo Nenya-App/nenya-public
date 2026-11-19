@@ -274,6 +274,11 @@ export function BreathingCounter({
             </button>
               );
             })}
+            {!PRESETS.some((p) => p.ih === IH && (p.hi || 0) === HI && p.ex === EX && (p.ho || 0) === HO) && (
+              <div style={{ padding: '6px 16px', fontFamily: "'Manrope',sans-serif", fontSize: '13px', color: 'rgba(232,160,32,0.96)', fontWeight: 600 }}>
+                Your own pace: {IH / 1000}·{HI / 1000}·{EX / 1000}·{HO / 1000}
+              </div>
+            )}
           </div>
         </>
       )}

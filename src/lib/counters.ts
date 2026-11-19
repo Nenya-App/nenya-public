@@ -67,7 +67,7 @@ export const FIXED_EVENTS = [
 export const SCREENS = ['welcome', 'home', 'sight', 'sound', 'touch', 'essence', 'movement', 'insight', 'color-selection', 'gateway-review', 'session', 'cell-creation', 'cell-interface', 'about'] as const;
 
 /** The breathing rhythms of the opening flow, by a plain name. */
-export const RHYTHM_NAMES = ['steady', 'calming', 'lively', 'deep-calm', 'box', '478'] as const;
+export const RHYTHM_NAMES = ['steady', 'resonance', 'calming', 'lively', 'deep-calm', 'box', '478'] as const;
 
 /** Where a visitor chose to start, on the start chooser (owner, 2026-11-15). Counted at agreement, with nothing about who chose. */
 export const START_CHOICES = ['breathing', 'reflection', 'coach'] as const;

@@ -8,7 +8,8 @@ import { BreathTonesPlayer } from './BreathTonesSwitch';
 // switched on in the panel). One pace and one clock per page, shared by the counter, the tones, the panel's ring and the header logo, on every screen of
 // the main site and on /coach. The pace is a display choice like the others: kept on the device only with "Remember on this device".
 
-export const STEADY: BreathingTechnique = { ih: 5000, hi: 0, ex: 5000, ho: 0 };
+/** The default pace: six seconds in, six out (owner, 2026-11-18; it was five and five). */
+export const STEADY: BreathingTechnique = { ih: 6000, hi: 0, ex: 6000, ho: 0 };
 
 /** The page's pace and the clock anchor every breathing thing reads, so they stay in phase. The clock restarts only when the pace changes. */
 export function useBreathRhythm() {

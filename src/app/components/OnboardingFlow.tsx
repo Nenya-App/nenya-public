@@ -19,15 +19,16 @@ const STEPS: OnboardingStep[] = ['rhythm', 'terms'];
 // Friendly names for the picker. The first four are the ones most people want (three hold-free, and Box); the rest
 // sit behind "More options".
 const RHYTHM_INFO: Record<string, { name: string; blurb: string }> = {
-  '5·5': { name: 'Steady', blurb: 'Even breaths, about six a minute. A good place to begin.' },
+  '6·6': { name: 'Steady', blurb: 'Even breaths, about five a minute. A good place to begin.' },
+  '5·5': { name: 'Resonance', blurb: 'Even breaths, about six a minute.' },
   '4·6': { name: 'Calming', blurb: 'A longer exhale, to help you settle.' },
   '3·3': { name: 'Lively', blurb: 'Quicker, lighter breaths to wake you up.' },
   '4·8': { name: 'Deep calm', blurb: 'A long, slow exhale. Good for winding down.' },
   Box: { name: 'Box', blurb: 'In, hold, out, hold, all the same length. For focus and reset.' },
   '4-7-8': { name: '4-7-8', blurb: 'A long hold between breaths. Skip it if holding your breath is uncomfortable.' },
 };
-const MAIN_LABELS = ['5·5', '4·6', '3·3', 'Box'];
-const MORE_LABELS = ['4·8', '4-7-8'];
+const MAIN_LABELS = ['6·6', '4·6', '3·3', 'Box'];
+const MORE_LABELS = ['5·5', '4·8', '4-7-8'];
 const presetByLabel = (lb: string) => PRESETS.find((p) => p.lb === lb)!;
 
 interface OnboardingFlowProps {

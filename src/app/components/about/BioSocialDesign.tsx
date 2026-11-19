@@ -445,7 +445,7 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
                   <div>
                     <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold mb-2">The Breathing Logo: Synchronized Visual Anchor</h3>
                     <p className="text-xs md:text-sm text-muted-foreground">
-                      The Nenya logo pulses with a <strong>deliberate breathing rhythm</strong> — a gentle expand and contract that mirrors inhale and exhale, meant as a <strong>visual anchor</strong> you can follow rather than just a decoration. It's synchronized to a 0.1Hz breathing pattern (a 10-second cycle), and stays subtle and consistent whether you're in light or dark mode.
+                      The Nenya logo pulses with a <strong>deliberate breathing rhythm</strong> — a gentle expand and contract that mirrors inhale and exhale, meant as a <strong>visual anchor</strong> you can follow rather than just a decoration. It's synchronized to the breathing pace you choose (by default six seconds in and six out, a 12-second cycle), and stays subtle and consistent whether you're in light or dark mode.
                     </p>
                   </div>
 

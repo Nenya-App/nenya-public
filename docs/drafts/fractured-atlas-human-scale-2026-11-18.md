@@ -41,7 +41,7 @@ Learn More: https://www.nenya.biz
 ## 3. Tailored (1879 characters)
 Nenya is made for a particular moment: a person who is wound up, worn out or too full to think, who wants a few minutes to settle and put words to what they feel and need. It is not therapy and not a crisis service, and it says so where people will see it.
 
-The tailoring starts with pace. Breathing begins at one breath every ten seconds, with other rhythms to choose, and a person may stop there. Reflection offers six sensory lenses (sight, sound, touch, essence, movement and pattern), because people reach their inner life by different roads. A person picks up whichever fits, in any order, or none. Choosing fewer can be more helpful than choosing many, so the site says so, asks before a fourth choice on a card, and never blocks. Everything is optional, and extra detail waits under "More descriptions". The text is plain, and the site is designed toward the highest level of web accessibility (WCAG 2.2 AAA), with known gaps listed in public. It is built for a keyboard and a screen reader, respects a request for less motion, and offers color-blind modes and three text sizes.
+The tailoring starts with pace. Breathing begins at six seconds in and six out, with other rhythms to choose and a pace of your own to set, and a person may stop there. Reflection offers six sensory lenses (sight, sound, touch, essence, movement and pattern), because people reach their inner life by different roads. A person picks up whichever fits, in any order, or none. Choosing fewer can be more helpful than choosing many, so the site says so, asks before a fourth choice on a card, and never blocks. Everything is optional, and extra detail waits under "More descriptions". The text is plain, and the site is designed toward the highest level of web accessibility (WCAG 2.2 AAA), with known gaps listed in public. It is built for a keyboard and a screen reader, respects a request for less motion, and offers color-blind modes and three text sizes.
 
 The optional coach is tailored the same way. It listens for the feelings and needs the person names, uses the words of the Center for Nonviolent Communication's Feelings and Needs Inventory, credited, keeps its replies short and plain, and turns a person back toward the people in their life.
 
@@ -74,7 +74,7 @@ Learn More: https://www.nenya.biz
 ## Facts each text rests on (check these before sending; Fractured Atlas will read them as statements of fact)
 | The text says | Where it holds |
 |---|---|
-| One breath every ten seconds by default; other rhythms to choose | `src/lib/breathingPresets.ts` (Steady 5·5 is the default) |
+| Six seconds in and six out by default; other rhythms to choose, and a custom pace within limits | `src/lib/breathingPresets.ts` (Steady 6·6 is the default); `src/lib/breathCustom.ts` |
 | Six sensory lenses: sight, sound, touch, essence, movement, pattern; any order, any number | `src/app/components/pages/LensTrayPage.tsx` and the lens pages, behind `VITE_LENS_TRAY`; the sixth reads Pattern with `VITE_LENS_COPY` |
 | Choosing fewer can be more helpful; asks before a fourth choice on a card, never blocks | `src/lib/lensState.ts` (`SOFT_LIMIT`), `LensCardParts.tsx` |
 | What is entered stays on the device and is gone when the tab closes | Terms, "The short version" and Section 16 |

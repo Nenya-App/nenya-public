@@ -1,3 +1,4 @@
+import { isAllowedTechnique } from './breathCustom.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 // Everything Nenya may keep on a visitor's device lives behind this one file, so there is a single
@@ -103,7 +104,6 @@ export interface Prefs {
 
 const VISION = ['', 'deuteranopia', 'protanopia', 'tritanopia', 'achromatopsia'];
 const isBool = (v: unknown): v is boolean => typeof v === 'boolean';
-const ms = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 60000;
 
 // Anything that does not match is dropped, so a hand-edited or stale entry cannot break the page.
 const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
@@ -121,8 +121,8 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   breathingSound: (v) => v === 'harp' || v === 'bowls' || v === 'chord' || v === 'scale',
   colorBlindMode: (v) => typeof v === 'string' && VISION.includes(v),
   breathingTechnique: (v) => {
-    const t = v as Record<string, unknown> | null;
-    return !!t && typeof t === 'object' && ms(t.ih) && ms(t.hi) && ms(t.ex) && ms(t.ho) && (t.ih as number) > 0 && (t.ex as number) > 0;
+    // A saved pace must be one the site would have allowed (src/lib/breathCustom.ts); earlier saves of the presets all pass.
+    return isAllowedTechnique(v);
   },
 };
 

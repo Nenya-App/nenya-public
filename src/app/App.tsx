@@ -256,7 +256,7 @@ export default function App() {
   const handleOnboardingFinish = (_agreement?: Promise<void>) => {
     enableUsageCounts();
     const rhythm = PRESETS.find((p) => sameTechnique(breathingTechnique, p));
-    const rhythmName = rhythm && !arrivedElsewhere && !termsFirstOn() ? ({ '5·5': 'steady', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
+    const rhythmName = rhythm && !arrivedElsewhere && !termsFirstOn() ? ({ '6·6': 'steady', '5·5': 'resonance', '4·6': 'calming', '3·3': 'lively', '4·8': 'deep-calm', Box: 'box', '4-7-8': '478' } as Record<string, string>)[rhythm.lb] : undefined;
     countEvents(['onboarding.terms.accepted', ...(rhythmName ? [`onboarding.rhythm.${rhythmName}`] : [])]);
     setBreathingCounterMinimized(true);
     setEntryUnlocked(true);
