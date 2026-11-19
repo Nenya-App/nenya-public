@@ -16,6 +16,7 @@ import { DrawingCanvas } from '../DrawingCanvas';
 
 import { WordPicker } from '../WordPicker';
 import { LensPreview } from '../LensPreview';
+import { useAutoDescription } from '../useAutoDescription';
 import { PutThisDown, FewerNote, FewerWarning, AddToReport, LensCardNav } from '../LensCardParts';
 import { lensTrayOn, needsFewerWarning } from '../../../lib/lensState';
 import { lensPathOn, cleanPoints, simplifyPoints, pathWords, type PathPoint } from '../../../lib/lensActivities';
@@ -95,7 +96,6 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [currentSpeed, setCurrentSpeed] = useState(() => (typeof init?.currentSpeed === 'number' ? [init.currentSpeed] : unsetSlider()));
   const [currentQualities, setCurrentQualities] = useState<string[]>(init?.currentQualities ?? []);
   const [currentQualityOther, setCurrentQualityOther] = useState(init?.currentQualityOther ?? '');
-  const [currentDescription, setCurrentDescription] = useState(init?.currentDescription ?? '');
   const [movementPath, setMovementPath] = useState<PathPoint[]>(() => cleanPoints(init?.movementPath));
   const [currentMovementDrawing, setCurrentMovementDrawing] = useState<string | null>(init?.currentMovementDrawing ?? null);
 
@@ -107,7 +107,9 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
   const [potentialSpeed, setPotentialSpeed] = useState(() => (typeof init?.potentialSpeed === 'number' ? [init.potentialSpeed] : unsetSlider()));
   const [potentialQualities, setPotentialQualities] = useState<string[]>(init?.potentialQualities ?? []);
   const [potentialQualityOther, setPotentialQualityOther] = useState(init?.potentialQualityOther ?? '');
-  const [potentialDescription, setPotentialDescription] = useState(init?.potentialDescription ?? '');
+  // The description boxes follow the words chosen (and the words added with Add) until the person writes in them (owner's comment sheet, 2026-11-18).
+  const currentDesc = useAutoDescription(init?.currentDescription ?? '', [...currentDirections, ...currentQualities]);
+  const potentialDesc = useAutoDescription(init?.potentialDescription ?? '', [...potentialDirections, ...potentialQualities]);
   const [potentialMovementDrawing, setPotentialMovementDrawing] = useState<string | null>(init?.potentialMovementDrawing ?? null);
 
   const handleCheckboxChange = (
@@ -151,7 +153,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
       currentSpeed: sliderValue(currentSpeed),
       currentQualities: currentQualities.length > 0 ? currentQualities : null,
       currentQualityOther: currentQualityOther || null,
-      currentDescription: currentDescription || null,
+      currentDescription: currentDesc.value || null,
       currentMovementDrawing: currentMovementDrawing || null,
       potentialDirections: potentialDirections.length > 0 ? potentialDirections : null,
       potentialDirectionOther: potentialDirectionOther || null,
@@ -159,7 +161,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
       potentialSpeed: sliderValue(potentialSpeed),
       potentialQualities: potentialQualities.length > 0 ? potentialQualities : null,
       potentialQualityOther: potentialQualityOther || null,
-      potentialDescription: potentialDescription || null,
+      potentialDescription: potentialDesc.value || null,
       potentialMovementDrawing: potentialMovementDrawing || null,
       // The optional path (VITE_LENS_PATH): words for the report and the coach, points for the PDF thumbnail and for reopening. Old drafts have neither key.
       ...(lensPathOn() && movementPath.length ? { movementPath: simplifyPoints(movementPath), movementPathWords: pathWords(movementPath, currentQualities) } : {})
@@ -286,7 +288,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   </div>,
                   <div key="m1" className="space-y-2">
                     <Label className="text-sm">Direction (optional)</Label>
-                    <WordPicker category="direction" idPrefix="currentDirections" selected={currentDirections} onToggle={(t) => handleCheckboxChange(t, !currentDirections.includes(t), currentDirections, setCurrentDirections)} other={{ value: currentDirectionOther, onChange: setCurrentDirectionOther, placeholder: "Describe..." }} />
+                    <WordPicker category="direction" idPrefix="currentDirections" selected={currentDirections} onToggle={(t) => handleCheckboxChange(t, !currentDirections.includes(t), currentDirections, setCurrentDirections)} {...(tray ? { onAddText: currentDesc.add } : { other: { value: currentDirectionOther, onChange: setCurrentDirectionOther, placeholder: "Describe..." } })} />
                     {pendingWord && pendingWord.list === currentDirections && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>,
                   <SnappingSlider key="m2"
@@ -307,7 +309,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   />,
                   <div key="m4" className="space-y-2">
                     <Label className="text-sm">Quality (optional)</Label>
-                    <WordPicker category="quality" idPrefix="currentQualities" selected={currentQualities} onToggle={(t) => handleCheckboxChange(t, !currentQualities.includes(t), currentQualities, setCurrentQualities)} other={{ value: currentQualityOther, onChange: setCurrentQualityOther, placeholder: "Describe..." }} />
+                    <WordPicker category="quality" idPrefix="currentQualities" selected={currentQualities} onToggle={(t) => handleCheckboxChange(t, !currentQualities.includes(t), currentQualities, setCurrentQualities)} {...(tray ? { onAddText: currentDesc.add } : { other: { value: currentQualityOther, onChange: setCurrentQualityOther, placeholder: "Describe..." } })} />
                     {pendingWord && pendingWord.list === currentQualities && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>,
                   <div key="m5" className="space-y-2">
@@ -322,10 +324,11 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                     <Label className="text-sm">Describe the movement (optional)</Label>
                     <Textarea
                       placeholder="Describe the kinesthetic qualities..."
-                      value={currentDescription}
-                      onChange={(e) => setCurrentDescription(e.target.value)}
+                      value={currentDesc.value}
+                      onChange={(e) => currentDesc.setValue(e.target.value)}
                       className="min-h-20 resize-none text-sm"
                     />
+                    {currentDesc.edited && tray && <button type="button" onClick={currentDesc.reset} className="min-h-11 text-xs underline underline-offset-4 text-muted-foreground">Fill it from my choices again</button>}
                   </div>
                     ];
                     b[8] = <LensPreview key="prev" kind="movement" speed={sliderValue(currentSpeed)} energy={sliderValue(currentEnergy)} direction={currentDirections[0] ?? null} />;
@@ -364,7 +367,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   </div>,
                   <div key="m1" className="space-y-2">
                     <Label className="text-sm">Direction (optional)</Label>
-                    <WordPicker category="direction" idPrefix="potentialDirections" selected={potentialDirections} onToggle={(t) => handleCheckboxChange(t, !potentialDirections.includes(t), potentialDirections, setPotentialDirections)} other={{ value: potentialDirectionOther, onChange: setPotentialDirectionOther, placeholder: "Describe..." }} />
+                    <WordPicker category="direction" idPrefix="potentialDirections" selected={potentialDirections} onToggle={(t) => handleCheckboxChange(t, !potentialDirections.includes(t), potentialDirections, setPotentialDirections)} {...(tray ? { onAddText: potentialDesc.add } : { other: { value: potentialDirectionOther, onChange: setPotentialDirectionOther, placeholder: "Describe..." } })} />
                     {pendingWord && pendingWord.list === potentialDirections && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>,
                   <SnappingSlider key="m2"
@@ -385,7 +388,7 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                   />,
                   <div key="m4" className="space-y-2">
                     <Label className="text-sm">Quality (optional)</Label>
-                    <WordPicker category="quality" idPrefix="potentialQualities" selected={potentialQualities} onToggle={(t) => handleCheckboxChange(t, !potentialQualities.includes(t), potentialQualities, setPotentialQualities)} other={{ value: potentialQualityOther, onChange: setPotentialQualityOther, placeholder: "Describe..." }} />
+                    <WordPicker category="quality" idPrefix="potentialQualities" selected={potentialQualities} onToggle={(t) => handleCheckboxChange(t, !potentialQualities.includes(t), potentialQualities, setPotentialQualities)} {...(tray ? { onAddText: potentialDesc.add } : { other: { value: potentialQualityOther, onChange: setPotentialQualityOther, placeholder: "Describe..." } })} />
                     {pendingWord && pendingWord.list === potentialQualities && <FewerWarning onAdd={() => { pendingWord.setter([...pendingWord.list, pendingWord.value]); setPendingWord(null); }} onKeep={() => setPendingWord(null)} />}
                   </div>,
                   <div key="m5" className="space-y-2">
@@ -401,10 +404,11 @@ export default function MovementGatewayPage({ onComplete, onBack, currentIndex, 
                     <Label className="text-sm">Describe the movement (optional)</Label>
                     <Textarea
                       placeholder="Describe the kinesthetic qualities you're moving toward..."
-                      value={potentialDescription}
-                      onChange={(e) => setPotentialDescription(e.target.value)}
+                      value={potentialDesc.value}
+                      onChange={(e) => potentialDesc.setValue(e.target.value)}
                       className="min-h-20 resize-none text-sm"
                     />
+                    {potentialDesc.edited && tray && <button type="button" onClick={potentialDesc.reset} className="min-h-11 text-xs underline underline-offset-4 text-muted-foreground">Fill it from my choices again</button>}
                   </div>
                     ];
                     b[8] = <LensPreview key="prev" kind="movement" speed={sliderValue(potentialSpeed)} energy={sliderValue(potentialEnergy)} direction={potentialDirections[0] ?? null} />;

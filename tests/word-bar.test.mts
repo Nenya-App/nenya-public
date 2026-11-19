@@ -1,0 +1,13 @@
+// One bar for finding words, near words and the online look-up; an Add button that sends a word to the text box; the description filled with the person's choices (owner's comment sheet, 2026-11-18).
+import { readFileSync } from 'node:fs';
+import { composeDescription, appendToOwnText } from '../src/lib/describeChoices.ts';
+import { ok } from './helpers.mts';
+
+ok('the description is made from the chosen words, in order, once each', composeDescription(['Upward', 'spiraling', 'Fluid']) === 'Upward, spiraling and fluid.' && composeDescription(['fluid', 'Fluid']) === 'Fluid.' && composeDescription([]) === '' && composeDescription(['a']) === 'A.');
+ok('a word added to text the person owns goes after a comma, once, and an empty word changes nothing', appendToOwnText('Slow and heavy.', 'dragging') === 'Slow and heavy, dragging' && appendToOwnText('Slow, heavy', 'heavy') === 'Slow, heavy' && appendToOwnText('', 'dragging') === 'dragging' && appendToOwnText('x', ' ') === 'x');
+const pick = readFileSync('src/app/components/WordPicker.tsx', 'utf8'), hook = readFileSync('src/app/components/useAutoDescription.ts', 'utf8'), mv = readFileSync('src/app/components/pages/MovementGatewayPage.tsx', 'utf8');
+ok('the word list has one bar: finding, near words and the online look-up, with an Add button beside it (and Enter adds)', /Find a word, or look one up/.test(pick) && /onClick=\{\(\) => send\(query\)\}[^>]*>Add<\/Button>/.test(pick) && /e\.key === 'Enter'/.test(pick) && !/<WordHelp\b/.test(pick));
+ok('Add chooses a word that is on the lists and sends any other to the text box (the page\'s, or the own-word box)', /if \(own\) \{ if \(!selected\.includes\(own\.term\)\) onToggle\(own\.term\); \} else if \(sink\) sink\(t\)/.test(pick) && /const sink = onAddText \?\? \(other/.test(pick));
+ok('the short lists are kept under Browse the word lists (open while searching), no longer the first thing on the card', /Browse the word lists/.test(pick) && /<details open=\{q \? true : undefined\}/.test(pick));
+ok('the box follows the choices until the person writes in it, then it is theirs; a saved description counts as theirs; they can hand it back', /useState\(!!initial\)/.test(hook) && /value: edited \? text : composed/.test(hook) && /reset: \(\) =>/.test(hook));
+ok('Movement: Add and the chosen words go into "Describe the movement", in tray mode the separate own-word boxes are gone, and the saved description is the box\'s text', (mv.match(/onAddText: currentDesc\.add/g) ?? []).length === 2 && (mv.match(/onAddText: potentialDesc\.add/g) ?? []).length === 2 && /currentDescription: currentDesc\.value \|\| null/.test(mv) && /Fill it from my choices again/.test(mv));
