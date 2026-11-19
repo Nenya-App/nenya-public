@@ -64,8 +64,10 @@ export function figurePoints(d: Dials, r = 40, cx = 50, cy = 50): string {
 export const randomDials = (rng: () => number = Math.random): Dials => ({ sweet: Math.floor(rng() * 5), sour: Math.floor(rng() * 5), salty: Math.floor(rng() * 5), bitter: Math.floor(rng() * 5), umami: Math.floor(rng() * 5) });
 
 export interface EssenceV2 { v: 2; basis: BasisId; now: Dials; wish: Dials; notes: string[]; mouth: string | null; lingers: string | null; tastingNote: string; smallThing: string; extra: string }
+/** Essence was first saved wrapped, as { essenceV2: {...} }, and never reached the report. Unwrap it so anything saved that way (a draft, a lens already added) still reads. */
+export const unwrapEssence = (x: unknown): unknown => (x && typeof x === 'object' && (x as Record<string, unknown>).essenceV2 && typeof (x as Record<string, unknown>).essenceV2 === 'object' ? (x as Record<string, unknown>).essenceV2 : x);
 export const cleanV2 = (x: unknown): EssenceV2 | null => {
-  const o = (x && typeof x === 'object' ? x : null) as Record<string, any> | null;
+  const o = (unwrapEssence(x) && typeof unwrapEssence(x) === 'object' ? unwrapEssence(x) : null) as Record<string, any> | null;
   if (!o || o.v !== 2) return null;
   const s = (v: unknown, n = 400): string => (typeof v === 'string' ? v.slice(0, n) : '');
   return { v: 2, basis: (['memory', 'mood', 'small'] as const).includes(o.basis) ? o.basis : 'mood', now: cleanDials(o.now), wish: cleanDials(o.wish), notes: Array.isArray(o.notes) ? o.notes.filter((n: unknown) => typeof n === 'string').slice(0, 12) : [], mouth: typeof o.mouth === 'string' ? o.mouth : null, lingers: typeof o.lingers === 'string' ? o.lingers : null, tastingNote: s(o.tastingNote), smallThing: s(o.smallThing, 200), extra: s(o.extra) };
@@ -73,6 +75,7 @@ export const cleanV2 = (x: unknown): EssenceV2 | null => {
 /** The lines for the report (words only, never a picture). */
 export function essenceReportLines(e: EssenceV2): string[] {
   const out: string[] = [`Flavor of your life now: ${dialsLine(e.now)}`, `Flavor you want: ${dialsLine(e.wish)}`, `  From now to what you want: ${differenceLine(e.now, e.wish)}`];
+  out.push(`  Started from: ${BASES.find((b) => b.id === e.basis)?.label.toLowerCase() ?? e.basis}`);
   if (e.notes.length) out.push(`  Notes: ${e.notes.join(', ')}`);
   if (e.mouth) out.push(`  In the mouth: ${e.mouth}`);
   if (e.lingers) out.push(`  What lingers: ${e.lingers}`);
