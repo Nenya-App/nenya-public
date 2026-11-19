@@ -9,6 +9,8 @@ export const PLAIN_INTRO = 'This is a short summary. The full Terms of Use and P
 export const PLAIN_ENGLISH: PlainItem[] = [
   { heading: 'What it is', from: 'Section 1 and the crisis section (988, findahelpline.com)',
     text: 'A free place to pause, breathe and reflect, a kind of interactive art. It is not therapy, medical care or advice, and it cannot help in an emergency. If you are in crisis, please contact a person now: call or text 988 (US and Canada), or your local emergency number. Elsewhere, findahelpline.com lists lines in your country.' },
+  { heading: 'Breathing safely', from: 'Section 3, "Using Nenya well"',
+    text: 'Stop and breathe normally if you feel dizzy or lightheaded. If a pace feels too long, shorten it. If you have asthma, COPD, a heart or lung condition, or specific symptoms, check with a healthcare professional first.' },
   { heading: 'Who it is for', from: 'Section 2',
     text: 'People 13 or older, or your country’s minimum age if that is higher. If you are under 18, please use the coach only with a parent’s or guardian’s consent.' },
   { heading: 'What stays with you', from: 'The short version; Section 16',
