@@ -524,6 +524,8 @@ export const ANSWERS: Answer[] = [
     full: [
       'The site has an optional form for sending us a report, feedback, a message, or a signed coach transcript. Using it is entirely your choice. By submitting, you allow us to read, store, and use what you send to understand problems and improve Nenya, and to share it in anonymized or summarized form.',
       'We do not ask for your name or email. If you type personal information into a comment, it becomes part of the submission, so please leave out anything you would not want us to keep. We will not use a submission to contact you unless you ask us to. To have a submission deleted, email us.',
+      'Before anything is sent, a screen shows you exactly what would be sent, who reads it, what we may do with it, how long we keep it, and that a deletion code will be shown once; nothing is sent until you press Send there, and Don’t send is just as easy to press. Sending is for people 18 and older: the screen asks you to tick “I am 18 or older”, Send stays off until you do, and our server refuses a send that does not carry that confirmation.',
+      'To refuse an identical repeat, we keep a one-way code of what you sent for as long as we keep it. It cannot be turned back into your words, and it is deleted when the submission is deleted, so deleting one lets you send the same words again if you choose.',
       'If a safety notice in the coach looks wrong to you, the notice has its own "Report a problem with this notice" link. It sends nothing unless you press Send, and it includes your message only if you tick the box.',
     ],
     links: [{ label: 'Terms, Sections 7 and 16', page: 'terms' }, { label: 'Contact Us', page: 'contact-us' }],
@@ -531,6 +533,8 @@ export const ANSWERS: Answer[] = [
     checks: [
       { claim: 'an optional form; entirely your choice', file: TERMS, has: 'Using it is always your choice' },
       { claim: 'we will not use a submission to contact you unless you ask', file: TERMS, has: 'We will not use a submission to contact you unless you ask us to' },
+      { claim: 'a screen shows what is sent first; sending is for people 18 and older, and the server refuses a send without the confirmation', file: TERMS, has: 'Sending is for people 18 and older: the screen asks you to tick “I am 18 or older”, Send stays off until you do, and our server refuses a send that does not carry that confirmation' },
+      { claim: 'an identical repeat is refused using a one-way code kept as long as the submission', file: TERMS, has: 'To refuse an identical repeat, we keep a one-way code of what you sent for as long as we keep it' },
       { claim: 'the flag notice report is sent only when you press Send, with your message only if chosen', file: 'src/coach/FlagNotice.tsx', has: 'Include the message that was flagged' },
     ],
     status: 'ready',
@@ -542,6 +546,7 @@ export const ANSWERS: Answer[] = [
     full: [
       'After your first exchange, and when a conversation finishes, you can download a transcript of it. If you ask for a signed copy, your page sends the conversation so far to our server one more time so the server can confirm it matches what it produced and add a dated signature.',
       'The signature also covers whether the conversation reached its end, how many exchanges it holds, and a fingerprint of the version of the coach that wrote the replies (the site\'s version, the model and the instructions), none of which identifies you. We do not store the conversation, and the signed file stays with you.',
+      'Sending a signed transcript to us is also for people 18 and older, and the choices screen asks you to confirm this before it lets you send. If you send the same signed transcript again with the same choices, we refuse it and change nothing; sending it with different choices is treated as an update, and an update can only remove permissions, never add them.',
       'We keep a plain daily total of how many signed transcripts are made and, for 30 days, a short code (a hash) for each one, which cannot be turned back into your words. It lets us recognize duplicate reports and confirm that we issued a transcript, and is then deleted. There is a verifier page where a file can be checked in your browser without leaving it.',
     ],
     links: [{ label: 'Terms, Section 15', page: 'terms' }],
@@ -550,6 +555,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'signed copy: the conversation is sent once more, confirmed and signed', file: TERMS, has: 'adds a dated signature' },
       { claim: 'a hash kept 30 days that cannot be turned back into words', file: TERMS, has: 'For 30 days we keep a short code (a hash) for each signed transcript' },
       { claim: 'we do not store the conversation; the signed file stays with you', file: TERMS, has: 'the signed file stays with you' },
+      { claim: 'sending a signed transcript is for people 18 and older; a repeat is refused, and an update can only remove permissions', file: TERMS, has: 'an update can only remove permissions, never add them' },
     ],
     status: 'ready',
   },

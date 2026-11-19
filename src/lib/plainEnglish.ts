@@ -12,7 +12,7 @@ export const PLAIN_ENGLISH: PlainItem[] = [
   { heading: 'Breathing safely', from: 'Section 3, "Using Nenya well"',
     text: 'Stop and breathe normally if you feel dizzy or lightheaded. If a pace feels too long, shorten it. If you have asthma, COPD, a heart or lung condition, or specific symptoms, check with a healthcare professional first.' },
   { heading: 'Who it is for', from: 'Section 2',
-    text: 'People 13 or older, or your country’s minimum age if that is higher. If you are under 18, please use the coach only with a parent’s or guardian’s consent.' },
+    text: 'People 13 or older, or your country’s minimum age if that is higher. If you are under 18, please use the coach only with a parent’s or guardian’s consent. Sending us something is only for people 18 or older.' },
   { heading: 'What stays with you', from: 'The short version; Section 16',
     text: 'What you enter in the reflection tools (colors, melodies, drawings, writing) stays in your browser and is gone when you close the tab, unless you choose “Save and return later”: then it is kept on your own device, locked with your passcode, for at most 24 hours. A PDF report is made on your own device.' },
   { heading: 'What we do not do', from: 'The short version; Section 16',
