@@ -39,7 +39,8 @@ Overflow order, so nothing expires: a task that does not fit its best budget mov
 The runner reads the menu (`canary/menu`: task, best budget, estimated cost) and fills each budget's spendable amount from the top; unspent amounts and skipped tasks are written to the digest so the owner sees what was left.
 
 ## 4. Claude credit at a cycle end
-- **Allowed (owner, 2026-11-19):** a weekly API call that spends down the week's usage before Thursday morning's reset, or monthly like Venice. It runs once, never nightly, with its own ceiling and ledger.
+- **Decided (owner, 2026-11-19): no API key.** The weekly spend-down is a scheduled Claude Code task, `nenya-weekly-spend-down`, Wednesdays 21:00 local, on the plan's own usage (an API key bills separately and cannot spend the plan's window). It writes private drafts only to `Nenya (private)/weekly/<date>/`. The app must be open at the time. The older note follows.
+- **Earlier note (superseded):** a weekly API call that spends down the week's usage before Thursday morning's reset, or monthly like Venice. It runs once, never nightly, with its own ceiling and ledger.
 - **Limit:** I cannot read the plan's usage from a script, so the job spends a fixed, owner-set amount up to the ceiling; it cannot know what is truly left. The simplest safe form is a weekly ceiling the owner sets from what the usage screen shows.
 - **What it would run:** the same menu as section 3 (baselines, paraphrase variants, held-out sets), model-drafted variants held for the owner to review before they join any set.
 - **Needs:** an API key (created by the owner, never pasted in chat; stored as a private environment value) and the ceiling.
@@ -60,5 +61,5 @@ The runner reads the menu (`canary/menu`: task, best budget, estimated cost) and
 ## 7. Still needed from the owner
 1. Venice: a fresh balance reading (I can take one with the key when you want), and whether staging has its own key.
 2. Claude: the API key (as a private environment value) and a weekly ceiling in dollars; the exact Thursday reset hour and time zone.
-3. Workers AI: confirm nothing else draws on that allowance, so the end-of-day run may use all of it.
+3. Workers AI: confirmed by the owner 2026-11-19 that nothing else draws on it, so the end-of-day run may use all of it.
 4. Should the live-model baseline run as a monthly Venice spend-down before 12/9, with the canary staying on Workers AI nightly?
