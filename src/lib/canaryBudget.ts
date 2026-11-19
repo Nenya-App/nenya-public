@@ -7,8 +7,8 @@ export const FREE_NEURONS_PER_DAY = 10_000;
 export const NEURONS_PER_TURN = 26;
 /** One persona run (38 cases) costs about 900 to 950 Neurons: the canary starts a run only if this much is free. */
 export const NEURONS_PER_RUN = 1000;
-/** Kept back whatever the arithmetic says, for retries, drift in the estimate and the owner's own use. */
-export const MARGIN = 1000;
+/** Kept back whatever the arithmetic says, for a last case that costs more than expected. (Was 1,000 until 2026-11-19: nothing else draws on this allowance now, owner's decision.) */
+export const MARGIN = 200;
 
 export interface BudgetInput {
   /** What the canary and the owner's runs have already spent today (UTC day), from the ledger. */
@@ -18,8 +18,13 @@ export interface BudgetInput {
   free?: number;
 }
 
-/** Whatever the arithmetic says, the canary spends at most this much in a UTC day (owner, 2026-11-16). */
-export const NIGHTLY_CEILING = 3000;
+/**
+ * The canary may spend at most the whole free allowance in a UTC day (owner, 2026-11-19; it was 3,000). It runs only in the last hour before the reset
+ * (23:00-23:59 UTC), so nothing else using the allowance that day is interrupted, and whatever is still unspent then would otherwise expire.
+ */
+export const NIGHTLY_CEILING = FREE_NEURONS_PER_DAY;
+/** Most persona runs planned for one night, however large the allowance: the hour's window is the real limit, and a night that runs out of time just ends early. */
+export const MAX_RUNS_A_NIGHT = 10;
 
 /** Neurons the canary may still spend: the unused amount, held under the nightly ceiling (spent today counts toward it). Never negative. */
 export const canaryAllowance = (i: BudgetInput): number => Math.max(0, Math.min(unusedNeurons(i), NIGHTLY_CEILING - i.spentToday));

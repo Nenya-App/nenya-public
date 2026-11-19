@@ -5,10 +5,10 @@ ok('visitors come first: each turn takes its Neurons off', unusedNeurons({ spent
 ok('what was already spent today comes off too', unusedNeurons({ spentToday: 3000, visitorTurns: 0 }) === FREE_NEURONS_PER_DAY - MARGIN - 3000);
 ok('never negative, however much was used', unusedNeurons({ spentToday: 9500, visitorTurns: 400 }) === 0);
 ok('a run starts only if a whole run fits', runsThatFit(NEURONS_PER_RUN - 1) === 0 && runsThatFit(NEURONS_PER_RUN) === 1 && runsThatFit(3500) === 3);
-ok('at the cap of 80 turns and nothing else, several runs fit; with the default cap of 500 none do', runsThatFit(unusedNeurons({ spentToday: 0, visitorTurns: 80 })) >= 6 && runsThatFit(unusedNeurons({ spentToday: 0, visitorTurns: 500 })) === 0);
+ok('with no visitors nine runs fit, and a day of 80 staging turns still leaves seven', runsThatFit(unusedNeurons({ spentToday: 0, visitorTurns: 0 })) === 9 && runsThatFit(unusedNeurons({ spentToday: 0, visitorTurns: 80 })) === 7);
 ok('the ledger day is the UTC day, which is when the allowance resets', utcDay(new Date('2026-11-16T23:59:00-06:00')) === '2026-11-17' && utcDay(new Date('2026-11-16T00:00:00Z')) === '2026-11-16');
-ok('the ceiling is 3,000 a night however much is unused', NIGHTLY_CEILING === 3000 && canaryAllowance({ spentToday: 0, visitorTurns: 0 }) === 3000);
-ok('what was already spent counts toward the ceiling, and the unused amount still limits it', canaryAllowance({ spentToday: 2500, visitorTurns: 0 }) === 500 && canaryAllowance({ spentToday: 0, visitorTurns: 300 }) === unusedNeurons({ spentToday: 0, visitorTurns: 300 }) && canaryAllowance({ spentToday: 3200, visitorTurns: 0 }) === 0);
+ok('the ceiling is the whole free allowance: with the whole 10,000 free at run time, everything but the margin is the allowance', NIGHTLY_CEILING === FREE_NEURONS_PER_DAY && canaryAllowance({ spentToday: 0, visitorTurns: 0 }) === FREE_NEURONS_PER_DAY - MARGIN && MARGIN <= 200);
+ok('what was already spent counts toward the ceiling, and the unused amount still limits it', canaryAllowance({ spentToday: 2500, visitorTurns: 0 }) === FREE_NEURONS_PER_DAY - MARGIN - 2500 && canaryAllowance({ spentToday: 0, visitorTurns: 300 }) === unusedNeurons({ spentToday: 0, visitorTurns: 300 }) && canaryAllowance({ spentToday: 9900, visitorTurns: 0 }) === 0 && canaryAllowance({ spentToday: 0, visitorTurns: 0, free: 20000 }) === NIGHTLY_CEILING);
 import { readFileSync } from 'node:fs';
 import { caseOrder, driftFlags, planTasks, report } from '../src/lib/canaryNight.ts';
 const nightly = readFileSync('netlify/functions/canary-nightly.mts', 'utf8');
@@ -33,7 +33,11 @@ ok('a case that had never failed and now does is flagged, and one that often fai
 {
   const night = readFileSync('netlify/functions/canary-nightly.mts', 'utf8');
   const rec = readFileSync('scripts/record-neurons.mts', 'utf8');
-  ok('the canary counts the owner\'s manual spend and holds back the production cap whatever the staging count', /canary\/manual/.test(night) && /spentToday: \(ledger\[day\] \?\? 0\) \+ manual/.test(night) && /\(counted \? Number\(counted\) : cap\) \+ cap \+ 20/.test(night));
+  ok('the canary counts the owner\'s manual spend and holds nothing back for production (it runs on Venice)', /canary\/manual/.test(night) && /spentToday: \(ledger\[day\] \?\? 0\) \+ manual/.test(night) && /const visitorTurns = counted \? Number\(counted\) : 0;/.test(night) && !/\+ cap \+ 20/.test(night));
   ok('three errors in a row end the night at once and say why in the digest', /last3\.every\(\(x\) => x\.outcome === 'error'\)/.test(night) && /stopped: state\.stopped/.test(night));
   ok('the recorder adds to today\'s UTC total and the manual scripts call it unless told not to', /canary\/manual/.test(rec) && /utcDay\(\)/.test(rec) && readFileSync('scripts/duet-eval.mts', 'utf8').includes("--no-record") && readFileSync('scripts/bakeoff-workers-ai.mts', 'utf8').includes("--no-record"));
 }
+
+import { MAX_RUNS_A_NIGHT } from '../src/lib/canaryBudget.ts';
+ok('the plan scales with the allowance: three runs as before, more when more fits, never over the nightly maximum', planTasks(0).length === 3 && planTasks(0, undefined, 9).length === 9 && planTasks(0, undefined, 9).filter((t) => t.name === 'baseline').length === 6 && MAX_RUNS_A_NIGHT === 10);
+ok('a bigger plan still starts with an alternate and rotates the alternate on', planTasks(0, undefined, 6)[0].name !== planTasks(0, undefined, 6)[3].name || planTasks(0).length === 3);

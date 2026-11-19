@@ -1,14 +1,14 @@
 // The nightly canary (owner, 2026-11-16; docs/canary-scope.md). Workers AI's free allowance resets at 00:00 UTC, so in the hour before it, a run every minute
 // plays a few of the invented persona cases through the real coach function (Workers AI, the private text from this site's own store) and saves where it is
 // up to; when the night's allowance is spent, or every task is done, it writes a digest. It spends only what is genuinely unused that day, never more than
-// 3,000 Neurons (src/lib/canaryBudget.ts). Small pieces, because a scheduled function may run only about 30 seconds, and because a password on a site blocks
+// the whole free allowance, only in the last hour before the reset (src/lib/canaryBudget.ts). Small pieces, because a scheduled function may run only about 30 seconds, and because a password on a site blocks
 // a function calling another over the site's own address.
 //
 // It touches nothing a visitor wrote: the cases are invented and the coach runs against an in-memory store (the site's counters and records stay out of it).
 // The digest holds counts, medians, flags and failed case ids; never a reply. Off unless COACH_CANARY=on, on a site that runs the coach on Workers AI.
 import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
-import { canaryAllowance, utcDay } from '../../src/lib/canaryBudget.ts';
+import { MAX_RUNS_A_NIGHT, canaryAllowance, runsThatFit, utcDay } from '../../src/lib/canaryBudget.ts';
 import { caseOrder, driftFlags, planTasks, report, type NightState, type TaskReport } from '../../src/lib/canaryNight.ts';
 import { PERSONA_CASES } from '../../src/lib/personaEvalSet.ts';
 import { pacedSend, runCase, type RawSent } from '../../src/lib/personaEval.ts';
@@ -35,13 +35,12 @@ export default async (): Promise<Response> => {
     if (!state) {
       // The start of the night. Visitor turns today are a bare number (the daily counter's "day:count"); Minnesota's day lags the UTC day, so the evening before is allowed for with 20.
       const counted = /^\d{4}-\d{2}-\d{2}:(\d+)$/.exec((await store.get('daily-count', { type: 'text' })) ?? '')?.[1];
-      // Visitors on THIS site (its daily count), plus the production site's whole daily cap held back whatever it has used (this function cannot see another site's store), plus 20 for the evening before.
-      const cap = Number(process.env.COACH_DAILY_CAP) || 80;
-      const visitorTurns = (counted ? Number(counted) : cap) + cap + 20;
+      // Visitors on THIS site only (its daily count). Production runs on Venice now, so no part of this allowance is held back for it (owner, 2026-11-19).
+      const visitorTurns = counted ? Number(counted) : 0;
       // What the owner spent by hand today (scripts/record-neurons.mts): the free allowance is shared by every use of the account.
       const manual = (JSON.parse((await store.get('canary/manual', { type: 'text' })) ?? '{}') as Record<string, number>)[day] ?? 0;
       const allowance = canaryAllowance({ spentToday: (ledger[day] ?? 0) + manual, visitorTurns });
-      const tasks = planTasks(dayNo, process.env.COACH_CANARY_MODEL);
+      const tasks = planTasks(dayNo, process.env.COACH_CANARY_MODEL, Math.min(MAX_RUNS_A_NIGHT, Math.max(3, runsThatFit(allowance))));
       state = { day, allowance, tasks, t: 0, c: 0, spent: 0, taskSpent: tasks.map(() => 0), compact: tasks.map(() => []), done: false };
       console.log(`canary: night ${day}, spent ${ledger[day] ?? 0} (canary) + ${manual} (by hand), visitor turns held back ${visitorTurns}, allowance ${allowance}`);
       if (allowance < MIN_CASE_NEURONS) {

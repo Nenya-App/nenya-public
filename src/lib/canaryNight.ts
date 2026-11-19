@@ -30,10 +30,11 @@ export const median = (xs: number[]): number => (xs.length ? [...xs].sort((a, b)
  * Tonight's tasks: an alternate, then the baseline twice. The baseline (instructions v2.1) is what drift and per-case pass rates are measured on. The alternate
  * rotates by day: the Learn stance, instructions v2, and a candidate model when one is named (for example Apertus, once access comes).
  */
-export function planTasks(dayNo: number, candidateModel?: string): Task[] {
+export function planTasks(dayNo: number, candidateModel?: string, runs = 3): Task[] {
   const alts: Task[] = [{ name: 'learn', instructions: 'v2.1', stance: 'vilya' }, { name: 'v2', instructions: 'v2' }, ...(candidateModel ? [{ name: 'model', instructions: 'v2.1', model: candidateModel }] : [])];
   const baseline: Task = { name: 'baseline', instructions: 'v2.1' };
-  return [alts[dayNo % alts.length], baseline, baseline];
+  // Three runs is the original night; a bigger allowance repeats the pattern (an alternate, then two baselines), the alternate rotating on.
+  return Array.from({ length: Math.max(1, runs) }, (_, i) => (i % 3 === 0 ? alts[(dayNo + i / 3) % alts.length] : baseline));
 }
 
 /** The cases in a rotation that starts somewhere new each night, so a small allowance still covers every case over a few nights. */
