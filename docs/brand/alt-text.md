@@ -35,6 +35,7 @@ Dark with glow, dark clean, transparent, and for light backgrounds all use the s
 | The visitor's freehand drawing, present state | Your freehand drawing for the present state. We cannot describe your drawing; your written answers are listed above. |
 | The visitor's freehand drawing, wish state | Your freehand drawing for the wish state. We cannot describe your drawing; your written answers are listed above. |
 | The visitor's body map picture | Your body map as a picture. The same marks are listed below as text. |
+| The same picture, when it has colored places or paintbrush strokes | Your body map as a picture, with 3 places colored and 2 paintbrush strokes. The same marks are listed below as text. (The counts come from the map; the section's text lists every mark: the lenses picked up, each colored place, and the strokes by paint and where they are.) |
 
 ## Known gap
 PDF and PNG exports are not tagged for screen readers (the PDF library does not tag images or structure). They are listed in the audit checklist as a known gap, not claimed as accessible.

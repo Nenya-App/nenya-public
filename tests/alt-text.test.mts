@@ -49,4 +49,4 @@ ok(`every <img> in the source (${imgCount}) has an alt attribute that is not fil
 const logo = read('src/app/components/NenyaLogo.tsx');
 ok('the logo is decorative unless a description is passed, and never says "Nenya Logo"', /alt = ''/.test(logo) && /alt=\{alt\}/.test(logo) && !/alt="Nenya Logo"/.test(logo));
 ok('the welcome page describes the logo (without orbs when they are off), and the name page uses the long text', /alt=\{orbitEnabled \? LOGO_ALT_SHORT : LOGO_ALT_NO_ORBS\}/.test(read('src/app/components/pages/WelcomePage.tsx')) && /alt=\{LOGO_ALT_LONG\}/.test(read('src/app/components/about/NamePhilosophy.tsx')));
-ok('the review page uses text-alternative alts for the visitor\'s pictures', /alt=\{DRAWING_ALT_PRESENT\}/.test(read('src/app/components/pages/GatewayReviewPage.tsx')) && /alt=\{BODY_MAP_ALT\}/.test(read('src/app/components/pages/GatewayReviewPage.tsx')));
+ok('the review page uses text-alternative alts for the visitor\'s pictures', /alt=\{DRAWING_ALT_PRESENT\}/.test(read('src/app/components/pages/GatewayReviewPage.tsx')) && /alt=\{bodyMapAltFor\(/.test(read('src/app/components/pages/GatewayReviewPage.tsx')));

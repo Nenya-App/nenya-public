@@ -9,3 +9,9 @@ export const LOGO_ALT_LONG =
 export const DRAWING_ALT_PRESENT = 'Your freehand drawing for the present state. We cannot describe your drawing; your written answers are listed above.';
 export const DRAWING_ALT_WISH = 'Your freehand drawing for the wish state. We cannot describe your drawing; your written answers are listed above.';
 export const BODY_MAP_ALT = 'Your body map as a picture. The same marks are listed below as text.';
+
+/** The body map picture with what is on it counted (the counts are ours; the picture's marks cannot be seen by us, so the text lists them). Falls back to the plain text when nothing is counted. */
+export const bodyMapAltFor = (places: number, strokes: number): string => {
+  const parts = [places ? `${places} ${places === 1 ? 'place' : 'places'} colored` : '', strokes ? `${strokes} paintbrush ${strokes === 1 ? 'stroke' : 'strokes'}` : ''].filter(Boolean);
+  return parts.length ? `Your body map as a picture, with ${parts.join(' and ')}. The same marks are listed below as text.` : BODY_MAP_ALT;
+};

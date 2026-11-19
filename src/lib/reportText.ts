@@ -7,6 +7,7 @@ import { describePalettePlainly } from './colorSchemes.ts';
 import { shapeById } from './gatewayShapes.ts';
 import { isAnswered } from './optionalSlider.ts';
 import { labelFor, type MapPin } from './bodyMapParts.ts';
+import { describeStrokes, type BrushStroke } from './bodyMapBrush.ts';
 
 import { L, sixthLensName } from './vocabulary.ts';
 export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight';
@@ -15,6 +16,10 @@ export interface BodyMapLike {
   notes: Record<string, string>;
   /** Pins the person placed anywhere on the map (see bodyMapParts.ts). */
   pins?: MapPin[];
+  /** Paintbrush marks (src/lib/bodyMapBrush.ts). */
+  strokes?: BrushStroke[];
+  /** The names of the lenses the body map picked up (lens tray only); the report names them in the body map section. Filled in by the app when the report is made, not kept with the map. */
+  pickedUp?: string[];
 }
 
 /** A line of slider answers, "Label: Pitch 40/100, Volume 60/100". Sliders that were never touched are left out (src/lib/optionalSlider.ts). */
@@ -47,13 +52,15 @@ export const getBodyPartLabel = (bodyPartId: string, pins: MapPin[] = []): strin
 // gateway's data -- true only if at least one color was placed or one note
 // was written.
 export const isBodyMapUsed = (bodyMapData: BodyMapLike): boolean =>
-  bodyMapData.placements.length > 0 || Object.values(bodyMapData.notes).some((note) => note.trim().length > 0);
+  bodyMapData.placements.length > 0 || (bodyMapData.strokes?.length ?? 0) > 0 || Object.values(bodyMapData.notes).some((note) => note.trim().length > 0);
 
 // One line per body part that has a color and/or a note. A part with a
 // note but no color explicitly says "No color chosen" per body-part rather
 // than being silently omitted or ambiguous.
 export const formatBodyMapLines = (bodyMapData: BodyMapLike): string[] => {
   const lines: string[] = [];
+  // The lenses the map picked up are named once, at the top of its own section.
+  if (bodyMapData.pickedUp?.length) lines.push(`Lenses picked up by the body map: ${bodyMapData.pickedUp.join(', ')}`);
   const partIds = new Set([
     ...bodyMapData.placements.map((p) => p.bodyPartId),
     ...Object.keys(bodyMapData.notes).filter((id) => bodyMapData.notes[id]?.trim()),
@@ -68,6 +75,12 @@ export const formatBodyMapLines = (bodyMapData: BodyMapLike): string[] => {
     lines.push(`  Color: ${placement ? placement.colorName || placement.color : 'No color chosen'}`);
     if (note) lines.push(`  Note: ${note}`);
   });
+
+  // The paintbrush marks, as text: one line per paint, with where the marks are. The picture shows the same marks.
+  if (bodyMapData.strokes?.length) {
+    lines.push('Paintbrush marks');
+    describeStrokes(bodyMapData.strokes).forEach((l) => lines.push(`  ${l}`));
+  }
 
   return lines;
 };

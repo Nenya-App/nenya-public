@@ -9,6 +9,8 @@ import { SenseIcon } from '../SenseIcon';
 import type { SenseId } from '../../../lib/senseIcons';
 import { L } from '../../../lib/vocabulary';
 import { lensStatus, reportShape, type LensId, type LensState } from '../../../lib/lensState';
+import { BodyMapCard } from '../BodyMapCard';
+import { BodyMapAvatar, type BodyMapData } from '../BodyMapAvatar';
 
 // The lens tray (docs/lens-rewrite-scope.md, behind VITE_LENS_TRAY): six lenses, any order, any number. Each shows whether it is not opened, examined or included.
 interface Props {
@@ -19,12 +21,21 @@ interface Props {
   onBack: () => void;
   /** "Forget who I was": make a new random working name for this visit (the pair under the footer mark). It changes nothing a person has added. */
   onNewName?: () => void;
+  /** The one body map for the whole report, opened from its own card (not part of any lens). */
+  bodyMapData: BodyMapData;
+  onUpdateBodyMap: (data: BodyMapData) => void;
+  /** Sight's colors, if added, so the map's color picker can offer them. */
+  userColors?: { color1?: string; color2?: string; color1Name?: string; color2Name?: string };
+  /** The lenses the body map has already announced as picked up. */
+  pickedSeen: LensId[];
+  onPickedSeen: (seen: LensId[]) => void;
 }
 
 const STATUS_TEXT = { 'not-opened': 'Not opened', examined: 'Examined, not added', included: 'Added to my report' } as const;
 
-export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack, onNewName }: Props) {
+export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack, onNewName, bodyMapData, onUpdateBodyMap, userColors, pickedSeen, onPickedSeen }: Props) {
   const [renamed, setRenamed] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const shape = reportShape(state);
   return (
     <div className="size-full flex flex-col overflow-auto scroll-container">
@@ -60,6 +71,7 @@ export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack
               );
             })}
           </ul>
+          <BodyMapCard added={state.added} mapData={bodyMapData} seen={pickedSeen} onSeen={onPickedSeen} onOpen={() => setShowMap(true)} />
           {shape.line && <p className="text-sm text-center text-muted-foreground">{shape.line}</p>}
           {onNewName && (
             <div className="text-center">
@@ -73,6 +85,17 @@ export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack
           )}
         </div>
       </div>
+      {showMap && (
+        <BodyMapAvatar
+          userColors={userColors}
+          onClose={() => setShowMap(false)}
+          onSave={(data) => onUpdateBodyMap(data)}
+          initialPlacements={bodyMapData.placements}
+          initialNotes={bodyMapData.notes}
+          initialPins={bodyMapData.pins}
+          initialStrokes={bodyMapData.strokes}
+        />
+      )}
       <AppFooter />
       {/* The same three places as on the breathing page: Breathe goes back, Reflect is here, Coach is its own page. */}
       <QuickNav current="reflect" onBreathe={onBack} onReflect={() => undefined} />
