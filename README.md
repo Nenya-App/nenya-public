@@ -68,6 +68,8 @@ The honest edges:
 
 ## About the AI pieces
 
+How much of Nenya was itself written by AI, and which models, is stated in [`AI-DISCLOSURE.md`](./AI-DISCLOSURE.md). Most of the code and much of the text was drafted and redrafted by AI.
+
 **The free tool has no AI in it.** Two things live beside it:
 
 - **A prototype conversation partner on Venice AI.** The About section links out
