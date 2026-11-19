@@ -11,7 +11,8 @@
 // Hurting oneself on purpose is the exception to "clear statements stop": it is a ladder (src/lib/selfInjury.ts) worked out from the
 // person's recent messages, so it needs the conversation, not one message: use checkConversation. detectFlag(text) checks one message alone.
 
-import { ABUSE_CANDIDATES, CANDIDATES } from './safetyPhrases.ts';
+import { ABUSE_CANDIDATES, CANDIDATES, IMMINENT_CANDIDATES } from './safetyPhrases.ts';
+import type { Rule as PhraseRule } from './safetyPhrases.ts';
 import { STOP_LEAD } from './distressText.ts';
 import { classifyMention, RECENT, rungFor, SELF_INJURY } from './selfInjury.ts';
 
@@ -26,6 +27,7 @@ export interface SafetyFlag {
    * What kind, within the category, where the page, the notice, the resources and the sentence the site adds differ by it.
    * abuse: 'partner-or-family' | 'child-or-dependent' | 'sexual' | 'control-or-fear'.
    * self-injury: 'background' | 'other' | 'present' (soften); 'ends' | 'emergency' (stop).
+   * self-harm: 'imminent' (stop): a plan, means at hand, an act in progress or a goodbye. The same notice text as any suicide stop; the resource list leads with the emergency number.
    */
   kind?: string;
 }
@@ -71,7 +73,7 @@ const RULES: Rule[] = [
   // src/lib/selfInjury.ts, which allows it with extra pushes toward a person and ends only if it recurs or escalates.
   { category: 'self-harm', tier: 'stop', pattern: /\bno reason to (?:live|go on|keep going)\b|\bbetter off (?:dead|without me)\b|\bwish i (?:was|were) dead\b|\bdon'?t want to (?:live|be alive)\b/i },
   { category: 'self-harm', tier: 'stop', pattern: /\b(?:i'?m|i am|i feel|feeling|been feeling|i'?ve been|having|have) (?:\w+ )?suicidal\b|\b(?:thoughts? of|thinking (?:of|about)) suicide\b/i },
-  { category: 'self-harm', tier: 'stop', pattern: /\b(?:going to|gonna|thinking (?:of|about)|want to) (?:overdose|take (?:all|a bunch of) (?:my |the )?(?:pills|meds))\b/i },
+  { category: 'self-harm', tier: 'stop', kind: 'imminent', pattern: /\b(?:going to|gonna|thinking (?:of|about)|want to) (?:overdose(?! on (?:caffeine|coffee|sugar|chocolate))|take (?:all|a bunch of) (?:my |the )?(?:pills|meds))\b/i },
 
   // ── stop: violence toward others ────────────────────────────────────────
   { category: 'harm-others', tier: 'stop', pattern: /\b(?:going to|gonna|plan(?:ning)? to|about to|decided to|thinking (?:of|about)) (?:kill|murder|shoot|stab|strangle|hurt|harm|attack|beat up) (?:him|her|them|my \w+|someone|somebody|everyone|people)\b/i },
@@ -144,9 +146,29 @@ export interface FlagExplained {
 }
 const cut = (x: string | undefined): string | undefined => (x === undefined ? undefined : x.length > 120 ? x.slice(0, 117) + '...' : x);
 
+const ALL_PHRASES: PhraseRule[] = [...CANDIDATES, ...IMMINENT_CANDIDATES];
+
+/** The words a phrase rule matched, or null: a rule's "unless" (another person, a story, sport, a job farewell) in the same sentence cancels it. */
+function phraseHit(r: PhraseRule, t: string): string | null {
+  const m = r.pattern.exec(t);
+  if (!m) return null;
+  if (r.unless) {
+    const from = Math.max(t.lastIndexOf('.', m.index), t.lastIndexOf('!', m.index), t.lastIndexOf('?', m.index)) + 1;
+    const ends = ['.', '!', '?'].map((c) => t.indexOf(c, m.index + m[0].length)).filter((i) => i >= 0);
+    if (r.unless.test(t.slice(from, ends.length ? Math.min(...ends) : t.length))) return null;
+  }
+  return m[0];
+}
+
 /** The most serious flag in one message, from the phrase lists alone (not the self-injury ladder), and the words that matched. Stop-tier rules win over soften-tier. */
 function detectSingleWhy(text: string): FlagExplained | null {
   const t = text.replace(/[‘’]/g, "'");
+  // Plan, means, an act in progress, a goodbye: kind "imminent" (the notice leads with the emergency number). Looked at first so that
+  // "I'm going to kill myself tonight" carries the kind too; each rule skips a sentence about someone else, a story, sport, a job farewell.
+  for (const r of ALL_PHRASES.filter((x) => x.tier === 'stop' && x.kind === 'imminent')) {
+    const hit = phraseHit(r, t);
+    if (hit) return { flag: flagOf('self-harm', 'stop', 'imminent'), why: { source: 'phrase', matched: cut(hit) } };
+  }
   for (const tier of ['stop', 'soften'] as FlagTier[]) {
     for (const r of RULES) {
       const m = r.tier === tier ? r.pattern.exec(t) : null;
@@ -161,9 +183,9 @@ function detectSingleWhy(text: string): FlagExplained | null {
       const kind = r.kind ?? (r.category === 'abuse' ? ABUSE_CANDIDATES.find((k) => k.tier === tier && k.pattern.test(t))?.kind : undefined);
       return { flag: flagOf(r.category, tier, kind), why: { source: 'phrase', matched: cut(m[0]) } };
     }
-    for (const r of CANDIDATES) {
-      const m = r.tier === tier ? r.pattern.exec(t) : null;
-      if (m) return { flag: flagOf('self-harm', tier), why: { source: 'phrase', matched: cut(m[0]) } };
+    for (const r of ALL_PHRASES) {
+      const hit = r.tier === tier ? phraseHit(r, t) : null;
+      if (hit) return { flag: flagOf('self-harm', tier, r.kind), why: { source: 'phrase', matched: cut(hit) } };
     }
     for (const r of ABUSE_CANDIDATES) {
       const m = r.tier === tier ? r.pattern.exec(t) : null;
@@ -310,6 +332,8 @@ export function resourcesFor(category: FlagCategory, kind?: string): Resource[] 
             : [emergency, ...HARM_LINES[kind]];
     return [...first, ...list, outside];
   }
+  // A plan, means at hand, an act in progress or a goodbye: the emergency number comes first (draft: awaiting clinician review, docs/ai-handoff/05-safety-legal-data.md).
+  if (category === 'self-harm' && kind === 'imminent') return [emergency, ...list, outside];
   list.push(emergency, outside);
   return list;
 }
