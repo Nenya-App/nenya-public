@@ -74,7 +74,7 @@ const TRIGGERS: Array<[id: string, group: ModuleGroup, patterns: RegExp[]]> = [
 // When one of these lenses applies, the matching moves would pull against it, so they are left out. The framework
 // says: with depleted reserves, offer rest only (no action planning or skill-building); with deliberate suppression,
 // skip skill-building and perspective-taking toward the other party, and support boundaries.
-const SUPPRESS: Record<string, string[]> = {
+export const SUPPRESS: Record<string, string[]> = {
   reserves: ['ask_one_question', 'answer_with_words', 'open_a_hard_conversation', 'ask_for_what_you_want', 'empathize_before_asking', 'offer_to_play_the_other', 'reaction_as_information', 'set_a_boundary', 'say_the_real_feeling', 'read_a_silence', 'closure_check', 'power_difference'],
   care_depleted: ['ask_one_question', 'answer_with_words', 'open_a_hard_conversation', 'ask_for_what_you_want', 'empathize_before_asking', 'offer_to_play_the_other', 'reaction_as_information', 'set_a_boundary', 'say_the_real_feeling', 'read_a_silence', 'closure_check', 'power_difference'],
   harm_named_as_intended: ['empathize_before_asking', 'open_a_hard_conversation', 'ask_for_what_you_want', 'offer_to_play_the_other', 'reaction_as_information', 'reframe_gently', 'closure_check'],
