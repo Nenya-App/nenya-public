@@ -15,7 +15,8 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 //   nenya.coach.owner  '1' in the owner's own browser, to skip the coach rest while testing.
 //   nenya.coach.ownerToken  the owner's secret, to skip the per-connection limit while testing.
 //   nenya.coach.overrides   the owner's testing switches (distress sentences on/off, instruction wording), sent only with the owner's token.
-// Never kept: anything a visitor writes, draws, picks as a session color, or answers in a gateway.
+//   nenya.phrases     only if the visitor turned on "Remember this sentence and my marks on this device" inside the phrase workbench (VITE_PHRASE_WORKBENCH; src/lib/workbenchMemory.ts): their latest sentence, its marks and slider steps, no time or count. Its own switch, off by default; removed by its Forget button, Forget me and Emergency Exit (every key starting with nenya).
+// Never kept (except by that one switch): anything a visitor writes, draws, picks as a session color, or answers in a gateway.
 // Nothing here is ever sent to a server, and there are no random identifiers.
 
 export const REST_KEY = 'nenya.coach.rest';

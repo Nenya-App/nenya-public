@@ -11,6 +11,7 @@ import { SayMore } from '../workbench/SayMore';
 import { SliderStep } from '../workbench/SliderStep';
 import { FrameStep } from '../workbench/FrameStep';
 import { WordsStep, LookupBlock } from '../workbench/WordsStep';
+import { forgetPhrases, keepPhrases, loadPhrases } from '../../../lib/workbenchMemory';
 import { btn, btnOn, btnLink } from '../workbench/styles';
 
 // The phrase workbench (docs/phrase-workbench-scope.md; VITE_PHRASE_WORKBENCH, off by default). A sentence becomes tappable words that the person marks
@@ -32,6 +33,18 @@ export default function PhraseWorkbenchPage({ onBack }: { onBack: () => void }) 
     }
     wasMark.current = s.lastMark;
   }, [s.lastMark, s.wb.marks]);
+
+  // "Remember on this device" is the person's own switch (off by default). A kept sentence is only looked for on arrival, and only restored if it is still valid.
+  useEffect(() => {
+    const kept = loadPhrases();
+    if (kept) send({ t: 'restore', wb: kept });
+  }, []);
+  const wasRemembering = useRef(false);
+  useEffect(() => {
+    if (s.remember) keepPhrases(s.wb);
+    else if (wasRemembering.current) forgetPhrases();
+    wasRemembering.current = s.remember;
+  }, [s.remember, s.wb]);
 
   return <WorkbenchView s={s} send={send} onBack={onBack} />;
 }
@@ -189,6 +202,16 @@ export function WorkbenchView({ s, send, onBack }: { s: ViewState; send: (a: Act
           {s.step === 3 && <FrameStep s={s} send={send} />}
 
           {s.step === 4 && <WordsStep s={s} send={send} />}
+
+          <section aria-labelledby="wb-mem" className="space-y-2 rounded-lg border border-border p-3">
+            <h2 id="wb-mem" className="text-base">On this device</h2>
+            <label className="flex min-h-11 items-start gap-3">
+              <input type="checkbox" checked={s.remember} onChange={(e) => send({ t: 'remember', on: e.target.checked })} className="mt-1 size-6" />
+              <span>{WB.rememberLabel}</span>
+            </label>
+            <p className="text-sm text-muted-foreground">{WB.rememberHelp}</p>
+            {s.remember && <button type="button" onClick={() => send({ t: 'forget' })} className={btn}>{WB.forget}</button>}
+          </section>
 
           <footer className="space-y-1 text-sm text-muted-foreground">
             <p>{WB.credit}</p>

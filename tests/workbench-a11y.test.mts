@@ -36,6 +36,9 @@ ok('the groups, families and words are buttons that say whether chosen, in label
 ok('frames: each slot has a label and a text box, words are taken by button, and the list says whether it is open', /htmlFor=\{lid\}/.test(all) && /aria-expanded=\{open\}/.test(all) && /Take from my sentence/.test(all));
 ok('copying fails softly and says so in words', /Could not copy\. Select the text instead\./.test(all) && /catch/.test(read('src/app/components/workbench/FrameStep.tsx')));
 
+ok('the remember switch is a labelled checkbox, off by default, with a Forget button once on', /WB\.rememberLabel/.test(page) && /checked=\{s\.remember\}/.test(page) && /WB\.forget/.test(page) && /remember: false/.test(read('src/lib/workbenchView.ts')));
+ok('the page keeps things only through workbenchMemory, and only while the switch is on', /if \(s\.remember\) keepPhrases/.test(page) && !/localStorage/.test(page));
+
 // The switch
 const app = read('src/app/App.tsx');
 ok('the page is reached only when the build switch is on', /currentScreen === 'phrases' && phraseWorkbenchOn\(\)/.test(app) && /phraseWorkbenchOn\(\) && isPhrasesPath/.test(app));

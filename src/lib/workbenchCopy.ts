@@ -70,5 +70,10 @@ export const WB = {
   tooLong: (over: number) => `That is ${over} ${over === 1 ? 'character' : 'characters'} over. Cut a little and it will fit.`,
   credit: `The need families follow the structure of the Feelings and Needs Inventory, ${CNVC_CREDIT_LINE}. The words, their meanings, the marks and the frames on this page are this site’s own. A layer for the needs of groups, if one is added later, will be this project’s extension and not CNVC’s.`,
   creditLink: 'CNVC’s own page for the inventory',
+  rememberLabel: 'Remember this sentence and my marks on this device',
+  rememberHelp: 'Off unless you turn it on. It keeps only your latest sentence, its marks and its slider steps, in this browser. No time, no count, no history of earlier sentences. Nothing is sent. Forget removes it.',
+  rememberOn: 'Kept on this device. It is replaced each time you change something.',
+  forget: 'Forget what is kept',
+  forgotten: 'Forgotten from this device.',
   starting: 'A starting point, not a complete list. Your own word is always welcome.',
 } as const;

@@ -38,11 +38,13 @@ export interface ViewState {
   lookup: { word: string; near: boolean } | null;
   /** What is in the "a word to look at" box. */
   wordDraft: string;
+  /** The person's own switch for keeping the latest sentence and marks on this device. Off unless turned on; the page does the keeping. */
+  remember: boolean;
 }
 
 export const EXAMPLE_SENTENCE = 'When you left again without telling me, I felt hurt and uneasy, because I need to be able to count on you. Would you tell me before you go?';
 
-export const initialView = (): ViewState => ({ step: 0, draft: EXAMPLE_SENTENCE, wb: createWorkbench(EXAMPLE_SENTENCE), sel: null, more: false, announce: '', lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, frameId: FRAMES[0].id, picks: {}, pickOpen: null, lookup: null, wordDraft: '' });
+export const initialView = (): ViewState => ({ step: 0, draft: EXAMPLE_SENTENCE, wb: createWorkbench(EXAMPLE_SENTENCE), sel: null, more: false, announce: '', lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, frameId: FRAMES[0].id, picks: {}, pickOpen: null, lookup: null, wordDraft: '', remember: false });
 
 export type Action =
   | { t: 'draft'; text: string }
@@ -74,7 +76,10 @@ export type Action =
   | { t: 'look'; word: string }
   | { t: 'look-selected' }
   | { t: 'look-near' }
-  | { t: 'look-close' };
+  | { t: 'look-close' }
+  | { t: 'remember'; on: boolean }
+  | { t: 'forget' }
+  | { t: 'restore'; wb: Workbench };
 
 const say = (s: ViewState, announce: string): ViewState => ({ ...s, announce });
 
@@ -251,6 +256,15 @@ export function reduce(s: ViewState, a: Action): ViewState {
     }
     case 'look-close':
       return s.lookup ? say({ ...s, lookup: null }, 'Closed.') : s;
+    case 'remember':
+      return say({ ...s, remember: a.on }, a.on ? WB.rememberOn : WB.forgotten);
+    case 'forget':
+      return say({ ...s, remember: false }, WB.forgotten);
+    case 'restore': {
+      const sliders: Record<number, boolean> = {};
+      for (const m of a.wb.marks) if (m.kind === 'need' && typeof m.level === 'number') sliders[m.id] = true;
+      return { ...s, wb: a.wb, draft: a.wb.sentence, sel: null, sliderOn: sliders, step: 1, remember: true, announce: 'Your kept sentence is back.' };
+    }
     default:
       return s;
   }
