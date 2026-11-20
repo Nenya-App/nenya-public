@@ -222,3 +222,6 @@ Written 2026-11-08, nothing built. All four tone styles stay as choices; this ad
 **Saved settings:** one object under the display settings (e.g. `breathingSoundOptions`), validated like the others (numbers clamped, unknown keys dropped), so a hand-edited or stale value cannot break the page.
 
 **Questions to settle by listening and with testers:** which of these controls people actually reach for; whether brightness and room are one control or two; whether any should be hidden behind "more options" so the panel stays simple; how this reads with a screen reader (sliders need names, current values and units announced).
+
+## Switching the tones on mid-breath (2026-11-20)
+The sample note played when the switch is pressed and the first breath's own notes used to sound together, so the start doubled up. The tones now tap in: the player plays nothing of a breath it joined part way through and begins at the next inhale (a start within 300 ms of an inhale plays that inhale). The sample note stands in for the wait. A change of pace still restarts at once. Code: `createPlanner` and `firstBreathStart` in `src/lib/breathTones.ts`, tested in `tests/breath-planner.test.mts`.

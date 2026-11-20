@@ -243,10 +243,23 @@ const TICK_MS = 150;
  *  - A new rhythm restarts the breath (the counter and the ring restart with it), so the tones restart at once.
  *  - A new style does not cut in mid-breath: the style that is playing finishes its breath (and its notes are left to ring
  *    out), and the new style begins on the first note of the next breath after anything already scheduled.
+ *  - Switching the tones on "taps in": the first sound is the start of a breath. A player that starts part way through a breath
+ *    plays nothing of that breath (the short preview note sounded when the switch was pressed stands in for it) and begins at the
+ *    next inhale; a player that starts within TAP_IN_MS of an inhale plays that inhale. Joining mid-breath used to schedule the rest of
+ *    the breath over the preview and sound doubled up.
  */
+export const TAP_IN_MS = 300;
+/** The first start of a breath the tones may play when they begin at `now`: this breath's if it only just began, else the next. Pure. */
+export function firstBreathStart(now: number, cycleStart: number, cycle: number): number {
+  if (!(cycle > 0)) return now;
+  const last = cycleStart + Math.floor((now - cycleStart) / cycle) * cycle;
+  return now - last <= TAP_IN_MS ? last : last + cycle;
+}
 export function createPlanner(lookaheadMs = LOOKAHEAD_MS) {
   let sig = '';
   let scheduledTo = 0;
+  let notBefore = 0; // nothing is scheduled before this (the tap-in point)
+  let firstTick = false; // true until the first window of a fresh start has been scheduled
   let active: Arrangement = DEFAULT_ARRANGEMENT;
   let pending: { arrangement: Arrangement; at: number } | null = null;
   return (now: number, st: { timing: BreathTiming; cycleStart: number; arrangement: Arrangement }) => {
@@ -255,9 +268,12 @@ export function createPlanner(lookaheadMs = LOOKAHEAD_MS) {
     const rhythmSig = `${timing.ih}.${timing.hi || 0}.${timing.ex}.${timing.ho || 0}.${cycleStart}`;
     let restart = false;
     if (rhythmSig !== sig) {
-      restart = sig !== '';
+      const first = sig === '';
+      restart = !first;
       sig = rhythmSig;
       scheduledTo = now;
+      notBefore = first ? firstBreathStart(now, cycleStart, cycle) : 0;
+      firstTick = first;
       active = st.arrangement;
       pending = null;
     } else if (st.arrangement !== active) {
@@ -268,7 +284,9 @@ export function createPlanner(lookaheadMs = LOOKAHEAD_MS) {
       pending = null;
     }
     const to = now + lookaheadMs;
-    let from = Math.max(scheduledTo, now - 50);
+    // The first window of a fresh start may reach back to an inhale that began a moment ago (within TAP_IN_MS), so it is played, a touch late.
+    let from = firstTick && notBefore <= now ? notBefore : Math.max(scheduledTo, now - 50, notBefore);
+    firstTick = false;
     const events: (ToneEvent & { at: number })[] = [];
     while (from < to) {
       const cap = pending ? Math.min(to, pending.at) : to;
