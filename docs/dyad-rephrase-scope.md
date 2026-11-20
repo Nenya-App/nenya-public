@@ -494,6 +494,29 @@ that is off until the owner turns it on.
     labels (section 10), the report button text.
 12. **Optional:** size padding, then locking.
 
+## Decisions taken (2026-11-20, by the owner's instruction: "take your own recommendation for every open decision; where there is none, the most conservative, privacy-preserving option")
+
+Numbers are the questions in section 16.
+
+1. **Ask first, then send.** The request carries no words; the phrase moves only after "Yes, I will look".
+2. **Reveal together.** The speaker's marks and rewrite go only when the speaker chooses "Show what I meant"; the hearer's marks stay hidden on the speaker's device until then.
+3. **The hearer's reading comes back only by choice,** with three equal buttons (send, keep private, skip) and nothing preselected.
+4. **Sliders:** the speaker's only, only those the speaker ticks, never set by the hearer. The message format carries them; their screen waits for the workbench's slider component.
+5. **Stories** (no recommendation, so the conservative option): the hearer may mark a story, but marks of that kind are left out of what is sent back unless the hearer ticks "Also send what I marked as a story" (unticked by default).
+6. **Safety split as in section 7:** a private pre-send check on the sender's device that informs and never blocks; the reader's device pauses both people only for danger to self or others; abuse-category resources go to the writer only and nothing about them is ever sent. The reader-side check is extended to every text field of every new kind.
+7. **No more "closes for both people on leaving the page", when rephrasing is on.** A page that is only hidden (it may come back) sends an encrypted "away" and keeps the cell; a page that is really unloading still closes the cell, because its keys are lost with it. The other person is told "They may have stepped away" and, after two minutes, asked "Still there?" with "Keep waiting" and "Close the cell". With the switch off nothing changes.
+8. **The three-hour limit stays,** declared as a privacy rule, with a notice (text and screen reader) when about 15 and 5 minutes remain.
+9. **Padding: yes.** Payloads are padded to fixed sizes before encryption.
+10. **Locking what was meant: yes.** The phrase message carries a commitment to the speaker's marks and rewrite; the reveal carries the key and the hearer's device checks it.
+11. **No local save** of a round.
+12. **No AI in the dyad in v1.** "Send with AI" and "Receive translated" are retired from the cell page and the scripted preview, in favour of rephrasing.
+13. **Either person may start a round, one at a time.**
+14. **Reports:** a received rephrasing message can be reported, after a notice that says exactly what will be revealed. The wording, a proposed keeping time (30 days) and the register rows are in docs/drafts/terms-rephrasing-draft.md; the Terms themselves are revised by the integrating session.
+15. **Terms:** drafted, not applied (same file).
+16. **Same-device use:** cannot be detected; the first-use screen says rephrasing needs two devices.
+17. **The four comparison statements** are used as worded in section 4.
+18. **Left out of v1 (and said so):** marking the rewrite (the hearer reads it); locking and padding are built; the frames and sliders wait for the workbench's parts.
+
 ## 16. Open questions for the owner
 
 1. **Ask first, then send (recommended),** or one step ("here is a phrase, look if you like")? The two-step ask means the
