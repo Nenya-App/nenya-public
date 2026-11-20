@@ -5,6 +5,7 @@
 //   node scripts/bakeoff-workers-ai.mts --model @cf/meta/llama-3.1-8b-instruct-fp8 --json bake-llama31-8b.json
 //   node scripts/bakeoff-workers-ai.mts --model <id> --instructions v2      # default v2.1
 //   node scripts/bakeoff-workers-ai.mts --model <id> --only crisis          # one category or case id
+//   VENICE_API_KEY=... node scripts/bakeoff-workers-ai.mts --venice --model claude-haiku-5-5   # a Venice model plays the coach's model call (spends Venice credit; tokens and dollars are totalled)
 //   node scripts/bakeoff-workers-ai.mts --model <id> --capture calls.jsonl  # also keep each request as sent and the usage the model reported (for scripts/replay-cost.mts)
 //   node scripts/bakeoff-workers-ai.mts --model <id> --private <dir>        # with the private text, as production sends it
 //   node scripts/bakeoff-workers-ai.mts --model <id> --private <dir> --stance vilya   # and the Learn stance (adds learn-icarus)
@@ -30,7 +31,14 @@ const flag = (name: string): string | undefined => (args.includes(name) ? args[a
 const model = flag('--model');
 // --local-url http://localhost:1234/v1 sends the model call to a local OpenAI-compatible server (LM Studio, Ollama, llama.cpp) instead of Workers AI; --model is then the local model's name.
 const localUrl = flag('--local-url');
-if (!model || (!localUrl && !/^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model))) {
+// --venice sends the model call to a Venice model (id from https://api.venice.ai/api/v1/models) with VENICE_API_KEY. The coach function still runs as on Workers AI (same instructions, same style note); only the hop changes.
+const viaVenice = args.includes('--venice');
+const veniceKey = process.env.VENICE_API_KEY;
+if (viaVenice && (!model || !veniceKey || localUrl)) {
+  console.error('--venice needs --model <Venice model id> and VENICE_API_KEY in the environment, and cannot be combined with --local-url.');
+  process.exit(2);
+}
+if (!viaVenice && (!model || (!localUrl && !/^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model)))) {
   console.error('--model is a Workers AI model id, such as @cf/meta/llama-3.1-8b-instruct-fp8 (see `cf ai models list`); with --local-url it is the local model name.');
   process.exit(2);
 }
@@ -39,7 +47,7 @@ if (localUrl && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(localU
   process.exit(2);
 }
 // The coach function takes the Workers AI path in both cases; for a local model it is given a pseudo id so its address check passes, and the real name is used when forwarding.
-const coachModelId = localUrl ? `@cf/local/${model.replace(/[^a-z0-9._-]/gi, '-')}` : model;
+const coachModelId = localUrl || viaVenice ? `@cf/local/${model.replace(/[^a-z0-9._-]/gi, '-')}` : model;
 const instructions = flag('--instructions') ?? 'v2.1';
 if (!['v1', 'v2', 'v2.1'].includes(instructions)) {
   console.error('--instructions must be v1, v2 or v2.1.');
@@ -79,6 +87,19 @@ if (privateDir) {
   process.env.COACH_STANCES = 'learn';
 }
 
+// Venice prices (USD per million tokens), read from the public model list, so the dollars come from each response's own token counts.
+let veniceIn = 0, veniceOut = 0, tokensIn = 0, tokensOut = 0;
+if (viaVenice) {
+  const list: any = await (await fetch('https://api.venice.ai/api/v1/models')).json();
+  const pr = list.data?.find((m: any) => m.id === model)?.model_spec?.pricing;
+  if (!pr) {
+    console.error(`No Venice price for ${model}.`);
+    process.exit(2);
+  }
+  veniceIn = Number(pr.input.usd);
+  veniceOut = Number(pr.output.usd);
+}
+
 const work = mkdtempSync(join(tmpdir(), 'nenya-bakeoff-'));
 let neurons = 0;
 let calls = 0;
@@ -94,6 +115,23 @@ const realFetch = globalThis.fetch;
   if (!url.startsWith('https://api.cloudflare.com/client/v4/accounts/')) return realFetch(input as RequestInfo, init);
   // The body exactly as the coach function built it for Workers AI.
   const body = JSON.parse(String(init?.body ?? '{}'));
+  if (viaVenice) {
+    const t0 = Date.now();
+    calls++;
+    try {
+      // Thinking models spend part of max_tokens on thinking, so the limit is raised to leave room for the answer.
+      const r = await realFetch('https://api.venice.ai/api/v1/chat/completions', { method: 'POST', headers: { authorization: `Bearer ${veniceKey}`, 'content-type': 'application/json' }, body: JSON.stringify({ model, messages: body.messages, max_tokens: Math.max(Number(body.max_tokens) || 0, 2000), venice_parameters: { include_venice_system_prompt: false } }) });
+      latencies.push(Date.now() - t0);
+      if (!r.ok) return new Response('{}', { status: r.status === 429 ? 429 : 502 });
+      const vj: any = await r.json();
+      tokensIn += vj.usage?.prompt_tokens ?? 0;
+      tokensOut += vj.usage?.completion_tokens ?? 0;
+      callLog.push({ chars: JSON.stringify(body.messages).length, messages: body.messages.length, neurons: 0 });
+      return new Response(JSON.stringify(vj), { status: 200, headers: { 'content-type': 'application/json' } });
+    } catch {
+      return new Response('{}', { status: 502 });
+    }
+  }
   if (localUrl) {
     const t0 = Date.now();
     calls++;
@@ -187,14 +225,16 @@ const layerSummary = withLayers ? summarizeLayers(results.map((result) => ({ res
 if (layerSummary) console.log(`Layers: the model's first reply failed ${layerSummary.rawFailed} of ${layerSummary.cases}; after the layers ${layerSummary.finalFailed} fail (${layerSummary.rescued} rescued, ${layerSummary.broken} made worse, ${layerSummary.stillFailing} nothing caught). Asked again on ${layerSummary.askedAgain} turns. Guards: ${JSON.stringify(layerSummary.byGuard)}`);
 const sorted = [...latencies].sort((a, b) => a - b);
 const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
-const cost = { calls, neurons: Math.round(neurons), neuronsPerCall: calls ? +(neurons / calls).toFixed(2) : 0, medianSeconds: +(median / 1000).toFixed(1) };
+const veniceUsd = (tokensIn * veniceIn + tokensOut * veniceOut) / 1e6;
+const cost = { calls, ...(viaVenice ? { tokensIn, tokensOut, usd: +veniceUsd.toFixed(5), usdPerCall: calls ? +(veniceUsd / calls).toFixed(6) : 0 } : {}), neurons: Math.round(neurons), neuronsPerCall: calls ? +(neurons / calls).toFixed(2) : 0, medianSeconds: +(median / 1000).toFixed(1) };
 console.log(`\n=== ${model}: ${s.pass} passed, ${s.fail} failed, ${s.error} errors, of ${s.total} ===`);
 for (const [cat, n] of Object.entries(s.byCategory)) console.log(`  ${cat.padEnd(13)} pass ${n.pass}  fail ${n.fail}  error ${n.error}`);
+if (viaVenice) console.log(`Venice: ${tokensIn} input and ${tokensOut} output tokens, $${veniceUsd.toFixed(4)} ($${cost.usdPerCall} a call).`);
 console.log(`Model calls ${cost.calls}, Neurons ${cost.neurons} (${cost.neuronsPerCall} a call), median ${cost.medianSeconds}s a call (through the CLI, so slower than from the site).`);
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: localUrl ? 'local' : 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, layerSummary, summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: viaVenice ? 'venice' : localUrl ? 'local' : 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, layerSummary, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 rmSync(work, { recursive: true, force: true });
-if (!args.includes('--no-record')) console.log((await import('./record-neurons.mts')).recordNeurons(neurons));
+if (!viaVenice && !args.includes('--no-record')) console.log((await import('./record-neurons.mts')).recordNeurons(neurons));
 process.exit(0);
