@@ -138,9 +138,9 @@ export default function WelcomePage({
             Give Yourself a Moment to Breathe
           </p>
 
-          {/* The "more below" button: glows, and pulses once at the end of each breath in that breath's colour */}
+          {/* The "Enter" button: glows, and pulses once at the end of each breath in that breath's colour */}
           <div className="flex justify-center pt-3">
-            <MoreBelowButton label="More below" ariaLabel="See more" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
+            <MoreBelowButton label="Enter" ariaLabel="Enter" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
           </div>
         </div>
       </div>
@@ -192,7 +192,7 @@ export default function WelcomePage({
           </div>
 
           <div className="flex justify-center pt-8">
-            <MoreBelowButton ariaLabel="See more" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
+            <MoreBelowButton ariaLabel="Continue" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
           </div>
         </div>
       </div>
