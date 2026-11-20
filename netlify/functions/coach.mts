@@ -40,6 +40,7 @@ import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '..
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
 import { BOUNDARY_GUARDS, boundaryGuardOn, rewritePresence, withNoMemory, withNotDiagnosis } from '../../src/lib/boundaryGuard.ts';
 import { allCards, registerExtraCards } from '../../src/lib/learningCards.ts';
+import { SHOWN_NOTE_INTRO, shownCardIds, shownCardsNote, shownCardTexts } from '../../src/lib/shownCards.ts';
 import { OFFER_MAP, historyHits, offerFor } from '../../src/lib/learningOffer.ts';
 import { askScreen } from '../../src/lib/screenClient.ts';
 import type { Band } from '../../src/lib/screenModel.ts';
@@ -343,7 +344,7 @@ const layerKey = (): string => JSON.stringify(stanceLayers());
 function instructionsFingerprint(version: InstructionsVersion = instructionsVersion()): string {
   const cacheKey = `${version}|${layerKey()}|${practiceArcOn() ? 'arc' : ''}|${valuesOn() ? 'values' : ''}|${finalSummaryOn() ? 'summary' : ''}|${finalSummaryCallOn() ? 'summarycall' + (process.env.COACH_SUMMARY_FORM ?? 'auto') : ''}`;
   if (fingerprint && fingerprint.version === cacheKey) return fingerprint.value;
-  const parts: string[] = [VALUES_RULE, ARC_NOTE, ARC_MENU_NOTE, ARC_INVITE, WORDS_ONLY_NOTE, gapText({ feeling: true, need: false }), gapText({ feeling: false, need: true }), gapText({ feeling: true, need: true }), REPEAT_NOTE, finalSummaryOn() ? CLOSE_NOTE_SUMMARY : CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
+  const parts: string[] = [SHOWN_NOTE_INTRO, VALUES_RULE, ARC_NOTE, ARC_MENU_NOTE, ARC_INVITE, WORDS_ONLY_NOTE, gapText({ feeling: true, need: false }), gapText({ feeling: false, need: true }), gapText({ feeling: true, need: true }), REPEAT_NOTE, finalSummaryOn() ? CLOSE_NOTE_SUMMARY : CLOSE_NOTE, INFRA_NOTE, ABOUT_FIRST_NOTE, NAME_NOTE, PERSONA_NOTE];
   for (let t = 1; t <= MAX_TURNS; t++) parts.push(systemInstruction(t, false, '', false, '', '', version), systemInstruction(t, true, '', false, '', '', version), systemInstruction(t, false, '', true, '', '', version), systemInstruction(t, false, '', false, '', '', version, 'abuse'), systemInstruction(t, false, '', false, '', '', version, 'critique'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'project'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'nvc'), systemInstruction(t, false, '', false, '', '', version, 'critique', 'ai'));
   if (practiceArcOn()) for (let t = 1; t <= MAX_TURNS; t++) parts.push(`arc:${t}:${arcTurnLine(t, MAX_TURNS, false)}:${arcTurnLine(t, MAX_TURNS, true)}`, ARC_CORE, ARC_CLOSE);
   // Any stance layer text that exists is part of what the coach may be given, so it is part of the fingerprint (nothing is added while none exists).
@@ -1151,6 +1152,9 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // A longer message that asks a question about Nenya inside it: the site answers that first, and the model carries on with the rest (not on the last
   // exchange, which has to read as an ending).
   const within = !about && !flag && !hostile && turn < MAX_TURNS && process.env.COACH_ABOUT_ANSWERS !== 'off' ? aboutAnswerWithin(lastText) : null;
+  // Cards the page has already shown the person (src/lib/shownCards.ts): the model is told what they say, and their words count in the repeat check.
+  const shownCards = (() => { const all = allCards(); const ids = shownCardIds((body as { shown?: unknown }).shown, new Set(all.map((c) => c.id))); return all.filter((c) => ids.includes(c.id)); })();
+  const shownNote = shownCardsNote(shownCards);
   const withinFilled = within ? fillAnswer(within, { model, provider: coachProvider(), label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit }) : null;
 
   const sampling = { temperature: 0.7, top_p: 0.9, repetition_penalty: 1.1, max_completion_tokens: MAX_REPLY_TOKENS };
@@ -1168,6 +1172,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
         systemInstruction(turn, softened, notes, directQ, layerText ? layerBlock(layerText) : '', flag?.category === 'self-injury' ? selfInjuryNote(flag.kind) : '', overrides.instructions ?? instructionsVersion(), hostile ?? '', target ?? '', practiceArcOn() ? { stuck: isStuck(lastText) } : null, isWordsOnly(lastText), gapText(namedParts(messages.filter((m) => m.role === 'user').map((m) => m.content))), standing, severalQ),
         ...(context ? [contextInstruction(neutralize(scrubPII(context).text))] : []),
         ...(within ? [ABOUT_FIRST_NOTE] : []),
+        ...(shownNote ? [shownNote] : []),
         ...(provider === 'workers-ai' ? [WORKERS_AI_STYLE_NOTE] : []),
         ...(extra ? [extra] : []),
       ].join('\n\n');
@@ -1293,7 +1298,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   if (!reply) return fail(502, 'empty', 'no-reply-text');
   // A small model sometimes answers a follow-up with the same words it gave the turn before. If so, ask once more for a
   // different answer. If that second attempt fails, the first reply is kept: better than an error.
-  const earlier = messages.filter((m) => m.role === 'assistant').map((m) => m.content);
+  const earlier = [...messages.filter((m) => m.role === 'assistant').map((m) => m.content), ...shownCardTexts(shownCards)];
   const remaining = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
   if (earlier.length && repeatsEarlier(reply, earlier) && remaining >= REPEAT_RETRY_MIN_REMAINING_MS) {
     const again = await generate(REPEAT_NOTE, remaining);
