@@ -14,6 +14,8 @@
 //    message really was sent through the cell, while being unable to read any message no one reported.
 //  - Both people can compare two "safety colours" made from both public keys; if they match, no one is in between.
 
+import type { RephraseKind } from './rephraseProtocol.ts';
+
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 const subtle = (): SubtleCrypto => globalThis.crypto.subtle;
@@ -185,9 +187,9 @@ export interface Envelope {
   commit: string;
 }
 
-/** What a message holds once opened. `kind` lets the two pages exchange controls (a pause after a crisis flag, a close). */
+/** What a message holds once opened. `kind` lets the two pages exchange controls (a pause after a crisis flag, a close), and, when rephrasing is on, its steps (src/lib/rephraseProtocol.ts: the content is JSON in `text`). */
 export interface CellMessage {
-  kind: 'text' | 'pause' | 'resume' | 'close';
+  kind: 'text' | 'pause' | 'resume' | 'close' | RephraseKind;
   text: string;
   /** The sender's AI-assisted version, when they chose "send with AI" (the original is `text`, always kept). */
   assisted?: string;
