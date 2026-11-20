@@ -92,7 +92,7 @@ Check each with VoiceOver, then NVDA and TalkBack:
 
 **Current state (checked in the code, 2026-11-06):**
 - `NenyaLogo.tsx` base image: `alt="Nenya Logo"` everywhere it appears. The gem and glow canvases and the bezel are already hidden from screen readers (`aria-hidden`), so only that one image is read. Orbs are CSS shapes and are not read.
-- `index.html`: `og:image:alt` already describes the emblem (and is accurate against the current image, apart from "six-petaled flower": it is two interlaced six-petaled flowers). This is what link previews use.
+- `index.html`: `og:image:alt` already describes the emblem (written so it stays true when the number of leaves or gem sides changes). This is what link previews use.
 - Footer Netlify badge: "Deploys by Netlify". Fractured Atlas donate image: "Donate now at Fractured Atlas!" (inside a link, so the link's purpose is announced; fine).
 - `GatewayReviewPage.tsx`: the visitor's own drawings and body map are labelled "Drawing for the present state", "Drawing for the wish state", "Body emotion map". These say what the picture is but give a blind visitor none of its content; the review page needs a text alternative (see below).
 - SVG widgets: `MusicalStaff` has a group label; `FlavorWheel` has `role="group"` with no label, and the body-map avatar has none checked. These need audit.
@@ -106,10 +106,10 @@ Check each with VoiceOver, then NVDA and TalkBack:
 5. **Social previews:** keep `og:image:alt` in step with the shared description.
 6. **Test:** every `<img>` in the built pages and components has an `alt` attribute (empty only when intentionally decorative and marked so), and none reads as a filename or "image". The existing `render` tests can walk the rendered HTML.
 
-**Draft descriptions** (to be refined once; they are checked against the current `public/og-image.jpg`, which shows two interlaced six-petaled flowers outlined in gold and cream, a hexagonal faceted gem with rainbow colours at the centre, and a ring of sixteen soft-coloured orbs, all softly glowing on a dark brown background):
-- **Logo, short:** "Nenya logo: a faceted rainbow gem at the centre of two interlaced six-petaled flowers, gold and cream, ringed by sixteen coloured orbs."
-- **Logo, long:** "The Nenya emblem. At the centre is a hexagonal gem whose facets show rainbow colours. Around it, two six-petaled flowers drawn in thin gold and cream lines weave over and under each other. A ring of sixteen small orbs surrounds the flowers, each a different soft colour: purples, greens, blues, yellow, orange, red and pink. On the site the orbs slowly change colour and the glow follows the breathing rhythm."
-- **Logo without the orbs** (small header version): "Nenya logo: a faceted rainbow gem at the centre of two interlaced six-petaled flowers, gold and cream."
+**Draft descriptions** (to be refined once; they are checked against the current `public/og-image.jpg`, which shows a ring of interlaced leaves outlined in gold and cream, a faceted gem with rainbow colours at the centre, and a ring of sixteen soft-coloured orbs, all softly glowing on a dark brown background):
+- **Logo, short:** "Nenya logo: a faceted rainbow gem inside a ring of woven leaves, gold and cream, ringed by sixteen coloured orbs."
+- **Logo, long:** "The Nenya emblem. At the centre is a faceted gem whose facets show rainbow colours. Around it, a ring of leaves drawn in thin gold and cream lines weaves over and under itself. A ring of sixteen small orbs surrounds the leaves, each a different soft colour: purples, greens, blues, yellow, orange, red and pink. On the site the orbs slowly change colour and the glow follows the breathing rhythm."
+- **Logo without the orbs** (small header version): "Nenya logo: a faceted rainbow gem inside a ring of woven leaves, gold and cream."
 - **Header / repeated use:** "Nenya" (as a link: "Nenya, home").
 - **Variants for marketing** (dark with glow, dark clean, transparent, for light backgrounds): the same text; mention the background only where it matters to the post ("on a light background").
 

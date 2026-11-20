@@ -27,6 +27,7 @@ ok('the link-preview text in index.html is the short logo text', read('index.htm
 const texts = [A.LOGO_ALT_SHORT, A.LOGO_ALT_NO_ORBS, A.LOGO_ALT_LONG, A.DRAWING_ALT_PRESENT, A.DRAWING_ALT_WISH, A.BODY_MAP_ALT];
 ok('no description starts with filler or reads as a file name', texts.every((t) => !/^(image|picture|photo|logo) of\b/i.test(t) && !/\.(png|jpe?g|webp|svg|gif)\b/i.test(t)));
 ok('the short descriptions stay short (one sentence, under 160 characters)', A.LOGO_ALT_SHORT.length < 160 && A.LOGO_ALT_NO_ORBS.length < 160);
+ok('the logo texts do not fix the number of gem sides or leaves (they change with the stone and the look setting)', [A.LOGO_ALT_SHORT, A.LOGO_ALT_NO_ORBS, A.LOGO_ALT_LONG].every((t) => !/\b(hexagon\w*|six|eight|octagon\w*|\d+-petal\w*)\b/i.test(t.replace(/sixteen/gi, ''))));
 ok('the visitor\'s own pictures are not described as if we could see them', [A.DRAWING_ALT_PRESENT, A.DRAWING_ALT_WISH].every((t) => /cannot describe/.test(t)));
 
 // ---- every image in the source has an alt attribute
