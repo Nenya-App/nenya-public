@@ -43,8 +43,8 @@ type OrbGlass = Pick<InnerOrbitLook, 'form' | 'shine' | 'rimLight' | 'rimDark'>;
 const orbGradient = (c: string): string => `radial-gradient(circle at 30% 30%, ${c}ff, ${c}ee 50%, ${c}99 80%, ${c}44)`;
 /** A light: a bright core fading smoothly to nothing, with no edge and no highlight. */
 const lightGradient = (c: string): string => `radial-gradient(circle closest-side, ${c}ff 0%, ${c}cc 28%, ${c}55 62%, ${c}00 100%)`;
-/** An outer orb's own halo: its current colour, fading smoothly to nothing. Cheap to draw (a gradient, not a blur) and it does not grow with zoom the way a large shadow does. */
-const haloGradient = (c: string): string => `radial-gradient(circle closest-side, ${c}aa 0%, ${c}66 34%, ${c}22 66%, ${c}00 100%)`;
+/** An outer orb's own halo: a gradient (never a blur) in its current colour, fading to nothing; in 'palette' mode the rim fades through another colour from its palette. Cheap to draw and it does not grow with zoom the way a large shadow does. The colours are set by CSS (see .nenya-orb-halo), not by script. */
+const haloGradient = (palette: boolean): string => `radial-gradient(circle closest-side, color-mix(in srgb, var(--hc) 67%, transparent) 0%, color-mix(in srgb, var(--hc) 40%, transparent) 34%, color-mix(in srgb, var(${palette ? '--hc2' : '--hc'}) 14%, transparent) 66%, transparent 100%)`;
 const HALO_SIZE = 3.4; // a halo's diameter as a multiple of its orb's
 const LIGHT_SIZE = 1.6; // a light's diameter as a multiple of an orb's
 
@@ -148,7 +148,7 @@ export default function NenyaLogo({
   // While the page is pinch-zoomed the logo is drawn lighter (no glows, halos or blends; the gem holds its last frame): see src/lib/zoomLite.ts.
   const zoomed = useZoomedIn();
   const isLight = inner.style === 'light';
-  const ownHalo = glow && !zoomed && outer.halo === 'own';
+  const ownHalo = glow && !zoomed && outer.halo !== 'shared';
   const ORBIT_DURATION = inner.orbitSeconds > 0 ? inner.orbitSeconds : DEFAULT_INNER_ORBIT.orbitSeconds; // seconds for one complete orbit
   const INNER_ORB_OPACITY = [inner.opacityLow, inner.opacityHigh, inner.opacityLow];
   const OUTER_ORB_OPACITY = [outer.opacityLow, outer.opacityHigh, outer.opacityLow];
@@ -381,7 +381,7 @@ export default function NenyaLogo({
             const colors = valar.vector;
             
             const halo = ownHalo ? (
-              <m.div
+              <div
                 key={`halo-${valar.name}`}
                 aria-hidden="true"
                 className="absolute nenya-orb-halo"
@@ -392,12 +392,13 @@ export default function NenyaLogo({
                   top: outerOrbitRadius - haloSize / 2 + y,
                   borderRadius: '50%',
                   pointerEvents: 'none',
-                  opacity: OUTER_ORB_OPACITY[0],
-                }}
-                animate={{ background: [0, 1, 2, 3, 4, 5, 0].map((k) => haloGradient(colors[k])), opacity: OUTER_ORB_OPACITY }}
-                transition={{
-                  background: { duration: colorCycleDuration, repeat: Infinity, ease: 'easeInOut', delay: index * 2 },
-                  opacity: { duration: 4 + index * 0.3, repeat: Infinity, ease: 'easeInOut' },
+                  background: haloGradient(outer.halo === 'palette'),
+                  ['--p0' as string]: colors[0], ['--p1' as string]: colors[1], ['--p2' as string]: colors[2],
+                  ['--p3' as string]: colors[3], ['--p4' as string]: colors[4], ['--p5' as string]: colors[5],
+                  ['--hc' as string]: colors[0], ['--hc2' as string]: colors[2],
+                  ['--halo-lo' as string]: outer.opacityLow, ['--halo-hi' as string]: outer.opacityHigh,
+                  opacity: outer.opacityLow,
+                  animation: `nenya-halo-hue ${colorCycleDuration}s ease-in-out ${index * 2}s infinite backwards, nenya-halo-hue2 ${colorCycleDuration}s ease-in-out ${index * 2}s infinite backwards, nenya-halo-breathe ${4 + index * 0.3}s ease-in-out infinite`,
                 }}
               />
             ) : null;

@@ -747,11 +747,27 @@
     scale: 1;
     transition: scale 0.3s ease;
   }
+  /* The halo's colours are animated by the browser itself (registered colour properties), one orb after another, in step with the
+     orb's own six-colour cycle. Without @property support the colour changes in steps instead of fading; nothing else is lost. */
+  @property --hc { syntax: '<color>'; inherits: false; initial-value: #e8a020; }
+  @property --hc2 { syntax: '<color>'; inherits: false; initial-value: #e8a020; }
+  @keyframes nenya-halo-hue {
+    0%, 100% { --hc: var(--p0); } 16.667% { --hc: var(--p1); } 33.333% { --hc: var(--p2); }
+    50% { --hc: var(--p3); } 66.667% { --hc: var(--p4); } 83.333% { --hc: var(--p5); }
+  }
+  /* The rim colour runs two steps ahead of the centre, so the halo shows two colours from the palette at once. */
+  @keyframes nenya-halo-hue2 {
+    0%, 100% { --hc2: var(--p2); } 16.667% { --hc2: var(--p3); } 33.333% { --hc2: var(--p4); }
+    50% { --hc2: var(--p5); } 66.667% { --hc2: var(--p0); } 83.333% { --hc2: var(--p1); }
+  }
+  @keyframes nenya-halo-breathe {
+    0%, 100% { opacity: var(--halo-lo); } 50% { opacity: var(--halo-hi); }
+  }
   .nenya-logo-hover:hover .nenya-orb-halo {
     scale: 1.18;
   }
   @media (prefers-reduced-motion: reduce) {
-    .nenya-orb-halo { transition: none; }
+    .nenya-orb-halo { transition: none; animation: none !important; opacity: var(--halo-hi) !important; }
     .nenya-logo-hover:hover .nenya-orb-halo { scale: 1; }
   }
   .nenya-logo-hover:hover .nenya-orb-glow {

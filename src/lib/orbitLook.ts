@@ -71,8 +71,12 @@ export interface OuterOrbitLook {
   orbSize: number;
   opacityLow: number;
   opacityHigh: number;
-  /** 'shared' is the one three-colour glow every orb has always had; 'own' gives each orb a soft halo in its own current colour (cheaper to draw, and safer when the page is zoomed). */
-  halo: 'shared' | 'own';
+  /**
+   * 'shared' is the one three-colour glow every orb has always had (heavy: three large blurs round every orb). 'own' gives each orb a soft
+   * halo in its own current colour; 'palette' fades that halo out into other colours from the orb's own palette. Both are gradients, not
+   * blurs, and are coloured by the browser's own animation (no per-frame script), so they are light to animate and safe when the page is zoomed.
+   */
+  halo: 'shared' | 'own' | 'palette';
 }
 
 export const DEFAULT_OUTER_ORBIT: OuterOrbitLook = {
@@ -81,7 +85,7 @@ export const DEFAULT_OUTER_ORBIT: OuterOrbitLook = {
   orbSize: 0.053,
   opacityLow: 0.64,
   opacityHigh: 0.87,
-  halo: 'shared',
+  halo: 'own',
 };
 
 /**
