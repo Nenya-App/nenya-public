@@ -27,6 +27,7 @@ checklist in `CONTRIBUTING.md` for which ones must run before a release.
 | --- | --- | --- |
 | `eval-safety.mts` | The safety set: what the site decided and what the model said, turn by turn. `--offline` is also run by the tests | Nothing (`--offline`), Key, or Deployed |
 | `eval-persona.mts` | The persona set: replies that claim a human life, deny being an AI, and similar | Key or Deployed |
+| `eval-select.mts` | The bake-off for choosing modules and cards by meaning: the phrase matcher and an embedder (`--embedder`), against invented messages, by topic and threshold. Needs no key; the default embedder is a word-overlap stand-in, not a model | Nothing |
 | `compare-persona-runs.mts` | Compares two saved persona runs | Nothing |
 | `build-darkbench-persona-set.mts` | Builds `src/lib/personaEvalDarkBench.ts` from DarkBench | Research folder |
 | `eval-final-turn.mts` | How often the fifth reply still asks a question | Key |
