@@ -160,3 +160,206 @@ Steps 1 to 6 and 8 need no browser to build and test (type-check and unit tests)
 - **Static logo regeneration:** `npm run logo:render`, then review `before-after.png` in Finder, per
   `docs/logo-regeneration.md`. Needs Chrome, `sips`, `cwebp`. (Browser; do once, after the leaves and the gem are both in.)
 - **Say yes or no** to the smaller-fallback question and to the final orientation after seeing it.
+
+---
+
+# Part 2: user-customizable leaves and gem sides, and the lens ring
+
+Added 2026-11-20 at the owner's request. Scoping only, no source changed. Facts checked: `src/lib/breathCustom.ts`,
+`src/lib/deviceMemory.ts`, `src/app/components/CustomBreath.tsx`, `src/lib/lensState.ts` (six lenses in `LENS_ORDER` on `dev`),
+and `docs/lens-story-nature.md` on `claude/nature-story-lenses-e05e47` (Nature 7th, Story 8th, each behind its own switch).
+
+## Updated recommendation
+
+**Yes, but split two things that the idea joins.**
+
+1. **The logo's look** (leaf count, gem sides) becomes a small, optional, device-only setting with **presets, not a slider**:
+   leaves 6, 8, 10, 12; gem 6, 8, 10; default 8 and 8, gem **follows leaves** by default.
+2. **The lens ring** (the leaves as a radial menu) is **not** governed by that setting. In the menu, the ring has **exactly one
+   leaf per lens**: 8 today, plus one per custom lens, **up to 13 in all** (8 built-in plus up to 5 custom). That is where 13
+   comes from, and why odd counts must work. Extra lenses never hide behind a "more" leaf.
+3. The text list (the existing lens tray) always stays as the equal alternative to the ring.
+
+Build the look setting first (small, safe), then the ring, then custom lenses last (it needs a privacy-policy decision).
+
+## 1. Presets and limits
+
+### Leaves
+
+- The generator accepts 1 to 12 (`Math.min(12, ...)` in `leafWeave.ts`); tests cover 6, 8 and 12. Leaf width follows
+  `238 × (6/n)^0.85`, so fewer than 6 leaves become very wide and overlap; I would not offer under 6.
+- **Offer 6, 8, 10, 12 as the look presets.** All even, so the weave alternates cleanly all the way round.
+- **What 13 costs** (needed by the ring, not offered as a look preset):
+  - *Weave geometry:* the generator's cap rises to 13; pairs of leaves to test for crossings rise from 66 (12) to 78. The
+    weave is computed once per count and memoised, so no per-frame cost. Leaf width shrinks to about 123 units with neighbours
+    about 27.7° apart; leaves overlap more, so check that gaps (radius 7.5 outer, 5.5 inner) still read at small sizes.
+  - *Odd count and the weave:* the over/under rule is `(j + a)` odd, per pair. With an odd number of leaves the alternation
+    cannot close around the ring: there will be one seam (leaf n and leaf 1) where two neighbours behave the same way.
+    Probably invisible, but a test must check that no crossing is left without a gap and that the seam reads as woven.
+  - *Tone alternation:* `'alternate'` gives even-index leaves gold outside and odd-index silver outside. With an odd count
+    leaf n and leaf 1 have the same tone and sit side by side. Options: accept it, or for odd counts use a third pattern
+    (the seam leaf takes the other tone). Needs an eye check by the owner.
+  - *Orbs:* the 16 orbs turn continuously with the orbit and are independent of the leaves, so there is no alignment to
+    keep for any count. Only the evenness of 8 and 16 was a nicety.
+  - *Ring-lock math:* none. The leaves breathe as one flower with the shared clock (`ringCorrection` and `breathClock.ts`
+    are untouched).
+  - *Tap targets:* see section 4.
+- Because the ring needs 9 to 13 once custom lenses exist, **odd-count support is a requirement of the ring, not an extra**.
+
+### Gem sides
+
+- **Minimum 6.** Four sides reads as a square tile, five has a flat nowhere and a kite-like look. With the engine
+  parametrised (Part 1), 5 can be tried on the bench; I'd start the offer at 6.
+- **Maximum 12 in the engine, offered 10.** Planes = `1 + 8N`: 6 → 49, 8 → 65, 10 → 81, 12 → 97. Shader time rises about
+  in step: 10 sides is roughly 1.65 times today's cost, 12 roughly 2 times. Past 12 the outline is within 3.5% of a circle,
+  so extra sides add cost without reading as sides. Offer 6, 8, 10; 12 is available on the bench only.
+- **Linked or independent:** *independent setting with a default of "Match the leaves"*. Match means
+  `clamp(leaves, 6, 10)` (so 12 leaves gives a 10-sided gem). A person who wants a hexagon with twelve leaves can pick it.
+  Gem follows leaves by default because that is the symmetry the owner liked at eight; independent control is a single
+  extra radio group.
+
+## 2. Storage and delivery
+
+- **How the neighbour persists:** the custom breath pace is four numbers checked by `validateCustom`, applied only when the
+  person presses Apply, and kept via `usePref('breathingTechnique', ...)` in `deviceMemory.ts`. That writes to
+  `nenya.prefs` **only while "Remember on this device" is on** (`nenya.remember`), otherwise it lives for the visit in
+  memory. `loadPrefs()` runs each key through a `VALID` check and drops anything that fails. "Forget me" and Emergency Exit
+  already erase all of it. Nothing is sent to a server.
+- **Proposed:** three new `Prefs` keys with the same pattern: `logoLeaves` (one of 6, 8, 10, 12), `gemSides` (`'match'`
+  or one of 6, 8, 10), later `customLenses` (section 5). Add them to the file's header list of what is kept and to the
+  privacy wording.
+- **Defaults:** 8 leaves, `'match'`. A fresh visit and anyone who never opens the setting see exactly today's logo.
+- **Validation:** the `VALID` table drops unknown values, which would fall back to the default. Better, for these two,
+  **snap to the nearest preset** (a stale 7 becomes 8) and re-clamp on read, so hand-edited storage can never hit the
+  generator's limits.
+- **Where the control lives:** in the accessibility/display panel next to "Gem Kaleidoscope", as two radio groups (AAA:
+  targets at least 44 CSS px, visible focus, no slider), with a plain note: "This changes the animated logo. The still
+  logo in some places stays at the standard design." Changes apply at once with no animated transition; a polite
+  live-region line says "The logo now has 10 leaves."
+- **Reduced motion:** nothing new moves. The swell is already off; the gem is held still; a change redraws once.
+- **Low-capability devices:** leaves are vector and cost nothing extra. For the gem, the low preset (and the first-frames
+  step-down) draws **at most 8 sides** and the setting says so ("Your device draws up to 8 sides"); the saved choice is
+  kept, not overwritten.
+- **Baked images stay at the default:** `nenya-logo.webp`, the small header logo, favicons, app icons, the social preview
+  and PDF logo are renders at the standard design (8 leaves, octagon). They never follow the setting. Where the flat logo is
+  shown without the orbit, it stays standard; the control's help text says which views change.
+
+## 3. Cost per preset for the gem
+
+| Choice | Live engine | Sprite sheet (WebGL2 missing) |
+|---|---|---|
+| 8 (default) | 65 planes | the one rebuilt sheet (Part 1, step 7) |
+| 6 | 49 planes, today's cost | the old hexagon sheet could be kept (809 KB) or dropped |
+| 10 | 81 planes, about 1.65 × | none |
+| 12 (bench only) | 97 planes, about 2 × | none |
+
+- **One sheet per side count is not workable:** about 0.8 MB each, and every sheet is a browser render by the owner.
+  Sheets **cannot be made on demand in the visitor's browser**: making them needs the same WebGL2 that is missing.
+- **Recommended rule:** the sprite exists only for the default (8 sides). A device without WebGL2 shows the 8-sided gem
+  whatever the setting says, and the gem-sides control is hidden there (feature test: `liveGemSupported()`). The leaf
+  control still works because it is vector.
+- **Alternative if the owner wants parity without WebGL2:** a small **2D-canvas drawn stone** (an N-gon with an angular
+  gradient and facet lines, no image, about 1 KB of code) used for any non-default count when WebGL2 is missing. It looks
+  plainer than the sprite; build only if asked.
+- Preload (`preload.ts`) is unchanged: the sprite is fetched only when WebGL2 is missing.
+
+## 4. The lens ring (leaves as a radial menu)
+
+### The tension
+
+Eight lenses today (Sight, Sound, Touch, Essence, Movement, Pattern from the Insight page, then Nature 7th and Story 8th,
+the last two behind switches), plus "add a custom lens" later. A decorative leaf count of 6 would hide lenses; 12 would leave
+four leaves doing nothing. So the user's look setting and the menu cannot be the same number.
+
+### Options
+
+| Option | For | Against |
+|---|---|---|
+| A. Leaf count fixed at the number of lenses | Every leaf is a control; nothing is hidden; no setting needed for the menu | No look choice; the count moves as lenses are added or switches change |
+| B. A "more" leaf or tray for extra lenses | Keeps the ring a set size | Hides lenses behind an extra step; hard to name and to reach by keyboard; breaks "pick up any lens in any order" |
+| C. The person assigns lenses to leaves | Maximum personal | Lots of interface and state; every leaf needs a "which lens?" step; error-prone with touch and screen readers |
+| D. Custom lenses get their own leaves | Natural way to grow the ring; each custom lens is a leaf | The ring grows to 13 and needs odd-count support and smaller tap sectors |
+
+### Recommendation: A for the built-in lenses, grown by D
+
+- **In the menu the ring has exactly one leaf per available lens, in lens order, clockwise from the top.** A custom lens
+  adds one leaf at the end. The total is capped at **13** (8 + 5 custom). When the menu is not open, the logo uses the
+  look setting.
+- Never use B or C: both hide or rearrange what every other lens-finding path (the list) shows in a fixed order.
+- The text tray stays and lists the same lenses in the same order with the same names; the ring is an addition.
+
+### Interaction
+
+- **Touch and mouse: first tap is information, second tap picks up.** First tap on a leaf shows a caption (the lens name,
+  its status "not opened", "examined" or "included", and one line of what it is) and marks that leaf selected. A second tap
+  on the same leaf picks up the lens. A tap elsewhere clears. This matches `lensState.ts` (picking up = opening).
+- **Keyboard:** focus is information (the caption shows when a leaf gets focus), Enter or Space picks up; no double
+  action. Tab enters the ring as one stop; Left/Right (and Up/Down) move between leaves in lens order; Home/End jump;
+  Escape closes the menu and returns focus to where it came from. Tab order inside the page matches visual order.
+  A `radiogroup`-like roving tabindex is the right pattern; do not use `role="menu"`, which promises behaviours (typeahead,
+  menu semantics) we do not provide.
+- **Names for every leaf:** each leaf is a real `<button>` with the accessible name "Sight lens, not opened, 1 of 8"
+  and the one-line description as its description. Status is not by colour alone. The captions never rely on hover.
+- **Targets (AAA 2.5.5 is 44 CSS px):** hit areas are **angular sectors**, not the leaf's shape (13 leaves overlap).
+  At 13 leaves the sector's arc at the leaf tips needs a ring radius of about 90 CSS px to give 44 px (2π × 90 ÷ 13). Below that
+  logo size, the ring is **not offered**: the text list is used and the ring appears only at the sizes that fit.
+- **Motion:** no spinning menu; selection is an outline plus the caption. With reduced motion nothing animates at all. No
+  time limits.
+- **Colour:** each leaf keeps its metal finish; selection is a thick outline in the AAA-contrast focus colour and a text
+  caption, tested for contrast in both themes and the vision modes.
+- **Behind a switch**, like Nature and Story (`VITE_LENS_TRAY=on` pattern): off in production until the owner has
+  walked through it.
+
+## 5. A custom lens
+
+- **What it needs:** a **name** (English only, 1 to 24 characters, plain text), a **colour from the site palette** (not a free
+  colour, so contrast is already checked), a **short description** (up to 120 characters), and optionally **a link to one of
+  the existing Patterns** (chosen from the list by id; never a typed address).
+- **What picking it up does:** opens the linked Pattern, or, with none, a private note page whose text never leaves the
+  device and is **not** part of any report.
+- **Out of scope, deliberately:** no text the person writes is sent anywhere: not to the coach, not into the report or PDF,
+  not to any server or analytics; no sharing, no sync, no import of lens text from a link; no free web addresses; no
+  generated or suggested names. Rendered as text only (no HTML), control characters stripped, length-limited.
+- **A policy decision for the owner:** `deviceMemory.ts` states "Never kept: anything a visitor writes". A custom lens name
+  and description are visitor-written text. Options: (a) **visit only** (in memory, gone when the tab closes), no policy
+  change; (b) **kept on the device with "Remember on this device"**, which needs the privacy wording and that header list
+  changed and approved. I recommend building (a) first and (b) only after the owner approves the wording.
+- **Limit of 5** custom lenses (so the ring stays at 13).
+
+## 6. Risks (new)
+
+- Odd leaf counts: seam in the weave and tones (section 1); needs tests and an eye check.
+- Ring at 12 to 13 leaves on small screens: the sector rule and the "list only below that size" rule must hold.
+- The lens set changes by switch (Nature, Story), so the ring count is not constant between builds. The ring must read the
+  available lens list at run time and not assume 8.
+- Privacy wording for custom lenses (section 5).
+- The look setting could be mistaken for the menu's leaf count. The control's help text and the ring's own behaviour must
+  keep them apart.
+- More surfaces to keep consistent with alt text: the long logo description must be generated from the count, or say
+  "a ring of leaves", not a number, wherever the number can vary.
+
+## 7. Proposed build order (continues Part 1's ten steps)
+
+Part 1 steps 1 to 9 come first (gem as N sides, octagon default). Then, each its own commit:
+
+11. **Prefs and validation (pure):** `logoLeaves`, `gemSides` with snapping, in `deviceMemory.ts`, plus tests. No UI.
+12. **Odd counts and 13 in the leaf generator**, with tests (every crossing has a gap; tone seam behaviour; counts 1 to 13).
+13. **Settings control:** two radio groups with the help text and live-region line; applies at once.
+14. **Gem follows leaves:** `'match'` rule, low-capability clamp, hide the gem control without WebGL2; alt text built
+    from the count.
+15. **Ring geometry (pure):** angular sectors, order, names, status text, target-size rule and the list fallback, with tests.
+16. **Ring interaction** behind a switch: first-tap information, second-tap pick up, keyboard, focus, live announcements.
+17. **Custom lens model (pure):** validation, sanitising, limits, palette colour, Pattern link by id.
+18. **Privacy decision and wording** if the owner chooses to keep custom lenses on the device.
+19. **Custom lens UI** and its leaf in the ring.
+20. *(Optional)* drawn 2D stone for non-default sides without WebGL2.
+
+### The owner runs or decides
+
+- Decide: the preset lists (6/8/10/12 and 6/8/10), "gem follows leaves", the 13-lens cap, and visit-only versus kept on
+  the device for custom lenses (and approve the privacy wording).
+- In a browser: judge odd-count leaves (seam and tones) and 10 and 12 leaves; judge the gem at 6, 8, 10 with the bezel;
+  time 10 sides on an older phone; check the ring at several logo sizes on a real touch screen.
+- By hand with assistive technology: VoiceOver on iPhone and Mac, TalkBack on Android, keyboard-only, switch/voice control,
+  200% and 400% zoom, all four vision modes and reduced motion, before turning the ring switch on.
+- Part 1's own browser steps (sprite rebuild, `npm run logo:render`) are unchanged.
