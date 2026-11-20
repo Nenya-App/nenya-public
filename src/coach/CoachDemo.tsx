@@ -156,11 +156,13 @@ interface CoachDemoProps {
   report?: ReportInput;
   /** "Sign Our Guestbook" at the end, where the guestbook is on: in the app it opens the page in place; on /coach it links to /guestbook. */
   onGuestbook?: () => void;
+  /** Opens the phrase workbench (VITE_PHRASE_WORKBENCH); nothing from the conversation is passed to it. */
+  onPhrases?: () => void;
 }
 
 // The conversation lives in this component's memory and closing the tab ends it. The only thing
 // written to browser storage is the finish time described above.
-export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, onPartnerPractice, report, onGuestbook }: CoachDemoProps) {
+export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, onPartnerPractice, report, onGuestbook, onPhrases }: CoachDemoProps) {
   const color1 = norm(colors.color1, '#7A9B9E');
   const color2 = norm(colors.color2, '#DAC682');
   const session = { color1, color2 };
@@ -991,6 +993,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   {/* From the second exchange on: the first one is in their own words, to show they can do it without an aid. */}
                   {messages.length >= 2 && (
                   <WordPanel
+                    onPhrases={onPhrases}
                     open={wordsOpen}
                     onToggle={rememberWordsOpen}
                     accent={color1}

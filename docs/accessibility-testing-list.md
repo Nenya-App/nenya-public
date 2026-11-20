@@ -19,6 +19,7 @@ Format: what, who should test it, what to ask, status.
 | 11 | Plain-language read of the safety notices and Terms | People with cognitive or reading disabilities | Is it understandable at a first reading? | not done |
 | 12 | Switch / voice control | Motor-impairment users | Can the whole flow be done? | not done |
 | 13 | Word picker in every gateway (grouped lists of 30 to 80 words, find-a-word box, chosen-words list, "i" buttons) | Screen-reader users; keyboard-only users; people with cognitive or reading disabilities; people with ADHD; people using voice control | Are the group names and counts announced? Is the chosen list announced when it changes? Is a word easy to find among 80? Are the small "i" buttons large enough to hit? (The old Essence wheels, which only responded to a click, are gone.) | not done |
+| 14 | Phrase workbench (`/phrases`, when switched on): word buttons, marks, optional say-more, met-to-unmet slider and its stepped buttons, frames, word meanings | Screen-reader users; keyboard-only users; switch and voice-control users; people with cognitive or reading disabilities; people who see no colour | Are marks understood from the label and shape alone? Is each change announced once, in plain words? Can the slider be set by the native control and by the steps? Does anything feel like being corrected or tested? | not done |
 
 Notes
 - Paid testers are preferable (testing by disabled people should be work that is paid). Budget line to be added to the funding plan.

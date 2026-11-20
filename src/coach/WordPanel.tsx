@@ -83,7 +83,7 @@ function Browser({ kind, groups, query, picked, onPick, accent, label }: { kind:
   );
 }
 
-export function WordPanel({ open, onToggle, tab, onTab, picked, have, onPick, onUnpick, accent }: { open: boolean; onToggle: (open: boolean) => void; tab: 'feelings' | 'needs'; onTab: (t: 'feelings' | 'needs') => void; picked: Picked[]; have: { feeling: boolean; need: boolean }; onPick: (p: Picked) => void; onUnpick: (p: Picked) => void; accent: string }) {
+export function WordPanel({ open, onToggle, tab, onTab, picked, have, onPick, onUnpick, accent, onPhrases }: { onPhrases?: () => void; open: boolean; onToggle: (open: boolean) => void; tab: 'feelings' | 'needs'; onTab: (t: 'feelings' | 'needs') => void; picked: Picked[]; have: { feeling: boolean; need: boolean }; onPick: (p: Picked) => void; onUnpick: (p: Picked) => void; accent: string }) {
   const [query, setQuery] = useState('');
   const [side, setSide] = useState<Side>('unmet');
   const seg = (active: boolean, onClick: () => void, label: string, id?: string) => (
@@ -173,6 +173,16 @@ export function WordPanel({ open, onToggle, tab, onTab, picked, have, onPick, on
           </div>
         ) : (
           <Browser kind="need" groups={NEED_GROUPS} query={query} picked={picked} onPick={onPick} accent={accent} label="Needs, met or not yet met" />
+        )}
+
+        {/* A plain door to the phrase workbench (VITE_PHRASE_WORKBENCH). It carries nothing: no words, no picks, no query. */}
+        {onPhrases && (
+          <p className="text-sm">
+            Want to take a sentence apart yourself?{' '}
+            <button type="button" onClick={onPhrases} className="min-h-11 underline underline-offset-2">
+              Open the phrase workbench
+            </button>
+          </p>
         )}
 
         <p className="text-xs text-muted-foreground">
