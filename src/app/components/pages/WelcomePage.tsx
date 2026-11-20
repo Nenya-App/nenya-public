@@ -135,7 +135,7 @@ export default function WelcomePage({
         {/* Breathing Text with Scroll Indicator */}
         <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`pb-8 mt-5 sm:mt-8 space-y-6 transition-opacity duration-500`}>
           <p className="text-xl md:text-2xl text-center text-muted-foreground">
-            Give Yourself a Moment to Breathe
+            Take a Moment to Breathe
           </p>
 
           {/* The "Enter" button: glows, and pulses once at the end of each breath in that breath's colour */}
