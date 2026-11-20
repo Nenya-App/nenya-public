@@ -51,7 +51,9 @@ ok('the extraction prompt says to save nothing personal', /Do not save any memor
 
 // the method file: NVC in plain steps, the framework named in plain speech, and pictures from nature (owner, 2026-11-20: the variables may be named, only
 // ever in plain speech; asked about the framework itself, the character may use imagery and metaphor; the earlier rule to withhold the framework is withdrawn)
-const method = f('context-method.md');
+const MODULES = ['module-ten-things.md', 'module-order-of-attention.md', 'module-four-kinds-of-harm.md', 'module-pictures-from-nature.md'];
+const core = f('context-method.md');
+const method = [core, ...MODULES.map(f)].join('\n\n'); // the whole method, whichever way Venice reads the files
 const TEN = ['Inner reserves', 'Conditions', 'Agency', 'Recurring patterns', 'Unresolved tension', 'Scale', 'Values and pulls', 'Opposition', 'Legitimacy', 'Time'];
 ok('the method file names all ten things to listen for, in plain words', TEN.every((t) => method.includes(`**${t}.**`)), TEN.filter((t) => !method.includes(`**${t}.**`)).join(','));
 ok('the method file uses no letter codes, variable symbols or scores for them', !/\*\*[IUVOLRSCTA]\*\*|\b[IUVOLRSCTA]-(?:state|vector|gravity|coherence|offset)\b|\bbottleneck score|\d\/10\b/.test(method));
@@ -63,3 +65,8 @@ ok('the method file is not an inventory (no long list of feeling words copied fr
 ok('the method file is modest in size and shows no named person', method.length < 14000 && !/yvette|erasmus|estëlle|estelle|streiff/i.test(method), String(method.length));
 ok('the method file says nothing about hosting, data or a human life', !claimsInfrastructure(method) && !claimsPersona(method));
 ok('the instructions allow imagery and metaphor only when asked about the framework, and keep everyday speech otherwise', /never use codes, letters or jargon/.test(full) && /imagery and metaphor from nature/.test(full) && /no codes or jargon/.test(short) && /imagery and metaphor from nature/.test(short));
+
+// the method is a short core plus small modules, each self-contained so it can be read alone
+ok('the core is short and the modules are small', core.length < 4500 && MODULES.every((m) => f(m).length < 3500), `${core.length} ${MODULES.map((m) => f(m).length)}`);
+ok('every module says what it is, that it is background, and that the instructions win, so it makes sense read alone', MODULES.every((m) => /^# Module: /.test(f(m)) && /background for the Nenya character, not instructions/.test(f(m)) && /the instructions win/.test(f(m))));
+ok('the core holds the plain-speech rule, NVC and the limits; the modules hold the rest', /Speak plainly/.test(core) && /Nonviolent Communication/.test(core) && /Limits that always hold/.test(core) && !/Ten things to listen for/.test(core) && !/## Pictures from nature/.test(core));
