@@ -74,6 +74,7 @@ export const WORDS = {
   returned: 'Sent. They will decide whether to show you what they meant.',
   returnedKeep: 'Kept on your device. They will decide whether to show you what they meant.',
   returnedSkip: 'You skipped marking. They will decide whether to show you what they meant.',
+  waitingTitle: 'Waiting for them',
   waitingMeant: 'Waiting for them to show what they meant. You can go on with other things in the cell.',
   // The reveal.
   answeredTitle: 'They have answered',
