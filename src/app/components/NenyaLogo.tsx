@@ -1,5 +1,5 @@
 import * as m from 'motion/react-m';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 // The flat logo (petals, bezel and gem, no orbs) is a 768 px WebP rendered from the vector drawings, and most call
 // sites use this component as a small persistent header mark (28-40px), where that is over 25 times more image
 // data than the display can show. A pre-resized 128 px WebP is swapped in below for those small sizes instead.
@@ -46,6 +46,11 @@ const lightGradient = (c: string): string => `radial-gradient(circle closest-sid
 /** An outer orb's own halo: a gradient (never a blur) in its current colour, fading to nothing; in 'palette' mode the rim fades through another colour from its palette. Cheap to draw and it does not grow with zoom the way a large shadow does. The colours are set by CSS (see .nenya-orb-halo), not by script. */
 const haloGradient = (palette: boolean): string => `radial-gradient(circle closest-side, color-mix(in srgb, var(--hc) 67%, transparent) 0%, color-mix(in srgb, var(--hc) 40%, transparent) 34%, color-mix(in srgb, var(${palette ? '--hc2' : '--hc'}) 14%, transparent) 66%, transparent 100%)`;
 const ALL_ORB_COLORS = valarColors.flatMap((v) => v.vector);
+/** An outer orb's sphere, coloured by the fading --hc (the same look as before: bright to a soft rim). */
+const ORB_FADE_GRADIENT = 'radial-gradient(circle at 30% 30%, var(--hc), color-mix(in srgb, var(--hc) 93%, transparent) 50%, color-mix(in srgb, var(--hc) 60%, transparent) 80%, color-mix(in srgb, var(--hc) 27%, transparent))';
+/** Keyframes for one orb: its colours in order and back to the first, with literal colours so every browser fades between them. */
+const hueKeyframes = (name: string, prop: string, cols: readonly string[], shift = 0): string =>
+  `@keyframes ${name}{${Array.from({ length: 7 }, (_, k) => `${((k * 100) / 6).toFixed(3)}%{${prop}:${cols[(k + shift) % 6]}}`).join('')}}`;
 const LIGHT_SIZE = 1.6; // a light's diameter as a multiple of an orb's
 
 /** The fixed layers over an orb's changing colour. `d` is the orb's diameter in px. */
@@ -168,6 +173,17 @@ export default function NenyaLogo({
   const outerOrbitRadius = size * outer.radius; // Half the logo size = outer edge of breathing animation
   const outerOrbSize = Math.max(8.5, size * outer.orbSize * 2) * 0.5;
   const haloSize = outerOrbSize * outer.haloWidth;
+  // Keyframes for every outer orb's colours (and its halo's): rebuilt only when the glow style or the random seed changes.
+  const orbHueCss = useMemo(
+    () =>
+      valarColors
+        .map((v, i) => {
+          const hc = outer.halo === 'random' ? randomHaloColors(outer.haloSeed, i, ALL_ORB_COLORS) : v.vector;
+          return hueKeyframes(`nho-c-${i}`, '--hc', v.vector) + hueKeyframes(`nho-h-${i}`, '--hc', hc) + hueKeyframes(`nho-h2-${i}`, '--hc2', hc, 2);
+        })
+        .join(''),
+    [outer.halo, outer.haloSeed],
+  );
 
   // Set once, when the logo first mounts with a clock anchor, so a fresh mount starts the rotation at the
   // correct phase. Deliberately NOT recomputed when the anchor changes later: that happens when the breathing
@@ -374,6 +390,7 @@ export default function NenyaLogo({
             animationDelay: `${orbitDelay}s`,
                       }}
         >
+          <style>{orbHueCss}</style>
           {valarColors.map((valar, index) => {
             // Calculate position on circle
             const angle = (index / valarColors.length) * 2 * Math.PI;
@@ -403,47 +420,37 @@ export default function NenyaLogo({
                   ['--hc' as string]: haloColors[0], ['--hc2' as string]: haloColors[2],
                   ['--halo-lo' as string]: outer.opacityLow, ['--halo-hi' as string]: outer.opacityHigh,
                   opacity: outer.opacityLow,
-                  animation: `nenya-halo-hue ${colorCycleDuration}s ease-in-out ${index * 2}s infinite backwards, nenya-halo-hue2 ${colorCycleDuration}s ease-in-out ${index * 2}s infinite backwards, nenya-halo-breathe ${4 + index * 0.3}s ease-in-out infinite`,
+                  // Linear, so the colour is always fading and never rests or snaps; the negative delay puts each orb part way round the cycle from the first frame.
+                  animation: `nho-h-${index} ${colorCycleDuration}s linear -${index * 2}s infinite, nho-h2-${index} ${colorCycleDuration}s linear -${index * 2}s infinite, nenya-halo-breathe ${4 + index * 0.3}s ease-in-out infinite`,
                 }}
               />
             ) : null;
             const planet = (
               <m.div
                 key={`outer-${valar.name}`}
-                className={glow && !zoomed && !ownHalo ? 'absolute nenya-orb-glow' : 'absolute'}
+                className={glow && !zoomed && !ownHalo ? 'absolute nenya-orb-hued nenya-orb-glow' : 'absolute nenya-orb-hued'}
                 style={{
                   width: outerOrbSize,
                   height: outerOrbSize,
                   left: outerOrbitRadius - outerOrbSize / 2 + x,
                   top: outerOrbitRadius - outerOrbSize / 2 + y,
                   borderRadius: '50%',
-                  willChange: zoomed ? undefined : 'background, opacity, transform',
+                  willChange: zoomed ? undefined : 'opacity, transform',
                   opacity: OUTER_ORB_OPACITY[0],
+                  // The colour is the browser's own fade (registered --hc, keyframes nho-c-N), not a script swapping gradient strings.
+                  background: ORB_FADE_GRADIENT,
+                  ['--hc' as string]: colors[0],
+                  animation: `nho-c-${index} ${colorCycleDuration}s linear -${index * 2}s infinite`,
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
                 }}
                 animate={{
-                  background: [
-                    `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[1]}ff, ${colors[1]}ee 50%, ${colors[1]}99 80%, ${colors[1]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[2]}ff, ${colors[2]}ee 50%, ${colors[2]}99 80%, ${colors[2]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[3]}ff, ${colors[3]}ee 50%, ${colors[3]}99 80%, ${colors[3]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[4]}ff, ${colors[4]}ee 50%, ${colors[4]}99 80%, ${colors[4]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[5]}ff, ${colors[5]}ee 50%, ${colors[5]}99 80%, ${colors[5]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
-                  ],
                   opacity: OUTER_ORB_OPACITY,
                   scale: [0.95, 1.05, 0.95],
                   rotate: 360,
                 }}
                 transition={{
-                  background: {
-                    duration: colorCycleDuration,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: index * 2,
-                  },
                   opacity: {
                     duration: 4 + (index * 0.3),
                     repeat: Infinity,

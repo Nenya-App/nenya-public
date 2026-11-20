@@ -18,5 +18,9 @@ ok('the depth is kept in range', emergence(0, 1, { ...L, emergeDepth: 5 }) === 1
 const src = (p: string) => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
 const logo = src('src/app/components/NenyaLogo.tsx');
 ok('a light draws no sphere layers and no seam cut', /\{!isLight && <OrbSurface/.test(logo) && /const wrapped = !isLight &&/.test(logo));
-ok('the own halo replaces the shared glow class for that orb, and is a gradient (no blur)', /glow && !zoomed && !ownHalo \? 'absolute nenya-orb-glow'/.test(logo) && /const haloGradient = .*radial-gradient/.test(logo) && !/haloGradient[^\n]*blur/.test(logo) && /nenya-halo-hue/.test(logo) && !/<m\.div[^>]*nenya-orb-halo/.test(logo));
+ok('the own halo replaces the shared glow class for that orb, and is a gradient (no blur)', /glow && !zoomed && !ownHalo \? 'absolute nenya-orb-hued nenya-orb-glow'/.test(logo) && /const haloGradient = .*radial-gradient/.test(logo) && !/haloGradient[^\n]*blur/.test(logo) && /nho-h-/.test(logo) && /linear/.test(logo) && !/<m\.div[^>]*nenya-orb-halo/.test(logo));
 ok('the gem takes each light\'s brightness into its colour from below', /emergence\(j, tSec, emergeRef\.current\)/.test(src('src/app/components/SpectralGem.tsx')));
+
+// The outer orbs fade between their colours; they never snap (owner, 2026-11-20).
+ok('the outer orbs and halos fade through registered colours with linear keyframes, not by swapping gradient strings', /nho-c-\$\{index\} \$\{colorCycleDuration\}s linear/.test(logo) && /@property --hc /.test(src('src/styles/globals.css')) && !/radial-gradient\(circle at 30% 30%, \$\{colors\[1\]\}ff/.test(logo));
+ok('the colour keyframes use literal colours, so they fade in every browser', /hueKeyframes = /.test(logo) && !/--hc:\s*var\(--p/.test(src('src/styles/globals.css')));
