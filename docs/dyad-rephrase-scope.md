@@ -511,7 +511,7 @@ Numbers are the questions in section 16.
 11. **No local save** of a round.
 12. **No AI in the dyad in v1.** "Send with AI" and "Receive translated" are retired from the cell page and the scripted preview, in favour of rephrasing.
 13. **Either person may start a round, one at a time.**
-14. **Reports:** a received rephrasing message can be reported, after a notice that says exactly what will be revealed. The wording, a proposed keeping time (30 days) and the register rows are in docs/drafts/terms-rephrasing-draft.md; the Terms themselves are revised by the integrating session.
+14. **Reports:** a received rephrasing message can be reported, after a notice that says exactly what will be revealed. The wording, the keeping time (30 days, decided by the owner on 2026-11-20) and the register rows are in docs/drafts/terms-rephrasing-draft.md; the Terms themselves are revised by the integrating session.
 15. **Terms:** drafted, not applied (same file).
 16. **Same-device use:** cannot be detected; the first-use screen says rephrasing needs two devices.
 17. **The four comparison statements** are used as worded in section 4.
@@ -540,7 +540,7 @@ Numbers are the questions in section 16.
 12. **AI in the dyad:** none in v1 (recommended). The workbench's "ask for help" stays solo-only. Agree? And may the
     scripted preview's "Send with AI" / "Receive translated" labels be retired for "Rephrase"?
 13. **Who may start a round:** either person, one at a time (recommended), or do people take turns?
-14. **Reports:** wording of the report button for rephrase messages, and a keeping time for reports, before this is turned on.
+14. **Reports:** wording of the report button for rephrase messages, and a keeping time for reports (decided: 30 days, owner, 2026-11-20), before this is turned on.
 15. **Terms:** the draft for partner practice needs a rephrasing section (what is sent, who sees it, that a partner can copy
     it). Does it go through the archive process like the other Terms changes?
 16. **Same-device use:** refuse, warn, or ignore? (It cannot be detected.)

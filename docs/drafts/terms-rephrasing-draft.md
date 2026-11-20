@@ -20,7 +20,7 @@ accurate, because nothing described here can happen. Scope: `docs/dyad-rephrase-
 
 Also add to the Short Version (Section 14), partner-practice item: "Rephrasing is optional, has no AI, and sends only what you choose, each time."
 
-## 2. Report keeping time (proposal; the owner decides)
+## 2. Report keeping time (decided by the owner, 2026-11-20: 30 days)
 
 Today a verified report is kept in the private store with no stated keeping time (the stack document lists "the owner panel for
 verified reports, and their keeping time" as left to do). **Proposal: 30 days, then deleted by the daily expiry job, or sooner when the
@@ -34,7 +34,7 @@ deletes reports by hand and notes the date. Nothing in the page's wording yet st
 |---|---|---|---|---|
 | Rephrasing round (phrase, marks, rewrite, sentence) while a cell is open: ciphertext only | private store (the cell's mailbox) | until the cell is closed; three hours at most | `cell-cleanup` (hourly); either person closing the cell | the other person in the cell only |
 | Rephrasing round on each device (drafts, the round, messages received) | the page's memory only | until the round is done or stopped, or the page is left | clearing at "Done with this" and "Stop rephrasing"; closing the tab; Emergency Exit | the person at that device |
-| A reported rephrasing message (the whole message as sent, its time, "verified"; no cell name) | private store (`cell-report/…`) | proposal: 30 days | the owner by hand now; a daily job to be written | the owner |
+| A reported rephrasing message (the whole message as sent, its time, "verified"; no cell name) | private store (`cell-report/…`) | 30 days (decided by the owner, 2026-11-20) | the owner by hand now; a daily job to be written | the owner |
 
 Not stored anywhere by us: the private device-check results, which person asked or declined, how many rounds, any mark counts.
 
