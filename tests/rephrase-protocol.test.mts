@@ -1,6 +1,6 @@
 // Rephrasing's message format (src/lib/rephraseProtocol.ts, src/lib/rephraseKinds.ts): every message round-trips, anything else
 // is refused, and the largest legal message still fits the report limit.
-import { decode, encode, isRpKind, MAX_NOTE, MAX_PHRASE, MAX_REWRITE, MAX_TOTAL, newRoundId, RP_KINDS, textsOf, type MeantBody } from '../src/lib/rephraseProtocol.ts';
+import { decode, encode, PAD_SIZES, isRpKind, MAX_NOTE, MAX_PHRASE, MAX_REWRITE, MAX_TOTAL, newRoundId, RP_KINDS, textsOf, type MeantBody } from '../src/lib/rephraseProtocol.ts';
 import { markMap, marksFromMap, plainWord, tokenize, TOKENIZER, type Mark } from '../src/lib/rephraseKinds.ts';
 import { ok } from './helpers.mts';
 
@@ -59,3 +59,11 @@ ok('tokenize splits on any spaces and drops empties', JSON.stringify(tokenize(' 
 ok('plainWord strips punctuation around a word and keeps a lone mark', plainWord('late,') === 'late' && plainWord('“hello!”') === 'hello' && plainWord('—') === '—');
 const mm = markMap([[0, 1, 'saw'], [1, 1, 'story']]);
 ok('markMap lets a later mark override and marksFromMap gives one mark per word in order', mm.get(0) === 'saw' && mm.get(1) === 'story' && JSON.stringify(marksFromMap(mm)) === '[[0,0,"saw"],[1,1,"story"]]');
+
+// Padding: the length the mailbox sees is one of a few sizes.
+const sizes = cases.map(([k, b]) => encode(k, b as never).length);
+ok('every message is padded to one of the fixed sizes', sizes.every((n) => (PAD_SIZES as readonly number[]).includes(n)), sizes.join());
+ok('short and long phrases of different lengths give the same size', encode('rp-phrase', { round, tok: TOKENIZER, phrase: 'a b c' }).length === encode('rp-phrase', { round, tok: TOKENIZER, phrase: 'word '.repeat(40).trim() }).length);
+ok('a longer one steps up to the next size', encode('rp-phrase', { round, tok: TOKENIZER, phrase: 'w '.repeat(300).trim() }).length === 1024);
+ok('padding is ignored on reading and never exceeds the report limit', JSON.stringify(decode('rp-answer', encode('rp-answer', { round, answer: 'yes' }))) === JSON.stringify({ round, answer: 'yes' }) && encode('rp-meant', big).length <= MAX_TOTAL);
+ok('the filler is plain letters and holds nothing', /"pad":"x+"/.test(encode('rp-ask', { round, tok: TOKENIZER })));

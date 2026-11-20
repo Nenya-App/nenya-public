@@ -56,7 +56,7 @@ const NOTE = 'I heard worry, mauvenote.';
   ok('asking sends one message', (await ca.ask()) === true);
   await pump();
   const askText = seen.b.find((m) => m.kind === 'rp-ask')!.text;
-  ok('the ask holds no word of the phrase, no length and no marks', !/quartzlate|tired|zebra/.test(askText) && Object.keys(JSON.parse(askText)).sort().join() === 'round,tok,v');
+  ok('the ask holds no word of the phrase, no length and no marks', !/quartzlate|tired|zebra/.test(askText) && Object.keys(JSON.parse(askText)).filter((k) => k !== 'pad').sort().join() === 'round,tok,v');
   ok('the hearer is deciding and holds nothing', cb.state.round?.phase === 'deciding' && JSON.stringify(cb.state).indexOf('quartzlate') === -1);
   await cb.answer('yes'); await pump();
   ok('the speaker may now send the phrase', ca.state.round?.phase === 'accepted');

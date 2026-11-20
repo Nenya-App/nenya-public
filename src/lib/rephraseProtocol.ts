@@ -96,13 +96,24 @@ function clean(kind: RephraseKind, o: Record<string, unknown>): BodyOf[RephraseK
   }
 }
 
+/** The sizes a message is padded up to before it is sealed, so its length (which the mailbox can see) says less about the words. */
+export const PAD_SIZES = [512, 1024, 2048, MAX_TOTAL] as const;
+const PAD_FIELD = ',"pad":""'.length;
+/** Adds a filler field (ignored on reading) to reach the next size; a message that would not fit the next size is left as it is. */
+export function pad(json: string): string {
+  const need = json.length + PAD_FIELD;
+  const size = PAD_SIZES.find((n) => n >= need);
+  if (!size) return json;
+  return json.slice(0, -1) + ',"pad":"' + 'x'.repeat(size - need) + '"}';
+}
+
 /** The text to put in a cell message. Throws if it is not valid or would not fit the report limit. */
 export function encode<K extends RephraseKind>(kind: K, body: BodyOf[K]): string {
-  const text = JSON.stringify({ v: RP_VERSION, ...body });
-  const back = clean(kind, JSON.parse(text));
+  const plain = JSON.stringify({ v: RP_VERSION, ...body });
+  const back = clean(kind, JSON.parse(plain));
   if (!back) throw new Error('rephrase: not a valid message');
-  if (text.length > MAX_TOTAL) throw new Error('rephrase: too long to report');
-  return text;
+  if (plain.length > MAX_TOTAL) throw new Error('rephrase: too long to report');
+  return pad(plain);
 }
 
 /** What a received message holds, or null for anything that is not exactly a message of its kind. */
