@@ -103,3 +103,15 @@ export function leafPath(i: number, count: number, size: number): string {
   const p = (r: number, off: number): string => `${(c + r * Math.sin(a) + off * Math.cos(a)).toFixed(1)} ${(c - r * Math.cos(a) + off * Math.sin(a)).toFixed(1)}`;
   return `M${p(r0, 0)} Q${p(rm, w * 2)} ${p(r1, 0)} Q${p(rm, -w * 2)} ${p(r0, 0)}Z`;
 }
+
+/** The ring is drawn only when VITE_LENS_RING=on (off by default; mounted only where the lens tray shows). */
+export const lensRingOn = (): boolean => import.meta.env?.VITE_LENS_RING === 'on';
+
+/** A leaf's hit sector as an SVG/CSS path (an annular wedge) in a square of side `size`, for clipping a button to exactly the sector that answers touches. */
+export function sectorPath(i: number, count: number, size: number): string {
+  const R = size / 2, { start, end } = sector(i, count);
+  const pt = (r: number, deg: number): string => `${(R + r * Math.sin((deg * Math.PI) / 180)).toFixed(2)} ${(R - r * Math.cos((deg * Math.PI) / 180)).toFixed(2)}`;
+  const ro = R * OUTER_FRACTION, ri = R * INNER_FRACTION, large = end - start > 180 ? 1 : 0;
+  if (count === 1) return `M${pt(ro, 0)} A${ro} ${ro} 0 1 1 ${pt(ro, 180)} A${ro} ${ro} 0 1 1 ${pt(ro, 360)} L${pt(ri, 360)} A${ri} ${ri} 0 1 0 ${pt(ri, 180)} A${ri} ${ri} 0 1 0 ${pt(ri, 0)}Z`;
+  return `M${pt(ri, start)} L${pt(ro, start)} A${ro} ${ro} 0 ${large} 1 ${pt(ro, end)} L${pt(ri, end)} A${ri} ${ri} 0 ${large} 0 ${pt(ri, start)}Z`;
+}

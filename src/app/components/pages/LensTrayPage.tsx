@@ -11,6 +11,9 @@ import { L } from '../../../lib/vocabulary';
 import { lensStatus, reportShape, type LensId, type LensState } from '../../../lib/lensState';
 import { BodyMapCard } from '../BodyMapCard';
 import { BodyMapAvatar, type BodyMapData } from '../BodyMapAvatar';
+import { LensRing } from '../LensRing';
+import { lensRingOn, type RingItem } from '../../../lib/lensRing';
+import { lensName } from '../../../lib/bodyMapBrush';
 
 // The lens tray (docs/lens-rewrite-scope.md, behind VITE_LENS_TRAY): six lenses, any order, any number. Each shows whether it is not opened, examined or included.
 interface Props {
@@ -31,6 +34,9 @@ interface Props {
   onPickedSeen: (seen: LensId[]) => void;
 }
 
+// The ring's leaves: the same lenses as the cards below, in the same order, with the same names (the tray stays as the equal alternative).
+const ringItemsFor = (): RingItem[] => gatewayCards.map((c) => ({ id: c.id, title: lensName(c.id as LensId), line: c.description }));
+
 const STATUS_TEXT = { 'not-opened': 'Not opened', examined: 'Examined, not added', included: 'Added to my report' } as const;
 
 export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack, onNewName, bodyMapData, onUpdateBodyMap, userColors, pickedSeen, onPickedSeen }: Props) {
@@ -50,6 +56,7 @@ export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack
               Choosing fewer can be more helpful than choosing many. Open any {L('lens')}, in any order. Nothing goes into your report until you add it.
             </p>
           </div>
+          {lensRingOn() && <LensRing items={ringItemsFor()} statusOf={(id) => lensStatus(state, id as LensId)} onPick={(id) => onOpen(id as LensId)} />}
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 list-none p-0">
             {gatewayCards.map((c) => {
               const st = lensStatus(state, c.id as LensId);

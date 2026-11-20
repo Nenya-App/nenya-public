@@ -30,3 +30,7 @@ ok('below the minimum the text list is used; at it the ring is offered', !ringFi
 ok('arrows wrap, Home and End jump, other keys are not the ring\'s', nextIndex('ArrowRight', 7, 8) === 0 && nextIndex('ArrowLeft', 0, 8) === 7 && nextIndex('ArrowDown', 2, 8) === 3 && nextIndex('ArrowUp', 2, 8) === 1 && nextIndex('Home', 5, 8) === 0 && nextIndex('End', 1, 8) === 7 && nextIndex('a', 1, 8) === null && nextIndex('End', 0, 0) === null);
 ok('first press informs, a second press on the same leaf picks up, a different leaf informs again', pressAction(null, 2) === 'inform' && pressAction(2, 2) === 'pick-up' && pressAction(2, 3) === 'inform');
 ok('every leaf has its own closed path inside the ring', Array.from({ length: 13 }, (_, i) => leafPath(i, 13, 400)).every((d, i, all) => /^M[\d. ]+Q.*Z$/.test(d) && all.indexOf(d) === i));
+
+import { lensRingOn, sectorPath } from '../src/lib/lensRing.ts';
+ok('the ring is off unless VITE_LENS_RING=on is set (no environment here, so off)', lensRingOn() === false);
+ok('every leaf has a closed sector path, and they are all different', Array.from({ length: 13 }, (_, i) => sectorPath(i, 13, 300)).every((d, i, all) => /^M.*Z$/.test(d) && all.indexOf(d) === i) && /A/.test(sectorPath(0, 1, 300)));
