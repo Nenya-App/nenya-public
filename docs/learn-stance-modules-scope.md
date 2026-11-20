@@ -8,10 +8,12 @@ Status: scoping plus one built piece. Written 2026-11-20 from the owner's note: 
 - **Learning cards** (`docs/learning-cards-scope.md`): short reads written by Nenya, not the AI, offered by the page **under** a reply as an invitation. The series include `nvc-ideas` (ids `idea-01`...). Off by default.
 - **The gap that was real:** the page sent the ids of offered cards (`shown`), but the server used them only to avoid offering the same card twice. **The model never saw what a card said.**
 
-## Built today (`src/lib/shownCards.ts`, tests in `tests/shown-cards.test.mts`)
-- The server now tells the model, inside the single system message, which cards the page has offered (title, key idea and text), that they are **written by Nenya and not by the model**, that the person may have read them, and not to repeat, summarize or cut across them.
-- The card's own words count in the existing repeat check: a reply that restates a card is asked for again once, like a reply that repeats an earlier one.
-- **What this cannot do:** catch a *contradiction*. Phrase matching cannot tell that a reply cuts across a card. What prevents it is the model seeing the text; what measures it is the evaluations (the duet and arena runs), not a guard. Say so wherever the guard is described.
+## Built (2026-11-20, reworked the same day): the page serves cards, the model stays out of the loop
+The first version told the model what each offered card said. **The owner asked for the opposite: keep the model out of the loop, and let the page do it.** So (`src/lib/shownCards.ts`, `tests/shown-cards.test.mts`):
+- **The model is told nothing about cards.** It sees only the conversation. No card title, text or note is in the system message (a test checks this), and nothing about cards is in the instruction fingerprint.
+- **The page's tidying after the reply:** if a reply happens to restate a card the person was already offered (a run of ten words in common), the sentences that do are taken out. No second call to the model, and the card is never mentioned to it. A reply that is entirely the card's words, or has none, is left alone.
+- **No double offer:** the offer is not made when the reply has just said the card's words (a run of eight words in common); the card would only repeat it.
+- **What this cannot do:** catch a *contradiction*, or the same *idea* said in different words. Phrase matching cannot. Cards are written to be self-contained and are labeled "written by Nenya, not the AI", and the evaluations (duet and arena) measure whether the coach cuts across them.
 
 ## The shape the owner is describing, and how it fits
 1. **Shrink the core, move detail into modules, send modules separately.** Already the design for the coach. Next: audit what is still in the core that is only sometimes relevant, and move it to a module with a trigger.
@@ -20,10 +22,8 @@ Status: scoping plus one built piece. Written 2026-11-20 from the owner's note: 
    - **Matched:** up to five chosen per reply by phrase matching, as lenses are today (cap raised from about three when Learn is on).
    The live model is now a larger one than the 7B the 2,500-character budget was set for, so five may fit; **it has to be measured** (length, repetition, contradictions, whether the honest lines still hold) with the duet and arena runs before the cap is raised.
 3. **ICARUS in learning modules.** One source for each idea, used twice: **the person reads it as a card or module, and the model is given the same text**. That is the cleanest answer to contradiction, because the coach cannot say something the card does not. A file per idea would have: the public text (key idea, short body, try-it, credit) and the coach's guidance (when to use it, what not to say), with a test that the coach's note contains the card's key sentence verbatim. The ideas are named and spoken in plain language, with imagery and metaphor when someone asks about the framework (owner, 2026-11-20); `docs/venice-card-v2/module-pictures-from-nature.md` is a first set of natural pictures.
-4. **The model must know in advance what may be shown.** Two situations:
-   - **A card the page already offered:** built (above).
-   - **A card the page is about to offer under this very reply:** the offer is decided from the person's message and the history, not from the reply, so it could be decided **before** generation and the model told "the page will offer the short read X under your reply; do not restate it, and you may point to it in one sentence". The risk: a reply that says "below is a short read" when the offer is then suppressed by a later rule. It is only safe if the decision is final before the model runs. A decision for the owner; not built.
-5. **Guards on the way back:** repeat (built, covers earlier replies and shown cards); the existing honesty, infrastructure, persona and name guards; **contradiction is measured, not guarded** (see above).
+4. **The page, not the model, handles what may be shown** (owner, 2026-11-20). The model is not briefed on cards. For a card already offered, the page tidies the reply (built, above). For a card about to be offered under this reply, the page decides the offer after the reply and can drop it if redundant (built). Telling the model in advance that "the page will offer X" is **not** the plan; if the model ever needs to know, the better route is to let it see the card text as part of the conversation the person sees, not as a briefing.
+5. **Guards on the way back:** repeat (earlier replies, and card words by sentence removal); the honesty, infrastructure, persona and name guards; **contradiction and same-idea overlap are measured, not guarded** (see above).
 
 ## On Venice (the card), for comparison
 Nothing here can be done there: Venice, not Nenya, decides how a character's Context is used, and nothing selects a module per reply. The card's method text is therefore a short core plus small, self-contained modules (`docs/venice-card-v2/`), so it works whether Venice always includes them or retrieves them in pieces; the rules that must always hold are in the Instructions. Whether Venice retrieves or includes is one of the questions for Venice.
@@ -31,7 +31,7 @@ Nothing here can be done there: Venice, not Nenya, decides how a character's Con
 ## Decisions for the owner
 1. Fixed five or matched up to five for Learn; and which five ideas (the nine in `learn-icarus` are the pool).
 2. Whether the ICARUS ideas also become public cards (the `nvc-ideas` series exists), so the card text and the coach's text are literally the same file.
-3. Whether to decide the offer before generation (item 4).
+3. Whether, for Learn, the coach's own teaching of an idea should also suppress the matching card (today only a near-verbatim restatement does).
 4. The test to run before raising any cap: which duet and arena scripts, and what counts as a pass (length, repeats, contradictions, honest lines).
 5. Which parts of the core move into modules first.
 
