@@ -4,6 +4,7 @@
 
 import { MAX_SENTENCE, MAX_LEVEL, addMark, clearMarks, createWorkbench, overBy, removeMark, setDetail, setLevel, textOf, tokensOf, type Detail, type Mark, type MarkKind, type Workbench } from './phraseWorkbench.ts';
 import { LEVEL_NAMES, WB, markInfo } from './workbenchCopy.ts';
+import { FRAMES, frameById, slotChoices, slotsOf } from './workbenchFrames.ts';
 import { NEED_CATEGORIES } from './needFamilies.ts';
 import { FEELING_SIDES } from './feelingFamilies.ts';
 
@@ -28,11 +29,15 @@ export interface ViewState {
   specOpen: boolean;
   /** Need marks that have a met-to-unmet slider turned on (by the person). */
   sliderOn: Record<number, boolean>;
+  /** The frame chosen on step 4, what the person put in each slot (by frame, then slot), and which slot's "take from my sentence" list is open. */
+  frameId: string;
+  picks: Record<string, Record<string, string>>;
+  pickOpen: string | null;
 }
 
 export const EXAMPLE_SENTENCE = 'When you left again without telling me, I felt hurt and uneasy, because I need to be able to count on you. Would you tell me before you go?';
 
-export const initialView = (): ViewState => ({ step: 0, draft: EXAMPLE_SENTENCE, wb: createWorkbench(EXAMPLE_SENTENCE), sel: null, more: false, announce: '', lastMark: null, detailFor: null, specOpen: false, sliderOn: {} });
+export const initialView = (): ViewState => ({ step: 0, draft: EXAMPLE_SENTENCE, wb: createWorkbench(EXAMPLE_SENTENCE), sel: null, more: false, announce: '', lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, frameId: FRAMES[0].id, picks: {}, pickOpen: null });
 
 export type Action =
   | { t: 'draft'; text: string }
@@ -53,7 +58,13 @@ export type Action =
   | { t: 'detail-clear'; id: number }
   | { t: 'spec' }
   | { t: 'slider'; id: number; on: boolean }
-  | { t: 'level'; id: number; level: number | null };
+  | { t: 'level'; id: number; level: number | null }
+  | { t: 'frame'; id: string }
+  | { t: 'pick-open'; slot: string }
+  | { t: 'take'; slot: string; markId: number }
+  | { t: 'slot-text'; slot: string; text: string }
+  | { t: 'clear-frame' }
+  | { t: 'announce'; text: string };
 
 const say = (s: ViewState, announce: string): ViewState => ({ ...s, announce });
 
@@ -76,7 +87,7 @@ export function reduce(s: ViewState, a: Action): ViewState {
       const over = overBy(text);
       if (over > 0) return say(s, WB.tooLong(over));
       if (!text) return say(s, 'There is no sentence yet.');
-      return { ...s, wb: createWorkbench(text), sel: null, step: 1, lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, announce: 'Your sentence is ready to mark.' };
+      return { ...s, wb: createWorkbench(text), sel: null, step: 1, lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, picks: {}, pickOpen: null, announce: 'Your sentence is ready to mark.' };
     }
     case 'step':
       return a.step >= 0 && a.step <= 4 && Number.isInteger(a.step) ? { ...s, step: a.step as StepIndex, announce: `Step ${a.step + 1}: ${WB.steps[a.step]}.` } : s;
@@ -182,6 +193,33 @@ export function reduce(s: ViewState, a: Action): ViewState {
       const wb = setLevel(s.wb, m.id, a.level);
       return say({ ...s, wb }, a.level === null ? `${quoted(textOf(wb, m))}: cleared.` : `${quoted(textOf(wb, m))}: ${LEVEL_NAMES[a.level]}.`);
     }
+    case 'frame':
+      return frameById(a.id) ? say({ ...s, frameId: a.id, pickOpen: null }, `Frame: ${frameById(a.id)!.title}.`) : s;
+    case 'pick-open': {
+      const f = frameById(s.frameId)!;
+      if (!slotsOf(f).some((x) => x.slot === a.slot)) return s;
+      return { ...s, pickOpen: s.pickOpen === a.slot ? null : a.slot, announce: s.pickOpen === a.slot ? '' : s.announce };
+    }
+    case 'take': {
+      const f = frameById(s.frameId)!;
+      const slot = slotsOf(f).find((x) => x.slot === a.slot);
+      if (!slot) return s;
+      // Only a word the person marked with this slot's kind can be taken from the sentence.
+      const hit = slotChoices(s.wb, slot).find((c) => c.markId === a.markId);
+      if (!hit) return s;
+      return say({ ...s, picks: { ...s.picks, [f.id]: { ...(s.picks[f.id] ?? {}), [slot.slot]: hit.text } }, pickOpen: null }, `Put ${quoted(hit.text)} in the slot for ${slot.label}.`);
+    }
+    case 'slot-text': {
+      const f = frameById(s.frameId)!;
+      if (!slotsOf(f).some((x) => x.slot === a.slot)) return s;
+      return { ...s, picks: { ...s.picks, [f.id]: { ...(s.picks[f.id] ?? {}), [a.slot]: a.text.slice(0, 200) } } };
+    }
+    case 'clear-frame': {
+      const { [s.frameId]: _drop, ...rest } = s.picks;
+      return say({ ...s, picks: rest, pickOpen: null }, 'The slots are empty again.');
+    }
+    case 'announce':
+      return say(s, a.text);
     default:
       return s;
   }

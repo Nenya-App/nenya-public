@@ -9,6 +9,7 @@ import { markLabel, marksFor, textOf, tokensOf } from '../../../lib/phraseWorkbe
 import { shapeStyle } from '../workbench/shapes';
 import { SayMore } from '../workbench/SayMore';
 import { SliderStep } from '../workbench/SliderStep';
+import { FrameStep } from '../workbench/FrameStep';
 import { btn, btnOn, btnLink } from '../workbench/styles';
 
 // The phrase workbench (docs/phrase-workbench-scope.md; VITE_PHRASE_WORKBENCH, off by default). A sentence becomes tappable words that the person marks
@@ -16,7 +17,7 @@ import { btn, btnOn, btnLink } from '../workbench/styles';
 // Tap or key to mark, no dragging. A mark shows as a text tag and a line or box shape, never colour alone, and each change is announced politely.
 
 /** The steps shown so far. Later steps are added as they are built. */
-const VISIBLE_STEPS: StepIndex[] = [0, 1, 2];
+const VISIBLE_STEPS: StepIndex[] = [0, 1, 2, 3];
 
 export default function PhraseWorkbenchPage({ onBack }: { onBack: () => void }) {
   const [s, send] = useReducer(reduce, undefined, initialView);
@@ -181,6 +182,8 @@ export function WorkbenchView({ s, send, onBack }: { s: ViewState; send: (a: Act
           )}
 
           {s.step === 2 && <SliderStep s={s} send={send} onGoMark={() => send({ t: 'step', step: 1 })} />}
+
+          {s.step === 3 && <FrameStep s={s} send={send} />}
 
           <footer className="space-y-1 text-sm text-muted-foreground">
             <p>{WB.credit}</p>

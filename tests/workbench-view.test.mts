@@ -80,3 +80,22 @@ ok('turning the slider off clears the level', run(sl, { t: 'slider', id: nid, on
 ok('only a need mark can have a slider', run(m, { t: 'slider', id: m.wb.marks[0].id, on: true }) === m);
 ok('removing a mark takes its slider setting with it', Object.keys(run(sl, { t: 'remove', id: nid }).sliderOn).length === 0);
 ok('no total or average of levels exists in the state', !Object.keys(sl).some((k) => /total|average|score|overall/i.test(k)));
+
+// ---- frames
+let fr = run(initialView(), { t: 'draft', text: 'You left, I felt hurt, and I need trust.' }, { t: 'make' });
+fr = run(fr, { t: 'select', id: id(fr, 'hurt') }, { t: 'mark', kind: 'feeling' }, { t: 'select', id: id(fr, 'left') }, { t: 'mark', kind: 'saw' });
+const feelMark = fr.wb.marks.find((x) => x.kind === 'feeling')!.id, sawMark = fr.wb.marks.find((x) => x.kind === 'saw')!.id;
+ok('the first frame is chosen to begin with, with every slot empty', fr.frameId === 'four-parts' && Object.keys(fr.picks).length === 0);
+ok('a frame can be chosen; an unknown one is ignored', run(fr, { t: 'frame', id: 'request-only' }).frameId === 'request-only' && run(fr, { t: 'frame', id: 'nope' }) === fr);
+const open = run(fr, { t: 'pick-open', slot: 'feeling' });
+ok('"Take from my sentence" opens and closes a slot’s list', open.pickOpen === 'feeling' && run(open, { t: 'pick-open', slot: 'feeling' }).pickOpen === null && run(fr, { t: 'pick-open', slot: 'bogus' }) === fr);
+const took = run(open, { t: 'take', slot: 'feeling', markId: feelMark });
+ok('taking a marked word fills the slot with it, as typed, and announces it', took.picks['four-parts'].feeling === 'hurt' && took.pickOpen === null && took.announce === 'Put “hurt” in the slot for a feeling.');
+ok('only a word marked with the slot’s kind can be taken', run(open, { t: 'take', slot: 'feeling', markId: sawMark }) === open && run(open, { t: 'take', slot: 'feeling', markId: 99 }) === open);
+const typed = run(took, { t: 'slot-text', slot: 'need', text: 'to count on you' });
+ok('typing fills a slot with no mark at all, and is limited in length', typed.picks['four-parts'].need === 'to count on you' && run(took, { t: 'slot-text', slot: 'need', text: 'x'.repeat(500) }).picks['four-parts'].need.length === 200);
+ok('each frame keeps its own slots', run(typed, { t: 'frame', id: 'need-first' }).picks['need-first'] === undefined && run(typed, { t: 'frame', id: 'need-first' }, { t: 'frame', id: 'four-parts' }).picks['four-parts'].feeling === 'hurt');
+ok('the slots can be emptied', Object.keys(run(typed, { t: 'clear-frame' }).picks).length === 0);
+ok('a new sentence clears the slots', Object.keys(run(typed, { t: 'step', step: 0 }, { t: 'make' }).picks).length === 0);
+ok('the sentence is untouched by a frame', typed.wb.sentence === 'You left, I felt hurt, and I need trust.');
+ok('an announcement can be sent from the page (for the copy button)', run(initialView(), { t: 'announce', text: 'Copied.' }).announce === 'Copied.');

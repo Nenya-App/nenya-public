@@ -69,6 +69,20 @@ try {
   h = draw(WorkbenchView, { s: n, send: noop, onBack: noop });
   ok('once set: the spoken value follows, the visible value is a name, and no number is shown', typeof h === 'string' && h.includes('aria-valuetext="Mostly, step 5 of 7"') && text(h).includes('Now: Mostly') && !/Now: [^A-Za-z]*\d/.test(text(h)));
   ok('there is no total, average or overall slider anywhere on the page', typeof h === 'string' && !/overall|average|total|in all/i.test(text(h.slice(h.indexOf('<main'), h.indexOf('</main>')))));
+
+  // frames
+  let fr = reduce(reduce(initialView(), { t: 'draft', text: 'You left, I felt hurt, and I need trust.' }), { t: 'make' });
+  fr = reduce(reduce(fr, { t: 'select', id: 5 }), { t: 'mark', kind: 'feeling' });
+  fr = reduce(fr, { t: 'step', step: 3 });
+  h = draw(WorkbenchView, { s: fr, send: noop, onBack: noop });
+  ok('step 4 shows the frames, each slot labelled with a text box and "Take from my sentence", blanks for empty slots', typeof h === 'string' && ['Four parts', 'Need first', 'Request only', 'A story, set down'].every((t) => h.includes(t)) && h.includes('Slot: a feeling') && h.includes('Take from my sentence') && text(h).includes('When I ___, I felt ___, because I need ___'), h.error ?? '');
+  ok('both versions show side by side, the second with blanks, and the first with the marks as words', typeof h === 'string' && text(h).includes('Your sentence') && text(h).includes('In the frame') && text(h).includes('hurt [a feeling]'));
+  fr = reduce(reduce(fr, { t: 'pick-open', slot: 'feeling' }), { t: 'pick-open', slot: 'saw' });
+  h = draw(WorkbenchView, { s: fr, send: noop, onBack: noop });
+  ok('an empty slot says nothing is marked and suggests no word', typeof h === 'string' && text(h).includes('Nothing marked as what I saw or heard yet. You can type one, or go back and mark one.'));
+  fr = reduce(reduce(reduce(fr, { t: 'pick-open', slot: 'feeling' }), { t: 'take', slot: 'feeling', markId: fr.wb.marks[0].id }), { t: 'announce', text: 'Copied.' });
+  h = draw(WorkbenchView, { s: fr, send: noop, onBack: noop });
+  ok('a taken word fills the frame text and the slot box', typeof h === 'string' && text(h).includes('I felt hurt,') && h.includes('value="hurt"'));
 } finally {
   await vite.close();
 }

@@ -33,6 +33,9 @@ ok('a stepped alternative sits beside every slider, as buttons that say which is
 ok('the slider starts unmarked, shows no number, and nothing adds levels up', /m\.level \?\? 3/.test(all) && !/total|average|overall/i.test(read('src/app/components/workbench/SliderStep.tsx').replace(/adds up to nothing/g, '')));
 ok('the groups, families and words are buttons that say whether chosen, in labelled groups', /role="group" aria-label=\{isNeed/.test(all) && /aria-pressed=\{m\.detail\?\.category === g\.name\}/.test(all) && /aria-expanded=\{s\.specOpen\}/.test(all));
 
+ok('frames: each slot has a label and a text box, words are taken by button, and the list says whether it is open', /htmlFor=\{lid\}/.test(all) && /aria-expanded=\{open\}/.test(all) && /Take from my sentence/.test(all));
+ok('copying fails softly and says so in words', /Could not copy\. Select the text instead\./.test(all) && /catch/.test(read('src/app/components/workbench/FrameStep.tsx')));
+
 // The switch
 const app = read('src/app/App.tsx');
 ok('the page is reached only when the build switch is on', /currentScreen === 'phrases' && phraseWorkbenchOn\(\)/.test(app) && /phraseWorkbenchOn\(\) && isPhrasesPath/.test(app));
