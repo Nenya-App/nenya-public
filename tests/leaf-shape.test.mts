@@ -1,5 +1,5 @@
 // The leaf generator (pure path data) and the three motion presets.
-import { LEAF_SET, leafGeometry, leafTransform, leafSilhouetteSvg } from '../src/lib/leafShape.ts';
+import { LEAF_SET, leafRing, leafGeometry, leafTransform, leafSilhouetteSvg } from '../src/lib/leafShape.ts';
 import { chooseLeafPreset, leafAnimationStyles, leafMotionCss, readLeafCapability } from '../src/lib/leafMotion.ts';
 import { breathFractions, breathEnvelope } from '../src/lib/breathClock.ts';
 import { ok } from './helpers.mts';
@@ -44,3 +44,18 @@ const css = leafMotionCss('full', tech);
 ok('keyframes follow the ring fractions (open held through the hold-in, closed at the end)', css.includes(`${Math.round(f.t1 * 10000) / 100}%{transform:rotate(calc(var(--lm-open) * 1))`) && breathEnvelope(0.4, f) === 1);
 ok('no flashing: glint stays between 0.35 and 0.75', [...css.matchAll(/opacity:([\d.]+)/g)].every((m) => +m[1] >= 0.35 && +m[1] <= 0.75));
 ok('leaves sway out of step with each other', new Set([0, 1, 2, 3, 4, 5].map((i) => style('full', i).sway.animationDelay)).size === 6);
+
+// The leaf count is a parameter: six is the default, eight draws cleanly, nothing is hard-coded to six.
+ok('default ring is six and equals leafRing(6)', LEAF_SET.length === 6 && JSON.stringify(leafRing()) === JSON.stringify(LEAF_SET));
+for (const n of [6, 8]) {
+  const ring = leafRing(n);
+  const g = ring.map((s) => leafGeometry(s));
+  ok(`ring of ${n}: ${n} unique ids, blades, and placements`, ring.length === n && new Set(ring.map((s) => s.id)).size === n && new Set(g.map((x) => x.blade)).size === n && new Set(ring.map(leafTransform)).size === n);
+  ok(`ring of ${n}: all paths valid and finite`, g.every((x) => [x.blade, x.litHalf, x.midrib, x.sheen, ...x.veins].every((d) => PATH.test(d) && !/NaN/.test(d))));
+  const step = 360 / n;
+  const gaps = ring.map((s, i) => (ring[(i + 1) % n].angle - s.angle + 360) % 360);
+  ok(`ring of ${n}: spacing stays within 4 degrees of even`, gaps.every((d) => Math.abs(d - step) < 4));
+  // Neighbours must not overlap: blade width at its widest vs. arc spacing at mid-length.
+  ok(`ring of ${n}: widest blade fits its slot at mid-length`, ring.every((s) => s.width < 2 * Math.PI * (s.root + s.length * 0.38) / n));
+  ok(`ring of ${n}: silhouette has ${n} blades`, (leafSilhouetteSvg(n).match(/<path /g) ?? []).length === n);
+}

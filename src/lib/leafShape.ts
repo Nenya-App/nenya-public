@@ -132,19 +132,43 @@ export interface LeafSpec extends LeafParams {
   root: number;
 }
 
-/**
- * The six leaves of the logo. They share a family likeness (long, pointed, bending the same way round the ring, as a
- * flower turns) but no two are alike: each differs in length, width, tip, bend and number of veins, and sits a little
- * off the exact sixty degrees, so they can be told apart without any motion.
- */
-export const LEAF_SET: readonly LeafSpec[] = [
-  { id: 'leaf-1', angle: 0, root: 58, length: 306, width: 104, tipSharpness: 0.55, curve: 0.07, veins: 4 },
-  { id: 'leaf-2', angle: 61.5, root: 60, length: 296, width: 110, tipSharpness: 0.4, curve: 0.09, veins: 5 },
-  { id: 'leaf-3', angle: 119, root: 58, length: 312, width: 98, tipSharpness: 0.7, curve: 0.06, veins: 3 },
-  { id: 'leaf-4', angle: 180.5, root: 60, length: 300, width: 108, tipSharpness: 0.5, curve: 0.1, veins: 6 },
-  { id: 'leaf-5', angle: 240, root: 58, length: 308, width: 100, tipSharpness: 0.62, curve: 0.08, veins: 4 },
-  { id: 'leaf-6', angle: 299, root: 60, length: 298, width: 106, tipSharpness: 0.45, curve: 0.05, veins: 5 },
+/** The base family: six leaves, none alike. The ring cycles through these for any leaf count. */
+const FAMILY: ReadonlyArray<Omit<LeafSpec, 'id' | 'angle'> & { skew: number }> = [
+  { skew: 0, root: 58, length: 306, width: 104, tipSharpness: 0.55, curve: 0.07, veins: 4 },
+  { skew: 1.5, root: 60, length: 296, width: 110, tipSharpness: 0.4, curve: 0.09, veins: 5 },
+  { skew: -1, root: 58, length: 312, width: 98, tipSharpness: 0.7, curve: 0.06, veins: 3 },
+  { skew: 0.5, root: 60, length: 300, width: 108, tipSharpness: 0.5, curve: 0.1, veins: 6 },
+  { skew: 0, root: 58, length: 308, width: 100, tipSharpness: 0.62, curve: 0.08, veins: 4 },
+  { skew: -1, root: 60, length: 298, width: 106, tipSharpness: 0.45, curve: 0.05, veins: 5 },
 ];
+
+/**
+ * The leaves of the logo's ring. The logo's layout is SIX (the default); the count is a parameter, and eight draws
+ * cleanly too (narrower blades, so neighbours do not touch). Leaves share a family likeness (long, pointed, bending the
+ * same way round the ring, as a flower turns) but no two are alike: each differs in length, width, tip, bend and number
+ * of veins, and sits a little off its exact angle, so they can be told apart without any motion. Ids are leaf-1, leaf-2, ...
+ */
+export function leafRing(count = 6): LeafSpec[] {
+  const n = Math.max(1, Math.min(12, Math.round(Number.isFinite(count) ? count : 6)));
+  const fit = Math.min(1, 6.6 / n); // blade width scale so a fuller ring keeps its gaps
+  return Array.from({ length: n }, (_, i) => {
+    const f = FAMILY[i % FAMILY.length];
+    const round = Math.floor(i / FAMILY.length); // a second time through the family gets a different length and vein count
+    return {
+      id: `leaf-${i + 1}`,
+      angle: Math.round(((i * 360) / n + f.skew) * 100) / 100,
+      root: f.root,
+      length: f.length + round * 9,
+      width: Math.round(f.width * fit * 100) / 100,
+      tipSharpness: f.tipSharpness,
+      curve: f.curve,
+      veins: f.veins + round,
+    };
+  });
+}
+
+/** The default layout: six leaves. */
+export const LEAF_SET: readonly LeafSpec[] = leafRing(6);
 
 /** A leaf's placement as an SVG `transform` (rotate about the logo's centre, then move out to the base). */
 export function leafTransform(spec: Pick<LeafSpec, 'angle' | 'root'>): string {
@@ -152,7 +176,7 @@ export function leafTransform(spec: Pick<LeafSpec, 'angle' | 'root'>): string {
 }
 
 /** The six blades alone, in the 765-unit box, as one SVG document: a still silhouette (used as the glow's mask). */
-export function leafSilhouetteSvg(): string {
-  const paths = LEAF_SET.map((s) => `<path transform="${leafTransform(s)}" d="${leafGeometry(s).blade}"/>`).join('');
+export function leafSilhouetteSvg(count = 6): string {
+  const paths = leafRing(count).map((s) => `<path transform="${leafTransform(s)}" d="${leafGeometry(s).blade}"/>`).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-382.5 -382.5 765 765" width="765" height="765"><g fill="#000">${paths}</g></svg>`;
 }

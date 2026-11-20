@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useState } from 'react';
-import { LEAF_SET, leafGeometry, leafTransform, type LeafSpec } from '../../lib/leafShape';
+import { leafRing, leafGeometry, leafTransform, type LeafSpec } from '../../lib/leafShape';
 import { chooseLeafPreset, leafAnimationStyles, leafMotionCss, readLeafCapability, type LeafPreset } from '../../lib/leafMotion';
 import { breathLengthMs } from '../../lib/breathClock';
 import type { BreathingTechnique } from './ValarBreathingLogo';
@@ -22,7 +22,9 @@ interface MallornLeavesProps {
   breathingEnabled?: boolean;
   className?: string;
   style?: React.CSSProperties;
-  /** The leaves to draw, so a later menu can pass its own. Defaults to all six. */
+  /** How many leaves. The logo's layout is six; eight also draws cleanly. */
+  count?: number;
+  /** The leaves to draw, so a later menu can pass its own (overrides `count`). */
   leaves?: readonly LeafSpec[];
 }
 
@@ -40,7 +42,7 @@ export function useLeafPreset(force?: LeafPreset): LeafPreset {
   return force ?? preset;
 }
 
-export default function MallornLeaves({ size, cycleStart, technique = null, preset: forced, breathingEnabled = true, className, style, leaves = LEAF_SET }: MallornLeavesProps) {
+export default function MallornLeaves({ size, cycleStart, technique = null, preset: forced, breathingEnabled = true, className, style, count = 6, leaves: given }: MallornLeavesProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const chosen = useLeafPreset(forced);
   const preset: LeafPreset = breathingEnabled ? chosen : 'none';
@@ -52,6 +54,7 @@ export default function MallornLeaves({ size, cycleStart, technique = null, pres
     setElapsed(cycleStart == null ? 0 : Date.now() - cycleStart);
   }, [cycleStart, breathMs]);
 
+  const leaves = useMemo(() => given ?? leafRing(count), [given, count]);
   const shapes = useMemo(() => leaves.map((s) => ({ spec: s, geo: leafGeometry(s) })), [leaves]);
   const css = useMemo(() => leafMotionCss(preset, technique), [preset, technique]);
   const id = (n: string) => `${n}${uid}`;
