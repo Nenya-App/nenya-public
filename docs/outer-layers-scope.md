@@ -56,3 +56,13 @@ What it replaces: "here for you", "I'll be here / always here", "whenever / anyt
 **Policy change for all the boundary guards:** the first reply is repaired directly (the offending clause or sentence), and the model is asked again only when the repair would leave nothing. The removal guards now cover only false promises and claims to be all the person needs ("I'll remember you", "I promise", "next time I'll", "you don't need anyone else", "I'm all you need") and a medication directive.
 
 **Measured offline** over the 250 raw model replies in the 2026-11-17 runs (no model calls): the rewrite would fire in 16 (6%): none from either 26B model, 3 to 5 from each small model, mostly relationship and closing cases. **Checks before turning it on:** the "keep a copy" and "send us feedback" options must be real on the page at that point (the transcript download appears after the first exchange; the feedback form is the report form in About); the wording matches the Terms (Section 15); a run with the switch on, with layers.
+
+## Token and cost comparison, from saved runs (2026-11-20; offline, no model calls)
+Tokens were counted with the Gemma 4 E2B tokenizer (`tokenizer.json` in the local LM Studio folder; **assumed to match the 26B-A4B's**, same family, not verified) over the replies saved in the 2026-11-17 persona runs, and over the repository's instructions text. Neither Workers AI (reports Neurons) nor Venice's encrypted route (reports no tokens) gives real counts, so these are counts of the text, not billed tokens.
+| Model | median reply | tokens (median, mean) |
+| --- | --- | --- |
+| Gemma 4 26B-A4B instruct (Workers AI) | 45 words, 232 characters | 60, 60 |
+| Gemma 4 26B-A4B uncensored (Venice) | 58 words, 302 characters | 70, 70 |
+| Gemma 4 E2B instruct (local) | 34 words | 40, 43 |
+| Gemma 4 E2B uncensored (local) | 30 words | 35, 42 |
+About **4.0 to 4.1 characters a token** across all of them (the instructions text: 12,459 characters, 3,077 tokens, 4.05). So the fixed prompt (about 10,400 characters in the coach calls) is **about 2,550 to 2,600 input tokens**, history adds about 100 tokens a turn, and a reply is 35 to 70 tokens: **input dominates (about 97% of a call's tokens), so a model's wordiness barely moves the cost**; the uncensored 26B's replies run about 17% longer in tokens (30% in words) than the instruct model's. Costs from the earlier runs: Workers AI 22.2 Neurons a call (about 25 a turn); Venice about $0.0003 a call (at most $0.0006 a turn); local E2B $0. `scripts/replay-cost.mts` would price a captured request on several models with real `usage` numbers and Venice's live prices; it spends Venice credit and needs the owner's key in a terminal, so it has not been run.
