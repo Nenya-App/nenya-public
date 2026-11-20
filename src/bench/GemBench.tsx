@@ -349,6 +349,7 @@ export default function GemBench() {
         </Panel>
 
         <Panel title="Live gem: cut" onReset={() => reset('cut')}>
+          <Range label="Sides of the stone" value={C.sides} min={6} max={12} step={1} digits={0} onChange={(v) => set('cut', { sides: v })} hint="6 is the original hexagon, 8 an octagon (matches eight leaves). Each side adds facets: 10 draws about 1.65 times as much as 6. The sprite on the left is always a hexagon." />
           <Range label="Crown main angle (°)" value={C.crown} min={15} max={50} step={0.5} digits={1} onChange={(v) => set('cut', { crown: v })} />
           <Range label="Star angle (°)" value={C.star} min={5} max={40} step={0.5} digits={1} onChange={(v) => set('cut', { star: v })} />
           <Range label="Star reach" value={C.starReach} min={0.1} max={0.8} step={0.01} onChange={(v) => set('cut', { starReach: v })} />
@@ -396,6 +397,7 @@ export default function GemBench() {
                   cycleStart={cycleStart}
                   breathingEnabled={s.view.breathing}
                   gemEngine={side}
+                  gemSides={isLive ? s.cut.sides : 6}
                   liveGem={isLive ? live : undefined}
                   gemLook={isLive ? F : SPRITE_FINISH}
                   innerOrbit={orbits ? I : undefined}
