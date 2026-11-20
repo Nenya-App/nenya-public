@@ -34,14 +34,14 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
             <li><strong>Contempt for a group, or a call to harm one.</strong> The coach says plainly where it stands (that it does not share the view and will not build on it) and then asks what lies underneath. It does not simply mirror the feeling back, and it may offer a short read about it.</li>
             <li><strong>Judgment words.</strong> Blame words aimed at another person, or harsh words about yourself, can bring a gentle question about what you need, or a short read. Nothing is stopped.</li>
             <li><strong>Too short or unclear.</strong> A message with no words to read is not sent and uses no turn; you are asked to write it again. This never applies to a message that mentions distress or danger.</li>
-            <li><strong>A small AI model on our own server</strong> can read your latest message as a second signal. It runs in memory on our server, sends nothing to anyone, keeps nothing, and cannot end a conversation on its own. [This is in a test stage; the Terms say whether it is switched on.]</li>
+            <li><strong>A hate-speech classifier on our own server</strong> can read your latest message as a second signal. It is <code>cardiffnlp/twitter-roberta-base-hate-latest</code>, a small language model from the Cardiff NLP group that scores a message for how likely it is to be hate speech; we use only a band (high, mid or low), never the score. It runs in memory on our server, sends nothing to anyone, keeps nothing, and cannot end a conversation on its own. [This is in a test stage; the Terms say whether it is switched on.]</li>
           </ul>
 
           <h2 className="text-xl">What no check does</h2>
           <ul className="list-disc space-y-2 pl-5">
             <li>None of them keeps your message, a score or a profile of you. We keep plain daily counts only, with nothing that identifies anyone.</li>
             <li>None of them reports you to anyone.</li>
-            <li>Apart from the crisis and intent-to-harm stops above, no check ends a conversation, and no single signal from the small model ever does.</li>
+            <li>Apart from the crisis and intent-to-harm stops above, no check ends a conversation, and no single signal from the hate-speech classifier ever does.</li>
             <li>None is a safety system you should rely on. They are simple, they read English only, they miss things, and they sometimes fire on ordinary sentences.</li>
           </ul>
 
@@ -101,7 +101,7 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
 
           <h2 className="text-xl">Credits</h2>
           <p>
-            The checks use word lists built partly from HurtLex and Wiktionary, a small model from the Cardiff NLP group, and the test sets named above, each used under its own license and credited, with what we changed, in the project&rsquo;s{' '}
+            The checks use word lists built partly from HurtLex and Wiktionary, the hate-speech classifier <code>cardiffnlp/twitter-roberta-base-hate-latest</code> from the Cardiff NLP group (under CC BY 4.0; we converted it to a smaller 8-bit format and did not retrain it; the authors have not endorsed Nenya), and the test sets named above, each used under its own license and credited, with what we changed, in the project&rsquo;s{' '}
             <a className={link} href="https://github.com/Nenya-App/nenya-public/blob/main/ATTRIBUTIONS.md" target="_blank" rel="noopener noreferrer">attributions file<span className="sr-only"> (opens an outside site in a new tab)</span></a>.
           </p>
         </Card>
