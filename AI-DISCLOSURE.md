@@ -2,7 +2,7 @@
 
 Nenya is written by one person, Estëlle Streiff, working with AI. Most of the code and a large share of the written text were drafted, and then redrafted many times, by AI models. That is a large part of why the project is open source: so anyone can see how it was made and check it.
 
-Nenya is a prototype: built quickly and well documented, not a finished or expert-reviewed product.
+Nenya is a prototype: the repository and the public prototype were built quickly because of AI assistance, and they are well documented, but they are not a finished or expert-reviewed product. "Quickly" describes the build, not the idea: the idea and the code developed over several years, across different models and providers. Early prototypes were made largely with Figma Make, and that material is still in the owner's own documentation. Most recently the work has been done with Claude.
 
 ## What the AI did
 - **Code.** AI wrote most of the code in this repository, including the website, the server functions, the tests and the scripts, working inside Claude Code.
@@ -17,7 +17,7 @@ Estëlle chose what to build and what not to build, set the rules the code and t
 Most commits carry a co-author line naming the model that worked on them (for example "Co-Authored-By: Claude Sonnet 5.5"). Of this repository's commits at the time of writing, about 550 of 686 do. Commits without that line were made by the owner or by other tools. `git log` shows which.
 
 ## Which models
-- **Making the code and text:** Anthropic's Claude models (Sonnet and Opus), through Claude Code. Some public brand materials were drafted with Venice AI models, and the commit history and documents say where.
+- **Making the code and text:** most recently Anthropic's Claude models (Sonnet and Opus), through Claude Code. Earlier prototypes were made largely with Figma Make, and over the years other models and providers were used too. Some public brand materials were drafted with Venice AI models, and the commit history and documents say where.
 - **Inside the product:** the optional coach runs on a hosted open-weights language model, Gemma 4 26B, through Venice AI (Cloudflare Workers AI is the built-in alternative). The coach is an AI and says so. The breathing and reflection tools contain no AI.
 
 ## Where the ideas came from
