@@ -1,9 +1,9 @@
 # DRAFT: Terms wording for the hate-speech classifier
 
-Status: a draft for the owner to edit, written 2026-11-20. **Nothing here is in the live Terms** (`src/lib/legalDocument.ts`). The Terms are owner-approved text, so this is wording to approve, not a change made.
+Status: **built into `src/lib/legalDocument.ts` behind `VITE_SCREEN_MODEL=on` on 2026-11-20, at the owner's request** ("we need to update those terms"); with the switch off, nothing in the live Terms changes, and the date stays November 19. The outgoing text is archived. Section numbers below are corrected to the live document: respectful use is Section 3, the coach demo Section 15 ("Safety checks and stops"), and the daily totals Section 13. The wording in the source is the final text; this draft keeps the reasoning.
 
 ## Why this is needed
-The site now explains the classifier in plain terms on the "How the checks work" page (`src/app/components/about/HowChecksWork.tsx`, status line from `SCREEN_STATUS` in `src/lib/checksReport.ts`). The Terms still say, in Section 5 and in the coach section, that the checks are "simple phrase matching". That stays true only while the classifier is off. **The classifier must not be switched on for the live site (`COACH_SCREEN=on`, or `shadow` on the live site) until this wording is in the Terms**, because a message would then pass through a step the Terms do not describe. Until then the site says it is not on for the live site.
+The site now explains the classifier in plain terms on the "How the checks work" page (`src/app/components/about/HowChecksWork.tsx`, status line from `SCREEN_STATUS` in `src/lib/checksReport.ts`). The Terms still say, in Section 5 and in the coach section, that the checks are "simple phrase matching". That stays true only while the classifier is off. **The classifier must not be switched on for the live site (`COACH_SCREEN=on`, or `shadow` on the live site) without `VITE_SCREEN_MODEL=on` in the same release**, because a message would then pass through a step the Terms do not describe. Until then the site says it is not on for the live site.
 (An earlier version of the how-checks page said "the Terms say whether it is switched on". They did not; that line is removed.)
 
 ## Where it goes
