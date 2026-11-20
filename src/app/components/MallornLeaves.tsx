@@ -47,7 +47,7 @@ export function useLeafPreset(force?: LeafPreset): LeafPreset {
 /** The original petals' lighting: a soft bevel and a specular edge, applied to the metal strokes. */
 function MetalFilter({ id }: { id: string }) {
   return (
-    <filter id={id} filterUnits="userSpaceOnUse" x="-820" y="-820" width="1640" height="1640" colorInterpolationFilters="sRGB">
+    <filter id={id} filterUnits="userSpaceOnUse" x="-383" y="-383" width="766" height="766" colorInterpolationFilters="sRGB">
       <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="h" />
       <feSpecularLighting in="h" surfaceScale="4.1" specularConstant="0.98" specularExponent="28" lightingColor="#ffffff" result="sp">
         <feDistantLight azimuth="141" elevation="15" />

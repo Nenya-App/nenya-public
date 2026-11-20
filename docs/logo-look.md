@@ -1,7 +1,7 @@
 # Logo look (visitor setting)
 
-Status (2026-11-20): built. The leaf count is built but hidden (`LEAF_SETTING_AVAILABLE = false` in `src/lib/logoLook.ts`) until the
-leaf drawing that follows it is in. Plan and reasons: [eight-sided-gem-scope.md](eight-sided-gem-scope.md), Part 2.
+Status (2026-11-20): built and on. The leaf count shows in the settings (`LEAF_SETTING_AVAILABLE = true` in `src/lib/logoLook.ts`) now that the
+mallorn leaves are in and the ring follows the count; the default is eight leaves, so the gem is an octagon. Plan and reasons: [eight-sided-gem-scope.md](eight-sided-gem-scope.md), Part 2.
 
 ## What a visitor can change
 Under **Logo look** in the accessibility panel (`AccessibilitySettings.tsx`), as radio buttons (no sliders), applied at once with no

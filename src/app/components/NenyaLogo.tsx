@@ -8,8 +8,12 @@ import nenyaLogoSmall from '../../assets/nenya-logo-small.webp';
 // The orbit view's petals are eight woven, outlined mallorn-style leaves (MallornLeaves) in a 765-unit box, the logo's
 // size * 0.765, with the outer ring's diameter as 1000 units. The glow is cast from a still silhouette of the same outlines
 // (built only when a glow is asked for).
-let leafMaskUri = '';
-const leafMask = () => (leafMaskUri ||= `data:image/svg+xml;utf8,${encodeURIComponent(weaveSilhouetteSvg())}`);
+const leafMaskUris = new Map<number, string>();
+const leafMask = (count: number) => {
+  let uri = leafMaskUris.get(count);
+  if (!uri) leafMaskUris.set(count, (uri = `data:image/svg+xml;utf8,${encodeURIComponent(weaveSilhouetteSvg(count))}`));
+  return uri;
+};
 import MallornLeaves from './MallornLeaves';
 import { weaveSilhouetteSvg } from '../../lib/leafWeave';
 import { valarColors, type BreathingTechnique } from './ValarBreathingLogo';
@@ -186,7 +190,7 @@ export default function NenyaLogo({
     >
       {/* The glow, computed once as an image (see LogoGlow). */}
       {glow && showLogo && (
-        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? leafMask() : flatLogoSrc} gemEngine={gemEngine} gemSides={gemSides} />
+        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? leafMask(leafChoice) : flatLogoSrc} gemEngine={gemEngine} gemSides={gemSides} />
       )}
 
       {/* Logo image - base layer. When the Valar orbit is enabled the flat logo is
@@ -199,7 +203,7 @@ export default function NenyaLogo({
           className="absolute"
           style={{ width: size * 0.765, height: size * 0.765, zIndex: 10, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}
         >
-          <MallornLeaves size={size * 0.765} cycleStart={cycleStart} technique={technique} breathingEnabled={breathingEnabled} />
+          <MallornLeaves size={size * 0.765} count={leafChoice} cycleStart={cycleStart} technique={technique} breathingEnabled={breathingEnabled} />
         </div>
       )}
       {showLogo && !showValarOrbit && (

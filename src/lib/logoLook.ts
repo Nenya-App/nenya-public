@@ -7,8 +7,8 @@ import { DEFAULT_GEM_SIDES, MAX_GEM_SIDES, MIN_GEM_SIDES, clampSides } from './g
 export const LEAF_PRESETS = [6, 8, 10, 12] as const;
 /** Gem sides a visitor can choose. 12 is possible in the engine but twice the cost of 6, so it is not offered. */
 export const GEM_SIDE_PRESETS = [6, 8, 10] as const;
-/** The leaves the logo has by default. The petals on this branch are six; the mallorn leaf work makes the default eight. */
-export const DEFAULT_LOGO_LEAVES = 6;
+/** The leaves the logo has by default: eight, which looks best with the mallorn leaves; the gem then follows as an octagon. */
+export const DEFAULT_LOGO_LEAVES = 8;
 /** The gem follows the leaves unless the visitor picks a number. */
 export type GemSidesChoice = 'match' | (typeof GEM_SIDE_PRESETS)[number];
 export const DEFAULT_GEM_CHOICE: GemSidesChoice = 'match';
@@ -33,8 +33,8 @@ export function effectiveGemSides(choice: GemSidesChoice, leaves: number, opts: 
 }
 export { MAX_GEM_SIDES };
 
-/** Whether the settings offer the leaf count. The ring only follows it once the leaf drawing (mallorn leaves) is in; until then the control stays hidden. */
-export const LEAF_SETTING_AVAILABLE = false;
+/** Whether the settings offer the leaf count. On now that the mallorn leaves are in and the ring follows the count. */
+export const LEAF_SETTING_AVAILABLE = true;
 /** Plain-language names for the choices (shown in the accessibility panel and read aloud by the live message). */
 export const gemChoiceLabel = (c: GemSidesChoice): string => (c === 'match' ? 'Match the leaves' : `${c} sides`);
 export const gemChoiceMessage = (c: GemSidesChoice): string => (c === 'match' ? 'The gem now matches the leaves.' : `The gem now has ${c} sides.`);
