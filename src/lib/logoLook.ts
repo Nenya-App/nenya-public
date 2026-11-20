@@ -38,3 +38,31 @@ export const LEAF_SETTING_AVAILABLE = true;
 /** Plain-language names for the choices (shown in the accessibility panel and read aloud by the live message). */
 export const gemChoiceLabel = (c: GemSidesChoice): string => (c === 'match' ? 'Match the leaves' : `${c} sides`);
 export const gemChoiceMessage = (c: GemSidesChoice): string => (c === 'match' ? 'The gem now matches the leaves.' : `The gem now has ${c} sides.`);
+
+// The outer orbs' glow (a halo round each outer orb): its style and width are visitor settings too, with the same rules as the rest of the look.
+/** The glow styles. 'own': the orb's own current colour. 'palette': the rim fades into another colour from the orb's palette. 'random': colours from every palette mixed. 'shared': the three large gold blurs the site used before (heavier to draw). */
+export const HALO_STYLES = ['own', 'palette', 'random', 'shared'] as const;
+export type HaloStyle = (typeof HALO_STYLES)[number];
+export const DEFAULT_HALO_STYLE: HaloStyle = 'own';
+/** A halo's width as a multiple of its orb's width: soft is the first design, 5 the owner's choice (2026-11-20). */
+export const HALO_WIDTHS = [3.4, 5, 7] as const;
+export const DEFAULT_HALO_WIDTH = 5;
+export const snapHaloStyle = (v: unknown): HaloStyle => ((HALO_STYLES as readonly unknown[]).includes(v) ? (v as HaloStyle) : DEFAULT_HALO_STYLE);
+export const snapHaloWidth = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? nearest(v, HALO_WIDTHS) : DEFAULT_HALO_WIDTH);
+/** A whole number to seed the random colours; anything else becomes 1. */
+export const snapHaloSeed = (v: unknown): number => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 4294967295 ? v : 1);
+export const haloStyleLabel = (s: HaloStyle): string => ({ own: 'Own colour', palette: "Orb's palette", random: 'Random colours', shared: 'Old shared glow' })[s];
+export const haloWidthLabel = (w: number): string => (w <= 3.4 ? 'Soft' : w >= 7 ? 'Wider' : 'Wide');
+export const haloStyleMessage = (s: HaloStyle): string => `The outer glow is now ${haloStyleLabel(s).toLowerCase()}.`;
+
+/**
+ * Six colours for orb number `index`, drawn from `all` (every palette's colours) and fixed by `seed`: the same seed always gives the same
+ * glow, so a reload does not reshuffle it; "Shuffle" picks a new seed. Pure.
+ */
+export function randomHaloColors(seed: number, index: number, all: readonly string[]): string[] {
+  let x = (Math.imul(snapHaloSeed(seed) + 1, 2654435761) ^ Math.imul(index + 1, 40503)) >>> 0;
+  return Array.from({ length: 6 }, () => {
+    x = (Math.imul(x, 1664525) + 1013904223) >>> 0;
+    return all[Math.floor((x / 4294967296) * all.length)] ?? all[0];
+  });
+}

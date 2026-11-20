@@ -301,7 +301,7 @@ export default function GemBench() {
           <Range label="Orb size (of logo size)" value={O.orbSize} min={0.01} max={0.12} step={0.001} digits={3} onChange={(v) => set('outer', { orbSize: v })} />
           <Range label="Opacity, low" value={O.opacityLow} min={0} max={1} step={0.01} onChange={(v) => set('outer', { opacityLow: v })} />
           <Range label="Opacity, high" value={O.opacityHigh} min={0} max={1} step={0.01} onChange={(v) => set('outer', { opacityHigh: v })} />
-          <Choice label="Halo (shared glow, each orb's own colour, or its palette)" value={O.halo} options={['shared', 'own', 'palette'] as const} onChange={(v) => set('outer', { halo: v })} />
+          <Choice label="Halo (shared glow, each orb's own colour, or its palette)" value={O.halo} options={['shared', 'own', 'palette', 'random'] as const} onChange={(v) => set('outer', { halo: v })} />
         </Panel>
 
         <Panel title="Live gem: light and material" open onReset={() => reset('light')}>

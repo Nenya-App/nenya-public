@@ -26,3 +26,13 @@ store['nenya.prefs'] = JSON.stringify({ gemSides: 'match', logoLeaves: 8 });
 ok("'match' and a preset leaf count are accepted", M.loadPrefs().gemSides === 'match' && M.loadPrefs().logoLeaves === 8);
 M.setGemSidesChoice(9);
 ok('a value set in code snaps to a preset', [6, 8, 10].includes(M.getGemSidesChoice() as number));
+
+// The outer glow settings are stored like the others.
+store['nenya.prefs'] = JSON.stringify({ orbHalo: 'random', orbHaloWidth: 7, orbHaloSeed: 99 });
+ok('a stored glow style, width and seed are read back', M.loadPrefs().orbHalo === 'random' && M.loadPrefs().orbHaloWidth === 7 && M.loadPrefs().orbHaloSeed === 99);
+store['nenya.prefs'] = JSON.stringify({ orbHalo: 'neon', orbHaloWidth: 6, orbHaloSeed: 1.5 });
+ok('values that are not offered are dropped when read', M.loadPrefs().orbHalo === undefined && M.loadPrefs().orbHaloWidth === undefined && M.loadPrefs().orbHaloSeed === undefined);
+M.setOrbHaloWidth(6);
+ok('a width set in code snaps to a preset', [3.4, 5, 7].includes(M.getOrbHaloWidth()));
+M.setOrbHaloStyle('palette');
+ok('a style set in code is kept', M.getOrbHaloStyle() === 'palette');

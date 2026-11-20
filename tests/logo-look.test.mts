@@ -14,3 +14,16 @@ ok('twelve leaves give a ten-sided gem', effectiveGemSides('match', 12, live) ==
 ok('a chosen number wins over the leaves', effectiveGemSides(6, 12, live) === 6 && effectiveGemSides(10, 6, live) === 10);
 ok('a low-capability device never draws more than eight sides', effectiveGemSides(10, 8, low) === LOW_DEVICE_MAX_SIDES && effectiveGemSides('match', 12, low) === LOW_DEVICE_MAX_SIDES && effectiveGemSides(6, 8, low) === 6);
 ok('without the live gem the stone is the sprite\'s hexagon', effectiveGemSides(10, 12, { live: false, low: false }) === 6);
+
+// The outer orbs' glow: style, width and the random colours.
+import { DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, HALO_STYLES, HALO_WIDTHS, haloStyleLabel, randomHaloColors, snapHaloSeed, snapHaloStyle, snapHaloWidth } from '../src/lib/logoLook.ts';
+ok('the glow defaults to each orb\'s own colour at five times the orb\'s width', DEFAULT_HALO_STYLE === 'own' && DEFAULT_HALO_WIDTH === 5);
+ok('the width presets are 3.4, 5 and 7, and the default is one of them', HALO_WIDTHS.join() === '3.4,5,7' && (HALO_WIDTHS as readonly number[]).includes(DEFAULT_HALO_WIDTH));
+ok('a glow style that is not offered becomes the default', snapHaloStyle('neon') === 'own' && snapHaloStyle(null) === 'own' && HALO_STYLES.every((s) => snapHaloStyle(s) === s));
+ok('a width snaps to the nearest preset, and anything unreadable becomes the default', snapHaloWidth(4.5) === 5 && snapHaloWidth(3) === 3.4 && snapHaloWidth(99) === 7 && snapHaloWidth('5') === 5 && snapHaloWidth(NaN) === 5);
+ok('a seed is a whole number or it becomes 1', snapHaloSeed(42) === 42 && snapHaloSeed(1.5) === 1 && snapHaloSeed(-1) === 1 && snapHaloSeed('x') === 1);
+const sample = ['#111111', '#222222', '#333333', '#444444', '#555555', '#666666', '#777777', '#888888'];
+ok('random colours: six per orb, all from the list', randomHaloColors(3, 0, sample).length === 6 && randomHaloColors(3, 0, sample).every((c) => sample.includes(c)));
+ok('the same seed gives the same colours (a reload does not reshuffle)', randomHaloColors(3, 4, sample).join() === randomHaloColors(3, 4, sample).join());
+ok('another seed or another orb gives different colours', randomHaloColors(3, 4, sample).join() !== randomHaloColors(4, 4, sample).join() && randomHaloColors(3, 4, sample).join() !== randomHaloColors(3, 5, sample).join());
+ok('every style has a label', HALO_STYLES.every((s) => haloStyleLabel(s).length > 0));

@@ -14,6 +14,12 @@ motion, and announced politely ("The gem now has 8 sides."). Targets are at leas
 The default gem is eight-sided (`DEFAULT_GEM_CHOICE = 8`). *Match the leaves* is the other option: the stone then has as many sides as the ring has leaves, kept between 6 and 10, so twelve leaves
 give a ten-sided stone. Picking a number fixes the gem whatever the leaves are.
 
+## Outer glow
+The glow round each outer orb is a setting too (Settings, Logo look, Outer glow), with the same storage rules as the rest of the look:
+- **Style** (`orbHalo`): *Own colour* (the default; the halo follows the orb's own colour), *Orb's palette* (the rim fades into another colour from the same palette), *Random colours* (each orb draws from every palette; *Shuffle colours* deals a new set, kept as `orbHaloSeed` so a reload does not reshuffle) or *Old shared glow* (the three large gold blurs, the heaviest to draw).
+- **Width** (`orbHaloWidth`): Soft 3.4, Wide 5 (the default, the owner's choice) or Wider 7, as a multiple of the orb's width. Not offered for the old shared glow.
+The halos are gradients, never blurs, and their colours are animated by the browser, so they are light to draw. Reduced motion holds them still. Code: `src/lib/logoLook.ts` (choices, `randomHaloColors`), `src/lib/deviceMemory.ts` (storage), `NenyaLogo.tsx`.
+
 ## Storage
 Both choices are display settings like the others (`logoLeaves`, `gemSides` in `nenya.prefs`, `src/lib/deviceMemory.ts`). They are
 written to the device only while "Remember on this device" is on; otherwise they last for the visit. Unreadable or unknown stored values
