@@ -1,9 +1,12 @@
 // The pure parts of the nightly canary (docs/canary-scope.md): tonight's tasks, the case order, a task's digest line, and the drift flags. The run itself
 // is netlify/functions/canary-nightly.mts. Nothing here holds a reply: a case is kept as its id, its outcome, and the length and reading grade of its reply.
 
+import { costSummary, sendBackFlag, type CostSummary } from './canaryCost.ts';
+
 export interface Task { name: string; instructions: string; stance?: string; model?: string }
-export interface Compact { id: string; outcome: string; words: number; grade: number }
-export interface TaskReport extends Task { conversations: number; pass: number; fail: number; error: number; medianWords: number; medianGrade: number; failedCases: Record<string, number>; neurons: number }
+/** `neurons` and `calls` (model calls on each turn of the case) are numbers only, and absent on cases saved before they were recorded. */
+export interface Compact { id: string; outcome: string; words: number; grade: number; neurons?: number; calls?: number[] }
+export interface TaskReport extends Task { conversations: number; pass: number; fail: number; error: number; medianWords: number; medianGrade: number; failedCases: Record<string, number>; neurons: number; cost?: CostSummary; sendBackRate?: number }
 
 /** Where a night is up to, kept in the private store between the minute-by-minute runs. */
 export interface NightState {
@@ -58,6 +61,7 @@ export function report(t: Task, cases: Compact[], neurons: number): TaskReport {
     medianGrade: Math.round(median(answered.map((r) => r.grade)) * 10) / 10,
     failedCases,
     neurons: Math.round(neurons),
+    ...(cases.some((r) => r.calls) ? (() => { const cost = costSummary(cases); return { cost, sendBackRate: cost.sendBackRate }; })() : {}),
   };
 }
 
@@ -72,6 +76,8 @@ export function driftFlags(today: TaskReport[], past: TaskReport[], cases: Recor
       if (t.pass / Math.max(1, t.conversations) < avgRate - 0.08) flags.push(`pass rate ${t.pass}/${t.conversations} against about ${Math.round(avgRate * 100)}% lately`);
     }
   }
+  const baseToday = today.filter((t) => t.sendBackRate !== undefined && (t.cost?.turns ?? 0) > 0);
+  for (const t of baseToday) { const f = sendBackFlag(t.sendBackRate, past.map((x) => x.sendBackRate)); if (f) flags.push(f); }
   const failsToday: Record<string, number> = {};
   for (const t of today) for (const [id, n] of Object.entries(t.failedCases)) failsToday[id] = (failsToday[id] ?? 0) + n;
   for (const [id, n] of Object.entries(failsToday)) if ((cases[id]?.[0] ?? 0) >= 8 && cases[id][1] === n) flags.push(`${id} had not failed in any earlier baseline run (${cases[id][0] - n} or more) and failed tonight`);
