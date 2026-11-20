@@ -34,7 +34,8 @@ const priceOf = (id: string): [number, number] => {
     cfList ??= JSON.parse(spawnSync(CF, ['ai', 'models', 'list'], { encoding: 'utf8', maxBuffer: 1 << 28 }).stdout);
     const pr = cfList!.find((m) => m.name === id)?.properties?.find((p: any) => p.property_id === 'price')?.value;
     const f = (u: string) => Number(pr?.find((x: any) => String(x.unit).endsWith(u))?.price);
-    if (!pr || Number.isNaN(f('input tokens'))) throw new Error(`No Workers AI price for ${id}`);
+    // Some models carry no per-token price in the list: their cost is then taken from the Neurons at the paid rate ($0.011 per 1,000, from memory: check it), marked by NaN.
+    if (!pr || Number.isNaN(f('input tokens'))) return [NaN, NaN];
     return [f('input tokens'), f('output tokens') || 0];
   }
   const p = list.data?.find((m: any) => m.id === id)?.model_spec?.pricing;
@@ -95,8 +96,8 @@ for (const model of models) {
     tout += j.usage?.completion_tokens ?? 0;
     lastReply = j.choices?.[0]?.message?.content ?? j.response ?? '';
   }
-  const usd = (tin * pin + tout * pout) / 1e6;
-  const row = { model, calls: rows.length, inputTokens: tin, outputTokens: tout, usdPerMillion: { in: pin, out: pout }, usd: +usd.toFixed(6), usdPerCall: +(usd / rows.length).toFixed(6), seconds: +secs.toFixed(1), ...(model.startsWith('@cf/') ? { neurons: +neurons.toFixed(2) } : {}), lastReplyWords: lastReply.split(/\s+/).filter(Boolean).length };
+  const usd = Number.isNaN(pin) ? (neurons * 0.011) / 1000 : (tin * pin + tout * pout) / 1e6;
+  const row = { model, calls: rows.length, inputTokens: tin, outputTokens: tout, usdPerMillion: Number.isNaN(pin) ? 'not listed: cost from Neurons' : { in: pin, out: pout }, usd: +usd.toFixed(6), usdPerCall: +(usd / rows.length).toFixed(6), seconds: +secs.toFixed(1), ...(model.startsWith('@cf/') ? { neurons: +neurons.toFixed(2) } : {}), lastReplyWords: lastReply.split(/\s+/).filter(Boolean).length };
   summary.push(row);
   console.log(JSON.stringify(row));
   console.log(`  reply: ${lastReply.replace(/\n+/g, ' ').slice(0, 400)}`);
