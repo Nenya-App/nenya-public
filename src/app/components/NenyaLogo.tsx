@@ -18,6 +18,7 @@ import { liveGemSupported } from '../../lib/gemRenderer';
 import { deviceProfile } from '../../lib/deviceProfile';
 import { useGemSidesChoice, useLogoLeaves } from '../../lib/deviceMemory';
 import { effectiveGemSides } from '../../lib/logoLook';
+import { useZoomedIn } from '../../lib/zoomLite';
 
 // Above this size, the full-resolution source is used instead -- 128px
 // covers up to ~40px CSS at 3x device pixel ratio (the largest "small"
@@ -137,8 +138,10 @@ export default function NenyaLogo({
   const sideChoice = useGemSidesChoice();
   const leafChoice = useLogoLeaves();
   const gemSides = gemSidesProp ?? effectiveGemSides(sideChoice, leafChoice, { live: gemEngine === 'live' && liveGemSupported(), low: typeof window !== 'undefined' && deviceProfile().gem.quality === 'low' });
+  // While the page is pinch-zoomed the logo is drawn lighter (no glows, halos or blends; the gem holds its last frame): see src/lib/zoomLite.ts.
+  const zoomed = useZoomedIn();
   const isLight = inner.style === 'light';
-  const ownHalo = glow && outer.halo === 'own';
+  const ownHalo = glow && !zoomed && outer.halo === 'own';
   const ORBIT_DURATION = inner.orbitSeconds > 0 ? inner.orbitSeconds : DEFAULT_INNER_ORBIT.orbitSeconds; // seconds for one complete orbit
   const INNER_ORB_OPACITY = [inner.opacityLow, inner.opacityHigh, inner.opacityLow];
   const OUTER_ORB_OPACITY = [outer.opacityLow, outer.opacityHigh, outer.opacityLow];
@@ -215,7 +218,7 @@ export default function NenyaLogo({
             marginLeft: -orbitRadius,
             marginTop: -orbitRadius,
             zIndex: inner.layer === 'over' ? 32 : 20,
-            mixBlendMode: inner.blend === 'normal' ? (isLight ? 'screen' : undefined) : inner.blend,
+            mixBlendMode: zoomed ? undefined : inner.blend === 'normal' ? (isLight ? 'screen' : undefined) : inner.blend,
             willChange: 'transform',
             // Plain CSS animation rather than Motion's JS-driven `animate` --
             // animation-play-state genuinely freezes this on pause, where
@@ -256,7 +259,7 @@ export default function NenyaLogo({
                   left: wrapped ? pad : orbitRadius - orbSize / 2 + x - off,
                   top: wrapped ? pad : orbitRadius - orbSize / 2 + y - off,
                   borderRadius: '50%',
-                  willChange: 'background, opacity, transform',
+                  willChange: zoomed ? undefined : 'background, opacity, transform',
                   opacity: isLight ? inner.emergeDepth : INNER_ORB_OPACITY[0],
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
@@ -383,14 +386,14 @@ export default function NenyaLogo({
             const planet = (
               <m.div
                 key={`outer-${valar.name}`}
-                className={glow && !ownHalo ? 'absolute nenya-orb-glow' : 'absolute'}
+                className={glow && !zoomed && !ownHalo ? 'absolute nenya-orb-glow' : 'absolute'}
                 style={{
                   width: outerOrbSize,
                   height: outerOrbSize,
                   left: outerOrbitRadius - outerOrbSize / 2 + x,
                   top: outerOrbitRadius - outerOrbSize / 2 + y,
                   borderRadius: '50%',
-                  willChange: 'background, opacity, transform',
+                  willChange: zoomed ? undefined : 'background, opacity, transform',
                   opacity: OUTER_ORB_OPACITY[0],
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
@@ -463,6 +466,7 @@ export default function NenyaLogo({
           orbitSeconds={inner.orbitSeconds}
           colorCycle={inner.colorCycle}
           emerge={inner}
+          paused={zoomed}
           onStats={onGemStats}
           {...gemLook}
         />

@@ -82,6 +82,8 @@ interface SpectralGemProps {
   colorCycle?: number;
   /** The inner ring's light look. In the 'light' style each colour the stone takes from below is scaled by how lit that light is. */
   emerge?: Pick<InnerOrbitLook, 'style' | 'emergeSeconds' | 'emergeStep' | 'emergeDepth'>;
+  /** Hold the last drawn frame and draw no new ones (the page is pinch-zoomed: see src/lib/zoomLite.ts). */
+  paused?: boolean;
   onStats?: (s: GemStats) => void;
 }
 
@@ -131,6 +133,7 @@ export default function SpectralGem({
   orbitSeconds = DEFAULT_INNER_ORBIT.orbitSeconds,
   colorCycle = DEFAULT_INNER_ORBIT.colorCycle,
   emerge = DEFAULT_INNER_ORBIT,
+  paused = false,
   onStats,
 }: SpectralGemProps) {
   const bodyRef = useRef<HTMLCanvasElement>(null);
@@ -167,6 +170,8 @@ export default function SpectralGem({
   const kaleido = useRef<{ t: number; last: number; started: boolean; restart: number | undefined }>({ t: 0, last: 0, started: false, restart: undefined });
   const statsRef = useRef(onStats);
   statsRef.current = onStats;
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
   const emergeRef = useRef(emerge);
   emergeRef.current = emerge;
   const timingRef = useRef({ orbitSeconds, colorCycle });
@@ -282,6 +287,7 @@ export default function SpectralGem({
     };
 
     const draw = (reduced: boolean) => {
+      if (pausedRef.current) return; // zoomed in: keep the frame on screen, spend nothing
       if (renderer && renderer.lost()) {
         // The browser took the graphics context away: carry on with the sprite.
         renderer = null;
