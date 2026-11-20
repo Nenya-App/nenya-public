@@ -91,3 +91,22 @@ Resource: crisis lines (by region), CNVC materials, the podcast, other vetted pl
 4. The resource list, with what you can name publicly.
 5. Who reviews the wording, and the reading level to aim for.
 6. Whether the existing draft modules are current and whether they are what staging uses now.
+
+## The moveset (2026-11-20)
+
+A derived set of coaching moves, their order and need and feeling guidance was handed over as a proposal, to be reconciled with what is here; where they conflicted, the existing guards won. This section records the structure of what was agreed with the owner. The handoff files and the new wording are private and are not in the repository.
+
+**Mapping.** Most moves already exist as modules (empathy mirroring and needs translation: `guess_then_check`; reframe: `reframe_gently`; scripting: `answer_with_words`, `open_a_hard_conversation`, `ask_for_what_you_want`; psychoeducation: `explain_briefly`; boundary clarification: `set_a_boundary`; role play: `offer_to_play_the_other`). The ten ICARUS-VOLT bottlenecks are already covered by the canonical lens modules, so the handoff's bottleneck counts (which describe an earlier labeler) change nothing there.
+
+**What changed in the code**
+- Two new draft moves: `permission_giving` (an apology for needing something, "I shouldn't", feeling guilty for wanting) and `ask_one_question` (no phrase of its own: a first message of up to five words with no question, no other person and nothing else matching).
+- `reframe_gently` also fires on a fixed story about the other person, but only from the second message on (a reframe before the person feels heard can land as dismissal); it is still held back when harm was named as intended.
+- `ask_one_question` is held back under depleted reserves (a question costs them); `permission_giving` is not.
+- With the practice arc on, `guess_then_check` and `ask_one_question` are left out (`ARC_EXCLUDED_MODULES`): the arc has the person guess first and gives each exchange its own question. This also fixed an existing clash, since `guess_then_check` names the feeling and need for the person.
+- Opening rules by stance: Reflect keeps empathy first with one exception (a first message too short to reflect gets one open question); Learn opens with whichever move fits. v1, the live default, is unchanged.
+
+**What was left out, and why.** Somatic invitation: the core says not to open with a question about the body, the evidence was the thinnest, and the app has its own breathing tool. Role play: the existing module already asks consent first and is held back when harm was intended; it only gains "stop or start again at any time" and "ask what felt true".
+
+**Wording** of the new and edited modules is in a private draft set (`coach-modules-combined-v0.3-DRAFT.json` in the owner's private folder), not uploaded to the store. The worst case for one reply is 7,680 of the 12,000 characters. A one-move-per-reply sentence is added to the private core. A plain-language public version of the moves is `docs/coach-moves.md`.
+
+**Decisions still open** (the handoff's list): the communal-needs layer is untested on data; whether the core's own need words should follow CNVC's seven categories (the core lists safety, belonging, dignity, meaning, autonomy, pleasure, contribution); and how the rare moves (permission giving, one open question) behave in an evaluation run before they are used.
