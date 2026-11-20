@@ -5,11 +5,13 @@ import { useEffect, useRef, useState } from 'react';
 // data than the display can show. A pre-resized 128 px WebP is swapped in below for those small sizes instead.
 import nenyaLogo from '../../assets/nenya-logo.webp';
 import nenyaLogoSmall from '../../assets/nenya-logo-small.webp';
-// The orbit view's petals are six vector mallorn-style leaves (MallornLeaves) in a 765-unit box, the logo's size * 0.765,
-// with the outer ring's diameter as 1000 units. The glow is cast from a still silhouette of the same leaves.
-const LEAF_MASK = `data:image/svg+xml;utf8,${encodeURIComponent(leafSilhouetteSvg())}`;
+// The orbit view's petals are eight woven, outlined mallorn-style leaves (MallornLeaves) in a 765-unit box, the logo's
+// size * 0.765, with the outer ring's diameter as 1000 units. The glow is cast from a still silhouette of the same outlines
+// (built only when a glow is asked for).
+let leafMaskUri = '';
+const leafMask = () => (leafMaskUri ||= `data:image/svg+xml;utf8,${encodeURIComponent(weaveSilhouetteSvg())}`);
 import MallornLeaves from './MallornLeaves';
-import { leafSilhouetteSvg } from '../../lib/leafShape';
+import { weaveSilhouetteSvg } from '../../lib/leafWeave';
 import { valarColors, type BreathingTechnique } from './ValarBreathingLogo';
 import SpectralGem, { type GemStats, type LiveGemLook } from './SpectralGem';
 import LogoGlow from './LogoGlow';
@@ -159,7 +161,7 @@ export default function NenyaLogo({
     >
       {/* The glow, computed once as an image (see LogoGlow). */}
       {glow && showLogo && (
-        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? LEAF_MASK : flatLogoSrc} gemEngine={gemEngine} />
+        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? leafMask() : flatLogoSrc} gemEngine={gemEngine} />
       )}
 
       {/* Logo image - base layer. When the Valar orbit is enabled the flat logo is

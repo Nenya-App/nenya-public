@@ -1,11 +1,10 @@
 // The leaf generator (pure path data) and the three motion presets.
 import { LEAF_SET, leafRing, leafGeometry, leafTransform, leafSilhouetteSvg } from '../src/lib/leafShape.ts';
-import { chooseLeafPreset, leafAnimationStyles, leafMotionCss, readLeafCapability } from '../src/lib/leafMotion.ts';
+import { chooseLeafPreset, flowerAnimationStyle, leafMotionCss, readLeafCapability } from '../src/lib/leafMotion.ts';
 import { breathFractions, breathEnvelope } from '../src/lib/breathClock.ts';
 import { ok } from './helpers.mts';
 
 const PATH = /^M[MCLQZ0-9.,\s-]+Z?$/;
-import { readFileSync } from 'node:fs';
 const nums = (d: string) => (d.match(/-?\d+\.\d+/g) ?? []).map(Number);
 const geos = LEAF_SET.map((s) => leafGeometry(s));
 
@@ -33,21 +32,18 @@ ok('preset: little memory or two cores is low', chooseLeafPreset({ ...cap, devic
 ok('preset: no window means none', chooseLeafPreset(readLeafCapability(undefined)) === 'none' || typeof window !== 'undefined');
 
 const tech = { ih: 4000, hi: 2000, ex: 6000, ho: 0 };
-const style = (p: 'full' | 'low' | 'none', i = 0) => leafAnimationStyles(p, i, tech, 12000, 5000);
-ok('none: no css and no animation on any part', leafMotionCss('none', tech) === '' && [0, 1, 2, 3, 4, 5].every((i) => Object.keys(style('none', i).open).length + Object.keys(style('none', i).glint).length === 0));
-const sp = (p: 'full' | 'low', i: number) => Math.abs(parseFloat(String(style(p, i).open['--lm-spread'])));
-ok('low: the same breath, smaller', !!style('low').open.animation && sp('low', 0) < sp('full', 0) && Number(style('low').open['--lm-gy']) < Number(style('full').open['--lm-gy']));
-ok('no sway anywhere: one animation per leaf part, no sway keyframes', !leafMotionCss('full', tech).includes('sway') && !('sway' in style('full')) && String(style('full').open.animation).startsWith('lm-open-'));
+const style = (p: 'full' | 'low' | 'none', elapsed = 5000) => flowerAnimationStyle(p, tech, 12000, elapsed);
+const swell = (p: 'full' | 'low') => Number(style(p)['--lm-swell']);
+ok('none: no css and no animation property at all', leafMotionCss('none', tech) === '' && Object.keys(style('none')).length === 0);
+ok('full: the whole flower breathes, 4.5% swell', !!style('full').animation && swell('full') === 0.045);
+ok('low: the same breath, smaller', !!style('low').animation && swell('low') < swell('full') && swell('low') > 0);
+ok('no sway, no per-leaf rotation: one breath keyframe set, scale only', !/sway|rotate/.test(leafMotionCss('full', tech)) && /@keyframes lm-breath-/.test(leafMotionCss('full', tech)));
 ok('motion css repeats the reduced-motion rule', leafMotionCss('full', tech).includes('prefers-reduced-motion:reduce') && leafMotionCss('low', tech).includes('prefers-reduced-motion:reduce'));
-ok('breath animation lasts exactly one breath', String(style('full').open.animation).includes('12000ms'));
-ok('starts at the clock phase (negative delay = elapsed)', style('full').open.animationDelay === '-5000ms' && leafAnimationStyles('low', 0, tech, 12000, 17000).open.animationDelay === '-5000ms');
+ok('breath animation lasts exactly one breath', String(style('full').animation).includes('12000ms'));
+ok('starts at the clock phase (negative delay = elapsed)', style('full').animationDelay === '-5000ms' && style('low', 17000).animationDelay === '-5000ms');
 const f = breathFractions(tech);
 const css = leafMotionCss('full', tech);
-ok('keyframes follow the ring fractions (open held through the hold-in, closed at the end)', css.includes(`${Math.round(f.t1 * 10000) / 100}%{transform:rotate(calc(var(--lm-spread) * 1))`) && breathEnvelope(0.4, f) === 1);
-ok('no flashing: glint stays between 0.35 and 0.75', [...css.matchAll(/opacity:([\d.]+)/g)].every((m) => +m[1] >= 0.35 && +m[1] <= 0.75));
-ok('neighbours spread away from each other (alternating signs), never all one way', [0, 1, 2, 3, 4, 5].every((i) => Math.sign(parseFloat(String(style('full', i).open['--lm-spread']))) === (i % 2 === 0 ? 1 : -1)));
-ok('every leaf has the same phase and period (stagger is amplitude only)', new Set([0, 1, 2, 3, 4, 5].map((i) => style('full', i).open.animationDelay + String(style('full', i).open.animation))).size === 1 && new Set([0, 1, 2, 3, 4, 5].map((i) => style('full', i).open['--lm-gy'])).size > 1);
-ok('breath swells more along the leaf than across it', Number(style('full').open['--lm-gy']) > Number(style('full').open['--lm-gx']));
+ok('keyframes follow the ring fractions (full through the hold-in, rest at the end)', css.includes(`${Math.round(f.t1 * 10000) / 100}%{transform:scale(calc(1 + var(--lm-swell) * 1))}`) && css.includes(`${Math.round(f.t3 * 10000) / 100}%{transform:scale(calc(1 + var(--lm-swell) * 0))}`) && breathEnvelope(0.4, f) === 1);
 
 // The leaf count is a parameter: six is the default, eight draws cleanly, nothing is hard-coded to six.
 ok('default ring is six and equals leafRing(6)', LEAF_SET.length === 6 && JSON.stringify(leafRing()) === JSON.stringify(LEAF_SET));
@@ -70,7 +66,3 @@ ok('default tone is gold for every leaf (the logo is unchanged)', leafRing().eve
 ok("'alternate' alternates: odd-numbered leaves silver, even-numbered gold", alt.every((s, i) => s.tone === ((i + 1) % 2 === 1 ? 'silver' : 'gold')) && alt.filter((s) => s.tone === 'silver').length === 6);
 ok('tone changes colour only: the shapes and placements are the same', JSON.stringify(alt.map(({ tone, ...r }) => r)) === JSON.stringify(leafRing(12).map(({ tone, ...r }) => r)));
 ok('silhouette is unchanged by tone', leafSilhouetteSvg(12) === leafSilhouetteSvg(12));
-const src = readFileSync(new URL('../src/app/components/MallornLeaves.tsx', import.meta.url), 'utf8');
-ok('component defaults to gold tones and keeps six leaves', /tones = 'gold'/.test(src) && /count = 6/.test(src));
-ok('silver leaves get a silver blade and gold lines; the bronze hairline stays under the veins', src.includes("id(silver ? 'silver' : 'gold')") && src.includes("id(silver ? 'goldLine' : 'silver')") && (src.match(/stroke="#3a2616"/g) ?? []).length >= 3);
-ok('none preset still has no animation with alternate tones', leafMotionCss('none', tech) === '' && alt.every((_, i) => Object.keys(leafAnimationStyles('none', i, tech, 12000, 5000).open).length === 0));

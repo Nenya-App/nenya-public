@@ -1,13 +1,13 @@
 import { useEffect, useId, useMemo, useState } from 'react';
-import { leafRing, leafGeometry, leafTransform, type LeafSpec } from '../../lib/leafShape';
-import { chooseLeafPreset, leafAnimationStyles, leafMotionCss, readLeafCapability, type LeafPreset } from '../../lib/leafMotion';
+import { leafWeave, LOGO_LEAF_COUNT, WEAVE_INNER_WIDTH, WEAVE_OUTER_WIDTH, WEAVE_RIB_WIDTH } from '../../lib/leafWeave';
+import { chooseLeafPreset, flowerAnimationStyle, leafMotionCss, readLeafCapability, type LeafPreset } from '../../lib/leafMotion';
 import { breathLengthMs } from '../../lib/breathClock';
 import type { BreathingTechnique } from './ValarBreathingLogo';
 
-// The six leaves of the logo gem, drawn as vectors in the same 765-unit box the old petals image used (its size is the
-// logo's size * 0.765). Colours are the ones the petals already had: warm gold (#b8803f, #fcce96, #fff0cf), silver-white
-// (#f2ead9, #ffffff, #b9b09f) and the dark bronze of the old edge shadow (#3a2616). Each leaf is its own group with an id
-// (leaf-1 to leaf-6), so a later menu can make each one a button. They are drawing only for now, hidden from assistive
+// The logo's petals: woven, outlined, translucent leaves in the original petals' metal finish (the gold and silver-white
+// gradients and the lighting filters below are the ones from the original petals drawing). The shapes come from
+// src/lib/leafWeave.ts. Drawn in the 765-unit box (the logo's size * 0.765). Each leaf has an id group (leaf-1 ... leaf-N)
+// holding its faint fill, so a later menu can make each one a control. Drawing only for now, hidden from assistive
 // technology: the logo's name comes from the text beside it or from the alt text NenyaLogo passes.
 
 interface MallornLeavesProps {
@@ -20,14 +20,14 @@ interface MallornLeavesProps {
   preset?: LeafPreset;
   /** Breathing animation switched off: the leaves keep still too. */
   breathingEnabled?: boolean;
+  /** 'alternate' (default): even leaves gold outside and silver inside, odd leaves the other way. 'classic': gold outside, silver inside. */
+  tones?: 'alternate' | 'classic';
+  /** Leaves in the ring. The logo's layout is eight (LOGO_LEAF_COUNT); 6 and 12 also draw cleanly. */
+  count?: number;
+  /** A hairline midrib on each leaf. On by default. */
+  midrib?: boolean;
   className?: string;
   style?: React.CSSProperties;
-  /** 'gold' (default): every leaf gold with silver-white veins. 'alternate': odd-numbered leaves silver with gold veins and edge. */
-  tones?: 'gold' | 'alternate';
-  /** How many leaves. The logo's layout is six; eight also draws cleanly. */
-  count?: number;
-  /** The leaves to draw, so a later menu can pass its own (overrides `count`). */
-  leaves?: readonly LeafSpec[];
 }
 
 /** The preset for this browser (re-read when the reduced-motion setting changes). */
@@ -44,7 +44,27 @@ export function useLeafPreset(force?: LeafPreset): LeafPreset {
   return force ?? preset;
 }
 
-export default function MallornLeaves({ size, cycleStart, technique = null, preset: forced, breathingEnabled = true, className, style, count = 6, tones = 'gold', leaves: given }: MallornLeavesProps) {
+/** The original petals' lighting: a soft bevel and a specular edge, applied to the metal strokes. */
+function MetalFilter({ id }: { id: string }) {
+  return (
+    <filter id={id} filterUnits="userSpaceOnUse" x="-820" y="-820" width="1640" height="1640" colorInterpolationFilters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="h" />
+      <feSpecularLighting in="h" surfaceScale="4.1" specularConstant="0.98" specularExponent="28" lightingColor="#ffffff" result="sp">
+        <feDistantLight azimuth="141" elevation="15" />
+      </feSpecularLighting>
+      <feComposite in="sp" in2="SourceAlpha" operator="in" result="spIn" />
+      <feDiffuseLighting in="h" surfaceScale="4.1" diffuseConstant="1" lightingColor="#ffffff" result="df">
+        <feDistantLight azimuth="141" elevation="15" />
+      </feDiffuseLighting>
+      <feBlend in="SourceGraphic" in2="df" mode="multiply" result="mul" />
+      <feComposite in="SourceGraphic" in2="mul" operator="arithmetic" k1="0" k2="0.88" k3="0.12" k4="0" result="shaded" />
+      <feComposite in="shaded" in2="spIn" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="lit" />
+      <feComposite in="lit" in2="SourceAlpha" operator="in" />
+    </filter>
+  );
+}
+
+export default function MallornLeaves({ size, cycleStart, technique = null, preset: forced, breathingEnabled = true, tones = 'alternate', count = LOGO_LEAF_COUNT, midrib = true, className, style }: MallornLeavesProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const chosen = useLeafPreset(forced);
   const preset: LeafPreset = breathingEnabled ? chosen : 'none';
@@ -56,66 +76,58 @@ export default function MallornLeaves({ size, cycleStart, technique = null, pres
     setElapsed(cycleStart == null ? 0 : Date.now() - cycleStart);
   }, [cycleStart, breathMs]);
 
-  const leaves = useMemo(() => given ?? leafRing(count, tones), [given, count, tones]);
-  const shapes = useMemo(() => leaves.map((s) => ({ spec: s, geo: leafGeometry(s) })), [leaves]);
+  const w = useMemo(() => leafWeave(count), [count]);
   const css = useMemo(() => leafMotionCss(preset, technique), [preset, technique]);
+  const flower = flowerAnimationStyle(preset, technique, breathMs, elapsed);
   const id = (n: string) => `${n}${uid}`;
 
+  // Which leaves are silver outside (and gold inside).
+  const silverOuter = (i: number) => tones === 'alternate' && i % 2 === 1;
+  const idx = w.ids.map((_, i) => i);
+  const outerGold = idx.filter((i) => !silverOuter(i));
+  const outerSilver = idx.filter(silverOuter);
+  const common = { fill: 'none', strokeLinejoin: 'round', strokeLinecap: 'round' } as const;
+  const paths = (list: string[], which: number[]) => which.map((i) => <path key={w.ids[i]} d={list[i]} />);
+
   return (
-    <svg className={className} style={style} viewBox="-382.5 -382.5 765 765" width={size} height={size} aria-hidden="true" focusable="false" data-leaf-preset={preset}>
+    <svg className={className} style={style} viewBox="-382.5 -382.5 765 765" width={size} height={size} aria-hidden="true" focusable="false" data-leaf-preset={preset} data-leaf-count={w.count}>
       {css && <style>{css}</style>}
       <defs>
-        {/* Gold along the blade: bronze at the base, light gold, then pale toward the tip. */}
-        <linearGradient id={id('gold')} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-310">
+        <linearGradient id={id('gGold')} gradientUnits="userSpaceOnUse" x1="-150.51" y1="-392.1" x2="150.51" y2="392.1">
           <stop offset="0" stopColor="#b8803f" />
-          <stop offset="0.3" stopColor="#fcce96" />
-          <stop offset="0.65" stopColor="#fff0cf" />
-          <stop offset="1" stopColor="#fcce96" />
-        </linearGradient>
-        <linearGradient id={id('lit')} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-310">
-          <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
-          <stop offset="0.5" stopColor="#ffffff" stopOpacity="0.42" />
-          <stop offset="1" stopColor="#ffffff" stopOpacity="0.12" />
-        </linearGradient>
-        {/* Gold for lines on a silver leaf: the same golds, kept to the darker and mid stops so they read on silver. */}
-        <linearGradient id={id('goldLine')} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-310">
-          <stop offset="0" stopColor="#b8803f" />
-          <stop offset="0.5" stopColor="#fcce96" />
+          <stop offset="0.2" stopColor="#fcce96" />
+          <stop offset="0.56" stopColor="#fff0cf" />
+          <stop offset="0.92" stopColor="#fcce96" />
           <stop offset="1" stopColor="#b8803f" />
         </linearGradient>
-        <linearGradient id={id('silver')} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-310">
+        <linearGradient id={id('gCream')} gradientUnits="userSpaceOnUse" x1="-150.51" y1="-392.1" x2="150.51" y2="392.1">
           <stop offset="0" stopColor="#b9b09f" />
-          <stop offset="0.4" stopColor="#f2ead9" />
-          <stop offset="1" stopColor="#ffffff" />
+          <stop offset="0.2" stopColor="#f2ead9" />
+          <stop offset="0.56" stopColor="#ffffff" />
+          <stop offset="0.92" stopColor="#f2ead9" />
+          <stop offset="1" stopColor="#b9b09f" />
         </linearGradient>
+        <radialGradient id={id('rFill')} cx="0" cy="0" r="380" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#4d4d4d" stopOpacity="0.06" />
+          <stop offset="1" stopColor="#4d4d4d" stopOpacity="0.02" />
+        </radialGradient>
+        <MetalFilter id={id('fGold')} />
+        <MetalFilter id={id('fCream')} />
       </defs>
-      {shapes.map(({ spec, geo }, i) => {
-        const a = leafAnimationStyles(preset, i, technique, breathMs, elapsed);
-        const silver = spec.tone === 'silver';
-        const blade = `url(#${id(silver ? 'silver' : 'gold')})`; // the leaf
-        const line = `url(#${id(silver ? 'goldLine' : 'silver')})`; // its veins and edge, the other metal
-        return (
-          <g key={spec.id} id={spec.id} data-leaf={spec.id} data-tone={spec.tone} transform={leafTransform(spec)}>
-            <g>
-              <g className="lm-open" style={a.open as React.CSSProperties}>
-                {/* Edge shadow (the old dark bronze, low opacity) under the blade. */}
-                <path d={geo.blade} fill="none" stroke="#3a2616" strokeOpacity="0.32" strokeWidth="5" strokeLinejoin="round" />
-                <path d={geo.blade} fill={blade} />
-                <path d={geo.litHalf} fill={`url(#${id('lit')})`} />
-                {/* Silver-white veins over the gold, with a dark hairline under them so they stay visible on the light gold. */}
-                <g fill="none" strokeLinecap="round">
-                  <path d={geo.midrib} stroke="#3a2616" strokeOpacity="0.3" strokeWidth="4.6" />
-                  {geo.veins.map((d, k) => <path key={`s${k}`} d={d} stroke="#3a2616" strokeOpacity="0.22" strokeWidth="3.2" />)}
-                  <path d={geo.midrib} stroke={line} strokeWidth="3" />
-                  {geo.veins.map((d, k) => <path key={k} d={d} stroke={line} strokeWidth="1.8" />)}
-                </g>
-                <path d={geo.blade} fill="none" stroke={line} strokeWidth="1.6" strokeLinejoin="round" strokeOpacity="0.9" />
-                <path className="lm-glint" d={geo.sheen} fill="#ffffff" fillOpacity="0.55" style={a.glint as React.CSSProperties} />
-              </g>
-            </g>
+      <g className="lm-flower" style={flower as React.CSSProperties}>
+        {/* The faint translucent fill, one group per leaf: the leaf's id and its hit area for a later menu. */}
+        {w.ids.map((leafId, i) => (
+          <g key={leafId} id={leafId} data-leaf={leafId} data-tone={silverOuter(i) ? 'silver' : 'gold'}>
+            <path d={w.fill[i]} fill={`url(#${id('rFill')})`} stroke="none" />
           </g>
-        );
-      })}
+        ))}
+        {/* The metal outlines, drawn by metal so each filter runs once: outer gold, outer silver, inner silver, inner gold. */}
+        <g filter={`url(#${id('fGold')})`}><g {...common} strokeWidth={WEAVE_OUTER_WIDTH} stroke={`url(#${id('gGold')})`}>{paths(w.outer, outerGold)}</g></g>
+        <g filter={`url(#${id('fCream')})`}><g {...common} strokeWidth={WEAVE_OUTER_WIDTH} stroke={`url(#${id('gCream')})`}>{paths(w.outer, outerSilver)}</g></g>
+        <g filter={`url(#${id('fCream')})`}><g {...common} strokeWidth={WEAVE_INNER_WIDTH} stroke={`url(#${id('gCream')})`}>{paths(w.inner, outerGold)}</g></g>
+        <g filter={`url(#${id('fGold')})`}><g {...common} strokeWidth={WEAVE_INNER_WIDTH} stroke={`url(#${id('gGold')})`}>{paths(w.inner, outerSilver)}</g></g>
+        {midrib && <g {...common} strokeWidth={WEAVE_RIB_WIDTH} stroke={`url(#${id('gCream')})`} opacity="0.85">{paths(w.rib, idx)}</g>}
+      </g>
     </svg>
   );
 }
