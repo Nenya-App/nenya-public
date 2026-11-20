@@ -17,25 +17,38 @@ The resource list under it already differs: the emergency number comes first, th
 - It does not say that someone can be reached by text, which matters for people who cannot speak aloud.
 - It does not distinguish "about to" from "has already done something" (overdose, cut wrists). For an act already done, the first need is medical care, as in the existing `emergency` self-injury notice.
 
+## Poison control (added 2026-11-20)
+
+US Poison Help, **1-800-222-1222**, free, confidential, any time. A web search on 2026-11-20 found it listed as the national line by several sources (poison.org's help page, aapcc.org's Get Poison Help page, medical references). It is not yet checked against the organization's own page in `docs/crisis-resources-check.md`, so a person should confirm it on poison.org before it goes live. **Canada:** the poison centre numbers are provincial and I could not confirm them, so no Canadian poison number is used; the Canadian lines stay in the list. It would need an official source.
+
+## Showing the whole list without overwhelming
+
+The owner's direction: show every resource, and do not frighten or overwhelm. Layout idea, for the owner to approve (not built):
+
+- The notice stays short (one of the options above), then **one line of "Right now"**: the emergency number and, for a swallowed overdose, Poison Help.
+- Then **"To talk to a person"**: 988 (call or text), Crisis Text Line, the Canadian lines, each on one line with how to reach it (call, text).
+- Then **"Outside the US and Canada"** and the rest, in the same calm style as today.
+- Everything is on the page at once, in an order that follows urgency, with plain headings and no red, no capital-letter warnings, no countdown wording, and nothing that moves. The first screen carries only the notice and "Right now".
+
 ## Constraints every option follows
 
 - Plain words, short sentences, no clinical terms, no diagnosis. Reading level kept low (AAA goal).
 - Honest about what the site is: an AI, not able to call anyone, keeps nothing, cannot notify anyone. No promise it cannot keep.
 - No judgment, no "why", no questions the person must answer to get help.
-- Numbers come from the list under the notice; the notice names only 911 (US and Canada) and 988, which are already confirmed in `docs/crisis-resources-check.md`.
+- Numbers come from the list under the notice; the notice names 911 (US and Canada), 988 (confirmed in `docs/crisis-resources-check.md`) and now Poison Help (see above; needs the owner-side check).
 - The conversation ends, as for every stop. Each option says why in one clause, so it does not read as a door closing.
 
 ## Option A: shortest
 
-> If you are in danger right now, call 911 (US and Canada), or your local emergency number. If you have already taken something or hurt yourself, call now, and do not wait. You can also call or text 988 to talk to a person. I'm an AI, and I can't call anyone for you, so the numbers below are the next step. I'm ending our chat here so that you can use them.
+> If you are in danger right now, call 911 (US and Canada), or your local emergency number. If you have already taken something or hurt yourself, call now, and do not wait. If you swallowed pills or something else, Poison Help (1-800-222-1222, US) answers any time. You can also call or text 988 to talk to a person. I'm an AI, and I can't call anyone for you, so the numbers below are the next step. I'm ending our chat here so that you can use them.
 
 ## Option B: adds someone nearby and distance from the means
 
-> You said something that tells me you may be in danger right now. Please call 911 (US and Canada) or your local emergency number. If you have already taken something or hurt yourself, call now. If someone is near you, tell them, and ask them to stay with you. If you can, put some distance between you and whatever you were thinking of using. You can also call or text 988 to talk to a person, any time. I'm an AI, and I can't call anyone for you. I'm ending our chat here so that you can reach someone.
+> You said something that tells me you may be in danger right now. Please call 911 (US and Canada) or your local emergency number. If you have already taken something or hurt yourself, call now. For something swallowed, Poison Help (1-800-222-1222, US) also answers any time. If someone is near you, tell them, and ask them to stay with you. If you can, put some distance between you and whatever you were thinking of using. You can also call or text 988 to talk to a person, any time. I'm an AI, and I can't call anyone for you. I'm ending our chat here so that you can reach someone.
 
 ## Option C: adds that a text is enough
 
-> You said something that tells me you may be in danger right now. Please call 911 (US and Canada) or your local emergency number, especially if you have already taken something or hurt yourself. If you can't talk out loud, you can text 988, or text HOME to 741741. Nobody around you has to hear a text. If someone is near you, please let them know. I'm an AI, and I can't call anyone for you, and I'm ending our chat here so that you can reach a person.
+> You said something that tells me you may be in danger right now. Please call 911 (US and Canada) or your local emergency number, especially if you have already taken something or hurt yourself. For something swallowed, Poison Help is 1-800-222-1222 (US). If you can't talk out loud, you can text 988, or text HOME to 741741. Nobody around you has to hear a text. If someone is near you, please let them know. I'm an AI, and I can't call anyone for you, and I'm ending our chat here so that you can reach a person.
 
 ## Questions for the owner
 
@@ -47,14 +60,14 @@ The resource list under it already differs: the emergency number comes first, th
 
 1. **Distance from the means** (Option B): is that line safe to say without knowing what the means are, and is "put some distance" the right phrasing? It is widely used in suicide-prevention guidance, but whether it belongs in an automated notice is a clinical call.
 2. **"Ask someone to stay with you":** appropriate for everyone, including people who are with someone who is a risk to them?
-3. **Act already done:** should "has already taken something or hurt themselves" get its own notice, separate from "about to", with poison control (US 1-800-222-1222) named? That number is not in the site today and is not confirmed in `docs/crisis-resources-check.md`; it would need checking on its source before use.
+3. **Act already done:** should "has already taken something or hurt themselves" get its own notice, separate from "about to"? Poison control is now in every option (owner asked, 2026-11-20); should it come before 988 for a swallowed overdose?
 4. **Texting 988:** confirm it is current, and whether text should be offered first or second.
 5. **Ending the conversation:** for a person at this level of risk, is a clean stop better than a short final reply that stays? The site cannot hold a safe conversation (a screen is not a clinician), but a clinician may disagree with an abrupt end.
 6. **Does any phrase read as pressure, blame or false reassurance?**
 
 ## If one is chosen
 
-Wiring is small: add `IMMINENT_LEAD` beside `STOP_LEAD` in `src/lib/distressText.ts`, return it from `noticeIntro` when `flag.kind === 'imminent'`, and change `tests/crisis-imminent.test.mts` line 82 (which currently asserts the notice equals the generic stop text) to assert the new text. Until a clinician has read it, the file comment should say "owner-approved, not clinician-reviewed", as `STOP_LEAD` does today.
+Wiring is small: add a Poison Help entry to `resourcesFor` for `imminent` (after the emergency number), add `IMMINENT_LEAD` beside `STOP_LEAD` in `src/lib/distressText.ts`, return it from `noticeIntro` when `flag.kind === 'imminent'`, and change `tests/crisis-imminent.test.mts` line 82 (which currently asserts the notice equals the generic stop text) to assert the new text. Until a clinician has read it, the file comment should say "owner-approved, not clinician-reviewed", as `STOP_LEAD` does today.
 
 ## Not claimed
 

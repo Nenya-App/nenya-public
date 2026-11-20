@@ -17,3 +17,13 @@ A web search is not a verification. This records what a quick search showed and 
 | Emergency number (911 in the US and Canada) | Unchanged | none |
 
 Nothing in the code was changed: nothing found contradicts it, and nothing here was verified against an official source. Do this by a person, with the date recorded, at least twice a year (the weekly Claude task can prepare the list but cannot verify a number). Outside the US and Canada no local line is offered; that gap is in the audit.
+
+
+## Future idea (owner, 2026-11-20): keep the resource list live
+
+Use part of the nightly or weekly budget (see `docs/nightly-budget-scope.md`) for workers to check each listed resource against its own site, or find an API to use. Notes so far, nothing built:
+
+- A model reading a page can **flag** a changed number or keyword. It must never **change** the list by itself: a person confirms each change on the organization's own page before it goes live. Wrong numbers in a crisis list are worse than a stale one.
+- First candidates: a plain scheduled fetch (no model) that compares each listed phone number and text keyword to the organization's page and reports differences; the model is only needed to read pages whose layout changes.
+- APIs to look into: 988 Lifeline and Poison Help have no public directory API that I could confirm; findahelpline.com (ThroughLine) lists services by country and may offer one; a person should check their terms and whether it is allowed to be called from the site or only from a check.
+- Output goes to a private report, in the same place as the weekly drafts. Never to production.
