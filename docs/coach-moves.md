@@ -2,7 +2,7 @@
 
 Status: **a draft for the owner's review, 2026-11-20.** This describes the moves the coach draws on, so a reader can see what it is doing and why. It is not the coach's instructions. Those are short, private, and are chosen for each reply by public phrase matching (`src/lib/coachModules.ts`, described in `docs/coach-modules-scope.md`).
 
-<!-- Credit for the source of the patterns goes here, in the owner's own wording. Nothing about who it is has been written into this file. -->
+**Where the patterns come from.** Dr. Yvette Erasmus, clinical psychologist and founder of the School of Human Connection, whose publicly available Conversations from the Heart podcast provided source material for identifying relational coaching patterns used in developing Nenya. The credit is used word for word, as she wrote it. It does not mean she endorses, reviewed or stands behind Nenya. Her site is featured first on the About NVC page: [YvetteErasmus.com](https://www.yvetteerasmus.com).
 
 ## How to read this
 - The patterns were found by reading many anonymized coaching conversations and labelling them with language models. The labels are model annotations, not expert-verified. The moves that were seen only a handful of times are marked **draft**.
