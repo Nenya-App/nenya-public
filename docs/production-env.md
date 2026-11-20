@@ -48,6 +48,19 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `WORD_HELP_ENABLED` | `true` | "Look it up online" under Word help (`/api/words`; docs/word-help-scope.md): one typed word goes through our server to Datamuse and the Free Dictionary API, nothing kept or logged. Also needs the build setting `VITE_WORD_HELP=on` for the button to show. Off by default |
 | `WORD_HELP_PER_CONNECTION` | e.g. `40` | Optional: look-ups per connection per day (default 40) |
 | `WORD_HELP_DAILY_CAP` | e.g. `600` | Optional: look-ups per day in all (default 600) |
+| `FEEDBACK_ENABLED` | `true` | "Give feedback" (`/api/feedback`; docs/feedback-scope.md): runs the site's checks and files a note in the Netlify form `feedback`. Also needs the build setting `VITE_FEEDBACK=on` for the button to show. Off by default |
+| `FEEDBACK_PER_CONNECTION` | e.g. `5` | Optional: feedback notes per connection per day (default 5; uses the coach's one-way daily code, so `COACH_IP_SECRET` must be set) |
+| `FEEDBACK_DAILY_CAP` | e.g. `200` | Optional: feedback notes per day in all (default 200) |
+| `FEEDBACK_MIN_SEVERITY` | e.g. `2` | Optional: the lowest private-list severity (1 to 3) that refuses a note (default 2). Needs the private list uploaded, as for the coach; without it that check is skipped |
+| `FEEDBACK_AUTOREPLY` | `on` | The automated thank-you to an address a person typed. Off by default. Needs the mail sender below; the address is used once and never stored |
+| `FEEDBACK_MAIL_URL` | secret, an https address | The mail sender (src/lib/feedbackMail.ts): an endpoint that accepts `POST {from,to,subject,text}` as JSON. A relay the owner runs, or a provider's endpoint behind a small adapter. Not set: nothing is sent. Functions scope, secret |
+| `FEEDBACK_MAIL_TOKEN` | secret | Optional: sent as a Bearer token to `FEEDBACK_MAIL_URL`. Functions scope, secret |
+| `FEEDBACK_MAIL_FROM` | e.g. `feedback@nenya.biz` | Optional: the sender address passed to the relay |
+| `FEEDBACK_DIGEST` | `on` | The daily digest (`feedback-digest.mts`, 07:00 UTC): reads the form `feedback` through the Netlify API, keeps notes that passed the site's checks, sends one email, nothing on a quiet day. Off by default |
+| `FEEDBACK_NETLIFY_TOKEN` | secret | A Netlify personal access token, read only by the digest to list this site's form submissions. Functions scope, secret. Never in the repo or in chat; use this site's own settings, never the production site's |
+| `FEEDBACK_SITE_ID` | this site's id | Optional: the platform's `SITE_ID` is used when this is not set |
+| `FEEDBACK_DIGEST_VIA` | `form` (default) or `mail` | `form`: the digest is posted to the Netlify form `feedback-digest`, and the email notification you add for that form (Site configuration, Forms, Form notifications) is the digest: no mail provider needed. `mail`: sent through the mail sender to `FEEDBACK_ADMIN_EMAIL` |
+| `FEEDBACK_ADMIN_EMAIL` | an address | Where `FEEDBACK_DIGEST_VIA=mail` delivers the digest |
 | `COACH_CARD_DRAFTS` | leave unset | Owner tool for card drafts; not for production |
 
 **Build switches for new screens (Builds scope; "Clear cache and deploy site" after a change).** Staging first; on production only after the owner approves what staging shows.
@@ -66,6 +79,7 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `VITE_TERMS_FIRST` | `on` | The Terms-first entry (docs/terms-first-entry-scope.md). Step 1 only so far: the random working pair (the shadow ID) is made at agreement, held in memory for the whole session and made again on request, never stored; the person's own Sight or Sound colors still take over as the session ID. Off by default |
 | `VITE_SUMMARY_REQUEST` | `on` | The "Request a summary" button on the coach page (docs/request-a-summary-scope.md, step 3), shown after the five exchanges and the closing note on an unflagged conversation. Needs the server's `COACH_SUMMARY_REQUEST=on` too (a switched-off server hides the button). Off by default; the wording is the owner's to approve |
 | `VITE_WORD_HELP` | `on` | The "Look it up online" button under Word help (needs `WORD_HELP_ENABLED=true` on the server; English only). The on-device near words need no switch. The Terms (Sections 12 and 14) name the look-up only where this is on |
+| `VITE_FEEDBACK` | `on` | The "Give feedback" button (needs `FEEDBACK_ENABLED=true` on the server). Set only on the dev branch's builds (`netlify.toml` `[context.dev.environment]`) and in `.env.development`; off in production. The Terms (Sections 2 and 14) name the tool only where this is on |
 | `VITE_NEED_TALLY` | `on` | "What has come up so far" on the coach pages (docs/need-tally-scope.md): a quiet, optional, closed-by-default control that lists the feelings and needs the person named in their own messages (from CNVC's inventory, credited), and at four or more different needs the one-to-three recommendation. Computed in the page from the messages it holds: never stored, never sent, gone with the tab; on the sealed route too. Off by default; the wording is the owner's to approve |
 | `VITE_GUESTBOOK` | `on` | "Sign Our Guestbook" at /guestbook, and its links at the end of a reflection and a coach conversation (src/lib/guestbook.ts) |
 

@@ -8,6 +8,7 @@ export const GROUPS: { title: string; match: (e: string) => boolean }[] = [
   { title: 'Screens shown', match: (e) => e.startsWith('page.view.') },
   { title: 'Reports and messages', match: (e) => e.startsWith('submission.') },
   { title: 'Guestbook', match: (e) => e.startsWith('guestbook.') },
+  { title: 'Feedback', match: (e) => e.startsWith('feedback.') },
 ];
 
 const LABELS: Record<string, string> = {
@@ -39,6 +40,17 @@ const LABELS: Record<string, string> = {
   'submission.duplicate-refused': 'Identical report or message refused',
   'submission.refused.no-adult': 'Report or message refused: no 18+ confirmation',
   'coach.report.duplicate-refused': 'Identical transcript resend refused',
+  'feedback.received': 'Feedback notes received',
+  'feedback.refused.honeypot': 'Feedback: trap field filled (dropped)',
+  'feedback.refused.limit': 'Feedback: over the daily limit (refused)',
+  'feedback.refused.human': 'Feedback: human check failed',
+  'feedback.refused.language': 'Feedback: held back by the language check (dropped)',
+  'feedback.refused.form': 'Feedback: too short or unclear (asked again)',
+  'feedback.forward-failed': 'Feedback passed the checks but could not be filed',
+  'feedback.reply.sent': 'Feedback thank-yous sent',
+  'feedback.reply.failed': 'Feedback thank-yous that failed',
+  'feedback.digest.sent': 'Daily feedback digests sent',
+  'feedback.digest.failed': 'Daily feedback digests that failed',
   'tour.accepted': 'Tour accepted',
   'tour.declined': 'Tour declined',
   'tour.completed': 'Tour completed',

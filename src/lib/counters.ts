@@ -63,6 +63,18 @@ export const FIXED_EVENTS = [
   // The guestbook (src/lib/guestbook.ts): a signature, and a second one refused that day.
   'guestbook.signed',
   'guestbook.refused.once',
+  // "Give feedback" (netlify/functions/feedback.mts, feedback-digest.mts): plain counts, nothing about who or what was said.
+  'feedback.received',
+  'feedback.refused.honeypot',
+  'feedback.refused.limit',
+  'feedback.refused.human',
+  'feedback.refused.language',
+  'feedback.refused.form',
+  'feedback.forward-failed',
+  'feedback.reply.sent',
+  'feedback.reply.failed',
+  'feedback.digest.sent',
+  'feedback.digest.failed',
   ...(['high', 'mid', 'low'] as const).flatMap((b) => [`coach.screen.vs-list.${b}.list`, `coach.screen.vs-list.${b}.nolist`]),
 ] as const;
 

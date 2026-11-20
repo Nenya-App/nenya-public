@@ -20,6 +20,7 @@
   VITE_LENS_PATH = "on"
   VITE_SUMMARY_REQUEST = "on"
   VITE_WORD_HELP = "on"
+  VITE_FEEDBACK = "on"
 
 # The /coach demo's relay function (see netlify/functions/coach.mts).
 [functions]

@@ -14,6 +14,7 @@ import { WelcomeTutorial, type TutorialStepId } from './components/WelcomeTutori
 import { TourOffer } from './components/TourOffer';
 import { LoadingVeil } from './components/LoadingVeil';
 import { EmergencyExitDock } from './components/EmergencyExit';
+import { FeedbackTool } from './components/FeedbackTool';
 import { BreathTonesSwitch, TonesAnnouncer } from './components/BreathTonesSwitch';
 import { PortableBreath, useBreathRhythm } from './components/PortableBreath';
 import { preloadLogoAssets } from '../lib/preload';
@@ -573,6 +574,8 @@ export default function App() {
         onEmergencyExit={() => { isEmergencyExiting.current = true; }}
       />
       <TonesAnnouncer />
+      {/* "Give feedback" (docs/feedback-scope.md): renders nothing unless VITE_FEEDBACK=on. */}
+      <FeedbackTool ready={veilGone && termsAgreed} />
       {!veilGone && <LoadingVeil ready={assetsReady} onDone={() => setVeilGone(true)} />}
       {/* Mounted under the loading screen, solid, so nothing half-drawn shows when the loading screen fades. */}
       {!termsAgreed && (

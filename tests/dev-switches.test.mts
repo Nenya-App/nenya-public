@@ -6,7 +6,7 @@ import { ok } from './helpers.mts';
 // The switches are on for builds of the dev branch only ([context.dev.environment]); nothing in the repository turns them on for production or any other site.
 const toml = readFileSync('netlify.toml', 'utf8');
 const dev = readFileSync('.env.development', 'utf8');
-const ON = ['VITE_LENS_COPY', 'VITE_LENS_TRAY', 'VITE_TERMS_FIRST', 'VITE_LENS_TAPESTRY', 'VITE_LENS_PATH', 'VITE_SUMMARY_REQUEST', 'VITE_WORD_HELP'];
+const ON = ['VITE_LENS_COPY', 'VITE_LENS_TRAY', 'VITE_TERMS_FIRST', 'VITE_LENS_TAPESTRY', 'VITE_LENS_PATH', 'VITE_SUMMARY_REQUEST', 'VITE_WORD_HELP', 'VITE_FEEDBACK'];
 const build = toml.slice(toml.indexOf('[build.environment]'), toml.indexOf('[context.dev.environment]'));
 const devBlock = toml.slice(toml.indexOf('[context.dev.environment]'), toml.indexOf('[functions]'));
 ok('the dev branch builds with the switches on', ON.every((v) => new RegExp(`${v} = "on"`).test(devBlock)) && !/VITE_NEED_TALLY = "on"/.test(devBlock));

@@ -86,6 +86,26 @@
       <input type="text" name="key-id" />
     </form>
 
+    <!-- "Give feedback" (netlify/functions/feedback.mts): a note reaches this form only through that function, after the site's checks, with a `checked` proof the daily
+         digest requires. It carries the page's path, the chosen feature(s), the comment, and nothing else: the optional email address is never put in a form. -->
+    <form name="feedback" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="feedback" />
+      <input type="text" name="bot-field" />
+      <input type="text" name="route" />
+      <input type="text" name="features" />
+      <input type="text" name="picked" />
+      <textarea name="comment"></textarea>
+      <input type="text" name="checked" />
+    </form>
+
+    <!-- The daily feedback digest (netlify/functions/feedback-digest.mts): posted by that scheduled function; the owner's email notification for this form is the digest. -->
+    <form name="feedback-digest" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="feedback-digest" />
+      <input type="text" name="bot-field" />
+      <input type="text" name="subject" />
+      <textarea name="digest"></textarea>
+    </form>
+
     <script src="/exit-guard.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>

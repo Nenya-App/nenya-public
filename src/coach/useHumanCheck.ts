@@ -57,7 +57,7 @@ export interface HumanCheck {
   reset: () => void;
 }
 
-export function useHumanCheck(active: boolean): HumanCheck {
+export function useHumanCheck(active: boolean, action: string = TURNSTILE_ACTION): HumanCheck {
   const siteKey = turnstileSiteKey();
   const enabled = active && siteKey !== '';
   const box = useRef<HTMLDivElement | null>(null);
@@ -85,7 +85,7 @@ export function useHumanCheck(active: boolean): HumanCheck {
         widget.current =
           window.turnstile.render(box.current, {
             sitekey: siteKey,
-            action: TURNSTILE_ACTION,
+            action,
             appearance: 'interaction-only',
             'refresh-expired': 'auto',
             callback: (t: string) => {
@@ -115,7 +115,7 @@ export function useHumanCheck(active: boolean): HumanCheck {
       token.current = null;
       flush(null);
     };
-  }, [enabled, siteKey]);
+  }, [enabled, siteKey, action]);
 
   const take = useCallback(async (): Promise<string | null> => {
     if (!enabled) return null;

@@ -17,6 +17,8 @@ export type TurnstileMode = 'off' | 'shadow' | 'on';
 
 /** The action the widget is rendered with, and the only one accepted. */
 export const TURNSTILE_ACTION = 'coach';
+/** The action the feedback form's widget is rendered with (netlify/functions/feedback.mts). The same site key, secret, hosts and COACH_TURNSTILE mode are used. */
+export const FEEDBACK_TURNSTILE_ACTION = 'feedback';
 
 const SITEVERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const MAX_TOKEN = 2048;
@@ -46,6 +48,7 @@ export async function checkTurnstile(
   secret: string | undefined,
   hosts: Set<string>,
   fetchImpl: typeof fetch = fetch,
+  action: string = TURNSTILE_ACTION,
 ): Promise<TurnstileResult> {
   if (typeof token !== 'string' || token.length === 0 || token.length > MAX_TOKEN) return { ok: false, why: 'missing' };
   if (!secret || hosts.size === 0) return { ok: false, why: 'config' };
@@ -63,7 +66,7 @@ export async function checkTurnstile(
     return { ok: false, why: 'unreachable' };
   }
   if (result?.success !== true) return { ok: false, why: 'rejected' };
-  if (result.action !== TURNSTILE_ACTION) return { ok: false, why: 'action' };
+  if (result.action !== action) return { ok: false, why: 'action' };
   if (typeof result.hostname !== 'string' || !hosts.has(result.hostname.toLowerCase())) return { ok: false, why: 'hostname' };
   return { ok: true };
 }
