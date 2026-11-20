@@ -1,4 +1,5 @@
 import { isAllowedTechnique } from './breathCustom.ts';
+import { isDisplayStyle, DEFAULT_DISPLAY_STYLE, type DisplayStyle } from './breathDisplay.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 // Everything Nenya may keep on a visitor's device lives behind this one file, so there is a single
@@ -84,6 +85,8 @@ export interface Prefs {
   theme?: 'dark' | 'light';
   textSize?: number;
   breathingEnabled?: boolean;
+  /** How the breathing animation is shown: gem, ring, circle or text (src/lib/breathDisplay.ts). */
+  breathingDisplay?: string;
   orbitEnabled?: boolean;
   logoVisible?: boolean;
   breathingOpacity?: number;
@@ -110,6 +113,7 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   theme: (v) => v === 'dark' || v === 'light',
   textSize: (v) => v === 14 || v === 16 || v === 18,
   breathingEnabled: isBool,
+  breathingDisplay: isDisplayStyle,
   orbitEnabled: isBool,
   logoVisible: isBool,
   breathingOpacity: (v) => typeof v === 'number' && v >= 0.1 && v <= 1,
@@ -207,7 +211,7 @@ export function useGemKaleidoscope(): boolean {
 // The kaleidoscope's look and "move with my breathing" (owner, 2026-11-15): the same kind of shared setting as the switch above, saved only
 // while "Remember on this device" is on.
 export type KaleidoscopeLookChoice = 'calm' | 'gentle' | 'lively' | 'full';
-function sharedPref<T>(key: 'gemKaleidoscopeLook' | 'gemKaleidoscopeBreath', read: () => T, fallback: T) {
+function sharedPref<T>(key: 'gemKaleidoscopeLook' | 'gemKaleidoscopeBreath' | 'breathingDisplay', read: () => T, fallback: T) {
   let value: T | null = null;
   const listeners = new Set<() => void>();
   const get = (): T => (value ??= read());
@@ -228,7 +232,8 @@ function sharedPref<T>(key: 'gemKaleidoscopeLook' | 'gemKaleidoscopeBreath', rea
     }, [remembering, v]);
     return v;
   };
-  return { get, set, use };
+  const reset = (): void => { value = null; };
+  return { get, set, use, reset };
 }
 const kaleidoLook = sharedPref<KaleidoscopeLookChoice>('gemKaleidoscopeLook', () => (loadPrefs().gemKaleidoscopeLook as KaleidoscopeLookChoice | undefined) ?? 'gentle', 'gentle');
 export const setGemKaleidoscopeLook = kaleidoLook.set;
@@ -236,6 +241,12 @@ export const useGemKaleidoscopeLook = kaleidoLook.use;
 const kaleidoBreath = sharedPref<boolean>('gemKaleidoscopeBreath', () => loadPrefs().gemKaleidoscopeBreath === true, false);
 export const setGemKaleidoscopeBreath = kaleidoBreath.set;
 export const useGemKaleidoscopeBreath = kaleidoBreath.use;
+
+// How the breathing animation is displayed (gem, ring, circle or text): one shared per-device choice, validated on load, saved only while "Remember on this device" is on.
+const displayStyle = sharedPref<DisplayStyle>('breathingDisplay', () => { const v = loadPrefs().breathingDisplay; return isDisplayStyle(v) ? v : DEFAULT_DISPLAY_STYLE; }, DEFAULT_DISPLAY_STYLE);
+export const getBreathingDisplay = displayStyle.get;
+export const setBreathingDisplay = displayStyle.set;
+export const useBreathingDisplay = displayStyle.use;
 
 // The style the tones are played in: the same kind of shared setting (the choice is made in the accessibility panel,
 // the sound is played from the page).
@@ -266,6 +277,7 @@ export function useBreathingSound(): BreathingSound {
 export const __resetBreathingTonesForTests = (): void => {
   tonesOn = null;
   soundStyle = null;
+  displayStyle.reset();
 };
 
 export const TERMS_RECEIPT_KEY = 'nenya.terms.receipt';

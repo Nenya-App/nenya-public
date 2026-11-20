@@ -13,6 +13,7 @@ import { valarColors, type BreathingTechnique } from './ValarBreathingLogo';
 import SpectralGem, { type GemStats, type LiveGemLook } from './SpectralGem';
 import LogoGlow from './LogoGlow';
 import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type OuterOrbitLook } from '../../lib/orbitLook';
+import { orbsVisible } from '../../lib/breathDisplay';
 import { GEM_ENGINE, type GemEngine } from '../../lib/gemSprite';
 
 // Above this size, the full-resolution source is used instead -- 128px
@@ -115,6 +116,8 @@ export default function NenyaLogo({
   outerOrbit,
   onGemStats,
 }: NenyaLogoProps) {
+  // The one place the orbs are decided: they belong to the gem, so a hidden gem hides them (src/lib/breathDisplay.ts orbsVisible). Everything below uses this, never the raw prop.
+  const orbs = orbsVisible(showLogo, showValarOrbit);
   const flatLogoSrc = size <= SMALL_LOGO_MAX_SIZE ? nenyaLogoSmall : nenyaLogo;
   const inner = { ...DEFAULT_INNER_ORBIT, ...innerOrbit };
   const outer = { ...DEFAULT_OUTER_ORBIT, ...outerOrbit };
@@ -158,21 +161,21 @@ export default function NenyaLogo({
     >
       {/* The glow, computed once as an image (see LogoGlow). */}
       {glow && showLogo && (
-        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? petalsLayer : flatLogoSrc} gemEngine={gemEngine} />
+        <LogoGlow size={size} orbit={orbs} maskSrc={orbs ? petalsLayer : flatLogoSrc} gemEngine={gemEngine} />
       )}
 
       {/* Logo image - base layer. When the Valar orbit is enabled the flat logo is
           swapped for the vector petals under the gem overlay below. */}
       {showLogo && (
         <img
-          src={showValarOrbit ? petalsLayer : flatLogoSrc}
+          src={orbs ? petalsLayer : flatLogoSrc}
           alt={alt}
-          width={showValarOrbit ? size * 0.765 : size * 0.85}
-          height={showValarOrbit ? size * 0.765 : size * 0.85}
+          width={orbs ? size * 0.765 : size * 0.85}
+          height={orbs ? size * 0.765 : size * 0.85}
           className="absolute"
           style={{
-            width: showValarOrbit ? size * 0.765 : size * 0.85,
-            height: showValarOrbit ? size * 0.765 : size * 0.85,
+            width: orbs ? size * 0.765 : size * 0.85,
+            height: orbs ? size * 0.765 : size * 0.85,
             zIndex: 10,
             left: '50%',
             top: '50%',
@@ -182,7 +185,7 @@ export default function NenyaLogo({
       )}
       
       {/* Orbiting Valar - only show if enabled */}
-      {showValarOrbit && inner.show && (
+      {orbs && inner.show && (
         <div
           className="absolute pointer-events-none"
           style={{
@@ -317,7 +320,7 @@ export default function NenyaLogo({
       )}
 
       {/* Outer Orbiting Valar - smaller orbs at breathing animation edge, rotating opposite direction */}
-      {showValarOrbit && outer.show && (
+      {orbs && outer.show && (
         <div
           className="absolute pointer-events-none"
           style={{
@@ -406,7 +409,7 @@ export default function NenyaLogo({
 
       {/* Light emanating from within. With the orbit enabled this is the spectral gem; otherwise the
           flat logo drawn again over the orbs. */}
-      {showLogo && showValarOrbit && (
+      {showLogo && orbs && (
         <SpectralGem
           size={size}
           cycleStart={cycleStart}
@@ -420,7 +423,7 @@ export default function NenyaLogo({
           {...gemLook}
         />
       )}
-      {showLogo && !showValarOrbit && (
+      {showLogo && !orbs && (
         <img
           src={flatLogoSrc}
           alt=""

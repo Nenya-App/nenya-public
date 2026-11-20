@@ -18,6 +18,12 @@ ok('valid values kept',p.theme==='light'&&p.textSize===18&&p.orbitEnabled===fals
 ok('invalid values dropped',p.breathingOpacity===undefined&&p.colorBlindMode===undefined&&p.logoVisible===undefined&&!('junk' in p));
 store['nenya.prefs']='{not json'; ok('corrupt prefs tolerated',Object.keys(dm.loadPrefs()).length===0);
 store['nenya.prefs']=JSON.stringify({breathingTechnique:{ih:0,hi:0,ex:5000,ho:0}}); ok('zero inhale rejected',dm.loadPrefs().breathingTechnique===undefined);
+// the breathing display style is validated on load and saved with the others
+store['nenya.prefs']=JSON.stringify({breathingDisplay:'circle'}); dm.__resetBreathingTonesForTests();
+ok('a valid display style is kept',dm.loadPrefs().breathingDisplay==='circle'&&dm.getBreathingDisplay()==='circle');
+store['nenya.prefs']=JSON.stringify({breathingDisplay:'sparkle'}); dm.__resetBreathingTonesForTests();
+ok('an unknown display style is dropped and the gem is used',dm.loadPrefs().breathingDisplay===undefined&&dm.getBreathingDisplay()==='gem');
+dm.setBreathingDisplay('text'); ok('choosing a style saves it',JSON.parse(store['nenya.prefs']).breathingDisplay==='text');
 // wipe
 store['nenya.coach.rest']='123'; store['nenya.coach.owner']='1'; store['nenya_terms_agreed']='true'; store['nenya-theme']='dark'; store['other.site']='keep';
 dm.wipeDevice({keepOwner:true});
