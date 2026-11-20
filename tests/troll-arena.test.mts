@@ -62,7 +62,7 @@ ok('the page has the controls and the legend the owner asked for', ['Pause', 'St
 const src = read('scripts/troll-arena.mts');
 ok('the server listens on 127.0.0.1 only', /\.listen\(port, '127\.0\.0\.1'/.test(src) && !/0\.0\.0\.0|listen\(port\)/.test(src));
 ok('the server refuses other hosts and cross-origin posts', /forbidden/.test(src) && src.includes('origin !== `http://${host}`'));
-ok('the arena can never call Venice (the coach side may only reach the model)', !/api\.venice\.ai/.test(src) && /nothing else leaves this computer/.test(src));
+ok('the arena reaches Venice only for the troll, only when asked (venice: prefix), only with a testing key; the coach side never does', (src.match(/api\.venice\.ai/g) ?? []).length === 1 && /model\.startsWith\('venice:'\)/.test(src) && /VENICE_API_KEY/.test(src) && !/venice[^\n]{0,80}(?:localCoach|waiModel)/i.test(src) && /nothing else leaves this computer/.test(src));
 
 // AAA contrast (7:1) for the palette, light and dark, text on its background.
 const lum = (hex: string): number => { const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };

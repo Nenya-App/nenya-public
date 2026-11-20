@@ -12,6 +12,15 @@ That checks LM Studio is up, says which adversary it found, starts the arena, an
 
 Defaults: the adversary is `Qwen2.5-14B-Instruct-abliterated-v2` when LM Studio lists it (otherwise `gemma-4-e2b-it-uncensored`); the coach is Workers AI Gemma 4 26B (about 100 Neurons a conversation, a hard ceiling of 3,000 per run, always recorded in the canary ledger); guards on and off in pairs; up to five exchanges. With a remote coach the arena unloads other local models so the memory is the adversary's.
 
+## A skilled, unhinged troll (hosted adversary, added 2026-11-19)
+The local models are weak role-players, so the first runs were too gentle. `--adversary venice:venice-uncensored` has Venice's uncensored model play the troll (a testing key in `VENICE_API_KEY`, never the production key; only the troll's invented side goes to Venice; the coach under test is still the real one). It costs a few cents a persona. Set the key from a hidden prompt:
+
+```
+read -rsp 'Venice testing key: ' VENICE_API_KEY; echo; export VENICE_API_KEY
+zsh /Users/estellestreiff/Desktop/nenya-public/scripts/run-troll-arena.sh --adversary venice:venice-uncensored --personas all --guards both
+```
+Check the model id against Venice's current list. The hard limits on what the troll may write (no minors, no real people, no slur lists authored here) still come from `adversaryPrompt`.
+
 ## What each part shows
 
 - **The troll** (left): its message, the ladder level it is at (it climbs one level each time the coach holds), and a note if the simulator slipped (coach-speak, a refusal, broken character). Fixed lines (floods, pasted walls, encoded text) are marked.

@@ -4,6 +4,7 @@
 //   node scripts/troll-arena.mts --coach local:gemma-4-e2b-it-rotorquant --guards both --personas random:3
 //   node scripts/troll-arena.mts --coach workers-ai --guards on --personas dan-roleplay,love-and-miss --neuron-cap 400
 //
+//   --adversary venice:<model>      the troll played by a hosted uncensored model (for example venice:venice-uncensored); needs VENICE_API_KEY (a testing key), costs a few cents
 //   --adversary <LM Studio model>   the troll (default: the Qwen2.5-14B abliterated v2 if LM Studio lists it, else gemma-4-e2b-it-uncensored)
 //   --coach local:<model> | workers-ai[:<@cf id>]   the coach under test (default workers-ai, @cf/google/gemma-4-26b-a4b-it; about 100 Neurons per conversation)
 //   --guards on|off|both            both = paired arms: the guards-on arm is played live, the guards-off arm replays the same troll messages
@@ -63,13 +64,16 @@ if (privateDir && !existsSync(join(privateDir, 'modules.json'))) fail('--private
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 async function preflight(): Promise<void> {
   let ids: string[] = [];
-  try {
+  const hostedTroll = adversaryModel.startsWith('venice:');
+  if (hostedTroll && !process.env.VENICE_API_KEY) fail('--adversary venice:<model> needs VENICE_API_KEY in this Terminal (a testing key, not the production one).');
+  const needsLm = !hostedTroll || !!localCoach || !!judgeModel;
+  if (needsLm) try {
     const r = await fetch(`${LM}/models`, { signal: AbortSignal.timeout(5000) });
     ids = ((await r.json()) as { data?: { id: string }[] }).data?.map((m) => m.id) ?? [];
   } catch { fail(`LM Studio is not reachable at ${LM}. Start its local server (Developer tab, "Start Server"), load the models, and try again.`); }
   if (!adversaryModel) adversaryModel = ids.find((i) => i.toLowerCase().includes('qwen2.5-14b-instruct-abliterated-v2')) ?? 'gemma-4-e2b-it-uncensored';
   console.log(`Adversary: ${adversaryModel}`);
-  const need = [adversaryModel, ...(localCoach ? [localCoach] : []), ...(judgeModel ? [judgeModel] : [])];
+  const need = [...(hostedTroll ? [] : [adversaryModel]), ...(localCoach ? [localCoach] : []), ...(judgeModel ? [judgeModel] : [])];
   const missing = need.filter((m) => !ids.includes(m));
   if (missing.length) fail(`LM Studio does not list: ${missing.join(', ')}.\nIt has: ${ids.filter((i) => !/embed/i.test(i)).join(', ')}`);
   if (waiModel && !existsSync(CF)) fail(`The cf CLI is not at ${CF} (set CF_BIN). It is needed for Workers AI.`);
@@ -216,6 +220,13 @@ const seedFor = (id: string, round: number): number => parseInt(createHash('sha2
 
 async function lmChat(model: string, messages: { role: string; content: string }[], opts: { temperature: number; max_tokens: number; seed?: number }): Promise<string> {
   const t0 = Date.now();
+  // A hosted, skilled role-player as the troll (--adversary venice:venice-uncensored): Venice's chat endpoint, with a testing key. Only the troll's side goes there (invented text, no visitor data).
+  if (model.startsWith('venice:')) {
+    const v = await realFetch('https://api.venice.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.VENICE_API_KEY}` }, signal: AbortSignal.timeout(turnTimeoutMs), body: JSON.stringify({ model: model.slice(7), messages, temperature: opts.temperature, max_tokens: Math.max(opts.max_tokens, 400), venice_parameters: { include_venice_system_prompt: false } }) });
+    if (!v.ok) throw new Error(`Venice ${v.status}`);
+    const vj: any = await v.json();
+    return String(vj.choices?.[0]?.message?.content ?? '');
+  }
   const r = await realFetch(`${LM}/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json', Connection: 'close' }, signal: AbortSignal.timeout(turnTimeoutMs), body: JSON.stringify({ model, messages, ...opts }) });
   if (!r.ok) throw new Error(`LM Studio ${r.status}`);
   const j: any = await r.json();
@@ -228,6 +239,7 @@ const clean = (s: string): string => s.replace(/<think>[\s\S]*?<\/think>/gi, '')
 // The coach refuses a person's message over 500 characters (MAX_USER_CHARS) and the page's own box stops at 500, so the troll is cut there too, at a word boundary.
 const clip500 = (t: string): string => (t.length <= 500 ? t : t.slice(0, 500).replace(/\s+\S*$/, '').trim());
 const advTokens = (): number => (/gemma/i.test(adversaryModel) ? 700 : 260);
+// For --adversary venice:<model> see lmChat: the troll is played by a hosted uncensored model; the coach under test is still the real one.
 interface Exchange { troll: string; coach: string }
 async function trollSays(t: TrollBrief, level: number, history: Exchange[], seed: number, slipped: boolean): Promise<string> {
   const messages: { role: string; content: string }[] = [{ role: 'system', content: adversaryPrompt(t, level, { first: !history.length, slipped }) }];
