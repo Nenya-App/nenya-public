@@ -61,7 +61,7 @@ export function ScrollHint() {
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            style={{ width: '20px', height: '20px', animation: 'scroll-bounce 2.2s ease-in-out infinite' }}
+            style={{ width: '20px', height: '20px', animation: 'scroll-pulse 2.2s ease-in-out infinite' }}
           >
             <path d="M6 9l6 6 6-6" />
           </svg>
