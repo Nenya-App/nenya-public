@@ -102,3 +102,10 @@ const y = run(hr, { t: 'ask', id: 'b0000000' }); hr = y.state;
 sp = run(sp, { t: 'in', kind: 'rp-ask', body: { round: 'b0000000', tok: TOKENIZER } }).state;
 hr = run(hr, { t: 'in', kind: 'rp-ask', body: { round: 'a0000000', tok: TOKENIZER } }).state;
 ok('when both ask at once the lower id stays the speaker and the other becomes the hearer', sp.round?.side === 'speaker' && sp.round.id === 'a0000000' && hr.round?.side === 'hearer' && hr.round.id === 'a0000000' && hr.round.phase === 'deciding');
+
+// "Not after all" at the phrase review withdraws the round without sending any words.
+fresh(); send('sp', { t: 'ask', id: ID }); send('hr', { t: 'answer', answer: 'yes' });
+const wd = send('sp', { t: 'cancel' });
+ok('the speaker may withdraw after a yes, before the phrase goes: no words were sent', sp.round === null && hr.round === null && wd.send?.kind === 'rp-control' && sp.notice === 'cancelled');
+fresh(); send('sp', { t: 'ask', id: ID }); send('hr', { t: 'answer', answer: 'yes' }); send('sp', { t: 'sendPhrase', phrase: 'Hello there friend' });
+ok('after the phrase has gone it is too late to withdraw it (the round can only be ended)', !run(sp, { t: 'cancel' }).ok);

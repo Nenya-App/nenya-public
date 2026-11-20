@@ -131,7 +131,7 @@ export function step(s: RoundState, e: Event): Result {
       if (r || s.asksBlocked || !/^[0-9a-f]{8}$/.test(e.id)) return keep(s);
       return done({ ...s, notice: null, round: { id: e.id, side: 'speaker', phase: 'asked' } }, { kind: 'rp-ask', body: { round: e.id, tok: TOKENIZER } });
     case 'cancel':
-      if (!r || r.side !== 'speaker' || r.phase !== 'asked') return keep(s);
+      if (!r || r.side !== 'speaker' || (r.phase !== 'asked' && r.phase !== 'accepted')) return keep(s);
       return done(clear(s, 'cancelled'), { kind: 'rp-control', body: { round: r.id, step: 'done' } });
     case 'answer': {
       if (!r || r.side !== 'hearer' || r.phase !== 'deciding') return keep(s);
