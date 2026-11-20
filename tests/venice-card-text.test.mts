@@ -19,7 +19,7 @@ const all = [name, description, intro, full, short, sys, ctxWithoutPersonLines];
 
 ok('the name is Nenya and there is one line of intro', name === 'Nenya' && !intro.includes('\n'));
 ok('no named person, and nothing structured after one', all.every((t) => !/\b(?:yvette|erasmus|in the (?:voice|style) of)\b/i.test(t)));
-ok('lengths stay inside conservative limits (assumed; Venice has not said)', description.length <= 500 && intro.length <= 200 && full.length <= 4000 && short.length <= 1600, `${description.length}/${intro.length}/${full.length}/${short.length}`);
+ok('lengths stay inside conservative limits (assumed; Venice has not said)', description.length <= 500 && intro.length <= 200 && full.length <= 4200 && short.length <= 1800, `${description.length}/${intro.length}/${full.length}/${short.length}`);
 ok('no claim about hosting, certifications or what happens to data', all.every((t) => !claimsInfrastructure(t)), all.filter(claimsInfrastructure).map((t) => t.slice(0, 40)).join(' | '));
 ok('no invented human life', all.every((t) => !claimsPersona(t)), all.filter(claimsPersona).map((t) => t.slice(0, 40)).join(' | '));
 ok('the description and intro say it is an AI and not a therapist', /\bAI\b/.test(intro) && /not a (?:person or a )?therapist/.test(intro) && /not a person and not a therapist/.test(description));
@@ -49,11 +49,17 @@ ok('no example says it is a person, promises to remember, or says I am here for 
 ok('the distress example names a person and a crisis line, and asks nothing about the dark thoughts', /988/.test(examples.find((e) => /reach someone you trust/.test(e)) ?? '') && !/why|how long|plan|method/i.test(examples.find((e) => /reach someone you trust/.test(e)) ?? ''));
 ok('the extraction prompt says to save nothing personal', /Do not save any memory about the person/.test(extraction) && /name, contact details/.test(extraction));
 
-// the method file: NVC in plain steps and the framework as plain listening moves, with no labels, scores or diagnosis
+// the method file: NVC in plain steps, the framework named in plain speech, and pictures from nature (owner, 2026-11-20: the variables may be named, only
+// ever in plain speech; asked about the framework itself, the character may use imagery and metaphor; the earlier rule to withhold the framework is withdrawn)
 const method = f('context-method.md');
-ok('the method file keeps the framework\'s labels out: no name, no variable letters, no scores', !/icarus|volt|\b[IUVOLRSCT]-(?:state|vector|gravity|coherence|offset)|bottleneck score|\d\/10/i.test(method.replace(/Never give a score, label, category, bottleneck or diagnosis/, '')));
-ok('the method file covers the four NVC parts and says empathy comes first', ['Observation', 'Feeling', 'Need', 'Request'].every((w) => method.includes(`**${w}:**`)) && /Empathy comes first/.test(method));
-ok('the method file says these are not a test or a diagnosis, never to name them, and handles control and fear with care', /not a test/.test(method) && /Do not name the framework/.test(method) && /1-800-799-7233/.test(method) && /do not advise confronting/i.test(method));
+const TEN = ['Inner reserves', 'Conditions', 'Agency', 'Recurring patterns', 'Unresolved tension', 'Scale', 'Values and pulls', 'Opposition', 'Legitimacy', 'Time'];
+ok('the method file names all ten things to listen for, in plain words', TEN.every((t) => method.includes(`**${t}.**`)), TEN.filter((t) => !method.includes(`**${t}.**`)).join(','));
+ok('the method file uses no letter codes, variable symbols or scores for them', !/\*\*[IUVOLRSCTA]\*\*|\b[IUVOLRSCTA]-(?:state|vector|gravity|coherence|offset)\b|\bbottleneck score|\d\/10\b/.test(method));
+ok('the method file says to speak plainly and that metaphor from nature is allowed when asked about the framework', /Speak plainly/.test(method) && /artistic license/.test(method) && /pictures to think with/.test(method));
+ok('there are pictures from nature for each of the ten and for a good way forward', /## Pictures from nature/.test(method) && TEN.every((t) => new RegExp(`\\*\\*${t}:\\*\\*`, 'i').test(method.slice(method.indexOf('## Pictures from nature')))) && /\*\*A good way forward:\*\*/.test(method));
+ok('the method file covers the four NVC parts, empathy first, the seven needs, the order of attention and the four kinds of harm', ['Observation', 'Feeling', 'Need', 'Request'].every((w) => method.includes(`**${w}:**`)) && /Empathy comes first/.test(method) && /Safety, belonging, dignity, meaning, autonomy, pleasure and contribution/.test(method) && /## What to attend to first/.test(method) && /## Four kinds of harm/.test(method));
+ok('the method file says never a score, label or diagnosis, and handles control and fear with care', /Never give a score, a label, a category or a diagnosis/.test(method) && /1-800-799-7233/.test(method) && /do not advise confronting/i.test(method));
 ok('the method file is not an inventory (no long list of feeling words copied from anywhere)', (method.match(/\b(?:afraid|angry|anxious|ashamed|confused|content|delighted|discouraged|embarrassed|excited|frustrated|grateful|hopeful|jealous|lonely|nervous|overwhelmed|peaceful|sad|tired)\b/gi) ?? []).length < 8);
-ok('the method file is modest in size and shows no named person', method.length < 7000 && !/yvette|erasmus|estëlle|estelle/i.test(method), String(method.length));
+ok('the method file is modest in size and shows no named person', method.length < 14000 && !/yvette|erasmus|estëlle|estelle|streiff/i.test(method), String(method.length));
 ok('the method file says nothing about hosting, data or a human life', !claimsInfrastructure(method) && !claimsPersona(method));
+ok('the instructions allow imagery and metaphor only when asked about the framework, and keep everyday speech otherwise', /never use codes, letters or jargon/.test(full) && /imagery and metaphor from nature/.test(full) && /no codes or jargon/.test(short) && /imagery and metaphor from nature/.test(short));
