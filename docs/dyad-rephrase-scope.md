@@ -60,7 +60,7 @@ its next poll, and sees "The other person closed the cell" or the three-hour not
 - *Crisis check on the reader's device.* Every incoming message of kind `text` is checked with `detectFlag`; a stop-tier flag
   pauses the cell for both and shows resources. Phrase matching only: it misses and misfires, and the page says so.
   **Gap found while reading:** `cellClient.ts` runs the check only when `m.kind === 'text'`, so any new message kind added for
-  rephrasing would skip it unless the check is extended (section 8, and the first plumbing commit).
+  rephrasing would skip it unless the check is extended (section 7, and the plumbing commit in section 15).
 - *Pause* by either person, and *resume* by either person. *Close* by either person. The Emergency Exit button closes the cell.
 - *Report* one message the other person sent: the reporter reveals its text and the franking key, the server confirms it
   really came through this cell, and keeps it (text, time, "verified") in the private store, without the mailbox name. The
@@ -145,7 +145,7 @@ is no private reading of the other person's marks that the other cannot see. (If
 their own side is shown, and the other's device says so in neutral words.)
 
 **What the view does not do.** It does not suggest a better phrase, say what the rewrite "fixes", or point at a "reason" for a
-difference. If, later, someone asks the app for help (solo workbench only, see section 12), that is a separate act in the solo
+difference. If, later, someone asks the app for help (solo workbench only; see question 12 in section 16), that is a separate act in the solo
 tool and not part of the cell.
 
 ---
@@ -315,7 +315,7 @@ designed to be complete for one person alone, and the comparison view is the onl
   reached by keyboard and by screen reader.
 - **Marking is not colour-only.** Each of the five kinds has a **text label** (always visible on the marked word in the text
   view, in the list, and in the legend), a **distinct non-colour cue** (underline pattern or border shape: solid, dotted,
-  double, dashed, wavy-equivalents via text decoration or border-style, plus a one-character shape glyph), and the
+  double, dashed and so on, by text decoration or border style, plus a one-character shape glyph), and the
   accessible name carries it: "tired, marked as a feeling". Colour may be added as a third cue and is never needed.
 - **Tap or key to mark.** A kind is chosen first (a radio group), then words are toggled by tap, or by arrow keys + Space or
   Enter. No drag. Un-marking is the same action. A word can hold one kind; changing a kind is a normal choice, with undo.
@@ -376,7 +376,7 @@ tokenizer version, and a mismatch is refused with a plain message.
 - the private pre-send device check and the extension of the receive-side check to the new kinds (section 7);
 - pause, stop and leave integration with the workbench;
 - the first-use screen, the report wording for rephrase messages, the terms and About-page changes;
-- the "don't include the AI" stance (section 12).
+- the "no AI in the dyad" stance (question 12 in section 16).
 
 ---
 
