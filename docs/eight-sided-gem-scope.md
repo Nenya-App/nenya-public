@@ -354,6 +354,12 @@ Part 1 steps 1 to 9 come first (gem as N sides, octagon default). Then, each its
 19. **Custom lens UI** and its leaf in the ring.
 20. *(Optional)* drawn 2D stone for non-default sides without WebGL2.
 
+### Built so far (steps 15, 16, 17, 19), and what step 18 still needs
+
+- **15** `src/lib/lensRing.ts` (geometry, names, 44 px rule), **16** `src/app/components/LensRing.tsx` behind `VITE_LENS_RING=on` (on in the dev context only), **17** `src/lib/customLens.ts`, **19** `CustomLensForm.tsx`, `CustomLensCard.tsx` and `useCustomLenses.ts`, shown only with the ring switch.
+- **Step 18 is skipped on purpose.** Custom lenses are **visit only**: held in a module variable in `useCustomLenses.ts`, not in `deviceMemory.ts`, not in the saved draft, not in any report or PDF, never sent to the coach or a server (a test reads the sources to keep it so). `deviceMemory.ts` still says "Never kept: anything a visitor writes". **Keeping them on the device with "Remember on this device" needs the owner's privacy wording first**: that header list, the privacy page and the Terms would change, then a `customLenses` key with the same `VALID`-and-drop pattern as the other prefs. Until then the form tells the visitor plainly that the lens is for this visit only.
+- The ring reads its lenses from the tray's own list at run time (it does not count them). On this branch that list is the six in `LENS_ORDER`; when Nature and Story are merged and `gatewayCards` carries them (behind their switches) they get leaves with no change to the ring.
+
 ### The owner runs or decides
 
 - Decide: the preset lists (6/8/10/12 and 6/8/10), "gem follows leaves", the 13-lens cap, and visit-only versus kept on
