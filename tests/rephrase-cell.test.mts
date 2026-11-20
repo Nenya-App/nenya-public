@@ -133,7 +133,7 @@ const NOTE = 'I heard worry, mauvenote.';
 
 // ── Pause, a failed send, a modified page ──
 {
-  const { ca, cb, seen, pump } = await pair();
+  const { ca, cb, seen } = await pair();
   ca.drafts.phrase = PHRASE;
   ca.setPaused(true);
   let threw = false; try { await ca.ask(); } catch (e) { threw = (e as Error).message === 'paused'; }
