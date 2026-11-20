@@ -10,7 +10,7 @@ import { normalizeCode, type Opened } from '../lib/cellCrypto';
 import type { SafetyFlag } from '../lib/safetyFlags';
 import { termsAcceptedFor } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
-import { MODES } from '../lib/privacyModes';
+import { MODES, REPHRASE_LIMITS } from '../lib/privacyModes';
 import { rephraseOn } from '../lib/rephraseSwitch';
 import { isRpKind } from '../lib/rephraseProtocol';
 import { RephraseController } from '../lib/rephraseController';
@@ -23,7 +23,8 @@ import RephrasePanel from './RephrasePanel';
 // Screens: start (make or join) → waiting for the other person → compare the safety colours → the conversation (with a
 // pause both people see when a message is flagged, a report for any message the other person sent, and closing).
 // "Send with AI" and "Receive translated" are shown as not available yet: they would send one person's own words to the
-// coach route, which is not wired in.
+// coach route, which is not wired in. With VITE_REPHRASE on the card says instead that there is no AI here (owner's decision:
+// no AI in the dyad in v1) and points to rephrasing.
 
 type Stage = 'loading' | 'off' | 'start' | 'waiting' | 'compare' | 'talk' | 'closed';
 interface Line {
@@ -236,6 +237,7 @@ export default function CellPage() {
                 <p className="text-sm text-muted-foreground">{MODES.cell.summary} {MODES.cell.encryption}</p>
                 <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">
                   {MODES.cell.limits.map((l) => <li key={l}>{l}</li>)}
+                  {rephraseOn() && REPHRASE_LIMITS.map((l) => <li key={l}>{l}</li>)}
                   <li>Nothing is kept: the cell is deleted when either of you closes it, and within three hours at most.</li>
                 </ul>
                 <p className="text-xs text-muted-foreground">This is a practice space, not therapy, and not for emergencies. In the US, call or text 988.</p>
@@ -354,7 +356,7 @@ export default function CellPage() {
                 </Card>
                 <Card className="space-y-1 p-3 text-muted-foreground">
                   <p className="font-medium text-foreground">AI help</p>
-                  <p>"Send with AI" and "Receive translated" are not available yet. Your messages go only to the other person.</p>
+                  <p>{rephraseOn() ? 'There is no AI in this cell. To work on a phrase together, use Rephrase together: you mark the words yourselves. Your messages go only to the other person.' : '"Send with AI" and "Receive translated" are not available yet. Your messages go only to the other person.'}</p>
                 </Card>
                 <div className="flex flex-col gap-2">
                   <Button variant="outline" className="gap-2" onClick={pauseMine} disabled={!!paused}><Pause className="size-4" /> Pause</Button>

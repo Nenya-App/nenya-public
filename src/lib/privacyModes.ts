@@ -89,3 +89,10 @@ export const MODES: Record<ModeId, PrivacyMode> = {
 export function availableModes(switches: { sealed?: boolean; cell?: boolean } = {}): PrivacyMode[] {
   return Object.values(MODES).filter((m) => m.status === 'live' || (m.id === 'sealed' && switches.sealed) || (m.id === 'cell' && switches.cell));
 }
+
+/** What is also true of a cell when rephrasing is on (VITE_REPHRASE; docs/dyad-rephrase-scope.md). Shown with the cell's own limits, only then. */
+export const REPHRASE_LIMITS: string[] = [
+  'Rephrasing sends only what you choose, each time: a phrase, your marks on it, a rewrite. The other person can copy or screenshot anything you send.',
+  'There is no AI in rephrasing. You mark the words yourself, and nothing is suggested or scored.',
+  'Reporting a rephrasing message reveals every word in that message to Nenya’s owner.',
+];
