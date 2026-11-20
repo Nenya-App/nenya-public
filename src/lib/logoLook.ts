@@ -7,11 +7,11 @@ import { DEFAULT_GEM_SIDES, MAX_GEM_SIDES, MIN_GEM_SIDES, clampSides } from './g
 export const LEAF_PRESETS = [6, 8, 10, 12] as const;
 /** Gem sides a visitor can choose. 12 is possible in the engine but twice the cost of 6, so it is not offered. */
 export const GEM_SIDE_PRESETS = [6, 8, 10] as const;
-/** The leaves the logo has by default: eight, which looks best with the mallorn leaves; the gem then follows as an octagon. */
-export const DEFAULT_LOGO_LEAVES = 8;
-/** The gem follows the leaves unless the visitor picks a number. */
+/** The leaves the logo has by default: six, the layout the owner chose. Eight is a preset. */
+export const DEFAULT_LOGO_LEAVES = 6;
+/** The gem has eight sides by default (the owner's choice); a visitor can pick another number or have it match the leaves. */
 export type GemSidesChoice = 'match' | (typeof GEM_SIDE_PRESETS)[number];
-export const DEFAULT_GEM_CHOICE: GemSidesChoice = 'match';
+export const DEFAULT_GEM_CHOICE: GemSidesChoice = 8;
 /** On a low-capability device the stone is drawn with at most this many sides. */
 export const LOW_DEVICE_MAX_SIDES = 8;
 
