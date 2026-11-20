@@ -17,7 +17,7 @@ export type EdgeType =
   | 'often_feels' //     lens -> feeling: which feeling families the page may open first (only when the person is stuck)
   | 'neighbors'; //      concept -> concept: easily mixed up, so one may stand in for the other when the first has nothing
 
-export interface WebNode { id: string; kind: NodeKind; /** Not yet tested on data: never returned by the selector. */ provisional?: boolean }
+export interface WebNode { id: string; kind: NodeKind; /** Part of the communal-needs layer (this project's own extension, not CNVC's): only returned when the context switches the layer on. */ layer?: 'communal'; /** Not yet tested on data: never returned by the selector. */ provisional?: boolean }
 export interface WebEdge { from: string; to: string; type: EdgeType; /** Reason id: a key in the private review table. */ reason: string; /** Lower comes first among edges of one type from one source. */ rank: number }
 
 const n = (kind: NodeKind, ...ids: string[]): WebNode[] => ids.map((id) => ({ id, kind }));
@@ -79,8 +79,9 @@ export const NEED_FAMILY_IDS = [
   'need.autonomy.say', 'need.autonomy.room', 'need.autonomy.pace',
   'need.meaning.purpose', 'need.meaning.grow', 'need.meaning.express',
 ] as const;
-/** The communal-needs layer is this project's own extension and is untested on data: a placeholder that the selector never returns. */
+/** The communal-needs layer is this project's own extension (communalNeeds.ts; not CNVC's) and untested on data: the selector returns its families only when the context turns it on. */
 export const COMMUNAL_LAYER = 'need.communal';
+export const COMMUNAL_FAMILY_NODE_IDS = ['need.communal.fair', 'need.communal.say', 'need.communal.together', 'need.communal.safe', 'need.communal.lasting', 'need.communal.each-other'] as const;
 
 /** Feeling families on the page, "when a need seems not met" side (feelingFamilies.ts). */
 export const FEELING_FAMILY_IDS = [
@@ -91,7 +92,7 @@ export const FEELING_FAMILY_IDS = [
 export const NODES: WebNode[] = [
   ...n('concept', ...CONCEPTS), ...n('lens', ...LENS_IDS), ...n('safety', ...SAFETY_IDS), ...n('move', ...MOVE_IDS), ...n('join', ...JOIN_IDS),
   ...n('question', ...QUESTION_IDS), ...n('card', ...CARD_IDS), ...n('core_need', ...CORE_NEEDS), ...n('need', ...NEED_FAMILY_IDS),
-  { id: COMMUNAL_LAYER, kind: 'need', provisional: true }, ...n('feeling', ...FEELING_FAMILY_IDS),
+  { id: COMMUNAL_LAYER, kind: 'need', layer: 'communal' }, ...COMMUNAL_FAMILY_NODE_IDS.map((id): WebNode => ({ id, kind: 'need', layer: 'communal' })), ...n('feeling', ...FEELING_FAMILY_IDS),
 ];
 
 // ---------------------------------------------------------------- edges
@@ -229,14 +230,14 @@ const NEEDS: Array<[lens: string, needs: string[]]> = [
 ];
 for (const [lens, needs] of NEEDS) add('needs_at_stake', 'r.needs-lens', lens, ...needs);
 
-// maps_to: each of the seven to the families on the page that fit it (the communal layer is a provisional placeholder)
-add('maps_to', 'r.map-safety', 'core.safety', 'need.physical.safety', 'need.peace.calm', 'need.connection.count');
-add('maps_to', 'r.map-belonging', 'core.belonging', 'need.connection.with', 'need.connection.count', COMMUNAL_LAYER);
-add('maps_to', 'r.map-dignity', 'core.dignity', 'need.connection.seen', 'need.autonomy.say', 'need.honesty.self');
-add('maps_to', 'r.map-meaning', 'core.meaning', 'need.meaning.purpose', 'need.meaning.express', 'need.meaning.grow');
-add('maps_to', 'r.map-autonomy', 'core.autonomy', 'need.autonomy.room', 'need.autonomy.say', 'need.autonomy.pace');
+// maps_to: each of the seven to the families on the page that fit it (the communal families are this project's own layer, returned only when switched on)
+add('maps_to', 'r.map-safety', 'core.safety', 'need.physical.safety', 'need.peace.calm', 'need.connection.count', 'need.communal.safe');
+add('maps_to', 'r.map-belonging', 'core.belonging', 'need.connection.with', 'need.connection.count', 'need.communal.together', 'need.communal.each-other');
+add('maps_to', 'r.map-dignity', 'core.dignity', 'need.connection.seen', 'need.autonomy.say', 'need.honesty.self', 'need.communal.fair');
+add('maps_to', 'r.map-meaning', 'core.meaning', 'need.meaning.purpose', 'need.meaning.express', 'need.meaning.grow', 'need.communal.lasting');
+add('maps_to', 'r.map-autonomy', 'core.autonomy', 'need.autonomy.room', 'need.autonomy.say', 'need.autonomy.pace', 'need.communal.say');
 add('maps_to', 'r.map-pleasure', 'core.pleasure', 'need.play.enjoy', 'need.play.light', 'need.physical.moving');
-add('maps_to', 'r.map-contribution', 'core.contribution', 'need.meaning.purpose', COMMUNAL_LAYER);
+add('maps_to', 'r.map-contribution', 'core.contribution', 'need.meaning.purpose', 'need.communal.lasting', 'need.communal.each-other', 'need.communal.say');
 
 // often_feels: lens -> feeling families the page may open first when the person says they are stuck
 const FEELS: Array<[lens: string, feelings: string[]]> = [

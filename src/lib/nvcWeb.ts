@@ -3,7 +3,7 @@
 //
 // What it will never do (all tested):
 //  - add to or override a guard: if any guard has fired, or the message was a crisis or hostility or the softened tier, it returns nothing at all;
-//  - return an id that is not a known module, question or card id, or a provisional node;
+//  - return an id that is not a known module, question or card id, or a node of the communal layer unless the context switches that layer on;
 //  - return a move that coachModules.ts holds back (SUPPRESS) or that the practice arc leaves out;
 //  - return a number: results are ordered lists of ids with reason ids, never a score;
 //  - hold any text. The wording of modules, questions and cards is private; this only chooses ids.
@@ -53,6 +53,8 @@ export interface WebContext {
   availableCards?: readonly string[];
   /** The ids the base selection already chose (from selectModules). */
   base?: readonly string[];
+  /** Also suggest word families from the communal-needs layer (this project's own extension, not CNVC's). Off by default. */
+  communal?: boolean;
   /** Maximum cards returned (the offer rules downstream still apply). */
   maxCards?: number;
 }
@@ -182,7 +184,7 @@ export function suggest(concepts: readonly string[], lenses: readonly string[], 
   const famW = new Map<string, { weight: number; because: Set<string> }>();
   if (ctx.stuck) {
     for (const l of ls) {
-      for (const ne of edgesFrom(l, 'needs_at_stake')) for (const me of edgesFrom(ne.to, 'maps_to')) if (me.to !== COMMUNAL_LAYER && !nodeById.get(me.to)?.provisional) bump(famW, me.to, 3 - Math.min(me.rank, 2), me.reason);
+      for (const ne of edgesFrom(l, 'needs_at_stake')) for (const me of edgesFrom(ne.to, 'maps_to')) { const nd = nodeById.get(me.to); if (nd?.provisional || me.to === COMMUNAL_LAYER) continue; if (nd?.layer === 'communal') { if (ctx.communal) bump(famW, me.to, 3, me.reason); } else bump(famW, me.to, 3 - Math.min(me.rank, 2), me.reason); }
       for (const fe of edgesFrom(l, 'often_feels')) bump(famW, fe.to, 2, fe.reason);
     }
   }

@@ -4,9 +4,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { ARC_EXCLUDED_MODULES, MODULE_GROUPS, MODULE_IDS, SUPPRESS, selectModules } from '../src/lib/coachModules.ts';
 import {
-  CARD_IDS, COMMUNAL_LAYER, CONCEPTS, EDGES, JOIN_IDS, JOIN_PAIRS, LENS_IDS, MOVE_IDS, NODES, QUESTION_IDS, SAFETY_IDS, NEED_FAMILY_IDS, FEELING_FAMILY_IDS,
+  CARD_IDS, COMMUNAL_FAMILY_NODE_IDS, COMMUNAL_LAYER, CONCEPTS, EDGES, JOIN_IDS, JOIN_PAIRS, LENS_IDS, MOVE_IDS, NODES, QUESTION_IDS, SAFETY_IDS, NEED_FAMILY_IDS, FEELING_FAMILY_IDS,
 } from '../src/lib/nvcWebData.ts';
 import { GUARD_KEYS, KNOWN, anyGuard, detectConcepts, edgesFrom, notesIds, pageView, suggest, suggestFromText, webProblems, type WebSuggestion } from '../src/lib/nvcWeb.ts';
+import { COMMUNAL_FAMILIES, COMMUNAL_FAMILY_IDS, COMMUNAL_LABEL } from '../src/lib/communalNeeds.ts';
 import { ok } from './helpers.mts';
 
 const ALL_CARDS = [...CARD_IDS];
@@ -25,7 +26,12 @@ ok('no id in the public data uses a framework label', NODES.every((n) => !/icaru
 ok('edge reasons are ids only, no sentences', EDGES.every((e) => /^r\.[a-z0-9-]+$/.test(e.reason)));
 ok('the data holds back at least everything the code holds back (SUPPRESS)', Object.entries(SUPPRESS).every(([lens, moves]) => { const have = new Set(edgesFrom(lens, 'holds_back').map((e) => e.to)); return moves.every((m) => have.has(m)); }));
 ok('the arc-excluded modules are known moves', ARC_EXCLUDED_MODULES.every((m) => (MOVE_IDS as readonly string[]).includes(m)));
-ok('the communal layer is provisional', NODES.find((n) => n.id === COMMUNAL_LAYER)?.provisional === true);
+ok('the communal layer is marked as a layer of its own', NODES.find((n) => n.id === COMMUNAL_LAYER)?.layer === 'communal' && COMMUNAL_FAMILY_NODE_IDS.every((i) => NODES.find((n) => n.id === i)?.layer === 'communal'));
+ok('the web\'s communal family ids are exactly the families in communalNeeds.ts', JSON.stringify([...COMMUNAL_FAMILY_NODE_IDS].sort()) === JSON.stringify([...COMMUNAL_FAMILY_IDS].sort()));
+ok('every communal family has four to six words, each with a plain one-line meaning', COMMUNAL_FAMILIES.every((f) => f.words.length >= 4 && f.words.length <= 6 && f.words.every((w) => w.word && w.def.length > 10 && w.def.length < 90)));
+ok('the communal words carry no dash, exclamation mark or banned word', COMMUNAL_FAMILIES.every((f) => f.words.every((w) => !/[—–!]/.test(w.word + w.def) && !/\b(journey|unlock|transform|hack|optimi[sz]e|heal|fix|wellness|anonymous|secure)\w*/i.test(w.word + w.def))));
+ok('the communal label says it is this project\'s own and not CNVC\'s', /this project's own/.test(COMMUNAL_LABEL) && /not part of the CNVC inventory/.test(COMMUNAL_LABEL));
+ok('no communal word is repeated across families', (() => { const all = COMMUNAL_FAMILIES.flatMap((f) => f.words.map((w) => w.word)); return new Set(all).size === all.length; })());
 
 // ---- the phrase workbench's own lists, when this branch has them (they are on claude/phrase-workbench-scope-cc19cc until merged)
 if (existsSync('src/lib/needFamilies.ts') && existsSync('src/lib/feelingFamilies.ts')) {
@@ -120,7 +126,12 @@ ok('a neighbouring concept stands in when the first has no card available', sugg
 const notStuck = suggest([], ['reserves', 'legitimacy'], {});
 const stuck = suggest([], ['reserves', 'legitimacy'], { stuck: true });
 ok('no word family is suggested unless the person is stuck', notStuck.openFamilies.length === 0 && stuck.openFamilies.length > 0 && stuck.openFamilies.length <= 3);
-ok('the communal placeholder is never returned', LENS_IDS.every((l) => !suggest([], [l], { stuck: true }).openFamilies.some((f) => f.id === COMMUNAL_LAYER)));
+ok('communal families are never returned unless the layer is switched on', LENS_IDS.every((l) => !suggest([], [l], { stuck: true }).openFamilies.some((f) => f.id.startsWith('need.communal'))));
+const comm = suggest([], ['systemic_scale', 'frozen_system'], { stuck: true, communal: true });
+ok('with the layer on, a stuck person facing something bigger than themselves is offered a communal family, and it is a known one', comm.openFamilies.some((f) => f.id.startsWith('need.communal')) && comm.openFamilies.every((f) => !f.id.startsWith('need.communal') || (COMMUNAL_FAMILY_IDS as string[]).includes(f.id)));
+ok('with the layer on but the person not stuck, still nothing', suggest([], ['systemic_scale'], { communal: true }).openFamilies.length === 0);
+ok('with the layer on, the guards still silence it', suggest([], ['systemic_scale'], { communal: true, stuck: true, guards: { crisis: true } }).openFamilies.length === 0);
+ok('the communal bare category node is never returned', LENS_IDS.every((l) => !suggest([], [l], { stuck: true, communal: true }).openFamilies.some((f) => f.id === COMMUNAL_LAYER)));
 
 // ---- nothing outside the known ids, ever, across many messages
 const MESSAGES = [
@@ -133,9 +144,9 @@ const MESSAGES = [
   'What is a need? Can you explain what NVC means?', 'How do I tell my sister I need space? She keeps yelling at me.', 'One good thing today, a bright spot at work.',
 ];
 const seen: { s: WebSuggestion; arc: boolean }[] = [];
-for (const m of MESSAGES) for (const arcOn of [false, true]) for (const stuckNow of [false, true]) seen.push({ s: suggestFromText([m], { arcOn, stuck: stuckNow, availableCards: ALL_CARDS }), arc: arcOn });
+for (const m of MESSAGES) for (const arcOn of [false, true]) for (const stuckNow of [false, true]) for (const communal of [false, true]) seen.push({ s: suggestFromText([m], { arcOn, stuck: stuckNow, communal, availableCards: ALL_CARDS }), arc: arcOn });
 const idsOf = (s: WebSuggestion): string[] => [...s.lenses, ...s.moves, ...s.joins, ...(s.question ? [s.question] : []), ...s.cards, ...s.openFamilies, ...s.hints].map((r) => r.id);
-const known = new Set<string>([...KNOWN.modules, ...KNOWN.cards, ...NEED_FAMILY_IDS, ...FEELING_FAMILY_IDS]);
+const known = new Set<string>([...KNOWN.modules, ...KNOWN.cards, ...NEED_FAMILY_IDS, ...COMMUNAL_FAMILY_IDS, ...FEELING_FAMILY_IDS]);
 ok('across many messages, every returned id is a known module, question, card or family id', seen.every(({ s }) => idsOf(s).every((i) => known.has(i))));
 ok('across many messages, every module id returned is a real module or a registered join or question', seen.every(({ s }) => [...s.lenses, ...s.moves, ...s.joins].every((r) => MODULE_IDS.includes(r.id) || (JOIN_IDS as readonly string[]).includes(r.id))));
 ok('across many messages with the arc on, the arc-excluded modules never appear', seen.filter((x) => x.arc).every(({ s }) => idsOf(s).every((i) => !(ARC_EXCLUDED_MODULES as readonly string[]).includes(i))));
