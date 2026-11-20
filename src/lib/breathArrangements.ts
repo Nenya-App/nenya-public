@@ -5,11 +5,11 @@
 // below uses that: the inhale climbs, the exhale resolves to the tonic (D), a hold after the inhale sits on a stable open
 // note and a hold after the exhale rests on the tonic. All are in D, on the pentatonic scale, so any note sits well with
 // any other. See docs/accessibility-audio-scope.md.
-import { FREQS } from './sessionSound.ts';
 import type { BreathTiming } from './breathClock.ts';
 
 export type Arrangement = 'harp' | 'bowls' | 'chord' | 'scale';
-export const DEFAULT_ARRANGEMENT: Arrangement = 'harp';
+/** The style heard by default: the bowls (the owner's choice, 2026-11-20). A visitor's own choice, kept on their device, still wins. */
+export const DEFAULT_ARRANGEMENT: Arrangement = 'bowls';
 
 export const ARRANGEMENTS: { id: Arrangement; label: string; description: string; drone: boolean }[] = [
   { id: 'harp', label: 'Harp', description: 'Plucked notes that ring and overlap, over a very soft low drone. The exhale lands on the home note.', drone: true },
@@ -42,22 +42,29 @@ const hz = (midi: number): number => 440 * Math.pow(2, (midi - 69) / 12);
 const counts = (ms: number): number => (ms > 0 ? Math.max(1, Math.round(ms / 1000)) : 0);
 const clamp01 = (x: number): number => Math.min(1, Math.max(0, x));
 
-// ---- Scale (the first version): a note a count across D4 to E5 of the session sound's scale, rising then falling
+// ---- Scale (the first version): plain notes, one a count, rising then falling. Stepwise through the D major pentatonic (the key of the
+// other styles). The first version spread the notes over the C pentatonic with a fixed range, which skipped notes and leapt (D E G C D E): awkward
+// and unpleasant by the owner's ear (2026-11-20). Now a phase climbs the scale a degree at a time, and both phases of a breath share the same top.
 
-export const LOW_INDEX = 1;
-export const HIGH_INDEX = 7;
-export const LOW_FREQ = FREQS[LOW_INDEX];
-export const HIGH_FREQ = FREQS[HIGH_INDEX];
+/** D major pentatonic from the home note up one octave: D4 E4 F#4 A4 B4 D5. D5 (587 Hz) is the ceiling: no pitched note in any style goes above it (the owner found the top note too high, 2026-11-20). */
+export const SCALE_LADDER = [62, 64, 66, 69, 71, 74].map(hz);
+export const LOW_INDEX = 0;
+export const HIGH_INDEX = SCALE_LADDER.length - 1;
+export const LOW_FREQ = SCALE_LADDER[LOW_INDEX];
+export const HIGH_FREQ = SCALE_LADDER[HIGH_INDEX];
 export const GAIN_MOVING = 0.12;
 export const GAIN_FIRM = 0.17;
 export const GAIN_HOLD = 0.05;
 
-/** The pitch for step `j` (from 0) of `n` steps across the range, rising or falling. A phase of one count sits at its end of the range. */
-export function pitchFor(j: number, n: number, direction: 'up' | 'down'): number {
-  const span = HIGH_INDEX - LOW_INDEX;
+/** The scale degree a breath climbs to: one step for each count of its longer phase (so equal phases walk the scale a degree at a time), at most the top. */
+export const scalePeak = (t: BreathTiming): number => Math.max(1, Math.min(HIGH_INDEX, Math.max(counts(t.ih), counts(t.ex)) - 1));
+
+/** The pitch for step `j` (from 0) of `n` steps from the home note up to degree `peak`, rising or falling. A phase of one count sits at its end of the range. */
+export function pitchFor(j: number, n: number, direction: 'up' | 'down', peak: number = HIGH_INDEX): number {
+  const span = peak - LOW_INDEX;
   const frac = n <= 1 ? 1 : clamp01(j / (n - 1));
-  const idx = direction === 'up' ? LOW_INDEX + Math.round(frac * span) : HIGH_INDEX - Math.round(frac * span);
-  return FREQS[n <= 1 ? (direction === 'up' ? HIGH_INDEX : LOW_INDEX) : idx];
+  const idx = direction === 'up' ? LOW_INDEX + Math.round(frac * span) : peak - Math.round(frac * span);
+  return SCALE_LADDER[n <= 1 ? (direction === 'up' ? peak : LOW_INDEX) : idx];
 }
 
 type Pitcher = (j: number, n: number) => number;
@@ -66,50 +73,44 @@ type Phase = (start: number, len: number, kind: Kind, pitch: Pitcher, gain: (j: 
 function scaleEvents(t: BreathTiming): ToneEvent[] {
   const ih = t.ih, hi = t.hi || 0, ex = t.ex, ho = t.ho || 0;
   const out: ToneEvent[] = [];
+  const peak = scalePeak(t);
   const phase: Phase = (start, len, kind, pitch, gain) => {
     const n = counts(len);
     for (let j = 0; j < n; j++) out.push({ t: start + (j * len) / n, freq: pitch(j, n), gain: gain(j), kind, timbre: 'sine', dur: 0.6 });
   };
-  phase(0, ih, 'inhale', (j, n) => pitchFor(j, n, 'up'), (j) => (j === 0 ? GAIN_FIRM : GAIN_MOVING));
-  phase(ih, hi, 'hold-in', () => HIGH_FREQ, () => GAIN_HOLD);
-  phase(ih + hi, ex, 'exhale', (j, n) => pitchFor(j, n, 'down'), () => GAIN_MOVING);
+  phase(0, ih, 'inhale', (j, n) => pitchFor(j, n, 'up', peak), (j) => (j === 0 ? GAIN_FIRM : GAIN_MOVING));
+  phase(ih, hi, 'hold-in', () => SCALE_LADDER[peak], () => GAIN_HOLD);
+  phase(ih + hi, ex, 'exhale', (j, n) => pitchFor(j, n, 'down', peak), () => GAIN_MOVING);
   phase(ih + hi + ex, ho, 'hold-out', () => LOW_FREQ, () => GAIN_HOLD);
   return out;
 }
 
 // ---- Harp: an open arpeggio in D that rings, rising on the inhale and landing on the tonic on the exhale
 
-/** D major pentatonic arpeggio ladder: A3, D4, F#4, A4, D5, F#5, A5. Index 1 (D4) is the home note. */
-export const HARP_LADDER = [57, 62, 66, 69, 74, 78, 81].map(hz);
-export const HARP_HOME = HARP_LADDER[1];
-export const HARP_OPEN = HARP_LADDER[4]; // D5: the stable, open note the inhale hold sits on
-const HARP_LOW = 1;
-const HARP_HIGH = 5; // up to F#5 for a phase of five counts or fewer
-const HARP_TOP = 6; // a phase of six counts or more reaches A5, so six counts are six different notes
+/** D4 E4 F#4 A4 B4 D5: the same six notes as the scale. D4 is the home note and D5 (the ceiling) the top; a short phase picks its notes from across them (three counts give the open D4 A4 D5). */
+export const HARP_LADDER = [62, 64, 66, 69, 71, 74].map(hz);
+export const HARP_HOME = HARP_LADDER[0];
+export const HARP_OPEN = HARP_LADDER[5]; // D5: the top, and the stable, open note the inhale hold sits on
+const HARP_TOP = HARP_LADDER.length - 1;
 
-/** The top of the climb for a breath: F#5, or A5 when either phase has more counts than the five notes D4 to F#5 (see harpPitch). */
-const harpHigh = (t: BreathTiming): number => (Math.max(counts(t.ih), counts(t.ex)) > HARP_HIGH - HARP_LOW + 1 ? HARP_TOP : HARP_HIGH);
-
-function harpPitch(j: number, n: number, up: boolean, high: number): number {
-  // With more counts than the five notes D4 to F#5 there would be a repeated note (the steady 6 count pace played A4 twice, a stutter), so the
-  // ladder grows by one note at the top for six counts or more, and both phases of the breath share that top so the exhale starts where the inhale ended.
-  const span = high - HARP_LOW;
+function harpPitch(j: number, n: number, up: boolean): number {
+  // Every phase spans the whole ladder, so both halves of a breath share the same top. Six counts are six different notes, one a step; the
+  // earlier ladder (D4 to F#5, five notes) repeated A4 on the steady 6 count pace, and its top note was found too high.
   const frac = n <= 1 ? 1 : clamp01(j / (n - 1));
-  const idx = up ? HARP_LOW + Math.round(frac * span) : high - Math.round(frac * span);
-  return HARP_LADDER[n <= 1 ? (up ? high : HARP_LOW) : idx];
+  const idx = up ? Math.round(frac * HARP_TOP) : HARP_TOP - Math.round(frac * HARP_TOP);
+  return HARP_LADDER[n <= 1 ? (up ? HARP_TOP : 0) : idx];
 }
 
 function harpEvents(t: BreathTiming): ToneEvent[] {
   const ih = t.ih, hi = t.hi || 0, ex = t.ex, ho = t.ho || 0;
   const out: ToneEvent[] = [];
-  const high = harpHigh(t);
   const phase: Phase = (start, len, kind, pitch, gain) => {
     const n = counts(len);
     for (let j = 0; j < n; j++) out.push({ t: start + (j * len) / n, freq: pitch(j, n), gain: gain(j), kind, timbre: 'harp', dur: kind.startsWith('hold') ? 1.6 : 2.6 });
   };
-  phase(0, ih, 'inhale', (j, n) => harpPitch(j, n, true, high), (j) => (j === 0 ? 0.17 : 0.13));
+  phase(0, ih, 'inhale', (j, n) => harpPitch(j, n, true), (j) => (j === 0 ? 0.17 : 0.13));
   phase(ih, hi, 'hold-in', () => HARP_OPEN, () => 0.045);
-  phase(ih + hi, ex, 'exhale', (j, n) => harpPitch(j, n, false, high), () => 0.13);
+  phase(ih + hi, ex, 'exhale', (j, n) => harpPitch(j, n, false), () => 0.13);
   phase(ih + hi + ex, ho, 'hold-out', () => HARP_HOME, () => 0.045);
   return out;
 }

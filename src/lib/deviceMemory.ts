@@ -1,4 +1,5 @@
 import { isAllowedTechnique } from './breathCustom.ts';
+import { DEFAULT_ARRANGEMENT } from './breathArrangements.ts';
 import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_PREVIEW_SIZE, GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, snapLeaves, snapPreviewSize, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
@@ -259,7 +260,7 @@ export const useGemKaleidoscopeBreath = kaleidoBreath.use;
 export type BreathingSound = 'harp' | 'bowls' | 'chord' | 'scale';
 let soundStyle: BreathingSound | null = null;
 const soundListeners = new Set<() => void>();
-const getSound = (): BreathingSound => (soundStyle ??= (loadPrefs().breathingSound as BreathingSound | undefined) ?? 'harp');
+const getSound = (): BreathingSound => (soundStyle ??= (loadPrefs().breathingSound as BreathingSound | undefined) ?? DEFAULT_ARRANGEMENT);
 export const getBreathingSound = getSound;
 export function setBreathingSound(s: BreathingSound): void {
   soundStyle = s;
@@ -271,7 +272,7 @@ const subscribeSound = (l: () => void) => {
   return () => soundListeners.delete(l);
 };
 export function useBreathingSound(): BreathingSound {
-  const style = useSyncExternalStore(subscribeSound, getSound, () => 'harp' as BreathingSound);
+  const style = useSyncExternalStore(subscribeSound, getSound, () => DEFAULT_ARRANGEMENT as BreathingSound);
   const remembering = useRemembering();
   useEffect(() => {
     if (remembering) savePref('breathingSound', style);

@@ -1,7 +1,7 @@
 // Breathing tones: a sound for each count of the breath, so the breath can be followed by ear (see
 // docs/accessibility-audio-scope.md). Off until a visitor switches it on; nothing here makes a sound at import time.
 // The notes themselves, for each tone style, are laid out in breathArrangements.ts (pure, tested); this file plays them.
-import { arrangementEvents, ARRANGEMENTS, type Arrangement, type ToneEvent, type Timbre } from './breathArrangements.ts';
+import { arrangementEvents, ARRANGEMENTS, DEFAULT_ARRANGEMENT, type Arrangement, type ToneEvent, type Timbre } from './breathArrangements.ts';
 import type { BreathTiming } from './breathClock.ts';
 
 export {
@@ -247,7 +247,7 @@ const TICK_MS = 150;
 export function createPlanner(lookaheadMs = LOOKAHEAD_MS) {
   let sig = '';
   let scheduledTo = 0;
-  let active: Arrangement = 'harp';
+  let active: Arrangement = DEFAULT_ARRANGEMENT;
   let pending: { arrangement: Arrangement; at: number } | null = null;
   return (now: number, st: { timing: BreathTiming; cycleStart: number; arrangement: Arrangement }) => {
     const { timing, cycleStart } = st;

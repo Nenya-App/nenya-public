@@ -25,7 +25,7 @@ const PENTATONIC_D = new Set([2, 4, 6, 9, 11]); // D E F# A B as pitch classes
 const inD = (f: number) => PENTATONIC_D.has(((midiOf(f) % 12) + 12) % 12);
 
 // ---- the list of styles
-ok('there are four styles: harp, bowls, chord and the original scale; harp is the default', A.ARRANGEMENTS.map((a) => a.id).join() === 'harp,bowls,chord,scale' && A.DEFAULT_ARRANGEMENT === 'harp');
+ok('there are four styles: harp, bowls, chord and the original scale; bowls is the default (owner, 2026-11-20)', A.ARRANGEMENTS.map((a) => a.id).join() === 'harp,bowls,chord,scale' && A.DEFAULT_ARRANGEMENT === 'bowls');
 ok('every style has a plain description for the panel', A.ARRANGEMENTS.every((a) => a.label.length > 2 && a.description.length > 30));
 ok('only the harp has a drone under it', A.ARRANGEMENTS.filter((a) => a.drone).map((a) => a.id).join() === 'harp');
 ok('anything that is not a style is refused', A.isArrangement('harp') && A.isArrangement('scale') && !A.isArrangement('organ') && !A.isArrangement(null));
@@ -56,7 +56,7 @@ ok('harp: notes ring for seconds, longer than the beat, so they overlap', h.ever
 const hb = A.arrangementEvents('harp', sec(4, 4, 4, 4));
 ok('harp: the hold after the inhale rests on the open D5, quietly; the hold after the exhale on the home note, quietly', hb.filter((e) => e.kind === 'hold-in').every((e) => e.freq === A.HARP_OPEN && e.gain < 0.06) && hb.filter((e) => e.kind === 'hold-out').every((e) => e.freq === A.HARP_HOME && e.gain < 0.06));
 ok('harp: the first note of a breath is a little firmer', h[0].gain > h[1].gain);
-ok('harp: a phase longer than the ladder shares notes but stays in range', A.arrangementEvents('harp', sec(12, 0, 12, 0)).every((e) => e.freq >= A.HARP_HOME && e.freq <= A.HARP_LADDER[6]));
+ok('harp: a phase longer than the ladder shares notes but stays in range', A.arrangementEvents('harp', sec(12, 0, 12, 0)).every((e) => e.freq >= A.HARP_HOME && e.freq <= A.HARP_LADDER[5]));
 
 // ---- bowls
 const b = A.arrangementEvents('bowls', sec(4, 0, 6, 0));
@@ -81,7 +81,7 @@ ok('chord: a very soft tick for every count, so counts can still be counted', cT
 ok('chord: with a long inhale the chord stops at six voices and the other counts are ticks', A.arrangementEvents('chord', sec(8, 0, 8, 0)).filter((e) => e.timbre === 'pad').length === 6);
 
 // ---- the setting
-ok('the style defaults to harp', dm.getBreathingSound() === 'harp');
+ok('the style defaults to the bowls', dm.getBreathingSound() === 'bowls');
 dm.setBreathingSound('bowls');
 ok('choosing one is shared in memory and is not written to the device unless remembering', dm.getBreathingSound() === 'bowls' && !('nenya.prefs' in store));
 dm.setRemembering(true); dm.setBreathingSound('chord');
@@ -90,7 +90,7 @@ store['nenya.prefs'] = JSON.stringify({ breathingSound: 'organ' });
 ok('a value that is not a style is ignored', dm.loadPrefs().breathingSound === undefined);
 store['nenya.prefs'] = JSON.stringify({ breathingSound: 'scale' });
 dm.wipeDevice({ keepOwner: true }); dm.__resetBreathingTonesForTests();
-ok('"Forget me" erases it, back to harp', !('nenya.prefs' in store) && dm.getBreathingSound() === 'harp');
+ok('"Forget me" erases it, back to the bowls', !('nenya.prefs' in store) && dm.getBreathingSound() === 'bowls');
 
 // ---- in the page
 const sw = src('src/app/components/BreathTonesSwitch.tsx');
@@ -116,3 +116,9 @@ for (const [ih, ex] of [[3, 3], [4, 4], [5, 5], [4, 6], [6, 6]]) {
 }
 
 ok('harp: the exhale starts on the note the inhale ended on, for the six count pace and a four-in six-out pace', [[6, 6], [4, 6], [5, 5], [3, 3]].every(([ih, ex]) => { const e = A.arrangementEvents('harp', sec(ih, 0, ex, 0)); const i = e.filter((x) => x.kind === 'inhale'); const o = e.filter((x) => x.kind === 'exhale'); return i[i.length - 1].freq === o[0].freq; }));
+
+// ---- the ceiling: no pitched note goes above D5 in any style (the top note was too high)
+const D5 = A.HARP_OPEN;
+const PACES = [sec(3, 0, 3, 0), sec(4, 0, 6, 0), sec(4, 0, 8, 0), sec(5, 0, 5, 0), sec(6, 0, 6, 0), sec(4, 4, 4, 4), sec(4, 7, 8, 0), sec(12, 0, 12, 0)];
+ok('no pitched note in any style goes above D5 (587 Hz); only the near-silent ticks are higher', ['harp', 'bowls', 'chord', 'scale'].every((s) => PACES.every((p) => A.arrangementEvents(s as never, p).filter((e) => e.timbre !== 'tick').every((e) => e.freq <= D5 + 0.01))));
+ok('D5 is 587 Hz, and the harp and scale share the same six notes', Math.abs(D5 - 587.33) < 0.01 && A.HARP_LADDER.length === 6 && A.HARP_LADDER.join() === A.SCALE_LADDER.join());
