@@ -66,3 +66,12 @@ export function randomHaloColors(seed: number, index: number, all: readonly stri
     return all[Math.floor((x / 4294967296) * all.length)] ?? all[0];
   });
 }
+
+// The size of the animated preview in the breathing and accessibility panel: adjustable, in steps of 20 pixels.
+export const PREVIEW_MIN = 120;
+export const PREVIEW_MAX = 400;
+export const PREVIEW_STEP = 20;
+export const DEFAULT_PREVIEW_SIZE = 220;
+/** A preview size the panel may use: rounded to a step and kept between the limits; anything unreadable becomes the default. */
+export const snapPreviewSize = (v: unknown): number =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.min(PREVIEW_MAX, Math.max(PREVIEW_MIN, Math.round(v / PREVIEW_STEP) * PREVIEW_STEP)) : DEFAULT_PREVIEW_SIZE;

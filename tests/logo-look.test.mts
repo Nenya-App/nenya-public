@@ -27,3 +27,10 @@ ok('random colours: six per orb, all from the list', randomHaloColors(3, 0, samp
 ok('the same seed gives the same colours (a reload does not reshuffle)', randomHaloColors(3, 4, sample).join() === randomHaloColors(3, 4, sample).join());
 ok('another seed or another orb gives different colours', randomHaloColors(3, 4, sample).join() !== randomHaloColors(4, 4, sample).join() && randomHaloColors(3, 4, sample).join() !== randomHaloColors(3, 5, sample).join());
 ok('every style has a label', HALO_STYLES.every((s) => haloStyleLabel(s).length > 0));
+
+// The preview's size in the breathing panel is adjustable.
+import { DEFAULT_PREVIEW_SIZE, PREVIEW_MAX, PREVIEW_MIN, PREVIEW_STEP, snapPreviewSize } from '../src/lib/logoLook.ts';
+ok('the preview size defaults to a value inside its limits and on a step', DEFAULT_PREVIEW_SIZE >= PREVIEW_MIN && DEFAULT_PREVIEW_SIZE <= PREVIEW_MAX && DEFAULT_PREVIEW_SIZE % PREVIEW_STEP === 0);
+ok('a preview size is rounded to a step and kept between the limits', snapPreviewSize(233) === 240 && snapPreviewSize(10) === PREVIEW_MIN && snapPreviewSize(9999) === PREVIEW_MAX);
+ok('an unreadable preview size becomes the default', snapPreviewSize('big') === DEFAULT_PREVIEW_SIZE && snapPreviewSize(NaN) === DEFAULT_PREVIEW_SIZE && snapPreviewSize(null) === DEFAULT_PREVIEW_SIZE);
+ok('the preview is larger by default than the old fixed 160 pixels', DEFAULT_PREVIEW_SIZE > 160);

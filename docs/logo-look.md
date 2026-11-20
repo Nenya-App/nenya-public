@@ -20,6 +20,9 @@ The glow round each outer orb is a setting too (Settings, Logo look, Outer glow)
 - **Width** (`orbHaloWidth`): Soft 3.4, Wide 5 (the default, the owner's choice) or Wider 7, as a multiple of the orb's width. Not offered for the old shared glow.
 The halos are gradients, never blurs, and their colours are animated by the browser, so they are light to draw. Reduced motion holds them still. Code: `src/lib/logoLook.ts` (choices, `randomHaloColors`), `src/lib/deviceMemory.ts` (storage), `NenyaLogo.tsx`.
 
+## Preview size
+The animated preview in the breathing and accessibility panel was a fixed 160 pixels. It now has a **Preview size** slider (120 to 400 pixels, steps of 20, default 220) and a Reset button, kept as `previewSize` like the other display settings. The panel widens to fit it on a wide screen; on a narrow screen the preview is held to 220 pixels so it fits. Code: `src/app/components/BreathingPopout.tsx`, `snapPreviewSize` in `src/lib/logoLook.ts`.
+
 ## Storage
 Both choices are display settings like the others (`logoLeaves`, `gemSides` in `nenya.prefs`, `src/lib/deviceMemory.ts`). They are
 written to the device only while "Remember on this device" is on; otherwise they last for the visit. Unreadable or unknown stored values

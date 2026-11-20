@@ -36,3 +36,11 @@ M.setOrbHaloWidth(6);
 ok('a width set in code snaps to a preset', [3.4, 5, 7].includes(M.getOrbHaloWidth()));
 M.setOrbHaloStyle('palette');
 ok('a style set in code is kept', M.getOrbHaloStyle() === 'palette');
+
+// The preview size is stored like the other display settings.
+store['nenya.prefs'] = JSON.stringify({ previewSize: 300 });
+ok('a stored preview size is read back', M.loadPrefs().previewSize === 300);
+store['nenya.prefs'] = JSON.stringify({ previewSize: 5000 });
+ok('a preview size outside the limits is dropped', M.loadPrefs().previewSize === undefined);
+M.setBreathPreviewSize(333);
+ok('a preview size set in code snaps to a step', M.getBreathPreviewSize() === 340);

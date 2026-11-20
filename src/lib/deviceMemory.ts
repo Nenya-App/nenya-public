@@ -1,5 +1,5 @@
 import { isAllowedTechnique } from './breathCustom.ts';
-import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, snapLeaves, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
+import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_PREVIEW_SIZE, GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, snapLeaves, snapPreviewSize, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 // Everything Nenya may keep on a visitor's device lives behind this one file, so there is a single
@@ -109,6 +109,8 @@ export interface Prefs {
   orbHalo?: string;
   orbHaloWidth?: number;
   orbHaloSeed?: number;
+  /** The size of the animated preview in the breathing and accessibility panel, in pixels (a multiple of 20, 120 to 400). */
+  previewSize?: number;
 }
 
 const VISION = ['', 'deuteranopia', 'protanopia', 'tritanopia', 'achromatopsia'];
@@ -134,6 +136,7 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   orbHalo: (v) => (HALO_STYLES as readonly unknown[]).includes(v),
   orbHaloWidth: (v) => typeof v === 'number' && (HALO_WIDTHS as readonly number[]).includes(v),
   orbHaloSeed: (v) => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 4294967295,
+  previewSize: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 120 && v <= 400,
   breathingTechnique: (v) => {
     // A saved pace must be one the site would have allowed (src/lib/breathCustom.ts); earlier saves of the presets all pass.
     return isAllowedTechnique(v);
@@ -415,3 +418,14 @@ export function shuffleOrbHalo(seed: number = Math.floor(Math.random() * 4294967
 export const useOrbHaloStyle = (): HaloStyle => useSyncExternalStore(subscribeLook, getHaloStyle, () => DEFAULT_HALO_STYLE);
 export const useOrbHaloWidth = (): number => useSyncExternalStore(subscribeLook, getHaloWidth, () => DEFAULT_HALO_WIDTH);
 export const useOrbHaloSeed = (): number => useSyncExternalStore(subscribeLook, getHaloSeed, () => 1);
+
+// The size of the preview in the breathing panel.
+let previewNow: number | null = null;
+const getPreviewSize = (): number => (previewNow ??= snapPreviewSize(loadPrefs().previewSize ?? DEFAULT_PREVIEW_SIZE));
+export const getBreathPreviewSize = getPreviewSize;
+export function setBreathPreviewSize(n: number): void {
+  previewNow = snapPreviewSize(n);
+  savePref('previewSize', previewNow);
+  lookListeners.forEach((l) => l());
+}
+export const useBreathPreviewSize = (): number => useSyncExternalStore(subscribeLook, getPreviewSize, () => DEFAULT_PREVIEW_SIZE);
