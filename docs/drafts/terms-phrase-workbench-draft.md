@@ -2,6 +2,8 @@
 
 Status: a draft for the owner and the integrating session. **Nothing here is in the live Terms** (`src/lib/legalDocument.ts`) or in `docs/data-register.md`. This wording goes in **only when `VITE_PHRASE_WORKBENCH=on` is set in production**, the same way other switch-shown text is handled (see `docs/drafts/terms-and-privacy-1.2.0-draft.md`, section 0). With the switch off, the page does not exist and nothing needs saying.
 
+Status: **applied on 2026-11-20 in `src/lib/legalDocument.ts` behind `VITE_PHRASE_WORKBENCH=on`** (Sections 12, 16 and 17 of the live numbering; the draft's section numbers below are the older ones). With the switch off nothing in the live Terms changes. The register row is in `docs/data-register.md`.
+
 ## What the feature does, for checking the wording against
 - The page is at `/phrases`. A person types or pastes a sentence and marks its words in their own browser. **Nothing is sent to our server or to any other site.** There is no look-up service in this build.
 - Everything lives in the page for the visit and is gone when the tab closes.

@@ -6,6 +6,8 @@ This builds on `docs/drafts/terms-sealed-and-partner-draft.md` (Section 23, part
 `VITE_REPHRASE=on` is set on a production build**, together with `CELL_ENABLED=true`. While the switch is off the live text stays
 accurate, because nothing described here can happen. Scope: `docs/dyad-rephrase-scope.md`.
 
+Status: **applied on 2026-11-20 in `src/lib/legalDocument.ts` behind `VITE_REPHRASE=on`**, in the live Section 14 (paragraphs after the list), with a line in Section 12 and the 30-day keeping time in Section 19's Retention (the draft's "Section 23" does not exist in the live document). The register rows are in `docs/data-register.md`. **Before switching on:** write the daily job that deletes a reported rephrasing message after 30 days; and note that the live Terms still do not describe partner practice itself (`docs/drafts/terms-sealed-and-partner-draft.md` is unapplied), so apply its partner-practice parts in the same release (the new Section 14 text defines a cell in one sentence so that it reads on its own).
+
 ## 1. Wording to add to Section 23 (partner practice), shown only where rephrasing is on
 
 > **Rephrasing.** Inside a cell, the two of you can use an optional activity called rephrasing. It has no AI in it. One of you types a phrase and marks the words yourself (what you saw or heard, a story about it, a feeling, a need, a request); the other, if they say yes, marks what they heard in it. Each of you chooses, every time, what is sent to the other: a request (which holds no words), the phrase, your marks, a rewrite, a sentence of your own. You can say "Not now" without a reason, stop at any time, and close the cell.

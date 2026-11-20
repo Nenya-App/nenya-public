@@ -1,6 +1,6 @@
 # Terms of Use & Privacy Policy: archived version
 
-**Status:** superseded on November 20, 2026 by the revision that describes the hate-speech classifier (Sections 3, 13 and 15), shown only in a build with VITE_SCREEN_MODEL=on, with its own effective date.
+**Status:** superseded on November 20, 2026 by the revision that describes the hate-speech classifier (Sections 3, 13 and 15), the phrase workbench (Sections 12, 16 and 17) and rephrasing in a partner cell (Sections 12, 14 and 19), each shown only in a build with its switch on (VITE_SCREEN_MODEL, VITE_PHRASE_WORKBENCH, VITE_REPHRASE); the date moves to November 20 if any of the three is on.
 **Effective:** November 19, 2026 (the text with the owner named in Section 11)
 **Source:** `src/lib/legalDocument.ts` at `0772e9c` (integration-gem-leaves), rendered with every switch off.
 
