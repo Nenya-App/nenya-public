@@ -1,3 +1,4 @@
+import { SCREEN_STATUS } from '../../../lib/checksReport';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL, VENICE_TERMS_URL, VENICE_PRIVACY_URL, VENICE_DIFFERENCES } from '../../../lib/veniceLinks';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -120,7 +121,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                       <strong>Safety checks are not integrated</strong>
                     </div>
                     <p>
-                      A fuller safety system, with human review and careful resets, is planned and not built. The on-site coach demo has a phrase-matching crisis check, a few site-written safety sentences, and simple checks on its replies (for example, against inventing a human life or describing how Nenya runs); all of it is phrase matching and can be wrong. Nothing like it runs on Venice's site. If you're in distress, please use the emergency resources in the Safety section.
+                      A fuller safety system, with human review and careful resets, is planned and not built. The on-site coach demo has a phrase-matching crisis check, a few site-written safety sentences, and simple checks on its replies (for example, against inventing a human life or describing how Nenya runs); all of it is phrase matching{SCREEN_STATUS.onLiveSite ? ', together with a small hate-speech classifier (see How the checks work)' : ' (a small hate-speech classifier is being tested but is not switched on for the live site; see How the checks work)'} and can be wrong. Nothing like it runs on Venice's site. If you're in distress, please use the emergency resources in the Safety section.
                     </p>
                   </div>
                 </div>
