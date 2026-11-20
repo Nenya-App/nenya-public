@@ -3,7 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { AppFooter } from '../AppFooter';
 import { ExternalLink } from '../ExternalLink';
-import { MARKS, WB, CNVC_PAGE, markInfo } from '../../../lib/workbenchCopy';
+import { MARKS, MORE_PLACES, WB, CNVC_PAGE, markInfo } from '../../../lib/workbenchCopy';
 import { initialView, reduce, selText, SENTENCE_LIMIT, type Action, type StepIndex, type ViewState } from '../../../lib/workbenchView';
 import { markLabel, marksFor, textOf, tokensOf } from '../../../lib/phraseWorkbench';
 import { shapeStyle } from '../workbench/shapes';
@@ -211,6 +211,21 @@ export function WorkbenchView({ s, send, onBack }: { s: ViewState; send: (a: Act
             </label>
             <p className="text-sm text-muted-foreground">{WB.rememberHelp}</p>
             {s.remember && <button type="button" onClick={() => send({ t: 'forget' })} className={btn}>{WB.forget}</button>}
+          </section>
+
+          <section aria-labelledby="wb-more-places" className="space-y-2 rounded-lg border border-border p-3">
+            <h2 id="wb-more-places" className="text-base">{MORE_PLACES.heading}</h2>
+            <ul className="space-y-3">
+              <li className="space-y-1">
+                <p><span className="mr-2 rounded border border-foreground px-1.5 text-xs">{MORE_PLACES.featured.tag}</span><ExternalLink href={MORE_PLACES.featured.href}>{MORE_PLACES.featured.name}</ExternalLink></p>
+                <p className="text-sm text-muted-foreground">{MORE_PLACES.featured.note}</p>
+              </li>
+              <li className="space-y-1">
+                <p><ExternalLink href={MORE_PLACES.cnvc.href}>{MORE_PLACES.cnvc.name}</ExternalLink></p>
+                <p className="text-sm text-muted-foreground">{MORE_PLACES.cnvc.credit}</p>
+              </li>
+            </ul>
+            <p className="text-sm">{MORE_PLACES.more}</p>
           </section>
 
           <footer className="space-y-1 text-sm text-muted-foreground">

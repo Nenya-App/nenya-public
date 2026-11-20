@@ -50,6 +50,14 @@ export const PASSING_WORDS: { word: string; def: string }[] = [
 ];
 export const PASSING_NOTE = 'People often say this word as if it were a feeling. It also holds a guess about what someone did. Only you know what is under it.';
 
+/** "More places to learn" on the phrase workbench page: a plain list of outside places, the featured one first. It claims no endorsement, review or partnership by anyone. */
+export const MORE_PLACES = {
+  heading: 'More places to learn',
+  featured: { tag: 'Featured', name: 'Yvette Erasmus', href: 'https://www.yvetteerasmus.com', note: 'Psychologist and conflict facilitator. Explores the intersection of psychology, social justice, and relational dynamics.' },
+  cnvc: { name: 'The Feelings and Needs Inventory, on CNVC’s own page', href: CNVC_PAGE, credit: CNVC_CREDIT_LINE },
+  more: 'Other resources are listed on the About NVC page.',
+} as const;
+
 export const WB = {
   title: 'Phrase workbench',
   intro: 'A bench for working with words. It is not a test: nothing is graded, nothing is kept, and nothing is suggested unless you ask.',

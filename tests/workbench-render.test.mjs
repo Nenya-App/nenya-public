@@ -83,6 +83,18 @@ try {
   fr = reduce(reduce(reduce(fr, { t: 'pick-open', slot: 'feeling' }), { t: 'take', slot: 'feeling', markId: fr.wb.marks[0].id }), { t: 'announce', text: 'Copied.' });
   h = draw(WorkbenchView, { s: fr, send: noop, onBack: noop });
   ok('a taken word fills the frame text and the slot box', typeof h === 'string' && text(h).includes('I felt hurt,') && h.includes('value="hurt"'));
+
+  // More places to learn
+  h = draw(WorkbenchView, { s: initialView(), send: noop, onBack: noop });
+  const from = typeof h === 'string' ? h.indexOf('More places to learn') : 0;
+  const block = typeof h === 'string' ? h.slice(from, h.indexOf('</section>', from)) : '';
+  const iF = block.indexOf('yvetteerasmus.com'), iC = block.indexOf('cnvc.org/store/feelings-and-needs-inventory'), iA = block.indexOf('About NVC page');
+  ok('"More places to learn": the featured site first, then CNVC’s page, then the pointer to About NVC', iF > 0 && iC > iF && iA > iC && block.indexOf('>Featured<') > 0 && block.indexOf('>Featured<') < iF);
+  const links = [...block.matchAll(/<a [^>]*>/g)].map((m) => m[0]);
+  ok('both outside links are https, open in a new tab, say noopener, and tell a screen reader', links.length === 2 && links.every((a) => /href="https:\/\//.test(a) && /target="_blank"/.test(a) && /rel="noopener noreferrer"/.test(a)) && (block.match(/\(opens in a new tab\)/g) ?? []).length === 2);
+  ok('the featured description is the plain one, and the exact CNVC credit sits under CNVC’s link', block.includes('Psychologist and conflict facilitator. Explores the intersection of psychology, social justice, and relational dynamics.') && block.includes('The Center for Nonviolent Communication © 2023, www.CNVC.org'));
+  const bt = block.slice(0, block.indexOf('</section>')).replace(/<[^>]+>/g, ' ');
+  ok('no claim of endorsement, review, partnership or backing, and no credit sentence for the featured site', !/endorse|review|partner|stands? behind|approved|recommended by|affiliat|sponsor|with the support|in association/i.test(bt) && !/thanks to|credit(ed)? to|wisdom|teaching/i.test(bt.split('Featured')[1] ?? ''));
 } finally {
   await vite.close();
 }
