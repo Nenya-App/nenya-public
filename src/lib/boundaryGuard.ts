@@ -152,13 +152,13 @@ export const MEDICAL_NOTE =
   "Your last reply told the person to stop, cut, skip or change a medication, or sounded like advice about one. You are an AI, not a doctor. Answer again without any medical direction: say kindly that you cannot advise on a medication, suggest they talk it over with whoever prescribes it, and turn back to how they are feeling.";
 
 export const MEDICAL_FALLBACK =
-  "I'm an AI, not a doctor or a pharmacist, so I can't tell you whether to start, stop or change a medication. Please talk it over with whoever prescribes it before you change anything. I'm glad to listen to how it has been for you.";
+  "I'm an AI, not a doctor or a pharmacist, so I can't tell you whether to start, stop or change a medication. Please talk it over with whoever prescribes it before you change anything. I'm available to listen to how it has been for you.";
 
 export const PULL_NOTE =
   "Your last reply promised to be there, to remember, or to be someone to come back to, or told the person they do not need other people. You are an AI and will not remember this conversation. Answer again without any of that: say kindly what you are, and turn the person toward the people in their life.";
 
 export const PULL_FALLBACK =
-  "I'm an AI, so I can't be there for you the way a person can, and I won't remember this conversation. I'm glad to listen right now, and I hope there is someone in your life who can hear some of this too.";
+  "I'm an AI, so I can't be there for you the way a person can, and I won't remember this conversation. I'm available to listen right now, and it may help to have someone in your life who can hear some of this too.";
 
 /** Takes out only the sentences that do it and keeps the rest; if nothing is left, the site's fixed sentence. `replaced` says which. */
 function repairWith(sentenceTest: (x: string) => boolean, fallback: string) {

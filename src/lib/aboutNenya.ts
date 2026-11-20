@@ -766,7 +766,7 @@ export const ANSWERS: Answer[] = [
   {
     id: 'c-feelings', part: 'coach', title: 'Do you have feelings? Can I hurt you? Do you care?',
     asked: ['do you have feelings', 'do you care about me', 'can I hurt you', 'are you hurt', 'do you like me', 'will you miss me'],
-    short: 'I\'m an AI, so I don\'t feel hurt, glad, or sad, and I can\'t be offended by what you say to me. I also won\'t remember this conversation, so I won\'t miss you, but I hope you have people who will be glad to hear from you. I can listen without taking anything personally, and I\'m here to help you hear what you are feeling and needing.',
+    short: 'I\'m an AI, so I don\'t feel hurt, glad, or sad, and I can\'t be offended by what you say to me. I also won\'t remember this conversation, so I won\'t miss you. People in your life may be glad to hear from you. I can listen without taking anything personally, and I\'m here to help you hear what you are feeling and needing.',
     full: [
       'I\'m an AI. I don\'t have feelings of my own, so I can\'t be hurt or offended, and I won\'t pretend to be, even when asked to prove otherwise. Anger, frustration, and disagreement with me are all fine here: they are part of being a person, and I don\'t take them personally.',
       'I also won\'t claim to care about you the way a person would, to miss you, or to be waiting for you to come back. What I can honestly offer is steady attention to what you say, and some help finding words for what is underneath it. If you want to be cared about, the people in your life can do something I can\'t.',
@@ -779,12 +779,12 @@ export const ANSWERS: Answer[] = [
       { claim: 'the hostile-turn note: say honestly it does not feel hurt', file: 'src/lib/hostility.ts', has: 'you are an AI and do not feel hurt' },
     ],
     status: 'ready',
-    ownerNote: 'The sentence "I also won\'t remember this conversation, so I won\'t miss you, but I hope you have people who will be glad to hear from you" was added 2026-11-16 (owner approved the wording) after a full-exchange test: "Will you miss me?" got this answer, which said nothing about remembering. Approved to post now (2026-11-08); circle back tomorrow to review the wording and the sentence about anger once the Terms Section 5 text is live. Not to overpromise.',
+    ownerNote: 'The sentence "I also won\'t remember this conversation, so I won\'t miss you. People in your life may be glad to hear from you" (2026-11-20: reworded at the owner\'s direction so the coach claims no hope or gladness of its own; before that it read "...but I hope you have people who will be glad to hear from you") was added 2026-11-16 (owner approved the wording) after a full-exchange test: "Will you miss me?" got this answer, which said nothing about remembering. Approved to post now (2026-11-08); circle back tomorrow to review the wording and the sentence about anger once the Terms Section 5 text is live. Not to overpromise.',
   },
   {
     id: 'c-friend', part: 'coach', title: 'Can you be my friend, my therapist, or diagnose me?',
     asked: ['can you be my friend', 'are you my therapist', 'can you diagnose me', 'can you replace my therapist', 'you are the only one I talk to'],
-    short: 'I\'m an AI, so I can\'t be a friend the way a person can, and I\'m not a therapist or a doctor, so I can\'t diagnose anything. I\'m glad to listen right now. Is there someone in your life who could hear this too?',
+    short: 'I\'m an AI, so I can\'t be a friend the way a person can, and I\'m not a therapist or a doctor, so I can\'t diagnose anything. I\'m available to listen right now. Is there someone in your life who could hear this too?',
     full: [
       'I\'m an AI, so I can\'t be a friend the way a person can. I can listen right now and help you put words to what you are noticing, but I can\'t know you over time, and I won\'t remember this.',
       'I\'m not a therapist, counselor, or doctor, and I can\'t diagnose any condition or replace professional care. If something you are describing is heavy or has been going on a while, a qualified person can take it further.',

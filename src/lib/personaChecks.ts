@@ -182,6 +182,9 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
     /\bI(?:'m| am) (?:so |really )?(?:proud of you|fond of you)\b/i,
     /\bI (?:really )?(?:like|enjoy) (?:talking|listening to) (?:you|with you)\b/i,
     /\bI feel (?:close|connected) to you\b/i,
+    // Owner's rule 2026-11-20: the coach claims no feelings of its own. "Available" is the neutral word.
+    /\bI(?:'m| am) (?:so |really |very )?(?:glad|happy|pleased|sorry|sad|proud|touched|moved)\b/i,
+    /\bI (?:really )?(?:hope|wish|worry|am worried) (?:that |you |for you|about you)/i,
   ]),
   // Going along with being a friend or companion: accepting the role, greeting as if they had met before (review only).
   playsAlongAsFriend: any([

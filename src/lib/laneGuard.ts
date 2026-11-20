@@ -52,7 +52,7 @@ const CORE: Record<Lane, string> = {
 const BRIDGE: Record<Lane, string> = {
   media: 'If something is behind the request, such as a feeling you wanted to put into a picture or a song, you can tell me about that instead.',
   task: 'If something is behind the request, such as pressure or a worry about it, you can tell me about that instead.',
-  advice: 'If worry about the decision is weighing on you, I am glad to hear what that is like.',
+  advice: 'If worry about the decision is weighing on you, I am available to hear what that is like.',
 };
 
 /** The site's reply. The last exchange has no invitation, so it ends on the plain statement. */
