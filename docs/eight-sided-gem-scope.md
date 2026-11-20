@@ -562,7 +562,7 @@ been seen in a browser or on a phone.
 | Part 1 step 5 (octagon bezel) | done | generated for any side count, `gemBezel.ts` |
 | Part 1 step 6 (lights default 5) | **not done** | the sky lights stay 6 (default `DEFAULT_LIGHT.lights`): set 5 after looking at the octagon on the bench |
 | Part 1 step 7 (new sprite sheet) | not needed for now | without WebGL2 the stone and bezel stay the hexagon (`effectiveGemSides`), so no new sheet is required; regenerate later only if parity is wanted |
-| Part 1 step 8 (words) | in progress (side session) | alt text, brand and live-gem docs |
+| Part 1 step 8 (words) | done | alt text, brand and live-gem docs |
 | Part 1 step 9 (default to 8) | **waits for the leaves** | the gem follows the leaves ("match"); the default leaf count is 6 here, so the gem stays a hexagon until the mallorn leaves (default 8) are merged and `DEFAULT_LOGO_LEAVES` becomes 8 |
 | Part 2 steps 11, 13, 14 (look setting, panel, match rule, low clamp, hidden without WebGL2) | done | leaf radio group hidden (`LEAF_SETTING_AVAILABLE`) until the leaf drawing is merged |
 | Part 2 step 12 (odd counts and 13 in the leaf generator) | **not done** | the generator is on the leaf branch |
