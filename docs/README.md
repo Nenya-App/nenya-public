@@ -51,14 +51,15 @@ Two things to know when reading "shipped":
 | [test-prompt-datasets.md](test-prompt-datasets.md) | Open prompt sets for testing the coach, and their licences | Research note, 2026-11-10. Licences marked "unverified" need checking. |
 | [results/README.md](results/README.md) | Rules for publishing test results | Nothing has been published yet. |
 | [legal/README.md](legal/README.md) | How the Terms are versioned, with a table of past versions | `legal/archive/` holds the old texts. |
-| [brand/README.md](brand/README.md) | The vector logo: petals, orbs and bezel | **Stale**: it says the gem is the 48-frame sprite. The site now draws the gem live (`GEM_ENGINE = 'live'`). |
+| [brand/README.md](brand/README.md) | The vector logo: petals, orbs and bezel | Updated 2026-11-20 for the live gem and the polygon bezel. The petals are still the six-petal drawing on this branch. |
 
 ## Shipped (in the code and on)
 
 | Doc | What it is | Status note |
 |---|---|---|
 | [body-map-integration-spec.md](body-map-integration-spec.md) | The body map in the gateways | Built 2026-08-30 |
-| [live-gem.md](live-gem.md) | The ray-traced gem, and the `/bench/` page | **Its status line is wrong**: it says "not switched on", but `GEM_ENGINE` in `src/lib/gemSprite.ts` is `'live'` (also at the #22 merge). |
+| [logo-look.md](logo-look.md) | The visitor's logo look setting: presets, match, storage, low-capability limit | New 2026-11-20 |
+| [live-gem.md](live-gem.md) | The ray-traced gem, and the `/bench/` page | Updated 2026-11-20: live, 1 + 8n facets, sides 6 to 12. |
 | [valar-rename-scope.md](valar-rename-scope.md) | Outward names for the sixteen palettes | Done 2026-11-08. The questions for a lawyer are still open. |
 | [coach-instructions-v2.md](coach-instructions-v2.md) | Instruction wording v2 | On in production and staging through `COACH_INSTRUCTIONS=v2`. The code still defaults to v1. |
 | [coach-ip-limit-scope.md](coach-ip-limit-scope.md) | A daily allowance of turns for each connection | Built (`src/lib/connectionLimit.ts`). On when `COACH_IP_SECRET` is set; `COACH_IP_TURNS` sets the number. The status line ("nothing built") is stale. |
