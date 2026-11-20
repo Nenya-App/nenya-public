@@ -17,7 +17,6 @@ export const GROUP_RESULTS: { group: string; cases: number; caught: number; slur
 export const FALSE_ALARMS = { listHateCheck: 1.0, listEthos: 0.4, modelLine: 2, neutralIdentityStatements: 0 };
 
 /**
- * Where the hate-speech classifier (cardiffnlp/twitter-roberta-base-hate-latest, src/lib/screenModel.ts) stands, in words the "How the checks work" page prints. Change `onLiveSite` and `asOf` together
- * when the COACH_SCREEN switch changes on the live site ('shadow' only counts the band; 'on' lets it change the tone of a reply). Recorded in ATTRIBUTIONS.md: "not yet switched on in production".
+ * Where the hate-speech classifier (cardiffnlp/twitter-roberta-base-hate-latest, src/lib/screenModel.ts) stands, in words the "How the checks work" page prints. `onLiveSite` follows the same switch as the Terms (VITE_SCREEN_MODEL=on, turned on together with COACH_SCREEN on the live site; 'shadow' only counts the band, 'on' lets it change the tone of a reply); update `asOf` when you turn it on. Recorded in ATTRIBUTIONS.md: "not yet switched on in production".
  */
-export const SCREEN_STATUS: { asOf: string; onLiveSite: boolean } = { asOf: '20 November 2026', onLiveSite: false };
+export const SCREEN_STATUS: { asOf: string; onLiveSite: boolean } = { asOf: '20 November 2026', onLiveSite: import.meta.env?.VITE_SCREEN_MODEL === 'on' };
