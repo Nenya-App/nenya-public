@@ -1,18 +1,10 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { Check, MessageCircle, Flag, Bot, BotOff, Sparkles, ArrowRight, Info, Eye, EyeOff } from 'lucide-react';
+import { Check, MessageCircle, Flag, Sparkles, ArrowRight } from 'lucide-react';
 import { Card } from './ui/card';
-import { Switch } from './ui/switch';
-import { Label } from './ui/label';
-import { Badge } from './ui/badge';
 import ReportModal from './ReportModal';
 import { ConversationControls } from './ConversationControls';
 import { getGradientMidpoint, getReadableTextColor } from './ColorUtils';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from './ui/popover';
 
 interface UserColors {
   color1: string;
@@ -31,8 +23,6 @@ type CellMessage = {
   id: string;
   sender: 'nenya' | 'user' | 'other';
   text: string;
-  rawText?: string; // Original text before AI assistance
-  isTranslated?: boolean;
 };
 
 type DemoStep = 
@@ -48,16 +38,11 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
   const otherUserColors = { color1: '#FF6B6B', color2: '#4ECDC4' };
   const [showReport, setShowReport] = useState(false);
   
-  // AI Translation Settings
-  const [receiveTranslated, setReceiveTranslated] = useState(false);
-  const [sendWithAI, setSendWithAI] = useState(false);
   
   // Demo walkthrough state
   const [showWalkthrough, setShowWalkthrough] = useState(true);
   const [demoStep, setDemoStep] = useState<DemoStep>('intro');
   
-  // Message view state - track which messages are showing raw text
-  const [showingRawText, setShowingRawText] = useState<Set<string>>(new Set());
   
   const [messages, setMessages] = useState<CellMessage[]>([
     {
@@ -78,18 +63,6 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
     }]);
   };
 
-  const toggleRawText = (messageId: string) => {
-    setShowingRawText(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(messageId)) {
-        newSet.delete(messageId);
-      } else {
-        newSet.add(messageId);
-      }
-      return newSet;
-    });
-  };
-
   // Demo walkthrough progression
   const handleNextStep = () => {
     if (demoStep === 'intro') {
@@ -99,38 +72,21 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
       setMessages(prev => [...prev, {
         id: '2',
         sender: 'other',
-        text: "You never listen to me! Every time I try to share something important, you just dismiss it or change the subject. I'm so tired of feeling like I don't matter to you.",
-        rawText: "You never listen to me! Every time I try to share something important, you just dismiss it or change the subject. I'm so tired of feeling like I don't matter to you.",
-        isTranslated: false
+        text: "You never listen to me! Every time I try to share something important, you just dismiss it or change the subject. I'm so tired of feeling like I don't matter to you."
       }]);
       setDemoStep('translation-option');
     } else if (demoStep === 'translation-option') {
       setDemoStep('translated-view');
     } else if (demoStep === 'translated-view') {
-      // Enable translation
-      setReceiveTranslated(true);
-      // Update the last message to show translated version
-      setMessages(prev => {
-        const updated = [...prev];
-        const lastMsg = updated[updated.length - 1];
-        if (lastMsg.sender === 'other') {
-          lastMsg.text = "I'm feeling hurt and frustrated right now. When I share things that are important to me, I notice that the conversation shifts direction, and I'm left feeling unheard. I have a need for connection and to know that what I share matters to you. I'm longing for that sense of being seen and valued.";
-          lastMsg.isTranslated = true;
-        }
-        return updated;
-      });
       setDemoStep('user-composing');
     } else if (demoStep === 'user-composing') {
       setDemoStep('user-ai-assist');
     } else if (demoStep === 'user-ai-assist') {
-      setSendWithAI(true);
-      // Add user's AI-assisted message
+      // The person's own words, written by them (scripted here)
       setMessages(prev => [...prev, {
         id: '3',
         sender: 'user',
-        text: "I hear that you're feeling hurt and frustrated. It sounds like when you share important things with me and the conversation changes direction, you feel unheard and disconnected. You need to know that what you share matters to me, and you're longing to feel seen and valued. Is that right?",
-        rawText: "I hear you and I'm trying to understand.",
-        isTranslated: true
+        text: "When I hear 'you never listen', I wonder if you felt hurt and wanted to be heard. Is that close?"
       }]);
       setDemoStep('complete');
     } else {
@@ -142,74 +98,52 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
     switch (demoStep) {
       case 'intro':
         return {
-          title: "Preview: AI translation (planned)",
-          description: "Partner practice is a planned feature and is not built. This scripted walkthrough shows the idea: in a dyadic cell, each person would choose whether to use AI assistance for sending and receiving messages, guided by NVC+ principles. No real AI is involved here.",
+          title: "Preview: rephrasing (planned)",
+          description: "Partner practice is a planned feature and is not built here. This scripted walkthrough shows the idea of rephrasing: one person shares a phrase and marks what they meant, the other marks what they heard, and each chooses what to send back. There is no AI in it, and nothing is rewritten for anyone.",
           icon: <Sparkles className="size-6 text-primary" />,
           extraContent: null
         };
       case 'partner-raw-message':
         return {
-          title: "Partner Sends Raw Message",
-          description: "Your conversation partner has chosen to send their message without AI assistance. This is their authentic, unfiltered expression.",
-          icon: <MessageCircle className="size-6 text-blue-600" />,
+          title: "Your partner shares a phrase",
+          description: "Your partner has asked if you would like to hear a phrase, and you said yes. Nothing was shown to you before you said yes, and you could have said \"Not now\" without a reason.",
+          icon: <MessageCircle className="size-6 text-primary" />,
           extraContent: null
         };
       case 'translation-option':
         return {
-          title: "Your Translation Option",
-          description: "You can choose to view this message in its raw form (as written) or request an AI-assisted NVC+ translation that identifies feelings and needs. The choice is yours.",
-          icon: <Bot className="size-6 text-purple-600" />,
-          extraContent: (
-            <Card className="p-4 bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800">
-              <p className="text-sm text-purple-900 dark:text-purple-100">
-                <strong>Notice the difference:</strong> You can see the partner's raw emotional expression. If you toggle "Receive Translated", this preview shows what an AI-assisted NVC+ translation would look like — the actual translation isn't live yet, this walkthrough uses a scripted example.
-              </p>
-            </Card>
-          )
+          title: "You mark what you hear",
+          description: "You tap the words to mark what you saw or heard, a story about it, a feeling or a need (your guesses), or a request. You choose whether to send your marks back, keep them to yourself, or skip marking.",
+          icon: <Check className="size-6 text-primary" />,
+          extraContent: null
         };
       case 'translated-view':
         return {
-          title: "NVC+ Translation Active",
-          description: "The AI has translated the partner's message using NVC+ principles, identifying feelings (hurt, frustrated) and needs (connection, being seen and valued). Notice how it preserves the emotional content while making the underlying needs more explicit.",
-          icon: <Sparkles className="size-6 text-green-600" />,
+          title: "Two readings of the same words",
+          description: "When your partner chooses to show what they meant, you see both readings side by side, in plain words, for each marked word: marked the same way, marked as different kinds, or marked by one of you. There are no scores, and neither reading is the right one.",
+          icon: <Sparkles className="size-6 text-primary" />,
           extraContent: null
         };
       case 'user-composing':
         return {
-          title: "Your Response",
-          description: "Now it's your turn to respond. You can write a raw message or use AI assistance to help craft an NVC+ response. We'll demonstrate using AI assistance.",
-          icon: <MessageCircle className="size-6 text-amber-600" />,
-          extraContent: (
-            <Card className="p-4 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
-              <p className="text-sm text-amber-900 dark:text-amber-100 mb-2">
-                <strong>Your options for responding:</strong>
-              </p>
-              <ul className="text-sm text-amber-900 dark:text-amber-100 space-y-1 list-disc list-inside">
-                <li><strong>Raw:</strong> Send your authentic response as-is</li>
-                <li><strong>AI Assist:</strong> Get help structuring an empathic NVC+ reflection</li>
-              </ul>
-            </Card>
-          )
+          title: "Your turn",
+          description: "You can answer in your own words, or start a round of your own. The app suggests nothing unless you ask, and it never writes or changes what you say.",
+          icon: <MessageCircle className="size-6 text-primary" />,
+          extraContent: null
         };
       case 'user-ai-assist':
         return {
-          title: "AI-Assisted Response",
-          description: "The AI has helped you craft a response using NVC+ reflection techniques. It identifies the feelings and needs you heard, then checks for understanding. This demonstrates empathic listening in action.",
-          icon: <Sparkles className="size-6 text-purple-600" />,
+          title: "In your own words",
+          description: "Here you guess, in your own words, what your partner may have felt and needed. It is written by you (scripted in this preview) and sent only if you choose.",
+          icon: <MessageCircle className="size-6 text-primary" />,
           extraContent: null
         };
       case 'complete':
         return {
-          title: "Tutorial Complete",
-          description: "You've seen how AI translation works in both directions. You can toggle these settings at any time during a conversation. The goal is to support authentic connection while providing tools for clearer communication.",
-          icon: <Check className="size-6 text-green-600" />,
-          extraContent: (
-            <Card className="p-4 bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
-              <p className="text-sm text-green-900 dark:text-green-100">
-                <strong>Key takeaway:</strong> Each person controls their own AI assistance independently. Your partner can send raw messages while you receive translations, or vice versa. This flexibility supports authentic connection while providing scaffolding for clearer communication.
-              </p>
-            </Card>
-          )
+          title: "Walkthrough complete",
+          description: "Each person chooses, every time, what is sent, and either can pause, stop or close at any time. Anything you send can be copied or screenshotted by the other person. The real thing is in the cell itself, where it is switched on.",
+          icon: <Check className="size-6 text-primary" />,
+          extraContent: null
         };
       default:
         return null;
@@ -322,72 +256,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
             </div>
           </div>
 
-          {/* AI Translation Settings */}
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <Card className="p-3 bg-muted/30">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  {receiveTranslated ? <Bot className="size-4 text-purple-600 flex-shrink-0" /> : <BotOff className="size-4 text-muted-foreground flex-shrink-0" />}
-                  <Label htmlFor="receive-translate" className="text-xs cursor-pointer truncate">
-                    Receive Translated
-                  </Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors">
-                        <Info className="size-3" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72" align="start">
-                      <div className="space-y-2">
-                        <h4 className="text-sm">Receive Translated</h4>
-                        <p className="text-xs text-muted-foreground">
-                          When enabled, incoming messages are automatically translated using NVC+ principles. The AI identifies feelings and needs while preserving the emotional content. You can click any translated message to see the original unfiltered text.
-                        </p>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <Switch 
-                  id="receive-translate" 
-                  checked={receiveTranslated}
-                  onCheckedChange={setReceiveTranslated}
-                  disabled={showWalkthrough && demoStep !== 'translated-view'}
-                />
-              </div>
-            </Card>
-
-            <Card className="p-3 bg-muted/30">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  {sendWithAI ? <Bot className="size-4 text-green-600 flex-shrink-0" /> : <BotOff className="size-4 text-muted-foreground flex-shrink-0" />}
-                  <Label htmlFor="send-ai" className="text-xs cursor-pointer truncate">
-                    Send with AI
-                  </Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors">
-                        <Info className="size-3" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72" align="start">
-                      <div className="space-y-2">
-                        <h4 className="text-sm">Send with AI</h4>
-                        <p className="text-xs text-muted-foreground">
-                          When enabled, the AI helps structure your outgoing messages using NVC+ reflection techniques. It crafts empathic responses that identify feelings and needs, then checks for understanding. Your original message is preserved and can be viewed by clicking the sent message.
-                        </p>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <Switch 
-                  id="send-ai" 
-                  checked={sendWithAI}
-                  onCheckedChange={setSendWithAI}
-                  disabled={showWalkthrough && demoStep !== 'user-ai-assist'}
-                />
-              </div>
-            </Card>
-          </div>
+          <p className="mt-3 text-xs text-muted-foreground">There is no AI in a cell, and nothing is rewritten for anyone. To work on a phrase together, rephrase it: you mark the words yourselves.</p>
         </div>
 
         {/* Main Content - Split View */}
@@ -412,7 +281,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
                       : message.sender === 'other'
                       ? ''
                       : 'bg-muted text-foreground'
-                  } ${message.rawText ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+                  }`}
                   style={
                     message.sender === 'user'
                       ? {
@@ -426,33 +295,8 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
                         }
                       : undefined
                   }
-                  onClick={() => message.rawText && toggleRawText(message.id)}
-                  title={message.rawText ? 'Click to toggle between raw and translated message' : undefined}
                 >
-                  <div>
-                    {showingRawText.has(message.id) && message.rawText ? message.rawText : message.text}
-                  </div>
-                  {message.rawText && (
-                    <div className="mt-2 pt-2 border-t border-current/20 flex items-center gap-1 text-xs">
-                      {showingRawText.has(message.id) ? (
-                        <>
-                          <EyeOff className="size-3" />
-                          <span>Raw message (click for NVC+)</span>
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="size-3" />
-                          <span>Click to see unfiltered input</span>
-                        </>
-                      )}
-                    </div>
-                  )}
-                  {message.isTranslated && !showingRawText.has(message.id) && (
-                    <Badge variant="secondary" className="absolute -top-2 -right-2 gap-1">
-                      <Sparkles className="size-3" />
-                      NVC+
-                    </Badge>
-                  )}
+                  <div>{message.text}</div>
                 </div>
               </div>
             ))}
@@ -482,10 +326,10 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
             <div className="bg-card rounded-lg p-4 border border-border">
               <h4 className="text-sm mb-2 flex items-center gap-1">
                 <Sparkles className="size-3" />
-                AI Translation
+                Rephrasing
               </h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Toggle AI assistance for incoming and outgoing messages. AI helps translate to/from NVC+ principles while preserving your authentic expression.
+                One person marks what they meant by a phrase; the other marks what they heard; each chooses what to send back. No AI, no scores.
               </p>
             </div>
 

@@ -44,5 +44,4 @@ Not stored anywhere by us: the private device-check results, which person asked 
 
 The About page for partner practice (`src/app/components/about/PartnerPractice.tsx`); the scripted preview in
 `src/app/components/DyadicCellInterface.tsx`, whose "Send with AI" and "Receive translated" toggles and "AI translation (planned)"
-steps now contradict the decision that there is no AI in the dyad in v1 (it is a scripted demo and was left unchanged; it needs a
-rewrite as a rephrasing preview); `docs/data-register.md`; `docs/README.md` (index row for `dyad-rephrase-scope.md` and this file).
+steps now contradict the decision that there is no AI in the dyad in v1 (rewritten on 2026-11-20 as a rephrasing preview with no AI; check its wording with the rest); `docs/data-register.md`; `docs/README.md` (index row for `dyad-rephrase-scope.md` and this file).
