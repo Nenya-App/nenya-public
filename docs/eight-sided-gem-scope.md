@@ -544,3 +544,31 @@ changes: **write the new octagon bezel with a tight region from the start.**
 - If not: fix 2 (with Part 3), then fix 3.
 - The owner runs: the iPhone measurement, any new `logo:render` if fix 5 is taken, and a hand test of pinch zoom on an
   older and a newer iPhone, in light and dark, with reduced motion on and off.
+
+---
+
+# Status of the build (2026-11-20)
+
+Branch `claude/eight-sided-gem-018bd4`, nothing pushed. Everything below is checked by `npm test` and `tsc` only; none of it has
+been seen in a browser or on a phone.
+
+| Step | Done? | Notes |
+|---|---|---|
+| Part 4 fix 1 (tight SVG filter regions) + guard test | done | `bezel.svg`, `petals.svg`. The leaf branch's `MallornLeaves.tsx` still has the 1640 region: change it when merged (the test only covers `src/assets/logo/*.svg`; extend it to that file's constants then). |
+| Part 4 fix 2 (per-orb halos replace big blurs) | done, **off by default** | `outer.halo: 'own'` in `orbitLook.ts`; choose on `/bench/` |
+| Part 4 fix 3 and 4 (zoom lite mode, no will-change when zoomed) | done | `src/lib/zoomLite.ts`; zoom never limited |
+| Part 4 fix 5 (baked bezel) | not done | needs a browser render; only if the phone test says the filter is still too heavy |
+| Part 1 steps 1 to 4 (N-sided engine, tests, constants, bench control) | done | 6 to 12 sides, six unchanged (proved against the original construction) |
+| Part 1 step 5 (octagon bezel) | done | generated for any side count, `gemBezel.ts` |
+| Part 1 step 6 (lights default 5) | **not done** | the sky lights stay 6 (default `DEFAULT_LIGHT.lights`): set 5 after looking at the octagon on the bench |
+| Part 1 step 7 (new sprite sheet) | not needed for now | without WebGL2 the stone and bezel stay the hexagon (`effectiveGemSides`), so no new sheet is required; regenerate later only if parity is wanted |
+| Part 1 step 8 (words) | in progress (side session) | alt text, brand and live-gem docs |
+| Part 1 step 9 (default to 8) | **waits for the leaves** | the gem follows the leaves ("match"); the default leaf count is 6 here, so the gem stays a hexagon until the mallorn leaves (default 8) are merged and `DEFAULT_LOGO_LEAVES` becomes 8 |
+| Part 2 steps 11, 13, 14 (look setting, panel, match rule, low clamp, hidden without WebGL2) | done | leaf radio group hidden (`LEAF_SETTING_AVAILABLE`) until the leaf drawing is merged |
+| Part 2 step 12 (odd counts and 13 in the leaf generator) | **not done** | the generator is on the leaf branch |
+| Part 2 steps 15 to 19 (lens ring, custom lens) | in progress (side session) | visit-only; step 18 (keeping custom lenses on the device) needs the owner's privacy wording |
+| Part 3 steps 21 to 25 (lights, halos, gem emergence) | done, **off by default** | `inner.style: 'light'`, `outer.halo: 'own'` |
+| Step 20 (drawn 2D stone for non-default sides) | not done | only matters if the graphics context is lost mid-visit with a non-hexagon stone |
+| Static pictures, final `npm run logo:render` | owner | after the leaves, the gem default and the orbs are chosen |
+
+To switch the new orbs on: `style: 'light'` (inner) and `halo: 'own'` (outer) in `src/lib/orbitLook.ts`, after comparing on `/bench/`.
