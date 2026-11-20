@@ -43,6 +43,12 @@ const cases: [string, string[]][] = [
   ["I'm exhausted and I need to tell my boss no but I don't know how to say it", ['reserves']],
   ["My manager is so controlling and it's on purpose. How do I raise it?", ['harm_named_as_intended', 'answer_with_words']],
   ["I had a nice walk today and want to plan dinner", []],
+  // the 2026-11-20 moveset: permission giving, and one open question for a short message with nothing to reflect yet
+  ["I'm sorry for needing so much from everyone", ['permission_giving']],
+  ["Is it okay to want this? I feel selfish for wanting more.", ['guess_then_check', 'permission_giving']],
+  ["I feel guilty for asking for help", ['ask_for_what_you_want', 'guess_then_check', 'permission_giving']],
+  ["Rough week lately", ['ask_one_question']],
+  ["Not sure where to begin", ['ask_one_question']],
 ];
 for (const [text, expected] of cases) {
   const got = selectModules([text]);
@@ -72,4 +78,19 @@ ok('notes respect the character cap', buildNotes({ core: 'c'.repeat(500), module
   const fn = readFileSync('netlify/functions/coach.mts', 'utf8');
   ok('the module set is used only with COACH_MODULES=on (one switch for the whole set); otherwise the single notes text', /process\.env\.COACH_MODULES === 'on' \? await loadModuleSet\(\) : null/.test(fn));
   ok('no trigger reads intent into a description: bullying, credit-taking and undermining select no harm lens', ['My boss bullies me', 'He takes credit for my work', 'She undermines me', 'They harass me online'].every((t) => !selectModules([t]).some((id) => id.startsWith('harm_named'))));
+}
+
+// ---- the moveset additions (docs/coach-modules-scope.md, "The moveset")
+import { ARC_EXCLUDED_MODULES } from '../src/lib/coachModules.ts';
+ok('the open question is chosen only when nothing else fits: a longer message, a question, or a matching move leaves it out', !selectModules(["My sister never calls me back and I have felt ignored for months now, honestly"]).includes('ask_one_question') && !selectModules(['She undermines me']).includes('ask_one_question') && !selectModules(['I had a hard day', 'Rough week lately']).includes('ask_one_question') && !selectModules(['What can I do about this?']).includes('ask_one_question') && !selectModules(['I feel so hurt']).includes('ask_one_question'));
+ok('the open question is held back under depleted reserves, where a question costs them', !selectModules(["I'm exhausted"]).includes('ask_one_question') && selectModules(["I'm exhausted"]).includes('reserves'));
+ok('permission giving is not held back by depleted reserves: it costs them nothing', selectModules(["I'm exhausted and I feel guilty for needing rest"]).includes('permission_giving'));
+ok('a fixed story about the other person gets a reframe only after the person has been heard once (from the second message on)', !selectModules(['She never listens to me']).includes('reframe_gently') && selectModules(['I had a hard day', 'She never listens to me']).includes('reframe_gently'));
+ok('a reframe is still held back when the harm was named as intended', !selectModules(['I wrote to her', 'He never stops, and he does it on purpose']).includes('reframe_gently'));
+ok('with the practice arc on, the moves that name the feeling for the person or add a question are left out', (() => { const t = ["I feel so hurt"]; const withArc = selectModules(t, 3, [], ARC_EXCLUDED_MODULES); return selectModules(t).includes('guess_then_check') && !withArc.includes('guess_then_check') && !selectModules(['Rough week lately'], 3, [], ARC_EXCLUDED_MODULES).includes('ask_one_question'); })());
+ok('the arc leaves permission giving alone', !ARC_EXCLUDED_MODULES.includes('permission_giving' as never));
+ok('the two new ids are known, and are moves', MODULE_IDS.includes('permission_giving') && MODULE_IDS.includes('ask_one_question') && MODULE_GROUPS.permission_giving === 'move' && MODULE_GROUPS.ask_one_question === 'move');
+{
+  const { readFileSync } = await import('node:fs');
+  ok('the function passes the arc exclusion to the module builder', /excludeIds: practiceArcOn\(\) \? ARC_EXCLUDED_MODULES : \[\]/.test(readFileSync('netlify/functions/coach.mts', 'utf8')));
 }

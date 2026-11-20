@@ -61,6 +61,10 @@ const TRIGGERS: Array<[id: string, group: ModuleGroup, patterns: RegExp[]]> = [
   ['explain_briefly', 'move', [/\b(what (?:is|does|are) (?:a |an |the )?(?:need|needs|nvc|nonviolent communication|request|boundary|trigger|projection)\b|why (?:do|does) (?:i|people|we) react|what does .{1,30} mean|can you explain|explain (?:to me )?(?:what|how|why))/]],
   ['guess_then_check', 'move', [/\b(i feel|i'm feeling|i felt|it hurts|i'm (?:so |really |very )?(?:hurt|sad|angry|upset|frustrated|scared|anxious|lonely|disappointed|resentful|worried)|makes me (?:feel|so))\b/]],
 
+  // From the 2026-11-20 moveset (docs/coach-modules-scope.md, "The moveset"): permission to want or feel something. Draft: thin evidence in the source.
+  ['permission_giving', 'move', [/\b(?:i (?:shouldn't|should not|am not supposed to|have no right)|(?:sorry|apolog\w+) (?:for|that i) (?:need|want|feel|ask|bring|complain|bother|vent)\w*|(?:is it|am i) (?:ok|okay|allowed|wrong|selfish|silly|stupid) (?:to|for) (?:want|need|feel|ask|say)\w*|i (?:feel )?(?:guilty|ashamed|selfish) (?:for|about) (?:wanting|needing|feeling|asking)|i (?:don't|do not) have the right|who am i to)\b/]],
+  // ask_one_question has no pattern of its own: it is added below when nothing else fits a short, open message (see selectModules).
+
   // Resources.
   ['crisis_lines', 'resource', [/\b(crisis line|hotline|helpline|where (?:can|do) i (?:get|find) help|who (?:can|should) i call|talk to (?:someone|a person) (?:now|today)|find a therapist|need (?:to talk to )?(?:a )?(?:person|professional))\b/]],
   ['cnvc', 'resource', [/\b(nonviolent communication|nvc|cnvc|marshall rosenberg|where (?:can|do) i learn|(?:a )?(?:book|course|class|training) (?:on|about|for)|resources? (?:on|about|for))\b/]],
@@ -71,20 +75,32 @@ const TRIGGERS: Array<[id: string, group: ModuleGroup, patterns: RegExp[]]> = [
 // says: with depleted reserves, offer rest only (no action planning or skill-building); with deliberate suppression,
 // skip skill-building and perspective-taking toward the other party, and support boundaries.
 const SUPPRESS: Record<string, string[]> = {
-  reserves: ['answer_with_words', 'open_a_hard_conversation', 'ask_for_what_you_want', 'empathize_before_asking', 'offer_to_play_the_other', 'reaction_as_information', 'set_a_boundary', 'say_the_real_feeling', 'read_a_silence', 'closure_check', 'power_difference'],
-  care_depleted: ['answer_with_words', 'open_a_hard_conversation', 'ask_for_what_you_want', 'empathize_before_asking', 'offer_to_play_the_other', 'reaction_as_information', 'set_a_boundary', 'say_the_real_feeling', 'read_a_silence', 'closure_check', 'power_difference'],
+  reserves: ['ask_one_question', 'answer_with_words', 'open_a_hard_conversation', 'ask_for_what_you_want', 'empathize_before_asking', 'offer_to_play_the_other', 'reaction_as_information', 'set_a_boundary', 'say_the_real_feeling', 'read_a_silence', 'closure_check', 'power_difference'],
+  care_depleted: ['ask_one_question', 'answer_with_words', 'open_a_hard_conversation', 'ask_for_what_you_want', 'empathize_before_asking', 'offer_to_play_the_other', 'reaction_as_information', 'set_a_boundary', 'say_the_real_feeling', 'read_a_silence', 'closure_check', 'power_difference'],
   harm_named_as_intended: ['empathize_before_asking', 'open_a_hard_conversation', 'ask_for_what_you_want', 'offer_to_play_the_other', 'reaction_as_information', 'reframe_gently', 'closure_check'],
 };
 
 const CAPS: Record<ModuleGroup, number> = { safety: 1, lens: 2, move: 3, resource: 1 };
 
-export const MODULE_IDS = TRIGGERS.map(([id]) => id);
-export const MODULE_GROUPS: Record<string, ModuleGroup> = Object.fromEntries(TRIGGERS.map(([id, group]) => [id, group]));
+/** Modules chosen by a rule in selectModules rather than by a phrase. */
+const RULE_MOVES = ['ask_one_question'] as const;
+export const MODULE_IDS = [...TRIGGERS.map(([id]) => id), ...RULE_MOVES];
+export const MODULE_GROUPS: Record<string, ModuleGroup> = { ...Object.fromEntries(TRIGGERS.map(([id, group]) => [id, group])), ...Object.fromEntries(RULE_MOVES.map((id) => [id, 'move' as ModuleGroup])) };
+
+/**
+ * Moves left out while the practice arc is on (docs/coach-practice-arc-scope.md, COACH_ARC=practice): the arc has the PERSON guess the feeling and need first and gives each
+ * exchange its own question, so a module that names the feeling and need for them, or adds a question of its own, would pull against it.
+ */
+export const ARC_EXCLUDED_MODULES = ['guess_then_check', 'ask_one_question'] as const;
+
+/** A very short message with nothing in it to reflect yet: up to five words, no question mark, and no other person in it (no he, she, they, we, my, your). */
+const SHORT_OPEN = /^\W*(?:[\w'’-]+\W+){0,4}[\w'’-]+\W*$/;
+const OTHER_PERSON = /\b(?:he|she|they|we|him|her|them|us|his|their|my|your|each other)\b/;
 
 const fold = (s: string): string => s.normalize('NFKC').toLowerCase().replace(/[‘’]/g, "'");
 
 /** Ids of the modules that fit this conversation, in order of attention (safety, lenses, moves, resources). `exclude` leaves whole groups out. */
-export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup[] = []): string[] {
+export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup[] = [], excludeIds: readonly string[] = []): string[] {
   // Safety and lens modules look at everything the person has said (what is blocking them stays true). The coaching moves and
   // resources look only at the latest message: what they ask for or react to now. Without this, a "how do I say..." from
   // two turns ago kept the "give them words" module on, and the coach offered the same words again.
@@ -95,12 +111,18 @@ export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup
     const text = group === 'safety' || group === 'lens' ? whole : latest;
     if (patterns.some((p) => p.test(text))) hit.add(id);
   }
+  // A fixed story about the other person ("she never ...", "he's always ..."): a reframe may be offered, but only once the person has been heard at
+  // least once (from their second message on), because a reframe before they feel understood can land as dismissal (the 2026-11-20 moveset).
+  if (userTexts.length >= 2 && /\b(?:he|she|they)(?:'s|'re| is| are)? (?:always|never)\b|\b(?:he|she|they) (?:always|never|keeps?) \w+/.test(latest)) hit.add('reframe_gently');
+  // The first message is a few words, with no question in it, no other person in it and nothing else fitting: one open question may come first (the one exception to empathy first in the Reflect stance).
+  const anyHit = [...hit].some((id) => MODULE_GROUPS[id] === 'move' || MODULE_GROUPS[id] === 'lens' || MODULE_GROUPS[id] === 'safety');
+  if (userTexts.length === 1 && !anyHit && SHORT_OPEN.test(latest) && !/\?/.test(latest) && !OTHER_PERSON.test(latest)) hit.add('ask_one_question');
   // Leave out moves that pull against a lens that applies.
   for (const lens of Object.keys(SUPPRESS)) if (hit.has(lens)) SUPPRESS[lens].forEach((id) => hit.delete(id));
   const out: string[] = [];
   const used: Record<string, number> = { safety: 0, lens: 0, move: 0, resource: 0 };
-  for (const [id, group] of TRIGGERS) {
-    if (!hit.has(id) || exclude.includes(group) || used[group] >= CAPS[group]) continue;
+  for (const [id, group] of [...TRIGGERS.map(([i, g]) => [i, g] as [string, ModuleGroup]), ...RULE_MOVES.map((i) => [i, 'move'] as [string, ModuleGroup])]) {
+    if (!hit.has(id) || exclude.includes(group) || excludeIds.includes(id) || used[group] >= CAPS[group]) continue;
     out.push(id);
     used[group]++;
     if (out.length >= max) break;
@@ -109,11 +131,11 @@ export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup
 }
 
 /** Core plus the chosen modules, within a character budget. */
-export function buildNotes(set: ModuleSet, userTexts: string[], opts: { skipModules?: boolean; maxChars?: number; exclude?: ModuleGroup[] } = {}): string {
+export function buildNotes(set: ModuleSet, userTexts: string[], opts: { skipModules?: boolean; maxChars?: number; exclude?: ModuleGroup[]; excludeIds?: readonly string[] } = {}): string {
   const maxChars = opts.maxChars ?? 9000;
   const parts = [set.core.trim()];
   if (!opts.skipModules) {
-    for (const id of selectModules(userTexts, 3, opts.exclude)) {
+    for (const id of selectModules(userTexts, 3, opts.exclude, opts.excludeIds)) {
       const body = set.modules[id]?.trim();
       if (body && parts.join('\n\n').length + body.length + 2 <= maxChars) parts.push(body);
     }

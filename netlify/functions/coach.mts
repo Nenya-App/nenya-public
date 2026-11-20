@@ -56,7 +56,7 @@ import { recordReceipt } from '../../src/lib/receiptLog.ts';
 import { addConnectionTurn, allowanceReached, connectionCode, turnsFromEnv } from '../../src/lib/connectionLimit.ts';
 import { hostAllowed, originHint, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { checkTurnstile, turnstileHosts, turnstileMode } from '../../src/lib/turnstileCheck.ts';
-import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
+import { ARC_EXCLUDED_MODULES, buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
 import { E2eeError, MAX_SEALED_HEX, attestationFor, e2eeChat, isE2eeModel, sealedChat } from '../../src/lib/veniceE2ee.ts';
 import { aboutTheWorld, detectDirectQuestion, hasSeveralQuestions, MULTI_QUESTION_NOTE } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier } from '../../src/lib/coachRepeat.ts';
@@ -452,7 +452,8 @@ async function loadModuleSet(): Promise<ModuleSet | null> {
 // module set (owner, 2026-11-14), so a new set can be uploaded to the store before it is used, and turned off without deleting it.
 async function notesFor(userTexts: string[], softened: boolean, exclude: ModuleGroup[] = []): Promise<string> {
   const set = process.env.COACH_MODULES === 'on' ? await loadModuleSet() : null;
-  if (set) return buildNotes(set, userTexts, { skipModules: softened, maxChars: MAX_NOTES_CHARS, exclude });
+  // With the practice arc on, moves that name the feeling and need for the person, or add a question of their own, are left out: the arc has the person guess first (src/lib/coachModules.ts).
+  if (set) return buildNotes(set, userTexts, { skipModules: softened, maxChars: MAX_NOTES_CHARS, exclude, excludeIds: practiceArcOn() ? ARC_EXCLUDED_MODULES : [] });
   return loadMethodNotes();
 }
 
