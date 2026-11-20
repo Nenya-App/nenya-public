@@ -11,6 +11,10 @@ import type { SafetyFlag } from '../lib/safetyFlags';
 import { termsAcceptedFor } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { MODES } from '../lib/privacyModes';
+import { rephraseOn } from '../lib/rephraseSwitch';
+import { isRpKind } from '../lib/rephraseProtocol';
+import { RephraseController } from '../lib/rephraseController';
+import RephrasePanel from './RephrasePanel';
 
 // Partner practice ("Dyadic Cells"), for real: two people in an end-to-end encrypted cell (src/lib/cellClient.ts,
 // netlify/functions/cell.mts; docs/ghost-footprint-stack.md). The conversation lives only in this page's memory; the
@@ -48,6 +52,8 @@ export default function CellPage() {
   const [closedWhy, setClosedWhy] = useState('');
   const client = useRef<CellClient | null>(null);
   const exiting = useRef(false);
+  // Rephrasing (VITE_REPHRASE, off by default): made when the two devices are connected, emptied when the cell closes.
+  const rephrase = useRef<RephraseController | null>(null);
 
   useEffect(() => {
     fetch('/api/cell?status', { cache: 'no-store' })
@@ -76,6 +82,7 @@ export default function CellPage() {
   const listen = (c: CellClient) => {
     c.listen({
       onConnected: (cols) => {
+        if (rephraseOn()) rephrase.current = new RephraseController(c);
         setColors(cols);
         setStage('compare');
       },
@@ -83,6 +90,7 @@ export default function CellPage() {
         if (m.kind === 'pause') setPaused({ by: 'them' });
         else if (m.kind === 'resume') setPaused(null);
         else if (m.kind === 'text') setLines((l) => [...l, { from: 'them', text: m.text, opened: m }]);
+        else if (isRpKind(m.kind)) rephrase.current?.handle(m);
       },
       onFlag: (flag, m) => {
         // A crisis message from the other person: it is shown with resources, and the cell pauses for both.
@@ -90,6 +98,8 @@ export default function CellPage() {
         void c.send({ kind: 'pause', text: '' }).catch(() => undefined);
       },
       onClosed: (why) => {
+        rephrase.current?.clearAll();
+        rephrase.current = null;
         setClosedWhy(why === 'me' ? 'You closed the cell.' : why === 'expired' ? 'The cell reached its three-hour limit and was deleted.' : 'The other person closed the cell.');
         setStage('closed');
       },
@@ -313,6 +323,7 @@ export default function CellPage() {
                     <Button type="submit" disabled={!draft.trim() || !!paused}>Send</Button>
                   </div>
                 </form>
+                {rephraseOn() && rephrase.current && <RephrasePanel ctl={rephrase.current} client={client.current} paused={!!paused} />}
               </section>
 
               <aside className="space-y-4 text-xs">
