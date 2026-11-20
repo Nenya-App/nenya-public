@@ -198,32 +198,42 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
               Nonviolent Communication © 2023, www.CNVC.org, cnvc@cnvc.org.
             </p>
 
+            {/* Featured (owner, 2026-11-20): the site sends people first to the website of the psychologist whose publicly available podcast provided source
+                material for identifying relational coaching patterns (credited word for word on About the Coach). A plain description only: no claim that she
+                endorses, reviewed or stands behind Nenya. "Featured" is a text label, not a colour. */}
+            <Card id="featured-resource" className="p-6 bg-muted/30 border-nenya-gold/40">
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Featured</p>
+                <div className="flex items-start gap-3">
+                  <ExternalLink className="size-5 text-nenya-gold-text mt-1 flex-shrink-0" aria-hidden="true" />
+                  <div className="space-y-1">
+                    <a
+                      href="https://www.yvetteerasmus.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-4 hover:text-nenya-gold-text transition-colors"
+                    >
+                      <h3 className="text-base">YvetteErasmus.com<span className="sr-only"> (opens an outside site in a new tab)</span></h3>
+                    </a>
+                    <p className="text-sm text-muted-foreground">
+                      Psychologist and conflict facilitator. Explores the intersection of psychology, social justice, and relational dynamics.
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      If one place is where you start, we would send you here first. How she is credited in Nenya&rsquo;s making is on the About the Coach page.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
             {/* Resource Links - Foundational Thinkers */}
             <Card className="p-6 bg-muted/30 border-nenya-gold/20">
               <div className="space-y-4">
                 <h3 className="text-foreground">Resources for Exploration</h3>
                 <p className="text-sm text-muted-foreground">
-                  To deepen your understanding of the principles behind Nenya, we encourage you to explore the work of these foundational thinkers and practitioners. Their work on conflict, communication, and systems thinking directly informs the NVC+ framework.
+                  There are many good places to learn this. Beyond the one above, we encourage you to explore the work of these other foundational thinkers and practitioners, and to find the voices that suit you. Their work on conflict, communication, and systems thinking directly informs the NVC+ framework.
                 </p>
                 <div className="space-y-3">
-                  <Card className="p-4 bg-background/60 border-border">
-                    <div className="flex items-start gap-3">
-                      <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
-                      <div className="space-y-1">
-                        <a 
-                          href="https://www.yvetteerasmus.com" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="hover:text-nenya-gold-text transition-colors"
-                        >
-                          <h4 className="text-sm">YvetteErasmus.com</h4>
-                        </a>
-                        <p className="text-xs text-muted-foreground">
-                          Psychologist and conflict facilitator. Explores the intersection of psychology, social justice, and relational dynamics.
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
                   <Card className="p-4 bg-background/60 border-border">
                     <div className="flex items-start gap-3">
                       <ExternalLink className="size-4 text-nenya-gold-text mt-1 flex-shrink-0" />
