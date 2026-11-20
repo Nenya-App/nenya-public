@@ -467,3 +467,80 @@ wrappers, I'd expect it to be no worse than today.
 27. **Re-render logo assets** once (`npm run logo:render`).
 
 The owner runs: the bench comparison (browser), older-phone timing, and the final `npm run logo:render`.
+
+---
+
+# Part 4: the site crashes when zooming in on the gem on an iPhone
+
+Added 2026-11-20. Scoping only: nothing was run on a device (no browser checks in this session) and no source changed.
+**This is a diagnosis from reading the code. Nothing below is confirmed until it is measured on the phone.** It matters beyond
+this bug: people with low vision zoom, so the site must survive zoom (WCAG 2.2 AAA 1.4.4, 1.4.10). The fix is not to
+forbid zoom: `index.html` correctly sets `maximum-scale=5.0, user-scalable=yes` and that must stay.
+
+## What a crash on pinch-zoom usually is
+
+iOS Safari reloads the page ("a problem repeatedly occurred") when the page uses too much memory. Pinch-zoom does not change
+`devicePixelRatio` or the layout size, but Safari **re-rasterises** vector content, effects and composited layers at the
+zoomed scale. So anything whose memory cost grows with scale (SVG filters, big blurs, many composited layers) can jump from
+harmless to enormous when zoomed in on one spot. Bitmaps with a fixed size do not grow with zoom.
+
+## Suspects, in order of likelihood
+
+1. **SVG filters with a huge filter region** (strong suspect). `bezel.svg`, `petals.svg` and the leaf branch's
+   `MallornLeaves.tsx` all define their lighting filters (`feSpecularLighting`, `feDiffuseLighting`, blur) with
+   `filterUnits="userSpaceOnUse" x="-820" y="-820" width="1640" height="1640"`. The bezel's drawing is only 268 units wide, so its
+   filter works on an area **about 37 times larger** than the image (6.1 × per side); the petals' is about 4.6 times (21 ×
+   in area). The filter surface is allocated at the zoomed scale, so zoom multiplies that waste. The bezel is the gem's own
+   frame, which is exactly what the person zooms into. Cost to fix is tiny: set the region to the drawing's bounds plus
+   the blur margin (about ±140 for the bezel, ±400 for the petals) so the result looks identical and the surface is
+   a fraction of the size. The leaf branch copied the same region, so it must be fixed there too.
+2. **Large `box-shadow` blurs on the 16 outer orbs** (`.nenya-orb-glow`: blurs of 23, 46 and 70 px, rising to 139 px on hover
+   or in dark mode). Shadow bitmaps are rasterised at zoom scale, 16 of them, each many times the orb's size. Part 3's
+   per-orb gradient halos remove this; they would double as the fix.
+3. **Many composited layers**: 32 orbs each with `will-change: background, opacity, transform`, `translateZ(0)` and an infinite
+   rotation, the overlay-blended gem sparkle canvas, and the blurred glow layers (`filter: blur(40px)` at `globals.css:309`
+   and the light-emanation layers). Each layer has its own backing store; zoom enlarges them all.
+4. **Less likely, still worth ruling out**: the gem's own canvases are fixed bitmaps (`gemSide × min(dpr, 3)`, so about
+   225 px on a phone at the default size) and do not grow with zoom. The WebGL context is released on
+   dispose (`loseContext`). If iOS drops the context under pressure, `SpectralGem` already falls back to the sprite (a 2016 × 2016
+   decode, about 16 MB of memory), which is survivable but is a second spike at a bad moment.
+5. **JS heap**: nothing in the gem loop allocates per frame at a problem scale. Not suspected.
+
+## Finding the cause (the owner runs this; it needs the phone)
+
+Connect the iPhone to a Mac, open Safari's Web Inspector (Develop menu), and zoom in on the gem while watching memory:
+
+1. Timelines → *Memory* and *Layers* (the layer count and total layer memory) before and after the zoom.
+2. Bisect by turning things off, one at a time, and re-trying the zoom: the bench has switches for the gem, orbits and
+   quality; for the rest, a temporary local edit (outer glow off; bezel image off; leaf SVG off).
+3. Try the **iOS Simulator** first if no phone is at hand; it reproduces memory growth poorly, so a negative result means nothing.
+4. Note the iPhone model and iOS version; older, smaller-memory phones fail first.
+
+## Fixes, cheapest first (each its own commit, once confirmed)
+
+1. **Tighten the SVG filter regions** in `bezel.svg`, `petals.svg` and `MallornLeaves.tsx` to the drawing's bounds plus margin.
+   Look identical; test it with a static check (see 6).
+2. **Replace the outer orbs' `box-shadow` glow** with per-orb gradient halos (Part 3, step 24).
+3. **Zoom-aware lite mode:** listen to `window.visualViewport` (`scale` and `resize`). While `scale > 1.25`, show a lite logo: no
+   blend modes, no `will-change`, outer halos and glow layers hidden, orbit and gem animation paused (the gem keeps its last
+   frame), and the rest of the page untouched. Back to normal about a second after the scale returns near 1 (debounced, so a
+   pinch does not flicker). Honour reduced motion. Nothing to be announced: it is purely visual and `aria-hidden`.
+4. **Trim compositing hints:** remove `will-change` and `translateZ(0)` from the orbs where nothing needs them, keeping only what
+   a measurement shows helps; drop the `backface-visibility` hacks.
+5. **Smaller filter use overall:** if the bezel's lighting survives as a fixed raster (a small WebP rendered once by
+   `npm run logo:render`, at 2×), the bezel stops being a live filter altogether. Costs a browser render and a file
+   (about 10 to 20 KB), so only if 1 does not settle it.
+6. **Guard against regression:** a unit test that parses each logo SVG and fails if any filter region is more than about
+   2 × the drawing's viewBox, and one that fails if an element in the logo gets a `box-shadow` blur above a set limit.
+7. **Do not** cap `maximum-scale`, disable `user-scalable`, or intercept pinch gestures: that breaks accessibility and is not a fix.
+
+Because Part 1 changes the bezel (octagon) and the leaf branch adds new filtered SVG, fix 1 should be folded into those
+changes: **write the new octagon bezel with a tight region from the start.**
+
+## Order and ownership
+
+- Build now, no browser needed: fix 1 and test 6 (and the same region in the leaf branch's `MallornLeaves.tsx`).
+- Then the owner measures on the phone with the Inspector (section above) to see whether 1 was enough.
+- If not: fix 2 (with Part 3), then fix 3.
+- The owner runs: the iPhone measurement, any new `logo:render` if fix 5 is taken, and a hand test of pinch zoom on an
+  older and a newer iPhone, in light and dark, with reduced motion on and off.
