@@ -23,6 +23,8 @@ export interface NightState {
   skipped?: string;
   /** Why the night ended early, if it did. */
   stopped?: string;
+  /** Set when the candidate model task was skipped because it kept erroring (no access, say); the night went on with the next task. */
+  candidateSkipped?: string;
   /** The instructions fingerprint of each task, for the archive. */
   fingerprints?: string[];
 }
@@ -82,4 +84,15 @@ export function driftFlags(today: TaskReport[], past: TaskReport[], cases: Recor
   for (const t of today) for (const [id, n] of Object.entries(t.failedCases)) failsToday[id] = (failsToday[id] ?? 0) + n;
   for (const [id, n] of Object.entries(failsToday)) if ((cases[id]?.[0] ?? 0) >= 8 && cases[id][1] === n) flags.push(`${id} had not failed in any earlier baseline run (${cases[id][0] - n} or more) and failed tonight`);
   return flags;
+}
+
+/**
+ * What to do when cases keep erroring (2026-11-20). Three errors in a row on the candidate model task (no access yet, say) skip that task and the night goes on with the
+ * next one; on any other task it is the allowance running out or an outage, so the night ends. Fewer than three errors in a row: carry on.
+ * (Until this was fixed, the candidate model's 403 ended the whole night on 20 Nov and 6,110 Neurons went unused.)
+ */
+export function onErrorStreak(task: { name: string }, outcomes: string[]): 'continue' | 'skip-task' | 'end-night' {
+  const last3 = outcomes.slice(-3);
+  if (last3.length < 3 || !last3.every((o) => o === 'error')) return 'continue';
+  return task.name === 'model' ? 'skip-task' : 'end-night';
 }

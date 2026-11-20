@@ -34,7 +34,7 @@ ok('a case that had never failed and now does is flagged, and one that often fai
   const night = readFileSync('netlify/functions/canary-nightly.mts', 'utf8');
   const rec = readFileSync('scripts/record-neurons.mts', 'utf8');
   ok('the canary counts the owner\'s manual spend and holds nothing back for production (it runs on Venice)', /canary\/manual/.test(night) && /spentToday: \(ledger\[day\] \?\? 0\) \+ manual/.test(night) && /const visitorTurns = counted \? Number\(counted\) : 0;/.test(night) && !/\+ cap \+ 20/.test(night));
-  ok('three errors in a row end the night at once and say why in the digest', /last3\.every\(\(x\) => x\.outcome === 'error'\)/.test(night) && /stopped: state\.stopped/.test(night));
+  ok('three errors in a row end the night at once and say why in the digest, except on the candidate model, which only skips its own task', /onErrorStreak\(task, state\.compact\[state\.t\]/.test(night) && /streak === 'end-night'/.test(night) && /streak === 'skip-task'/.test(night) && /stopped: state\.stopped/.test(night) && /candidateSkipped/.test(night));
   ok('the recorder adds to today\'s UTC total and the manual scripts call it unless told not to', /canary\/manual/.test(rec) && /utcDay\(\)/.test(rec) && readFileSync('scripts/duet-eval.mts', 'utf8').includes("--no-record") && readFileSync('scripts/bakeoff-workers-ai.mts', 'utf8').includes("--no-record"));
 }
 

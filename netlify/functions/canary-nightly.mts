@@ -10,7 +10,7 @@ import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
 import { MAX_RUNS_A_NIGHT, canaryAllowance, runsThatFit, utcDay } from '../../src/lib/canaryBudget.ts';
 import { costSummary } from '../../src/lib/canaryCost.ts';
-import { caseOrder, driftFlags, planTasks, report, type NightState, type TaskReport } from '../../src/lib/canaryNight.ts';
+import { caseOrder, driftFlags, onErrorStreak, planTasks, report, type NightState, type TaskReport } from '../../src/lib/canaryNight.ts';
 import { PERSONA_CASES } from '../../src/lib/personaEvalSet.ts';
 import { pacedSend, runCase, type RawSent } from '../../src/lib/personaEval.ts';
 import { readWorkersAi } from '../../src/lib/coachProvider.ts';
@@ -122,8 +122,10 @@ export default async (): Promise<Response> => {
           await store.set(`canary/runs/${day}/${state.t}-${r.id}`, JSON.stringify({ t: state.t, task: task.name, id: r.id, category: r.category, outcome: r.outcome, how: r.how, failures: r.failures, reply: r.reply ?? null, neurons: Math.round(cost) }));
           state.c++;
           // Three errors in a row: the allowance has run out or Workers AI is down. Stop at once instead of spending the rest of the night's requests on errors.
-          const last3 = state.compact[state.t].slice(-3);
-          if (last3.length === 3 && last3.every((x) => x.outcome === 'error')) { state.stopped = 'three errors in a row (probably the daily allowance, or an outage)'; finished = true; break; }
+          // A candidate model with no access (a 403) skips only its own task; the night goes on with the baseline (src/lib/canaryNight.ts onErrorStreak).
+          const streak = onErrorStreak(task, state.compact[state.t].map((x) => x.outcome));
+          if (streak === 'end-night') { state.stopped = 'three errors in a row (probably the daily allowance, or an outage)'; finished = true; break; }
+          if (streak === 'skip-task') { state.candidateSkipped = `${task.model ?? task.name}: three errors in a row (probably no access)`; break; }
           await store.set(stateKey, JSON.stringify(state)); // after every case, so a run cut off by the time limit loses at most the case in hand
         }
         if (finished || Date.now() - started >= START_NEW_CASE_BEFORE_MS) break;
@@ -159,7 +161,7 @@ export default async (): Promise<Response> => {
       const flags = driftFlags(reports.filter((x) => x.name === 'baseline'), past, caseTally);
       // The whole night's two cost signals (send-backs, Neurons per case), over every task played; each task's line carries its own under `cost`.
       const nightCost = (({ sendBacks, sendBackRate, neuronsPerCaseMedian, neuronsPerCaseMean, modelCalls, turns }) => ({ sendBacks, sendBackRate, neuronsPerCaseMedian, neuronsPerCaseMean, modelCalls, turns }))(costSummary(state.compact.flat()));
-      const digest = { day, model: defaultModel || '@cf/google/gemma-4-26b-a4b-it', tasks: reports, spentNeurons: Math.round(state.spent), ...nightCost, flags, ...(state.stopped ? { stopped: state.stopped } : {}), reviewed: false };
+      const digest = { day, model: defaultModel || '@cf/google/gemma-4-26b-a4b-it', tasks: reports, spentNeurons: Math.round(state.spent), ...nightCost, flags, ...(state.candidateSkipped ? { candidateSkipped: state.candidateSkipped } : {}), ...(state.stopped ? { stopped: state.stopped } : {}), reviewed: false };
       // What the full run was made with, so a later reader can tell one night's replies from another's.
       await store.set(`canary/runs/${day}/meta`, JSON.stringify({ day, model: digest.model, provider: 'workers-ai', build: BUILD_INFO.commit, tasks: state.tasks.map((t, i) => ({ ...t, instructionsFingerprint: state.fingerprints?.[i] ?? null, neurons: Math.round(state.taskSpent[i]) })), spentNeurons: digest.spentNeurons, note: 'Invented cases only. Replies can echo the private notes: read before sharing anything.' }));
       await store.set(`canary/digest-${day}`, JSON.stringify(digest));
