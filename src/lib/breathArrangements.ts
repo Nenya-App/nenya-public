@@ -79,30 +79,37 @@ function scaleEvents(t: BreathTiming): ToneEvent[] {
 
 // ---- Harp: an open arpeggio in D that rings, rising on the inhale and landing on the tonic on the exhale
 
-/** D major pentatonic arpeggio ladder: A3, D4, F#4, A4, D5, F#5. Index 1 (D4) is the home note. */
-export const HARP_LADDER = [57, 62, 66, 69, 74, 78].map(hz);
+/** D major pentatonic arpeggio ladder: A3, D4, F#4, A4, D5, F#5, A5. Index 1 (D4) is the home note. */
+export const HARP_LADDER = [57, 62, 66, 69, 74, 78, 81].map(hz);
 export const HARP_HOME = HARP_LADDER[1];
 export const HARP_OPEN = HARP_LADDER[4]; // D5: the stable, open note the inhale hold sits on
 const HARP_LOW = 1;
-const HARP_HIGH = 5;
+const HARP_HIGH = 5; // up to F#5 for a phase of five counts or fewer
+const HARP_TOP = 6; // a phase of six counts or more reaches A5, so six counts are six different notes
 
-function harpPitch(j: number, n: number, up: boolean): number {
-  const span = HARP_HIGH - HARP_LOW;
+/** The top of the climb for a breath: F#5, or A5 when either phase has more counts than the five notes D4 to F#5 (see harpPitch). */
+const harpHigh = (t: BreathTiming): number => (Math.max(counts(t.ih), counts(t.ex)) > HARP_HIGH - HARP_LOW + 1 ? HARP_TOP : HARP_HIGH);
+
+function harpPitch(j: number, n: number, up: boolean, high: number): number {
+  // With more counts than the five notes D4 to F#5 there would be a repeated note (the steady 6 count pace played A4 twice, a stutter), so the
+  // ladder grows by one note at the top for six counts or more, and both phases of the breath share that top so the exhale starts where the inhale ended.
+  const span = high - HARP_LOW;
   const frac = n <= 1 ? 1 : clamp01(j / (n - 1));
-  const idx = up ? HARP_LOW + Math.round(frac * span) : HARP_HIGH - Math.round(frac * span);
-  return HARP_LADDER[n <= 1 ? (up ? HARP_HIGH : HARP_LOW) : idx];
+  const idx = up ? HARP_LOW + Math.round(frac * span) : high - Math.round(frac * span);
+  return HARP_LADDER[n <= 1 ? (up ? high : HARP_LOW) : idx];
 }
 
 function harpEvents(t: BreathTiming): ToneEvent[] {
   const ih = t.ih, hi = t.hi || 0, ex = t.ex, ho = t.ho || 0;
   const out: ToneEvent[] = [];
+  const high = harpHigh(t);
   const phase: Phase = (start, len, kind, pitch, gain) => {
     const n = counts(len);
     for (let j = 0; j < n; j++) out.push({ t: start + (j * len) / n, freq: pitch(j, n), gain: gain(j), kind, timbre: 'harp', dur: kind.startsWith('hold') ? 1.6 : 2.6 });
   };
-  phase(0, ih, 'inhale', (j, n) => harpPitch(j, n, true), (j) => (j === 0 ? 0.17 : 0.13));
+  phase(0, ih, 'inhale', (j, n) => harpPitch(j, n, true, high), (j) => (j === 0 ? 0.17 : 0.13));
   phase(ih, hi, 'hold-in', () => HARP_OPEN, () => 0.045);
-  phase(ih + hi, ex, 'exhale', (j, n) => harpPitch(j, n, false), () => 0.13);
+  phase(ih + hi, ex, 'exhale', (j, n) => harpPitch(j, n, false, high), () => 0.13);
   phase(ih + hi + ex, ho, 'hold-out', () => HARP_HOME, () => 0.045);
   return out;
 }

@@ -56,7 +56,7 @@ ok('harp: notes ring for seconds, longer than the beat, so they overlap', h.ever
 const hb = A.arrangementEvents('harp', sec(4, 4, 4, 4));
 ok('harp: the hold after the inhale rests on the open D5, quietly; the hold after the exhale on the home note, quietly', hb.filter((e) => e.kind === 'hold-in').every((e) => e.freq === A.HARP_OPEN && e.gain < 0.06) && hb.filter((e) => e.kind === 'hold-out').every((e) => e.freq === A.HARP_HOME && e.gain < 0.06));
 ok('harp: the first note of a breath is a little firmer', h[0].gain > h[1].gain);
-ok('harp: a phase longer than the ladder shares notes but stays in range', A.arrangementEvents('harp', sec(12, 0, 12, 0)).every((e) => e.freq >= A.HARP_HOME && e.freq <= A.HARP_LADDER[5]));
+ok('harp: a phase longer than the ladder shares notes but stays in range', A.arrangementEvents('harp', sec(12, 0, 12, 0)).every((e) => e.freq >= A.HARP_HOME && e.freq <= A.HARP_LADDER[6]));
 
 // ---- bowls
 const b = A.arrangementEvents('bowls', sec(4, 0, 6, 0));
@@ -101,3 +101,18 @@ ok('switching the tones on plays a taste of the chosen style', /playPreview\(get
 ok('the player is given the chosen style and reads it on every tick', /arrangement/.test(sw) && /createPlanner\(\)/.test(eng) && /plan\(now, state\(\)\)/.test(eng));
 ok('the drone starts only for a style that has one, and fades out when the tones stop', /wantsDrone/.test(eng) && /drone\?\.\(\)/.test(eng));
 ok('sound is created only from a click, never at load', /ctx \?\?= new Ctor\(\)/.test(eng) && !/^new AudioContext/m.test(eng));
+
+// ---- the steady six count pace (the default): six counts are six different notes, never a repeat
+const six = A.arrangementEvents('harp', sec(6, 0, 6, 0)).filter((e) => e.kind === 'inhale' || e.kind === 'exhale');
+const sixIn = six.filter((e) => e.kind === 'inhale').map((e) => e.freq);
+const sixOut = six.filter((e) => e.kind === 'exhale').map((e) => e.freq);
+ok('harp, six counts: six different notes climbing, with no note repeated', sixIn.length === 6 && new Set(sixIn).size === 6 && sixIn.every((f, i) => i === 0 || f > sixIn[i - 1]));
+ok('harp, six counts: six different notes falling, landing on the home note', sixOut.length === 6 && new Set(sixOut).size === 6 && sixOut.every((f, i) => i === 0 || f < sixOut[i - 1]) && sixOut[5] === A.HARP_HOME);
+ok('harp, six counts: the climb starts on the home note', sixIn[0] === A.HARP_HOME);
+for (const [ih, ex] of [[3, 3], [4, 4], [5, 5], [4, 6], [6, 6]]) {
+  const e2 = A.arrangementEvents('harp', sec(ih, 0, ex, 0));
+  const up = e2.filter((e) => e.kind === 'inhale').map((e) => e.freq);
+  ok(`harp, ${ih} in ${ex} out: no note repeats on the way up`, new Set(up).size === up.length);
+}
+
+ok('harp: the exhale starts on the note the inhale ended on, for the six count pace and a four-in six-out pace', [[6, 6], [4, 6], [5, 5], [3, 3]].every(([ih, ex]) => { const e = A.arrangementEvents('harp', sec(ih, 0, ex, 0)); const i = e.filter((x) => x.kind === 'inhale'); const o = e.filter((x) => x.kind === 'exhale'); return i[i.length - 1].freq === o[0].freq; }));
