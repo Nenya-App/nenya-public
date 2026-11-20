@@ -15,6 +15,7 @@
 [context.dev.environment]
   VITE_LENS_COPY = "on"
   VITE_LENS_TRAY = "on"
+  VITE_LENS_RING = "on"
   VITE_TERMS_FIRST = "on"
   VITE_LENS_TAPESTRY = "on"
   VITE_LENS_PATH = "on"

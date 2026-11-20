@@ -1,6 +1,5 @@
 // Loads what the logo is drawn from before the first screen is shown, so the logo and its gem do not pop in piece by
 // piece. Never rejects and never waits forever: a slow or failed download only ends the wait.
-import petalsSvg from '../assets/logo/petals.svg';
 import bezelSvg from '../assets/logo/bezel.svg';
 import flatLogo from '../assets/nenya-logo.webp';
 import smallLogo from '../assets/nenya-logo-small.webp';
@@ -31,7 +30,6 @@ export function startLogoDownloads(): Promise<void> {
     const gem = GEM_ENGINE === 'live' && liveGemSupported() ? Promise.resolve() : quietly(ready(loadGemSprite));
     downloads = Promise.all([
       gem,
-      quietly(ready(() => loadImage(petalsSvg))),
       quietly(ready(() => loadImage(bezelSvg))),
       quietly(ready(() => loadImage(flatLogo))),
       quietly(ready(() => loadImage(smallLogo))),

@@ -13,6 +13,7 @@ const store: Record<string, string> = {};
 };
 (globalThis as any).window ??= { addEventListener() {}, removeEventListener() {} };
 const { breathEvents, eventsBetween, pitchFor, LOW_FREQ, HIGH_FREQ, GAIN_FIRM, GAIN_MOVING, GAIN_HOLD } = await import('../src/lib/breathTones.ts');
+const { SCALE_LADDER } = await import('../src/lib/breathArrangements.ts');
 const dm = await import('../src/lib/deviceMemory.ts');
 const { PRESETS } = await import('../src/lib/breathingPresets.ts');
 import { ok } from './helpers.mts';
@@ -25,12 +26,12 @@ const sec = (a: number, b = 0, c = 0, d = 0) => ({ ih: a * 1000, hi: b * 1000, e
 const e55 = breathEvents(sec(5, 0, 5, 0));
 ok('5-5: five rising notes then five falling notes, one a second', e55.length === 10 && e55.every((e, i) => e.t === i * 1000));
 const up = e55.slice(0, 5).map((e) => e.freq), down = e55.slice(5).map((e) => e.freq);
-ok('the inhale rises, from the bottom of the range to the top', up.every((f, i) => i === 0 || f > up[i - 1]) && up[0] === LOW_FREQ && up[4] === HIGH_FREQ);
-ok('the exhale falls, from the top of the range to the bottom', down.every((f, i) => i === 0 || f < down[i - 1]) && down[0] === HIGH_FREQ && down[4] === LOW_FREQ);
+ok('the inhale rises, from the bottom of the range to the top', up.every((f, i) => i === 0 || f > up[i - 1]) && up[0] === LOW_FREQ && up[4] === SCALE_LADDER[4]);
+ok('the exhale falls, from the top of the range to the bottom', down.every((f, i) => i === 0 || f < down[i - 1]) && down[0] === SCALE_LADDER[4] && down[4] === LOW_FREQ);
 ok('the first note of the breath is the firm one, the rest are not', e55[0].gain === GAIN_FIRM && e55.slice(1).every((e) => e.gain === GAIN_MOVING) && GAIN_FIRM > GAIN_MOVING);
 const box = breathEvents(sec(4, 4, 4, 4));
 ok('box breathing: four notes for each of four phases', box.length === 16 && ['inhale', 'hold-in', 'exhale', 'hold-out'].every((k) => box.filter((e) => e.kind === k).length === 4));
-ok('hold after the inhale repeats the top note, quietly, once a count', box.filter((e) => e.kind === 'hold-in').every((e) => e.freq === HIGH_FREQ && e.gain === GAIN_HOLD && GAIN_HOLD < GAIN_MOVING));
+ok('hold after the inhale repeats the top note, quietly, once a count', box.filter((e) => e.kind === 'hold-in').every((e) => e.freq === SCALE_LADDER[3] && e.gain === GAIN_HOLD && GAIN_HOLD < GAIN_MOVING));
 ok('hold after the exhale repeats the bottom note, quietly, once a count', box.filter((e) => e.kind === 'hold-out').every((e) => e.freq === LOW_FREQ && e.gain === GAIN_HOLD));
 const r478 = breathEvents(sec(4, 7, 8, 0));
 ok('4-7-8: seven quiet holds and no notes after the exhale (an empty hold-out)', r478.filter((e) => e.kind === 'hold-in').length === 7 && r478.filter((e) => e.kind === 'hold-out').length === 0 && r478.length === 4 + 7 + 8);
@@ -38,7 +39,10 @@ ok('a 4 count inhale and an 8 count exhale span the same range', (() => { const 
 ok('a phase longer than the scale shares notes between neighbours but never leaves the range', (() => { const f = breathEvents(sec(12, 0, 12, 0)).map((e) => e.freq); return f.every((x) => x >= LOW_FREQ && x <= HIGH_FREQ) && f.slice(0, 12).every((x, i, a) => i === 0 || x >= a[i - 1]); })());
 ok('a one-count phase sits at its end of the range', pitchFor(0, 1, 'up') === HIGH_FREQ && pitchFor(0, 1, 'down') === LOW_FREQ);
 ok('every preset gives one note per whole second of the breath', PRESETS.every((p) => breathEvents(p).length === Math.round(p.ih / 1000) + Math.round((p.hi || 0) / 1000) + Math.round(p.ex / 1000) + Math.round((p.ho || 0) / 1000)));
-ok('the notes come from the same scale as the session sound', (() => { const { FREQS } = { FREQS: [261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25, 783.99, 880] }; return e55.every((e) => FREQS.includes(e.freq)); })());
+ok('the notes come from the D major pentatonic, the key of the other styles', e55.every((e) => SCALE_LADDER.includes(e.freq)) && SCALE_LADDER.length === 6);
+ok('an equal-phase breath climbs the scale a degree at a time: no skipped or repeated note, for 3, 4, 5 and 6 counts', [3, 4, 5, 6].every((n) => { const ev = breathEvents(sec(n, 0, n, 0)); const upN = ev.slice(0, n).map((e) => SCALE_LADDER.indexOf(e.freq)); const downN = ev.slice(n).map((e) => SCALE_LADDER.indexOf(e.freq)); return upN.every((d, i) => d === i) && downN.every((d, i) => d === n - 1 - i); }));
+ok('both phases of a breath share the same top, so the exhale begins where the inhale ended', [[4, 6], [4, 8], [6, 6], [3, 3]].every(([a, b]) => { const ev = breathEvents(sec(a, 0, b, 0)); const i = ev.filter((e) => e.kind === 'inhale'), x = ev.filter((e) => e.kind === 'exhale'); return i[i.length - 1].freq === x[0].freq; }));
+ok('no leap of more than three scale degrees inside a phase for the usual paces', PRESETS.every((p) => ['inhale', 'exhale'].every((k) => { const d = breathEvents(p).filter((e) => e.kind === k).map((e) => SCALE_LADDER.indexOf(e.freq)); return d.every((v, i) => i === 0 || Math.abs(v - d[i - 1]) <= 3); })));
 
 // ---- on the shared clock
 const t = sec(5, 0, 5, 0);

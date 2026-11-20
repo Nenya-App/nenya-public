@@ -1,0 +1,36 @@
+// The visitor's look for the logo (src/lib/logoLook.ts, kept by deviceMemory.ts): presets, snapping, and what the gem draws.
+import { DEFAULT_GEM_CHOICE, DEFAULT_LOGO_LEAVES, GEM_SIDE_PRESETS, LEAF_PRESETS, LOW_DEVICE_MAX_SIDES, effectiveGemSides, snapGemChoice, snapLeaves } from '../src/lib/logoLook.ts';
+import { ok } from './helpers.mts';
+
+ok('leaf presets are even and between 6 and 12', LEAF_PRESETS.every((n) => n % 2 === 0 && n >= 6 && n <= 12));
+ok('gem presets are 6, 8 and 10', JSON.stringify(GEM_SIDE_PRESETS) === '[6,8,10]');
+ok('a leaf count snaps to the nearest preset', snapLeaves(7) === 6 || snapLeaves(7) === 8);
+ok('an odd or wild leaf count never reaches the generator', [0, 1, 5, 7, 9, 11, 13, 99, -4].every((n) => (LEAF_PRESETS as readonly number[]).includes(snapLeaves(n))));
+ok('anything unreadable becomes the defaults', snapLeaves('8') === DEFAULT_LOGO_LEAVES && snapLeaves(NaN) === DEFAULT_LOGO_LEAVES && snapGemChoice(null) === DEFAULT_GEM_CHOICE && snapGemChoice('big') === DEFAULT_GEM_CHOICE);
+ok("'match' stays 'match'; numbers snap to a preset", snapGemChoice('match') === 'match' && (snapGemChoice(9) as unknown) !== 9 && snapGemChoice(12) === 10 && snapGemChoice(3) === 6);
+const live = { live: true, low: false }, low = { live: true, low: true };
+ok('the gem follows the leaves by default, never fewer than 6 sides', effectiveGemSides('match', 6, live) === 6 && effectiveGemSides('match', 8, live) === 8 && effectiveGemSides('match', 10, live) === 10);
+ok('twelve leaves give a ten-sided gem', effectiveGemSides('match', 12, live) === 10);
+ok('a chosen number wins over the leaves', effectiveGemSides(6, 12, live) === 6 && effectiveGemSides(10, 6, live) === 10);
+ok('a low-capability device never draws more than eight sides', effectiveGemSides(10, 8, low) === LOW_DEVICE_MAX_SIDES && effectiveGemSides('match', 12, low) === LOW_DEVICE_MAX_SIDES && effectiveGemSides(6, 8, low) === 6);
+ok('without the live gem the stone is the sprite\'s hexagon', effectiveGemSides(10, 12, { live: false, low: false }) === 6);
+
+// The outer orbs' glow: style, width and the random colours.
+import { DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, HALO_STYLES, HALO_WIDTHS, haloStyleLabel, randomHaloColors, snapHaloSeed, snapHaloStyle, snapHaloWidth } from '../src/lib/logoLook.ts';
+ok('the glow defaults to each orb\'s own colour at five times the orb\'s width', DEFAULT_HALO_STYLE === 'own' && DEFAULT_HALO_WIDTH === 5);
+ok('the width presets are 3.4, 5 and 7, and the default is one of them', HALO_WIDTHS.join() === '3.4,5,7' && (HALO_WIDTHS as readonly number[]).includes(DEFAULT_HALO_WIDTH));
+ok('a glow style that is not offered becomes the default', snapHaloStyle('neon') === 'own' && snapHaloStyle(null) === 'own' && HALO_STYLES.every((s) => snapHaloStyle(s) === s));
+ok('a width snaps to the nearest preset, and anything unreadable becomes the default', snapHaloWidth(4.5) === 5 && snapHaloWidth(3) === 3.4 && snapHaloWidth(99) === 7 && snapHaloWidth('5') === 5 && snapHaloWidth(NaN) === 5);
+ok('a seed is a whole number or it becomes 1', snapHaloSeed(42) === 42 && snapHaloSeed(1.5) === 1 && snapHaloSeed(-1) === 1 && snapHaloSeed('x') === 1);
+const sample = ['#111111', '#222222', '#333333', '#444444', '#555555', '#666666', '#777777', '#888888'];
+ok('random colours: six per orb, all from the list', randomHaloColors(3, 0, sample).length === 6 && randomHaloColors(3, 0, sample).every((c) => sample.includes(c)));
+ok('the same seed gives the same colours (a reload does not reshuffle)', randomHaloColors(3, 4, sample).join() === randomHaloColors(3, 4, sample).join());
+ok('another seed or another orb gives different colours', randomHaloColors(3, 4, sample).join() !== randomHaloColors(4, 4, sample).join() && randomHaloColors(3, 4, sample).join() !== randomHaloColors(3, 5, sample).join());
+ok('every style has a label', HALO_STYLES.every((s) => haloStyleLabel(s).length > 0));
+
+// The preview's size in the breathing panel is adjustable.
+import { DEFAULT_PREVIEW_SIZE, PREVIEW_MAX, PREVIEW_MIN, PREVIEW_STEP, snapPreviewSize } from '../src/lib/logoLook.ts';
+ok('the preview size defaults to a value inside its limits and on a step', DEFAULT_PREVIEW_SIZE >= PREVIEW_MIN && DEFAULT_PREVIEW_SIZE <= PREVIEW_MAX && DEFAULT_PREVIEW_SIZE % PREVIEW_STEP === 0);
+ok('a preview size is rounded to a step and kept between the limits', snapPreviewSize(233) === 240 && snapPreviewSize(10) === PREVIEW_MIN && snapPreviewSize(9999) === PREVIEW_MAX);
+ok('an unreadable preview size becomes the default', snapPreviewSize('big') === DEFAULT_PREVIEW_SIZE && snapPreviewSize(NaN) === DEFAULT_PREVIEW_SIZE && snapPreviewSize(null) === DEFAULT_PREVIEW_SIZE);
+ok('the preview is larger by default than the old fixed 160 pixels', DEFAULT_PREVIEW_SIZE > 160);

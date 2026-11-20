@@ -1,7 +1,8 @@
 # The live gem and the gem bench
 
-Status (2026-11-11): **built, not switched on.** The site still draws the sprite gem. The live gem runs on the `/bench/`
-page, side by side with the sprite, for tuning. Switching the site over is one line (below).
+Status (2026-11-20): **live on the site.** `GEM_ENGINE` in `src/lib/gemSprite.ts` is `'live'`; the sprite is the fallback where WebGL2 is
+missing. The same engine runs on the `/bench/` page, side by side with the sprite, for tuning. The stone's side count is a
+parameter (6 to 12, six by default); see [logo-look.md](logo-look.md) for the visitor's setting.
 
 ## Why
 
@@ -11,9 +12,10 @@ stone in the browser from about 3.9 KB of compressed code and no image.
 
 ## How it works
 
-- `src/lib/gemCut.ts`: the stone as 49 flat facets (a convex polyhedron): table, six crown mains, six stars, twelve upper
-  girdle facets, six girdle sides, twelve lower girdle facets, six pavilion mains. It is hexagonal, with corners at the top
-  and bottom, and sits in its frame exactly where the sprite's stone does. Every angle can be tuned.
+- `src/lib/gemCut.ts`: the stone as 1 + 8n flat facets (a convex polyhedron) for n sides: table, n crown mains, n stars, 2n upper
+  girdle facets, n girdle sides, 2n lower girdle facets, n pavilion mains. With six sides that is 49 facets. n runs from 6
+  to 12 (`clampSides`). The outline has a corner at the top and bottom, and the stone sits in its frame exactly where the
+  sprite's stone does. Every angle can be tuned. The bezel (`src/lib/gemBezel.ts`), the glow outline and the logo follow n.
 - `src/lib/gemRenderer.ts`: a WebGL2 shader that ray-traces the stone for each pixel. It traces reflection off the crown
   (sparkle), refraction in at diamond's index (2.42), bounces inside with total internal reflection, and light leaking out
   at each face. Light leaving through the pavilion takes the colour of the inner orbit's orbs that sit under that part of
@@ -35,12 +37,12 @@ Panels: View; Inner orbit (radius, orb size, opacity range, pulse, colour cycle,
 over the gem, blend mode); Outer orbit; Live gem light and material; motion; cut; quality (bounces, fire, smooth edges,
 and a low preset for older phones); and 2D finishing. Each side reports its time per frame.
 
-## Switching the site over
+## Switching the site over (done; kept for the record)
 
 1. Tune on the bench, then copy the settings into the defaults: `DEFAULT_LIGHT` in `gemRenderer.ts`, `DEFAULT_CUT` in
    `gemCut.ts`, and the live finishing (at least `fieldAlpha`, about 0.25) where `NenyaLogo` renders `SpectralGem`.
 2. Set `GEM_ENGINE` to `'live'` in `src/lib/gemSprite.ts`. Startup then skips the sprite download where WebGL2 is
-   available (`src/lib/preload.ts`), and the glow traces a hexagon instead of the sprite's first frame.
+   available (`src/lib/preload.ts`), and the glow traces the stone's outline (a regular polygon with n sides) instead of the sprite's first frame.
 3. Before claiming a lower footprint, measure device energy on an older phone with the gem on screen, as in the footprint
    plan: the live gem trades 0.8 MB of download for some graphics work while it is visible (15 draws a second by default,
    paused when hidden, held still with reduced motion).
@@ -52,7 +54,7 @@ Still to decide: whether low-end devices should pick the low preset automaticall
 `src/lib/kaleidoscope.ts`. The inside of the stone slowly re-cuts itself, while the outline stays still in the bezel:
 - each facet angle drifts on its own slow wave, with unrelated lengths, so the pattern takes a long time to repeat;
 - the star facets and the pavilion turn steadily in opposite directions, which is what reads as a kaleidoscope. The cut
-  repeats every 60°, so the turn wraps without a jump.
+  repeats every 360/n degrees (60° for six sides, 45° for eight), so the turn wraps without a jump.
 
 It's tuned on `/bench/` (panel "Live gem: kaleidoscope": depth, slowest wave, turning). With reduced motion it holds still.
 Tests sample half an hour at full depth and confirm the stone never opens a gap.

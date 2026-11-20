@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 // The bezel is a vector drawing, made in the design bench: a double hexagon (gold, and a thinner cream one just
 // outside it) with a bevel. Its box is 1.12 times the stone's frame, so the outer line is not cut off.
 import bezelSvg from '../../assets/logo/bezel.svg';
+import bezelRaw from '../../assets/logo/bezel.svg?raw';
+import { bezelDataUri, bezelFor } from '../../lib/gemBezel';
+import { DEFAULT_GEM_SIDES, clampSides, stoneRadius } from '../../lib/gemCut';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { allColors, valarColors } from './ValarBreathingLogo';
 import { orbColour } from '../../lib/orbColours';
@@ -12,7 +15,7 @@ import { deviceProfile } from '../../lib/deviceProfile';
 import { HIGH_QUALITY, LOW_QUALITY, createGemRenderer, type GemLight, type GemQuality, type GemRenderer } from '../../lib/gemRenderer';
 import type { GemCut } from '../../lib/gemCut';
 import { KALEIDOSCOPE_PRESETS, breathDepth, breathPeriodS, kaleidoscopeCut, type KaleidoscopeLook } from '../../lib/kaleidoscope';
-import { DEFAULT_INNER_ORBIT } from '../../lib/orbitLook';
+import { DEFAULT_INNER_ORBIT, emergence, type InnerOrbitLook } from '../../lib/orbitLook';
 import { SITE_LIVE_FIELD_ALPHA, SITE_LIVE_GEM } from '../../lib/siteGem';
 import { useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook } from '../../lib/deviceMemory';
 
@@ -69,12 +72,18 @@ interface SpectralGemProps {
   contrast?: number;
   lift?: number;
   fieldAlpha?: number;
+  /** The stone's number of sides (6 to 12). The sprite is a hexagon, so where it has to stand in, the outline stays six-sided. */
+  sides?: number;
   /** Which gem to draw. The live one falls back to the sprite where it cannot run. */
   engine?: GemEngine;
   live?: LiveGemLook;
   /** The inner orbit's timing, so the gem's inner colour stays with the orbs when the orbit's options change. */
   orbitSeconds?: number;
   colorCycle?: number;
+  /** The inner ring's light look. In the 'light' style each colour the stone takes from below is scaled by how lit that light is. */
+  emerge?: Pick<InnerOrbitLook, 'style' | 'emergeSeconds' | 'emergeStep' | 'emergeDepth'>;
+  /** Hold the last drawn frame and draw no new ones (the page is pinch-zoomed: see src/lib/zoomLite.ts). */
+  paused?: boolean;
   onStats?: (s: GemStats) => void;
 }
 
@@ -119,15 +128,20 @@ export default function SpectralGem({
   lift = LIFT,
   fieldAlpha: fieldAlphaProp,
   engine = GEM_ENGINE,
+  sides: sidesProp = DEFAULT_GEM_SIDES,
   live = SITE_LIVE_GEM,
   orbitSeconds = DEFAULT_INNER_ORBIT.orbitSeconds,
   colorCycle = DEFAULT_INNER_ORBIT.colorCycle,
+  emerge = DEFAULT_INNER_ORBIT,
+  paused = false,
   onStats,
 }: SpectralGemProps) {
   const bodyRef = useRef<HTMLCanvasElement>(null);
   const lightRef = useRef<HTMLCanvasElement>(null);
   const mountTime = useRef(Date.now());
 
+  const sides = clampSides(sidesProp);
+  const bezelUrl = sides === 6 ? bezelSvg : bezelDataUri(bezelFor(bezelRaw, sides, stoneRadius(sides) / stoneRadius(6)));
   const petalsSide = size * 0.765;
   const gemSide = petalsSide * GEM_TO_PETALS;
 
@@ -156,6 +170,10 @@ export default function SpectralGem({
   const kaleido = useRef<{ t: number; last: number; started: boolean; restart: number | undefined }>({ t: 0, last: 0, started: false, restart: undefined });
   const statsRef = useRef(onStats);
   statsRef.current = onStats;
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
+  const emergeRef = useRef(emerge);
+  emergeRef.current = emerge;
   const timingRef = useRef({ orbitSeconds, colorCycle });
   timingRef.current = { orbitSeconds, colorCycle };
   // The orbit's phase is set once, when the logo mounts (NenyaLogo does not move it later), so the gem keeps the same anchor.
@@ -165,7 +183,7 @@ export default function SpectralGem({
   const autoQuality = !live?.quality;
   const startLow = autoQuality && (steppedDown || (typeof window !== 'undefined' && deviceProfile().gem.quality === 'low'));
   const quality: GemQuality = { ...(startLow ? LOW_QUALITY : HIGH_QUALITY), ...live?.quality };
-  const qualityKey = `${quality.bounces}|${quality.disperse}|${quality.supersample}`;
+  const qualityKey = `${quality.bounces}|${quality.disperse}|${quality.supersample}|${sides}`;
 
   useEffect(() => {
     const body = bodyRef.current;
@@ -188,7 +206,7 @@ export default function SpectralGem({
     let renderer: GemRenderer | null = null;
     let fallback: string | undefined;
     if (engine === 'live') {
-      renderer = createGemRenderer(px, quality);
+      renderer = createGemRenderer(px, quality, sides);
       if (!renderer) fallback = 'WebGL2 is not available here, or the shader did not build';
     }
     let spent = 0;
@@ -269,6 +287,7 @@ export default function SpectralGem({
     };
 
     const draw = (reduced: boolean) => {
+      if (pausedRef.current) return; // zoomed in: keep the frame on screen, spend nothing
       if (renderer && renderer.lost()) {
         // The browser took the graphics context away: carry on with the sprite.
         renderer = null;
@@ -290,7 +309,11 @@ export default function SpectralGem({
         renderer.render({
           turn: loops * 2 * Math.PI * (L?.spin ?? LIVE_SPIN),
           orbit: reduced ? 0 : (((orbitT / (oS > 0 ? oS : 120)) % 1) * 2 * Math.PI),
-          orbs: valarColors.map((v, j) => orbColour(v.vector, j, tSec, cS)),
+          orbs: valarColors.map((v, j) => {
+            const c = orbColour(v.vector, j, tSec, cS);
+            const e = emergeRef.current.style === 'light' ? emergence(j, tSec, emergeRef.current) : 1;
+            return e === 1 ? c : c.map((x: number) => x * e);
+          }),
           light: L?.light,
           cut: kaleidoscopeAt(reduced, L, c.p),
         });
@@ -419,7 +442,7 @@ export default function SpectralGem({
     <>
       <canvas ref={bodyRef} aria-hidden="true" style={{ ...place, zIndex: 30, opacity: (1 - clarity) * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
       <canvas ref={lightRef} aria-hidden="true" style={{ ...place, zIndex: 31, mixBlendMode: 'overlay', opacity: sparkle * (fadeStyle.opacity as number), transition: fadeStyle.transition }} />
-      <img src={bezelSvg} alt="" aria-hidden="true" draggable={false} style={{ ...place, width: gemSide * BEZEL_CANVAS, height: gemSide * BEZEL_CANVAS, zIndex: 29 }} />
+      <img src={bezelUrl} alt="" aria-hidden="true" draggable={false} style={{ ...place, width: gemSide * BEZEL_CANVAS, height: gemSide * BEZEL_CANVAS, zIndex: 29 }} />
     </>
   );
 }

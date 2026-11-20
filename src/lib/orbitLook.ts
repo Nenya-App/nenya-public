@@ -28,6 +28,16 @@ export interface InnerOrbitLook {
   layer: 'under' | 'over';
   /** How the ring blends with what is behind it. */
   blend: 'normal' | 'screen' | 'soft-light' | 'overlay' | 'plus-lighter';
+  /**
+   * 'orb' draws shaded spheres (the look the site has always had). 'light' draws soft light sources that well up from beneath the
+   * stone and fade back: no rim, no highlight, and they add together where they overlap.
+   */
+  style: 'orb' | 'light';
+  /** Light style: seconds for one light to rise and settle; each later light's is `emergeStep` longer, so they never move in step. */
+  emergeSeconds: number;
+  emergeStep: number;
+  /** Light style: how dim a light gets between risings, as a fraction of its full brightness (0 to 1). */
+  emergeDepth: number;
 }
 
 export const DEFAULT_INNER_ORBIT: InnerOrbitLook = {
@@ -47,6 +57,10 @@ export const DEFAULT_INNER_ORBIT: InnerOrbitLook = {
   rimDark: 0,
   layer: 'under',
   blend: 'normal',
+  style: 'orb',
+  emergeSeconds: 9,
+  emergeStep: 0.7,
+  emergeDepth: 0.12,
 };
 
 export interface OuterOrbitLook {
@@ -57,6 +71,16 @@ export interface OuterOrbitLook {
   orbSize: number;
   opacityLow: number;
   opacityHigh: number;
+  /**
+   * 'shared' is the one three-colour glow every orb has always had (heavy: three large blurs round every orb). 'own' gives each orb a soft
+   * halo in its own current colour; 'palette' fades that halo out into other colours from the orb's own palette; 'random' draws each orb's colours from every palette. Both are gradients, not
+   * blurs, and are coloured by the browser's own animation (no per-frame script), so they are light to animate and safe when the page is zoomed.
+   */
+  halo: 'shared' | 'own' | 'palette' | 'random';
+  /** A halo's width as a multiple of its orb's width. */
+  haloWidth: number;
+  /** Seeds the 'random' halo's colours. */
+  haloSeed: number;
 }
 
 export const DEFAULT_OUTER_ORBIT: OuterOrbitLook = {
@@ -65,4 +89,19 @@ export const DEFAULT_OUTER_ORBIT: OuterOrbitLook = {
   orbSize: 0.053,
   opacityLow: 0.64,
   opacityHigh: 0.87,
+  halo: 'own',
+  haloWidth: 5,
+  haloSeed: 1,
 };
+
+/**
+ * How lit the inner light number `index` is at `tSec`, from `emergeDepth` (dimmest) to 1 (full): a smooth rise and settle over its own
+ * period (`emergeSeconds` plus `emergeStep` for each later light), so the ring is never lit in step. Orbs ('orb' style) are always 1.
+ * The gem multiplies each light's colour by this, so the stone brightens where a light is rising.
+ */
+export function emergence(index: number, tSec: number, look: Pick<InnerOrbitLook, 'style' | 'emergeSeconds' | 'emergeStep' | 'emergeDepth'>): number {
+  if (look.style !== 'light') return 1;
+  const period = Math.max(1, look.emergeSeconds + index * look.emergeStep);
+  const depth = Math.min(1, Math.max(0, look.emergeDepth));
+  return depth + (1 - depth) * (0.5 - 0.5 * Math.cos((2 * Math.PI * tSec) / period));
+}

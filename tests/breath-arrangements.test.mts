@@ -25,7 +25,7 @@ const PENTATONIC_D = new Set([2, 4, 6, 9, 11]); // D E F# A B as pitch classes
 const inD = (f: number) => PENTATONIC_D.has(((midiOf(f) % 12) + 12) % 12);
 
 // ---- the list of styles
-ok('there are four styles: harp, bowls, chord and the original scale; harp is the default', A.ARRANGEMENTS.map((a) => a.id).join() === 'harp,bowls,chord,scale' && A.DEFAULT_ARRANGEMENT === 'harp');
+ok('there are four styles: harp, bowls, chord and the original scale; bowls is the default (owner, 2026-11-20)', A.ARRANGEMENTS.map((a) => a.id).join() === 'harp,bowls,chord,scale' && A.DEFAULT_ARRANGEMENT === 'bowls');
 ok('every style has a plain description for the panel', A.ARRANGEMENTS.every((a) => a.label.length > 2 && a.description.length > 30));
 ok('only the harp has a drone under it', A.ARRANGEMENTS.filter((a) => a.drone).map((a) => a.id).join() === 'harp');
 ok('anything that is not a style is refused', A.isArrangement('harp') && A.isArrangement('scale') && !A.isArrangement('organ') && !A.isArrangement(null));
@@ -81,7 +81,7 @@ ok('chord: a very soft tick for every count, so counts can still be counted', cT
 ok('chord: with a long inhale the chord stops at six voices and the other counts are ticks', A.arrangementEvents('chord', sec(8, 0, 8, 0)).filter((e) => e.timbre === 'pad').length === 6);
 
 // ---- the setting
-ok('the style defaults to harp', dm.getBreathingSound() === 'harp');
+ok('the style defaults to the bowls', dm.getBreathingSound() === 'bowls');
 dm.setBreathingSound('bowls');
 ok('choosing one is shared in memory and is not written to the device unless remembering', dm.getBreathingSound() === 'bowls' && !('nenya.prefs' in store));
 dm.setRemembering(true); dm.setBreathingSound('chord');
@@ -90,7 +90,7 @@ store['nenya.prefs'] = JSON.stringify({ breathingSound: 'organ' });
 ok('a value that is not a style is ignored', dm.loadPrefs().breathingSound === undefined);
 store['nenya.prefs'] = JSON.stringify({ breathingSound: 'scale' });
 dm.wipeDevice({ keepOwner: true }); dm.__resetBreathingTonesForTests();
-ok('"Forget me" erases it, back to harp', !('nenya.prefs' in store) && dm.getBreathingSound() === 'harp');
+ok('"Forget me" erases it, back to the bowls', !('nenya.prefs' in store) && dm.getBreathingSound() === 'bowls');
 
 // ---- in the page
 const sw = src('src/app/components/BreathTonesSwitch.tsx');
@@ -101,3 +101,24 @@ ok('switching the tones on plays a taste of the chosen style', /playPreview\(get
 ok('the player is given the chosen style and reads it on every tick', /arrangement/.test(sw) && /createPlanner\(\)/.test(eng) && /plan\(now, state\(\)\)/.test(eng));
 ok('the drone starts only for a style that has one, and fades out when the tones stop', /wantsDrone/.test(eng) && /drone\?\.\(\)/.test(eng));
 ok('sound is created only from a click, never at load', /ctx \?\?= new Ctor\(\)/.test(eng) && !/^new AudioContext/m.test(eng));
+
+// ---- the steady six count pace (the default): six counts are six different notes, never a repeat
+const six = A.arrangementEvents('harp', sec(6, 0, 6, 0)).filter((e) => e.kind === 'inhale' || e.kind === 'exhale');
+const sixIn = six.filter((e) => e.kind === 'inhale').map((e) => e.freq);
+const sixOut = six.filter((e) => e.kind === 'exhale').map((e) => e.freq);
+ok('harp, six counts: six different notes climbing, with no note repeated', sixIn.length === 6 && new Set(sixIn).size === 6 && sixIn.every((f, i) => i === 0 || f > sixIn[i - 1]));
+ok('harp, six counts: six different notes falling, landing on the home note', sixOut.length === 6 && new Set(sixOut).size === 6 && sixOut.every((f, i) => i === 0 || f < sixOut[i - 1]) && sixOut[5] === A.HARP_HOME);
+ok('harp, six counts: the climb starts on the home note', sixIn[0] === A.HARP_HOME);
+for (const [ih, ex] of [[3, 3], [4, 4], [5, 5], [4, 6], [6, 6]]) {
+  const e2 = A.arrangementEvents('harp', sec(ih, 0, ex, 0));
+  const up = e2.filter((e) => e.kind === 'inhale').map((e) => e.freq);
+  ok(`harp, ${ih} in ${ex} out: no note repeats on the way up`, new Set(up).size === up.length);
+}
+
+ok('harp: the exhale starts on the note the inhale ended on, for the six count pace and a four-in six-out pace', [[6, 6], [4, 6], [5, 5], [3, 3]].every(([ih, ex]) => { const e = A.arrangementEvents('harp', sec(ih, 0, ex, 0)); const i = e.filter((x) => x.kind === 'inhale'); const o = e.filter((x) => x.kind === 'exhale'); return i[i.length - 1].freq === o[0].freq; }));
+
+// ---- the ceiling: no pitched note goes above D5 in any style (the top note was too high)
+const D5 = A.HARP_OPEN;
+const PACES = [sec(3, 0, 3, 0), sec(4, 0, 6, 0), sec(4, 0, 8, 0), sec(5, 0, 5, 0), sec(6, 0, 6, 0), sec(4, 4, 4, 4), sec(4, 7, 8, 0), sec(12, 0, 12, 0)];
+ok('no pitched note in any style goes above D5 (587 Hz); only the near-silent ticks are higher', ['harp', 'bowls', 'chord', 'scale'].every((s) => PACES.every((p) => A.arrangementEvents(s as never, p).filter((e) => e.timbre !== 'tick').every((e) => e.freq <= D5 + 0.01))));
+ok('D5 is 587 Hz, and the harp and scale share the same six notes', Math.abs(D5 - 587.33) < 0.01 && A.HARP_LADDER.length === 6 && A.HARP_LADDER.join() === A.SCALE_LADDER.join());

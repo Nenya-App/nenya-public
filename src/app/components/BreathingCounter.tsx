@@ -76,8 +76,10 @@ export function BreathingCounter({
       whileDrag={{ scale: 1.03, boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
       style={{
         position: 'fixed',
-        top: 'calc(8.5rem + env(safe-area-inset-top))',
-        right: '1rem',
+        // Bottom left by default: the top right sat under the header over the page, bottom right is the quick-navigation
+        // buttons and bottom centre is the scroll cue. It can still be dragged anywhere.
+        bottom: 'calc(1rem + env(safe-area-inset-bottom))',
+        left: '1rem',
         zIndex: 39,
         background: 'rgba(13,19,33,0.92)',
         border: '1px solid rgba(232,160,32,0.35)',
