@@ -11,7 +11,7 @@
 // All of this is a few kilobytes of code. createGemRenderer returns null where WebGL2 is missing or the shader fails,
 // and the caller falls back to the sprite.
 
-import { FRAME_HALF, PLANE_COUNT, gemPlanes, type GemCut } from './gemCut.ts';
+import { DEFAULT_GEM_SIDES, apothem, clampSides, frameHalf, gemPlanes, planeCount, sideStart, type GemCut } from './gemCut.ts';
 
 /** Everything that can be tuned without recompiling the shader. */
 export interface GemLight {
@@ -100,11 +100,13 @@ in vec2 aPos;
 out vec2 vUv;
 void main() { vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
 
-export function fragmentSource(q: GemQuality): string {
+export function fragmentSource(q: GemQuality, sides: number = DEFAULT_GEM_SIDES): string {
+  const n = clampSides(sides);
   const bounces = Math.max(1, Math.min(8, Math.round(q.bounces)));
   return `#version 300 es
 precision highp float;
-#define NP ${PLANE_COUNT}
+#define NP ${planeCount(n)}
+#define SIDES ${n}
 #define BOUNCES ${bounces}
 #define DISPERSE ${q.disperse ? 1 : 0}
 #define SS ${q.supersample ? 1 : 0}
@@ -195,7 +197,7 @@ vec3 trace(vec3 o, vec3 d, float ior) {
 vec3 shade(vec2 q) {
   vec3 o = vec3(q, 5.0), d = vec3(0.0, 0.0, -1.0);
   if (uPersp > 0.0) {
-    // A viewer at a finite distance: aim at the point q on the girdle's plane (so the outline stays the hexagon), start above the stone.
+    // A viewer at a finite distance: aim at the point q on the girdle's plane (so the outline stays the polygon), start above the stone.
     vec3 eye = vec3(0.0, 0.0, uPersp), target = vec3(q, 0.0);
     d = normalize(target - eye);
     o = target - d * 3.0;
@@ -208,12 +210,12 @@ vec3 shade(vec2 q) {
 }
 
 void main() {
-  vec2 q = (vUv * 2.0 - 1.0) * ${FRAME_HALF.toFixed(6)};
-  // The outline: the girdle hexagon (sides facing left and right), antialiased over one pixel.
+  vec2 q = (vUv * 2.0 - 1.0) * ${frameHalf(n).toFixed(6)};
+  // The outline: the girdle polygon (a corner at the top; for six sides, the sides face left and right), antialiased over one pixel.
   float edge = -1e9;
-  for (int k = 0; k < 6; k++) {
-    float a = float(k) * TAU / 6.0;
-    edge = max(edge, dot(q, vec2(cos(a), sin(a))) - 0.8660254);
+  for (int k = 0; k < SIDES; k++) {
+    float a = ${(sideStart(n) * Math.PI / 180).toFixed(7)} + float(k) * TAU / float(SIDES);
+    edge = max(edge, dot(q, vec2(cos(a), sin(a))) - ${apothem(n).toFixed(7)});
   }
   float alpha = clamp(0.5 - edge / uPx, 0.0, 1.0);
   if (alpha <= 0.0) { outColor = vec4(0.0); return; }
@@ -247,7 +249,8 @@ export function liveGemSupported(): boolean {
 }
 
 /** Null when WebGL2 is unavailable or the shader fails to build: the caller falls back to the sprite. */
-export function createGemRenderer(px: number, quality: GemQuality = HIGH_QUALITY): GemRenderer | null {
+export function createGemRenderer(px: number, quality: GemQuality = HIGH_QUALITY, sides: number = DEFAULT_GEM_SIDES): GemRenderer | null {
+  const n = clampSides(sides);
   if (typeof document === 'undefined') return null;
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = Math.max(8, Math.round(px));
@@ -277,7 +280,7 @@ export function createGemRenderer(px: number, quality: GemQuality = HIGH_QUALITY
     return s;
   };
   const vs = shader(g.VERTEX_SHADER, VERT);
-  const fs = shader(g.FRAGMENT_SHADER, fragmentSource(quality));
+  const fs = shader(g.FRAGMENT_SHADER, fragmentSource(quality, n));
   if (!vs || !fs) return null;
   const prog = g.createProgram();
   if (!prog) return null;
@@ -302,7 +305,7 @@ export function createGemRenderer(px: number, quality: GemQuality = HIGH_QUALITY
     lights: u('uLights'), lightGain: u('uLightGain'), lightPow: u('uLightPow'), sky: u('uSky'), exposure: u('uExposure'),
     sat: u('uSat'), elev: u('uElev'), head: u('uHead'), below: u('uBelow'),
   };
-  g.uniform1f(U.px, (2 * FRAME_HALF) / canvas.width);
+  g.uniform1f(U.px, (2 * frameHalf(n)) / canvas.width);
 
   let cutKey = '';
   const orbBuf = new Float32Array(48);
@@ -315,9 +318,10 @@ export function createGemRenderer(px: number, quality: GemQuality = HIGH_QUALITY
       if (isLost) return;
       const L = { ...DEFAULT_LIGHT, ...frame.light };
       const key = JSON.stringify(frame.cut ?? {});
+      // The shader was built for `n` sides; the cut can never change that.
       if (key !== cutKey) {
         cutKey = key;
-        g.uniform4fv(U.planes, gemPlanes(frame.cut));
+        g.uniform4fv(U.planes, gemPlanes({ ...frame.cut, sides: n }));
       }
       for (let i = 0; i < 16; i++) {
         const c = frame.orbs[i % Math.max(1, frame.orbs.length)] ?? [255, 255, 255];
