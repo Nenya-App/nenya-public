@@ -22,6 +22,8 @@ interface MallornLeavesProps {
   breathingEnabled?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  /** 'gold' (default): every leaf gold with silver-white veins. 'alternate': odd-numbered leaves silver with gold veins and edge. */
+  tones?: 'gold' | 'alternate';
   /** How many leaves. The logo's layout is six; eight also draws cleanly. */
   count?: number;
   /** The leaves to draw, so a later menu can pass its own (overrides `count`). */
@@ -42,7 +44,7 @@ export function useLeafPreset(force?: LeafPreset): LeafPreset {
   return force ?? preset;
 }
 
-export default function MallornLeaves({ size, cycleStart, technique = null, preset: forced, breathingEnabled = true, className, style, count = 6, leaves: given }: MallornLeavesProps) {
+export default function MallornLeaves({ size, cycleStart, technique = null, preset: forced, breathingEnabled = true, className, style, count = 6, tones = 'gold', leaves: given }: MallornLeavesProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const chosen = useLeafPreset(forced);
   const preset: LeafPreset = breathingEnabled ? chosen : 'none';
@@ -54,7 +56,7 @@ export default function MallornLeaves({ size, cycleStart, technique = null, pres
     setElapsed(cycleStart == null ? 0 : Date.now() - cycleStart);
   }, [cycleStart, breathMs]);
 
-  const leaves = useMemo(() => given ?? leafRing(count), [given, count]);
+  const leaves = useMemo(() => given ?? leafRing(count, tones), [given, count, tones]);
   const shapes = useMemo(() => leaves.map((s) => ({ spec: s, geo: leafGeometry(s) })), [leaves]);
   const css = useMemo(() => leafMotionCss(preset, technique), [preset, technique]);
   const id = (n: string) => `${n}${uid}`;
@@ -75,6 +77,12 @@ export default function MallornLeaves({ size, cycleStart, technique = null, pres
           <stop offset="0.5" stopColor="#ffffff" stopOpacity="0.42" />
           <stop offset="1" stopColor="#ffffff" stopOpacity="0.12" />
         </linearGradient>
+        {/* Gold for lines on a silver leaf: the same golds, kept to the darker and mid stops so they read on silver. */}
+        <linearGradient id={id('goldLine')} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-310">
+          <stop offset="0" stopColor="#b8803f" />
+          <stop offset="0.5" stopColor="#fcce96" />
+          <stop offset="1" stopColor="#b8803f" />
+        </linearGradient>
         <linearGradient id={id('silver')} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-310">
           <stop offset="0" stopColor="#b9b09f" />
           <stop offset="0.4" stopColor="#f2ead9" />
@@ -83,22 +91,25 @@ export default function MallornLeaves({ size, cycleStart, technique = null, pres
       </defs>
       {shapes.map(({ spec, geo }, i) => {
         const a = leafAnimationStyles(preset, i, technique, breathMs, elapsed);
+        const silver = spec.tone === 'silver';
+        const blade = `url(#${id(silver ? 'silver' : 'gold')})`; // the leaf
+        const line = `url(#${id(silver ? 'goldLine' : 'silver')})`; // its veins and edge, the other metal
         return (
-          <g key={spec.id} id={spec.id} data-leaf={spec.id} transform={leafTransform(spec)}>
+          <g key={spec.id} id={spec.id} data-leaf={spec.id} data-tone={spec.tone} transform={leafTransform(spec)}>
             <g>
               <g className="lm-open" style={a.open as React.CSSProperties}>
                 {/* Edge shadow (the old dark bronze, low opacity) under the blade. */}
                 <path d={geo.blade} fill="none" stroke="#3a2616" strokeOpacity="0.32" strokeWidth="5" strokeLinejoin="round" />
-                <path d={geo.blade} fill={`url(#${id('gold')})`} />
+                <path d={geo.blade} fill={blade} />
                 <path d={geo.litHalf} fill={`url(#${id('lit')})`} />
                 {/* Silver-white veins over the gold, with a dark hairline under them so they stay visible on the light gold. */}
                 <g fill="none" strokeLinecap="round">
                   <path d={geo.midrib} stroke="#3a2616" strokeOpacity="0.3" strokeWidth="4.6" />
                   {geo.veins.map((d, k) => <path key={`s${k}`} d={d} stroke="#3a2616" strokeOpacity="0.22" strokeWidth="3.2" />)}
-                  <path d={geo.midrib} stroke={`url(#${id('silver')})`} strokeWidth="3" />
-                  {geo.veins.map((d, k) => <path key={k} d={d} stroke={`url(#${id('silver')})`} strokeWidth="1.8" />)}
+                  <path d={geo.midrib} stroke={line} strokeWidth="3" />
+                  {geo.veins.map((d, k) => <path key={k} d={d} stroke={line} strokeWidth="1.8" />)}
                 </g>
-                <path d={geo.blade} fill="none" stroke={`url(#${id('silver')})`} strokeWidth="1.6" strokeLinejoin="round" strokeOpacity="0.9" />
+                <path d={geo.blade} fill="none" stroke={line} strokeWidth="1.6" strokeLinejoin="round" strokeOpacity="0.9" />
                 <path className="lm-glint" d={geo.sheen} fill="#ffffff" fillOpacity="0.55" style={a.glint as React.CSSProperties} />
               </g>
             </g>

@@ -5,6 +5,7 @@ import { breathFractions, breathEnvelope } from '../src/lib/breathClock.ts';
 import { ok } from './helpers.mts';
 
 const PATH = /^M[MCLQZ0-9.,\s-]+Z?$/;
+import { readFileSync } from 'node:fs';
 const nums = (d: string) => (d.match(/-?\d+\.\d+/g) ?? []).map(Number);
 const geos = LEAF_SET.map((s) => leafGeometry(s));
 
@@ -50,7 +51,7 @@ ok('breath swells more along the leaf than across it', Number(style('full').open
 
 // The leaf count is a parameter: six is the default, eight draws cleanly, nothing is hard-coded to six.
 ok('default ring is six and equals leafRing(6)', LEAF_SET.length === 6 && JSON.stringify(leafRing()) === JSON.stringify(LEAF_SET));
-for (const n of [6, 8]) {
+for (const n of [6, 8, 12]) {
   const ring = leafRing(n);
   const g = ring.map((s) => leafGeometry(s));
   ok(`ring of ${n}: ${n} unique ids, blades, and placements`, ring.length === n && new Set(ring.map((s) => s.id)).size === n && new Set(g.map((x) => x.blade)).size === n && new Set(ring.map(leafTransform)).size === n);
@@ -62,3 +63,14 @@ for (const n of [6, 8]) {
   ok(`ring of ${n}: widest blade fits its slot at mid-length`, ring.every((s) => s.width < 2 * Math.PI * (s.root + s.length * 0.38) / n));
   ok(`ring of ${n}: silhouette has ${n} blades`, (leafSilhouetteSvg(n).match(/<path /g) ?? []).length === n);
 }
+
+// Tones.
+const alt = leafRing(12, 'alternate');
+ok('default tone is gold for every leaf (the logo is unchanged)', leafRing().every((s) => s.tone === 'gold') && LEAF_SET.every((s) => s.tone === 'gold') && leafRing(12).every((s) => s.tone === 'gold'));
+ok("'alternate' alternates: odd-numbered leaves silver, even-numbered gold", alt.every((s, i) => s.tone === ((i + 1) % 2 === 1 ? 'silver' : 'gold')) && alt.filter((s) => s.tone === 'silver').length === 6);
+ok('tone changes colour only: the shapes and placements are the same', JSON.stringify(alt.map(({ tone, ...r }) => r)) === JSON.stringify(leafRing(12).map(({ tone, ...r }) => r)));
+ok('silhouette is unchanged by tone', leafSilhouetteSvg(12) === leafSilhouetteSvg(12));
+const src = readFileSync(new URL('../src/app/components/MallornLeaves.tsx', import.meta.url), 'utf8');
+ok('component defaults to gold tones and keeps six leaves', /tones = 'gold'/.test(src) && /count = 6/.test(src));
+ok('silver leaves get a silver blade and gold lines; the bronze hairline stays under the veins', src.includes("id(silver ? 'silver' : 'gold')") && src.includes("id(silver ? 'goldLine' : 'silver')") && (src.match(/stroke="#3a2616"/g) ?? []).length >= 3);
+ok('none preset still has no animation with alternate tones', leafMotionCss('none', tech) === '' && alt.every((_, i) => Object.keys(leafAnimationStyles('none', i, tech, 12000, 5000).open).length === 0));

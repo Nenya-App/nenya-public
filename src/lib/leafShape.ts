@@ -124,8 +124,12 @@ export function leafGeometry(input: LeafParams): LeafGeometry {
 }
 
 /** One leaf of the ring: its shape, and where it sits. */
+export type LeafTone = 'gold' | 'silver';
+
 export interface LeafSpec extends LeafParams {
   id: string;
+  /** gold: gold blade, silver-white veins and edge. silver: silver blade, gold veins and edge. */
+  tone: LeafTone;
   /** Degrees clockwise from straight up. */
   angle: number;
   /** Distance of the leaf's base from the centre, in drawing units. */
@@ -133,7 +137,7 @@ export interface LeafSpec extends LeafParams {
 }
 
 /** The base family: six leaves, none alike. The ring cycles through these for any leaf count. */
-const FAMILY: ReadonlyArray<Omit<LeafSpec, 'id' | 'angle'> & { skew: number }> = [
+const FAMILY: ReadonlyArray<Omit<LeafSpec, 'id' | 'angle' | 'tone'> & { skew: number }> = [
   { skew: 0, root: 58, length: 306, width: 104, tipSharpness: 0.55, curve: 0.07, veins: 4 },
   { skew: 1.5, root: 60, length: 296, width: 110, tipSharpness: 0.4, curve: 0.09, veins: 5 },
   { skew: -1, root: 58, length: 312, width: 98, tipSharpness: 0.7, curve: 0.06, veins: 3 },
@@ -147,8 +151,9 @@ const FAMILY: ReadonlyArray<Omit<LeafSpec, 'id' | 'angle'> & { skew: number }> =
  * cleanly too (narrower blades, so neighbours do not touch). Leaves share a family likeness (long, pointed, bending the
  * same way round the ring, as a flower turns) but no two are alike: each differs in length, width, tip, bend and number
  * of veins, and sits a little off its exact angle, so they can be told apart without any motion. Ids are leaf-1, leaf-2, ...
+ * Tones: all gold by default; 'alternate' makes the odd-numbered leaves (leaf-1, leaf-3, ...) silver and the even ones gold.
  */
-export function leafRing(count = 6): LeafSpec[] {
+export function leafRing(count = 6, tones: 'gold' | 'alternate' = 'gold'): LeafSpec[] {
   const n = Math.max(1, Math.min(12, Math.round(Number.isFinite(count) ? count : 6)));
   const fit = Math.min(1, 6.6 / n); // blade width scale so a fuller ring keeps its gaps
   return Array.from({ length: n }, (_, i) => {
@@ -156,6 +161,7 @@ export function leafRing(count = 6): LeafSpec[] {
     const round = Math.floor(i / FAMILY.length); // a second time through the family gets a different length and vein count
     return {
       id: `leaf-${i + 1}`,
+      tone: tones === 'alternate' && i % 2 === 0 ? 'silver' : 'gold',
       angle: Math.round(((i * 360) / n + f.skew) * 100) / 100,
       root: f.root,
       length: f.length + round * 9,
