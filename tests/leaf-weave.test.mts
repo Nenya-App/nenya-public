@@ -26,7 +26,7 @@ ok('geometry is from the approved blend (root 30, length 340, sharpness 0.5, cur
 
 // The drawing component (read as source: it is TSX).
 const src = readFileSync(new URL('../src/app/components/MallornLeaves.tsx', import.meta.url), 'utf8');
-ok('component: eight leaves, alternating tones and the midrib are the defaults', /count = LOGO_LEAF_COUNT/.test(src) && /tones = 'alternate'/.test(src) && /midrib = true/.test(src));
+ok('component: eight leaves and alternating tones are the defaults; the midrib is off by default (owner, 2026-11-20)', /count = LOGO_LEAF_COUNT/.test(src) && /tones = 'alternate'/.test(src) && /midrib = false/.test(src));
 ok("component: 'classic' is the other tone option", /'alternate' \| 'classic'/.test(src));
 ok('component: the original finish is reused (gold and cream gradients, both lighting filters, round joins, 8.2 / 5.2 strokes)', ['gGold', 'gCream', 'fGold', 'fCream', 'rFill', 'feSpecularLighting', 'feDiffuseLighting'].every((t) => src.includes(t)) && /strokeLinejoin: 'round'/.test(src));
 ok('component: tone alternation puts silver outside on odd (0-based) leaves, gold on even', /tones === 'alternate' && i % 2 === 1/.test(src));

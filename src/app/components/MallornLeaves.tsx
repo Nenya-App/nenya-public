@@ -24,7 +24,7 @@ interface MallornLeavesProps {
   tones?: 'alternate' | 'classic';
   /** Leaves in the ring. The logo's layout is eight (LOGO_LEAF_COUNT); 6 and 12 also draw cleanly. */
   count?: number;
-  /** A hairline midrib on each leaf. On by default. */
+  /** A hairline midrib on each leaf. Off by default (the owner removed it, 2026-11-20). */
   midrib?: boolean;
   className?: string;
   style?: React.CSSProperties;
@@ -64,7 +64,7 @@ function MetalFilter({ id }: { id: string }) {
   );
 }
 
-export default function MallornLeaves({ size, cycleStart, technique = null, preset: forced, breathingEnabled = true, tones = 'alternate', count = LOGO_LEAF_COUNT, midrib = true, className, style }: MallornLeavesProps) {
+export default function MallornLeaves({ size, cycleStart, technique = null, preset: forced, breathingEnabled = true, tones = 'alternate', count = LOGO_LEAF_COUNT, midrib = false, className, style }: MallornLeavesProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const chosen = useLeafPreset(forced);
   const preset: LeafPreset = breathingEnabled ? chosen : 'none';
