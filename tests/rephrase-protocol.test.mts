@@ -64,6 +64,6 @@ ok('markMap lets a later mark override and marksFromMap gives one mark per word 
 const sizes = cases.map(([k, b]) => encode(k, b as never).length);
 ok('every message is padded to one of the fixed sizes', sizes.every((n) => (PAD_SIZES as readonly number[]).includes(n)), sizes.join());
 ok('short and long phrases of different lengths give the same size', encode('rp-phrase', { round, tok: TOKENIZER, phrase: 'a b c' }).length === encode('rp-phrase', { round, tok: TOKENIZER, phrase: 'word '.repeat(40).trim() }).length);
-ok('a longer one steps up to the next size', encode('rp-phrase', { round, tok: TOKENIZER, phrase: 'w '.repeat(300).trim() }).length === 1024);
+ok('a longer one steps up to the next size', encode('rp-phrase', { round, tok: TOKENIZER, phrase: 'word '.repeat(150).trim() }).length === 1024);
 ok('padding is ignored on reading and never exceeds the report limit', JSON.stringify(decode('rp-answer', encode('rp-answer', { round, answer: 'yes' }))) === JSON.stringify({ round, answer: 'yes' }) && encode('rp-meant', big).length <= MAX_TOTAL);
 ok('the filler is plain letters and holds nothing', /"pad":"x+"/.test(encode('rp-ask', { round, tok: TOKENIZER })));
