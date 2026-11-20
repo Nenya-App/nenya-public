@@ -71,6 +71,7 @@ if the model changes.
 | `build-learning-cards.mts` | Builds `src/lib/learningCardsData.ts` from approved card files | Private card folder |
 | `build-draft-cards.mts` | Collects draft cards for testing on a dev site only | Private card folder |
 | `build-module-set.mts` | Builds the coach's private module set (store key `modules`) | Private drafts |
+| `check-web-set.mts` | Checks a private module set that carries the connection web's joined modules and question kinds (sizes, framework words, cap); writes nothing | Private drafts |
 
 ## Documents and brand
 

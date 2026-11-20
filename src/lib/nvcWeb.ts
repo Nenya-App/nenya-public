@@ -224,3 +224,40 @@ export function pageView(s: WebSuggestion): { cards: string[]; openFamilies: str
 export function notesIds(s: WebSuggestion): string[] {
   return [...s.joins.map((j) => j.id), ...(s.question ? [s.question.id] : [])];
 }
+
+// ------------------------------------------------------------ checking a private module set that carries the web's modules (the wording stays outside the repository)
+/** Words that belong to the framework, not to the person. A joined or question module that uses one is not ready: the coach never names a lens. */
+export const FRAMEWORK_LABELS = ['icarus', 'volt', 'bottleneck', 'lens', 'legitimacy', 'recursion', 'torque', 'omega', 'theorem', 'flourishing', 'scale-coupling', 'reserves'];
+export const JOIN_MIN = 300;
+export const JOIN_MAX = 700;
+export const QUESTION_MAX = 300;
+
+/**
+ * What is wrong with a private set (core, modules) as far as the web is concerned: a joined module or question kind without text, text outside the length
+ * the notes can afford, a framework label in what the model is told to say, or a worst case over the cap (core, the three longest existing modules, one join, one question).
+ */
+export function webSetProblems(set: { core: string; modules: Record<string, string> }, cap = 12000): string[] {
+  const p: string[] = [];
+  for (const id of JOIN_IDS) {
+    const t = set.modules[id];
+    if (!t) { p.push(`missing text: ${id}`); continue; }
+    if (t.length < JOIN_MIN || t.length > JOIN_MAX) p.push(`${id} is ${t.length} characters (${JOIN_MIN} to ${JOIN_MAX})`);
+  }
+  for (const id of QUESTION_IDS) {
+    const t = set.modules[id];
+    if (!t) { p.push(`missing text: ${id}`); continue; }
+    if (t.length > QUESTION_MAX) p.push(`${id} is ${t.length} characters (up to ${QUESTION_MAX})`);
+    if ((t.match(/\?/g) ?? []).length > 2) p.push(`${id} carries more than its one question`);
+  }
+  for (const id of [...JOIN_IDS, ...QUESTION_IDS]) {
+    const t = (set.modules[id] ?? '').toLowerCase();
+    for (const w of FRAMEWORK_LABELS) if (new RegExp(`\\b${w}\\b`).test(t)) p.push(`${id} uses the framework word "${w}"`);
+  }
+  const webIds = new Set<string>([...JOIN_IDS, ...QUESTION_IDS]);
+  const lens = Object.entries(set.modules).filter(([id]) => !webIds.has(id)).map(([, t]) => t.length).sort((a, b) => b - a).slice(0, 3);
+  const longest = (ids: readonly string[]): number => Math.max(0, ...ids.map((i) => set.modules[i]?.length ?? 0));
+  const worst = set.core.length + lens.reduce((a, n) => a + n + 2, 0) + longest(JOIN_IDS) + 2 + longest(QUESTION_IDS) + 2;
+  if (worst > cap) p.push(`worst case ${worst} characters exceeds the ${cap} cap`);
+  for (const id of Object.keys(set.modules)) if (!MODULE_IDS.includes(id) && !webIds.has(id)) p.push(`unknown module id ${id}`);
+  return p;
+}

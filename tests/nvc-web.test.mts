@@ -155,3 +155,18 @@ ok('the unknown-input paths are safe: empty input, unknown ids, junk', (() => {
   const a = suggest([], []); const b = suggest(['c.not_real', 'x'], ['not_a_lens', 'c.observation']); const c = suggestFromText([]);
   return !a.silent && idsOf(a).length === 0 && idsOf(b).length === 0 && !c.silent && idsOf(c).length === 0;
 })());
+
+// ---- checking a private set that carries the web's modules (made-up text: the real wording is private)
+import { QUESTION_MAX, JOIN_MAX, webSetProblems } from '../src/lib/nvcWeb.ts';
+const fake = (join = 'x'.repeat(400), q = 'Ask once, plainly? Wait.'): { core: string; modules: Record<string, string> } => ({
+  core: 'c'.repeat(3500),
+  modules: { ...Object.fromEntries(MODULE_IDS.map((i) => [i, 'm'.repeat(800)])), ...Object.fromEntries(JOIN_IDS.map((i) => [i, join])), ...Object.fromEntries(QUESTION_IDS.map((i) => [i, q])) },
+});
+ok('a complete made-up set with the web modules has no problems', webSetProblems(fake()).length === 0, webSetProblems(fake()).join('; '));
+ok('a joined module with no text is reported', webSetProblems({ ...fake(), modules: Object.fromEntries(Object.entries(fake().modules).filter(([k]) => k !== 'web_what_still_works')) }).some((p) => p.includes('missing text: web_what_still_works')));
+ok('a joined module that is too short or too long is reported', webSetProblems(fake('x'.repeat(100))).some((p) => p.includes('characters (300 to')) && webSetProblems(fake('x'.repeat(JOIN_MAX + 1))).length > 0);
+ok('a question over its length is reported', webSetProblems(fake(undefined, 'q'.repeat(QUESTION_MAX + 1))).some((p) => p.includes('up to')));
+ok('a question that carries two questions is reported', webSetProblems(fake(undefined, 'One? Two? Three?')).some((p) => p.includes('more than its one question')));
+ok('a framework word in a joined module is reported', webSetProblems(fake('Listen for the bottleneck in what they say. '.repeat(10))).some((p) => p.includes('"bottleneck"')));
+ok('a worst case over the cap is reported', webSetProblems({ ...fake(), core: 'c'.repeat(12000) }).some((p) => p.includes('exceeds')));
+ok('an unknown module id is reported', webSetProblems({ ...fake(), modules: { ...fake().modules, invented_one: 'x' } }).some((p) => p.includes('unknown module id invented_one')));
