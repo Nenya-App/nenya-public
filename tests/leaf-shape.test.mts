@@ -33,17 +33,20 @@ ok('preset: no window means none', chooseLeafPreset(readLeafCapability(undefined
 
 const tech = { ih: 4000, hi: 2000, ex: 6000, ho: 0 };
 const style = (p: 'full' | 'low' | 'none', i = 0) => leafAnimationStyles(p, i, tech, 12000, 5000);
-ok('none: no css and no animation on any part', leafMotionCss('none', tech) === '' && [0, 1, 2, 3, 4, 5].every((i) => Object.keys(style('none', i).open).length + Object.keys(style('none', i).glint).length + Object.keys(style('none', i).sway).length === 0));
-ok('low: breath animation only, no sway', !!style('low').open.animation && !!style('low').glint.animation && Object.keys(style('low').sway).length === 0 && !leafMotionCss('low', tech).includes('@keyframes lm-sway'));
-ok('full: breath and sway', !!style('full').open.animation && !!style('full').sway.animation && leafMotionCss('full', tech).includes('@keyframes lm-sway'));
+ok('none: no css and no animation on any part', leafMotionCss('none', tech) === '' && [0, 1, 2, 3, 4, 5].every((i) => Object.keys(style('none', i).open).length + Object.keys(style('none', i).glint).length === 0));
+const sp = (p: 'full' | 'low', i: number) => Math.abs(parseFloat(String(style(p, i).open['--lm-spread'])));
+ok('low: the same breath, smaller', !!style('low').open.animation && sp('low', 0) < sp('full', 0) && Number(style('low').open['--lm-gy']) < Number(style('full').open['--lm-gy']));
+ok('no sway anywhere: one animation per leaf part, no sway keyframes', !leafMotionCss('full', tech).includes('sway') && !('sway' in style('full')) && String(style('full').open.animation).startsWith('lm-open-'));
 ok('motion css repeats the reduced-motion rule', leafMotionCss('full', tech).includes('prefers-reduced-motion:reduce') && leafMotionCss('low', tech).includes('prefers-reduced-motion:reduce'));
 ok('breath animation lasts exactly one breath', String(style('full').open.animation).includes('12000ms'));
 ok('starts at the clock phase (negative delay = elapsed)', style('full').open.animationDelay === '-5000ms' && leafAnimationStyles('low', 0, tech, 12000, 17000).open.animationDelay === '-5000ms');
 const f = breathFractions(tech);
 const css = leafMotionCss('full', tech);
-ok('keyframes follow the ring fractions (open held through the hold-in, closed at the end)', css.includes(`${Math.round(f.t1 * 10000) / 100}%{transform:rotate(calc(var(--lm-open) * 1))`) && breathEnvelope(0.4, f) === 1);
+ok('keyframes follow the ring fractions (open held through the hold-in, closed at the end)', css.includes(`${Math.round(f.t1 * 10000) / 100}%{transform:rotate(calc(var(--lm-spread) * 1))`) && breathEnvelope(0.4, f) === 1);
 ok('no flashing: glint stays between 0.35 and 0.75', [...css.matchAll(/opacity:([\d.]+)/g)].every((m) => +m[1] >= 0.35 && +m[1] <= 0.75));
-ok('leaves sway out of step with each other', new Set([0, 1, 2, 3, 4, 5].map((i) => style('full', i).sway.animationDelay)).size === 6);
+ok('neighbours spread away from each other (alternating signs), never all one way', [0, 1, 2, 3, 4, 5].every((i) => Math.sign(parseFloat(String(style('full', i).open['--lm-spread']))) === (i % 2 === 0 ? 1 : -1)));
+ok('every leaf has the same phase and period (stagger is amplitude only)', new Set([0, 1, 2, 3, 4, 5].map((i) => style('full', i).open.animationDelay + String(style('full', i).open.animation))).size === 1 && new Set([0, 1, 2, 3, 4, 5].map((i) => style('full', i).open['--lm-gy'])).size > 1);
+ok('breath swells more along the leaf than across it', Number(style('full').open['--lm-gy']) > Number(style('full').open['--lm-gx']));
 
 // The leaf count is a parameter: six is the default, eight draws cleanly, nothing is hard-coded to six.
 ok('default ring is six and equals leafRing(6)', LEAF_SET.length === 6 && JSON.stringify(leafRing()) === JSON.stringify(LEAF_SET));

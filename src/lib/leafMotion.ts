@@ -1,6 +1,6 @@
 // How the logo's leaves move. Three presets, chosen from what the browser reports:
-//   full: a slow sway, and the leaves open and close with the breath
-//   low:  the opening and closing with the breath only
+//   full: the leaves breathe: each swells from its base and spreads a little with the inhale, softens with the exhale
+//   low:  the same breath, smaller
 //   none: nothing moves (a still drawing)
 // The breath part is driven by the shared clock (src/lib/breathClock.ts): its keyframes use the same phase fractions
 // as the ring's scale, and the animation is started at the clock's current phase, so leaves and ring stay together.
@@ -37,12 +37,15 @@ export function readLeafCapability(win: Window | undefined = typeof window === '
   };
 }
 
-/** Peak opening of a leaf about its base, and how much it grows, at full inhale. */
-export const LEAF_OPEN_DEG = 7;
-export const LEAF_GROW = 0.045;
-/** Sway: a gentle swing either way, one full sway per this many breaths. */
-export const LEAF_SWAY_DEG = 1.6;
-export const LEAF_SWAY_BREATHS = 2;
+/**
+ * Peak breath of a leaf at full inhale (the `full` preset). Each leaf swells from its base (more along its length than
+ * across it) and spreads a little about its base, neighbours turning away from each other (alternating signs), so the
+ * ring breathes in and out and never turns one way round. `low` uses LOW_SCALE of all three.
+ */
+export const LEAF_SPREAD_DEG = 4;
+export const LEAF_SWELL_LENGTH = 0.07;
+export const LEAF_SWELL_WIDTH = 0.03;
+export const LEAF_LOW_SCALE = 0.5;
 
 const pct = (x: number): string => `${Math.round(x * 10000) / 100}%`;
 
@@ -66,31 +69,28 @@ export function leafMotionCss(preset: LeafPreset, technique: Parameters<typeof b
   if (preset === 'none') return '';
   const f = breathFractions(technique);
   const key = breathKey(f);
-  const open = stops(f, (e) => `transform:rotate(calc(var(--lm-open) * ${e})) scale(calc(1 + ${LEAF_GROW} * ${e}))`);
+  const open = stops(f, (e) => `transform:rotate(calc(var(--lm-spread) * ${e})) scale(calc(1 + var(--lm-gx) * ${e}),calc(1 + var(--lm-gy) * ${e}))`);
   const glint = stops(f, (e) => `opacity:${(0.35 + 0.4 * e).toFixed(2)}`);
   let css = `@keyframes lm-open-${key}{${open}}@keyframes lm-glint-${key}{${glint}}`;
-  if (preset === 'full') {
-    css += `@keyframes lm-sway{0%,100%{transform:rotate(calc(var(--lm-sway) * -1))}50%{transform:rotate(var(--lm-sway))}}`;
-  }
   // The same rule the preset already applied, repeated for browsers that change the setting while the page is open.
-  css += `@media (prefers-reduced-motion:reduce){.lm-open,.lm-glint,.lm-sway{animation:none!important}}`;
+  css += `@media (prefers-reduced-motion:reduce){.lm-open,.lm-glint{animation:none!important}}`;
   return css;
 }
 
 type Style = Record<string, string | number>;
 
 export interface LeafAnimationStyles {
-  /** On the group that opens and closes (the leaf and its details). */
+  /** On the group that breathes (the leaf and its details). */
   open: Style;
   /** On the highlight. */
   glint: Style;
-  /** On the group that sways (outside the opening one). */
-  sway: Style;
 }
 
 /**
  * Inline styles for leaf number `index`. `elapsedMs` is the time since the shared cycle start, so the animation begins
- * at the clock's present phase (a negative delay). `none` returns empty styles: no animation property at all.
+ * at the clock's present phase (a negative delay); every leaf has the same phase and timing, only a little amplitude
+ * differs between leaves. The spread alternates in sign, so neighbours turn away from each other. `none` returns empty
+ * styles: no animation property at all.
  */
 export function leafAnimationStyles(
   preset: LeafPreset,
@@ -99,15 +99,15 @@ export function leafAnimationStyles(
   breathMs: number,
   elapsedMs: number,
 ): LeafAnimationStyles {
-  if (preset === 'none' || !(breathMs > 0)) return { open: {}, glint: {}, sway: {} };
+  if (preset === 'none' || !(breathMs > 0)) return { open: {}, glint: {} };
   const key = breathKey(breathFractions(technique));
-  const e = Math.max(0, elapsedMs);
-  const phase = e % breathMs;
-  const swayMs = breathMs * LEAF_SWAY_BREATHS;
-  // Each leaf sways a sixth of a cycle behind the one before, and swings a little differently.
-  const swayPhase = (e + (index * swayMs) / 6) % swayMs;
+  const phase = Math.max(0, elapsedMs) % breathMs;
+  const amp = (preset === 'low' ? LEAF_LOW_SCALE : 1) * (0.9 + 0.05 * (index % 3)); // a little stagger of amplitude only
+  const sign = index % 2 === 0 ? 1 : -1;
   const open: Style = {
-    '--lm-open': `${(LEAF_OPEN_DEG * (0.85 + 0.06 * (index % 4))).toFixed(2)}deg`,
+    '--lm-spread': `${(sign * LEAF_SPREAD_DEG * amp).toFixed(3)}deg`,
+    '--lm-gx': (LEAF_SWELL_WIDTH * amp).toFixed(4),
+    '--lm-gy': (LEAF_SWELL_LENGTH * amp).toFixed(4),
     animation: `lm-open-${key} ${breathMs}ms ease-in-out infinite`,
     animationDelay: `${-Math.round(phase)}ms`,
     transformOrigin: '0px 0px',
@@ -116,14 +116,5 @@ export function leafAnimationStyles(
     animation: `lm-glint-${key} ${breathMs}ms ease-in-out infinite`,
     animationDelay: `${-Math.round(phase)}ms`,
   };
-  const sway: Style =
-    preset === 'full'
-      ? {
-          '--lm-sway': `${(LEAF_SWAY_DEG * (0.8 + 0.1 * (index % 5))).toFixed(2)}deg`,
-          animation: `lm-sway ${swayMs}ms ease-in-out infinite`,
-          animationDelay: `${-Math.round(swayPhase)}ms`,
-          transformOrigin: '0px 0px',
-        }
-      : {};
-  return { open, glint, sway };
+  return { open, glint };
 }

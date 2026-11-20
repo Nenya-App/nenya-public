@@ -85,7 +85,7 @@ export default function MallornLeaves({ size, cycleStart, technique = null, pres
         const a = leafAnimationStyles(preset, i, technique, breathMs, elapsed);
         return (
           <g key={spec.id} id={spec.id} data-leaf={spec.id} transform={leafTransform(spec)}>
-            <g className="lm-sway" style={a.sway as React.CSSProperties}>
+            <g>
               <g className="lm-open" style={a.open as React.CSSProperties}>
                 {/* Edge shadow (the old dark bronze, low opacity) under the blade. */}
                 <path d={geo.blade} fill="none" stroke="#3a2616" strokeOpacity="0.32" strokeWidth="5" strokeLinejoin="round" />
