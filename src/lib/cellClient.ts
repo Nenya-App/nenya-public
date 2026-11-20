@@ -9,6 +9,7 @@
 import { detectFlag, type SafetyFlag } from './safetyFlags.ts';
 import { isRpKind, textsOf } from './rephraseProtocol.ts';
 import { incomingDanger } from './rephraseSafety.ts';
+import { rephraseOn } from './rephraseSwitch.ts';
 import { finishHandshake, newCellCode, normalizeCode, openMessage, sealMessage, startHandshake, type CellMessage, type CellSession, type Envelope, type Handshake, type Opened, type Role } from './cellCrypto.ts';
 
 export const POLL_FAST_MS = 1500;
@@ -33,6 +34,8 @@ export interface CellClientOptions {
   schedule?: (fn: () => void, ms: number) => unknown;
   /** For tests: whether the page is hidden. */
   hidden?: () => boolean;
+  /** Whether ordinary messages get the rephrasing safety handling too (default: the VITE_REPHRASE switch). For tests. */
+  rephrase?: boolean;
 }
 
 export class CellClient {
@@ -46,6 +49,7 @@ export class CellClient {
   private readonly fetchImpl: typeof fetch;
   private readonly schedule: (fn: () => void, ms: number) => unknown;
   private readonly hidden: () => boolean;
+  private readonly rephrase: boolean;
   private events: CellEvents = {};
   private wait = POLL_FAST_MS;
   private stopped = false;
@@ -56,6 +60,7 @@ export class CellClient {
     this.endpoint = o.endpoint ?? '/api/cell';
     this.fetchImpl = o.fetchImpl ?? ((input, init) => fetch(input, init));
     this.schedule = o.schedule ?? ((fn, ms) => setTimeout(fn, ms));
+    this.rephrase = o.rephrase ?? rephraseOn();
     this.hidden = o.hidden ?? (() => typeof document !== 'undefined' && document.visibilityState === 'hidden');
   }
 
@@ -131,7 +136,10 @@ export class CellClient {
         if (flag) this.events.onFlag?.(flag, { ...m, text: texts.join('\n') });
         continue;
       }
-      const flag = m.kind === 'text' ? detectFlag(m.text) : null;
+      // Ordinary messages. With rephrasing on (VITE_REPHRASE) they get the same handling as its messages: only danger to self or
+      // others pauses both people, and abuse-category findings are the writer's private notice alone (src/lib/rephraseSafety.ts).
+      // With it off, exactly as before: any stop-tier finding pauses.
+      const flag = m.kind !== 'text' ? null : this.rephrase ? incomingDanger([m.text]) : detectFlag(m.text);
       if (flag?.tier === 'stop') this.events.onFlag?.(flag, m);
     }
     return list.length;

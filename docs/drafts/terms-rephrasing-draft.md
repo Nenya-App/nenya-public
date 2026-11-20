@@ -18,6 +18,8 @@ accurate, because nothing described here can happen. Scope: `docs/dyad-rephrase-
 > - **Leaving the page.** If your page is only hidden (for example, you switched to another app), the other person is told you may have stepped away and the cell stays open; after two minutes they are asked whether to keep waiting or close the cell. If your page is closed, the cell is closed for both of you, as before.
 > - **Not for emergencies, not therapy.** Rephrasing is a practice. It does not tell anyone who is right, and it is not a way to settle a situation in which one of you is afraid of the other.
 
+> **Ordinary messages in a cell (when rephrasing is on).** The same device checks apply to the messages you type: before you send one, your device checks it and tells only you if it finds words that may be about someone being in danger or being hurt by someone; the other person is not told, and you can still send it. The other person's device pauses the cell for both of you only for danger to a person, not for anything you write about being hurt or afraid. Nothing about these checks is sent to us. (Without rephrasing the existing Section 23 wording stays as it is.)
+
 Also add to the Short Version (Section 14), partner-practice item: "Rephrasing is optional, has no AI, and sends only what you choose, each time."
 
 ## 2. Report keeping time (decided by the owner, 2026-11-20: 30 days)

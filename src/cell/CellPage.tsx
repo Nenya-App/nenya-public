@@ -5,6 +5,9 @@ import { Card } from '../app/components/ui/card';
 import { EmergencyExitDock } from '../app/components/EmergencyExit';
 import OnboardingFlow from '../app/components/OnboardingFlow';
 import { FlagNotice } from '../coach/FlagNotice';
+import PrivateNotice from './PrivateNotice';
+import ReaderNotice from './ReaderNotice';
+import { checkOutgoing } from '../lib/rephraseSafety';
 import { CellClient } from '../lib/cellClient';
 import { normalizeCode, type Opened } from '../lib/cellCrypto';
 import type { SafetyFlag } from '../lib/safetyFlags';
@@ -47,6 +50,8 @@ export default function CellPage() {
   const [colors, setColors] = useState<[string, string] | null>(null);
   const [lines, setLines] = useState<Line[]>([]);
   const [draft, setDraft] = useState('');
+  // With VITE_REPHRASE on: the writer's own private check found something in the draft (shown to nobody else; a second press sends).
+  const [privateFlag, setPrivateFlag] = useState<SafetyFlag | null>(null);
   const [paused, setPaused] = useState<null | { by: 'me' | 'them'; flag?: SafetyFlag; text?: string }>(null);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -157,11 +162,19 @@ export default function CellPage() {
   const send = async () => {
     const text = draft.trim();
     if (!text || !client.current || paused) return;
+    if (rephraseOn() && !privateFlag) {
+      const f = checkOutgoing([text]);
+      if (f) {
+        setPrivateFlag(f);
+        return;
+      }
+    }
     setError('');
     try {
       await client.current.send({ kind: 'text', text });
       setLines((l) => [...l, { from: 'me', text }]);
       setDraft('');
+      setPrivateFlag(null);
     } catch {
       setError('That message could not be sent. It is still in the box; try again.');
     }
@@ -326,17 +339,18 @@ export default function CellPage() {
                           ? 'You paused the cell. Take the time you need.'
                           : 'The other person paused the cell.'}
                     </p>
-                    {paused.flag && paused.text && <FlagNotice flag={paused.flag} flaggedMessage={paused.text} />}
+                    {paused.flag && paused.text && (rephraseOn() ? <ReaderNotice flag={paused.flag} /> : <FlagNotice flag={paused.flag} flaggedMessage={paused.text} />)}
                     <Button variant="outline" className="gap-2" onClick={resume}><Play className="size-4" /> Continue the conversation</Button>
                   </Card>
                 )}
 
+                {privateFlag && <PrivateNotice flag={privateFlag} />}
                 <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); void send(); }}>
                   <label htmlFor="cell-draft" className="text-xs text-muted-foreground">Your message, encrypted on this device before it is sent</label>
-                  <textarea id="cell-draft" className="min-h-24 w-full rounded-md border border-border bg-background p-3 text-sm" maxLength={MAX_CHARS} value={draft} onChange={(e) => setDraft(e.target.value)} disabled={!!paused} />
+                  <textarea id="cell-draft" className="min-h-24 w-full rounded-md border border-border bg-background p-3 text-sm" maxLength={MAX_CHARS} value={draft} onChange={(e) => { setDraft(e.target.value); setPrivateFlag(null); }} disabled={!!paused} />
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs text-muted-foreground">{draft.length}/{MAX_CHARS}</span>
-                    <Button type="submit" disabled={!draft.trim() || !!paused}>Send</Button>
+                    <Button type="submit" disabled={!draft.trim() || !!paused}>{privateFlag ? 'Send as it is' : 'Send'}</Button>
                   </div>
                 </form>
                 {rephraseOn() && rephrase.current && <RephrasePanel ctl={rephrase.current} client={client.current} paused={!!paused} onPause={() => void pauseMine()} onResume={() => void resume()} onCloseCell={() => void close()} />}

@@ -107,6 +107,9 @@ export const WORDS = {
   privateBody: 'Your device found words that may be about someone being in danger. Nobody else is told. You can edit, send as it is, or stop.',
   sendAnyway: 'Send as it is',
   edit: 'Go back and edit',
+  // The reader's notice (an ordinary message or a rephrasing one).
+  readerTitle: 'This may be about someone being in danger',
+  readerBody: 'Your device found words that may be about someone being in danger. The cell is paused for both of you. This is a simple check of the words and can be mistaken. If anyone is in danger now, call your local emergency number. You can continue when you are both ready.',
   // Time.
   away: 'They may have stepped away. Waiting.',
   stillThereTitle: 'Still there?',
