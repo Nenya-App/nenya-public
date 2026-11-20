@@ -132,14 +132,14 @@ export default function WelcomePage({
         </div>
 
         {/* Breathing Text with Scroll Indicator */}
-        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`pb-8 -mt-2 sm:-mt-4 space-y-3 transition-opacity duration-500`}>
+        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`pb-8 mt-5 sm:mt-8 space-y-6 transition-opacity duration-500`}>
           <p className="text-xl md:text-2xl text-center text-muted-foreground">
             Give Yourself a Moment to Breathe
           </p>
 
           {/* Animated Scroll Indicator */}
           <div
-            className="flex flex-col items-center gap-0.5 animate-bounce cursor-pointer pt-1"
+            className="flex flex-col items-center gap-0.5 nenya-scroll-pulse cursor-pointer pt-3"
             onClick={scrollToNextSection}
             role="button"
             tabIndex={0}
@@ -205,7 +205,7 @@ export default function WelcomePage({
 
           {/* Animated Scroll Indicator */}
           <div
-            className="flex justify-center animate-bounce pt-8 cursor-pointer"
+            className="flex justify-center nenya-scroll-pulse pt-8 cursor-pointer"
             onClick={scrollToNextSection}
             role="button"
             tabIndex={0}
@@ -228,7 +228,7 @@ export default function WelcomePage({
           <SupportThisWork />
 
           <div
-            className="flex flex-col items-center gap-0.5 animate-bounce cursor-pointer pt-2"
+            className="flex flex-col items-center gap-0.5 nenya-scroll-pulse cursor-pointer pt-2"
             onClick={scrollToNextSection}
             role="button"
             tabIndex={0}
