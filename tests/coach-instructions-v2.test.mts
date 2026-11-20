@@ -51,3 +51,13 @@ ok('when the page flags distress, v2 still adds the care note, and the care note
 const script = readFileSync(join(root, 'scripts/eval-persona.mts'), 'utf8');
 ok('the evaluation script can run any wording and records which one, the model and the distress switch in its results', /--instructions/.test(script) && /process\.env\.COACH_INSTRUCTIONS = instructions/.test(script) && /instructions, model:/.test(script) && /distressText:/.test(script));
 delete process.env.COACH_INSTRUCTIONS;
+
+// ---- the opening rules (owner, 2026-11-20): Reflect keeps empathy first with one exception; Learn opens with whichever move fits
+{
+  const { readFileSync } = await import('node:fs');
+  const fn = readFileSync('netlify/functions/coach.mts', 'utf8');
+  const stances = readFileSync('src/lib/stances.ts', 'utf8');
+  ok('Reflect (the base) in v2 and v2.1 keeps empathy first, with one exception: a first message of only a few words gets one open question first', /listen and reflect what you heard before anything else\. The one exception: if their first message is only a few words, with nothing in it to reflect yet, ask one open question first\./.test(fn));
+  ok('v1, the live default, keeps the old first-exchange sentence exactly', /: 'This is the first exchange: listen and reflect what you heard before anything else\.'/.test(fn));
+  ok('Learn replaces the first-exchange line with "open with whichever move fits", and its layer lists the options', /open with whichever move fits what they said, as the stance above describes/.test(fn) && /First reply: open with the move that fits \(a reflection if they sound hurt, one open question if the goal is unclear, a short explanation if they ask how or why\)\./.test(stances));
+}

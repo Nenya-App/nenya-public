@@ -588,7 +588,16 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
     );
   }
   if (turn === 1 && !answerFirst) {
-    parts.push(v2 || v21 ? 'This is the first exchange: unless they have asked you something, listen and reflect what you heard before anything else.' : 'This is the first exchange: listen and reflect what you heard before anything else.');
+    // Opening rules (owner, 2026-11-20, from the moveset): the Reflect stance (the base) keeps empathy first with one exception, a first message too short to reflect; the Learn stance
+    // opens with whichever move fits (its layer says what the options are). v1, the live default, is unchanged.
+    const learnOpening = !!stanceLayer && stanceLayer.startsWith('Learn:');
+    parts.push(
+      learnOpening
+        ? 'This is the first exchange: unless they have asked you something, open with whichever move fits what they said, as the stance above describes.'
+        : v2 || v21
+          ? 'This is the first exchange: unless they have asked you something, listen and reflect what you heard before anything else. The one exception: if their first message is only a few words, with nothing in it to reflect yet, ask one open question first.'
+          : 'This is the first exchange: listen and reflect what you heard before anything else.'
+    );
   } else if (finalTurn) {
     parts.push(
       v21 && finalSummaryCallOn() ? V21_FINAL_PART : v21 && finalSummaryOn() ? V21_FINAL : 'This is the final exchange, and the person will not be able to reply: the conversation ends after your message, and the page adds its own closing note straight after it. So write a closing, not a turn in a conversation. This overrides any earlier instruction in these notes to ask a question or to offer a next step. Do not ask any question, and do not invite the person to share, reply, or tell you more. Do not open a new topic or offer a new suggestion. In three or four sentences: first say, in their own words, what you heard in what they shared; then name one thing that is theirs to keep, such as something they already did, said, or know; then end with one calm, complete statement that settles it. End on a full stop. Do not say goodbye or thank them for talking, and do not announce that the conversation is ending: the page does that.'
