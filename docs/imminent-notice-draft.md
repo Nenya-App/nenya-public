@@ -1,6 +1,8 @@
-# Notice wording for an imminent message: DRAFT options (step 5 of the suicidal-ideation audit)
+# Notice wording for an imminent message: options, and the wired blend (step 5 of the suicidal-ideation audit)
 
-Written 2026-11-19. **Not wired. Nothing in `src/` changed.** The rule in `docs/ai-handoff/05-safety-legal-data.md` is that any new wording for `imminent` needs the owner's approval and a clinician's before it is written into the site. These are options for the owner to choose from and edit, then for a clinician to read. They are not clinically reviewed and must not be described as evidence-based.
+**Wired 2026-11-20:** the owner chose a blend of B and C. It is `IMMINENT_LEAD` in `src/lib/distressText.ts` (B's someone-nearby and distance lines, C's "text is enough" line, Poison Help). Owner-approved, **not clinician-reviewed**; the clinician questions below still stand. The rest of this file is the options as drafted before wiring.
+
+Written 2026-11-19. The rule in `docs/ai-handoff/05-safety-legal-data.md` is that any new wording for `imminent` needs the owner's approval and a clinician's before it is written into the site. These are options for the owner to choose from and edit, then for a clinician to read. They are not clinically reviewed and must not be described as evidence-based.
 
 ## What happens today
 

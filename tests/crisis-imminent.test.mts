@@ -1,6 +1,7 @@
 // Plan, means, an act in progress, goodbyes: stop tier, kind "imminent" (the notice leads with the emergency number). DRAFT: awaiting clinician review.
 // Positives are first-person, present or near-future statements. Negatives are the look-alikes that must NOT be flagged at all (or, where noted, only softened).
 import { checkConversation, detectFlag, resourcesFor, noticeIntro } from '../src/lib/safetyFlags.ts';
+import { IMMINENT_LEAD, STOP_LEAD } from '../src/lib/distressText.ts';
 import { ok } from './helpers.mts';
 
 const IMMINENT: string[] = [
@@ -79,4 +80,9 @@ const first = resourcesFor(imminent.category, imminent.kind)[0];
 ok('imminent resources lead with the emergency number', first.name === 'Immediate danger' && /911/.test(first.detail));
 ok('imminent resources still include 988 and Crisis Text Line', resourcesFor('self-harm', 'imminent').some((r) => /988/.test(r.name)) && resourcesFor('self-harm', 'imminent').some((r) => /Crisis Text Line/.test(r.name)));
 ok('plain suicide stop keeps 988 first', /988/.test(resourcesFor('self-harm')[0].name));
-ok('imminent uses the existing stop notice text (no new clinical wording)', noticeIntro(imminent) === noticeIntro({ ...imminent, kind: undefined }));
+ok('imminent has its own notice (blend of B and C), different from the generic stop text', noticeIntro(imminent) === IMMINENT_LEAD && noticeIntro(imminent) !== noticeIntro({ ...imminent, kind: undefined }));
+ok('the imminent notice names 911, Poison Help and 988, and says it is an AI', /911/.test(IMMINENT_LEAD) && /1-800-222-1222/.test(IMMINENT_LEAD) && /988/.test(IMMINENT_LEAD) && /I'm an AI/.test(IMMINENT_LEAD));
+ok('the imminent notice says a text is enough, and mentions someone nearby and distance', /text HOME to 741741/.test(IMMINENT_LEAD) && /someone is near you/.test(IMMINENT_LEAD) && /distance/.test(IMMINENT_LEAD));
+ok('a plain suicide stop keeps the generic stop text', noticeIntro(detectFlag('I want to die.')!) === STOP_LEAD);
+ok('imminent resources: emergency, then Poison Help, then 988', (() => { const l = resourcesFor('self-harm', 'imminent'); return l[0].name === 'Immediate danger' && /Poison Help/.test(l[1].name) && /988/.test(l[2].name); })());
+ok('other suicide stops do not list Poison Help', !resourcesFor('self-harm').some((r) => /Poison/.test(r.name)));

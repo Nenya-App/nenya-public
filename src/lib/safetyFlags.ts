@@ -14,7 +14,7 @@
 import { ABUSE_CANDIDATES, CANDIDATES, IMMINENT_CANDIDATES, SLANG_CANDIDATES } from './safetyPhrases.ts';
 import { evasionVariants } from './safetyNormalize.ts';
 import type { Rule as PhraseRule } from './safetyPhrases.ts';
-import { STOP_LEAD } from './distressText.ts';
+import { IMMINENT_LEAD, STOP_LEAD } from './distressText.ts';
 import { classifyMention, RECENT, rungFor, SELF_INJURY } from './selfInjury.ts';
 import { CONSTRUCT_LABELS, constructsIn, WINDOW, type Construct } from './safetyConstructs.ts';
 
@@ -352,6 +352,9 @@ const HARM_LINES: Record<string, Resource[]> = {
   'admitted-trafficking': TRAFFICKING_LINES,
 };
 
+/** US poison centers, for something swallowed. Listed by several sources as the national line (searched 2026-11-20); not yet checked on poison.org. No Canadian number: none confirmed. */
+const POISON_HELP: Resource = { name: 'Poison Help (US)', detail: 'Call 1-800-222-1222, any time, free and confidential. For something swallowed', href: 'tel:18002221222' };
+
 /** Resources already listed elsewhere on the site (Emergency Exit, Terms), and the specific lines for abuse. */
 export function resourcesFor(category: FlagCategory, kind?: string): Resource[] {
   const list: Resource[] = [
@@ -385,7 +388,7 @@ export function resourcesFor(category: FlagCategory, kind?: string): Resource[] 
     return [...first, ...list, outside];
   }
   // A plan, means at hand, an act in progress or a goodbye: the emergency number comes first (draft: awaiting clinician review, docs/ai-handoff/05-safety-legal-data.md).
-  if (category === 'self-harm' && kind === 'imminent') return [emergency, ...list, outside];
+  if (category === 'self-harm' && kind === 'imminent') return [emergency, POISON_HELP, ...list, outside];
   list.push(emergency, outside);
   return list;
 }
@@ -428,6 +431,8 @@ export function noticeIntro(flag: SafetyFlag): string {
   if (flag.category === 'harm-others' && flag.kind && HARM_NOTICE[flag.kind]) return HARM_NOTICE[flag.kind];
   if (flag.category === 'self-injury' && flag.kind && SELF_INJURY_NOTICE[flag.kind]) return SELF_INJURY_NOTICE[flag.kind];
   // Owner approved 2026-11-19: a stopped message about suicide or self-harm gets the warmer site-written lead, not the form-like sentence.
+  // Owner chose a blend of options B and C 2026-11-20 for a plan, means, an act in progress or a goodbye (docs/imminent-notice-draft.md). Awaiting clinician review.
+  if (flag.category === 'self-harm' && flag.tier === 'stop' && flag.kind === 'imminent') return IMMINENT_LEAD;
   if (flag.category === 'self-harm' && flag.tier === 'stop') return STOP_LEAD;
   const subject =
     flag.tier === 'stop'
