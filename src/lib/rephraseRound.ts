@@ -82,7 +82,11 @@ export function step(s: RoundState, e: Event): Result {
   if (e.t === 'in') {
     switch (e.kind) {
       case 'rp-ask': {
-        if (r || s.ignoreAsks || e.body.tok !== TOKENIZER) return keep(s);
+        if (s.ignoreAsks || e.body.tok !== TOKENIZER) return keep(s);
+        // Two people asking at the same moment: the lower round id keeps its place and the other becomes the hearer, the same
+        // way on both devices, so neither is left waiting for an answer that cannot come.
+        const collides = !!r && r.side === 'speaker' && r.phase === 'asked' && e.body.round < r.id;
+        if (r && !collides) return keep(s);
         return done({ ...s, notice: null, round: { id: e.body.round, side: 'hearer', phase: 'deciding' } });
       }
       case 'rp-answer': {

@@ -94,3 +94,11 @@ ok('after a stop a new round can begin', hr.round?.phase === 'deciding');
 const away = run(hr, { t: 'in', kind: 'rp-control', body: { step: 'away' } });
 ok('away and back are noted and change no round', away.state.partnerAway && away.state.round === hr.round && !run(away.state, { t: 'in', kind: 'rp-control', body: { step: 'back' } }).state.partnerAway);
 ok('the machine never mutates the state it is given', (() => { const s = initialState(); const j = JSON.stringify(s); step(s, { t: 'ask', id: ID }); return JSON.stringify(s) === j; })());
+
+// Two asks at the same moment: one yields, the same way on both devices.
+fresh();
+const x = run(sp, { t: 'ask', id: 'a0000000' }); sp = x.state;
+const y = run(hr, { t: 'ask', id: 'b0000000' }); hr = y.state;
+sp = run(sp, { t: 'in', kind: 'rp-ask', body: { round: 'b0000000', tok: TOKENIZER } }).state;
+hr = run(hr, { t: 'in', kind: 'rp-ask', body: { round: 'a0000000', tok: TOKENIZER } }).state;
+ok('when both ask at once the lower id stays the speaker and the other becomes the hearer', sp.round?.side === 'speaker' && sp.round.id === 'a0000000' && hr.round?.side === 'hearer' && hr.round.id === 'a0000000' && hr.round.phase === 'deciding');

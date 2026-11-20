@@ -7,6 +7,8 @@
 // small requests instead of the 800 a fixed 1.5 s poll would make.
 
 import { detectFlag, type SafetyFlag } from './safetyFlags.ts';
+import { isRpKind, textsOf } from './rephraseProtocol.ts';
+import { incomingDanger } from './rephraseSafety.ts';
 import { finishHandshake, newCellCode, normalizeCode, openMessage, sealMessage, startHandshake, type CellMessage, type CellSession, type Envelope, type Handshake, type Opened, type Role } from './cellCrypto.ts';
 
 export const POLL_FAST_MS = 1500;
@@ -37,6 +39,8 @@ export class CellClient {
   readonly code: string;
   readonly role: Role;
   session: CellSession | null = null;
+  /** When the mailbox deletes the cell whatever anyone does (ms since 1970), as the mailbox said when this side took its seat. */
+  expiresAt: number | null = null;
   private hs: Handshake | null = null;
   private readonly endpoint: string;
   private readonly fetchImpl: typeof fetch;
@@ -85,7 +89,8 @@ export class CellClient {
 
   private async hello(): Promise<void> {
     this.hs = await startHandshake(this.code, this.role);
-    await this.post({ action: 'hello', hello: this.hs.hello });
+    const j = await this.post({ action: 'hello', hello: this.hs.hello });
+    if (typeof j.expiresAt === 'number') this.expiresAt = j.expiresAt;
   }
 
   /** Once the other person has joined: finishes the exchange. Returns the two safety colours to compare, or null if they have not joined yet. */
@@ -118,6 +123,14 @@ export class CellClient {
         return list.length;
       }
       this.events.onMessage?.(m);
+      // Rephrasing's messages hold free text inside their JSON (src/lib/rephraseProtocol.ts): the phrase, a rewrite, a note. They get
+      // the reader's check too, but only danger to self or others may pause both people (src/lib/rephraseSafety.ts).
+      if (isRpKind(m.kind)) {
+        const texts = textsOf(m.kind, m.text);
+        const flag = incomingDanger(texts);
+        if (flag) this.events.onFlag?.(flag, { ...m, text: texts.join('\n') });
+        continue;
+      }
       const flag = m.kind === 'text' ? detectFlag(m.text) : null;
       if (flag?.tier === 'stop') this.events.onFlag?.(flag, m);
     }
