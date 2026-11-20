@@ -34,7 +34,7 @@ ok('every mark has its own shape, so no mark depends on colour', new Set(MARKS.m
 ok('the seven slider steps have names and none is a number', LEVEL_NAMES.length === 7 && LEVEL_NAMES.every((n) => !/\d/.test(n)));
 
 // Wording
-const copy = [...Object.values(WB).filter((v): v is string => typeof v === 'string'), ...WB.steps, WB.emptySlot('a feeling'), WB.tooLong(3), ...MARKS.flatMap((m) => [m.name, m.plain]), PASSING_NOTE, ...PASSING_WORDS.map((p) => p.def)];
+const copy: string[] = [...(Object.values(WB) as unknown[]).filter((v): v is string => typeof v === 'string'), ...WB.steps, WB.emptySlot('a feeling'), WB.tooLong(3), ...MARKS.flatMap((m) => [m.name, m.plain]), PASSING_NOTE, ...PASSING_WORDS.map((p) => p.def)];
 ok('no screen wording carries a verdict word', copy.every((t) => !VERDICT.test(t)), copy.filter((t) => VERDICT.test(t)).join(' / '));
 const gc = gradeLevel(copy.join(' '));
 ok(`the screen wording, read together, is at grade 8 or below (${gc.toFixed(1)})`, gc <= 8);
