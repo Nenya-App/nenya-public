@@ -4,12 +4,17 @@
 //   read -rs "VENICE_API_KEY?Venice testing key: "; echo; export VENICE_API_KEY      # zsh; the key is never printed or written
 //   node scripts/replay-cost.mts --capture calls.jsonl --models google-gemma-4-26b-a4b-it,claude-opus-5-5 [--json out.json]
 //
+// A model whose id starts with @cf/ is a Workers AI model: it goes through the signed-in Cloudflare CLI (`cf ai run`, free allowance, no key here),
+// and its price is read from `cf ai models list`. Those runs spend Neurons, not Venice credit, and need no VENICE_API_KEY.
 // Every model sees the identical messages (system text and history); nothing is fed back. Prices are read live from Venice's public
 // /models list (USD per million tokens). With VENICE_ADMIN_KEY also set (an admin key; hidden prompt, never printed), it reads GET /billing/balance
 // before and after the run and prints every number that changed, so the billed cost sits next to the token-based estimate (the balance can lag
 // a little, so a zero difference may only mean it has not settled; run it again after a minute). Tokens come from each response's own `usage`. This spends Venice credit (a few cents for a
 // handful of calls) and uses invented text only: do not point it at a capture made with the private text, or at anything personal.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const args = process.argv.slice(2);
 const flag = (n: string): string | undefined => (args.includes(n) ? args[args.indexOf(n) + 1] : undefined);
@@ -17,12 +22,21 @@ const captureFile = flag('--capture');
 const models = (flag('--models') ?? '').split(',').filter(Boolean);
 const jsonOut = flag('--json');
 const key = process.env.VENICE_API_KEY;
-if (!captureFile || models.length === 0 || !key) {
+if (!captureFile || models.length === 0 || (!key && models.some((m) => !m.startsWith('@cf/')))) {
   console.error('Needs --capture <file>, --models a,b and VENICE_API_KEY in the environment (see the top of this file).');
   process.exit(2);
 }
-const list: any = await (await fetch('https://api.venice.ai/api/v1/models')).json();
+const CF = process.env.CF_BIN ?? join(homedir(), '.npm-global/bin/cf');
+const list: any = models.some((m) => !m.startsWith('@cf/')) ? await (await fetch('https://api.venice.ai/api/v1/models')).json() : { data: [] };
+let cfList: any[] | null = null;
 const priceOf = (id: string): [number, number] => {
+  if (id.startsWith('@cf/')) {
+    cfList ??= JSON.parse(spawnSync(CF, ['ai', 'models', 'list'], { encoding: 'utf8', maxBuffer: 1 << 28 }).stdout);
+    const pr = cfList!.find((m) => m.name === id)?.properties?.find((p: any) => p.property_id === 'price')?.value;
+    const f = (u: string) => Number(pr?.find((x: any) => String(x.unit).endsWith(u))?.price);
+    if (!pr || Number.isNaN(f('input tokens'))) throw new Error(`No Workers AI price for ${id}`);
+    return [f('input tokens'), f('output tokens') || 0];
+  }
   const p = list.data?.find((m: any) => m.id === id)?.model_spec?.pricing;
   if (!p) throw new Error(`No Venice price for ${id}`);
   return [Number(p.input.usd), Number(p.output.usd)];
@@ -45,27 +59,44 @@ const rows = readFileSync(captureFile, 'utf8').split('\n').filter(Boolean).map((
 const summary: Record<string, unknown>[] = [];
 for (const model of models) {
   const [pin, pout] = priceOf(model);
-  let tin = 0, tout = 0, secs = 0;
+  let tin = 0, tout = 0, secs = 0, neurons = 0;
   let lastReply = '';
   for (const r of rows) {
     const t0 = Date.now();
-    const res = await fetch('https://api.venice.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ model, messages: r.messages, max_tokens: 2000, venice_parameters: { include_venice_system_prompt: false } }),
-    });
-    const j: any = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      console.error(`${model}: ${res.status} ${JSON.stringify(j).slice(0, 300)}`);
-      process.exit(1);
+    let j: any;
+    if (model.startsWith('@cf/')) {
+      const dir = mkdtempSync(join(tmpdir(), 'nenya-replay-'));
+      const f = join(dir, 'req.json');
+      writeFileSync(f, JSON.stringify({ messages: r.messages, max_tokens: 2000 }));
+      const o = spawnSync(CF, ['ai', 'run', model, '--body', `@${f}`], { encoding: 'utf8', timeout: 180_000 });
+      rmSync(dir, { recursive: true, force: true });
+      try {
+        j = JSON.parse(o.stdout);
+      } catch {
+        console.error(`${model}: no answer (${(o.stdout + o.stderr).slice(0, 300)})`);
+        process.exit(1);
+      }
+      j = j.result ?? j;
+      neurons += Number(j.usage?.neurons ?? 0);
+    } else {
+      const res = await fetch('https://api.venice.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ model, messages: r.messages, max_tokens: 2000, venice_parameters: { include_venice_system_prompt: false } }),
+      });
+      j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.error(`${model}: ${res.status} ${JSON.stringify(j).slice(0, 300)}`);
+        process.exit(1);
+      }
     }
     secs += (Date.now() - t0) / 1000;
     tin += j.usage?.prompt_tokens ?? 0;
     tout += j.usage?.completion_tokens ?? 0;
-    lastReply = j.choices?.[0]?.message?.content ?? '';
+    lastReply = j.choices?.[0]?.message?.content ?? j.response ?? '';
   }
   const usd = (tin * pin + tout * pout) / 1e6;
-  const row = { model, calls: rows.length, inputTokens: tin, outputTokens: tout, usdPerMillion: { in: pin, out: pout }, usd: +usd.toFixed(6), usdPerCall: +(usd / rows.length).toFixed(6), seconds: +secs.toFixed(1), lastReplyWords: lastReply.split(/\s+/).filter(Boolean).length };
+  const row = { model, calls: rows.length, inputTokens: tin, outputTokens: tout, usdPerMillion: { in: pin, out: pout }, usd: +usd.toFixed(6), usdPerCall: +(usd / rows.length).toFixed(6), seconds: +secs.toFixed(1), ...(model.startsWith('@cf/') ? { neurons: +neurons.toFixed(2) } : {}), lastReplyWords: lastReply.split(/\s+/).filter(Boolean).length };
   summary.push(row);
   console.log(JSON.stringify(row));
   console.log(`  reply: ${lastReply.replace(/\n+/g, ' ').slice(0, 400)}`);
