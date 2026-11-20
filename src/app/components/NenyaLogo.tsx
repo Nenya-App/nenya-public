@@ -14,6 +14,7 @@ import SpectralGem, { type GemStats, type LiveGemLook } from './SpectralGem';
 import LogoGlow from './LogoGlow';
 import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type OuterOrbitLook } from '../../lib/orbitLook';
 import { GEM_ENGINE, type GemEngine } from '../../lib/gemSprite';
+import { DEFAULT_GEM_SIDES } from '../../lib/gemCut';
 
 // Above this size, the full-resolution source is used instead -- 128px
 // covers up to ~40px CSS at 3x device pixel ratio (the largest "small"
@@ -90,6 +91,8 @@ interface NenyaLogoProps {
   gemLook?: { clarity?: number; sparkle?: number; tint?: number; contrast?: number; lift?: number; fieldAlpha?: number };
   /** Which gem to draw (the sprite, or the live ray-traced one). Defaults to the site-wide choice in gemSprite.ts. */
   gemEngine?: GemEngine;
+  /** The gem's number of sides (6 to 12). Defaults to the site's own. */
+  gemSides?: number;
   /** The live gem's settings. Used by the /bench page. */
   liveGem?: LiveGemLook;
   /** Options for the inner and outer orbits (src/lib/orbitLook.ts). Used by the /bench page. */
@@ -110,6 +113,7 @@ export default function NenyaLogo({
   alt = '',
   gemLook,
   gemEngine = GEM_ENGINE,
+  gemSides = DEFAULT_GEM_SIDES,
   liveGem,
   innerOrbit,
   outerOrbit,
@@ -158,7 +162,7 @@ export default function NenyaLogo({
     >
       {/* The glow, computed once as an image (see LogoGlow). */}
       {glow && showLogo && (
-        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? petalsLayer : flatLogoSrc} gemEngine={gemEngine} />
+        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? petalsLayer : flatLogoSrc} gemEngine={gemEngine} gemSides={gemSides} />
       )}
 
       {/* Logo image - base layer. When the Valar orbit is enabled the flat logo is
@@ -413,6 +417,7 @@ export default function NenyaLogo({
           technique={technique}
           breathingEnabled={breathingEnabled}
           engine={gemEngine}
+          sides={gemSides}
           live={liveGem}
           orbitSeconds={inner.orbitSeconds}
           colorCycle={inner.colorCycle}

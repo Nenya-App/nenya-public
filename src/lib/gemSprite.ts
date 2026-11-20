@@ -2,6 +2,7 @@
 // 7 x 7 grid on a 2016 x 2016 transparent image. Loaded once, only when something that needs it mounts
 // (the sheet is ~790 KB, so it must not load for pages that never show the orbit view).
 import spriteUrl from '../assets/diamond-hex-sprite.webp';
+import { DEFAULT_GEM_SIDES, clampSides, stoneRadius } from './gemCut.ts';
 
 /**
  * Which gem the site draws: the pre-rendered sprite sheet, or the live, ray-traced stone (src/lib/gemRenderer.ts).
@@ -66,13 +67,14 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
  * Draws the stone's outline (the girdle hexagon, corners at the top and bottom) filled in solid, in a gem frame of
  * side `side` at (x, y). The live gem uses it where the sprite's first frame was used for the outline (the glow).
  */
-export function drawGemSilhouette(ctx: CanvasRenderingContext2D, x: number, y: number, side: number): void {
-  const r = side * GEM_HEX_RADIUS;
+export function drawGemSilhouette(ctx: CanvasRenderingContext2D, x: number, y: number, side: number, sides: number = DEFAULT_GEM_SIDES): void {
+  const n = clampSides(sides);
+  const r = side * stoneRadius(n);
   const cx = x + side / 2;
   const cy = y + side / 2;
   ctx.beginPath();
-  for (let k = 0; k < 6; k++) {
-    const a = Math.PI / 2 + (k * Math.PI) / 3;
+  for (let k = 0; k < n; k++) {
+    const a = Math.PI / 2 + (k * 2 * Math.PI) / n;
     const px = cx + Math.cos(a) * r;
     const py = cy + Math.sin(a) * r;
     if (k === 0) ctx.moveTo(px, py);

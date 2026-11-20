@@ -58,3 +58,15 @@ for (const n of [6, 7, 8, 10, 12]) {
 }
 const look = { on: true, depth: 1, periodS: 60, turn: 1, sway: 0 };
 ok('the kaleidoscope wraps at 45 degrees for eight sides and 60 for six', (kaleidoscopeCut(1000, { sides: 8 }, look).starTwist ?? 99) < 45 && (kaleidoscopeCut(1000, { sides: 6 }, look).starTwist ?? 99) < 60);
+
+// The bezel follows the side count (src/lib/gemBezel.ts).
+import { readFileSync } from 'node:fs';
+import { bezelFor, bezelOutlines, bezelRadii } from '../src/lib/gemBezel.ts';
+const bez = readFileSync(new URL('../src/assets/logo/bezel.svg', import.meta.url), 'utf8');
+const outl = bezelOutlines(bez);
+const rad = (d: string) => Math.max(...(d.match(/-?\d+\.?\d*/g) ?? []).map((v) => Math.abs(Number(v))));
+ok('the bezel file holds exactly two hexagon outlines, as the generator draws them', outl.length === 2 && outl.every((d) => (d.match(/[ML]/g) ?? []).length === 6) && Math.abs(rad(outl[0]) - bezelRadii(6, 1).gold) < 0.02 && Math.abs(rad(outl[1]) - bezelRadii(6, 1).cream) < 0.02);
+ok('six sides leave the bezel unchanged', bezelFor(bez, 6, 1) === bez);
+const oct = bezelFor(bez, 8, stoneRadius(8) / stoneRadius(6));
+ok('eight sides redraw both outlines as octagons and keep the metal and the lighting', !oct.includes(outl[0]) && (oct.match(/<path d="M[^"]*"/g) ?? []).every((d) => (d.match(/[ML]/g) ?? []).length === 8) && oct.includes('id="fBez"') && oct.includes('feSpecularLighting'));
+ok('the octagon bezel stays inside its box and clears the stone', (() => { const r = bezelRadii(8, stoneRadius(8) / stoneRadius(6)); return r.cream + 2.3 < 134.0892 && r.gold * Math.cos(Math.PI / 8) > stoneRadius(8) * Math.cos(Math.PI / 8) * 239.45 - 0.5; })());

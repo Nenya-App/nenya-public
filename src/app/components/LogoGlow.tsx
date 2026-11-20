@@ -3,6 +3,7 @@ import { useTheme } from './ThemeProvider';
 import { GLOW_COLORS, GLOW_RADII, GLOW_SPREAD, GLOW_STRENGTH, MAX_GLOW_RADIUS, bakeGlow } from '../../lib/glowBake';
 import { GEM_CENTRE, GEM_ENGINE, GEM_TO_PETALS, SPRITE_CELL, drawGemSilhouette, frameOrigin, loadGemSprite, loadImage, type GemEngine } from '../../lib/gemSprite';
 import { liveGemSupported } from '../../lib/gemRenderer';
+import { DEFAULT_GEM_SIDES } from '../../lib/gemCut';
 
 interface LogoGlowProps {
   /** The logo's size (the same `size` NenyaLogo takes). */
@@ -13,6 +14,8 @@ interface LogoGlowProps {
   maskSrc: string;
   /** With the live gem, the stone's outline is drawn as a hexagon, so the sprite is never downloaded just for the glow. */
   gemEngine?: GemEngine;
+  /** The stone's number of sides, for the outline the glow follows (live gem only). */
+  gemSides?: number;
 }
 
 /** Room left around the logo for the glow: three times the largest blur radius. */
@@ -30,7 +33,7 @@ function alphaOf(ctx: CanvasRenderingContext2D, w: number, h: number): Float32Ar
  * pixel density. Replaces a CSS `filter: drop-shadow()` chain, which Safari fails to draw on an element
  * whose contents are animated or blended. Never computed per frame.
  */
-export default function LogoGlow({ size, orbit, maskSrc, gemEngine = GEM_ENGINE }: LogoGlowProps) {
+export default function LogoGlow({ size, orbit, maskSrc, gemEngine = GEM_ENGINE, gemSides = DEFAULT_GEM_SIDES }: LogoGlowProps) {
   const { theme } = useTheme();
   const restRef = useRef<HTMLCanvasElement>(null);
   const hoverRef = useRef<HTMLCanvasElement>(null);
@@ -71,7 +74,7 @@ export default function LogoGlow({ size, orbit, maskSrc, gemEngine = GEM_ENGINE 
           const [sx, sy] = frameOrigin(0);
           ctx.drawImage(sprite, sx, sy, SPRITE_CELL, SPRITE_CELL, gx, gy, gs, gs);
         } else {
-          drawGemSilhouette(ctx, gx, gy, gs);
+          drawGemSilhouette(ctx, gx, gy, gs, gemSides);
         }
         const gem = alphaOf(ctx, W, W);
         for (let i = 0; i < alpha.length; i++) if (gem[i] > alpha[i]) alpha[i] = gem[i];
@@ -100,7 +103,7 @@ export default function LogoGlow({ size, orbit, maskSrc, gemEngine = GEM_ENGINE 
       cancelled = true;
       clearTimeout(t);
     };
-  }, [side, contentSide, orbit, maskSrc, theme, gemEngine]);
+  }, [side, contentSide, orbit, maskSrc, theme, gemEngine, gemSides]);
 
   const place: React.CSSProperties = {
     position: 'absolute',
