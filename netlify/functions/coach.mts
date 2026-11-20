@@ -1504,10 +1504,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       const matcher = await getMatcher(privateStore() as unknown as Parameters<typeof getMatcher>[0]);
       const minSev = Number(process.env.COACH_LEARNING_MIN_SEVERITY);
       const o = offerFor({ hits: [...(matcher ? lexiconMatch(lastText, matcher) : []), ...historyHits(lastText)], text: lastText, shown, available: [...known], flagged: !!flag, abuseAtCoach: hostile === 'abuse', judgmentOffers: process.env.COACH_JUDGMENT_CARDS === 'on', ...(Number.isInteger(minSev) && minSev >= 1 && minSev <= 3 ? { minSeverity: minSev } : {}) });
-      // Not when the reply has just said the same thing in the same words: the card would only repeat it.
-      const restated = o ? repeatsEarlier(reply, shownCardTexts(allCards().filter((c) => c.id === o.id)), 8) : false;
-      if (restated) tally('coach.offer.suppressed-restated');
-      if (o && !restated) { offer = { id: o.id, proof: offerProof(secret, [...messages, { role: 'assistant' as const, content: reply }], o.id) }; tally(`coach.offer.${o.because}`); }
+      if (o) { offer = { id: o.id, proof: offerProof(secret, [...messages, { role: 'assistant' as const, content: reply }], o.id) }; tally(`coach.offer.${o.because}`); }
     } catch { /* an offer is a courtesy: never let it break a reply */ }
   }
   if (screening) {

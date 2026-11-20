@@ -42,7 +42,7 @@ r = await ask({ shown: ['conn-01'] });
 ok('a reply that restates an offered card has those sentences taken out, with no second call to the model', sent.length === 1 && r.j.reply === 'It sounds like your brother matters a great deal. What was it you kept returning to?', JSON.stringify(r.j.reply));
 r = await ask();
 ok('the same reply is left alone when no card was offered', r.j.reply.includes('Contempt is often'));
-// an offer is not made when the reply has just said the same thing
+// the offer is never suppressed, whatever the reply said
 process.env.COACH_LEARNING_OFFERS = 'on';
 __setCardsForTests([card('dehum-01', 'A card on dehumanization')]);
 __forgetLexiconForTests();
@@ -56,6 +56,6 @@ ok('(control) with the switch on and a match, the card is offered', o.offer?.id 
 const offeredId = o.offer?.id;
 say = [BODY];
 o = await (async () => { const res = await coach(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ session: S, messages: [{ role: 'user', content: 'what a blorvish' }] }) })); return (await res.json()) as any; })();
-ok('when the reply has just said the card\'s words, the card is not offered', offeredId !== undefined && o.offer === undefined);
+ok('even when the reply has just said the card\'s words, the matching card is still offered (owner, 2026-11-20: never suppress it)', offeredId !== undefined && o.offer?.id === offeredId);
 delete process.env.COACH_LEARNING_OFFERS;
 __setCardsForTests(null);
