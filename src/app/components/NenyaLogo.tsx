@@ -5,10 +5,13 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 // data than the display can show. A pre-resized 128 px WebP is swapped in below for those small sizes instead.
 import nenyaLogo from '../../assets/nenya-logo.webp';
 import nenyaLogoSmall from '../../assets/nenya-logo-small.webp';
-// The orbit view's petals: a vector drawing (two interlaced gold and cream flowers with a bevel and a true over-under
-// weave), drawn as an image so the build gives it a versioned filename that can be cached for a long time.
-// Its 765-unit box is the logo's size * 0.765, with the outer ring's diameter as 1000 units.
-import petalsLayer from '../../assets/logo/petals.svg';
+// The orbit view's petals are eight woven, outlined mallorn-style leaves (MallornLeaves) in a 765-unit box, the logo's
+// size * 0.765, with the outer ring's diameter as 1000 units. The glow is cast from a still silhouette of the same outlines
+// (built only when a glow is asked for).
+let leafMaskUri = '';
+const leafMask = () => (leafMaskUri ||= `data:image/svg+xml;utf8,${encodeURIComponent(weaveSilhouetteSvg())}`);
+import MallornLeaves from './MallornLeaves';
+import { weaveSilhouetteSvg } from '../../lib/leafWeave';
 import { valarColors, type BreathingTechnique } from './ValarBreathingLogo';
 import SpectralGem, { type GemStats, type LiveGemLook } from './SpectralGem';
 import LogoGlow from './LogoGlow';
@@ -183,21 +186,32 @@ export default function NenyaLogo({
     >
       {/* The glow, computed once as an image (see LogoGlow). */}
       {glow && showLogo && (
-        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? petalsLayer : flatLogoSrc} gemEngine={gemEngine} gemSides={gemSides} />
+        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? leafMask() : flatLogoSrc} gemEngine={gemEngine} gemSides={gemSides} />
       )}
 
       {/* Logo image - base layer. When the Valar orbit is enabled the flat logo is
           swapped for the vector petals under the gem overlay below. */}
-      {showLogo && (
+      {showLogo && showValarOrbit && (
+        <div
+          role={alt ? 'img' : undefined}
+          aria-label={alt || undefined}
+          aria-hidden={alt ? undefined : true}
+          className="absolute"
+          style={{ width: size * 0.765, height: size * 0.765, zIndex: 10, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}
+        >
+          <MallornLeaves size={size * 0.765} cycleStart={cycleStart} technique={technique} breathingEnabled={breathingEnabled} />
+        </div>
+      )}
+      {showLogo && !showValarOrbit && (
         <img
-          src={showValarOrbit ? petalsLayer : flatLogoSrc}
+          src={flatLogoSrc}
           alt={alt}
-          width={showValarOrbit ? size * 0.765 : size * 0.85}
-          height={showValarOrbit ? size * 0.765 : size * 0.85}
+          width={size * 0.85}
+          height={size * 0.85}
           className="absolute"
           style={{
-            width: showValarOrbit ? size * 0.765 : size * 0.85,
-            height: showValarOrbit ? size * 0.765 : size * 0.85,
+            width: size * 0.85,
+            height: size * 0.85,
             zIndex: 10,
             left: '50%',
             top: '50%',
