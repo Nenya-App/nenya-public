@@ -4,6 +4,7 @@ import type { CellClient } from '../lib/cellClient';
 import type { RephraseController } from '../lib/rephraseController';
 import { NOTICES, WORDS } from '../lib/rephraseWords';
 import { Deciding, FirstUse, Waiting } from './RephraseConsent';
+import { Answered, Compared } from './CompareViews';
 import { Hearing, Returned } from './HearerViews';
 import { Draft, PhraseReview } from './SpeakerViews';
 import { Quiet, type PanelCtx } from './rephraseShared';
@@ -45,6 +46,9 @@ export default function RephrasePanel({ ctl, client, paused }: RephrasePanelProp
   else if (round.side === 'hearer' && round.phase === 'waiting-phrase') body = <Waiting text={WORDS.waitingPhrase} />;
   else if (round.side === 'hearer' && round.phase === 'hearing') body = <Hearing ctx={ctx} />;
   else if (round.side === 'hearer' && round.phase === 'returned') body = <Returned ctx={ctx} />;
+  else if (round.side === 'speaker' && round.phase === 'answered') body = <Answered ctx={ctx} />;
+  else if (round.side === 'speaker' && round.phase === 'revealed') body = <Compared ctx={ctx} viewer="speaker" />;
+  else if (round.side === 'hearer' && round.phase === 'compared') body = <Compared ctx={ctx} viewer="hearer" />;
   else body = null;
 
   return (
