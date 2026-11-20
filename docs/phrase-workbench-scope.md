@@ -222,3 +222,6 @@ The owner asked for the whole workbench to be built now, taking my recommendatio
 9. **Definitions:** written by us in this build. The owner reviews them before the switch is turned on (they are in `src/lib/needFamilies.ts` and `src/lib/feelingFamilies.ts`, one line each).
 10. **Name:** "Phrase workbench" stays as the working title, kept in one place (`WB.title` in `src/lib/workbenchCopy.ts`).
 11. **Sibling flow:** nothing designed here. The pure core is exported for the two-person session to reuse.
+
+## Build status (2026-11-20)
+Built behind `VITE_PHRASE_WORKBENCH` (off by default), all nine steps of section 9: data and wording; the pure core; frames; the marking page; need and feeling detail with sliders; frames page; words on request; "Remember on this device"; and the doors (a plain button in the coach's word panel, an accessibility-testing row, the Terms and data-register draft in `docs/drafts/terms-phrase-workbench-draft.md`). Not done: an About answer (the owner's wording), the online look-up (decision 8), the communal layer (decision 4). Checked by tests, type-check, build and server renders only; not in a browser.

@@ -43,3 +43,8 @@ ok('the page keeps things only through workbenchMemory, and only while the switc
 const app = read('src/app/App.tsx');
 ok('the page is reached only when the build switch is on', /currentScreen === 'phrases' && phraseWorkbenchOn\(\)/.test(app) && /phraseWorkbenchOn\(\) && isPhrasesPath/.test(app));
 ok('the switch is off unless VITE_PHRASE_WORKBENCH is "on", and documented', /=== 'on'/.test(read('src/lib/workbenchSwitch.ts')) && read('docs/production-env.md').includes('VITE_PHRASE_WORKBENCH'));
+
+// The door from the coach: a plain button that carries nothing
+const panel = read('src/coach/WordPanel.tsx'), demo = read('src/coach/CoachDemo.tsx');
+ok('the coach word panel offers the workbench only when given a handler, and passes nothing along', /onPhrases\?: \(\) => void/.test(panel) && /\{onPhrases && \(/.test(panel) && /onClick=\{onPhrases\}/.test(panel) && /onPhrases=\{onPhrases\}/.test(demo));
+ok('the handler is given only when the build switch is on', /onPhrases=\{phraseWorkbenchOn\(\) \? \(\) => navigateTo\('phrases'\) : undefined\}/.test(app));

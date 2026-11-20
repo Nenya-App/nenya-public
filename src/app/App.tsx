@@ -843,6 +843,7 @@ export default function App() {
               onBreathe={() => handleGlobalNavigation('welcome')}
               onPartnerPractice={handleNavigateToCell}
               onGuestbook={guestbookOn() ? () => navigateTo('guestbook') : undefined}
+              onPhrases={phraseWorkbenchOn() ? () => navigateTo('phrases') : undefined}
             />
             </RegionGate>
           )}
