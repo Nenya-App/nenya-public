@@ -5,6 +5,7 @@
 //   node scripts/bakeoff-workers-ai.mts --model @cf/meta/llama-3.1-8b-instruct-fp8 --json bake-llama31-8b.json
 //   node scripts/bakeoff-workers-ai.mts --model <id> --instructions v2      # default v2.1
 //   node scripts/bakeoff-workers-ai.mts --model <id> --only crisis          # one category or case id
+//   OPENROUTER_API_KEY=... node scripts/bakeoff-workers-ai.mts --openrouter --model anthropic/claude-haiku-5.5 [--zdr]   # the same through OpenRouter (testing only)
 //   VENICE_API_KEY=... node scripts/bakeoff-workers-ai.mts --venice --model claude-haiku-5-5   # a Venice model plays the coach's model call (spends Venice credit; tokens and dollars are totalled)
 //   node scripts/bakeoff-workers-ai.mts --model <id> --capture calls.jsonl  # also keep each request as sent and the usage the model reported (for scripts/replay-cost.mts)
 //   node scripts/bakeoff-workers-ai.mts --model <id> --private <dir>        # with the private text, as production sends it
@@ -33,12 +34,17 @@ const model = flag('--model');
 const localUrl = flag('--local-url');
 // --venice sends the model call to a Venice model (id from https://api.venice.ai/api/v1/models) with VENICE_API_KEY. The coach function still runs as on Workers AI (same instructions, same style note); only the hop changes.
 const viaVenice = args.includes('--venice');
-const veniceKey = process.env.VENICE_API_KEY;
-if (viaVenice && (!model || !veniceKey || localUrl)) {
-  console.error('--venice needs --model <Venice model id> and VENICE_API_KEY in the environment, and cannot be combined with --local-url.');
+// --openrouter does the same through OpenRouter (https://openrouter.ai/api/v1/models for the ids, such as anthropic/claude-haiku-5.5) with OPENROUTER_API_KEY. The request asks OpenRouter to route only to hosts that do not collect data
+// (provider.data_collection = deny); add --zdr to require zero-data-retention hosts too (some models have none, and the call then fails). Testing only, with invented text: never point visitor traffic here.
+const viaOpenRouter = args.includes('--openrouter');
+const hosted = viaVenice || viaOpenRouter;
+const hostedName = viaOpenRouter ? 'OpenRouter' : 'Venice';
+const hostedKey = viaOpenRouter ? process.env.OPENROUTER_API_KEY : process.env.VENICE_API_KEY;
+if (hosted && (!model || !hostedKey || localUrl || (viaVenice && viaOpenRouter))) {
+  console.error('--venice or --openrouter (not both) needs --model <that service\'s model id> and VENICE_API_KEY or OPENROUTER_API_KEY in the environment, and cannot be combined with --local-url.');
   process.exit(2);
 }
-if (!viaVenice && (!model || (!localUrl && !/^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model)))) {
+if (!hosted && (!model || (!localUrl && !/^@cf\/[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(model)))) {
   console.error('--model is a Workers AI model id, such as @cf/meta/llama-3.1-8b-instruct-fp8 (see `cf ai models list`); with --local-url it is the local model name.');
   process.exit(2);
 }
@@ -47,7 +53,7 @@ if (localUrl && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(localU
   process.exit(2);
 }
 // The coach function takes the Workers AI path in both cases; for a local model it is given a pseudo id so its address check passes, and the real name is used when forwarding.
-const coachModelId = localUrl || viaVenice ? `@cf/local/${model.replace(/[^a-z0-9._-]/gi, '-')}` : model;
+const coachModelId = localUrl || hosted ? `@cf/local/${model.replace(/[^a-z0-9._-]/gi, '-')}` : model;
 const instructions = flag('--instructions') ?? 'v2.1';
 if (!['v1', 'v2', 'v2.1'].includes(instructions)) {
   console.error('--instructions must be v1, v2 or v2.1.');
@@ -89,15 +95,27 @@ if (privateDir) {
 
 // Venice prices (USD per million tokens), read from the public model list, so the dollars come from each response's own token counts.
 let veniceIn = 0, veniceOut = 0, tokensIn = 0, tokensOut = 0;
-if (viaVenice) {
-  const list: any = await (await fetch('https://api.venice.ai/api/v1/models')).json();
-  const pr = list.data?.find((m: any) => m.id === model)?.model_spec?.pricing;
-  if (!pr) {
-    console.error(`No Venice price for ${model}.`);
-    process.exit(2);
+if (hosted) {
+  if (viaOpenRouter) {
+    // OpenRouter lists prices in USD per token.
+    const list: any = await (await fetch('https://openrouter.ai/api/v1/models')).json();
+    const pr = list.data?.find((m: any) => m.id === model)?.pricing;
+    if (!pr) {
+      console.error(`No OpenRouter price for ${model}.`);
+      process.exit(2);
+    }
+    veniceIn = Number(pr.prompt) * 1e6;
+    veniceOut = Number(pr.completion) * 1e6;
+  } else {
+    const list: any = await (await fetch('https://api.venice.ai/api/v1/models')).json();
+    const pr = list.data?.find((m: any) => m.id === model)?.model_spec?.pricing;
+    if (!pr) {
+      console.error(`No Venice price for ${model}.`);
+      process.exit(2);
+    }
+    veniceIn = Number(pr.input.usd);
+    veniceOut = Number(pr.output.usd);
   }
-  veniceIn = Number(pr.input.usd);
-  veniceOut = Number(pr.output.usd);
 }
 
 const work = mkdtempSync(join(tmpdir(), 'nenya-bakeoff-'));
@@ -111,16 +129,20 @@ const callLog: { chars: number; messages: number; neurons: number }[] = [];
 const realFetch = globalThis.fetch;
 (globalThis as { fetch: typeof fetch }).fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-  if (url.startsWith('https://api.venice.ai/')) throw new Error('the bake-off must never call Venice');
+  if (url.startsWith('https://api.venice.ai/') || url.startsWith('https://openrouter.ai/')) throw new Error('the coach function itself must never call Venice or OpenRouter in the bake-off');
   if (!url.startsWith('https://api.cloudflare.com/client/v4/accounts/')) return realFetch(input as RequestInfo, init);
   // The body exactly as the coach function built it for Workers AI.
   const body = JSON.parse(String(init?.body ?? '{}'));
-  if (viaVenice) {
+  if (hosted) {
     const t0 = Date.now();
     calls++;
     try {
       // Thinking models spend part of max_tokens on thinking, so the limit is raised to leave room for the answer.
-      const r = await realFetch('https://api.venice.ai/api/v1/chat/completions', { method: 'POST', headers: { authorization: `Bearer ${veniceKey}`, 'content-type': 'application/json' }, body: JSON.stringify({ model, messages: body.messages, max_tokens: Math.max(Number(body.max_tokens) || 0, 2000), venice_parameters: { include_venice_system_prompt: false } }) });
+      const maxTokens = Math.max(Number(body.max_tokens) || 0, 2000);
+      const hostedBody = viaOpenRouter
+        ? { model, messages: body.messages, max_tokens: maxTokens, provider: { data_collection: 'deny', ...(args.includes('--zdr') ? { zdr: true } : {}) } }
+        : { model, messages: body.messages, max_tokens: maxTokens, venice_parameters: { include_venice_system_prompt: false } };
+      const r = await realFetch(viaOpenRouter ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://api.venice.ai/api/v1/chat/completions', { method: 'POST', headers: { authorization: `Bearer ${hostedKey}`, 'content-type': 'application/json' }, body: JSON.stringify(hostedBody) });
       latencies.push(Date.now() - t0);
       if (!r.ok) return new Response('{}', { status: r.status === 429 ? 429 : 502 });
       const vj: any = await r.json();
@@ -226,15 +248,15 @@ if (layerSummary) console.log(`Layers: the model's first reply failed ${layerSum
 const sorted = [...latencies].sort((a, b) => a - b);
 const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
 const veniceUsd = (tokensIn * veniceIn + tokensOut * veniceOut) / 1e6;
-const cost = { calls, ...(viaVenice ? { tokensIn, tokensOut, usd: +veniceUsd.toFixed(5), usdPerCall: calls ? +(veniceUsd / calls).toFixed(6) : 0 } : {}), neurons: Math.round(neurons), neuronsPerCall: calls ? +(neurons / calls).toFixed(2) : 0, medianSeconds: +(median / 1000).toFixed(1) };
+const cost = { calls, ...(hosted ? { tokensIn, tokensOut, usd: +veniceUsd.toFixed(5), usdPerCall: calls ? +(veniceUsd / calls).toFixed(6) : 0 } : {}), neurons: Math.round(neurons), neuronsPerCall: calls ? +(neurons / calls).toFixed(2) : 0, medianSeconds: +(median / 1000).toFixed(1) };
 console.log(`\n=== ${model}: ${s.pass} passed, ${s.fail} failed, ${s.error} errors, of ${s.total} ===`);
 for (const [cat, n] of Object.entries(s.byCategory)) console.log(`  ${cat.padEnd(13)} pass ${n.pass}  fail ${n.fail}  error ${n.error}`);
-if (viaVenice) console.log(`Venice: ${tokensIn} input and ${tokensOut} output tokens, $${veniceUsd.toFixed(4)} ($${cost.usdPerCall} a call).`);
+if (hosted) console.log(`${hostedName}: ${tokensIn} input and ${tokensOut} output tokens, $${veniceUsd.toFixed(4)} ($${cost.usdPerCall} a call).`);
 console.log(`Model calls ${cost.calls}, Neurons ${cost.neurons} (${cost.neuronsPerCall} a call), median ${cost.medianSeconds}s a call (through the CLI, so slower than from the site).`);
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: viaVenice ? 'venice' : localUrl ? 'local' : 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, layerSummary, summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: viaOpenRouter ? 'openrouter' : viaVenice ? 'venice' : localUrl ? 'local' : 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, layerSummary, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 rmSync(work, { recursive: true, force: true });
-if (!viaVenice && !args.includes('--no-record')) console.log((await import('./record-neurons.mts')).recordNeurons(neurons));
+if (!hosted && !args.includes('--no-record')) console.log((await import('./record-neurons.mts')).recordNeurons(neurons));
 process.exit(0);

@@ -21,13 +21,15 @@ const flag = (n: string): string | undefined => (args.includes(n) ? args[args.in
 const captureFile = flag('--capture');
 const models = (flag('--models') ?? '').split(',').filter(Boolean);
 const jsonOut = flag('--json');
-const key = process.env.VENICE_API_KEY;
+// --openrouter sends every model that is not a @cf/ one through OpenRouter instead of Venice (OPENROUTER_API_KEY; ids such as anthropic/claude-haiku-5.5). The request asks for hosts that do not collect data; add --zdr to require zero-data-retention hosts.
+const viaOpenRouter = args.includes('--openrouter');
+const key = viaOpenRouter ? process.env.OPENROUTER_API_KEY : process.env.VENICE_API_KEY;
 if (!captureFile || models.length === 0 || (!key && models.some((m) => !m.startsWith('@cf/')))) {
-  console.error('Needs --capture <file>, --models a,b and VENICE_API_KEY in the environment (see the top of this file).');
+  console.error('Needs --capture <file>, --models a,b and VENICE_API_KEY (or OPENROUTER_API_KEY with --openrouter) in the environment (see the top of this file).');
   process.exit(2);
 }
 const CF = process.env.CF_BIN ?? join(homedir(), '.npm-global/bin/cf');
-const list: any = models.some((m) => !m.startsWith('@cf/')) ? await (await fetch('https://api.venice.ai/api/v1/models')).json() : { data: [] };
+const list: any = models.some((m) => !m.startsWith('@cf/')) ? await (await fetch(viaOpenRouter ? 'https://openrouter.ai/api/v1/models' : 'https://api.venice.ai/api/v1/models')).json() : { data: [] };
 let cfList: any[] | null = null;
 const priceOf = (id: string): [number, number] => {
   if (id.startsWith('@cf/')) {
@@ -37,6 +39,12 @@ const priceOf = (id: string): [number, number] => {
     // Some models carry no per-token price in the list: their cost is then taken from the Neurons at the paid rate ($0.011 per 1,000, from memory: check it), marked by NaN.
     if (!pr || Number.isNaN(f('input tokens'))) return [NaN, NaN];
     return [f('input tokens'), f('output tokens') || 0];
+  }
+  if (viaOpenRouter) {
+    // OpenRouter lists USD per token.
+    const o = list.data?.find((m: any) => m.id === id)?.pricing;
+    if (!o) throw new Error(`No OpenRouter price for ${id}`);
+    return [Number(o.prompt) * 1e6, Number(o.completion) * 1e6];
   }
   const p = list.data?.find((m: any) => m.id === id)?.model_spec?.pricing;
   if (!p) throw new Error(`No Venice price for ${id}`);
@@ -80,10 +88,10 @@ for (const model of models) {
       j = j.result ?? j;
       neurons += Number(j.usage?.neurons ?? 0);
     } else {
-      const res = await fetch('https://api.venice.ai/api/v1/chat/completions', {
+      const res = await fetch(viaOpenRouter ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://api.venice.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ model, messages: r.messages, max_tokens: 2000, venice_parameters: { include_venice_system_prompt: false } }),
+        body: JSON.stringify(viaOpenRouter ? { model, messages: r.messages, max_tokens: 2000, provider: { data_collection: 'deny', ...(args.includes('--zdr') ? { zdr: true } : {}) } } : { model, messages: r.messages, max_tokens: 2000, venice_parameters: { include_venice_system_prompt: false } }),
       });
       j = await res.json().catch(() => ({}));
       if (!res.ok) {
