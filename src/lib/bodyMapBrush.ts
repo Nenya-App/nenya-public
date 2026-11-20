@@ -29,7 +29,7 @@ export interface BrushStroke { paint: Paint; /** Width in map units (the map is 
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
-export const LENS_NAMES: Record<LensId, string> = { sight: 'Sight', sound: 'Sound', touch: 'Touch', essence: 'Essence', movement: 'Movement', insight: 'Insight' };
+export const LENS_NAMES: Record<LensId, string> = { sight: 'Sight', sound: 'Sound', touch: 'Touch', essence: 'Essence', movement: 'Movement', insight: 'Insight', nature: 'Nature', story: 'Story' };
 /** The visitor-facing name of a lens (the sixth is Pattern when the lens words are on). */
 export const lensName = (id: LensId): string => (id === 'insight' ? sixthLensName() : LENS_NAMES[id]);
 

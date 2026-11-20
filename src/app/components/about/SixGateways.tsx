@@ -1,4 +1,5 @@
-import { Eye, Music, Hand, Leaf, TrendingUp, Lightbulb } from 'lucide-react';
+import { Eye, Music, Hand, Leaf, TrendingUp, Lightbulb, TreePine, BookOpen } from 'lucide-react';
+import { activeLenses, lensCountWord, type LensId } from '../../../lib/lensState';
 import { Card } from '../ui/card';
 import { AppFooter } from '../AppFooter';
 
@@ -73,9 +74,34 @@ const gateways = [
     color: 'from-cyan-500/20 to-blue-500/20',
     iconColor: 'text-cyan-400',
   },
+  // The seventh and eighth lenses are listed only where they are on (src/lib/lensState.ts). They make no claim about the brain: they say what you do.
+  {
+    id: 'nature',
+    name: 'Nature',
+    subtitle: 'The natural world',
+    icon: TreePine,
+    description: 'Describe it through plants, weather, land and materials',
+    explanation: 'Many people find it easier to say how things are by pointing outdoors: a heron standing still, a drizzle, a ridge, something stiff or translucent or flowing. The Nature Lens gives you words for plants and animals, weather and climate, landscapes, and the physical properties of materials, and fills a description in from the words you pick. Nothing in it has a fixed meaning.',
+    askNote: 'You pick words from four lists, one list on each card, and you can add words of your own. Each card is optional.',
+    color: 'from-green-500/20 to-lime-500/20',
+    iconColor: 'text-lime-500',
+  },
+  {
+    id: 'story',
+    name: 'Story',
+    subtitle: 'A moment, told',
+    icon: BookOpen,
+    description: 'Tell a moment: where, who, what changes, how it ends',
+    explanation: 'A moment is sometimes easier to hold as a short story than as a feeling. The Story Lens asks, one card at a time, where and when it happens, who is in it, what changes and how it ends. It is a way of looking at a moment, not a test and not a treatment, and an unfinished story is a fine answer.',
+    askNote: 'You pick words for each part and can write your own. The last card puts them in a few words you can change.',
+    color: 'from-orange-500/20 to-rose-500/20',
+    iconColor: 'text-orange-500',
+  },
 ];
 
 export default function SixGateways({ onBack }: SixGatewaysProps) {
+  const lenses = gateways.filter((g) => activeLenses().includes(g.id as LensId));
+  const count = lensCountWord(), Count = count[0].toUpperCase() + count.slice(1);
   return (
     <div className="size-full overflow-auto scroll-container bg-background">
       <div className="max-w-4xl mx-auto px-6 sm:px-8 py-12 sm:py-16 space-y-12">
@@ -90,7 +116,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
         
         <div className="space-y-4">
           <h1 className="text-4xl sm:text-5xl bg-gradient-to-r from-nenya-gold-dark via-nenya-gold to-nenya-gold-light dark:from-nenya-silver dark:via-yellow-500 dark:to-nenya-silver-light bg-clip-text text-transparent">
-            The Six Lenses of Inner Knowing
+            The {Count} Lenses of Inner Knowing
           </h1>
           <p className="text-lg text-muted-foreground">
             Expanding emotional intelligence beyond the visual—because everyone's inner world speaks a different sensory language.
@@ -100,7 +126,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
 
       {/* Philosophy */}
       <Card className="p-6 sm:p-8 bg-gradient-to-br from-nenya-gold/5 to-nenya-gold/10 border-nenya-gold/30 dark:from-nenya-silver/5 dark:to-yellow-500/10 dark:border-nenya-silver/30">
-        <h2 className="text-2xl mb-4 text-nenya-gold-text dark:text-nenya-silver">Why Six Lenses?</h2>
+        <h2 className="text-2xl mb-4 text-nenya-gold-text dark:text-nenya-silver">Why {Count} Lenses?</h2>
         <div className="space-y-4 text-muted-foreground">
           <p>
             Nenya began with color—the Sight Lens—because visual metaphor is the most universal. But as we engaged with users, we realized: <strong>not everyone processes emotions visually</strong>.
@@ -109,7 +135,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
             Some feel emotions as <strong>sounds</strong> (musicians, auditory thinkers). Others experience them as <strong>textures</strong> or <strong>temperatures</strong> (highly sensitive, trauma survivors). Some sense them as <strong>atmospheric qualities</strong> or <strong>directional forces</strong>. And some process emotions primarily through <strong>pattern recognition</strong> and conceptual frameworks.
           </p>
           <p>
-            The Six Lenses framework recognizes this sensory diversity. Each lens offers a different way of looking at the same feeling, grounded in NVC+—meeting you where your neurology already lives, rather than forcing you to translate into a language that doesn't fit.
+            The {Count} Lenses framework recognizes this sensory diversity. Each lens offers a different way of looking at the same feeling, grounded in NVC+—meeting you where your neurology already lives, rather than forcing you to translate into a language that doesn't fit.
           </p>
           <p>
             <strong>You pick up a lens, look, and decide.</strong> Open any lens, in any order, as many or as few as you like. Choosing fewer can be more helpful than choosing many, so Nenya asks you to stop and think before a fourth choice on one card, and never stops you. The main choice and two sliders come first; extra words and your own description wait under “More descriptions”. Nothing goes into your report until you press “Add this to my report”. If you only looked through a lens, you can put it down, and the report says so in one plain line: “Examined, not included”.
@@ -125,7 +151,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
         <h2 className="text-2xl text-center">The Lenses</h2>
         
         <div className="grid gap-6">
-          {gateways.map((gateway) => {
+          {lenses.map((gateway) => {
             const Icon = gateway.icon;
             return (
               <Card 
@@ -151,7 +177,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
                     
                     <div className="pt-2 border-t border-border">
                       <p className="text-xs text-muted-foreground">
-                        <strong className="text-foreground">Neuroscience:</strong> {gateway.neuroscience}
+                        {'neuroscience' in gateway ? <><strong className="text-foreground">Neuroscience:</strong> {gateway.neuroscience}</> : <><strong className="text-foreground">What you do:</strong> {gateway.askNote}</>}
                       </p>
                     </div>
                   </div>
@@ -167,7 +193,7 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
         <h2 className="text-2xl mb-4">Development Status</h2>
         <div className="space-y-4 text-sm text-muted-foreground">
           <p>
-            <strong className="text-foreground">What exists today:</strong> All six lenses work as self-directed reflection, in any order and any number. What you choose to add stays in your browser and can be turned into a downloadable report, or saved on your own device for up to 24 hours, locked with your passcode. A lens you only looked through stays out of the report. When you are ready, you can optionally continue to an early coach demo: a short, five-exchange conversation with an AI that runs on an outside service (Venice AI). It is a prototype, not therapy, and it is the only part of Nenya that sends what you type to an AI.
+            <strong className="text-foreground">What exists today:</strong> All {count} lenses work as self-directed reflection, in any order and any number. What you choose to add stays in your browser and can be turned into a downloadable report, or saved on your own device for up to 24 hours, locked with your passcode. A lens you only looked through stays out of the report. When you are ready, you can optionally continue to an early coach demo: a short, five-exchange conversation with an AI that runs on an outside service (Venice AI). It is a prototype, not therapy, and it is the only part of Nenya that sends what you type to an AI.
           </p>
           <p>
             <strong className="text-foreground">Two optional activities:</strong> a tapestry, where you layer patterns one at a time (in Pattern), and a path of movement, which you draw or build with direction buttons and can watch move (in Movement). Each adds words to your report, and a small picture to the PDF; the coach reads words only.

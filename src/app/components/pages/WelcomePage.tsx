@@ -8,7 +8,8 @@ import { AppFooter } from '../AppFooter';
 import { SupportThisWork } from '../SupportThisWork';
 import { ContactSection } from '../ContactSection';
 import { LOGO_ALT_NO_ORBS, LOGO_ALT_SHORT } from '../../../lib/altText';
-import { GATEWAY_SUMMARIES } from '../../../lib/gatewaySummaries';
+import { lensSummaries } from '../../../lib/gatewaySummaries';
+import { lensCountWord } from '../../../lib/lensState';
 import { SenseIcon } from '../SenseIcon';
 
 import { L } from '../../../lib/vocabulary';
@@ -172,13 +173,13 @@ export default function WelcomePage({
 
           {/* The six gateways in a sentence each: short by default, nothing to open */}
           <section aria-labelledby="gateways-overview" className="mx-auto max-w-xl space-y-4 text-left">
-            <h2 id="gateways-overview" className="text-center text-xl md:text-2xl">The six {L('gateways')}</h2>
+            <h2 id="gateways-overview" className="text-center text-xl md:text-2xl">The {lensCountWord()} {L('gateways')}</h2>
             <p className="text-center text-base text-muted-foreground">
               Each one asks about where you are now and where you would like to be. Pick up any of them, in any order, as many or
               as few as you like. Choosing fewer can be more helpful than choosing many.
             </p>
             <dl className="space-y-3">
-              {GATEWAY_SUMMARIES.map((g) => (
+              {lensSummaries().map((g) => (
                 <div key={g.id}>
                   <dt className="flex items-center gap-2 font-medium"><SenseIcon id={g.id} />{g.name}</dt>
                   <dd className="text-muted-foreground">{g.summary}</dd>

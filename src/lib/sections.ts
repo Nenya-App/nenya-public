@@ -11,7 +11,7 @@ export const sectionsOn = (): boolean => import.meta.env?.VITE_SECTION_ADDRESSES
 
 export const SECTION_PATHS: Record<Section, string> = { breath: '/breath', senses: '/senses', coach: '/coach' };
 
-const SENSES_SCREENS = ['home', 'sight', 'sound', 'touch', 'essence', 'movement', 'insight', 'color-selection', 'gateway-review'];
+const SENSES_SCREENS = ['home', 'sight', 'sound', 'touch', 'essence', 'movement', 'insight', 'nature', 'story', 'color-selection', 'gateway-review'];
 
 /** The part of the site a screen belongs to, or null for screens with their own addresses (About) or none (partner practice). */
 export function sectionOfScreen(screen: string): Section | null {

@@ -22,6 +22,10 @@ the in-app Terms of Use for the full statement, including crisis resources.
     Miyako-bushi, and the blues), each written in its own notation.
   - *Touch*, *Essence*, *Movement*, *Insight*: sliders and short prompts, plus a
     body map and a freeform drawing canvas.
+  - *Nature* (the seventh lens) and *Story* (the eighth): cards of words, one activity each, with a
+    description that fills in from the words chosen. Each is behind its own switch,
+    `VITE_LENS_NATURE` and `VITE_LENS_STORY` (they also need `VITE_LENS_TRAY`), on for the dev branch
+    and off in production. Design notes: [`docs/lens-story-nature.md`](./docs/lens-story-nature.md).
 - **A report you keep.** A PDF summary, generated entirely in your browser,
   that you can save, print, or bring to someone you trust.
 - **Accessibility.** Light and dark themes, adjustable text size, animation

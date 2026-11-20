@@ -42,6 +42,8 @@ const TouchGatewayPage = lazy(() => import('./components/pages/TouchGatewayPage'
 const EssenceGatewayPage = lazy(() => import('./components/pages/EssenceGatewayPage'));
 const MovementGatewayPage = lazy(() => import('./components/pages/MovementGatewayPage'));
 const InsightGatewayPage = lazy(() => import('./components/pages/InsightGatewayPage'));
+const NatureGatewayPage = lazy(() => import('./components/pages/NatureGatewayPage'));
+const StoryGatewayPage = lazy(() => import('./components/pages/StoryGatewayPage'));
 const SessionKeyPicker = lazy(() => import('../coach/SessionKeyPicker'));
 const GatewayReviewPage = lazy(() => import('./components/pages/GatewayReviewPage'));
 const CoachDemo = lazy(() => import('../coach/CoachDemo'));
@@ -51,7 +53,7 @@ const DyadicCellCreation = lazy(() => import('./components/DyadicCellCreation'))
 const DyadicCellInterface = lazy(() => import('./components/DyadicCellInterface'));
 const AboutNenya = lazy(() => import('./components/AboutNenya'));
 
-export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight';
+export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'nature' | 'story';
 
 export interface UserColors {
   color1: string;
@@ -79,7 +81,7 @@ export interface GatewayData {
   data: any;
 }
 
-type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about' | 'guestbook';
+type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'nature' | 'story' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about' | 'guestbook';
 
 export default function App() {
   // An address under /about (or the older /?about=<section>) opens that About page.
@@ -787,6 +789,32 @@ export default function App() {
             />
           )}
           
+          {currentScreen === 'nature' && (
+            <NatureGatewayPage
+              onComplete={(data) => handleGatewayComplete('nature', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'nature')?.data}
+              onBack={() => navigateBack('home')}
+              currentIndex={selectedGateways.indexOf('nature')}
+              totalGateways={selectedGateways.length}
+              userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
+              bodyMapData={bodyMapData}
+              onUpdateBodyMap={setBodyMapData}
+            />
+          )}
+
+          {currentScreen === 'story' && (
+            <StoryGatewayPage
+              onComplete={(data) => handleGatewayComplete('story', data)}
+              initialData={gatewayData.find((g) => g.gateway === 'story')?.data}
+              onBack={() => navigateBack('home')}
+              currentIndex={selectedGateways.indexOf('story')}
+              totalGateways={selectedGateways.length}
+              userColors={gatewayData.find(gd => gd.gateway === 'sight')?.data}
+              bodyMapData={bodyMapData}
+              onUpdateBodyMap={setBodyMapData}
+            />
+          )}
+
           {currentScreen === 'color-selection' && (
             <SessionKeyPicker
               onComplete={handleColorSelectionComplete}

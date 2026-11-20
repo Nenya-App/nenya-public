@@ -8,7 +8,7 @@
   NODE_VERSION = "24"
 
 
-# Builds of the dev branch only (Netlify's context named for the branch): the lens tray, Terms-first, the lens activities and the summary button are ON there.
+# Builds of the dev branch only (Netlify's context named for the branch): the lens tray, Terms-first, the lens activities, the Nature and Story lenses and the summary button are ON there.
 # NOTHING here reaches production: production (nenya.biz) builds main, and every other site (such as the staging site) sets its own variables in its Netlify
 # settings. The lens words are on by default in the code, so they do not need a setting. The summary button also needs COACH_SUMMARY_REQUEST=on in the site's own
 # settings (a function variable cannot be set from this file). "What has come up so far" (VITE_NEED_TALLY) stays off until its wording is approved.
@@ -18,6 +18,8 @@
   VITE_TERMS_FIRST = "on"
   VITE_LENS_TAPESTRY = "on"
   VITE_LENS_PATH = "on"
+  VITE_LENS_NATURE = "on"
+  VITE_LENS_STORY = "on"
   VITE_SUMMARY_REQUEST = "on"
   VITE_WORD_HELP = "on"
 

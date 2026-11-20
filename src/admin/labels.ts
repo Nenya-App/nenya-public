@@ -55,7 +55,7 @@ const LABELS: Record<string, string> = {
   'coach.offer.ai-insult': 'Cards offered: abuse aimed at the AI',
 };
 
-const lensName = (id: string): string => (id === 'insight' ? 'Pattern' : id[0].toUpperCase() + id.slice(1));
+const lensName = (id: string): string => (id === 'insight' ? 'Pattern' : id[0].toUpperCase() + id.slice(1)); // nature and story read as they are
 
 export const label = (e: string): string => {
   if (LABELS[e]) return LABELS[e];

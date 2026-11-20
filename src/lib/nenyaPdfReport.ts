@@ -14,6 +14,7 @@ import { swatchBlock } from './pdfLayout';
 import { cleanLayers, cleanPoints } from './lensActivities';
 
 import { L } from './vocabulary.ts';
+import { lensCountWord } from './lensState.ts';
 import {
   COLORS,
   loadFonts,
@@ -245,7 +246,7 @@ export async function downloadNenyaPdfReport(
   doc.setFontSize(9.5);
   doc.setTextColor(...COLORS.textMuted);
   const introLines = doc.splitTextToSize(
-    L('This report reflects a private session of self-exploration through Nenya’s six sensory gateways. It is offered as a starting point for your own reflection, or for a conversation with a therapist, spiritual counselor, or trusted guide — never as a diagnosis or a directive.'),
+    L(`This report reflects a private session of self-exploration through Nenya’s ${lensCountWord()} sensory gateways. It is offered as a starting point for your own reflection, or for a conversation with a therapist, spiritual counselor, or trusted guide — never as a diagnosis or a directive.`),
     150
   );
   doc.text(introLines, centerX, 148, { align: 'center' });

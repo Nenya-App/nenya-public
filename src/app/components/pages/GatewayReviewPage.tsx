@@ -1,5 +1,5 @@
 import { Button } from '../ui/button';
-import { ArrowLeft, ArrowRight, Edit2, Eye, Music, Hand, Sparkles, Zap, Brain, Download, User, FileText, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Edit2, Eye, Music, Hand, Sparkles, Zap, Brain, TreePine, BookOpen, Download, User, FileText, ExternalLink } from 'lucide-react';
 import PanelLogo from '../PanelLogo';
 import { Gateway, GatewayData } from '../../App';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -37,6 +37,8 @@ const gatewayIcons = {
   essence: Sparkles,
   movement: Zap,
   insight: Brain,
+  nature: TreePine,
+  story: BookOpen,
 };
 
 export default function GatewayReviewPage({
@@ -222,6 +224,8 @@ export default function GatewayReviewPage({
                             {gd.gateway === 'essence' && 'Scent and aromatic associations'}
                             {gd.gateway === 'movement' && 'Direction and flow of energy'}
                             {gd.gateway === 'insight' && 'Patterns of understanding'}
+                            {gd.gateway === 'nature' && 'The natural world, in your words'}
+                            {gd.gateway === 'story' && 'A moment, told as a story'}
                           </CardDescription>
                         </div>
                       </div>

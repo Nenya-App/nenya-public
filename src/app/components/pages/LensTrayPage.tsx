@@ -4,7 +4,7 @@ import { Card } from '../ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { AppFooter } from '../AppFooter';
 import QuickNav from '../QuickNav';
-import { gatewayCards } from './GatewaysPage';
+import { trayLensCards } from './GatewaysPage';
 import { SenseIcon } from '../SenseIcon';
 import type { SenseId } from '../../../lib/senseIcons';
 import { L } from '../../../lib/vocabulary';
@@ -12,7 +12,7 @@ import { lensStatus, reportShape, type LensId, type LensState } from '../../../l
 import { BodyMapCard } from '../BodyMapCard';
 import { BodyMapAvatar, type BodyMapData } from '../BodyMapAvatar';
 
-// The lens tray (docs/lens-rewrite-scope.md, behind VITE_LENS_TRAY): six lenses, any order, any number. Each shows whether it is not opened, examined or included.
+// The lens tray (docs/lens-rewrite-scope.md, behind VITE_LENS_TRAY): every lens that is on (six, or more where Nature and Story are on), any order, any number. Each shows whether it is not opened, examined or included.
 interface Props {
   state: LensState;
   onOpen: (lens: LensId) => void;
@@ -51,7 +51,7 @@ export default function LensTrayPage({ state, onOpen, onRemove, onReport, onBack
             </p>
           </div>
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 list-none p-0">
-            {gatewayCards.map((c) => {
+            {trayLensCards().map((c) => {
               const st = lensStatus(state, c.id as LensId);
               return (
                 <li key={c.id}>

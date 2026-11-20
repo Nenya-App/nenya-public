@@ -3,7 +3,7 @@ import { SENSE_WORDS, ORIGINAL_WORDS, wordsOf, senseDescription, type SenseCateg
 import { ok } from './helpers.mts';
 
 const cats = Object.keys(SENSE_WORDS) as SenseCategory[];
-ok('there are nine lists', cats.length === 9);
+ok('there are seventeen lists: the nine of the first six lenses, four for Nature and four for Story', cats.length === 17);
 for (const c of cats) {
   const words = wordsOf(c);
   const lower = words.map((w) => w.toLowerCase());

@@ -1,6 +1,7 @@
 // The text of a sensory report, one function per part: the review page, the downloads (text and PDF) and the coach hand-off
 // (src/lib/reportShare.ts) all use these, so what the person sees, downloads and may share is the same words.
 import { cleanV2, essenceReportLines } from './flavour.ts';
+import { NATURE, STORY, wordCardLines } from './lensWordCards.ts';
 import { surfaceLine } from './touchTextures.ts';
 import { getNoteNames, TONAL_SYSTEM_LABELS, type TonalSystem } from './audio.ts';
 import { describePalettePlainly } from './colorSchemes.ts';
@@ -10,7 +11,7 @@ import { labelFor, type MapPin } from './bodyMapParts.ts';
 import { describeStrokes, type BrushStroke } from './bodyMapBrush.ts';
 
 import { L, sixthLensName } from './vocabulary.ts';
-export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight';
+export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'nature' | 'story';
 export interface BodyMapLike {
   placements: { bodyPartId: string; color: string; colorName?: string }[];
   notes: Record<string, string>;
@@ -42,6 +43,8 @@ export const gatewayTitles: Record<Gateway, string> = {
   essence: 'Essence - Aromatic Memory',
   movement: 'Movement - Kinesthesia',
   insight: `${sixthLensName()} - Noesis`,
+  nature: 'Nature - The Natural World',
+  story: 'Story - Narrative',
 };
 
 // Helper function to get body part label from ID
@@ -280,6 +283,15 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialPatternDrawing) info.push(`  Drawing: captured`);
       info.push(...shapeLine('wish', data.potentialPatternShapes));
       if (typeof data.tapestryWords === 'string' && data.tapestryWords) info.push(`Tapestry: ${data.tapestryWords}`); // words only: the picture never goes into the text (or to the coach)
+      break;
+
+    // Nature and Story (the seventh and eighth lenses): words and the person's own sentences, nothing else (src/lib/lensWordCards.ts).
+    case 'nature':
+      info.push(...wordCardLines(NATURE, data));
+      break;
+
+    case 'story':
+      info.push(...wordCardLines(STORY, data));
       break;
   }
   

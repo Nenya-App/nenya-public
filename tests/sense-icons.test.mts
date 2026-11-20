@@ -1,11 +1,11 @@
 // The icons beside the six senses on the opening page: Google's Material Symbols, self-hosted, credited, decorative.
 import { existsSync, readFileSync } from 'node:fs';
 import { SENSE_ICONS, SENSE_ICON_VIEWBOX } from '../src/lib/senseIcons.ts';
-import { GATEWAY_SUMMARIES } from '../src/lib/gatewaySummaries.ts';
+import { GATEWAY_SUMMARIES, EXTRA_LENS_SUMMARIES } from '../src/lib/gatewaySummaries.ts';
 import { ok } from './helpers.mts';
 
-const ids = GATEWAY_SUMMARIES.map((g) => g.id);
-ok('every one of the six senses has an icon, and no more', ids.length === 6 && Object.keys(SENSE_ICONS).sort().join() === [...ids].sort().join());
+const ids = [...GATEWAY_SUMMARIES, ...EXTRA_LENS_SUMMARIES].map((g) => g.id);
+ok('every one of the lenses (the six, and Nature and Story) has an icon, and no more', ids.length === 8 && Object.keys(SENSE_ICONS).sort().join() === [...ids].sort().join());
 ok('each icon\'s path equals the downloaded file in public/icons/material/ (the table and the self-hosted files never drift apart)', ids.every((id) => {
   const f = `public/icons/material/${SENSE_ICONS[id].symbol}.svg`;
   if (!existsSync(f)) return false;

@@ -4,7 +4,7 @@ This Figma Make file includes photos from [Unsplash](https://unsplash.com) used 
 
 ## Material Symbols
 
-The six small icons beside the senses (Sight, Sound, Touch, Essence, Movement, Pattern) on the opening page are **Material Symbols** by Google (Outlined, 24 px: `visibility`, `hearing`, `back_hand`, `local_florist`, `air`, `pattern`), used under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) and unchanged. They are served from this site (`public/icons/material/`, with the licence and a note of where they came from), so nothing is loaded from Google. Source: <https://github.com/google/material-design-icons>.
+The small icons beside the lenses (Sight, Sound, Touch, Essence, Movement, Pattern, and Nature and Story where those are on) on the opening page are **Material Symbols** by Google (Outlined, 24 px: `visibility`, `hearing`, `back_hand`, `local_florist`, `air`, `pattern`, `park`, `auto_stories`), used under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) and unchanged. They are served from this site (`public/icons/material/`, with the licence and a note of where they came from), so nothing is loaded from Google. Source: <https://github.com/google/material-design-icons>.
 
 ## DarkBench
 

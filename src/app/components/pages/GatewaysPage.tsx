@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { ArrowLeft, Eye, Music, Hand, Droplet, Zap, Lightbulb, Check } from 'lucide-react';
+import { ArrowLeft, Eye, Music, Hand, Droplet, Zap, Lightbulb, Check, TreePine, BookOpen } from 'lucide-react';
 import { Gateway } from '../../App';
 import { AppFooter } from '../AppFooter';
 import { ContinueSavedLink } from '../SaveReflection';
 import { GATEWAY_ROUTES } from '../../../lib/gatewaySummaries';
 
 import { L, sixthLensName } from '../../../lib/vocabulary';
+import { activeLenses, type LensId } from '../../../lib/lensState';
 interface GatewaysPageProps {
   onGatewaysSelected: (gateways: Gateway[]) => void;
   onBack: () => void;
@@ -56,7 +57,25 @@ export const gatewayCards = [
     description: 'Understand through inner knowing',
     tagline: 'What wisdom emerges from within?',
   },
+  // The seventh and eighth lenses exist only in the tray, and only where their switches are on (src/lib/lensState.ts). The older choose-several flow below never lists them.
+  {
+    id: 'nature' as Gateway,
+    name: 'Nature',
+    icon: TreePine,
+    description: 'Describe it through the natural world',
+    tagline: 'What in nature is it like?',
+  },
+  {
+    id: 'story' as Gateway,
+    name: 'Story',
+    icon: BookOpen,
+    description: 'Tell it as a moment in a story',
+    tagline: 'What is the moment, and how does it end?',
+  },
 ];
+
+/** The lens cards the tray shows: the lenses a visitor can open now (the seventh and eighth only where their switches are on). */
+export const trayLensCards = () => gatewayCards.filter((c) => activeLenses().includes(c.id as LensId));
 
 export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPageProps) {
   const [selectedGateways, setSelectedGateways] = useState<Gateway[]>([]);
@@ -111,7 +130,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
 
           {/* Gateway Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {gatewayCards.map((gateway) => {
+            {gatewayCards.filter((g) => g.id !== 'nature' && g.id !== 'story').map((gateway) => {
               const Icon = gateway.icon;
               const isSelected = selectedGateways.includes(gateway.id);
               

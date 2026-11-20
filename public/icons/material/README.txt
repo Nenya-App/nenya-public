@@ -1,3 +1,3 @@
 Material Symbols (Outlined, weight 400, 24px) by Google, from https://github.com/google/material-design-icons (symbols/web/<name>/materialsymbolsoutlined/<name>_24px.svg), downloaded 2026-11-18 and served from this site, so no icon is fetched from any other host.
 Licensed under the Apache License, Version 2.0 (LICENSE.txt in this folder). The files are unchanged.
-Used on the opening page's list of the six lenses: Sight = visibility, Sound = hearing, Touch = back_hand, Essence = local_florist, Movement = air, Pattern = pattern.
+Used on the opening page's list of the lenses: Sight = visibility, Sound = hearing, Touch = back_hand, Essence = local_florist, Movement = air, Pattern = pattern, Nature = park, Story = auto_stories (the last two downloaded 2026-11-19 from the same place).

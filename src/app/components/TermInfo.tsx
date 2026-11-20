@@ -9,11 +9,11 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import * as m from 'motion/react-m';
-import { senseDescription } from '../../lib/senseWords';
+import { senseDescription, type SenseCategory } from '../../lib/senseWords';
 
 interface TermInfoProps {
   term: string;
-  category: 'timbre' | 'rhythm' | 'taste' | 'scent' | 'pattern' | 'perspective' | 'direction' | 'quality' | 'lightQuality';
+  category: SenseCategory;
 }
 
 // Term information database - context-aware for duplicate terms
