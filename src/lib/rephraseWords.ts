@@ -8,7 +8,7 @@ import type { Notice } from './rephraseRound.ts';
 export const CNVC_CREDIT = 'The Center for Nonviolent Communication © 2023, www.CNVC.org';
 export const CNVC_URL = 'https://www.cnvc.org';
 export const EXTENSION_NOTE = 'The communal-needs layer is a project extension and is not part of the CNVC list.';
-export const CATEGORIES_NOTE = `The five kinds of mark follow the categories of ${CNVC_CREDIT}. Nenya’s own lists of feelings and needs are used, not CNVC’s.`;
+export const CATEGORIES_NOTE = `The kinds of mark follow the categories of ${CNVC_CREDIT}. Nenya’s own lists of feelings and needs are used, not CNVC’s.`;
 
 export const WORDS = {
   panelTitle: 'Rephrase together',
@@ -146,6 +146,9 @@ export const KIND_PLAIN: Record<MarkKind, string> = {
   feeling: 'a feeling',
   need: 'a need',
   request: 'a request',
+  thought: 'a thought',
+  strategy: 'a way to meet a need',
+  demand: 'a demand',
 };
 
 /** The announcements for a screen reader (polite). The content of a phrase is never read out on arrival. */

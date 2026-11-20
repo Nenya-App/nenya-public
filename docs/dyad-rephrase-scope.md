@@ -516,6 +516,7 @@ Numbers are the questions in section 16.
 16. **Same-device use:** cannot be detected; the first-use screen says rephrasing needs two devices.
 17. **The four comparison statements** are used as worded in section 4.
 18. **Left out of v1 (and said so):** marking the rewrite (the hearer reads it); locking and padding are built; the frames and sliders wait for the workbench's parts.
+19. **Reuse of the workbench (merged 2026-11-20, branch `claude/phrase-workbench-scope-cc19cc`):** rephrasing now uses the workbench's mark kinds (eight, not five: saw, feeling, need, request first, then story, thought, strategy, demand), their names, plain descriptions and shapes (lines under or over, boxes), and its CNVC credit line and page link (`workbenchCopy.ts`). **Not reused, and why:** its tokenizer and mark model (marks with ids, detail and levels), because a phrase's word positions must mean the same words on both devices and the format is already versioned (`w1`); swapping it would be a protocol change with its own tests. Its sliders, frames and "words on request" have no screen in rephrasing yet (the message format carries the speaker's sliders; the workbench's levels run 0 to 6 and the format's 0 to 4, to be aligned when sliders get a screen). The marking component is still rephrasing's own, drawing the workbench's shapes.
 
 ## 16. Open questions for the owner
 

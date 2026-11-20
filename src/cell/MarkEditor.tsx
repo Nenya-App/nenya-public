@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { isGuess, kindInfo, KINDS, plainWord, type Cue, type MarkKind } from '../lib/rephraseKinds';
 import { ANNOUNCE, CATEGORIES_NOTE, CNVC_URL, EXTENSION_NOTE, WORDS } from '../lib/rephraseWords';
 
@@ -6,7 +6,13 @@ import { ANNOUNCE, CATEGORIES_NOTE, CNVC_URL, EXTENSION_NOTE, WORDS } from '../l
 // A mark is never colour alone: it has its name in words under the word, a glyph, and a line style (solid, dotted, double, dashed,
 // wavy), and the word's accessible name says it ("tired, marked as a feeling"). No dragging; arrow keys move between words.
 // LOCAL stand-in for the solo workbench's marking component, to be swapped when its pure core lands.
-const cueStyle = (c: Cue) => ({ textDecorationLine: 'underline' as const, textDecorationStyle: c, textDecorationThickness: '2px', textUnderlineOffset: '5px' });
+// The shapes are the workbench's: lines under, a line over, or a box (solid or dashed) around the word.
+function cueStyle(c: Cue): CSSProperties {
+  const [form, style] = c.split('-') as ['underline' | 'box' | 'overline', string | undefined];
+  if (form === 'box') return { outline: `2px ${style} currentColor`, outlineOffset: '1px' };
+  if (form === 'overline') return { textDecorationLine: 'overline', textDecorationStyle: 'solid', textDecorationThickness: '2px', textUnderlineOffset: '5px' };
+  return { textDecorationLine: 'underline', textDecorationStyle: style as CSSProperties['textDecorationStyle'], textDecorationThickness: '2px', textUnderlineOffset: '5px' };
+}
 const kindLabel = (k: MarkKind, hearer: boolean) => `${kindInfo(k).name}${isGuess(k, hearer) ? ' (my guess)' : ''}`;
 const shortLabel = (k: MarkKind, hearer: boolean) => `${kindInfo(k).glyph} ${kindInfo(k).short}${isGuess(k, hearer) ? ', a guess' : ''}`;
 
@@ -59,7 +65,7 @@ export default function MarkEditor({ id, words, marks, hearer, onMark }: MarkEdi
       {hearer && <p className="text-sm text-muted-foreground">{WORDS.hearerGuess}</p>}
       <fieldset className="grid gap-1 rounded-lg border-2 border-border p-2">
         <legend className="px-1 text-sm font-bold">{WORDS.markAs}</legend>
-        {KINDS.map((k) => (
+        {KINDS.filter((k) => k.first).concat(KINDS.filter((k) => !k.first)).map((k) => (
           <label key={k.id} className={`flex min-h-11 items-center gap-3 rounded-md px-2 ${kind === k.id ? 'bg-muted outline outline-2 outline-foreground' : ''}`}>
             <input type="radio" name={`${id}-kind`} className="size-6 shrink-0" checked={kind === k.id} onChange={() => setKind(k.id)} />
             <span className="text-sm">

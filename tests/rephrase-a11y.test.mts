@@ -42,9 +42,9 @@ const editor = html(h(M.MarkEditor, { id: 't', words, marks, hearer: false, onMa
 const buttons = [...editor.matchAll(/<button[^>]*>/g)].map((m) => m[0]);
 ok('every word is a button with a name that says whether and how it is marked', buttons.length === 4 && buttons.every((b) => /aria-label="[^"]*(not marked|marked as)/.test(b) && /aria-pressed/.test(b)));
 ok('a marked word shows its kind in words, with a glyph, not by colour', />late,<\/span><span class="block text-xs font-bold">■ saw</.test(editor) && />again\.<\/span><span class="block text-xs font-bold">○ story</.test(editor));
-ok('each kind has a distinct line style, in the legend and on marked words', ['solid', 'dotted', 'double', 'dashed', 'wavy'].every((c) => editor.includes(`text-decoration-style:${c}`)) );
-ok('the kind chooser is a labelled group of five radio buttons', /<fieldset[\s\S]*<legend[^>]*>Mark as<\/legend>/.test(editor) && (editor.match(/type="radio"/g) ?? []).length === 5);
-ok('word buttons and radios are at least 44 px (min-h-11 / size-6 inside a min-h-11 label)', buttons.every((b) => /min-h-11/.test(b) && /min-w-11/.test(b)) && (editor.match(/<label[^>]*min-h-11/g) ?? []).length === 5);
+ok('each kind has a distinct shape, in the legend and on marked words (lines under, over, or a box)', ['solid', 'dotted', 'double', 'dashed', 'wavy'].every((c) => editor.includes(`text-decoration-style:${c}`)) && editor.includes('text-decoration-line:overline') && editor.includes('outline:2px solid currentColor') && editor.includes('outline:2px dashed currentColor'));
+ok('the kind chooser is a labelled group of eight radio buttons', /<fieldset[\s\S]*<legend[^>]*>Mark as<\/legend>/.test(editor) && (editor.match(/type="radio"/g) ?? []).length === 8);
+ok('word buttons and radios are at least 44 px (min-h-11 / size-6 inside a min-h-11 label)', buttons.every((b) => /min-h-11/.test(b) && /min-w-11/.test(b)) && (editor.match(/<label[^>]*min-h-11/g) ?? []).length === 8);
 ok('there is a polite live region for mark announcements', /role="status" aria-live="polite" class="sr-only"/.test(editor));
 ok('the CNVC credit line, its link and the project-extension note are under the marks', editor.includes('The Center for Nonviolent Communication © 2023, www.CNVC.org') && /href="https:\/\/www\.cnvc\.org"/.test(editor) && /project extension/.test(editor));
 const guess = html(h(M.MarkEditor, { id: 'h', words, marks: new Map([[1, 'feeling']]), hearer: true, onMark: () => undefined }));

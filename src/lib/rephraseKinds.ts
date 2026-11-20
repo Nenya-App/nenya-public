@@ -1,11 +1,14 @@
-// The five kinds of mark in rephrasing (docs/dyad-rephrase-scope.md), as a person marks the words of a phrase. A LOCAL stand-in
-// for the solo phrase workbench's own list, to be replaced by its names when that lands. The cue (how a mark looks without
-// colour) and the glyph are in addition to the text label, which is always shown: a mark is never colour alone.
-export type MarkKind = 'saw' | 'story' | 'feeling' | 'need' | 'request';
-export type Cue = 'solid' | 'dotted' | 'double' | 'dashed' | 'wavy';
+// The kinds of mark in rephrasing (docs/dyad-rephrase-scope.md), as a person marks the words of a phrase. The kinds, their names,
+// plain descriptions and shapes are the solo phrase workbench's own (src/lib/workbenchCopy.ts), reused so the two tools say the
+// same things. A shape (how a mark looks without colour) and a glyph are in addition to the text label, which is always shown:
+// a mark is never colour alone. The tokenizer stays rephrasing's own (version 'w1'), because it travels with the phrase.
+import { MARKS, type MarkKind as WorkbenchKind, type MarkShape } from './workbenchCopy.ts';
+
+export type MarkKind = WorkbenchKind;
+export type Cue = MarkShape;
 export interface KindInfo {
   id: MarkKind;
-  /** The heading, in the person's own voice. */
+  /** The heading. */
   name: string;
   /** The short label shown on the marked word. */
   short: string;
@@ -13,15 +16,11 @@ export interface KindInfo {
   /** One plain line. */
   desc: string;
   cue: Cue;
+  /** Shown first; the rest sit under "More marks". */
+  first: boolean;
 }
-
-export const KINDS: readonly KindInfo[] = [
-  { id: 'saw', name: 'What I saw or heard', short: 'saw', glyph: '■', desc: 'Something a camera or a recording would have caught.', cue: 'solid' },
-  { id: 'story', name: 'A story about it', short: 'story', glyph: '○', desc: 'What I made of it: a reason, a pattern, a judgment.', cue: 'dotted' },
-  { id: 'feeling', name: 'A feeling', short: 'feeling', glyph: '▲', desc: 'What I felt in my body or heart.', cue: 'double' },
-  { id: 'need', name: 'A need', short: 'need', glyph: '◆', desc: 'What matters to me underneath.', cue: 'dashed' },
-  { id: 'request', name: 'A request', short: 'request', glyph: '✦', desc: 'A clear, doable ask.', cue: 'wavy' },
-];
+const GLYPH: Record<MarkKind, string> = { saw: '\u25A0', story: '\u25CB', feeling: '\u25B2', need: '\u25C6', request: '\u2726', thought: '\u25C7', strategy: '\u25CF', demand: '\u25BC' };
+export const KINDS: readonly KindInfo[] = MARKS.map((m) => ({ id: m.kind, name: m.name, short: m.kind, glyph: GLYPH[m.kind], desc: m.plain, cue: m.shape, first: m.first }));
 export const MARK_KINDS: readonly MarkKind[] = KINDS.map((k) => k.id);
 export const isMarkKind = (x: unknown): x is MarkKind => typeof x === 'string' && (MARK_KINDS as readonly string[]).includes(x);
 export const kindInfo = (k: MarkKind): KindInfo => KINDS.find((x) => x.id === k)!;

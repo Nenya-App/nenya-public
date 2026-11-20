@@ -18,7 +18,7 @@ ok('both devices compute the same rows (relation, word, kinds), worded for the v
 ok('the statements read right for each viewer', onSpeaker.rows![0].text === 'Marked only by you.' && onHearer.rows![0].text === 'Marked only by them.' && onSpeaker.rows![3].text === 'Marked only by them.' && onHearer.rows![3].text === 'Marked only by you.');
 ok('"different" names both kinds, the speaker first, and calls the hearer\'s guess a guess', onSpeaker.rows![5].text === 'Marked by both of you, as different kinds. You: what was seen or heard. They: a story.' && onHearer.rows![5].text === 'Marked by both of you, as different kinds. They: what was seen or heard. You: a story.' && statement('different', 'story', 'feeling', 'hearer') === 'Marked by both of you, as different kinds. They: a story. You: a guess at a feeling.');
 ok('"same" names the kind and nothing else', onSpeaker.rows![1].text === 'Marked the same way by both of you (what was seen or heard).');
-ok('sections are in the fixed order of the five kinds', onSpeaker.speaker.map((s) => s.kind).join() === 'saw,story,feeling' && onSpeaker.hearer!.map((s) => s.kind).join() === 'saw,story,feeling,request');
+ok('sections are in the fixed order of the kinds (the workbench order)', onSpeaker.speaker.map((s) => s.kind).join() === 'saw,feeling,story' && onSpeaker.hearer!.map((s) => s.kind).join() === 'saw,feeling,request,story');
 ok('a hearer\'s feelings are called guesses in the sentence', sectionLine({ kind: 'feeling', words: ['tired'] }, true) === 'A guess at a feeling: tired.' && sectionLine({ kind: 'feeling', words: ['tired'] }, false) === 'A feeling: tired.');
 const kept = compare(phrase, S, null, 'speaker');
 ok('with no reading of the hearer there are no rows and no hearer sections', kept.rows === null && kept.hearer === null && kept.speaker.length === 3);
@@ -37,8 +37,8 @@ ok('"Neither is the right one." is the only mention of right, and it is a refusa
 
 // Credit and wording.
 ok('the CNVC credit line is exact and the extension note says what it is', CNVC_CREDIT === 'The Center for Nonviolent Communication © 2023, www.CNVC.org' && /project extension/.test(EXTENSION_NOTE) && CATEGORIES_NOTE.includes(CNVC_CREDIT));
-ok('every kind has a plain one-line description and a text label', KINDS.length === 5 && KINDS.every((k) => k.desc.length > 10 && k.short.length > 2 && k.glyph.length === 1 && k.name.length > 5));
-ok('the cues differ between kinds (a mark is never colour alone)', new Set(KINDS.map((k) => k.cue)).size === 5 && new Set(KINDS.map((k) => k.glyph)).size === 5);
+ok('every kind has a plain one-line description and a text label', KINDS.length === 8 && KINDS.every((k) => k.desc.length > 10 && k.short.length > 2 && k.glyph.length === 1 && k.name.length > 5));
+ok('the cues differ between kinds (a mark is never colour alone)', new Set(KINDS.map((k) => k.cue)).size === 8 && new Set(KINDS.map((k) => k.glyph)).size === 8);
 ok('the first-use screen says what cannot be stopped, what is checked, what is not, and the hotline', WORDS.firstPoints.some((p) => /copy or screenshot/.test(p)) && WORDS.firstPoints.some((p) => /can miss things/.test(p)) && WORDS.firstPoints.some((p) => /988/.test(p)) && WORDS.firstPoints.some((p) => /two devices/.test(p)) && WORDS.firstPoints.some((p) => /not therapy/.test(p)));
 ok('no notice gives a reason or names who declined beyond "they"', Object.values(NOTICES).every((t) => !/because|reason:|refus|ignored|rejected/i.test(t)));
 ok('the report notice says exactly what is revealed and that the reporter is not named', /exactly as it arrived/.test(WORDS.reportExplain) && /every word/.test(WORDS.reportExplain) && /does not tell them who reported/.test(WORDS.reportExplain));
