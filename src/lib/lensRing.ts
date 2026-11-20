@@ -24,6 +24,8 @@ export interface RingItem {
   line: string;
   /** True for a custom lens (visit only). */
   custom?: boolean;
+  /** A custom lens's chosen colour (a hex from the palette); built-in leaves keep their metal finish. */
+  color?: string;
 }
 
 export const STATUS_WORDS: Record<RingStatus, string> = { 'not-opened': 'not opened', examined: 'examined', included: 'included in my report' };

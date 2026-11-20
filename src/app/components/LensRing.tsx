@@ -68,7 +68,7 @@ export function LensRing({ items: all, statusOf, onPick }: Props) {
             const cx = R + rm * Math.sin(a), cy = R - rm * Math.cos(a);
             return (
               <g key={it.id}>
-                <path d={leafPath(i, n, size)} fill={it.custom ? 'var(--nenya-accent-cool, #9bb0c9)' : i % 2 ? '#C9CED8' : 'var(--nenya-accent-warm)'} fillOpacity={st === 'not-opened' ? 0.55 : 0.95} stroke={on ? 'var(--foreground)' : 'var(--border)'} strokeWidth={on ? 4 : 1.5} />
+                <path d={leafPath(i, n, size)} fill={it.custom ? (it.color ?? '#9bb0c9') : i % 2 ? '#C9CED8' : 'var(--nenya-accent-warm)'} fillOpacity={st === 'not-opened' ? 0.55 : 0.95} stroke={on ? 'var(--foreground)' : 'var(--border)'} strokeWidth={on ? 4 : 1.5} />
                 {st === 'examined' && <circle cx={cx} cy={cy} r={7} fill="none" stroke="#1a1a1a" strokeWidth={2.5} />}
                 {st === 'included' && <><circle cx={cx} cy={cy} r={9} fill="#1a1a1a" /><path d={`M${cx - 4.5} ${cy} l3.2 3.4 l5.8 -6.6`} fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" /></>}
               </g>
