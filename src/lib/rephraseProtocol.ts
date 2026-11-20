@@ -31,9 +31,9 @@ export type ControlStep = 'done' | 'stop' | 'away' | 'back';
 
 export interface AskBody { round: string; tok: string }
 export interface AnswerBody { round: string; answer: Answer }
-export interface PhraseBody { round: string; tok: string; phrase: string }
+export interface PhraseBody { round: string; tok: string; phrase: string; lock?: string }
 export interface HeardBody { round: string; mode: HeardMode; marks?: Mark[]; note?: string }
-export interface MeantBody { round: string; marks: Mark[]; rewrite?: string; sliders?: Slider[] }
+export interface MeantBody { round: string; marks: Mark[]; rewrite?: string; sliders?: Slider[]; lockKey?: string }
 export interface ControlBody { round?: string; step: ControlStep }
 export interface BodyOf {
   'rp-ask': AskBody;
@@ -71,7 +71,8 @@ function clean(kind: RephraseKind, o: Record<string, unknown>): BodyOf[RephraseK
     case 'rp-phrase': {
       if (o.tok !== TOKENIZER || !isStr(o.phrase, MAX_PHRASE) || !o.phrase.trim()) return null;
       if (tokenize(o.phrase).length > MAX_WORDS) return null;
-      return { round: round as string, tok: TOKENIZER, phrase: o.phrase };
+      if (o.lock !== undefined && !(isStr(o.lock, 64) && o.lock.length > 0)) return null;
+      return { round: round as string, tok: TOKENIZER, phrase: o.phrase, ...(o.lock ? { lock: o.lock as string } : {}) };
     }
     case 'rp-heard': {
       if (o.mode !== 'send' && o.mode !== 'keep' && o.mode !== 'skip') return null;
@@ -87,7 +88,8 @@ function clean(kind: RephraseKind, o: Record<string, unknown>): BodyOf[RephraseK
       if (!marksOk(o.marks)) return null;
       if (o.rewrite !== undefined && !isStr(o.rewrite, MAX_REWRITE)) return null;
       if (o.sliders !== undefined && !slidersOk(o.sliders)) return null;
-      return { round: round as string, marks: o.marks, ...(o.rewrite ? { rewrite: o.rewrite as string } : {}), ...(o.sliders ? { sliders: o.sliders as Slider[] } : {}) };
+      if (o.lockKey !== undefined && !(isStr(o.lockKey, 64) && o.lockKey.length > 0)) return null;
+      return { round: round as string, marks: o.marks, ...(o.rewrite ? { rewrite: o.rewrite as string } : {}), ...(o.sliders ? { sliders: o.sliders as Slider[] } : {}), ...(o.lockKey ? { lockKey: o.lockKey as string } : {}) };
     }
     case 'rp-control':
       if (o.step !== 'done' && o.step !== 'stop' && o.step !== 'away' && o.step !== 'back') return null;

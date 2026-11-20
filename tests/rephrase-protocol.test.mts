@@ -67,3 +67,7 @@ ok('short and long phrases of different lengths give the same size', encode('rp-
 ok('a longer one steps up to the next size', encode('rp-phrase', { round, tok: TOKENIZER, phrase: 'word '.repeat(150).trim() }).length === 1024);
 ok('padding is ignored on reading and never exceeds the report limit', JSON.stringify(decode('rp-answer', encode('rp-answer', { round, answer: 'yes' }))) === JSON.stringify({ round, answer: 'yes' }) && encode('rp-meant', big).length <= MAX_TOTAL);
 ok('the filler is plain letters and holds nothing', /"pad":"x+"/.test(encode('rp-ask', { round, tok: TOKENIZER })));
+
+const lockCases = [dec('rp-phrase', { v: 1, round, tok: TOKENIZER, phrase: 'hi there', lock: 'x'.repeat(65) }), dec('rp-phrase', { v: 1, round, tok: TOKENIZER, phrase: 'hi there', lock: '' }), dec('rp-meant', { v: 1, round, marks: [], lockKey: 'k'.repeat(65) })];
+ok('a lock or key that is empty or too long is refused', lockCases.every((x) => x === null));
+ok('a lock and a key round-trip', decode('rp-phrase', encode('rp-phrase', { round, tok: TOKENIZER, phrase: 'hi there', lock: 'AAAA' }))?.lock === 'AAAA' && decode('rp-meant', encode('rp-meant', { round, marks, lockKey: 'BBBB' }))?.lockKey === 'BBBB');

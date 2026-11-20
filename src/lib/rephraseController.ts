@@ -3,8 +3,9 @@
 // it is emptied when a round is done or stopped. The page drives it; tests drive it through a real cell.
 import { marksFromMap, tokenize, type Mark, type MarkKind } from './rephraseKinds.ts';
 import { decode, encode, isRpKind, MAX_NOTE, MAX_PHRASE, MAX_REWRITE, MAX_WORDS, newRoundId, type RephraseKind, type Slider } from './rephraseProtocol.ts';
-import { initialState, step, type Event, type Local, type RoundState } from './rephraseRound.ts';
+import { initialState, step, type Event, type Local, type Meant, type RoundState } from './rephraseRound.ts';
 import { checkOutgoing } from './rephraseSafety.ts';
+import { checkLock, makeLock } from './rephraseLock.ts';
 import type { SafetyFlag } from './safetyFlags.ts';
 import type { CellMessage, Opened } from './cellCrypto.ts';
 
@@ -34,6 +35,10 @@ export class RephraseController {
   /** The messages as they arrived, so the person can report one (the reporter chooses). */
   received: Partial<Record<RephraseKind, Opened>> = {};
   paused = false;
+  /** What the speaker locked in when the phrase went (kept here, never sent until the reveal). */
+  private locked: { meant: Meant; key: string } | null = null;
+  /** Hearer: whether what was shown is what the speaker fixed before the hearer marked (null: not known, or no lock). */
+  lockState: boolean | null = null;
   private listeners = new Set<() => void>();
   private readonly transport: Transport;
   private readonly newId: () => string;
@@ -72,6 +77,8 @@ export class RephraseController {
     this.state = { ...initialState(), asksBlocked: this.state.asksBlocked, ignoreAsks: this.state.ignoreAsks };
     this.drafts = blank();
     this.received = {};
+    this.locked = null;
+    this.lockState = null;
     this.changed();
   }
 
@@ -82,6 +89,8 @@ export class RephraseController {
     if (r.state.notice && CLEARS.has(r.state.notice)) {
       this.drafts = blank();
       this.received = {};
+      this.locked = null;
+      this.lockState = null;
     }
     return { ok: true, ...(r.send ? { send: { kind: r.send.kind, text: encode(r.send.kind, r.send.body as never) } } : {}) };
   }
@@ -95,10 +104,25 @@ export class RephraseController {
     if (!r.ok) return;
     this.state = r.state;
     this.received[m.kind] = m;
+    if (m.kind === 'rp-meant') void this.verifyLock();
     if (r.state.notice && CLEARS.has(r.state.notice)) {
       this.drafts = blank();
       this.received = {};
+      this.locked = null;
+      this.lockState = null;
     }
+    this.changed();
+  }
+
+  private async verifyLock(): Promise<void> {
+    const r = this.state.round;
+    if (!r || r.side !== 'hearer' || !r.meant || !r.lock || !r.meant.lockKey) {
+      this.lockState = r?.meant ? false : null;
+      this.changed();
+      return;
+    }
+    const { lockKey, ...core } = r.meant;
+    this.lockState = await checkLock(core, lockKey!, r.lock);
     this.changed();
   }
 
@@ -146,8 +170,25 @@ export class RephraseController {
   answer(a: 'yes' | 'notnow' | 'never'): Promise<boolean> {
     return this.act({ t: 'answer', answer: a });
   }
-  sendPhrase(): Promise<boolean> {
-    return this.act({ t: 'sendPhrase', phrase: this.drafts.phrase.trim() });
+  private meantNow(count: number): Meant {
+    const d = this.drafts;
+    const rewrite = d.rewrite.trim().slice(0, MAX_REWRITE);
+    return { marks: this.clip(d.marks, count), ...(rewrite ? { rewrite } : {}), ...(d.sliders.length ? { sliders: d.sliders } : {}) };
+  }
+  async sendPhrase(): Promise<boolean> {
+    const phrase = this.drafts.phrase.trim();
+    const meant = this.meantNow(tokenize(phrase).length);
+    const { lock, key } = await makeLock(meant);
+    const before = this.locked;
+    this.locked = { meant, key };
+    try {
+      const ok = await this.act({ t: 'sendPhrase', phrase, lock });
+      if (!ok) this.locked = before;
+      return ok;
+    } catch (e) {
+      this.locked = before;
+      throw e;
+    }
   }
   /** The hearer's marks that would go back if they chose to send: stories stay out unless the person ticked for them. */
   heardToSend(): Mark[] {
@@ -167,10 +208,10 @@ export class RephraseController {
     return kind === 'phrase' ? [d.phrase] : kind === 'heard' ? [d.note] : [d.rewrite];
   }
   reveal(): Promise<boolean> {
-    const d = this.drafts;
-    const count = tokenize(this.state.round?.phrase ?? d.phrase).length;
-    const rewrite = d.rewrite.trim().slice(0, MAX_REWRITE);
-    return this.act({ t: 'reveal', meant: { marks: this.clip(d.marks, count), ...(rewrite ? { rewrite } : {}), ...(d.sliders.length ? { sliders: d.sliders } : {}) } });
+    // What goes is exactly what was locked when the phrase went; the key goes with it, so the other device can check.
+    const l = this.locked;
+    const meant: Meant = l ? { ...l.meant, lockKey: l.key } : this.meantNow(tokenize(this.state.round?.phrase ?? this.drafts.phrase).length);
+    return this.act({ t: 'reveal', meant });
   }
   done(): Promise<boolean> {
     return this.act({ t: 'done' });

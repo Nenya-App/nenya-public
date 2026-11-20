@@ -6,7 +6,7 @@ import { CellClient } from '../src/lib/cellClient.ts';
 import { RephraseController } from '../src/lib/rephraseController.ts';
 import { checkOutgoing, incomingDanger } from '../src/lib/rephraseSafety.ts';
 import { readings } from '../src/lib/rephraseRound.ts';
-import { decode } from '../src/lib/rephraseProtocol.ts';
+import { decode, encode } from '../src/lib/rephraseProtocol.ts';
 import type { Opened } from '../src/lib/cellCrypto.ts';
 import { ok } from './helpers.mts';
 
@@ -69,6 +69,8 @@ const NOTE = 'I heard worry, mauvenote.';
   ok('the speaker holds the reading but cannot show it before revealing', ca.state.round?.phase === 'answered' && readings(ca.state) === null);
   ok('the stories were not sent', JSON.stringify(ca.state.round?.heard?.marks) === JSON.stringify([[1, 1, 'saw'], [2, 2, 'saw'], [6, 6, 'feeling']]));
   await ca.reveal(); await pump();
+  await new Promise((r) => setTimeout(r, 10));
+  ok('the hearer\'s device confirms what was shown is what the speaker fixed before the hearer marked', cb.lockState === true);
   ok('both can now show both readings', readings(ca.state)?.heard?.length === 3 && readings(cb.state)?.heard?.length === 4 && readings(cb.state)?.meant.rewrite === REWRITE && readings(ca.state)?.note === NOTE);
   ok('the hearer got the speaker\'s marks only now', cb.state.round?.meant?.marks.length === 4);
 
@@ -163,4 +165,37 @@ const NOTE = 'I heard worry, mauvenote.';
   ok('back clears it', cb.state.partnerAway === false);
   const dead = new RephraseController({ send: async () => { throw new Error('gone'); } });
   ok('a failed away signal is swallowed (the page is going anyway)', (await dead.signal('away')) === undefined);
+}
+
+// ── Locking what was meant ──
+{
+  const { ca, cb, pump } = await pair();
+  ca.drafts.phrase = 'You were late again, and I am tired of waiting.';
+  ca.mark('speaker', 2, 'saw'); ca.drafts.rewrite = 'I felt tired.';
+  await ca.ask(); await pump(); await cb.answer('yes'); await pump(); await ca.sendPhrase(); await pump();
+  ok('the phrase carries a lock and no key, and nothing of the marks', typeof cb.state.round?.lock === 'string' && cb.state.round.lock.length > 20 && cb.state.round.meant === undefined);
+  // The speaker changes their drafts after the phrase went: the reveal still sends what was locked.
+  ca.mark('speaker', 3, 'story'); ca.drafts.rewrite = 'Something else entirely.';
+  await cb.sendHeard('skip'); await pump(); await ca.reveal(); await pump();
+  await new Promise((r) => setTimeout(r, 10));
+  ok('what is revealed is what was locked, not the later edits, and it checks out', cb.state.round?.meant?.rewrite === 'I felt tired.' && cb.state.round.meant.marks.length === 1 && cb.lockState === true);
+}
+{
+  const { ca, cb, pump } = await pair();
+  ca.drafts.phrase = 'You were late again, and I am tired of waiting.';
+  ca.mark('speaker', 2, 'saw');
+  await ca.ask(); await pump(); await cb.answer('yes'); await pump(); await ca.sendPhrase(); await pump();
+  await cb.sendHeard('skip'); await pump();
+  const key = (ca as unknown as { locked: { key: string } }).locked.key;
+  const round = ca.state.round!.id;
+  cb.handle({ kind: 'rp-meant', text: encode('rp-meant', { round, marks: [[2, 2, 'story']], lockKey: key }), at: 1, seq: 50, frank: '', commit: '' } as Opened);
+  await new Promise((r) => setTimeout(r, 10));
+  ok('a reveal that is not what was locked is shown as such', cb.lockState === false);
+  const { ca: c2, cb: d2, pump: p2 } = await pair();
+  c2.drafts.phrase = 'Hello there my friend';
+  await c2.ask(); await p2(); await d2.answer('yes'); await p2(); await c2.sendPhrase(); await p2();
+  await d2.sendHeard('skip'); await p2();
+  d2.handle({ kind: 'rp-meant', text: encode('rp-meant', { round: c2.state.round!.id, marks: [] }), at: 1, seq: 51, frank: '', commit: '' } as Opened);
+  await new Promise((r) => setTimeout(r, 10));
+  ok('a reveal with no key, after a lock, is shown as not what was fixed', d2.lockState === false);
 }

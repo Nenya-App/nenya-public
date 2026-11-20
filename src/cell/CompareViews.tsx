@@ -70,6 +70,7 @@ function Reading({ viewer, ctx }: { viewer: Viewer; ctx: PanelCtx }) {
       {r.note && <p className="text-sm"><b>{WORDS.theirNote}:</b> {r.note}</p>}
       {r.meant.rewrite && <Box label={viewer === 'speaker' ? WORDS.yourRewrite : WORDS.theirRewrite}><b>{viewer === 'speaker' ? WORDS.yourRewrite : WORDS.theirRewrite}</b><q className="block text-base">{r.meant.rewrite}</q></Box>}
       {r.meant.sliders && r.meant.sliders.length > 0 && <ul className="list-disc pl-5 text-sm">{r.meant.sliders.map((s) => <li key={s.need}>{s.need}: {['met', 'mostly met', 'partly met', 'mostly not met', 'not met'][s.level]}</li>)}</ul>}
+      {viewer === 'hearer' && ctx.ctl.lockState !== null && <Quiet>{ctx.ctl.lockState ? WORDS.lockOk : WORDS.lockBad}</Quiet>}
       <CreditLines />
     </div>
   );

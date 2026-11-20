@@ -17,6 +17,8 @@ export interface Meant {
   marks: Mark[];
   rewrite?: string;
   sliders?: Slider[];
+  /** The key that opens the lock the phrase carried (src/lib/rephraseLock.ts). */
+  lockKey?: string;
 }
 export interface Heard {
   mode: HeardMode;
@@ -29,6 +31,8 @@ export interface Round {
   side: Side;
   phase: SpeakerPhase | HearerPhase;
   phrase?: string;
+  /** The commitment to what the speaker meant, carried by the phrase. */
+  lock?: string;
   /** Speaker: what the hearer sent back, held until the speaker reveals. Hearer: what they sent (or kept). */
   heard?: Heard;
   /** The hearer's own marks, all of them, kept on their device whether or not they were sent. */
@@ -56,7 +60,7 @@ export type Local =
   | { t: 'ask'; id: string }
   | { t: 'cancel' }
   | { t: 'answer'; answer: Answer }
-  | { t: 'sendPhrase'; phrase: string }
+  | { t: 'sendPhrase'; phrase: string; lock?: string }
   | { t: 'sendHeard'; mode: HeardMode; ownMarks: Mark[]; sendMarks?: Mark[]; note?: string }
   | { t: 'reveal'; meant: Meant }
   | { t: 'done' }
@@ -99,7 +103,7 @@ export function step(s: RoundState, e: Event): Result {
       case 'rp-phrase': {
         const h = mine(s, e.body.round, 'hearer');
         if (!h || h.phase !== 'waiting-phrase') return keep(s);
-        return done({ ...s, round: { ...h, phase: 'hearing', phrase: e.body.phrase } });
+        return done({ ...s, round: { ...h, phase: 'hearing', phrase: e.body.phrase, ...(e.body.lock ? { lock: e.body.lock } : {}) } });
       }
       case 'rp-heard': {
         const sp = mine(s, e.body.round, 'speaker');
@@ -112,7 +116,7 @@ export function step(s: RoundState, e: Event): Result {
         const h = mine(s, e.body.round, 'hearer');
         if (!h || h.phase !== 'returned') return keep(s);
         const b = e.body;
-        const meant: Meant = { marks: b.marks, ...(b.rewrite ? { rewrite: b.rewrite } : {}), ...(b.sliders ? { sliders: b.sliders } : {}) };
+        const meant: Meant = { marks: b.marks, ...(b.rewrite ? { rewrite: b.rewrite } : {}), ...(b.sliders ? { sliders: b.sliders } : {}), ...(b.lockKey ? { lockKey: b.lockKey } : {}) };
         return done({ ...s, round: { ...h, phase: 'compared', meant } });
       }
       case 'rp-control': {
@@ -142,7 +146,7 @@ export function step(s: RoundState, e: Event): Result {
     }
     case 'sendPhrase':
       if (!r || r.side !== 'speaker' || r.phase !== 'accepted' || !e.phrase.trim()) return keep(s);
-      return done({ ...s, round: { ...r, phase: 'phrase-sent', phrase: e.phrase } }, { kind: 'rp-phrase', body: { round: r.id, tok: TOKENIZER, phrase: e.phrase } });
+      return done({ ...s, round: { ...r, phase: 'phrase-sent', phrase: e.phrase } }, { kind: 'rp-phrase', body: { round: r.id, tok: TOKENIZER, phrase: e.phrase, ...(e.lock ? { lock: e.lock } : {}) } });
     case 'sendHeard': {
       if (!r || r.side !== 'hearer' || r.phase !== 'hearing') return keep(s);
       if (e.mode === 'send') {

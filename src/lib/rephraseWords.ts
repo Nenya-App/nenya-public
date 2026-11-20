@@ -96,6 +96,8 @@ export const WORDS = {
   theirNote: 'Their sentence',
   keptOwn: 'They kept their marks to themselves.',
   skippedOwn: 'They did not mark.',
+  lockOk: 'This is what they fixed before you marked.',
+  lockBad: 'This is not what they fixed before you marked. Take care with it.',
   doneButton: 'Done with this',
   // Controls.
   pause: 'Pause',
