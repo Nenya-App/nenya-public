@@ -4,6 +4,7 @@ import type { CellClient } from '../lib/cellClient';
 import type { RephraseController } from '../lib/rephraseController';
 import { NOTICES, WORDS } from '../lib/rephraseWords';
 import { Deciding, FirstUse, Waiting } from './RephraseConsent';
+import { announcement, Controls, TimeNotices } from './RephraseControls';
 import { Answered, Compared } from './CompareViews';
 import { Hearing, Returned } from './HearerViews';
 import { Draft, PhraseReview } from './SpeakerViews';
@@ -16,9 +17,12 @@ export interface RephrasePanelProps {
   ctl: RephraseController;
   client: CellClient | null;
   paused: boolean;
+  onPause: () => void;
+  onResume: () => void;
+  onCloseCell: () => void;
 }
 
-export default function RephrasePanel({ ctl, client, paused }: RephrasePanelProps) {
+export default function RephrasePanel({ ctl, client, paused, onPause, onResume, onCloseCell }: RephrasePanelProps) {
   const [, force] = useReducer((n: number) => n + 1, 0);
   const [understood, setUnderstood] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -36,6 +40,7 @@ export default function RephrasePanel({ ctl, client, paused }: RephrasePanelProp
   const ctx: PanelCtx = { ctl, client, paused, run, busy };
   const { round, notice } = ctl.state;
 
+  const said = announcement({ side: round?.side, phase: round?.phase, notice: notice, away: ctl.state.partnerAway, paused });
   let body;
   if (!understood) body = <FirstUse onUnderstood={() => setUnderstood(true)} />;
   else if (round?.side === 'hearer' && round.phase === 'deciding') body = <Deciding ctx={ctx} />;
@@ -57,7 +62,10 @@ export default function RephrasePanel({ ctl, client, paused }: RephrasePanelProp
       {understood && !round && <Quiet>{WORDS.panelIntro}</Quiet>}
       {error && <p role="alert" className="rounded-md border border-amber-600 p-3 text-sm">{error}</p>}
       {understood && !round && notice && <p role="status" className="rounded-md border border-border p-3 text-sm">{NOTICES[notice]}</p>}
+      <p role="status" aria-live="polite" className="sr-only">{said}</p>
+      <TimeNotices ctx={ctx} onCloseCell={onCloseCell} />
       <fieldset disabled={paused} className="m-0 min-w-0 space-y-4 border-0 p-0">{body}</fieldset>
+      <Controls ctx={ctx} onPause={onPause} onResume={onResume} onCloseCell={onCloseCell} />
     </section>
   );
 }

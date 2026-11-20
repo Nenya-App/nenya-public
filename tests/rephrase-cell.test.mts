@@ -153,3 +153,14 @@ const NOTE = 'I heard worry, mauvenote.';
   ok('a chat message is not a rephrasing message', (() => { cb.handle({ kind: 'text', text: JSON.stringify({ v: 1, round: 'a1b2c3d4', tok: 'w1' }), at: 1, seq: 101, frank: '', commit: '' } as Opened); return cb.state.round === null; })());
   ok('decode refuses what the controller would refuse', decode('rp-ask', 'x') === null);
 }
+
+// ── Away and back (the grace period that replaces "leaving closes the cell for both") ──
+{
+  const { ca, cb, pump, seen } = await pair();
+  await ca.signal('away'); await pump();
+  ok('an away signal tells the other device, and nothing else changes', cb.state.partnerAway === true && cb.state.round === null && seen.b.at(-1)?.kind === 'rp-control');
+  await ca.signal('back'); await pump();
+  ok('back clears it', cb.state.partnerAway === false);
+  const dead = new RephraseController({ send: async () => { throw new Error('gone'); } });
+  ok('a failed away signal is swallowed (the page is going anyway)', (await dead.signal('away')) === undefined);
+}

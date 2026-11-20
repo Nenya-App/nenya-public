@@ -64,9 +64,23 @@ export default function CellPage() {
 
   // Leaving with a cell open: close it for both people, so nothing waits on the server.
   useEffect(() => {
-    const leave = () => void client.current?.close();
+    // With rephrasing on, a page that is only hidden (it may come back: the browser keeps it, `persisted`) does not end the cell for
+    // both people: the other person is told it is away, and asked "Still there?" after two minutes. A page that is really going
+    // closes the cell as before, because its keys go with it.
+    const leave = (e: PageTransitionEvent) => {
+      if (rephraseOn() && e.persisted && rephrase.current) return;
+      void client.current?.close();
+    };
+    const visibility = () => {
+      if (!rephraseOn() || !rephrase.current) return;
+      void rephrase.current.signal(document.visibilityState === 'hidden' ? 'away' : 'back');
+    };
     window.addEventListener('pagehide', leave);
-    return () => window.removeEventListener('pagehide', leave);
+    document.addEventListener('visibilitychange', visibility);
+    return () => {
+      window.removeEventListener('pagehide', leave);
+      document.removeEventListener('visibilitychange', visibility);
+    };
   }, []);
   useEffect(() => {
     if (stage !== 'talk' && stage !== 'waiting' && stage !== 'compare') return;
@@ -323,7 +337,7 @@ export default function CellPage() {
                     <Button type="submit" disabled={!draft.trim() || !!paused}>Send</Button>
                   </div>
                 </form>
-                {rephraseOn() && rephrase.current && <RephrasePanel ctl={rephrase.current} client={client.current} paused={!!paused} />}
+                {rephraseOn() && rephrase.current && <RephrasePanel ctl={rephrase.current} client={client.current} paused={!!paused} onPause={() => void pauseMine()} onResume={() => void resume()} onCloseCell={() => void close()} />}
               </section>
 
               <aside className="space-y-4 text-xs">

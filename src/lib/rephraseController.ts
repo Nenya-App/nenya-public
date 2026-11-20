@@ -58,6 +58,15 @@ export class RephraseController {
     this.changed();
   }
 
+  /** Tells the other page this one is hidden, or back (nothing else changes, and a failure is not worth a word). */
+  async signal(step: 'away' | 'back'): Promise<void> {
+    try {
+      await this.transport.send({ kind: 'rp-control', text: encode('rp-control', { step }) });
+    } catch {
+      /* the other page simply is not told */
+    }
+  }
+
   /** Empties everything the round and the person's drafts hold. */
   clearAll(): void {
     this.state = { ...initialState(), asksBlocked: this.state.asksBlocked, ignoreAsks: this.state.ignoreAsks };
