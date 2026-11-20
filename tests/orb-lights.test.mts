@@ -18,5 +18,5 @@ ok('the depth is kept in range', emergence(0, 1, { ...L, emergeDepth: 5 }) === 1
 const src = (p: string) => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
 const logo = src('src/app/components/NenyaLogo.tsx');
 ok('a light draws no sphere layers and no seam cut', /\{!isLight && <OrbSurface/.test(logo) && /const wrapped = !isLight &&/.test(logo));
-ok('the own halo replaces the shared glow class for that orb, and is a gradient (no blur)', /glow && !ownHalo \? 'absolute nenya-orb-glow'/.test(logo) && /const haloGradient = .*radial-gradient/.test(logo) && !/haloGradient[^\n]*blur/.test(logo));
+ok('the own halo replaces the shared glow class for that orb, and is a gradient (no blur)', /glow && !zoomed && !ownHalo \? 'absolute nenya-orb-glow'/.test(logo) && /const haloGradient = .*radial-gradient/.test(logo) && !/haloGradient[^\n]*blur/.test(logo));
 ok('the gem takes each light\'s brightness into its colour from below', /emergence\(j, tSec, emergeRef\.current\)/.test(src('src/app/components/SpectralGem.tsx')));
