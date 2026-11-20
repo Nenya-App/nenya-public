@@ -7,16 +7,16 @@ import { MARKS, WB, CNVC_PAGE, markInfo } from '../../../lib/workbenchCopy';
 import { initialView, reduce, selText, SENTENCE_LIMIT, type Action, type StepIndex, type ViewState } from '../../../lib/workbenchView';
 import { markLabel, marksFor, textOf, tokensOf } from '../../../lib/phraseWorkbench';
 import { shapeStyle } from '../workbench/shapes';
+import { SayMore } from '../workbench/SayMore';
+import { SliderStep } from '../workbench/SliderStep';
+import { btn, btnOn, btnLink } from '../workbench/styles';
 
 // The phrase workbench (docs/phrase-workbench-scope.md; VITE_PHRASE_WORKBENCH, off by default). A sentence becomes tappable words that the person marks
 // themselves. Nothing is suggested, graded, kept or sent: the state lives in this page for the visit (src/lib/workbenchView.ts holds what each tap does).
 // Tap or key to mark, no dragging. A mark shows as a text tag and a line or box shape, never colour alone, and each change is announced politely.
 
-const btn = 'inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border-2 border-border bg-background px-3.5 py-1.5 text-left text-sm hover:bg-muted';
-const btnOn = 'border-foreground bg-muted font-medium';
-
 /** The steps shown so far. Later steps are added as they are built. */
-const VISIBLE_STEPS: StepIndex[] = [0, 1];
+const VISIBLE_STEPS: StepIndex[] = [0, 1, 2];
 
 export default function PhraseWorkbenchPage({ onBack }: { onBack: () => void }) {
   const [s, send] = useReducer(reduce, undefined, initialView);
@@ -139,7 +139,7 @@ export function WorkbenchView({ s, send, onBack }: { s: ViewState; send: (a: Act
                         </button>
                       ))}
                     </div>
-                    <button type="button" onClick={() => send({ t: 'more' })} aria-expanded={s.more} className={`${btn} border-transparent underline underline-offset-4`}>
+                    <button type="button" onClick={() => send({ t: 'more' })} aria-expanded={s.more} className={`${btn} ${btnLink}`}>
                       {s.more ? 'Fewer marks' : 'More marks'}
                     </button>
                   </>
@@ -155,13 +155,16 @@ export function WorkbenchView({ s, send, onBack }: { s: ViewState; send: (a: Act
                     {s.wb.marks.map((m) => (
                       <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2 first:border-t-0 first:pt-0">
                         <span>“{textOf(s.wb, m)}” as <strong>{markLabel(m)}</strong></span>
+                        {(m.kind === 'need' || m.kind === 'feeling') && <button type="button" onClick={() => send({ t: 'detail-open', id: m.id })} aria-label={`Say more about ${textOf(s.wb, m)}`} className={btn}>Say more</button>}
                         <button type="button" onClick={() => { send({ t: 'remove', id: m.id }); marksHeading.current?.focus(); }} aria-label={`Remove the mark from ${textOf(s.wb, m)}`} className={btn}>Remove</button>
                       </li>
                     ))}
                   </ul>
                 )}
-                {s.wb.marks.length > 0 && <button type="button" onClick={() => send({ t: 'clear-marks' })} className={`${btn} border-transparent underline underline-offset-4`}>Clear all marks</button>}
+                {s.wb.marks.length > 0 && <button type="button" onClick={() => send({ t: 'clear-marks' })} className={`${btn} ${btnLink}`}>Clear all marks</button>}
               </div>
+
+              <SayMore s={s} send={send} />
 
               <div className="space-y-2">
                 <h3 className="text-base">What the shapes mean</h3>
@@ -176,6 +179,8 @@ export function WorkbenchView({ s, send, onBack }: { s: ViewState; send: (a: Act
               </div>
             </section>
           )}
+
+          {s.step === 2 && <SliderStep s={s} send={send} onGoMark={() => send({ t: 'step', step: 1 })} />}
 
           <footer className="space-y-1 text-sm text-muted-foreground">
             <p>{WB.credit}</p>

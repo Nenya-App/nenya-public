@@ -46,7 +46,29 @@ try {
   ok('the live region carries the announcement', typeof h === 'string' && h.includes('role="status" aria-live="polite"') && h.includes('Marked “tired” as a feeling.'));
   ok('the key names every shape in words', typeof h === 'string' && ['solid line under', 'dotted line under', 'box around', 'line over', 'dashed line under', 'double line under', 'dashed box around', 'wavy line under'].every((w) => h.includes(w)));
   ok('the page draws without a warning or error colour', typeof h === 'string' && !/destructive|text-red|border-red/.test(h.slice(h.indexOf('<main'), h.indexOf('</main>'))));
-  ok('no text field other than the sentence box exists on step 2, and nothing in the page posts anywhere', typeof h === 'string' && !/<form|action=|<input/.test(h));
+  ok('nothing in the page posts anywhere: no form, no action', typeof h === 'string' && !/<form|action=/.test(h));
+
+  // say more and the slider step
+  let n = reduce(reduce(initialView(), { t: 'draft', text: 'I need to count on you.' }), { t: 'make' });
+  n = reduce(reduce(reduce(reduce(n, { t: 'select', id: 3 }), { t: 'extend' }), { t: 'extend' }), { t: 'mark', kind: 'need' });
+  h = draw(WorkbenchView, { s: n, send: noop, onBack: noop });
+  ok('after a need is marked the say-more panel offers the seven groups, optional, nothing chosen', typeof h === 'string' && ['Physical wellbeing', 'Connection', 'Honesty', 'Play', 'Peace', 'Autonomy', 'Meaning'].every((g) => h.includes(g)) && text(h).includes('This is optional') && !h.includes('Open this into specific needs'), h.error ?? '');
+  n = reduce(n, { t: 'detail-pick', id: n.wb.marks[0].id, level: 'category', name: 'Connection' });
+  h = draw(WorkbenchView, { s: n, send: noop, onBack: noop });
+  ok('choosing a group offers "Open this into specific needs" but shows no words yet', typeof h === 'string' && h.includes('Open this into specific needs') && !h.includes('>trust<'));
+  n = reduce(reduce(n, { t: 'spec' }), { t: 'detail-pick', id: n.wb.marks[0].id, level: 'family', name: 'Being able to count on people' });
+  h = draw(WorkbenchView, { s: n, send: noop, onBack: noop });
+  ok('opening shows the families and the words of the chosen family', typeof h === 'string' && h.includes('Being known') && h.includes('>trust<') && h.includes('>reliability<'));
+  n = reduce(n, { t: 'step', step: 2 });
+  h = draw(WorkbenchView, { s: n, send: noop, onBack: noop });
+  ok('step 3 lists the need with an unchecked "Add a met-to-unmet slider" and no slider yet', typeof h === 'string' && h.includes('Add a met-to-unmet slider') && !h.includes('type="range"'));
+  n = reduce(n, { t: 'slider', id: n.wb.marks[0].id, on: true });
+  h = draw(WorkbenchView, { s: n, send: noop, onBack: noop });
+  ok('with the slider on: a native range 0 to 6 with a spoken value, a visible label, "Not marked yet", and the seven steps as buttons', typeof h === 'string' && h.includes('type="range"') && h.includes('min="0"') && h.includes('max="6"') && h.includes('step="1"') && h.includes('aria-valuetext="Not marked yet"') && h.includes('How much is this need met, right now, here?') && text(h).includes('Not marked yet. Move the slider or pick a step') && ['Not at all', 'A little', 'Some', 'About half', 'Mostly', 'Almost fully', 'Fully'].every((w) => h.includes('>' + w + '<')));
+  n = reduce(n, { t: 'level', id: n.wb.marks[0].id, level: 4 });
+  h = draw(WorkbenchView, { s: n, send: noop, onBack: noop });
+  ok('once set: the spoken value follows, the visible value is a name, and no number is shown', typeof h === 'string' && h.includes('aria-valuetext="Mostly, step 5 of 7"') && text(h).includes('Now: Mostly') && !/Now: [^A-Za-z]*\d/.test(text(h)));
+  ok('there is no total, average or overall slider anywhere on the page', typeof h === 'string' && !/overall|average|total|in all/i.test(text(h.slice(h.indexOf('<main'), h.indexOf('</main>')))));
 } finally {
   await vite.close();
 }

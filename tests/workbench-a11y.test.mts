@@ -28,6 +28,11 @@ ok('the credit is shown with a link to CNVC’s own page', /WB\.credit/.test(pag
 ok('the page has one heading level 1 and is a main landmark with a target for the skip link', (page.match(/<h1\b/g) ?? []).length === 1 && /<main id="main-content"/.test(page));
 ok('the page stores and sends nothing: no fetch, no storage, no cookies', !/fetch\(|localStorage|sessionStorage|document\.cookie|XMLHttpRequest|sendBeacon/.test(page.replace(/Remember on this device/g, '')) || /deviceMemory/.test(page));
 
+ok('the slider is a native range input with a label and a spoken value', /type="range"/.test(all) && /aria-valuetext=\{levelSpoken\(m\.level\)\}/.test(all) && /htmlFor=\{rid\}/.test(all));
+ok('a stepped alternative sits beside every slider, as buttons that say which is chosen', /Or pick a step/.test(all) && /LEVEL_NAMES\.map/.test(all) && /aria-pressed=\{m\.level === i\}/.test(all));
+ok('the slider starts unmarked, shows no number, and nothing adds levels up', /m\.level \?\? 3/.test(all) && !/total|average|overall/i.test(read('src/app/components/workbench/SliderStep.tsx').replace(/adds up to nothing/g, '')));
+ok('the groups, families and words are buttons that say whether chosen, in labelled groups', /role="group" aria-label=\{isNeed/.test(all) && /aria-pressed=\{m\.detail\?\.category === g\.name\}/.test(all) && /aria-expanded=\{s\.specOpen\}/.test(all));
+
 // The switch
 const app = read('src/app/App.tsx');
 ok('the page is reached only when the build switch is on', /currentScreen === 'phrases' && phraseWorkbenchOn\(\)/.test(app) && /phraseWorkbenchOn\(\) && isPhrasesPath/.test(app));

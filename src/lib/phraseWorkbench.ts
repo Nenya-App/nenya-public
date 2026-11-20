@@ -119,12 +119,14 @@ export function textOf(w: Workbench, m: Mark): string {
 
 export const markInfoOf = (m: Mark): MarkInfo => markInfo(m.kind);
 
-/** A mark in the person's own terms: "A need: Connection, trust" or "A feeling". */
+/** A mark in the person's own terms: "A need: trust (Connection)", "A need: Connection" or just "A feeling". */
 export function markLabel(m: Mark): string {
   const d = m.detail;
-  const bits = [d?.category, d?.family && d.family !== d.category ? d.family : undefined, d?.word, d?.custom].filter(Boolean);
+  const main = [d?.word, d?.custom].filter(Boolean).join(', ');
+  const ctx = d?.family || d?.category;
   const name = markInfo(m.kind).name;
-  return bits.length ? `${name}: ${bits.join(', ')}` : name;
+  if (main) return `${name}: ${main}${ctx ? ` (${ctx})` : ''}`;
+  return ctx ? `${name}: ${ctx}` : name;
 }
 
 /** The step's name for a level, or "Not marked yet". */

@@ -2,8 +2,10 @@
 // behaviour can be tested without a browser. Pure. The page's state lives in memory for the visit; nothing here stores or sends anything. The words announced
 // to a screen reader are made here too, and they describe what was done, never a verdict.
 
-import { MAX_SENTENCE, addMark, clearMarks, createWorkbench, overBy, removeMark, textOf, tokensOf, type MarkKind, type Workbench } from './phraseWorkbench.ts';
-import { WB, markInfo } from './workbenchCopy.ts';
+import { MAX_SENTENCE, MAX_LEVEL, addMark, clearMarks, createWorkbench, overBy, removeMark, setDetail, setLevel, textOf, tokensOf, type Detail, type Mark, type MarkKind, type Workbench } from './phraseWorkbench.ts';
+import { LEVEL_NAMES, WB, markInfo } from './workbenchCopy.ts';
+import { NEED_CATEGORIES } from './needFamilies.ts';
+import { FEELING_SIDES } from './feelingFamilies.ts';
 
 export type StepIndex = 0 | 1 | 2 | 3 | 4;
 
@@ -20,11 +22,17 @@ export interface ViewState {
   announce: string;
   /** The mark just made, so the page can put focus back sensibly. */
   lastMark: number | null;
+  /** The need or feeling mark whose "say more" panel is open (optional, never required). */
+  detailFor: number | null;
+  /** Whether that panel has been opened into families and words. */
+  specOpen: boolean;
+  /** Need marks that have a met-to-unmet slider turned on (by the person). */
+  sliderOn: Record<number, boolean>;
 }
 
 export const EXAMPLE_SENTENCE = 'When you left again without telling me, I felt hurt and uneasy, because I need to be able to count on you. Would you tell me before you go?';
 
-export const initialView = (): ViewState => ({ step: 0, draft: EXAMPLE_SENTENCE, wb: createWorkbench(EXAMPLE_SENTENCE), sel: null, more: false, announce: '', lastMark: null });
+export const initialView = (): ViewState => ({ step: 0, draft: EXAMPLE_SENTENCE, wb: createWorkbench(EXAMPLE_SENTENCE), sel: null, more: false, announce: '', lastMark: null, detailFor: null, specOpen: false, sliderOn: {} });
 
 export type Action =
   | { t: 'draft'; text: string }
@@ -37,7 +45,15 @@ export type Action =
   | { t: 'more' }
   | { t: 'mark'; kind: MarkKind }
   | { t: 'remove'; id: number }
-  | { t: 'clear-marks' };
+  | { t: 'clear-marks' }
+  | { t: 'detail-open'; id: number }
+  | { t: 'detail-close' }
+  | { t: 'detail-pick'; id: number; level: 'category' | 'family' | 'word'; name: string }
+  | { t: 'detail-custom'; id: number; text: string }
+  | { t: 'detail-clear'; id: number }
+  | { t: 'spec' }
+  | { t: 'slider'; id: number; on: boolean }
+  | { t: 'level'; id: number; level: number | null };
 
 const say = (s: ViewState, announce: string): ViewState => ({ ...s, announce });
 
@@ -60,7 +76,7 @@ export function reduce(s: ViewState, a: Action): ViewState {
       const over = overBy(text);
       if (over > 0) return say(s, WB.tooLong(over));
       if (!text) return say(s, 'There is no sentence yet.');
-      return { ...s, wb: createWorkbench(text), sel: null, step: 1, lastMark: null, announce: 'Your sentence is ready to mark.' };
+      return { ...s, wb: createWorkbench(text), sel: null, step: 1, lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, announce: 'Your sentence is ready to mark.' };
     }
     case 'step':
       return a.step >= 0 && a.step <= 4 && Number.isInteger(a.step) ? { ...s, step: a.step as StepIndex, announce: `Step ${a.step + 1}: ${WB.steps[a.step]}.` } : s;
@@ -96,19 +112,96 @@ export function reduce(s: ViewState, a: Action): ViewState {
       const wb = addMark(s.wb, { kind: a.kind, from: s.sel.a, to: s.sel.b });
       if (wb === s.wb) return say(s, 'That could not be marked.');
       const m = wb.marks[wb.marks.length - 1];
-      return { ...s, wb, sel: null, lastMark: m.id, announce: `Marked ${quoted(textOf(wb, m))} as ${markInfo(m.kind).name.toLowerCase()}.` };
+      const opens = m.kind === 'need' || m.kind === 'feeling';
+      return { ...s, wb, sel: null, lastMark: m.id, detailFor: opens ? m.id : s.detailFor, specOpen: opens ? false : s.specOpen, announce: `Marked ${quoted(textOf(wb, m))} as ${markInfo(m.kind).name.toLowerCase()}.` };
     }
     case 'remove': {
       const m = s.wb.marks.find((x) => x.id === a.id);
       if (!m) return s;
       const text = textOf(s.wb, m);
-      return { ...s, wb: removeMark(s.wb, a.id), lastMark: null, announce: `Removed the mark from ${quoted(text)}.` };
+      const { [a.id]: _gone, ...sliders } = s.sliderOn;
+      return { ...s, wb: removeMark(s.wb, a.id), lastMark: null, detailFor: s.detailFor === a.id ? null : s.detailFor, sliderOn: sliders, announce: `Removed the mark from ${quoted(text)}.` };
     }
     case 'clear-marks':
-      return s.wb.marks.length ? { ...s, wb: clearMarks(s.wb), lastMark: null, announce: 'All marks removed.' } : s;
+      return s.wb.marks.length ? { ...s, wb: clearMarks(s.wb), lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, announce: 'All marks removed.' } : s;
+    case 'detail-open': {
+      const m = s.wb.marks.find((x) => x.id === a.id);
+      if (!m || (m.kind !== 'need' && m.kind !== 'feeling')) return s;
+      return say({ ...s, detailFor: m.id, specOpen: !!(m.detail?.family || m.detail?.word) }, `Choosing more about ${quoted(textOf(s.wb, m))}. This is optional.`);
+    }
+    case 'detail-close':
+      return s.detailFor == null ? s : say({ ...s, detailFor: null, specOpen: false }, 'Closed.');
+    case 'spec':
+      return s.detailFor == null ? s : say({ ...s, specOpen: !s.specOpen }, s.specOpen ? 'Showing fewer.' : 'Showing the families.');
+    case 'detail-pick': {
+      const m = s.wb.marks.find((x) => x.id === a.id);
+      if (!m || (m.kind !== 'need' && m.kind !== 'feeling')) return s;
+      const cur = m.detail ?? {};
+      const groups = browseGroups(m.kind);
+      let next: Detail | null;
+      if (a.level === 'category') {
+        if (!groups.some((g) => g.name === a.name)) return s;
+        next = cur.category === a.name ? null : { category: a.name };
+      } else if (a.level === 'family') {
+        const g = groups.find((x) => x.name === cur.category);
+        if (!g || !g.families.some((f) => f.name === a.name)) return s;
+        next = cur.family === a.name ? { category: cur.category } : { category: cur.category, family: a.name };
+      } else {
+        const g = groups.find((x) => x.name === cur.category);
+        const f = g?.families.find((x) => x.name === cur.family);
+        if (!f || !f.words.some((w) => w === a.name)) return s;
+        next = cur.word === a.name ? { category: cur.category, family: cur.family } : { category: cur.category, family: cur.family, word: a.name };
+      }
+      if (next && cur.custom) next = { ...next, custom: cur.custom };
+      const wb = setDetail(s.wb, m.id, next);
+      return say({ ...s, wb, specOpen: a.level === 'category' ? false : s.specOpen }, next ? `${markInfo(m.kind).name}: ${a.name}.` : `Cleared ${a.name}.`);
+    }
+    case 'detail-custom': {
+      const m = s.wb.marks.find((x) => x.id === a.id);
+      if (!m || (m.kind !== 'need' && m.kind !== 'feeling')) return s;
+      const cur = m.detail ?? {};
+      const text = a.text.trim();
+      const wb = setDetail(s.wb, m.id, { ...cur, custom: text || undefined });
+      return say({ ...s, wb }, text ? `Added your own word, ${text}.` : 'Removed your own word.');
+    }
+    case 'detail-clear': {
+      const m = s.wb.marks.find((x) => x.id === a.id);
+      return m && m.detail ? say({ ...s, wb: setDetail(s.wb, m.id, null), specOpen: false }, 'Cleared.') : s;
+    }
+    case 'slider': {
+      const m = s.wb.marks.find((x) => x.id === a.id);
+      if (!m || m.kind !== 'need') return s;
+      const sliders = { ...s.sliderOn, [m.id]: a.on };
+      const wb = a.on ? s.wb : setLevel(s.wb, m.id, null);
+      return say({ ...s, wb, sliderOn: sliders }, a.on ? `Slider added for ${quoted(textOf(s.wb, m))}. It starts unmarked.` : `Slider removed for ${quoted(textOf(s.wb, m))}.`);
+    }
+    case 'level': {
+      const m = s.wb.marks.find((x) => x.id === a.id);
+      if (!m || m.kind !== 'need' || !s.sliderOn[m.id]) return s;
+      if (a.level !== null && (!Number.isInteger(a.level) || a.level < 0 || a.level > MAX_LEVEL)) return s;
+      const wb = setLevel(s.wb, m.id, a.level);
+      return say({ ...s, wb }, a.level === null ? `${quoted(textOf(wb, m))}: cleared.` : `${quoted(textOf(wb, m))}: ${LEVEL_NAMES[a.level]}.`);
+    }
     default:
       return s;
   }
 }
 
 export const SENTENCE_LIMIT = MAX_SENTENCE;
+
+/** The two tiers a "say more" panel browses: for a need, the seven categories; for a feeling, the two sides. Each has families, each family its words. */
+export interface BrowseGroup { name: string; plain: string; families: { name: string; words: string[] }[] }
+export function browseGroups(kind: 'need' | 'feeling'): BrowseGroup[] {
+  return kind === 'need'
+    ? NEED_CATEGORIES.map((c) => ({ name: c.name, plain: c.plain, families: c.families.map((f) => ({ name: f.name, words: f.words.map((w) => w.word) })) }))
+    : FEELING_SIDES.map((c) => ({ name: c.name, plain: c.plain, families: c.families.map((f) => ({ name: f.name, words: f.words.map((w) => w.word) })) }));
+}
+
+/** What the "say more" panel shows for a mark right now: the first tier always; the families once a group is chosen and the person opens it; the words once a family is chosen. */
+export function browseFor(m: Mark, specOpen: boolean): { groups: BrowseGroup[]; chosen: BrowseGroup | null; families: BrowseGroup['families']; family: BrowseGroup['families'][number] | null } {
+  const groups = browseGroups(m.kind === 'need' ? 'need' : 'feeling');
+  const chosen = groups.find((g) => g.name === m.detail?.category) ?? null;
+  const families = chosen && specOpen ? chosen.families : [];
+  const family = chosen && specOpen ? chosen.families.find((f) => f.name === m.detail?.family) ?? null : null;
+  return { groups, chosen, families, family };
+}

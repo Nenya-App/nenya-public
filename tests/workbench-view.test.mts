@@ -36,3 +36,47 @@ ok('clear all marks works and is announced', run(m2, { t: 'clear-marks' }).wb.ma
 ok('stepping goes to a real step only', run(s, { t: 'step', step: 3 }).step === 3 && run(s, { t: 'step', step: 9 }).step === s.step && run(s, { t: 'step', step: 1.5 }).step === s.step);
 ok('no announcement carries a verdict word', [s.announce, m.announce, r.announce, ext.announce].every((x) => !/\b(wrong|correct|good|bad|error|mistake|score)\b/i.test(x)));
 ok('the state holds no time, counter or history', !('time' in s) && !('count' in s) && !('history' in s));
+
+// ---- say more (need and feeling detail) and sliders
+import { browseFor, browseGroups } from '../src/lib/workbenchView.ts';
+import { markLabel } from '../src/lib/phraseWorkbench.ts';
+let n = run(initialView(), { t: 'draft', text: 'I need to count on you.' }, { t: 'make' });
+n = run(n, { t: 'select', id: id(n, 'count') }, { t: 'extend' }, { t: 'extend' }, { t: 'mark', kind: 'need' });
+const nid = n.wb.marks[0].id;
+ok('marking a need opens the optional say-more panel, nothing chosen for the person', n.detailFor === nid && n.specOpen === false && !n.wb.marks[0].detail);
+ok('marking a saw-or-heard does not open it', run(run(initialView(), { t: 'draft', text: 'one two' }, { t: 'make' }), { t: 'select', id: 0 }, { t: 'mark', kind: 'saw' }).detailFor === null);
+ok('the first tier is the seven need groups (feelings: two sides)', browseGroups('need').length === 7 && browseGroups('feeling').length === 2);
+let d = run(n, { t: 'detail-pick', id: nid, level: 'category', name: 'Connection' });
+ok('choosing a group sets it, announced; families stay closed until asked', d.wb.marks[0].detail?.category === 'Connection' && browseFor(d.wb.marks[0], d.specOpen).families.length === 0 && /Connection/.test(d.announce));
+d = run(d, { t: 'spec' });
+ok('"Open this into specific needs" shows the group’s three families', browseFor(d.wb.marks[0], d.specOpen).families.length === 3);
+d = run(d, { t: 'detail-pick', id: nid, level: 'family', name: 'Being able to count on people' });
+ok('choosing a family shows four to six words', (browseFor(d.wb.marks[0], d.specOpen).family?.words.length ?? 0) >= 4);
+d = run(d, { t: 'detail-pick', id: nid, level: 'word', name: 'trust' });
+ok('choosing a word narrows the mark, and the label says so in the person’s terms', markLabel(d.wb.marks[0]) === 'A need: trust (Being able to count on people)');
+ok('tapping the chosen word again takes it back', run(d, { t: 'detail-pick', id: nid, level: 'word', name: 'trust' }).wb.marks[0].detail?.word === undefined);
+ok('a family from another group is ignored', run(d, { t: 'detail-pick', id: nid, level: 'family', name: 'Body basics' }).wb.marks[0].detail?.family === 'Being able to count on people');
+ok('a word not on the list is ignored', run(d, { t: 'detail-pick', id: nid, level: 'word', name: 'zzz' }).wb.marks[0].detail?.word === 'trust');
+ok('choosing the same group again clears the detail', run(d, { t: 'detail-pick', id: nid, level: 'category', name: 'Connection' }).wb.marks[0].detail === undefined);
+const own = run(d, { t: 'detail-custom', id: nid, text: '  being picked up on time ' });
+ok('the person’s own word is kept beside the list word, and can be removed', own.wb.marks[0].detail?.custom === 'being picked up on time' && run(own, { t: 'detail-custom', id: nid, text: '' }).wb.marks[0].detail?.custom === undefined);
+ok('Done closes the panel', run(d, { t: 'detail-close' }).detailFor === null);
+ok('say-more can be reopened from the list and an unknown mark changes nothing', run(d, { t: 'detail-close' }, { t: 'detail-open', id: nid }).detailFor === nid && run(d, { t: 'detail-open', id: 99 }) === d);
+// feelings use the same panel
+let fe = run(initialView(), { t: 'draft', text: 'I felt hurt.' }, { t: 'make' }, { t: 'select', id: 2 }, { t: 'mark', kind: 'feeling' });
+fe = run(fe, { t: 'detail-pick', id: fe.wb.marks[0].id, level: 'category', name: 'When a need seems not met' }, { t: 'spec' }, { t: 'detail-pick', id: fe.wb.marks[0].id, level: 'family', name: 'Hurt' }, { t: 'detail-pick', id: fe.wb.marks[0].id, level: 'word', name: 'lonely' });
+ok('a feeling goes side, family, word, with none required', markLabel(fe.wb.marks[0]) === 'A feeling: lonely (Hurt)');
+
+// sliders
+let sl = run(n, { t: 'level', id: nid, level: 3 });
+ok('a level cannot be set until the person turns the slider on', sl.wb.marks[0].level === undefined);
+sl = run(n, { t: 'slider', id: nid, on: true });
+ok('turning the slider on starts it unmarked and says so', sl.sliderOn[nid] === true && sl.wb.marks[0].level === undefined && /starts unmarked/.test(sl.announce));
+sl = run(sl, { t: 'level', id: nid, level: 4 });
+ok('a step sets the level and is announced by name, not number', sl.wb.marks[0].level === 4 && /Mostly\.$/.test(sl.announce) && !/\d/.test(sl.announce.replace(/[“”].*?[“”]/, '')));
+ok('a level outside the seven steps is ignored', run(sl, { t: 'level', id: nid, level: 9 }) === sl && run(sl, { t: 'level', id: nid, level: 1.5 }) === sl);
+ok('clearing returns to unmarked', run(sl, { t: 'level', id: nid, level: null }).wb.marks[0].level === undefined);
+ok('turning the slider off clears the level', run(sl, { t: 'slider', id: nid, on: false }).wb.marks[0].level === undefined);
+ok('only a need mark can have a slider', run(m, { t: 'slider', id: m.wb.marks[0].id, on: true }) === m);
+ok('removing a mark takes its slider setting with it', Object.keys(run(sl, { t: 'remove', id: nid }).sliderOn).length === 0);
+ok('no total or average of levels exists in the state', !Object.keys(sl).some((k) => /total|average|score|overall/i.test(k)));

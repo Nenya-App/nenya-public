@@ -49,7 +49,7 @@ const f = addMark(createWorkbench(S), { kind: 'feeling', from: hurt, to: hurt })
 ok('only a need mark can carry a level', setLevel(f, f.marks[0].id, 3) === f);
 n = setDetail(n, id, { category: 'Connection', family: 'Being able to count', word: 'trust', custom: '  my own\u0000 word ' });
 ok('detail keeps what the person chose, cleaned', n.marks[0].detail?.word === 'trust' && n.marks[0].detail?.custom === 'my own word');
-ok('markLabel names the mark in the person’s own terms', markLabel(n.marks[0]) === 'A need: Connection, Being able to count, trust, my own word' && markLabel(f.marks[0]) === 'A feeling');
+ok('markLabel names the mark in the person’s own terms', markLabel(n.marks[0]) === 'A need: trust, my own word (Being able to count)' && markLabel(f.marks[0]) === 'A feeling' && markLabel(setDetail(f, f.marks[0].id, { category: 'When a need seems met' }).marks[0]) === 'A feeling: When a need seems met');
 ok('detail can be cleared', setDetail(n, id, null).marks[0].detail === undefined);
 
 // annotated
