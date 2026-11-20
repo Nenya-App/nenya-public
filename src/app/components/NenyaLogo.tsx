@@ -14,7 +14,10 @@ import SpectralGem, { type GemStats, type LiveGemLook } from './SpectralGem';
 import LogoGlow from './LogoGlow';
 import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type OuterOrbitLook } from '../../lib/orbitLook';
 import { GEM_ENGINE, type GemEngine } from '../../lib/gemSprite';
-import { DEFAULT_GEM_SIDES } from '../../lib/gemCut';
+import { liveGemSupported } from '../../lib/gemRenderer';
+import { deviceProfile } from '../../lib/deviceProfile';
+import { useGemSidesChoice, useLogoLeaves } from '../../lib/deviceMemory';
+import { effectiveGemSides } from '../../lib/logoLook';
 
 // Above this size, the full-resolution source is used instead -- 128px
 // covers up to ~40px CSS at 3x device pixel ratio (the largest "small"
@@ -113,7 +116,7 @@ export default function NenyaLogo({
   alt = '',
   gemLook,
   gemEngine = GEM_ENGINE,
-  gemSides = DEFAULT_GEM_SIDES,
+  gemSides: gemSidesProp,
   liveGem,
   innerOrbit,
   outerOrbit,
@@ -122,6 +125,10 @@ export default function NenyaLogo({
   const flatLogoSrc = size <= SMALL_LOGO_MAX_SIZE ? nenyaLogoSmall : nenyaLogo;
   const inner = { ...DEFAULT_INNER_ORBIT, ...innerOrbit };
   const outer = { ...DEFAULT_OUTER_ORBIT, ...outerOrbit };
+  // The visitor's look (accessibility panel): the gem follows the leaves unless they chose a number; a prop (the bench) overrides it.
+  const sideChoice = useGemSidesChoice();
+  const leafChoice = useLogoLeaves();
+  const gemSides = gemSidesProp ?? effectiveGemSides(sideChoice, leafChoice, { live: gemEngine === 'live' && liveGemSupported(), low: typeof window !== 'undefined' && deviceProfile().gem.quality === 'low' });
   const ORBIT_DURATION = inner.orbitSeconds > 0 ? inner.orbitSeconds : DEFAULT_INNER_ORBIT.orbitSeconds; // seconds for one complete orbit
   const INNER_ORB_OPACITY = [inner.opacityLow, inner.opacityHigh, inner.opacityLow];
   const OUTER_ORB_OPACITY = [outer.opacityLow, outer.opacityHigh, outer.opacityLow];
