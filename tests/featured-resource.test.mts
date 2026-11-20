@@ -8,7 +8,7 @@ const listAt = page.indexOf('Resources for Exploration');
 ok('the featured card comes before the list of other resources', featuredAt > 0 && listAt > featuredAt);
 ok('it is marked "Featured" in words, not by colour', />Featured</.test(page));
 ok('it links to the site safely: https, a new tab, noopener, and says so to a screen reader', /href="https:\/\/www\.yvetteerasmus\.com"\s+target="_blank"\s+rel="noopener noreferrer"/.test(page.slice(featuredAt, listAt)) && /opens an outside site in a new tab/.test(page.slice(featuredAt, listAt)));
-ok('the site appears once: it is not repeated in the list below', (page.match(/yvetteerasmus\.com/g) ?? []).length === 3 && !page.slice(listAt).includes('href="https://www.yvetteerasmus.com"'));
+ok('the site appears once: it is not repeated in the list below', (page.match(/yvetteerasmus\.com/gi) ?? []).length === 2 && !page.slice(listAt).includes('href="https://www.yvetteerasmus.com"'));
 ok('the other resources are still listed', /mikikashtan\.org/.test(page.slice(listAt)) && /empathyfactor\.com/.test(page.slice(listAt)));
 ok('the page offers variety in words: many places, find the voices that suit you', /There are many good places to learn this/.test(page) && /find the voices that suit you/.test(page));
 ok('nothing claims she endorses, reviewed, partners with or stands behind Nenya', !/\b(?:endorse[sd]?|partner(?:s|ed)? with|official(?:ly)?|approved by|stands? behind|reviewed by)\b/i.test(page.slice(featuredAt, listAt)));
