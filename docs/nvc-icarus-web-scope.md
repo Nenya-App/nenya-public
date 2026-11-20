@@ -25,7 +25,7 @@ It never replaces the guards or the phrase matching. It adds to them, and it goe
 | core need | The seven needs under the coach's core | 7 | The core |
 | need, feeling | The phrase workbench's own tiered families (category, family; the "not met" feeling families) | 22 + 11 | `needFamilies.ts`, `feelingFamilies.ts` (checked against them when those files are on the branch) |
 
-131 nodes. The **communal-needs layer** is a node (`need.communal`) marked provisional: it is this project's extension, untested on data, and the selector never returns it.
+137 nodes. The **communal-needs layer** (`src/lib/communalNeeds.ts`: six families of needs that belong to a group, such as fairness, a say together, shared safety and looking after what lasts) is this project's own extension, not CNVC's, and carries its own label (`COMMUNAL_LABEL`) wherever it is shown. It is a draft, untested on data and unread by a reviewer, so the selector returns its families only when the context switches it on (`communal`, off by default) and only to a person who has said they are stuck. CNVC's own stance, that its lists are neither exhaustive nor definitive, is the basis for extending the lists; the note to CNVC was sent 2026-11-20.
 
 ## Edges
 
@@ -107,7 +107,7 @@ Next, each its own commit and each behind a switch that is off by default (`COAC
 1. **The sixteen joins.** Read the join table in the private review file and strike any pairing that feels like a diagnosis of the person.
 2. **Hold-backs under depleted reserves.** Is "no join, no question and no card except the two written for rest" the right strictness, or should one gentle card be allowed?
 3. **The new series name.** The draft cards use `series: patterns`, which is not in `SERIES` yet, so they cannot load until it is added (one word). Is `patterns` the name, and may I add it in a separate commit?
-4. **The communal-needs layer.** Add families for it (and a test on data) before the web uses it, or leave the placeholder until the owner's research is ready?
+4. **The communal-needs layer** (decided 2026-11-20: build it now). Drafted as six families in `communalNeeds.ts` from my own reading, since your research was not to hand. Please read the words and strike or replace any, and say whether the label wording is yours.
 5. **Moves from the web.** Should the web ever add a move that phrase matching did not choose, or only reorder?
 6. **Concept phrases.** The detector is deliberately narrow. Do you want a wider list tuned on the private evaluation set, which means reading real messages?
 7. **Credit for the framework.** The cards pair an NVC idea with a pattern and say the pairing is this project's own. Do you want the framework named in the card credits, and in whose wording?
