@@ -15,7 +15,7 @@ import { deviceProfile } from '../../lib/deviceProfile';
 import { HIGH_QUALITY, LOW_QUALITY, createGemRenderer, type GemLight, type GemQuality, type GemRenderer } from '../../lib/gemRenderer';
 import type { GemCut } from '../../lib/gemCut';
 import { KALEIDOSCOPE_PRESETS, breathDepth, breathPeriodS, kaleidoscopeCut, type KaleidoscopeLook } from '../../lib/kaleidoscope';
-import { DEFAULT_INNER_ORBIT } from '../../lib/orbitLook';
+import { DEFAULT_INNER_ORBIT, emergence, type InnerOrbitLook } from '../../lib/orbitLook';
 import { SITE_LIVE_FIELD_ALPHA, SITE_LIVE_GEM } from '../../lib/siteGem';
 import { useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook } from '../../lib/deviceMemory';
 
@@ -80,6 +80,8 @@ interface SpectralGemProps {
   /** The inner orbit's timing, so the gem's inner colour stays with the orbs when the orbit's options change. */
   orbitSeconds?: number;
   colorCycle?: number;
+  /** The inner ring's light look. In the 'light' style each colour the stone takes from below is scaled by how lit that light is. */
+  emerge?: Pick<InnerOrbitLook, 'style' | 'emergeSeconds' | 'emergeStep' | 'emergeDepth'>;
   onStats?: (s: GemStats) => void;
 }
 
@@ -128,6 +130,7 @@ export default function SpectralGem({
   live = SITE_LIVE_GEM,
   orbitSeconds = DEFAULT_INNER_ORBIT.orbitSeconds,
   colorCycle = DEFAULT_INNER_ORBIT.colorCycle,
+  emerge = DEFAULT_INNER_ORBIT,
   onStats,
 }: SpectralGemProps) {
   const bodyRef = useRef<HTMLCanvasElement>(null);
@@ -164,6 +167,8 @@ export default function SpectralGem({
   const kaleido = useRef<{ t: number; last: number; started: boolean; restart: number | undefined }>({ t: 0, last: 0, started: false, restart: undefined });
   const statsRef = useRef(onStats);
   statsRef.current = onStats;
+  const emergeRef = useRef(emerge);
+  emergeRef.current = emerge;
   const timingRef = useRef({ orbitSeconds, colorCycle });
   timingRef.current = { orbitSeconds, colorCycle };
   // The orbit's phase is set once, when the logo mounts (NenyaLogo does not move it later), so the gem keeps the same anchor.
@@ -298,7 +303,11 @@ export default function SpectralGem({
         renderer.render({
           turn: loops * 2 * Math.PI * (L?.spin ?? LIVE_SPIN),
           orbit: reduced ? 0 : (((orbitT / (oS > 0 ? oS : 120)) % 1) * 2 * Math.PI),
-          orbs: valarColors.map((v, j) => orbColour(v.vector, j, tSec, cS)),
+          orbs: valarColors.map((v, j) => {
+            const c = orbColour(v.vector, j, tSec, cS);
+            const e = emergeRef.current.style === 'light' ? emergence(j, tSec, emergeRef.current) : 1;
+            return e === 1 ? c : c.map((x: number) => x * e);
+          }),
           light: L?.light,
           cut: kaleidoscopeAt(reduced, L, c.p),
         });

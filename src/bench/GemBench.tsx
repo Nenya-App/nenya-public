@@ -287,6 +287,10 @@ export default function GemBench() {
           <Range label="Glass: shine" value={I.shine} min={0} max={1} step={0.01} onChange={(v) => set('inner', { shine: v })} />
           <Range label="Glass: rim light" value={I.rimLight} min={0} max={1} step={0.01} onChange={(v) => set('inner', { rimLight: v })} />
           <Range label="Glass: rim dark" value={I.rimDark} min={0} max={0.5} step={0.01} onChange={(v) => set('inner', { rimDark: v })} />
+          <Choice label="Style (orbs or lights)" value={I.style} options={['orb', 'light'] as const} onChange={(v) => set('inner', { style: v })} />
+          <Range label="Light: seconds to rise and settle" value={I.emergeSeconds} min={3} max={30} step={0.5} digits={1} onChange={(v) => set('inner', { emergeSeconds: v })} hint="Lights style only. Each later light takes the 'spread' longer, so they never move in step." />
+          <Range label="Light: spread per light (s)" value={I.emergeStep} min={0} max={2} step={0.05} digits={2} onChange={(v) => set('inner', { emergeStep: v })} />
+          <Range label="Light: dimmest" value={I.emergeDepth} min={0} max={1} step={0.01} onChange={(v) => set('inner', { emergeDepth: v })} hint="How dim a light gets between risings, as a share of full brightness." />
           <Choice label="Layer" value={I.layer} options={['under', 'over'] as const} onChange={(v) => set('inner', { layer: v })} />
           <Choice label="Blend" value={I.blend} options={['normal', 'screen', 'soft-light', 'overlay', 'plus-lighter'] as const} onChange={(v) => set('inner', { blend: v })} />
         </Panel>
@@ -297,6 +301,7 @@ export default function GemBench() {
           <Range label="Orb size (of logo size)" value={O.orbSize} min={0.01} max={0.12} step={0.001} digits={3} onChange={(v) => set('outer', { orbSize: v })} />
           <Range label="Opacity, low" value={O.opacityLow} min={0} max={1} step={0.01} onChange={(v) => set('outer', { opacityLow: v })} />
           <Range label="Opacity, high" value={O.opacityHigh} min={0} max={1} step={0.01} onChange={(v) => set('outer', { opacityHigh: v })} />
+          <Choice label="Halo (shared glow or each orb's own)" value={O.halo} options={['shared', 'own'] as const} onChange={(v) => set('outer', { halo: v })} />
         </Panel>
 
         <Panel title="Live gem: light and material" open onReset={() => reset('light')}>
