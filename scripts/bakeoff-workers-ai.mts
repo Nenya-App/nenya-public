@@ -5,6 +5,7 @@
 //   node scripts/bakeoff-workers-ai.mts --model @cf/meta/llama-3.1-8b-instruct-fp8 --json bake-llama31-8b.json
 //   node scripts/bakeoff-workers-ai.mts --model <id> --instructions v2      # default v2.1
 //   node scripts/bakeoff-workers-ai.mts --model <id> --only crisis          # one category or case id
+//   node scripts/bakeoff-workers-ai.mts --model <id> --capture calls.jsonl  # also keep each request as sent and the usage the model reported (for scripts/replay-cost.mts)
 //   node scripts/bakeoff-workers-ai.mts --model <id> --private <dir>        # with the private text, as production sends it
 //   node scripts/bakeoff-workers-ai.mts --model <id> --private <dir> --stance vilya   # and the Learn stance (adds learn-icarus)
 //
@@ -17,7 +18,7 @@
 // providers). Each result records the Neurons the call used, so the cost per turn is measured, not guessed.
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
@@ -52,6 +53,7 @@ if (privateDir && !existsSync(join(privateDir, 'modules.json'))) {
   process.exit(2);
 }
 const jsonOut = flag('--json');
+const captureOut = flag('--capture');
 const CF = process.env.CF_BIN ?? join(homedir(), '.npm-global/bin/cf');
 
 // The coach function, as it runs on the site, on the Workers AI provider. The account and token are placeholders: the call itself goes through the
@@ -123,6 +125,7 @@ const realFetch = globalThis.fetch;
   const spent = Number(j.usage?.neurons ?? j.result?.usage?.neurons ?? 0);
   neurons += spent;
   callLog.push({ chars: JSON.stringify(body.messages).length, messages: body.messages.length, neurons: spent });
+  if (captureOut) appendFileSync(captureOut, JSON.stringify({ messages: body.messages, max_tokens: body.max_tokens, usage: j.usage ?? j.result?.usage ?? null }) + '\n');
   // Passed back as the REST API would answer; the coach function reads it (src/lib/coachProvider.ts readWorkersAi).
   return new Response(JSON.stringify(j), { status: 200, headers: { 'content-type': 'application/json' } });
 }) as typeof fetch;
