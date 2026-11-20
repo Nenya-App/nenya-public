@@ -363,3 +363,107 @@ Part 1 steps 1 to 9 come first (gem as N sides, octagon default). Then, each its
 - By hand with assistive technology: VoiceOver on iPhone and Mac, TalkBack on Android, keyboard-only, switch/voice control,
   200% and 400% zoom, all four vision modes and reduced motion, before turning the ring switch on.
 - Part 1's own browser steps (sprite rebuild, `npm run logo:render`) are unchanged.
+
+---
+
+# Part 3: inner orbs become emerging lights; outer orbs keep their planet look and get their own halos
+
+Added 2026-11-20. Still scoping only (this session's task is scope, no source changes); say the word and each step below
+can be built as its own commit. Facts checked: `NenyaLogo.tsx` (`OrbSurface`, inner and outer orbit blocks),
+`src/lib/orbitLook.ts`, `.nenya-orb-glow` in `src/styles/globals.css`, and the `uOrbs` / `below()` path in `gemRenderer.ts`.
+
+## Recommendation
+
+Do both, as two independent changes behind one new look option, with the old look kept as a setting on the bench:
+
+- **Inner ring: "lights".** Each of the 16 inner orbs stops being a shaded sphere and becomes a soft light source that
+  slowly *wells up from beneath the stone*, brightens, and fades back, each on its own slow rhythm. The stone's own colour
+  already comes from these orbs (the shader's `below()` reads their colours), so the gem and the lights stay one system.
+- **Outer ring: keep the planets**, and give each its own halo in **its own current colour** (today all 16 share one halo
+  from three theme colours).
+- Keep 16 and the Valar colours; leave the breath clock and ring-lock alone.
+
+## 1. How it is drawn today
+
+- **Inner orbs** (16): each is a `m.div` with a `radial-gradient(circle at 30% 30%, ...)` that cycles through that orb's six
+  colours over `colorCycle` (36 s), `OrbSurface` layers over it (form shading, glass highlight, rim light, rim dark), a pulse
+  of opacity and scale (3 s plus 0.5 s per orb), a counter-rotation so highlights stay upper left, and a seam cut so the ring
+  overlaps cleanly. Drawn under the gem by default (`layer: 'under'`), seen through the stone's clear body.
+  The defaults already set `form`, `rimLight`, `rimDark` to 0 and `shine` to 1, so they are already lightly shaded.
+- **Gem link:** `SpectralGem` feeds each orb's current colour (`orbColour(...)`) into the shader as `uOrbs`, so light leaving
+  the pavilion takes the colour of whatever lies below. This does not depend on how the orbs are drawn, and works for lights
+  with no change.
+- **Outer orbs** (16): the same construction at radius 0.5, plus class `nenya-orb-glow`: a three-layer `box-shadow` in the
+  theme's warm, metallic and primary colours, identical for every orb, strengthened on hover and in dark mode. Because it is
+  `box-shadow` with blur radii up to 139 px on 16 elements, it is also the most expensive paint in the logo.
+- **Baked images:** orbit-view assets (some icons, og image, print logos) include the orbs, so they need re-rendering.
+
+## 2. Inner lights: design and cost
+
+**What "emerge" means:** a light is a disc with a soft falloff (no rim, no highlight, no darkened edge), so it has no edge
+to read as a sphere. Each cycle: it **rises** (opacity 0 to about 0.9 and size from about 55% to 100%, easing in), **holds**
+briefly, **settles** (back down), at its own period (about 6 to 14 s, spread by index as the pulse is now) so the ring
+never moves in step. Brightness is highest when the light is under the stone's clear facets. The colour cycle stays.
+
+**How to build it (no new dependencies):**
+1. New option `style: 'orb' | 'light'` in `InnerOrbitLook` (default stays `'orb'` until the owner chooses), with
+   `emergeSeconds`, `emergeStep` (spread per orb) and `emergeDepth` (how far brightness falls to, 0 to 1).
+2. In `light` style, skip `OrbSurface`; background is `radial-gradient(circle closest-side, colour 0%, colour at 55%
+   alpha, transparent 100%)`; blend `screen` (or `plus-lighter` where supported) so overlapping lights add rather than
+   cover. The seam cut (`SEAM_REACH`) is no longer needed because light adds; removes 4 wrapper elements.
+3. Emerging **in the gem too:** multiply each orb colour fed to `uOrbs` by its current emergence factor (JS only; shader
+   unchanged), so the stone brightens where a light is rising. Cheap: 16 numbers a frame.
+4. Bench panel: style, emerge seconds, spread, depth, blend; the old orb look stays selectable for comparison.
+
+**Cost:** similar DOM count to now; fewer gradient layers (4 fewer per orb in `light`), but blend modes force the ring into
+its own compositing group. Needs a timing check on an older phone (device). With no `OrbSurface` per orb and no seam
+wrappers, I'd expect it to be no worse than today.
+
+**Limits:**
+- Sprite fallback (no WebGL2): the stone cannot take light from below (the sprite is baked), so the lights are seen only
+  through the sprite's clear body as now. No new asset.
+- On a light theme, `screen` blending nearly vanishes; use normal alpha blend there with a slightly stronger core.
+  The lights are decorative (`aria-hidden`), so no contrast requirement of their own, but they must not lower contrast of
+  any text they sit under; keep the alpha cap and test over text.
+- Names/words: nothing user-visible says "orbs" for the inner ring today; the alt text mentions sixteen orbs generally.
+  If wording changes, "sixteen small lights" for the inner ring and orbs for the outer.
+
+## 3. Outer orbs: planets with their own halos
+
+- Keep the sphere construction (`OrbSurface`) unchanged.
+- **Halo per orb**, replacing the shared `.nenya-orb-glow` box-shadow: a child `span` behind the orb, about 3 to 3.5 times its
+  diameter, `radial-gradient(circle closest-side, colour at 55% alpha, colour at 20% alpha 45%, transparent 100%)` in **that orb's
+  current colour**, so purple orbs have purple halos and the ring reads as a colour wheel of its own.
+- **Keeping the colour in step** with the orb: the halo takes the same six colours, duration (30 s) and per-orb delay
+  (`index × 2`) as the orb's background animation; the cheapest correct way is one shared CSS custom property per orb
+  (registered with `@property`, animated once, read by both orb and halo), or the halo repeats the same Motion animation
+  (16 more animated elements). I'd try the custom property first; fall back to the duplicate animation where `@property`
+  isn't supported.
+- **Cheaper than today:** a gradient on a composited layer instead of three large blurs, with its opacity (not blur radius)
+  animated; hover raises opacity and size slightly, replacing the box-shadow switch. Dark mode raises opacity a little.
+- **`glow` prop** (already toggles the class) toggles the halos; reduced-motion keeps the halos static at mid strength;
+  low-capability profile uses a single smaller halo with no blend.
+- **Halos and the leaves:** the halos sit at radius 0.5, outside the leaf tips, so they do not cross the leaf work.
+  At 13 leaves or 12, no interaction.
+
+## 4. Risks and checks
+
+- Visual: lights must read as light, not as dim flat discs; this needs an eye test and a bench A/B against today's orbs.
+- Performance: blend modes on 16 layers; check on an older phone. Fall back to normal blend on the low preset.
+- Browser support: `plus-lighter` and `@property` have fallbacks (screen; duplicate animation).
+- Tests: `orbitLook` defaults are pinned as "what the site has always drawn"; add `style` to the look and keep the default
+  until the owner switches; add tests for emerge timing (period spread, never all lit at once) and for the `uOrbs` factor.
+- Re-render the baked logo assets once, after the leaves, the gem and these changes are all in.
+
+## 5. Build order (each a separate commit)
+
+21. **Option plumbing:** `style` and emerge fields in `orbitLook.ts`, bench controls, defaults unchanged. Tests.
+22. **Light style for the inner orbs** (CSS only, behind the option); bench A/B.
+23. **Emergence factor into `uOrbs`** (JS only) and tests.
+24. **Per-orb halos** on the outer ring (colour-synced), replacing `.nenya-orb-glow` where `halo` is on; keep the old look
+    selectable; hover and dark mode.
+25. **Low-capability and reduced-motion rules** for both.
+26. **Owner chooses** on the bench; switch defaults in `orbitLook.ts`; update words and alt text if needed.
+27. **Re-render logo assets** once (`npm run logo:render`).
+
+The owner runs: the bench comparison (browser), older-phone timing, and the final `npm run logo:render`.
