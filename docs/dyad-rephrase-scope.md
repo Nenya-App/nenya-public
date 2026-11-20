@@ -2,7 +2,12 @@
 
 **Status: scope only. No site code is changed by this document.** It describes a two-person flow, "rephrasing", built on the
 solo phrase workbench and carried through the existing encrypted partner cell. A clickable prototype of the flow (invented
-example phrases only) accompanies it; its link is in the commit message and the hand-over note.
+example phrases only; private Artifact, not in the repository) accompanies it: https://claude.ai/artifact/287T5uBnPsFXycLazUHs7F.
+It shows the nine steps in two panes, one per person, with the consent choices, blind-then-reveal, the side-by-side
+readings, pause, stop and close. **Checked:** the script parses (`node --check`) and a stand-in-DOM run of every step and
+branch passes (no layout, no screen reader, no real browser). **Not checked:** how it looks in a browser, phone width, dark
+mode, keyboard use, screen readers, contrast. It leaves out need sliders, the frames, the private pre-send check and
+marking the rewrite.
 
 **Depends on:** the solo phrase workbench (scoped separately; its scope document was not yet on its branch when this was
 written, so everything below that says "reused from the workbench" is an *assumption about its parts*, listed in section 11,
