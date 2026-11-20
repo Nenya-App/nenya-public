@@ -5,6 +5,7 @@
 import { MAX_SENTENCE, MAX_LEVEL, addMark, clearMarks, createWorkbench, overBy, removeMark, setDetail, setLevel, textOf, tokensOf, type Detail, type Mark, type MarkKind, type Workbench } from './phraseWorkbench.ts';
 import { LEVEL_NAMES, WB, markInfo } from './workbenchCopy.ts';
 import { FRAMES, frameById, slotChoices, slotsOf } from './workbenchFrames.ts';
+import { defineWord, nearTo } from './wordLookup.ts';
 import { NEED_CATEGORIES } from './needFamilies.ts';
 import { FEELING_SIDES } from './feelingFamilies.ts';
 
@@ -33,11 +34,15 @@ export interface ViewState {
   frameId: string;
   picks: Record<string, Record<string, string>>;
   pickOpen: string | null;
+  /** The word the person asked about, and whether they also asked for near words. Only ever set by a press. */
+  lookup: { word: string; near: boolean } | null;
+  /** What is in the "a word to look at" box. */
+  wordDraft: string;
 }
 
 export const EXAMPLE_SENTENCE = 'When you left again without telling me, I felt hurt and uneasy, because I need to be able to count on you. Would you tell me before you go?';
 
-export const initialView = (): ViewState => ({ step: 0, draft: EXAMPLE_SENTENCE, wb: createWorkbench(EXAMPLE_SENTENCE), sel: null, more: false, announce: '', lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, frameId: FRAMES[0].id, picks: {}, pickOpen: null });
+export const initialView = (): ViewState => ({ step: 0, draft: EXAMPLE_SENTENCE, wb: createWorkbench(EXAMPLE_SENTENCE), sel: null, more: false, announce: '', lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, frameId: FRAMES[0].id, picks: {}, pickOpen: null, lookup: null, wordDraft: '' });
 
 export type Action =
   | { t: 'draft'; text: string }
@@ -64,7 +69,12 @@ export type Action =
   | { t: 'take'; slot: string; markId: number }
   | { t: 'slot-text'; slot: string; text: string }
   | { t: 'clear-frame' }
-  | { t: 'announce'; text: string };
+  | { t: 'announce'; text: string }
+  | { t: 'word-draft'; text: string }
+  | { t: 'look'; word: string }
+  | { t: 'look-selected' }
+  | { t: 'look-near' }
+  | { t: 'look-close' };
 
 const say = (s: ViewState, announce: string): ViewState => ({ ...s, announce });
 
@@ -87,7 +97,7 @@ export function reduce(s: ViewState, a: Action): ViewState {
       const over = overBy(text);
       if (over > 0) return say(s, WB.tooLong(over));
       if (!text) return say(s, 'There is no sentence yet.');
-      return { ...s, wb: createWorkbench(text), sel: null, step: 1, lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, picks: {}, pickOpen: null, announce: 'Your sentence is ready to mark.' };
+      return { ...s, wb: createWorkbench(text), sel: null, step: 1, lastMark: null, detailFor: null, specOpen: false, sliderOn: {}, picks: {}, pickOpen: null, lookup: null, announce: 'Your sentence is ready to mark.' };
     }
     case 'step':
       return a.step >= 0 && a.step <= 4 && Number.isInteger(a.step) ? { ...s, step: a.step as StepIndex, announce: `Step ${a.step + 1}: ${WB.steps[a.step]}.` } : s;
@@ -220,6 +230,27 @@ export function reduce(s: ViewState, a: Action): ViewState {
     }
     case 'announce':
       return say(s, a.text);
+    case 'word-draft':
+      return { ...s, wordDraft: a.text.slice(0, 40) };
+    case 'look': {
+      const w = a.word.trim();
+      if (!w) return say(s, 'Type a word first.');
+      const mean = defineWord(w);
+      return say({ ...s, lookup: { word: w, near: false }, wordDraft: s.step === 4 ? s.wordDraft : w }, mean ? `${mean.word}: ${mean.def}` : `No short meaning for ${w} on our lists. Your own word is always welcome.`);
+    }
+    case 'look-selected': {
+      const w = selText(s);
+      if (!w) return s;
+      const mean = defineWord(w);
+      return say({ ...s, lookup: { word: w, near: false } }, mean ? `${mean.word}: ${mean.def}` : `No short meaning for ${w} on our lists. Your own word is always welcome.`);
+    }
+    case 'look-near': {
+      if (!s.lookup) return s;
+      const list = nearTo(s.lookup.word);
+      return say({ ...s, lookup: { ...s.lookup, near: true } }, list.length ? `Near words for ${s.lookup.word}: ${list.join(', ')}.` : `No near words on our lists for ${s.lookup.word}.`);
+    }
+    case 'look-close':
+      return s.lookup ? say({ ...s, lookup: null }, 'Closed.') : s;
     default:
       return s;
   }

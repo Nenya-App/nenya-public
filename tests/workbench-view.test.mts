@@ -99,3 +99,14 @@ ok('the slots can be emptied', Object.keys(run(typed, { t: 'clear-frame' }).pick
 ok('a new sentence clears the slots', Object.keys(run(typed, { t: 'step', step: 0 }, { t: 'make' }).picks).length === 0);
 ok('the sentence is untouched by a frame', typed.wb.sentence === 'You left, I felt hurt, and I need trust.');
 ok('an announcement can be sent from the page (for the copy button)', run(initialView(), { t: 'announce', text: 'Copied.' }).announce === 'Copied.');
+
+// ---- words on request
+import { defineWord, nearTo } from '../src/lib/wordLookup.ts';
+ok('a word on our lists has a short meaning and says where it sits', defineWord('Hurt')?.where === 'a feeling, in Hurt' && defineWord('trust')?.where === 'a need, in Connection' && defineWord('Connection')?.kind === 'group');
+ok('a word often said as a feeling has a plain description and a note, never a verdict', defineWord('ignored')?.kind === 'passing' && /guess about what someone did/.test(defineWord('ignored')!.note!));
+ok('a word not on the lists has no meaning and is not flagged', defineWord('zzz') === null && defineWord('') === null);
+ok('near words are only produced for a word on the lists', nearTo('hurt').length > 0 && nearTo('zzz').length === 0);
+ok('nothing is looked up until pressed', initialView().lookup === null);
+const lk = run(initialView(), { t: 'look', word: 'tired' });
+ok('looking up shows the meaning, announced; near words only after another press', lk.lookup?.near === false && /Low on energy/.test(lk.announce) && run(lk, { t: 'look-near' }).lookup?.near === true);
+ok('an unlisted word is met kindly', /Your own word is always welcome/.test(run(initialView(), { t: 'look', word: 'zzz' }).announce) && run(initialView(), { t: 'look', word: ' ' }).lookup === null);
