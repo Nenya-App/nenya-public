@@ -1,8 +1,10 @@
 import { useEffect, useReducer, useState } from 'react';
+import { Button } from '../app/components/ui/button';
 import type { CellClient } from '../lib/cellClient';
 import type { RephraseController } from '../lib/rephraseController';
 import { NOTICES, WORDS } from '../lib/rephraseWords';
 import { Deciding, FirstUse, Waiting } from './RephraseConsent';
+import { Draft, PhraseReview } from './SpeakerViews';
 import { Quiet, type PanelCtx } from './rephraseShared';
 
 // Rephrasing in a partner cell (docs/dyad-rephrase-scope.md), shown on /cell only when VITE_REPHRASE is on. One person's view of
@@ -35,7 +37,10 @@ export default function RephrasePanel({ ctl, client, paused }: RephrasePanelProp
   let body;
   if (!understood) body = <FirstUse onUnderstood={() => setUnderstood(true)} />;
   else if (round?.side === 'hearer' && round.phase === 'deciding') body = <Deciding ctx={ctx} />;
-  else if (round?.side === 'speaker' && round.phase === 'asked') body = <Waiting text={WORDS.waitingAsk} />;
+  else if (!round) body = <Draft ctx={ctx} />;
+  else if (round.side === 'speaker' && round.phase === 'asked') body = <><Waiting text={WORDS.waitingAsk} /><Button variant="outline" disabled={busy} onClick={() => run(() => ctl.cancel())}>{WORDS.cancelRequest}</Button></>;
+  else if (round.side === 'speaker' && round.phase === 'accepted') body = <PhraseReview ctx={ctx} />;
+  else if (round.side === 'speaker' && round.phase === 'phrase-sent') body = <Waiting text={WORDS.sentPhrase} />;
   else body = null;
 
   return (
