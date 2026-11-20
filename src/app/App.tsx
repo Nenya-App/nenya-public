@@ -23,6 +23,7 @@ import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../l
 import OnboardingFlow from './components/OnboardingFlow';
 import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
 import { guestbookOn } from '../lib/guestbook';
+import { phraseWorkbenchOn, isPhrasesPath, PHRASES_PATH } from '../lib/workbenchSwitch';
 import { SaveReflectionContext, type SaveReflectionApi } from './components/SaveReflection';
 import { normalizeId, openReflection, purgeExpired, saveReflection, saveReflectionOn, type SavedPayload } from '../lib/savedReflection';
 import { newShadow, sessionIdFor, termsFirstOn } from '../lib/shadowSession';
@@ -46,6 +47,7 @@ const SessionKeyPicker = lazy(() => import('../coach/SessionKeyPicker'));
 const GatewayReviewPage = lazy(() => import('./components/pages/GatewayReviewPage'));
 const CoachDemo = lazy(() => import('../coach/CoachDemo'));
 const GuestbookPage = lazy(() => import('./components/pages/GuestbookPage'));
+const PhraseWorkbenchPage = lazy(() => import('./components/pages/PhraseWorkbenchPage'));
 const RegionGate = lazy(() => import('../coach/RegionGate').then((m) => ({ default: m.RegionGate })));
 const DyadicCellCreation = lazy(() => import('./components/DyadicCellCreation'));
 const DyadicCellInterface = lazy(() => import('./components/DyadicCellInterface'));
@@ -79,7 +81,7 @@ export interface GatewayData {
   data: any;
 }
 
-type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about' | 'guestbook';
+type ScreenType = 'welcome' | 'home' | 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight' | 'color-selection' | 'gateway-review' | 'session' | 'cell-creation' | 'cell-interface' | 'about' | 'guestbook' | 'phrases';
 
 export default function App() {
   // An address under /about (or the older /?about=<section>) opens that About page.
@@ -106,10 +108,18 @@ export default function App() {
       return false;
     }
   });
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : arrivedAtGuestbook ? 'guestbook' : arrivedAtSenses ? 'home' : 'welcome');
+  // The phrase workbench has its own address (VITE_PHRASE_WORKBENCH=on): arriving there opens it, after the Terms.
+  const [arrivedAtPhrases] = useState(() => {
+    try {
+      return initialAbout === null && phraseWorkbenchOn() && isPhrasesPath(window.location.pathname);
+    } catch {
+      return false;
+    }
+  });
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(initialAbout !== null ? 'about' : arrivedAtGuestbook ? 'guestbook' : arrivedAtPhrases ? 'phrases' : arrivedAtSenses ? 'home' : 'welcome');
   // Arrived on a page other than the welcome page (a link to an About page, or straight to /senses, which means reflection was chosen):
   // the first-visit panel then skips the breathing-rhythm choice, and asks only the Terms.
-  const [arrivedElsewhere] = useState(initialAbout !== null || arrivedAtSenses || arrivedAtGuestbook);
+  const [arrivedElsewhere] = useState(initialAbout !== null || arrivedAtSenses || arrivedAtGuestbook || arrivedAtPhrases);
   // Real navigation history instead of a single "previousScreen" value.
   // A single value can only ever answer "what screen came immediately
   // before this one" -- it breaks the moment a screen is reachable more
@@ -126,6 +136,11 @@ export default function App() {
       if (guestbookOn() && /^\/guestbook\/?$/.test(window.location.pathname) && currentScreen !== 'guestbook') {
         setAboutSection(undefined);
         setCurrentScreen('guestbook');
+        return;
+      }
+      if (phraseWorkbenchOn() && isPhrasesPath(window.location.pathname) && currentScreen !== 'phrases') {
+        setAboutSection(undefined);
+        setCurrentScreen('phrases');
         return;
       }
       const sec = sectionsOn() ? sectionOfPath(window.location.pathname) : null;
@@ -151,6 +166,12 @@ export default function App() {
     if (currentScreen === 'about') return;
     const sec = sectionsOn() ? sectionOfScreen(currentScreen) : null;
     const leavingAbout = aboutSectionFromLocation(window.location.pathname, '') !== null;
+    if (currentScreen === 'phrases' && phraseWorkbenchOn()) {
+      if (!isPhrasesPath(window.location.pathname)) window.history[firstAddress.current || leavingAbout ? 'replaceState' : 'pushState'](null, '', PHRASES_PATH);
+      firstAddress.current = false;
+      document.title = SITE_TITLE;
+      return;
+    }
     if (currentScreen === 'guestbook' && guestbookOn()) {
       if (!/^\/guestbook\/?$/.test(window.location.pathname)) window.history[firstAddress.current || leavingAbout ? 'replaceState' : 'pushState'](null, '', '/guestbook');
       firstAddress.current = false;
@@ -335,7 +356,7 @@ export default function App() {
   useEffect(() => {
     const screensWithNothingToLose: ScreenType[] = ['welcome', 'home', 'about'];
     // The guestbook holds nothing to lose itself; a reflection in memory still does.
-    const hasUnsavedProgress = currentScreen === 'guestbook' ? gatewayData.length > 0 : !screensWithNothingToLose.includes(currentScreen);
+    const hasUnsavedProgress = currentScreen === 'guestbook' || currentScreen === 'phrases' ? gatewayData.length > 0 : !screensWithNothingToLose.includes(currentScreen);
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedProgress && !isEmergencyExiting.current) {
@@ -685,6 +706,12 @@ export default function App() {
               cycleStart={breathingCycleStart}
               onLogoClick={toggleBreathingPanel}
             />
+          )}
+
+          {currentScreen === 'phrases' && phraseWorkbenchOn() && (
+            <Suspense fallback={null}>
+              <PhraseWorkbenchPage onBack={() => navigateBack('welcome')} />
+            </Suspense>
           )}
 
           {currentScreen === 'guestbook' && (
