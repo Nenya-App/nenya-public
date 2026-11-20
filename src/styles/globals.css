@@ -721,6 +721,19 @@
                 0 0 58px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),
                 0 0 87px color-mix(in srgb, var(--nenya-accent-primary) 60%, transparent);
   }
+  /* An outer orb's own halo (orbitLook halo: 'own'): a gradient in the orb's own colour. Hover swells it slightly. The individual
+     `scale` property composes with the inline transform Motion sets. Held still with reduced motion. */
+  .nenya-orb-halo {
+    scale: 1;
+    transition: scale 0.3s ease;
+  }
+  .nenya-logo-hover:hover .nenya-orb-halo {
+    scale: 1.18;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nenya-orb-halo { transition: none; }
+    .nenya-logo-hover:hover .nenya-orb-halo { scale: 1; }
+  }
   .nenya-logo-hover:hover .nenya-orb-glow {
     box-shadow: 0 0 35px var(--nenya-accent-warm),
                 0 0 70px color-mix(in srgb, var(--nenya-accent-metallic) 80%, transparent),

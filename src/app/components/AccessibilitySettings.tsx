@@ -10,6 +10,9 @@ import { DeviceMemoryControls } from './DeviceMemoryControls';
 import { BreathToneStyle, BreathTonesSwitch } from './BreathTonesSwitch';
 import { setGemKaleidoscope, setGemKaleidoscopeBreath, setGemKaleidoscopeLook, useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook, type KaleidoscopeLookChoice } from '../../lib/deviceMemory';
 import { VISITOR_LOOKS } from '../../lib/kaleidoscope';
+import { GEM_SIDE_PRESETS, LEAF_PRESETS, LEAF_SETTING_AVAILABLE, gemChoiceLabel, gemChoiceMessage, type GemSidesChoice } from '../../lib/logoLook';
+import { setGemSidesChoice, setLogoLeaves, useGemSidesChoice, useLogoLeaves } from '../../lib/deviceMemory';
+import { liveGemSupported } from '../../lib/gemRenderer';
 
 const VISION_MODES: { value: string; label: string }[] = [
   { value: '', label: 'Standard' },
@@ -60,6 +63,9 @@ export function AccessibilitySettingsContent({
 
   // Pending changes state
   const gemKaleidoscope = useGemKaleidoscope();
+  const gemChoice = useGemSidesChoice();
+  const leafChoice = useLogoLeaves();
+  const [lookMessage, setLookMessage] = useState('');
   const kaleidoLook = useGemKaleidoscopeLook();
   const kaleidoBreath = useGemKaleidoscopeBreath();
   const [pendingBreathingEnabled, setPendingBreathingEnabled] = useState(breathingEnabled);
@@ -199,6 +205,38 @@ export function AccessibilitySettingsContent({
                 </p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* The logo's look: how many sides the gem has (and, once the leaves are in, how many leaves). Presets, applied at once, no motion. */}
+        {!compact && (liveGemSupported() || LEAF_SETTING_AVAILABLE) && (
+          <div className="space-y-2">
+            <p id="logo-look-help" className="text-sm">Logo look</p>
+            <p className="text-xs text-muted-foreground">This changes the animated logo. The still logo in some places stays at the standard design.</p>
+            {LEAF_SETTING_AVAILABLE && (
+              <fieldset className="space-y-1">
+                <legend className="text-xs text-muted-foreground">Leaves</legend>
+                {LEAF_PRESETS.map((n) => (
+                  <label key={n} className="flex min-h-11 items-center gap-2 text-sm">
+                    <input type="radio" name="logo-leaves" value={n} checked={leafChoice === n} onChange={() => { setLogoLeaves(n); setLookMessage(`The logo now has ${n} leaves.`); }} />
+                    {n} leaves
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            {liveGemSupported() && (
+              <fieldset className="space-y-1">
+                <legend className="text-xs text-muted-foreground">Gem</legend>
+                {(['match', ...GEM_SIDE_PRESETS] as GemSidesChoice[]).map((c) => (
+                  <label key={String(c)} className="flex min-h-11 items-center gap-2 text-sm">
+                    <input type="radio" name="gem-sides" value={String(c)} checked={gemChoice === c} onChange={() => { setGemSidesChoice(c); setLookMessage(gemChoiceMessage(c)); }} />
+                    {gemChoiceLabel(c)}
+                  </label>
+                ))}
+                <p className="text-xs text-muted-foreground">On a device that draws less, the gem has at most 8 sides.</p>
+              </fieldset>
+            )}
+            <p role="status" aria-live="polite" className="sr-only">{lookMessage}</p>
           </div>
         )}
 

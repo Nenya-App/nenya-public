@@ -111,11 +111,12 @@ export function kaleidoscopeCut(tSec: number, base: Partial<GemCut> = {}, k: Par
   const wave = (key: keyof typeof KALEIDOSCOPE_SWING, phase: number) => Math.sin((2 * Math.PI * tSec) / (period * RATIOS[key]) + phase);
   const S = KALEIDOSCOPE_SWING;
   // The stars and the pavilion turn in opposite directions. With a sway they swing back and forth within it, so they
-  // always come home. Without one they turn steadily; the cut repeats every 60 degrees, so wrapping the angle at 60 is
-  // seamless (at `turn` and `depth` both 1, a sixth of a turn each half period).
+  // always come home. Without one they turn steadily; the cut repeats every 360/sides degrees (60 for six, 45 for eight), so
+  // wrapping the angle there is seamless (at `turn` and `depth` both 1, a sixth or an eighth of a turn each half period).
+  const wrap = 360 / Math.min(12, Math.max(6, Math.round(c.sides)));
   const tn = clamp(look.turn, 0, 1) * d;
   const sway = clamp(look.sway, 0, 30);
-  const twist = sway > 0 ? sway * tn * wave('twist', 0.9) : (((tn * 60 * tSec) / (period * RATIOS.twist)) % 60 + 60) % 60;
+  const twist = sway > 0 ? sway * tn * wave('twist', 0.9) : (((tn * wrap * tSec) / (period * RATIOS.twist)) % wrap + wrap) % wrap;
   return {
     ...base,
     crown: c.crown + S.crown * st * wave('crown', 0),
