@@ -71,3 +71,23 @@ ok('a record too large to keep gives null', serialize({ sentence: S, next: 1, ma
 // No scoring
 const names = Object.keys(core);
 ok('nothing is exported that scores, totals, ranks or tracks', !names.some((x) => /score|total|average|progress|streak|rank|count|trend|grade|rate/i.test(x)), names.join(','));
+
+// ---- frames
+import { FRAMES, frameById, slotsOf, slotChoices, fillFrame } from '../src/lib/workbenchFrames.ts';
+import { MARKS } from '../src/lib/workbenchCopy.ts';
+ok('four frames, each with an id, a title and at least one slot', FRAMES.length === 4 && FRAMES.every((f) => f.id && f.title && slotsOf(f).length >= 1) && new Set(FRAMES.map((f) => f.id)).size === 4);
+ok('every slot takes a real kind of mark and slot names are unique within a frame', FRAMES.every((f) => slotsOf(f).every((s) => MARKS.some((m) => m.kind === s.takes)) && new Set(slotsOf(f).map((s) => s.slot)).size === slotsOf(f).length));
+const four = frameById('four-parts')!;
+ok('an empty frame is all blanks and lists them', fillFrame(four, {}).text === 'When I ___, I felt ___, because I need ___. Would you be willing to ___?' && fillFrame(four, {}).blanks.join() === 'saw,feeling,need,request');
+ok('a typed or moved word fills its slot; the rest stay blank', fillFrame(four, { feeling: 'hurt' }).text.includes('I felt hurt,') && fillFrame(four, { feeling: 'hurt' }).blanks.join() === 'saw,need,request');
+ok('slot text stays plain text: markup and braces are not interpreted, and control characters go', fillFrame(four, { feeling: '<b>{x}</b>\u0000 hi' }).text.includes('<b>{x}</b> hi') && !fillFrame(four, { feeling: 'a'.repeat(900) }).text.includes('a'.repeat(201)));
+ok('a slot name such as __proto__ or toString does not leak', fillFrame(four, JSON.parse('{"__proto__":"x"}')).blanks.length === 4 && fillFrame(four, {}).text.indexOf('function') === -1);
+let fw = createWorkbench(S);
+fw = addMark(fw, { kind: 'feeling', from: uneasy, to: uneasy });
+fw = addMark(fw, { kind: 'feeling', from: hurt, to: hurt });
+fw = addMark(fw, { kind: 'need', from: need, to: need + 2 });
+const feelingSlot = slotsOf(four).find((s) => s.slot === 'feeling')!, sawSlot = slotsOf(four).find((s) => s.slot === 'saw')!;
+ok('a slot lists only words marked with its kind, in sentence order', slotChoices(fw, feelingSlot).map((c) => c.text).join('|') === 'hurt|uneasy');
+ok('a slot with nothing marked lists nothing, and offers nothing of its own', slotChoices(fw, sawSlot).length === 0);
+ok('a marked phrase comes through as typed', slotChoices(fw, slotsOf(four).find((s) => s.slot === 'need')!)[0].text === 'count on you');
+ok('both versions can be shown: the sentence is untouched by a frame', fw.sentence === S);
