@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
-import NenyaLogo from '../NenyaLogo';
-import { ValarBreathingLogo, BreathingTechnique } from '../ValarBreathingLogo';
+import { BreathingDisplay } from '../BreathingDisplay';
+import type { BreathingTechnique } from '../ValarBreathingLogo';
 import QuickNav from '../QuickNav';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { AppFooter } from '../AppFooter';
@@ -105,28 +105,18 @@ export default function WelcomePage({
                 }
               : {})}
           >
-            <ValarBreathingLogo
-              enabled={breathingEnabled}
-              opacity={breathingOpacity}
+            <BreathingDisplay
+              breathingEnabled={breathingEnabled}
+              breathingOpacity={breathingOpacity}
               logoSize={logoSize}
-              cycleDuration={technique ? (technique.ih + (technique.hi || 0) + technique.ex + (technique.ho || 0)) / 1000 : 10}
+              cycleSeconds={technique ? (technique.ih + (technique.hi || 0) + technique.ex + (technique.ho || 0)) / 1000 : 10}
               technique={technique}
               cvMode={cvMode}
               cycleStart={cycleStart}
-            >
-              <div className="nenya-logo-glow">
-                <NenyaLogo
-                  size={logoSize}
-                  showValarOrbit={orbitEnabled}
-                  showLogo={logoVisible}
-                  cycleStart={cycleStart}
-                  technique={technique}
-                  breathingEnabled={breathingEnabled}
-                  glow
-                  alt={orbitEnabled ? LOGO_ALT_SHORT : LOGO_ALT_NO_ORBS}
-                />
-              </div>
-            </ValarBreathingLogo>
+              orbitEnabled={orbitEnabled}
+              logoVisible={logoVisible}
+              alt={orbitEnabled ? LOGO_ALT_SHORT : LOGO_ALT_NO_ORBS}
+            />
 
           </div>
         </div>

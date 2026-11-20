@@ -285,7 +285,9 @@ export function ValarBreathingLogo({
     ${t2 * 100}% { transform: scale(1); opacity: ${opacity * 0.6}; }
     ${t3 * 100}% { transform: scale(${minScale}); opacity: 0; }
     100% { transform: scale(${minScale}); opacity: 0; }
-  }`;
+  }
+  /* Reduced motion: a still ring at full size (no growing or shrinking); the count beneath carries the breath. */
+  @media (prefers-reduced-motion: reduce) { .nenya-ring-live { animation: none !important; transform: scale(1) !important; opacity: ${opacity * 0.6} !important; } }`;
 
   return (
     <div className="flex items-center justify-center p-8 sm:p-12">
@@ -311,7 +313,7 @@ export function ValarBreathingLogo({
           <style>{ringKeyframesCss}</style>
           <div
             ref={ringRef}
-            className="absolute rounded-full pointer-events-none"
+            className="absolute rounded-full pointer-events-none nenya-ring-live"
             style={{
               width: logoSize,
               height: logoSize,

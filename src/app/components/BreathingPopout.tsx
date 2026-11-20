@@ -2,13 +2,13 @@ import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 import { X } from 'lucide-react';
 import { Button } from './ui/button';
-import { ValarBreathingLogo, type BreathingTechnique } from './ValarBreathingLogo';
+import type { BreathingTechnique } from './ValarBreathingLogo';
+import { BreathingDisplay, BreathingDisplayPicker } from './BreathingDisplay';
 import { breathLengthMs } from '../../lib/breathClock';
 import { PRESETS, sameTechnique } from '../../lib/breathingPresets';
 import { CustomBreath } from './CustomBreath';
 import { paceLabel } from '../../lib/breathCustom';
 import { STEADY } from './PortableBreath';
-import NenyaLogo from './NenyaLogo';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
 
 interface BreathingPopoutProps {
@@ -103,28 +103,19 @@ export function BreathingPopout({
               {/* Left: Breathing Animation */}
               <div className="flex flex-col items-center justify-center p-6 bg-background">
                 <div className="scale-75 md:scale-90">
-                  <ValarBreathingLogo
-                    enabled={breathingEnabled}
-                    opacity={breathingOpacity}
+                  <BreathingDisplay
+                    breathingEnabled={breathingEnabled}
+                    breathingOpacity={breathingOpacity}
                     logoSize={160}
-                    cycleDuration={cycleSeconds}
+                    cycleSeconds={cycleSeconds}
                     technique={technique}
                     cvMode={cvMode}
                     cycleStart={cycleStart}
-                  >
-                    <div className="nenya-logo-glow">
-                      <NenyaLogo
-                        size={160}
-                        showValarOrbit={orbitEnabled}
-                        showLogo={logoVisible}
-                        cycleStart={cycleStart}
-                        technique={technique}
-                        breathingEnabled={breathingEnabled}
-                        glow
-                      />
-                    </div>
-                  </ValarBreathingLogo>
+                    orbitEnabled={orbitEnabled}
+                    logoVisible={logoVisible}
+                  />
                 </div>
+                <BreathingDisplayPicker />
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   {Number.isInteger(cycleSeconds) ? cycleSeconds : cycleSeconds.toFixed(1)}-second breathing cycle
                 </p>
