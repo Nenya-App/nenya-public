@@ -6,12 +6,16 @@ import { reviewEnv, showsValue, type EnvVar } from '../src/lib/envReview.ts';
 
 const token = process.env.NETLIFY_API_TOKEN, siteId = process.env.NETLIFY_SITE_ID;
 if (!token || !siteId) { console.error('needs NETLIFY_API_TOKEN and NETLIFY_SITE_ID (use the production site)'); process.exit(1); }
+console.log(`Checking site ${siteId} (read-only)...`);
 const get = async (path: string): Promise<any> => {
-  const res = await fetch(`https://api.netlify.com/api/v1${path}`, { headers: { authorization: `Bearer ${token}` } });
+  let res: Response;
+  try { res = await fetch(`https://api.netlify.com/api/v1${path}`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(20000) }); }
+  catch (e) { console.error(`Could not reach Netlify (${(e as Error).name}). Nothing was changed.`); process.exit(1); }
   if (!res.ok) { console.error(`Netlify answered ${res.status} for ${path.split('?')[0]}. Nothing was changed.`); process.exit(1); }
   return res.json();
 };
 const site = await get(`/sites/${siteId}`);
+if (!site.account_id) { console.error('Netlify did not accept the token (no account came back). Check it is a personal access token with access to this site. Nothing was changed.'); process.exit(1); }
 console.log(`Site: ${site.name} (${site.url ?? site.ssl_url ?? 'no url'})`);
 const raw = await get(`/accounts/${site.account_id}/env?site_id=${siteId}`);
 if (!Array.isArray(raw)) { console.error('Unexpected answer from Netlify (not a list). Nothing was changed.'); process.exit(1); }
