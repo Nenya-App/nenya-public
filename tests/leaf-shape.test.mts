@@ -1,6 +1,6 @@
 // The leaf generator (pure path data) and the three motion presets.
 import { LEAF_SET, leafRing, leafGeometry, leafTransform, leafSilhouetteSvg } from '../src/lib/leafShape.ts';
-import { chooseLeafPreset, flowerAnimationStyle, leafMotionCss, readLeafCapability } from '../src/lib/leafMotion.ts';
+import { PETALS_BREATHE, chooseLeafPreset, flowerAnimationStyle, leafMotionCss, readLeafCapability } from '../src/lib/leafMotion.ts';
 import { breathFractions, breathEnvelope } from '../src/lib/breathClock.ts';
 import { ok } from './helpers.mts';
 
@@ -25,13 +25,15 @@ ok('silhouette is one svg with six blades', (leafSilhouetteSvg().match(/<path /g
 
 // Presets.
 const cap = { reducedMotion: false, reducedData: false };
-ok('preset: ordinary browser is full', chooseLeafPreset(cap) === 'full');
-ok('preset: reduced motion is none, whatever else', chooseLeafPreset({ ...cap, reducedMotion: true, deviceMemory: 8 }) === 'none');
-ok('preset: save-data is low', chooseLeafPreset({ ...cap, reducedData: true }) === 'low');
-ok('preset: little memory or two cores is low', chooseLeafPreset({ ...cap, deviceMemory: 2 }) === 'low' && chooseLeafPreset({ ...cap, hardwareConcurrency: 2 }) === 'low');
+ok('preset: with the petals\' breathing on, an ordinary browser is full', chooseLeafPreset(cap, true) === 'full');
+ok('preset: reduced motion is none, whatever else', chooseLeafPreset({ ...cap, reducedMotion: true, deviceMemory: 8 }, true) === 'none');
+ok('preset: save-data is low', chooseLeafPreset({ ...cap, reducedData: true }, true) === 'low');
+ok('preset: little memory or two cores is low', chooseLeafPreset({ ...cap, deviceMemory: 2 }, true) === 'low' && chooseLeafPreset({ ...cap, hardwareConcurrency: 2 }, true) === 'low');
+ok('the petals do not breathe on the site: every device gets the still preset by default', PETALS_BREATHE === false && [cap, { ...cap, reducedData: true }, { ...cap, deviceMemory: 2 }, { ...cap, reducedMotion: true }].every((c) => chooseLeafPreset(c) === 'none'));
 ok('preset: no window means none', chooseLeafPreset(readLeafCapability(undefined)) === 'none' || typeof window !== 'undefined');
 
 const tech = { ih: 4000, hi: 2000, ex: 6000, ho: 0 };
+ok('the motion is kept: a forced preset still breathes, so the bench can preview it', !!flowerAnimationStyle('full', tech, 12000, 0).animation && leafMotionCss('full', tech).includes('@keyframes lm-breath-'));
 const style = (p: 'full' | 'low' | 'none', elapsed = 5000) => flowerAnimationStyle(p, tech, 12000, elapsed);
 const swell = (p: 'full' | 'low') => Number(style(p)['--lm-swell']);
 ok('none: no css and no animation property at all', leafMotionCss('none', tech) === '' && Object.keys(style('none')).length === 0);
