@@ -2,7 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { AppFooter } from '../AppFooter';
-import { CHECKS_MEASURED, FALSE_ALARMS, GROUP_RESULTS } from '../../../lib/checksReport';
+import { CHECKS_MEASURED, FALSE_ALARMS, GROUP_RESULTS, SCREEN_STATUS } from '../../../lib/checksReport';
 
 // "How the checks work" (docs/coach-screening-flow-scope.md): what the coach's checks look for, what each can and cannot do, what is kept, how well they work, where they fall short, and how to tell us one was wrong.
 // The numbers are in src/lib/checksReport.ts. No outside professional has reviewed this work; the page says so and invites review.
@@ -17,7 +17,7 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
         </Button>
         <h1 className="text-3xl">How the Checks Work</h1>
         <p className="text-sm text-muted-foreground">
-          What the coach checks, what each check can and cannot do, and how well they work. Last measured {CHECKS_MEASURED}. Which checks are switched on at a given time changes with releases and is stated in the Terms.
+          What the coach checks, what each check can and cannot do, and how well they work. Last measured {CHECKS_MEASURED}. Which checks are switched on can change with releases; the status line in the classifier section says where the hate-speech classifier stands.
         </p>
         <Card className="space-y-4 p-6 leading-relaxed">
           <h2 className="text-xl">Why there are checks</h2>
@@ -34,15 +34,32 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
             <li><strong>Contempt for a group, or a call to harm one.</strong> The coach says plainly where it stands (that it does not share the view and will not build on it) and then asks what lies underneath. It does not simply mirror the feeling back, and it may offer a short read about it.</li>
             <li><strong>Judgment words.</strong> Blame words aimed at another person, or harsh words about yourself, can bring a gentle question about what you need, or a short read. Nothing is stopped.</li>
             <li><strong>Too short or unclear.</strong> A message with no words to read is not sent and uses no turn; you are asked to write it again. This never applies to a message that mentions distress or danger.</li>
-            <li><strong>A small AI model on our own server</strong> can read your latest message as a second signal. It runs in memory on our server, sends nothing to anyone, keeps nothing, and cannot end a conversation on its own. [This is in a test stage; the Terms say whether it is switched on.]</li>
+            <li><strong>A hate-speech classifier on our own server</strong> can read your messages as a second signal. It is described in plain terms in its own section below. It cannot end a conversation on its own.</li>
           </ul>
 
           <h2 className="text-xl">What no check does</h2>
           <ul className="list-disc space-y-2 pl-5">
             <li>None of them keeps your message, a score or a profile of you. We keep plain daily counts only, with nothing that identifies anyone.</li>
             <li>None of them reports you to anyone.</li>
-            <li>Apart from the crisis and intent-to-harm stops above, no check ends a conversation, and no single signal from the small model ever does.</li>
-            <li>None is a safety system you should rely on. They are simple, they miss things, and they sometimes fire on ordinary sentences.</li>
+            <li>Apart from the crisis and intent-to-harm stops above, no check ends a conversation, and no single signal from the hate-speech classifier ever does.</li>
+            <li>None is a safety system you should rely on. They are simple, they read English only, they miss things, and they sometimes fire on ordinary sentences.</li>
+          </ul>
+
+          <h2 className="text-xl">The hate-speech classifier, in plain terms</h2>
+          <p>
+            <strong>Where it stands.</strong>{' '}
+            {SCREEN_STATUS.onLiveSite
+              ? `As of ${SCREEN_STATUS.asOf}, it is switched on for the live site.`
+              : `As of ${SCREEN_STATUS.asOf}, it is built and being tested on a test copy of the site, where it only counts which band it gave, next to what the other checks did, and never changes a reply. It is not switched on for the live site.`}{' '}
+            We change this line when that changes.
+          </p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li><strong>What it is.</strong> A classifier is a program that sorts text into groups. This one is <code>cardiffnlp/twitter-roberta-base-hate-latest</code>, made by the Cardiff NLP group. It was trained on public hate-speech datasets, mostly English posts from social media, and it estimates how likely a piece of text is to be hate speech. We did not train it. We only shrank it to a smaller 8-bit format so it fits in a server function.</li>
+            <li><strong>What it reads.</strong> One of your messages at a time, never the coach&rsquo;s replies. It runs on our own server, in memory, as a separate step before the coach answers. Your message already passes through our server on its way to the coach; the classifier sends it to nobody else.</li>
+            <li><strong>What it gives back.</strong> Only a band: high, mid or low. Never the score and never your text. &ldquo;High&rdquo; means a score above the line where about 2% of ordinary test messages were flagged by mistake; &ldquo;mid&rdquo; is the line at about 5%.</li>
+            <li><strong>What it can change.</strong> Only the tone of a reply: when it reads a message as contempt for a group, the coach states its own position, or a short learning card may be offered. It never ends a conversation, never blocks a message and reports no one. If it is slow or fails, it is skipped and the conversation goes on without it.</li>
+            <li><strong>What it cannot do.</strong> It reads English only, it misses most hate that is not a slur, it is uneven across groups (see below), and it can be wrong about a quote, a joke or a reclaimed word. It is a second signal beside the word lists, not a safety system.</li>
+            <li><strong>What is kept.</strong> Nothing about your message or its score. We count only how many messages fell in each band, with nothing that identifies anyone.</li>
           </ul>
 
           <h2 className="text-xl">How we measure them</h2>
@@ -84,7 +101,7 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
           </div>
           <p>
             So hate about Muslims, immigrants and women is caught more than twice as often as hate about trans or disabled people, and most hate that is not a slur (comparisons, threats, quiet contempt) is missed. We are adding to the lists and measuring again.
-            Other limits: the examples are written, in English only; evasions such as spacing out or swapping letters get through; very short messages give the checks little to read; and a check can be wrong about a quote, a joke or a word reclaimed by the people it was aimed at.
+            Other limits: the examples are written, in English only; the crisis check undoes some common evasions (spaced-out letters, swapped digits, symbols) but not all, and the other lists do not; very short messages give the checks little to read; and a check can be wrong about a quote, a joke or a word reclaimed by the people it was aimed at.
           </p>
 
           <h2 className="text-xl">If a check was wrong about you</h2>
@@ -101,7 +118,7 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
 
           <h2 className="text-xl">Credits</h2>
           <p>
-            The checks use word lists built partly from HurtLex and Wiktionary, a small model from the Cardiff NLP group, and the test sets named above, each used under its own license and credited, with what we changed, in the project&rsquo;s{' '}
+            The checks use word lists built partly from HurtLex and Wiktionary, the hate-speech classifier <code>cardiffnlp/twitter-roberta-base-hate-latest</code> from the Cardiff NLP group (under CC BY 4.0; we converted it to a smaller 8-bit format and did not retrain it; the authors have not endorsed Nenya), and the test sets named above, each used under its own license and credited, with what we changed, in the project&rsquo;s{' '}
             <a className={link} href="https://github.com/Nenya-App/nenya-public/blob/main/ATTRIBUTIONS.md" target="_blank" rel="noopener noreferrer">attributions file<span className="sr-only"> (opens an outside site in a new tab)</span></a>.
           </p>
         </Card>

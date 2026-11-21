@@ -14,3 +14,9 @@ src/generated/
 /safety-*.json
 /ai-abuse*.json
 /baseline-*.json
+
+# Private business material: the accounts and memberships site is its own private repo, and pricing, tiers and cost reports stay outside this repository
+/nenya-accounts/
+/venice-cost*
+/PRIVATE-*
+**/venice-cost.md

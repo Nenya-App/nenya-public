@@ -3,12 +3,15 @@
 // code they can delete it themselves (`{ action: "delete", code }`), at once, with no email. A daily job (submission-expiry.mts) deletes what has reached 90 days.
 // The owner reads submissions on the admin page; the alert email, through a small separate form, carries only the kind and the dates, never the text.
 // Nothing here is logged; only plain counts. The text is checked as plain text again here, whatever the page did.
+// Sending needs the sender's confirmation that they are 18 or older (`adult: true`, from the consent screen): without it nothing is kept. An identical repeat (same
+// kind, same report, same comments) is refused with 409 {error:'duplicate'}: a marker keyed by a one-way code of that text (never the text) lives as long as the
+// submission and is deleted with it by every route (the sender's code, the owner, the daily job), so deleting lets the same words be sent again on purpose.
 import { getStore } from '@netlify/blobs';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { addCount } from '../../src/lib/counters.ts';
 import type { CounterStore } from '../../src/lib/dailyCap.ts';
 import { sanitizePlainText } from '../../src/lib/textSanitize.ts';
-import { isSubmissionType, keyForCode, makeCode, newRecord } from '../../src/lib/submissions.ts';
+import { DUP_PREFIX, duplicateKey, isSubmissionType, isDue, keyForCode, makeCode, newRecord, PREFIX, type DuplicateMarker, type SubmissionRecord } from '../../src/lib/submissions.ts';
 
 const MAX_BODY = 30000;
 const MAX_REPORT = 20000;
@@ -44,7 +47,7 @@ export default async (req: Request): Promise<Response> => {
   if (!(req.headers.get('content-type') || '').includes('application/json')) return reply(415, { error: 'type' });
   const raw = await req.text();
   if (raw.length > MAX_BODY) return reply(413, { error: 'size' });
-  let body: { action?: unknown; type?: unknown; report?: unknown; comments?: unknown; code?: unknown; website?: unknown };
+  let body: { action?: unknown; adult?: unknown; type?: unknown; report?: unknown; comments?: unknown; code?: unknown; website?: unknown };
   try {
     body = JSON.parse(raw);
   } catch {
@@ -56,8 +59,10 @@ export default async (req: Request): Promise<Response> => {
     if (typeof body.code !== 'string' || body.code.length > 100) return reply(400, { error: 'code' });
     try {
       const key = keyForCode(body.code);
-      const had = (await store().get(key)) !== null;
+      const rec = (await store().get(key, { type: 'json' })) as SubmissionRecord | null;
+      const had = rec !== null;
       await store().delete(key);
+      if (rec && typeof rec.dup === 'string' && rec.dup.startsWith(DUP_PREFIX)) await store().delete(rec.dup); // the same words may now be sent again
       if (had) await count('submission.deleted.self');
     } catch {
       return reply(503, { error: 'store' });
@@ -66,17 +71,41 @@ export default async (req: Request): Promise<Response> => {
   }
 
   if (typeof body.website === 'string' && body.website !== '') return reply(200, {}); // the honeypot: pretend, keep nothing
+  // The sender's confirmation that they are 18 or older, from the consent screen. Nothing else about their age is asked, sent or kept.
+  if (body.adult !== true) {
+    await count('submission.refused.no-adult');
+    return reply(400, { error: 'adult' });
+  }
   if (!isSubmissionType(body.type)) return reply(400, { error: 'kind' });
   const report = sanitizePlainText(typeof body.report === 'string' ? body.report : '', MAX_REPORT);
   const comments = sanitizePlainText(typeof body.comments === 'string' ? body.comments : '', MAX_COMMENTS);
   if (!report.trim() && !comments.trim()) return reply(400, { error: 'empty' });
 
-  const code = makeCode();
-  const record = newRecord(body.type, report, comments);
+  // An identical repeat is refused, and nothing new is kept. The marker counts only while the submission it belongs to still exists.
+  const dup = duplicateKey(body.type, report, comments, process.env.COACH_TICKET_SECRET);
   try {
-    await store().setJSON(keyForCode(code), record);
+    const marker = (await store().get(dup, { type: 'json' })) as DuplicateMarker | null;
+    if (marker && typeof marker.sub === 'string' && marker.sub.startsWith(PREFIX) && !isDue(marker) && (await store().get(marker.sub)) !== null) {
+      await count('submission.duplicate-refused');
+      return reply(409, { error: 'duplicate' });
+    }
+  } catch {
+    /* if the check cannot run, the message is still kept: a repeat is better than a lost message */
+  }
+
+  const code = makeCode();
+  const record = newRecord(body.type, report, comments, new Date(), dup);
+  const subKey = keyForCode(code);
+  try {
+    await store().setJSON(subKey, record);
   } catch {
     return reply(503, { error: 'store' });
+  }
+  try {
+    const marker: DuplicateMarker = { keepUntil: record.keepUntil, sub: subKey };
+    await store().setJSON(dup, marker);
+  } catch {
+    /* the message is kept; only the repeat guard is missing for it */
   }
   await count('submission.received');
 

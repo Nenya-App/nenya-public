@@ -14,8 +14,9 @@ import { formatBodyMapLines, formatGatewayData, gatewayTitles, isBodyMapUsed } f
 // "Download PDF Report" -- loaded on demand inside downloadNenyaPdfReport()
 // instead of shipped with every page.
 import { downloadNenyaPdfReport } from '../../../lib/nenyaPdfReport';
-import { BODY_MAP_ALT, DRAWING_ALT_PRESENT, DRAWING_ALT_WISH } from '../../../lib/altText';
+import { bodyMapAltFor, DRAWING_ALT_PRESENT, DRAWING_ALT_WISH } from '../../../lib/altText';
 
+import { L } from '../../../lib/vocabulary';
 interface GatewayReviewPageProps {
   gatewayData: GatewayData[];
   selectedGateways: Gateway[];
@@ -25,6 +26,8 @@ interface GatewayReviewPageProps {
   bodyMapData: BodyMapData;
   /** "Sign Our Guestbook", where the guestbook is on (VITE_GUESTBOOK). */
   onGuestbook?: () => void;
+  /** Tray mode: "Examined, not included: …", the one line about lenses opened but not added. */
+  examinedLine?: string;
 }
 
 const gatewayIcons = {
@@ -44,6 +47,7 @@ export default function GatewayReviewPage({
   onBack,
   bodyMapData,
   onGuestbook,
+  examinedLine,
 }: GatewayReviewPageProps) {
   const bodyMapUsed = isBodyMapUsed(bodyMapData);
 
@@ -70,6 +74,8 @@ export default function GatewayReviewPage({
       });
       report += `\n`;
     });
+
+    if (examinedLine) report += `\n${examinedLine}\n`;
 
     if (bodyMapUsed) {
       report += `\nBODY MAP\n`;
@@ -103,7 +109,7 @@ export default function GatewayReviewPage({
   };
 
   const downloadPDFReport = () => {
-    downloadNenyaPdfReport(gatewayData, gatewayTitles, formatGatewayData, bodyMapUsed ? bodyMapData : undefined, formatBodyMapLines);
+    downloadNenyaPdfReport(gatewayData, gatewayTitles, formatGatewayData, bodyMapUsed ? bodyMapData : undefined, formatBodyMapLines, examinedLine);
   };
   
   return (
@@ -119,7 +125,7 @@ export default function GatewayReviewPage({
           <div className="flex items-center gap-3">
             <PanelLogo size={32} />
             <div className="text-center">
-              <h1 className="text-xl">Gateway Review</h1>
+              <h1 className="text-xl">{L('Gateway')} Review</h1>
               <p className="text-sm text-muted-foreground">
                 Review and adjust your sensory pathways
               </p>
@@ -136,10 +142,10 @@ export default function GatewayReviewPage({
           {/* Introduction */}
           <div className="text-center space-y-4">
             <h2 className="text-2xl md:text-3xl">
-              Your {selectedGateways.length} {selectedGateways.length === 1 ? 'Gateway' : 'Gateways'}
+              Your {selectedGateways.length} {selectedGateways.length === 1 ? L('Gateway') : L('Gateways')}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              You can review and modify any of your gateway selections before continuing. 
+              You can review and modify any of your {L('gateway')} selections before continuing. 
               These sensory pathways will guide your conversation and help create your unique space for reflection.
             </p>
             
@@ -191,6 +197,7 @@ export default function GatewayReviewPage({
           </div>
 
           {/* Gateway Cards */}
+          {examinedLine && <p className="text-sm text-muted-foreground" data-examined-line>{examinedLine}</p>}
           <div className="grid gap-4">
             {gatewayData.map((gd) => {
               const Icon = gatewayIcons[gd.gateway];
@@ -297,7 +304,7 @@ export default function GatewayReviewPage({
                   <User className="size-5 text-muted-foreground" />
                   <div>
                     <CardTitle className="text-lg">Body Map</CardTitle>
-                    <CardDescription className="mt-1">Colors and notes placed across your gateways</CardDescription>
+                    <CardDescription className="mt-1">Colors, brush marks and notes placed across your {L('gateways')}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -325,7 +332,7 @@ export default function GatewayReviewPage({
                   <div className="bg-muted/30 rounded-lg p-4 flex justify-center">
                     <img
                       src={bodyMapData.imageDataUrl}
-                      alt={BODY_MAP_ALT}
+                      alt={bodyMapAltFor(bodyMapData.placements.length, bodyMapData.strokes?.length ?? 0)}
                       className="max-w-full h-auto rounded"
                       style={{ maxHeight: '300px' }}
                     />
@@ -354,7 +361,7 @@ export default function GatewayReviewPage({
             </Button>
           </div>
           <p className="mx-auto max-w-md pt-3 text-center text-xs text-muted-foreground">
-            Optional. A short, five-exchange conversation with an early prototype. Nothing you chose in the gateways is
+            Optional. A short, five-exchange conversation with an early prototype. Nothing you chose in the {L('gateways')} is
             sent anywhere.
           </p>
           <div className="flex justify-center pt-2">

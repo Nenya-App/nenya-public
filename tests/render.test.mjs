@@ -24,7 +24,8 @@ globalThis.window ??= {
 const require = createRequire(root + 'package.json');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
-const vite = await createServer({ root, server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' });
+// mode 'test' so the dev switches in .env.development (the lens tray, lens words, Terms-first) do not change what these pages render; each switch's own page is tested where it is set.
+const vite = await createServer({ root, mode: 'test', server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' });
 
 const render = (Component, props) => {
   try { return renderToString(React.createElement(Component, props)); } catch (e) { return { error: e.message }; }
@@ -66,7 +67,7 @@ try {
   ok('first-visit panel: renders its dialog and the rhythm choice', typeof h === 'string' && h.includes('role="dialog"') && h.includes('onboarding-title'), h.error ?? '');
   ok('first-visit panel: no layer starts invisible', typeof h === 'string' && !/opacity:\s*0(?![.\d])/.test(h.replace(/<style>[\s\S]*?<\/style>/g, '')), 'found an inline opacity: 0');
   ok('first-visit panel: the steps ease in with a CSS class; the panel itself has no entrance (it is already there, solid, when the loading screen fades)', typeof h === 'string' && h.includes('onb-step-in') && !h.includes('onb-fade-in') && !h.includes('onb-card-in'));
-  ok('first-visit panel: Box breathing is one of the four main choices, and there is no skip link', typeof h === 'string' && h.includes('>Box<') && h.includes('>5·5<') && h.includes('>4·6<') && h.includes('>3·3<') && !h.includes('>4·8<') && !h.includes('Skip to terms'), h.error ?? '');
+  ok('first-visit panel: Box breathing is one of the four main choices, and there is no skip link', typeof h === 'string' && h.includes('>Box<') && h.includes('>6·6<') && h.includes('>4·6<') && h.includes('>3·3<') && !h.includes('>4·8<') && !h.includes('Skip to terms'), h.error ?? '');
   ok('first-visit panel: says that not choosing is fine', typeof h === 'string' && h.includes('Not choosing is fine'), h.error ?? '');
   {
     const src = readFileSync(new URL('../src/app/components/OnboardingFlow.tsx', import.meta.url), 'utf8');
@@ -115,9 +116,9 @@ try {
     ok('palettes: optional, with a bridge and the kinds of harmony, and nothing is made or asked until a button is pressed', typeof h === 'string' && h.includes('Make a palette from these colors (optional)') && h.includes('Make a bridge') && h.includes('Make it on my device') && h.includes('Neighbors and opposite') && h.includes('Three evenly spaced') && !h.includes('Keep this palette in my report'), h.error ?? '');
     ok('palettes: the online button says what is sent, to whom, and that nothing else is, before it is pressed', typeof h === 'string' && h.includes('Ask The Color API') && h.includes('sends this one color, as a hex code, through our server to The Color API') && h.includes('Nothing else is sent, and we store nothing') && h.includes('sends nothing anywhere') && h.includes('no color has a fixed meaning'), h.error ?? '');
     h = render(PalettePanel, { color1: '#1B4F6E', color2: '#E3752B', values: [{ source: 'The Color API', kind: 'analogic', base: 'present', colors: [{ hex: '#1B4F6E', name: 'Seafarer' }, { hex: '#2D6F8E' }] }, { source: 'device', kind: 'bridge', useInSound: true, colors: [{ hex: '#1B4F6E' }, { hex: '#E3752B' }] }], onChange: noop });
-    { const t = typeof h === 'string' ? h.replace(/<!-- -->/g, '') : ''; ok('palettes: up to two kept palettes are shown, numbered, with where each was made, each with a choice to use it in the Sound gateway, and can be removed', t.includes('In your report: Palette 1 you made') && t.includes('In your report: Palette 2 you made') && t.includes('generated with The Color API') && t.includes('Seafarer #1B4F6E') && t.includes('also used in the Sound gateway') && t.includes('Use this palette in the Sound gateway') && t.includes('Remove it'), h.error ?? ''); }
+    { const t = typeof h === 'string' ? h.replace(/<!-- -->/g, '') : ''; ok('palettes: up to two kept palettes are shown, numbered, with where each was made, each with a choice to use it in the Sound gateway, and can be removed', t.includes('In your report: Palette 1 you made') && t.includes('In your report: Palette 2 you made') && t.includes('generated with The Color API') && t.includes('Seafarer #1B4F6E') && t.includes('also used in the Sound lens') && t.includes('Use this palette in the Sound lens') && t.includes('Remove it'), h.error ?? ''); }
     const sightSrc = readFileSync(new URL('../src/app/components/pages/SightGatewayPage.tsx', import.meta.url), 'utf8');
-    ok('palettes: the Sight gateway carries up to two kept palettes into its data, and clears them when reset', /<PalettePanel color1=\{color1\} color2=\{color2\} values=\{generatedPalettes\} onChange=\{setGeneratedPalettes\}/.test(sightSrc) && /gradientDirection,\n\s+generatedPalettes:/.test(sightSrc) && /setGeneratedPalettes\(\[\]\)/.test(sightSrc));
+    ok('palettes: the Sight gateway carries up to two kept palettes into its data, and clears them when reset', /<PalettePanel color1=\{color1\} color2=\{color2\} color1Name=\{color1Name\} color2Name=\{color2Name\} values=\{generatedPalettes\} onChange=\{setGeneratedPalettes\}/.test(sightSrc) && /gradientDirection,\n\s+generatedPalettes:/.test(sightSrc) && /setGeneratedPalettes\(\[\]\)/.test(sightSrc));
   }
   // The body map on the Sight gateway's page, and a kept palette in the PDF.
   {
@@ -129,7 +130,7 @@ try {
     const sightPage = readFileSync(new URL('../src/app/components/pages/SightGatewayPage.tsx', import.meta.url), 'utf8');
     ok('the Sight gateway shows the body map on the page, beside the palette', /<BodyMapAvatar\s+inline/.test(sightPage) && !/setShowBodyMap/.test(sightPage));
     const pdfSrc = readFileSync(new URL('../src/lib/nenyaPdfReport.ts', import.meta.url), 'utf8');
-    ok('the PDF report draws each kept palette (up to two) as a row of colour chips with their names written out in full (wrapped, not cut short)', /generatedPalettes/.test(pdfSrc) && /heading: `Palette/.test(pdfSrc) && /caption: c\.name \?\? c\.hex/.test(pdfSrc) && /splitTextToSize\(s\.caption/.test(pdfSrc));
+    ok('the PDF report draws each kept palette (up to two) as a row of colour chips with their names written out in full (wrapped, not cut short)', /generatedPalettes/.test(pdfSrc) && /heading: `Palette/.test(pdfSrc) && /caption: c\.name \?\? c\.hex/.test(pdfSrc) && /splitTextToSize\(s\.caption/.test(pdfSrc + readFileSync(root + 'src/lib/pdfLayout.ts', 'utf8')));
   }
   // The loading screen, the tour offer and the tour.
   const { LoadingVeil } = await vite.ssrLoadModule('/src/app/components/LoadingVeil.tsx');
@@ -175,7 +176,9 @@ try {
   ok('logo (orbit view): renders the gem canvases, the vector bezel image and the two glow images', typeof h === 'string' && canvases === 4 && /<img[^>]*src="[^"]*(bezel|svg)/.test(h), h.error ?? `${canvases} canvases`);
   ok('logo (orbit view): the overlay gem layer blends with overlay', typeof h === 'string' && h.includes('mix-blend-mode:overlay'));
   ok('logo (orbit view): the last inner orbs are cut away where the first ones overlap them', typeof h === 'string' && (h.match(/mask-image:radial-gradient/g) ?? []).length >= 8, `${(h.match(/mask-image:radial-gradient/g) ?? []).length} mask-image uses`);
-  ok('logo (orbit view): the outer orbs carry the box-shadow glow class', typeof h === 'string' && h.includes('nenya-orb-glow'));
+  ok('logo (orbit view): the outer orbs carry their own halo by default, with no blur glow class', typeof h === 'string' && h.includes('nenya-orb-halo') && !h.includes('nenya-orb-glow'));
+  const h2 = render(Logo, { size: 300, showValarOrbit: true, showLogo: true, glow: true, technique: { ih: 4000, hi: 7000, ex: 8000, ho: 0 }, cycleStart: 0, outerOrbit: { halo: 'shared' } });
+  ok('logo (orbit view): the shared glow is still there when chosen', typeof h2 === 'string' && h2.includes('nenya-orb-glow') && !h2.includes('nenya-orb-halo'));
   ok('logo (orbit view): the logo isolates its blending', typeof h === 'string' && h.includes('isolation:isolate'));
   h = render(Logo, { size: 32 });
   ok('logo (header mark): a plain flat image, no canvases, no glow', typeof h === 'string' && !h.includes('<canvas') && h.includes('<img'), h.error ?? '');

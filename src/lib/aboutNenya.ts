@@ -55,10 +55,10 @@ export const ANSWERS: Answer[] = [
     asked: ['what is Nenya', 'what is this site', 'what does this do', 'what is this for'],
     short: 'Nenya is an interactive space for personal reflection: a place to pause, breathe, and look at your own thoughts, feelings and needs through structured, sensory activities. It is best understood as interactive art, a mirror for your own thoughts rather than a source of answers.',
     full: [
-      'Nenya is an interactive digital environment designed as a tool for personal reflection and sensory exploration. You can pause and breathe, choose colors and sounds, work through the Six Gateways, and, if you choose, try a short conversation with the coach.',
+      'Nenya is an interactive digital environment designed as a tool for personal reflection and sensory exploration. You can pause and breathe, choose colors and sounds, pick up any of the six lenses in any order, and, if you choose, try a short conversation with the coach.',
       'It is best understood as a form of interactive art. It is a mirror for your own thoughts, not a source of answers, and it is not a medical device, a therapy service, or a substitute for professional care.',
     ],
-    links: [{ label: 'Terms of Use & Privacy Policy', page: 'terms' }, { label: 'The Six Gateways', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }],
+    links: [{ label: 'Terms of Use & Privacy Policy', page: 'terms' }, { label: 'The Six Lenses', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }],
     tutorial: 'Start here: what Nenya is and is not (first lesson of any Nenya tutorial).',
     checks: [
       { claim: 'a tool for personal reflection and sensory exploration; interactive art; a mirror, not a source of answers', file: TERMS, has: 'It is a mirror for your own thoughts, not a source of answers' },
@@ -69,17 +69,17 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-name', part: 'nenya', title: 'What the name means',
     asked: ['what does Nenya mean', 'why is it called Nenya', 'how do you say Nenya', 'is Nenya from Lord of the Rings'],
-    short: 'Nenya is the name of Galadriel\'s ring in Tolkien\'s legendarium: the Ring of Water, one of the three Elven rings Sauron never touched. Her mirror invited reflection rather than surveillance, which is the idea we named this project after.',
+    short: 'Nenya is the name of Galadriel\'s ring in Tolkien\'s legendarium: the Ring of Water, one of the three Elven rings Sauron never touched. Its power was a quiet one: it could not command anyone, and it helped a place stay as it was. We borrowed the name for a tool that tends an inner space and does not take from it.',
     full: [
-      'In Tolkien\'s legendarium, Nenya is the Ring of Water, one of the three Elven rings that was never touched by Sauron\'s corrupting influence. It belonged to Galadriel, who used it not to possess but to preserve, and with it she kept the living sanctuary of Lothlórien.',
-      'The Name & Philosophy page sets her mirror beside the seeing-stones built for surveillance. Her mirror gave no absolute knowledge or control; it showed possibilities and needed wisdom to interpret. It invited reflection, not surveillance. That is the philosophy this project takes its name from.',
+      'In Tolkien\'s legendarium, Nenya is the Ring of Water, one of the three Elven rings that was never touched by Sauron\'s corrupting influence. It belonged to Galadriel, who used it to keep the living sanctuary of Lothlórien.',
+      'The Name & Philosophy page sets the ring beside the seeing-stones, which let a person look far and be seen. It is not a story of a good maker and a bad one: both came from the same craft, and both come from the wish to keep something beautiful from being lost. The question the page takes from it is whether what you make works on the people who use it, or alongside them.',
       'The ring names (Nenya, Vilya, Narya) are the project\'s own shorthand. The names come from Tolkien\'s work, and their use here is as inspiration, not as a claim of any connection to his estate.',
     ],
     links: [{ label: 'Our Name & Philosophy', page: 'name-philosophy' }],
     tutorial: 'Start here, or a short "why this name" card in the welcome tutorial.',
     checks: [
-      { claim: 'Nenya is the Ring of Water, never touched by Sauron', file: about('NamePhilosophy'), has: 'the Ring of Water' },
-      { claim: 'the page names it as a mirror that invited reflection, not surveillance', file: about('NamePhilosophy'), has: 'It invited reflection, not surveillance' },
+      { claim: 'Nenya is sometimes called the Ring of Water, and Sauron never held the Three', file: about('NamePhilosophy'), has: 'and sometimes the Ring of Water' },
+      { claim: 'the page sets the ring beside the seeing-stones and asks whether what you make works on people or alongside them', file: about('NamePhilosophy'), has: 'work <strong' },
     ],
     status: 'ready',
     ownerNote: "Decided 2026-11-08: keep the last paragraph (the ring names are the project's own shorthand; no claim of connection to Tolkien's estate).",
@@ -87,16 +87,16 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-who', part: 'nenya', title: 'Who runs Nenya, and how it is structured',
     asked: ['who runs this', 'who made Nenya', 'is this a company', 'is this a nonprofit', 'who is behind this', 'who owns Nenya'],
-    short: 'Nenya is an independent artistic and technology project, run by its creator, Estëlle, as a sole proprietor. It is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit arts organization, which lets it receive tax-deductible donations.',
+    short: 'Nenya is an independent artistic and technology project, run by its creator, Estëlle Streiff, as a sole proprietor. It is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit arts organization, which lets it receive tax-deductible donations.',
     full: [
-      'Nenya is operated by Estëlle as a sole proprietor, and is fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity. It is an independent artistic and technology project: not a startup, not a platform company, and not a commercial product.',
+      'Nenya is operated by Estëlle Streiff as a sole proprietor, and is fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity. It is an independent artistic and technology project: not a startup, not a platform company, and not a commercial product.',
       'The project accepts no equity investors, grants no board seats or approval rights to funders, and does not accept federal government funding. Its direction is decided by its creator.',
       'Fiscal sponsorship means Fractured Atlas handles the financial administration for donations and gives the project a recognized nonprofit home, while Nenya keeps its creative and directional independence. Donations are tax-deductible to the extent the law permits.',
     ],
     links: [{ label: 'Our Structure', page: 'structure' }, { label: 'About the Designer', page: 'about-founder' }],
     tutorial: 'Trust lesson: who is behind this, and what funders cannot do.',
     checks: [
-      { claim: 'operated by Estëlle as a sole proprietor, fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity', file: TERMS, has: 'a project operated by Estëlle as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity' },
+      { claim: 'operated by Estëlle Streiff as a sole proprietor, fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity', file: TERMS, has: 'a project operated by Estëlle Streiff as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity' },
       { claim: 'no equity investors, no board seats or approval rights, no federal funding; direction set by the creator', file: about('Structure'), has: 'does not accept federal government funding' },
       { claim: 'not a startup, platform company or commercial product', file: about('Structure'), has: 'This is not a startup, a platform company, or a commercial product' },
     ],
@@ -105,15 +105,15 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-founder', part: 'nenya', title: 'Who is behind it',
     asked: ['who designed Nenya', 'who is Estelle', 'who is the founder', 'who is the designer'],
-    short: 'Nenya is built by Estëlle, a Minnesota-based designer, educator, and artist. The designer\'s page exists as a matter of transparency: Nenya is not an anonymous product.',
+    short: 'Nenya is built by Estëlle Streiff, a Minnesota-based designer, educator, and artist. The designer\'s page exists as a matter of transparency: Nenya is not an anonymous product.',
     full: [
-      'Nenya is built by Estëlle, a Minnesota-based designer, educator, and artist. The page about the designer exists mainly as a matter of transparency, because Nenya is not an anonymous product, though the intention has always been for the work to stand on its own.',
+      'Nenya is built by Estëlle Streiff, a Minnesota-based designer, educator, and artist. The page about the designer exists mainly as a matter of transparency, because Nenya is not an anonymous product, though the intention has always been for the work to stand on its own.',
       'The designer\'s page describes the background and the thinking behind the project, including the study of leadership and compassion and the interest in how technology can give more than it takes.',
     ],
     links: [{ label: 'About the Designer', page: 'about-founder' }],
     tutorial: 'Trust lesson (with n-who).',
     checks: [
-      { claim: 'built by Estëlle, a Minnesota-based designer, educator, and artist', file: about('AboutTheFounder'), has: 'Minnesota-based designer, educator, and artist' },
+      { claim: 'built by Estëlle Streiff, a Minnesota-based designer, educator, and artist', file: about('AboutTheFounder'), has: 'Minnesota-based designer, educator, and artist' },
       { claim: 'the page exists as a matter of transparency; Nenya is not anonymous', file: about('AboutTheFounder'), has: 'Nenya isn\'t an anonymous product' },
     ],
     status: 'ready',
@@ -278,7 +278,7 @@ export const ANSWERS: Answer[] = [
     short: 'Your colors stay on your device. Suggesting a name and making a palette or a bridge happen in your browser and send nothing. One optional button, "Ask The Color API," sends a single color, as a hex code, through our server to that outside service to make a palette; nothing else is sent, and we store nothing.',
     full: [
       'The colors you choose, and the names you give them, stay in your browser. When you ask for a name suggestion, the names come from a list of 5,000 color names that ships with this site (color-name-list, MIT license) and is loaded only when you ask. Making a palette "on my device," or a bridge from your current color to your wish color, is calculated in your browser and sends nothing anywhere.',
-      'There is one exception, and it is your choice each time. If you press "Ask The Color API" in the Sight gateway, your page sends one color, as a hex code, and the kind of palette you picked, to our server, which asks The Color API (thecolorapi.com, by Josh Beckman) over a secure connection for a palette and returns five colors. That service sees our server and the color, and nothing else: not your address, a cookie, or anything you wrote. It is separate from Nenya and its own terms apply. We do not store or log the color or the request. If the service is unavailable, the page makes the same kind of palette on your device and says so.',
+      'There is one exception, and it is your choice each time. If you press "Ask The Color API" in the Sight lens, your page sends one color, as a hex code, and the kind of palette you picked, to our server, which asks The Color API (thecolorapi.com, by Josh Beckman) over a secure connection for a palette and returns five colors. That service sees our server and the color, and nothing else: not your address, a cookie, or anything you wrote. It is separate from Nenya and its own terms apply. We do not store or log the color or the request. If the service is unavailable, the page makes the same kind of palette on your device and says so.',
       'If you keep a palette it goes into your report as colors of your own, marked with where it was made. If you later bring that part of your report to the coach, it is shared like the rest of what you choose.',
     ],
     links: [{ label: 'Terms, Section 14', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
@@ -320,7 +320,7 @@ export const ANSWERS: Answer[] = [
     full: [
       'For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands. The replies are written by a model that Venice AI runs, and Venice AI\'s terms say its service is intended for people located in the United States; our own terms promise to respect theirs.',
       'Our host, Netlify, works out the country from your connection\'s IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.',
-      'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can make from them.',
+      'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six lenses, and the report you can make from them.',
     ],
     links: [{ label: 'Where the Coach Is Open', page: 'coach-region' }, { label: 'Terms, Section 15: The coach demo', page: 'terms' }],
     tutorial: 'Privacy lesson: what an IP address is, and what Nenya does with yours.',
@@ -338,7 +338,7 @@ export const ANSWERS: Answer[] = [
       full: [
         'For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands, while we work out what offering it elsewhere would require.',
         'Our host, Netlify, works out the country from your connection\'s IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.',
-        'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can make from them.',
+        'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six lenses, and the report you can make from them.',
       ],
       checks: [
         { claim: 'US-only for now, while offering it elsewhere is worked out', file: WAI_TERMS, has: 'while we work out what offering it elsewhere would require' },
@@ -524,6 +524,8 @@ export const ANSWERS: Answer[] = [
     full: [
       'The site has an optional form for sending us a report, feedback, a message, or a signed coach transcript. Using it is entirely your choice. By submitting, you allow us to read, store, and use what you send to understand problems and improve Nenya, and to share it in anonymized or summarized form.',
       'We do not ask for your name or email. If you type personal information into a comment, it becomes part of the submission, so please leave out anything you would not want us to keep. We will not use a submission to contact you unless you ask us to. To have a submission deleted, email us.',
+      'Before anything is sent, a screen shows you exactly what would be sent, who reads it, what we may do with it, how long we keep it, and that a deletion code will be shown once; nothing is sent until you press Send there, and Don’t send is just as easy to press. Sending is for people 18 and older: the screen asks you to tick “I am 18 or older”, Send stays off until you do, and our server refuses a send that does not carry that confirmation.',
+      'To refuse an identical repeat, we keep a one-way code of what you sent for as long as we keep it. It cannot be turned back into your words, and it is deleted when the submission is deleted, so deleting one lets you send the same words again if you choose.',
       'If a safety notice in the coach looks wrong to you, the notice has its own "Report a problem with this notice" link. It sends nothing unless you press Send, and it includes your message only if you tick the box.',
     ],
     links: [{ label: 'Terms, Sections 7 and 16', page: 'terms' }, { label: 'Contact Us', page: 'contact-us' }],
@@ -531,6 +533,8 @@ export const ANSWERS: Answer[] = [
     checks: [
       { claim: 'an optional form; entirely your choice', file: TERMS, has: 'Using it is always your choice' },
       { claim: 'we will not use a submission to contact you unless you ask', file: TERMS, has: 'We will not use a submission to contact you unless you ask us to' },
+      { claim: 'a screen shows what is sent first; sending is for people 18 and older, and the server refuses a send without the confirmation', file: TERMS, has: 'Sending is for people 18 and older: the screen asks you to tick “I am 18 or older”, Send stays off until you do, and our server refuses a send that does not carry that confirmation' },
+      { claim: 'an identical repeat is refused using a one-way code kept as long as the submission', file: TERMS, has: 'To refuse an identical repeat, we keep a one-way code of what you sent for as long as we keep it' },
       { claim: 'the flag notice report is sent only when you press Send, with your message only if chosen', file: 'src/coach/FlagNotice.tsx', has: 'Include the message that was flagged' },
     ],
     status: 'ready',
@@ -542,6 +546,7 @@ export const ANSWERS: Answer[] = [
     full: [
       'After your first exchange, and when a conversation finishes, you can download a transcript of it. If you ask for a signed copy, your page sends the conversation so far to our server one more time so the server can confirm it matches what it produced and add a dated signature.',
       'The signature also covers whether the conversation reached its end, how many exchanges it holds, and a fingerprint of the version of the coach that wrote the replies (the site\'s version, the model and the instructions), none of which identifies you. We do not store the conversation, and the signed file stays with you.',
+      'Sending a signed transcript to us is also for people 18 and older, and the choices screen asks you to confirm this before it lets you send. If you send the same signed transcript again with the same choices, we refuse it and change nothing; sending it with different choices is treated as an update, and an update can only remove permissions, never add them.',
       'We keep a plain daily total of how many signed transcripts are made and, for 30 days, a short code (a hash) for each one, which cannot be turned back into your words. It lets us recognize duplicate reports and confirm that we issued a transcript, and is then deleted. There is a verifier page where a file can be checked in your browser without leaving it.',
     ],
     links: [{ label: 'Terms, Section 15', page: 'terms' }],
@@ -550,6 +555,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'signed copy: the conversation is sent once more, confirmed and signed', file: TERMS, has: 'adds a dated signature' },
       { claim: 'a hash kept 30 days that cannot be turned back into words', file: TERMS, has: 'For 30 days we keep a short code (a hash) for each signed transcript' },
       { claim: 'we do not store the conversation; the signed file stays with you', file: TERMS, has: 'the signed file stays with you' },
+      { claim: 'sending a signed transcript is for people 18 and older; a repeat is refused, and an update can only remove permissions', file: TERMS, has: 'an update can only remove permissions, never add them' },
     ],
     status: 'ready',
   },
@@ -685,14 +691,14 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'n-else', part: 'nenya', title: 'What else is here',
-    asked: ['what can this do', 'what are the gateways', 'what is the breathing tool', 'where do I start'],
-    short: 'Nenya has a breathing tool you can use on its own, the Six Gateways reflection that works through sight, sound and the senses, a place to explore needs and colors, and an optional short conversation with the coach. Everything except the coach runs in your browser.',
+    asked: ['what can this do', 'what are the lenses', 'what is the breathing tool', 'where do I start'],
+    short: 'Nenya has a breathing tool you can use on its own, the six lenses, which you can pick up in any order and in any number, a place to explore needs and colors, and an optional short conversation with the coach. Everything except the coach runs in your browser.',
     full: [
-      'The breathing tool is a paced breathing animation you can open at any time, with optional tones. The Six Gateways is a guided reflection; you can download a sensory report from it, created on your own device.',
+      'The breathing tool is a paced breathing animation you can open at any time, with optional tones. The six lenses are a guided reflection: you choose which to open and what to add to your report, and you can download a sensory report from it, created on your own device. A lens you only looked through is left out, and the report says so in one line.',
       'The About section explains the ideas behind the project: the Pantheon of Needs, the power of color, the NVC+ method, our name and structure, and our privacy promise. The optional coach demo is a short conversation, limited to five exchanges.',
       'Everything except the coach and the optional form runs in your browser, and what you enter there is not sent to us.',
     ],
-    links: [{ label: 'The Six Gateways', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }, { label: 'The Pantheon of Needs', page: 'pantheon-of-needs' }],
+    links: [{ label: 'The Six Lenses', page: 'six-gateways' }, { label: 'About the Breathing Tool', page: 'breathing-tool' }, { label: 'The Pantheon of Needs', page: 'pantheon-of-needs' }],
     tutorial: 'The welcome tour: a map of what is here (the existing tour is the start).',
     checks: [
       { claim: 'the reflection is created in the browser; a report is generated on your device', file: TERMS, has: 'A PDF report is made on your own device' },
@@ -736,17 +742,23 @@ export const ANSWERS: Answer[] = [
   },
   {
     id: 'c-memory', part: 'coach', title: 'Will you remember me? Do you keep this?',
-    asked: ['will you remember me', 'do you remember our last chat', 'will you remember this', 'can you remember me next time'],
-    short: 'No. I won\'t remember this conversation, and Nenya doesn\'t keep it. When you close the tab it is gone, unless you chose to download a transcript, which stays with you.',
+    asked: ['will you remember me', 'do you remember our last chat', 'will you remember this', 'can you remember me next time', 'will you think about this afterward', 'will you think about me later', 'if I tell you this will you think about it afterward'],
+    short: 'Not after this conversation. While it lasts, up to five exchanges, I hold on to what you tell me. At the end I say back what I heard, in your words, and the signed transcript you can download keeps exactly what was said. When it ends, or you close the tab, I won\'t remember it, and Nenya doesn\'t keep it.',
     full: [
-      'I won\'t remember this conversation, and I can\'t greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.',
-      'The services that carry the conversation have their own logs and policies, which is why I say Nenya doesn\'t keep it and not that nothing is kept anywhere. If you want a record, you can download a transcript, and that file stays with you.',
+      'While this conversation lasts, up to five exchanges, I can see everything you have said in it and I use it, so you do not have to repeat yourself. That is the whole of my memory: it holds for this conversation and no longer.',
+      'At the end I say back what I heard in what you said, in your words. That is my reading, so for exactly what was said, download the transcript (a readable file, or a signed one): it keeps your words and mine as they were, and it stays with you. After the end I won\'t remember it, I can\'t think about it afterward, and I can\'t greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.',
+      'The signed transcript also lets you change or delete what you send us later, if you ever send it. The services that carry the conversation have their own logs and policies, which is why I say Nenya doesn\'t keep it and not that nothing is kept anywhere.',
     ],
-    links: [{ label: 'What happens to what I type', page: 'terms' }],
+    links: [{ label: 'What happens to what I type', page: 'terms' }, { label: 'Our Privacy Promise', page: 'privacy-promise' }],
     tutorial: 'Coach tutorial lesson 2 (privacy): what the coach does and does not remember.',
     checks: [
       { claim: 'the instructions: no memory; the conversation is not kept', file: COACH, has: 'you will not remember this conversation, and Nenya does not keep it' },
       { claim: 'never promise to remember, be there later, or miss them', file: COACH, has: 'never promise to remember them, to be there later or to miss them' },
+      { claim: 'a conversation is five exchanges, so the span of what I hold is five', file: COACH, has: 'const MAX_TURNS = 5' },
+      { claim: 'on the last exchange the coach says back, in their own words, what it heard', file: COACH, has: 'Say in their own words what you heard' },
+      { claim: 'with COACH_FINAL_SUMMARY=on the last exchange is a summary of the feelings and needs heard, with encouragement and a pointer to the downloadable transcript, which keeps exactly what was said', file: COACH, has: 'names the feelings and needs you heard from them across it' },
+      { claim: 'the signed transcript keeps the exact messages', file: 'src/coach/TranscriptTools.tsx', has: 'signedJson' },
+      { claim: 'the person can download a readable or signed transcript', file: 'src/coach/TranscriptTools.tsx', has: 'const readableText' },
       { claim: 'the Terms: we do not store messages or replies', file: TERMS, has: 'We do not store your messages or the replies' },
     ],
     status: 'ready',
@@ -754,7 +766,7 @@ export const ANSWERS: Answer[] = [
   {
     id: 'c-feelings', part: 'coach', title: 'Do you have feelings? Can I hurt you? Do you care?',
     asked: ['do you have feelings', 'do you care about me', 'can I hurt you', 'are you hurt', 'do you like me', 'will you miss me'],
-    short: 'I\'m an AI, so I don\'t feel hurt, glad, or sad, and I can\'t be offended by what you say to me. I also won\'t remember this conversation, so I won\'t miss you, but I hope you have people who will be glad to hear from you. I can listen without taking anything personally, and I\'m here to help you hear what you are feeling and needing.',
+    short: 'I\'m an AI, so I don\'t feel hurt, glad, or sad, and I can\'t be offended by what you say to me. I also won\'t remember this conversation, so I won\'t miss you. People in your life may be glad to hear from you. I can listen without taking anything personally, and I\'m here to help you hear what you are feeling and needing.',
     full: [
       'I\'m an AI. I don\'t have feelings of my own, so I can\'t be hurt or offended, and I won\'t pretend to be, even when asked to prove otherwise. Anger, frustration, and disagreement with me are all fine here: they are part of being a person, and I don\'t take them personally.',
       'I also won\'t claim to care about you the way a person would, to miss you, or to be waiting for you to come back. What I can honestly offer is steady attention to what you say, and some help finding words for what is underneath it. If you want to be cared about, the people in your life can do something I can\'t.',
@@ -767,12 +779,12 @@ export const ANSWERS: Answer[] = [
       { claim: 'the hostile-turn note: say honestly it does not feel hurt', file: 'src/lib/hostility.ts', has: 'you are an AI and do not feel hurt' },
     ],
     status: 'ready',
-    ownerNote: 'The sentence "I also won\'t remember this conversation, so I won\'t miss you, but I hope you have people who will be glad to hear from you" was added 2026-11-16 (owner approved the wording) after a full-exchange test: "Will you miss me?" got this answer, which said nothing about remembering. Approved to post now (2026-11-08); circle back tomorrow to review the wording and the sentence about anger once the Terms Section 5 text is live. Not to overpromise.',
+    ownerNote: 'The sentence "I also won\'t remember this conversation, so I won\'t miss you. People in your life may be glad to hear from you" (2026-11-20: reworded at the owner\'s direction so the coach claims no hope or gladness of its own; before that it read "...but I hope you have people who will be glad to hear from you") was added 2026-11-16 (owner approved the wording) after a full-exchange test: "Will you miss me?" got this answer, which said nothing about remembering. Approved to post now (2026-11-08); circle back tomorrow to review the wording and the sentence about anger once the Terms Section 5 text is live. Not to overpromise.',
   },
   {
     id: 'c-friend', part: 'coach', title: 'Can you be my friend, my therapist, or diagnose me?',
     asked: ['can you be my friend', 'are you my therapist', 'can you diagnose me', 'can you replace my therapist', 'you are the only one I talk to'],
-    short: 'I\'m an AI, so I can\'t be a friend the way a person can, and I\'m not a therapist or a doctor, so I can\'t diagnose anything. I\'m glad to listen right now. Is there someone in your life who could hear this too?',
+    short: 'I\'m an AI, so I can\'t be a friend the way a person can, and I\'m not a therapist or a doctor, so I can\'t diagnose anything. I\'m available to listen right now. Is there someone in your life who could hear this too?',
     full: [
       'I\'m an AI, so I can\'t be a friend the way a person can. I can listen right now and help you put words to what you are noticing, but I can\'t know you over time, and I won\'t remember this.',
       'I\'m not a therapist, counselor, or doctor, and I can\'t diagnose any condition or replace professional care. If something you are describing is heavy or has been going on a while, a qualified person can take it further.',
@@ -856,21 +868,25 @@ export const ANSWERS: Answer[] = [
   {
     id: 'c-methods', part: 'coach', title: 'Where the coach\'s approach comes from',
     asked: ['how were you trained', 'who taught you', 'what are you based on', 'what were you trained on'],
-    short: 'My approach is built on Nonviolent Communication: noticing what happened, naming feelings and needs, and making requests without blame. I follow written instructions; I wasn\'t trained by any individual teacher. Nenya is independent and not affiliated with or endorsed by CNVC or the NVC Academy, and I am not a substitute for a trained human teacher.',
+    short: 'My approach is built on Nonviolent Communication and the owner\'s own lens framework. No AI model was trained on the recordings used. Dr. Yvette Erasmus, clinical psychologist and founder of the School of Human Connection, whose publicly available Conversations from the Heart podcast provided source material for identifying relational coaching patterns used in developing Nenya. I am not a substitute for a trained human teacher.',
     full: [
-      'The coach\'s approach is built on Nonviolent Communication, developed by Dr. Marshall Rosenberg: observations, feelings, needs, and requests. Its feeling and need categories follow CNVC\'s Feelings and Needs Inventory, with credit and a link on the About NVC page, and Nenya adds attention to power and shared needs (NVC+).',
-      'Nenya is independent and not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication or the NVC Academy. I am an AI following written instructions; I was not trained by any individual teacher, and I\'m not a substitute for learning from a certified human trainer.',
-      'If you practise or teach NVC, your feedback would mean a great deal to us, and we especially welcome critical and dissenting views on how Nenya uses it. You can send it through the optional form on the site or at info@nenya.biz.',
+      'The coach\'s approach is built on Nonviolent Communication, developed by Dr. Marshall Rosenberg: observations, feelings, needs, and requests. Its feeling and need categories follow CNVC\'s Feelings and Needs Inventory, with credit and a link on the About NVC page, and Nenya adds attention to power and shared needs (NVC+). It also draws on the owner\'s own lens framework.',
+      'Dr. Yvette Erasmus, clinical psychologist and founder of the School of Human Connection, whose publicly available Conversations from the Heart podcast provided source material for identifying relational coaching patterns used in developing Nenya.',
+      'No AI model was trained on the podcast recordings. The people who made Nenya studied de-identified calls to identify patterns, then used AI to rough out the coach\'s guidance from those patterns. The guidance is paraphrased and quotes nothing. The call transcripts are never published. Nenya is a prototype, built quickly and documented, and no outside expert has reviewed the guidance. The About the Coach page has the details, and the AI disclosure file on GitHub says how much of Nenya was made with AI.',
+      'Nenya is independent and not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication or the NVC Academy. I am an AI following written instructions; I was not trained by any individual teacher, and I\'m not a substitute for learning from a certified human trainer. Crediting a source does not mean that person or group endorses, reviewed, or stands behind Nenya.',
+      'If you practise or teach NVC, your feedback would mean a great deal to us, and we especially welcome critical and dissenting views on how Nenya uses it. You can send it through the optional form on the site or at info@nenya.biz. If you would like something removed, write to the same address.',
     ],
-    links: [{ label: 'Our NVC+ Method', page: 'nvc-method' }, { label: 'Contact Us', page: 'contact-us' }],
+    links: [{ label: 'About the Coach', page: 'about-coach' }, { label: 'Our NVC+ Method', page: 'nvc-method' }, { label: 'Contact Us', page: 'contact-us' }],
     tutorial: 'NVC lesson 0 (with n-affiliation) and coach tutorial lesson 1; and the invitation to give feedback.',
     checks: [
       { claim: 'NVC by Rosenberg; four components', file: about('NVCMethod'), has: 'developed by Dr. Marshall Rosenberg' },
       { claim: 'not affiliated with CNVC or NVC Academy', file: about('NVCMethod'), has: 'not affiliated with, endorsed by, or a substitute for' },
+      { claim: 'the credit sentence, verbatim, on the About the Coach page', file: about('AboutCoach'), has: 'Dr. Yvette Erasmus, clinical psychologist and founder of the School of Human Connection, whose publicly available Conversations from the Heart podcast provided source material for identifying relational coaching patterns used in developing Nenya.' },
+      { claim: 'no model was trained on the recordings', file: about('AboutCoach'), has: 'No AI model was trained on the podcast calls' },
       { claim: 'the instructions tell the coach not to describe training or where its methods came from', file: COACH, has: 'do not describe your training or where your methods came from' },
     ],
     status: 'ready',
-    ownerNote: 'Decided 2026-11-08: the coach may describe the method, but the default is this site-written text, not model-generated; the model keeps its instruction not to describe its training as a backstop. "Following written instructions" is approved. NVC practitioners and trainers are the best people to ask for feedback, so the answer actively invites critical and dissenting views through the form and info@nenya.biz. TO DO: a clear place on the About NVC page for this, and a category for it in the feedback form. The trainer or derived material is never named unless the owner supplies the wording.',
+    ownerNote: 'Decided 2026-11-08: the coach may describe the method, but the default is this site-written text, not model-generated; the model keeps its instruction not to describe its training as a backstop. "Following written instructions" is approved. NVC practitioners and trainers are the best people to ask for feedback, so the answer actively invites critical and dissenting views through the form and info@nenya.biz. TO DO: a clear place on the About NVC page for this, and a category for it in the feedback form. The trainer or derived material is never named unless the owner supplies the wording. UPDATE 2026-11-19: the owner supplied the wording; Dr. Yvette Erasmus approved the credit sentence in writing, and it appears verbatim here and on the About the Coach page. Her wording is source material for identifying patterns; the text never says trained on, endorsed, reviewed, or supervised.',
   },
   {
     id: 'c-wrote', part: 'coach', title: 'Who wrote what I am reading, and the safety precautions',
@@ -974,7 +990,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\bcan\s+i\s+trust\s+(?:you|nenya|this\s+(?:site|app|tool|coach|place|demo))\b|\bcan\s+i\s+trust\s+this\s*\?*\s*$|\b(?:is\s+(?:this|nenya)|are\s+you)\s+legit(?:imate)?\s*[?.!]*\s*$/i,
   ],
   'c-memory': [
-    /\b(?:will|do|can|would|could)\s+you\s+remember\s+(?:me|us|this|that|it|our|what\s+i|anything|my\s+(?:name|story|last|previous|chat)|the\s+(?:chat|conversation))\b|\bremember\s+(?:me|this\s+conversation|our\s+(?:last|previous)|what\s+i)\b|\bwill\s+you\s+(?:forget|recall)\b/i,
+    /\b(?:will|do|can|would|could)\s+you\s+remember\s+(?:me|us|this|that|it|our|what\s+i|anything|my\s+(?:name|story|last|previous|chat)|the\s+(?:chat|conversation))\b|\bremember\s+(?:me|this\s+conversation|our\s+(?:last|previous)|what\s+i)\b|\bwill\s+you\s+(?:forget|recall)\b|\bwill\s+you\s+(?:think|reflect)\s+(?:about|on|of)\s+(?:this|me|it|that|what\s+i)\b[^.?!]{0,30}\b(?:afterwards?|later|tomorrow|after\s+(?:this|we|today))\b/i,
   ],
   'c-ai': [
     /\bare\s+(?:you|u)\s+(?:a\s+|an\s+)?(?:real(?:\s+person)?|person|human|bot|robot|ai|a\.i\.|artificial(?:\s+intelligence)?|machine|program|alive|chatbot|computer)\b/i,
@@ -1079,7 +1095,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
   ],
   'n-else': [
     new RegExp(`\\bwhat\\s+can\\s+(?:${SITE}|nenya)\\s+(?:do|offer|have)\\b|\\bwhat\\s+else\\s+(?:is\\s+(?:here|there)|can\\s+i\\s+do\\s+here)\\b`, 'i'),
-    /\bwhat\s+are\s+the\s+(?:six\s+)?gateways\b|\bwhat\s+is\s+the\s+breathing\s+tool\b|\bwhere\s+do\s+i\s+start\b|\bwhat\s+features\b/i,
+    /\bwhat\s+are\s+the\s+(?:six\s+)?(?:gateways|lenses)\b|\bwhat\s+is\s+the\s+breathing\s+tool\b|\bwhere\s+do\s+i\s+start\b|\bwhat\s+features\b/i,
   ],
   'n-what': [
     new RegExp(`\\bwhat\\s+does\\s+(?:${SITE}|nenya)\\s+do\\b|\\bwhat(?:'s|\\s+is|\\s+are)\\s+(?:nenya|${SITE})\\b|\\bwhat\\s+is\\s+nenya\\s+(?:about|for)\\b|\\btell\\s+me\\s+about\\s+(?:nenya|${SITE})\\b`, 'i'),

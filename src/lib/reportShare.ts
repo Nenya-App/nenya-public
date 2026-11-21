@@ -7,7 +7,7 @@
 // opening of the visitor's own signed transcript, and nothing else.
 import { PALETTE_DISPLAY_NAMES } from './paletteNames.ts';
 
-export const REPORT_SECTIONS = ['Sight', 'Sound', 'Touch', 'Essence', 'Movement', 'Insight', 'Body map'] as const;
+export const REPORT_SECTIONS = ['Sight', 'Sound', 'Touch', 'Essence', 'Movement', 'Insight', 'Pattern', 'Body map'] as const; // Insight (until the lens copy is on) and Pattern (after); both are read
 export const PALETTE_NAMES: string[] = [...new Set(Object.values(PALETTE_DISPLAY_NAMES))];
 
 export interface ReportMeta {

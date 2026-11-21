@@ -29,7 +29,7 @@ export function careProblemsIn(sentence: string): CareProblem[] {
 export const careProblems = (reply: string): CareProblem[] => [...new Set(splitSentences(reply).flatMap(careProblemsIn))];
 
 /** The site's own sentence, used only if every sentence of the coach's reply had to go. */
-export const CARE_FALLBACK = 'That sounds really heavy, and I am glad you said it.';
+export const CARE_FALLBACK = 'That sounds really heavy, and it matters that you said it.';
 
 /** The reply without the sentences that break the rule, and how many were taken out. If nothing would be left, the site's own short sentence stands in. */
 export function withoutCareProblems(reply: string): { reply: string; removed: number } {

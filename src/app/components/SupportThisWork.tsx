@@ -33,11 +33,11 @@ export function SupportThisWork() {
             Nenya is a hybrid work of visual art, literature, and contemplative
             technology — a digital sanctuary built for reflection, emotional
             regulation, and ethical self-inquiry. The breathing interface, the
-            color gateways, the guided reflection: each element is designed to
+            six lenses, the guided reflection: each element is designed to
             leave you more present than when you arrived.
           </p>
           <p className="text-muted-foreground leading-relaxed">
-            It is built by Estëlle, a Minnesota-based designer, educator, and
+            It is built by Estëlle Streiff, a Minnesota-based designer, educator, and
             artist — though the intention has always been for the work to
             speak for itself. The practice behind it asks what technology
             could look like if it helped us feel more human rather than

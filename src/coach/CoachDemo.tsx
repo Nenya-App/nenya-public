@@ -28,9 +28,14 @@ import { WordPanel, type Picked } from './WordPanel';
 import { StancePicker } from './StancePicker';
 import { addWordToDraft } from '../lib/feelingsNeeds';
 import { isStuck, namedParts } from '../lib/practiceArc';
+import { ExternalLink, LinkedText } from '../app/components/ExternalLink';
 import { AnswerCard, type AnswerCardData } from './AnswerCard';
 import { CLOSING_TEXT, greetingText, siteMessagesFor } from '../lib/siteMessages';
 import { TranscriptTools } from './TranscriptTools';
+import { SummaryRequest } from './SummaryRequest';
+import { NeedTally } from './NeedTally';
+import { needTallyOn } from '../lib/needTallyView';
+import { summaryRequestOn } from '../lib/summaryRequest';
 import { FailureNotice } from './FailureNotice';
 import { RegionNotice } from './RegionGate';
 import { suggestsBreath } from '../lib/breathOffer';
@@ -227,6 +232,9 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   const notes = signatureNotes(color1, color2);
   useEffect(() => () => stopSignature.current?.(), []);
   const [flag, setFlag] = useState<SafetyFlag | null>(null);
+  // The summary the person asked for (VITE_SUMMARY_REQUEST), with the server's proof: kept here for the visit, sent only with the signed transcript if they ask for it there.
+  const [summary, setSummary] = useState<{ text: string; proof: string } | null>(null);
+  useEffect(() => { if (messages.length === 0) setSummary(null); }, [messages.length]);
   const [flaggedText, setFlaggedText] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -427,7 +435,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         style={{ borderColor: `${color2}66` }}
       >
         <span className="mb-1 block text-xs text-muted-foreground">Coach</span>
-        {text}
+        <LinkedText text={text} />
       </div>
     </div>
   );
@@ -466,8 +474,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
           <li>
             You leave Nenya. Venice AI&rsquo;s{' '}
-            <a href={VENICE_TERMS_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>terms</a> and{' '}
-            <a href={VENICE_PRIVACY_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>privacy policy</a> apply,
+            <ExternalLink href={VENICE_TERMS_URL} className={linkClass}>terms</ExternalLink> and{' '}
+            <ExternalLink href={VENICE_PRIVACY_URL} className={linkClass}>privacy policy</ExternalLink> apply,
             not ours. {VENICE_DIFFERENCES}
           </li>
           <li>
@@ -480,19 +488,13 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         </ul>
       </div>
       <div className="flex flex-wrap items-center gap-4">
-        <a
-          href={VENICE_CHARACTER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm"
-          style={gradientButton}
-        >
+        <ExternalLink href={VENICE_CHARACTER_URL} className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm" style={gradientButton}>
           Continue on Venice AI
-          <ArrowRight className="size-4" />
-        </a>
-        <a href={VENICE_SIGNUP_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </ExternalLink>
+        <ExternalLink href={VENICE_SIGNUP_URL} className={linkClass}>
           Need a Venice account? Sign up
-        </a>
+        </ExternalLink>
       </div>
       <p className="text-xs text-muted-foreground">{REFERRAL_NOTE}</p>
     </section>
@@ -710,8 +712,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                 <li>
                   The replies are written by an AI model run by {COACH_SERVICE.name}. They can be wrong, incomplete or offensive, and
                   they are not medical, legal, financial or mental health advice. {COACH_SERVICE.name}&rsquo;s own{' '}
-                  <a href={COACH_SERVICE.termsUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>terms</a> and{' '}
-                  <a href={COACH_SERVICE.privacyUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>privacy policy</a>{' '}
+                  <ExternalLink href={COACH_SERVICE.termsUrl} className={linkClass}>terms</ExternalLink> and{' '}
+                  <ExternalLink href={COACH_SERVICE.privacyUrl} className={linkClass}>privacy policy</ExternalLink>{' '}
                   apply to what it receives.
                 </li>
                 <li>
@@ -804,7 +806,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                       <span className="mb-1 block text-xs text-muted-foreground">
                         {m.role === 'user' ? 'You' : 'Coach'}
                       </span>
-                      {m.content}
+                      {m.role === 'assistant' ? <LinkedText text={m.content} /> : m.content}
                       {m.note && <span className="mt-2 block text-xs italic text-muted-foreground">{m.note}</span>}
                     </div>
                   </div>
@@ -845,10 +847,15 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </p>
                 )}
                 {stage === 'done' && !flag && pageBubble(CLOSING)}
+                {stage === 'done' && !flag && summaryRequestOn() && !!ticket && messages.filter((m) => m.role === 'user').length === MAX_TURNS && (
+                  <SummaryRequest input={{ session, messages: toWire(messages), ticket, ...(shared ? { context: shared.text } : {}) }} headers={ownerHeader()} onSummary={setSummary} />
+                )}
                 {stage === 'done' && !flag && siteMessagesFor(toWire(messages), MAX_TURNS).filter((x) => x.kind === 'invitation').map((x) => <Fragment key="invitation">{pageBubble(x.text)}</Fragment>)}
                 <div ref={endRef} />
               </div>
 
+              {/* VITE_NEED_TALLY: the person's own feelings and needs so far; quiet, optional, page state only. Not shown after a safety notice. */}
+              {needTallyOn() && !flag && <NeedTally userTexts={messages.filter((m) => m.role === 'user').map((m) => m.content)} />}
               {flag && <FlagNotice flag={flag} flaggedMessage={flaggedText} />}
               {contextFlag && !flag && <FlagNotice flag={contextFlag} flaggedMessage="" source="report" />}
               {sharedDropped && !shared && (
@@ -872,7 +879,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   </summary>
                   <div className="pt-3">
                     <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))}
-                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} summary={summary} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
                   </div>
                 </details>
               )}
@@ -1039,7 +1046,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
 
               {stage === 'done' && (
                 <TranscriptTools offers={messages.flatMap((m, i) => (m.offer ? [{ after: i, id: m.offer.id, proof: m.offer.proof }] : []))}
-                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
+                      edits={messages.flatMap((m, i) => (m.edits ?? []).map((e) => ({ after: i, ...e })))} messages={toWire(messages)} context={shared?.text} session={session} ticket={ticket} stopped={stopped} summary={summary} maxTurns={MAX_TURNS} answered={messages.flatMap((m, i) => (m.card ? [{ index: i, title: m.card.title, partial: m.card.partial }] : []))} />
               )}
             </>
           )}

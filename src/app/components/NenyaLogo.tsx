@@ -1,19 +1,31 @@
 import * as m from 'motion/react-m';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 // The flat logo (petals, bezel and gem, no orbs) is a 768 px WebP rendered from the vector drawings, and most call
 // sites use this component as a small persistent header mark (28-40px), where that is over 25 times more image
 // data than the display can show. A pre-resized 128 px WebP is swapped in below for those small sizes instead.
 import nenyaLogo from '../../assets/nenya-logo.webp';
 import nenyaLogoSmall from '../../assets/nenya-logo-small.webp';
-// The orbit view's petals: a vector drawing (two interlaced gold and cream flowers with a bevel and a true over-under
-// weave), drawn as an image so the build gives it a versioned filename that can be cached for a long time.
-// Its 765-unit box is the logo's size * 0.765, with the outer ring's diameter as 1000 units.
-import petalsLayer from '../../assets/logo/petals.svg';
+// The orbit view's petals are eight woven, outlined mallorn-style leaves (MallornLeaves) in a 765-unit box, the logo's
+// size * 0.765, with the outer ring's diameter as 1000 units. The glow is cast from a still silhouette of the same outlines
+// (built only when a glow is asked for).
+const leafMaskUris = new Map<number, string>();
+const leafMask = (count: number) => {
+  let uri = leafMaskUris.get(count);
+  if (!uri) leafMaskUris.set(count, (uri = `data:image/svg+xml;utf8,${encodeURIComponent(weaveSilhouetteSvg(count))}`));
+  return uri;
+};
+import MallornLeaves from './MallornLeaves';
+import { weaveSilhouetteSvg } from '../../lib/leafWeave';
 import { valarColors, type BreathingTechnique } from './ValarBreathingLogo';
 import SpectralGem, { type GemStats, type LiveGemLook } from './SpectralGem';
 import LogoGlow from './LogoGlow';
 import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type OuterOrbitLook } from '../../lib/orbitLook';
 import { GEM_ENGINE, type GemEngine } from '../../lib/gemSprite';
+import { liveGemSupported } from '../../lib/gemRenderer';
+import { deviceProfile } from '../../lib/deviceProfile';
+import { useGemSidesChoice, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
+import { effectiveGemSides, randomHaloColors } from '../../lib/logoLook';
+import { useZoomedIn } from '../../lib/zoomLite';
 
 // Above this size, the full-resolution source is used instead -- 128px
 // covers up to ~40px CSS at 3x device pixel ratio (the largest "small"
@@ -27,6 +39,19 @@ const SMALL_LOGO_MAX_SIZE = 48;
 // /bench page can tune them. The glass layers: form is the shading toward the lower right edge, shine the highlight at the
 // upper left, rim light a bright rim on the upper left edge, rim dark a faint darkening of the whole edge.
 type OrbGlass = Pick<InnerOrbitLook, 'form' | 'shine' | 'rimLight' | 'rimDark'>;
+
+const orbGradient = (c: string): string => `radial-gradient(circle at 30% 30%, ${c}ff, ${c}ee 50%, ${c}99 80%, ${c}44)`;
+/** A light: a bright core fading smoothly to nothing, with no edge and no highlight. */
+const lightGradient = (c: string): string => `radial-gradient(circle closest-side, ${c}ff 0%, ${c}cc 28%, ${c}55 62%, ${c}00 100%)`;
+/** An outer orb's own halo: a gradient (never a blur) in its current colour, fading to nothing; in 'palette' mode the rim fades through another colour from its palette. Cheap to draw and it does not grow with zoom the way a large shadow does. The colours are set by CSS (see .nenya-orb-halo), not by script. */
+const haloGradient = (palette: boolean): string => `radial-gradient(circle closest-side, color-mix(in srgb, var(--hc) 67%, transparent) 0%, color-mix(in srgb, var(--hc) 40%, transparent) 34%, color-mix(in srgb, var(${palette ? '--hc2' : '--hc'}) 14%, transparent) 66%, transparent 100%)`;
+const ALL_ORB_COLORS = valarColors.flatMap((v) => v.vector);
+/** An outer orb's sphere, coloured by the fading --hc (the same look as before: bright to a soft rim). */
+const ORB_FADE_GRADIENT = 'radial-gradient(circle at 30% 30%, var(--hc), color-mix(in srgb, var(--hc) 93%, transparent) 50%, color-mix(in srgb, var(--hc) 60%, transparent) 80%, color-mix(in srgb, var(--hc) 27%, transparent))';
+/** Keyframes for one orb: its colours in order and back to the first, with literal colours so every browser fades between them. */
+const hueKeyframes = (name: string, prop: string, cols: readonly string[], shift = 0): string =>
+  `@keyframes ${name}{${Array.from({ length: 7 }, (_, k) => `${((k * 100) / 6).toFixed(3)}%{${prop}:${cols[(k + shift) % 6]}}`).join('')}}`;
+const LIGHT_SIZE = 1.6; // a light's diameter as a multiple of an orb's
 
 /** The fixed layers over an orb's changing colour. `d` is the orb's diameter in px. */
 function OrbSurface({ d, glass = DEFAULT_INNER_ORBIT }: { d: number; glass?: OrbGlass }) {
@@ -90,6 +115,8 @@ interface NenyaLogoProps {
   gemLook?: { clarity?: number; sparkle?: number; tint?: number; contrast?: number; lift?: number; fieldAlpha?: number };
   /** Which gem to draw (the sprite, or the live ray-traced one). Defaults to the site-wide choice in gemSprite.ts. */
   gemEngine?: GemEngine;
+  /** The gem's number of sides (6 to 12). Defaults to the site's own. */
+  gemSides?: number;
   /** The live gem's settings. Used by the /bench page. */
   liveGem?: LiveGemLook;
   /** Options for the inner and outer orbits (src/lib/orbitLook.ts). Used by the /bench page. */
@@ -110,6 +137,7 @@ export default function NenyaLogo({
   alt = '',
   gemLook,
   gemEngine = GEM_ENGINE,
+  gemSides: gemSidesProp,
   liveGem,
   innerOrbit,
   outerOrbit,
@@ -117,7 +145,19 @@ export default function NenyaLogo({
 }: NenyaLogoProps) {
   const flatLogoSrc = size <= SMALL_LOGO_MAX_SIZE ? nenyaLogoSmall : nenyaLogo;
   const inner = { ...DEFAULT_INNER_ORBIT, ...innerOrbit };
-  const outer = { ...DEFAULT_OUTER_ORBIT, ...outerOrbit };
+  // The outer glow's style, width and random seed come from the visitor's settings unless a prop (the bench) sets them.
+  const haloStyleChoice = useOrbHaloStyle();
+  const haloWidthChoice = useOrbHaloWidth();
+  const haloSeedChoice = useOrbHaloSeed();
+  const outer = { ...DEFAULT_OUTER_ORBIT, halo: haloStyleChoice, haloWidth: haloWidthChoice, haloSeed: haloSeedChoice, ...outerOrbit };
+  // The visitor's look (accessibility panel): the gem follows the leaves unless they chose a number; a prop (the bench) overrides it.
+  const sideChoice = useGemSidesChoice();
+  const leafChoice = useLogoLeaves();
+  const gemSides = gemSidesProp ?? effectiveGemSides(sideChoice, leafChoice, { live: gemEngine === 'live' && liveGemSupported(), low: typeof window !== 'undefined' && deviceProfile().gem.quality === 'low' });
+  // While the page is pinch-zoomed the logo is drawn lighter (no glows, halos or blends; the gem holds its last frame): see src/lib/zoomLite.ts.
+  const zoomed = useZoomedIn();
+  const isLight = inner.style === 'light';
+  const ownHalo = glow && !zoomed && outer.halo !== 'shared';
   const ORBIT_DURATION = inner.orbitSeconds > 0 ? inner.orbitSeconds : DEFAULT_INNER_ORBIT.orbitSeconds; // seconds for one complete orbit
   const INNER_ORB_OPACITY = [inner.opacityLow, inner.opacityHigh, inner.opacityLow];
   const OUTER_ORB_OPACITY = [outer.opacityLow, outer.opacityHigh, outer.opacityLow];
@@ -132,6 +172,18 @@ export default function NenyaLogo({
   // Breathing animation expands to 1.4x its base size (logoSize / 1.4), so at peak it reaches logoSize diameter
   const outerOrbitRadius = size * outer.radius; // Half the logo size = outer edge of breathing animation
   const outerOrbSize = Math.max(8.5, size * outer.orbSize * 2) * 0.5;
+  const haloSize = outerOrbSize * outer.haloWidth;
+  // Keyframes for every outer orb's colours (and its halo's): rebuilt only when the glow style or the random seed changes.
+  const orbHueCss = useMemo(
+    () =>
+      valarColors
+        .map((v, i) => {
+          const hc = outer.halo === 'random' ? randomHaloColors(outer.haloSeed, i, ALL_ORB_COLORS) : v.vector;
+          return hueKeyframes(`nho-c-${i}`, '--hc', v.vector) + hueKeyframes(`nho-h-${i}`, '--hc', hc) + hueKeyframes(`nho-h2-${i}`, '--hc2', hc, 2);
+        })
+        .join(''),
+    [outer.halo, outer.haloSeed],
+  );
 
   // Set once, when the logo first mounts with a clock anchor, so a fresh mount starts the rotation at the
   // correct phase. Deliberately NOT recomputed when the anchor changes later: that happens when the breathing
@@ -158,21 +210,32 @@ export default function NenyaLogo({
     >
       {/* The glow, computed once as an image (see LogoGlow). */}
       {glow && showLogo && (
-        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? petalsLayer : flatLogoSrc} gemEngine={gemEngine} />
+        <LogoGlow size={size} orbit={showValarOrbit} maskSrc={showValarOrbit ? leafMask(leafChoice) : flatLogoSrc} gemEngine={gemEngine} gemSides={gemSides} />
       )}
 
       {/* Logo image - base layer. When the Valar orbit is enabled the flat logo is
           swapped for the vector petals under the gem overlay below. */}
-      {showLogo && (
+      {showLogo && showValarOrbit && (
+        <div
+          role={alt ? 'img' : undefined}
+          aria-label={alt || undefined}
+          aria-hidden={alt ? undefined : true}
+          className="absolute"
+          style={{ width: size * 0.765, height: size * 0.765, zIndex: 10, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}
+        >
+          <MallornLeaves size={size * 0.765} count={leafChoice} cycleStart={cycleStart} technique={technique} breathingEnabled={breathingEnabled} />
+        </div>
+      )}
+      {showLogo && !showValarOrbit && (
         <img
-          src={showValarOrbit ? petalsLayer : flatLogoSrc}
+          src={flatLogoSrc}
           alt={alt}
-          width={showValarOrbit ? size * 0.765 : size * 0.85}
-          height={showValarOrbit ? size * 0.765 : size * 0.85}
+          width={size * 0.85}
+          height={size * 0.85}
           className="absolute"
           style={{
-            width: showValarOrbit ? size * 0.765 : size * 0.85,
-            height: showValarOrbit ? size * 0.765 : size * 0.85,
+            width: size * 0.85,
+            height: size * 0.85,
             zIndex: 10,
             left: '50%',
             top: '50%',
@@ -193,7 +256,7 @@ export default function NenyaLogo({
             marginLeft: -orbitRadius,
             marginTop: -orbitRadius,
             zIndex: inner.layer === 'over' ? 32 : 20,
-            mixBlendMode: inner.blend === 'normal' ? undefined : inner.blend,
+            mixBlendMode: zoomed ? undefined : inner.blend === 'normal' ? (isLight ? 'screen' : undefined) : inner.blend,
             willChange: 'transform',
             // Plain CSS animation rather than Motion's JS-driven `animate` --
             // animation-play-state genuinely freezes this on pause, where
@@ -218,39 +281,33 @@ export default function NenyaLogo({
             // wherever one of the first orbs overlaps them, which puts those first orbs on top at the seam.
             const total = valarColors.length;
             const SEAM_REACH = 4; // an orb overlaps about this many neighbours (their centres are closer than a diameter)
-            const wrapped = index >= total - SEAM_REACH;
+            const wrapped = !isLight && index >= total - SEAM_REACH;
             const pad = orbSize * 0.2; // room for the orb's pulse (it grows by 5%) inside the cut-out wrapper
             const left = orbitRadius - orbSize / 2 + x;
             const top = orbitRadius - orbSize / 2 + y;
+            const d = isLight ? orbSize * LIGHT_SIZE : orbSize; // a light is a little larger than an orb: its edge is a fade
+            const off = (d - orbSize) / 2;
             const orb = (
               <m.div
                 key={valar.name}
                 className="absolute"
                 style={{
-                  width: orbSize,
-                  height: orbSize,
-                  left: wrapped ? pad : orbitRadius - orbSize / 2 + x,
-                  top: wrapped ? pad : orbitRadius - orbSize / 2 + y,
+                  width: d,
+                  height: d,
+                  left: wrapped ? pad : orbitRadius - orbSize / 2 + x - off,
+                  top: wrapped ? pad : orbitRadius - orbSize / 2 + y - off,
                   borderRadius: '50%',
-                  willChange: 'background, opacity, transform',
-                  opacity: INNER_ORB_OPACITY[0],
+                  willChange: zoomed ? undefined : 'background, opacity, transform',
+                  opacity: isLight ? inner.emergeDepth : INNER_ORB_OPACITY[0],
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
                 }}
                 animate={{
-                  background: [
-                    `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[1]}ff, ${colors[1]}ee 50%, ${colors[1]}99 80%, ${colors[1]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[2]}ff, ${colors[2]}ee 50%, ${colors[2]}99 80%, ${colors[2]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[3]}ff, ${colors[3]}ee 50%, ${colors[3]}99 80%, ${colors[3]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[4]}ff, ${colors[4]}ee 50%, ${colors[4]}99 80%, ${colors[4]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[5]}ff, ${colors[5]}ee 50%, ${colors[5]}99 80%, ${colors[5]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
-                  ],
-                  opacity: INNER_ORB_OPACITY,
-                  scale: PULSE,
-                  rotate: -360,
+                  background: [0, 1, 2, 3, 4, 5, 0].map((k) => (isLight ? lightGradient(colors[k]) : orbGradient(colors[k]))),
+                  opacity: isLight ? [inner.emergeDepth, 1, inner.emergeDepth] : INNER_ORB_OPACITY,
+                  scale: isLight ? [0.55, 1, 0.55] : PULSE,
+                  rotate: isLight ? 0 : -360,
                 }}
                 transition={{
                   background: {
@@ -260,12 +317,12 @@ export default function NenyaLogo({
                     delay: index * 2,
                   },
                   opacity: {
-                    duration: inner.pulseSeconds + (index * inner.pulseStep),
+                    duration: isLight ? inner.emergeSeconds + index * inner.emergeStep : inner.pulseSeconds + (index * inner.pulseStep),
                     repeat: Infinity,
                     ease: "easeInOut",
                   },
                   scale: {
-                    duration: inner.pulseSeconds + (index * inner.pulseStep),
+                    duration: isLight ? inner.emergeSeconds + index * inner.emergeStep : inner.pulseSeconds + (index * inner.pulseStep),
                     repeat: Infinity,
                     ease: "easeInOut",
                   },
@@ -276,7 +333,7 @@ export default function NenyaLogo({
                   }
                 }}
               >
-                <OrbSurface d={orbSize} glass={inner} />
+                {!isLight && <OrbSurface d={orbSize} glass={inner} />}
               </m.div>
             );
             if (!wrapped) return orb;
@@ -333,6 +390,7 @@ export default function NenyaLogo({
             animationDelay: `${orbitDelay}s`,
                       }}
         >
+          <style>{orbHueCss}</style>
           {valarColors.map((valar, index) => {
             // Calculate position on circle
             const angle = (index / valarColors.length) * 2 * Math.PI;
@@ -343,43 +401,56 @@ export default function NenyaLogo({
             const colorCycleDuration = 30; // seconds to cycle through all 6 colors
             const colors = valar.vector;
             
-            return (
+            const haloColors = outer.halo === 'random' ? randomHaloColors(outer.haloSeed, index, ALL_ORB_COLORS) : colors;
+            const halo = ownHalo ? (
+              <div
+                key={`halo-${valar.name}`}
+                aria-hidden="true"
+                className="absolute nenya-orb-halo"
+                style={{
+                  width: haloSize,
+                  height: haloSize,
+                  left: outerOrbitRadius - haloSize / 2 + x,
+                  top: outerOrbitRadius - haloSize / 2 + y,
+                  borderRadius: '50%',
+                  pointerEvents: 'none',
+                  background: haloGradient(outer.halo === 'palette' || outer.halo === 'random'),
+                  ['--p0' as string]: haloColors[0], ['--p1' as string]: haloColors[1], ['--p2' as string]: haloColors[2],
+                  ['--p3' as string]: haloColors[3], ['--p4' as string]: haloColors[4], ['--p5' as string]: haloColors[5],
+                  ['--hc' as string]: haloColors[0], ['--hc2' as string]: haloColors[2],
+                  ['--halo-lo' as string]: outer.opacityLow, ['--halo-hi' as string]: outer.opacityHigh,
+                  opacity: outer.opacityLow,
+                  // Linear, so the colour is always fading and never rests or snaps; the negative delay puts each orb part way round the cycle from the first frame.
+                  animation: `nho-h-${index} ${colorCycleDuration}s linear -${index * 2}s infinite, nho-h2-${index} ${colorCycleDuration}s linear -${index * 2}s infinite, nenya-halo-breathe ${4 + index * 0.3}s ease-in-out infinite`,
+                }}
+              />
+            ) : null;
+            const planet = (
               <m.div
                 key={`outer-${valar.name}`}
-                className={glow ? 'absolute nenya-orb-glow' : 'absolute'}
+                className={glow && !zoomed && !ownHalo ? 'absolute nenya-orb-hued nenya-orb-glow' : 'absolute nenya-orb-hued'}
                 style={{
                   width: outerOrbSize,
                   height: outerOrbSize,
                   left: outerOrbitRadius - outerOrbSize / 2 + x,
                   top: outerOrbitRadius - outerOrbSize / 2 + y,
                   borderRadius: '50%',
-                  willChange: 'background, opacity, transform',
+                  willChange: zoomed ? undefined : 'opacity, transform',
                   opacity: OUTER_ORB_OPACITY[0],
+                  // The colour is the browser's own fade (registered --hc, keyframes nho-c-N), not a script swapping gradient strings.
+                  background: ORB_FADE_GRADIENT,
+                  ['--hc' as string]: colors[0],
+                  animation: `nho-c-${index} ${colorCycleDuration}s linear -${index * 2}s infinite`,
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
                 }}
                 animate={{
-                  background: [
-                    `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[1]}ff, ${colors[1]}ee 50%, ${colors[1]}99 80%, ${colors[1]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[2]}ff, ${colors[2]}ee 50%, ${colors[2]}99 80%, ${colors[2]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[3]}ff, ${colors[3]}ee 50%, ${colors[3]}99 80%, ${colors[3]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[4]}ff, ${colors[4]}ee 50%, ${colors[4]}99 80%, ${colors[4]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[5]}ff, ${colors[5]}ee 50%, ${colors[5]}99 80%, ${colors[5]}44)`,
-                    `radial-gradient(circle at 30% 30%, ${colors[0]}ff, ${colors[0]}ee 50%, ${colors[0]}99 80%, ${colors[0]}44)`,
-                  ],
                   opacity: OUTER_ORB_OPACITY,
                   scale: [0.95, 1.05, 0.95],
                   rotate: 360,
                 }}
                 transition={{
-                  background: {
-                    duration: colorCycleDuration,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: index * 2,
-                  },
                   opacity: {
                     duration: 4 + (index * 0.3),
                     repeat: Infinity,
@@ -400,6 +471,14 @@ export default function NenyaLogo({
                 <OrbSurface d={outerOrbSize} />
               </m.div>
             );
+            return halo ? (
+              <Fragment key={`outer-pair-${valar.name}`}>
+                {halo}
+                {planet}
+              </Fragment>
+            ) : (
+              planet
+            );
           })}
         </div>
       )}
@@ -413,9 +492,12 @@ export default function NenyaLogo({
           technique={technique}
           breathingEnabled={breathingEnabled}
           engine={gemEngine}
+          sides={gemSides}
           live={liveGem}
           orbitSeconds={inner.orbitSeconds}
           colorCycle={inner.colorCycle}
+          emerge={inner}
+          paused={zoomed}
           onStats={onGemStats}
           {...gemLook}
         />

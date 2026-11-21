@@ -30,7 +30,7 @@ export const editText = (e: SiteEdit): string => e.kind === 'added'
   : `The site removed ${e.n === 1 ? 'one sentence' : `${e.n} sentences`} from the reply above that echoed back contempt or a wish to harm a group of people. The AI wrote ${e.n === 1 ? 'it' : 'them'}; the site took ${e.n === 1 ? 'it' : 'them'} out before you saw the reply.`;
 
 export interface SiteMessage {
-  kind: 'greeting' | 'closing' | 'notice' | 'invitation' | 'answer' | 'replacement' | 'offer' | 'edit';
+  kind: 'greeting' | 'closing' | 'notice' | 'invitation' | 'answer' | 'replacement' | 'offer' | 'edit' | 'summary';
   /** The index of the message this one follows; -1 means before the first message. */
   after: number;
   text: string;
@@ -43,7 +43,7 @@ export interface SiteMessage {
  * flagged (the page keeps the most recent flag on screen), the notice with its resources comes after the last message; otherwise, when all
  * the exchanges are done, the closing message does.
  */
-export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content: string }[], maxTurns: number, answered: { index: number; title: string; partial?: boolean }[] = [], context = '', offered: { after: number; title: string }[] = [], edited: SiteEdit[] = []): SiteMessage[] {
+export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content: string }[], maxTurns: number, answered: { index: number; title: string; partial?: boolean }[] = [], context = '', offered: { after: number; title: string }[] = [], edited: SiteEdit[] = [], summary: string | null = null): SiteMessage[] {
   // When the person shared part of a report, the site opens with a message built from what was shared (reportShare.ts) in place of the greeting.
   const shared = context ? parseReportHeader(context) : null;
   const out: SiteMessage[] = [{ kind: 'greeting', after: -1, text: shared ? openingText(shared) : greetingText(maxTurns) }];
@@ -71,6 +71,8 @@ export function siteMessagesFor(messages: { role: 'user' | 'assistant'; content:
     out.push({ kind: 'notice', after: last, text: noticeIntro(flag), resources: resourcesFor(flag.category, flag.kind).map((r) => ({ name: r.name, detail: r.detail })) });
   } else if (messages.length === maxTurns * 2 && messages[last]?.role === 'assistant') {
     out.push({ kind: 'closing', after: last, text: CLOSING_TEXT });
+    // A summary the person asked for after the five exchanges (docs/request-a-summary-scope.md), only ever on a finished, unflagged conversation, and only when the server can prove it made it (its proof covers these exact messages and this text).
+    if (summary) out.push({ kind: 'summary', after: last, text: summary });
     // Critique is feedback the people who made Nenya want. Offered only at the end, never when a message was flagged, never as a request.
     if (users.some((t) => detectHostility(t) === 'critique')) out.push({ kind: 'invitation', after: last, text: INVITATION_TEXT });
   }
@@ -84,7 +86,7 @@ export interface CheckNote {
   tier: 'stop' | 'soften';
   category: string;
   kind?: string;
-  source: 'phrase' | 'ladder';
+  source: 'phrase' | 'ladder' | 'accumulated';
   /** The words in the person's message that matched a phrase list (cut short). */
   matched?: string;
   /** For the self-injury ladder: its rung in words. */

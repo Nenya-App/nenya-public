@@ -38,12 +38,20 @@ export const DISTRESS_APPEND: Record<FlagCategory, string> = {
 };
 
 /**
- * What the notice says first when a message is stopped (a "stop" flag: the message is not sent to the coach and the conversation ends).
- * A proposed replacement for the first sentence of noticeIntro in safetyFlags.ts, which today reads "This message appears to contain
- * ... content." Not wired: the page text changes only when the owner approves it.
+ * What the notice says when a message about suicide or self-harm is stopped (a "stop" flag: the message is not sent to the coach and the
+ * conversation ends). It replaces the generic "This message appears to contain ... content" notice for that category. Wired by the owner's
+ * approval of 2026-11-19. A clinician has not yet read it.
  */
 export const STOP_LEAD =
   "What you wrote sounds heavy, and it deserves a person, not an AI. I'm not able to help in a crisis. These numbers connect you with someone who can, any time of day:";
+
+/**
+ * What the notice says when a stopped message states a plan, means at hand, an act in progress or a goodbye (kind "imminent").
+ * A blend of options B and C of docs/imminent-notice-draft.md (B's someone-nearby and distance lines, C's text line), chosen by the owner 2026-11-20. NOT clinician-reviewed: the distance-from-means and
+ * "ask someone to stay" lines are open questions for a clinician in that doc. Poison Help is the US line, not yet checked on its own page.
+ */
+export const IMMINENT_LEAD =
+  "You said something that tells me you may be in danger right now. Please call 911 (US and Canada) or your local emergency number, especially if you have already taken something or hurt yourself. For something swallowed, Poison Help (1-800-222-1222, US) also answers any time. You can also call or text 988 to talk to a person. If you can't talk out loud, you can text 988, or text HOME to 741741. Nobody around you has to hear a text. If someone is near you, tell them, and ask them to stay with you. If you can, put some distance between you and whatever you were thinking of using. I'm an AI, and I can't call anyone for you, and I'm ending our chat here so that you can reach a person.";
 
 /** The extra instruction for the coach when the person has talked about hurting themselves on purpose (or about someone who does). */
 export function selfInjuryNote(kind?: string): string {

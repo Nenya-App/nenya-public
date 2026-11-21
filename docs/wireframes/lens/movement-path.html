@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: the Movement path</title>
+<link rel="stylesheet" href="wire.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the wireframes</a>
+<header class="page">
+  <h1>The path of movement: an optional activity</h1>
+  <p><a href="index.html">All wireframes</a> · <a href="movement.html">Movement</a> · <a href="pattern-tapestry.html">Tapestry</a> · Draft 2026-11-18 · plan: <code>docs/lens-audit-movement-pattern.md</code> section 4</p>
+</header>
+<main id="main">
+<div class="legend">
+  <h2>How to read this</h2>
+  <p>The path lives inside Movement’s “More descriptions”. It is optional, and Movement can be added to the report without it. Each card is a real page of controls on the left (try the keyboard) and its notes on the right. Every card has <strong>Emergency Exit</strong> first in the tab order. Nothing here sends anything, makes a sound or saves.</p>
+  <p class="mini">You can draw the path with a pointer or finger, or build it with the step buttons. Both make the same path and the same words.</p>
+</div>
+
+<section class="card" aria-labelledby="c1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Path · card 1 of 2</span><button type="button">Put this down</button></div>
+    <h2 id="c1">Draw a path of movement (optional)</h2>
+    <p>Draw a line, or build one with the step buttons. Then watch it move. There is no right path.</p>
+    <div data-path="P" data-out="P-out">
+      <svg class="pathpad" id="P-pad" viewBox="0 0 100 100" role="img" aria-label="A pad for a path. Draw on it with a pointer or finger, or use the step buttons. The text below says what the path does."><polyline id="P-line" points="" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle id="P-dot" r="3" cx="0" cy="0" hidden/></svg>
+      <p class="mini">Your path: <span id="P-out" role="status">nothing drawn yet</span></p>
+      <fieldset><legend>Add a step</legend>
+        <div class="row"><button type="button" data-step="up">Up</button><button type="button" data-step="down">Down</button><button type="button" data-step="left">Left</button><button type="button" data-step="right">Right</button></div>
+      </fieldset>
+      <label for="P-feel">How does it move?</label>
+      <select id="P-feel"><option value="">Not chosen</option><option>fluid</option><option>jerky</option><option>graceful</option><option>forceful</option><option>hesitant</option><option>determined</option><option>gentle</option><option>turbulent</option></select>
+      <div class="row"><button type="button" data-path-replay>Watch it move</button><button type="button" data-path-undo>Undo</button><button type="button" data-path-clear>Clear</button></div>
+    </div>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>The four step buttons</li><li>How does it move? (list)</li><li>Watch it move, Undo, Clear</li><li>Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>The pad is a named image and is not a tab stop; the step buttons are the full alternative. The line under it says the path in words after every change: “starts at the left, goes right, then up, then right; gently”. It never moves focus.</li></ul>
+    <h3>Responds live <strong>(try it)</strong></h3><ul><li>“Watch it move” sends a dot along the line. Under reduced motion the dot is not animated: the whole line shows, with a dot at the end.</li><li>The feel word sets the look of the line (broken for jerky or hesitant, thick for forceful, thin for gentle) and is repeated in words.</li></ul>
+    <h3>Not drawn here</h3><p>The real pad also keeps your drawing as a picture only if you ask. The report holds the words.</p>
+  </aside>
+</section>
+
+<section class="card" aria-labelledby="c2">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Path · card 2 of 2</span><button type="button">Put this down</button></div>
+    <h2 id="c2">Keep this path in Movement?</h2>
+    <p>This is what would be kept with Movement:</p>
+    <ul><li>Words: <span data-sum="P">nothing drawn yet</span></li></ul>
+    <p class="mini">The report keeps the words, not the picture. The picture is only for you.</p>
+    <div class="row"><button type="button" class="primary" data-added="path-added">Keep this path</button><button type="button">Skip it</button></div>
+    <p id="path-added" hidden role="status"><strong>Kept with Movement.</strong> You can come back and change it. <button type="button">Update my report</button> <button type="button">Remove from my report</button></p>
+    <p class="state-label">If skipped</p>
+    <p class="mini">Movement is added exactly as it would be without a path. Nothing is lost and nothing is asked again.</p>
+  </div>
+  <aside class="note">
+    <h3>States</h3><ul><li><strong>Before:</strong> as drawn.</li><li><strong>Kept:</strong> Movement reopens with the path as you left it.</li><li><strong>Skipped:</strong> no path words in the report.</li></ul>
+    <h3>Report, PDF and coach (owner, 2026-11-18)</h3><p>The report text carries words only. The PDF may also show a small image thumbnail of the path. The coach reads words only, because it has no image model; nothing visual goes to the coach.</p><h3>Playful, within the limits</h3><p>No points, streaks or badges. A path is never graded.</p>
+  </aside>
+</section>
+</main>
+<script src="wire.js"></script>
+</body>
+</html>

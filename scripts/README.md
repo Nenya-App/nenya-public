@@ -27,9 +27,12 @@ checklist in `CONTRIBUTING.md` for which ones must run before a release.
 | --- | --- | --- |
 | `eval-safety.mts` | The safety set: what the site decided and what the model said, turn by turn. `--offline` is also run by the tests | Nothing (`--offline`), Key, or Deployed |
 | `eval-persona.mts` | The persona set: replies that claim a human life, deny being an AI, and similar | Key or Deployed |
+| `eval-select.mts` | The bake-off for choosing modules and cards by meaning: the phrase matcher and an embedder (`--embedder`), against invented messages, by topic and threshold. Needs no key; the default embedder is a word-overlap stand-in, not a model | Nothing |
+| `embedder-onnx.mts` | An embedder for `eval-select.mts` made from a folder of downloaded files (`EMBED_DIR`, `EMBED_POOLING`): the model under test, run locally, nothing sent anywhere | Nothing |
 | `compare-persona-runs.mts` | Compares two saved persona runs | Nothing |
 | `build-darkbench-persona-set.mts` | Builds `src/lib/personaEvalDarkBench.ts` from DarkBench | Research folder |
 | `eval-final-turn.mts` | How often the fifth reply still asks a question | Key |
+| `eval-final-summary.mts` | Reads the fifth reply of invented conversations from a local model for the v2.1 summary (no question, feelings and needs, transcript pointer, no promise, length) | Local |
 | `eval-prompts.mts` | A sample of an open prompt set run against a deployed coach, with a result you can publish | Deployed |
 | `eval-detect.mts` | The site's detection (private list, history patterns, card offers) run over outside test sets | Research folder |
 | `holistic-coach.mts` | About 50 short conversations across every area of the coach | Deployed |
@@ -48,9 +51,13 @@ if the model changes.
 | `bakeoff-target-groups.py` | Catch and false-alarm rates for each target group, for the model and the list (run `eval-detect.mts --dump` first) | Research folder |
 | `bakeoff-heldout-bias.py` | Threshold checked on held-out halves, plus flag rates on invented neutral sentences about 27 groups | Research folder |
 | `bakeoff-second-reading.py` | Tests whether a second model (toxic-bert) closes the per-group gaps on the same budget | Research folder |
-| `bakeoff-workers-ai.mts` | Runs the persona set through the real coach function with the model call sent to Workers AI instead of Venice | Cloudflare account |
+| `bakeoff-workers-ai.mts` | Runs the persona set through the real coach function with the model call sent to Workers AI instead of Venice (or to a local model server with `--local-url`); `--layers` records what the guards did; `--capture` keeps each request and the usage reported; `--venice` or `--openrouter` sends the model call to a Venice or OpenRouter model instead (tokens and dollars totalled; OpenRouter asks for no-data-collection hosts, `--zdr` for zero-retention hosts; testing only) | Cloudflare account (Venice testing key with `--venice`) |
+| `replay-cost.mts` | Replays a captured coach request to two or more Venice models and prints tokens and dollars for each (prices read from Venice's public model list); invented text only | Venice testing key (spends credit), or an OpenRouter key with `--openrouter`; optional Venice admin key to read the balance |
+| `layers-report.mts` | Compares saved persona runs made with `--layers` (bake-off or eval-persona): how often the model's first reply broke a check, how often the outer layers rescued it, which guards did the work, which cases nothing caught (docs/outer-layers-scope.md) | none (no calls) |
 | `record-neurons.mts` | Adds Neurons you spent by hand to the nightly canary's ledger (the bake-off and full-exchange scripts do it for you; `--no-record` skips) so the canary does not spend what you already did | Netlify CLI |
+| `apply-lens-copy.mts` | Runs after `vite build`. With `VITE_LENS_COPY=on`, puts the lens vocabulary into the static public files the page code does not render (about-nenya.html, why-nenya.html, llms.txt); with it off, does nothing | Node |
 | `duet-eval.mts` | Full-exchange tests: Venice plays an invented person turn by turn against the real coach on Workers AI; writes transcripts and a read-first summary to a private folder (docs/duet-eval.md) | Venice testing key, Cloudflare account |
+| `troll-arena.mts` | The troll arena: a local model plays one of 30+ invented trolls against the real coach (every layer) while you watch a live page on 127.0.0.1; paired guards on/off arms; writes a counts-only digest and a self-contained replay.html to a private folder (docs/troll-arena.md). `run-troll-arena.sh` starts it from a fresh shell | LM Studio, Cloudflare account (Workers AI coach) |
 | `export-onnx.py` | Exports the cardiffnlp model to int8 ONNX for `netlify/functions/screen.mts` | Research folder, Python packages onnx, onnxruntime and torch |
 
 ## Private list and learning content
@@ -63,6 +70,7 @@ if the model changes.
 | `prepare-private-list.mts` | Cleans and checks the reviewed list before upload | Research folder |
 | `upload-private-list.mts` | Uploads the list to the site's private store | Netlify |
 | `upload-screen-model.mts` | Uploads the ONNX model and tokenizer to the private store | Netlify |
+| `upload-select-model.mts` | Uploads the selection model (all-MiniLM-L6-v2, int8 ONNX) and tokenizer to the private store, after checking every file's SHA-256 | Netlify |
 | `build-learning-cards.mts` | Builds `src/lib/learningCardsData.ts` from approved card files | Private card folder |
 | `build-draft-cards.mts` | Collects draft cards for testing on a dev site only | Private card folder |
 | `build-module-set.mts` | Builds the coach's private module set (store key `modules`) | Private drafts |

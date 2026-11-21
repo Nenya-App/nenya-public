@@ -1,6 +1,6 @@
 // The breath clock drives the ring, the counter and the gem, so they must agree. These check the maths the gem
 // relies on: the sparkle loop is exactly three breaths, and the tint never jumps at a breath boundary.
-import { breathLengthMs, breathFractions, breathEnvelope, breathCounter, gemClock, gemMultiplyColor, hueOnly, GEM_FRAMES } from '../src/lib/breathClock.ts';
+import { breathLengthMs, breathFractions, breathEnvelope, breathCounter, breathPhaseProgress, gemClock, gemMultiplyColor, hueOnly, GEM_FRAMES } from '../src/lib/breathClock.ts';
 import { ok } from './helpers.mts';
 
 const even = { ih: 5000, hi: 0, ex: 5000, ho: 0 };
@@ -60,3 +60,11 @@ ok('then it starts again at 1', at(10000) === '{"count":1,"phase":"i"}' && at(10
 ok('holds count from 1 as well', at(4000, box) === '{"count":1,"phase":"h"}' && at(7999, box) === '{"count":4,"phase":"h"}' && at(12000, box) === '{"count":1,"phase":"h"}' && at(15999, box) === '{"count":4,"phase":"h"}');
 ok('the counter never shows 0', Array.from({ length: 1900 }, (_, i) => i * 10).every((ms) => breathCounter(ms, s478).count >= 1));
 ok('a negative elapsed time wraps instead of breaking', breathCounter(-1, even).count >= 1);
+
+// The circle counter's arc: the same clock and the same phase edges as the number.
+const pp = (ms: number, tt = even) => breathPhaseProgress(ms, tt);
+ok('phase progress starts each phase at 0 and runs to 1', pp(0) === 0 && pp(2500) === 0.5 && pp(5000) === 0 && pp(7500) === 0.5 && pp(9999) > 0.99);
+ok('phase progress follows holds as their own phases', pp(4000, box) === 0 && pp(6000, box) === 0.5 && pp(14000, box) === 0.5 && pp(16000, box) === 0);
+ok('phase progress changes phase exactly when the number does',
+  Array.from({ length: 1600 }, (_, i) => i * 10).every((ms) => { const a = breathCounter(ms, box).phase, b = breathCounter(ms + 10, box).phase; return a === b || pp(ms + 10, box) < pp(ms, box); }));
+ok('phase progress stays in 0..1 and wraps negative time', Array.from({ length: 1900 }, (_, i) => i * 10 - 500).every((ms) => { const v = pp(ms, s478); return v >= 0 && v <= 1; }));

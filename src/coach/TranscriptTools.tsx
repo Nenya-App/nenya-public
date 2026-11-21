@@ -7,6 +7,8 @@ import { cardById } from '../lib/learningCards';
 import { stopLevelFlagged } from '../lib/publicCopy';
 import { TranscriptChoices, choicesToSend, emptyChoices, type ChoiceState } from './TranscriptChoices';
 import { Button } from '../app/components/ui/button';
+import { AfterSending } from '../app/components/DeletionCode';
+import { DUPLICATE_MESSAGE } from '../lib/reportSubmission';
 import { Textarea } from '../app/components/ui/textarea';
 import { readableWithBlock } from '../lib/verifyTranscript';
 import { checkNotesFor, siteMessagesFor } from '../lib/siteMessages';
@@ -41,15 +43,17 @@ interface TranscriptToolsProps {
   offers?: { after: number; id: string; proof: string }[];
   /** Changes the site made to replies, with the server's proof (recorded only when the server can prove them). */
   edits?: { after: number; kind: 'added' | 'removed' | 'removed-care'; n: number; proof: string }[];
+  /** The summary the person asked for (docs/request-a-summary-scope.md), with the server's proof. The signed transcript carries it only if it is here, and the server only if the proof checks. */
+  summary?: { text: string; proof: string } | null;
 }
 
-type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error';
+type Share = 'closed' | 'preview' | 'sending' | 'sent' | 'error' | 'duplicate';
 
 // Everything here is the visitor's choice. Signing sends the conversation back to
 // our server once more (it was already there, turn by turn) so it can confirm it
 // is untouched and date it. Nothing is stored. Sharing with Nenya shows exactly
 // what would be sent first.
-export function TranscriptTools({ messages, session, context = '', ticket, stopped = false, maxTurns = 5, answered = [], offers = [], edits = [] }: TranscriptToolsProps) {
+export function TranscriptTools({ messages, session, context = '', ticket, stopped = false, maxTurns = 5, answered = [], offers = [], edits = [], summary = null }: TranscriptToolsProps) {
   const editList = edits.map((e) => ({ after: e.after, kind: e.kind, n: e.n }));
   const offeredTitles = offers.flatMap((o) => { const t = cardById(o.id)?.title; return t ? [{ after: o.after, title: t }] : []; });
   const [receipt, setReceipt] = useState<Receipt | null>(null);
@@ -73,7 +77,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setShare('closed');
     setKeptKey(false);
     setNoKeyOk(false);
-  }, [messages.length]);
+  }, [messages.length, summary?.text]);
 
   // A conversation stopped on its first message has no earlier exchange, so it has no ticket and needs none.
   const canSign = stopped ? !!ticket || messages.length === 1 : !!ticket;
@@ -85,7 +89,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'receipt', messages, session, ...(termsReceiptForRequest() ? { terms: termsReceiptForRequest() } : {}), ...(offers.length ? { offers } : {}), ...(edits.length ? { edits } : {}), ...(context ? { context } : {}), ticket, ...(stopped ? { stopped: true } : {}) }),
+        body: JSON.stringify({ action: 'receipt', messages, session, ...(termsReceiptForRequest() ? { terms: termsReceiptForRequest() } : {}), ...(offers.length ? { offers } : {}), ...(edits.length ? { edits } : {}), ...(summary ? { summary: { text: summary.text, proof: summary.proof } } : {}), ...(context ? { context } : {}), ticket, ...(stopped ? { stopped: true } : {}) }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { receipt: Receipt; transcript: SignedTranscript };
@@ -111,7 +115,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
   };
 
   const readableText = (r: Receipt | null): string => {
-    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles, editList), signedRef.current?.checks ?? checkNotesFor(messages, context));
+    const readable = readableTranscript(messages, session, r, context, signedRef.current?.meta, signedRef.current?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles, editList, summary?.text ?? null), signedRef.current?.checks ?? checkNotesFor(messages, context));
     // A signed copy carries the signed file at its end, so the readable text can be checked against it (see /verify/).
     return r && signedRef.current ? readableWithBlock(readable, { transcript: signedRef.current, receipt: r }) : readable;
   };
@@ -158,7 +162,7 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
     setShare('preview');
   };
 
-  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles, editList), signed?.checks ?? checkNotesFor(messages, context));
+  const shareText = readableTranscript(messages, session, receipt, context, signed?.meta, signed?.site ?? siteMessagesFor(messages, maxTurns, answered, context, offeredTitles, editList, summary?.text ?? null), signed?.checks ?? checkNotesFor(messages, context));
   const tooLong = shareText.length > MAX_SHARE_CHARS;
 
   // Only a signed transcript can be sent. The function checks the signature first, then forwards the readable text (rebuilt
@@ -176,6 +180,11 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ signed: { transcript: signedRef.current, receipt }, note: note.trim(), choices: toSend }),
       });
+      // The same signed transcript with the same choices is already on file: nothing changed and nothing new was kept (netlify/functions/report.mts).
+      if (res.status === 409) {
+        setShare('duplicate');
+        return;
+      }
       if (!res.ok) throw new Error(String(res.status));
       // With a signing key the site answers with the person's consent receipt (what they agreed to, signed); they are offered it to keep.
       if (res.status === 200) {
@@ -281,6 +290,20 @@ export function TranscriptTools({ messages, session, context = '', ticket, stopp
         </div>
       )}
       {share === 'sent' && <p className="text-xs text-muted-foreground" role="status">Thank you. Your transcript was sent{toSend ? `. You chose: ${describeChoices({ uses: toSend.uses, keep: toSend.keep, adult: true, terms: toSend.terms, portions: toSend.portions })}` : ''}. {keptKey ? ' To change or take back any of it, keep the signed file you downloaded and show it at nenya.biz/my-transcript.' : ''}</p>}
+      {share === 'duplicate' && (
+        <div role="status" className="space-y-2 rounded-lg border border-border p-3 text-xs">
+          <p>{DUPLICATE_MESSAGE.replace('the deletion code you were given still works', 'the signed file you hold still works at nenya.biz/my-transcript')}</p>
+          <p className="text-muted-foreground">If you want to send it with different choices, open the form again and change them.</p>
+          <AfterSending fromCoach />
+          <Button variant="outline" size="sm" onClick={() => setShare('closed')}>Close</Button>
+        </div>
+      )}
+      {share === 'sent' && (
+        <div className="space-y-1 text-xs">
+          <p className="text-muted-foreground">Your transcript page is where you take back or change what you sent. It needs the signed file.</p>
+          <AfterSending fromCoach />
+        </div>
+      )}
       {share === 'sent' && !keptKey && <KeepKeyNotice onDownload={downloadSigned} onShare={canShareFile ? shareToSelf : undefined} busy={busy} />}
       {share === 'sent' && consentReceipt && (
         <div className="space-y-1">

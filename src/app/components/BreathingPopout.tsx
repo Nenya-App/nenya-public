@@ -5,8 +5,14 @@ import { Button } from './ui/button';
 import { ValarBreathingLogo, type BreathingTechnique } from './ValarBreathingLogo';
 import { breathLengthMs } from '../../lib/breathClock';
 import { PRESETS, sameTechnique } from '../../lib/breathingPresets';
+import { CustomBreath } from './CustomBreath';
+import { paceLabel } from '../../lib/breathCustom';
+import { STEADY } from './PortableBreath';
 import NenyaLogo from './NenyaLogo';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
+import { useIsMobile } from './useIsMobile';
+import { setBreathPreviewSize, useBreathPreviewSize } from '../../lib/deviceMemory';
+import { DEFAULT_PREVIEW_SIZE, PREVIEW_MAX, PREVIEW_MIN, PREVIEW_STEP } from '../../lib/logoLook';
 
 interface BreathingPopoutProps {
   isOpen: boolean;
@@ -53,6 +59,12 @@ export function BreathingPopout({
   onTechniqueChange,
   cycleStart,
 }: BreathingPopoutProps) {
+  // The preview's size is the visitor's to set. On a narrow screen it is held to what fits.
+  const previewChoice = useBreathPreviewSize();
+  const narrow = useIsMobile();
+  const previewSize = narrow ? Math.min(previewChoice, 220) : previewChoice;
+  // The logo block is its size plus the breathing ring's padding (96px) and the column's own padding (48px).
+  const leftWidth = previewSize + 144;
   const cycleSeconds = breathLengthMs(technique) / 1000;
   return (
     <AnimatePresence>
@@ -80,7 +92,7 @@ export function BreathingPopout({
               duration: 0.3
             }}
             className="fixed top-16 left-4 z-[70] bg-background border border-border rounded-lg shadow-2xl overflow-y-auto"
-            style={{ width: 'min(500px, calc(100vw - 2rem))', maxHeight: 'calc(100dvh - 5rem)' }}
+            style={{ width: narrow ? 'calc(100vw - 2rem)' : `min(calc(100vw - 2rem), ${Math.max(500, leftWidth + 300)}px)`, maxHeight: 'calc(100dvh - 5rem)' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
@@ -96,14 +108,14 @@ export function BreathingPopout({
             </div>
 
             {/* Content - Two Columns */}
-            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+            <div className="grid grid-cols-1 divide-y md:divide-y-0 md:divide-x divide-border" style={narrow ? undefined : { gridTemplateColumns: `${leftWidth}px minmax(0, 1fr)` }}>
               {/* Left: Breathing Animation */}
               <div className="flex flex-col items-center justify-center p-6 bg-background">
-                <div className="scale-75 md:scale-90">
+                <div>
                   <ValarBreathingLogo
                     enabled={breathingEnabled}
                     opacity={breathingOpacity}
-                    logoSize={160}
+                    logoSize={previewSize}
                     cycleDuration={cycleSeconds}
                     technique={technique}
                     cvMode={cvMode}
@@ -111,7 +123,7 @@ export function BreathingPopout({
                   >
                     <div className="nenya-logo-glow">
                       <NenyaLogo
-                        size={160}
+                        size={previewSize}
                         showValarOrbit={orbitEnabled}
                         showLogo={logoVisible}
                         cycleStart={cycleStart}
@@ -121,6 +133,21 @@ export function BreathingPopout({
                       />
                     </div>
                   </ValarBreathingLogo>
+                </div>
+                <div className="mt-2 flex w-full max-w-xs items-center gap-3">
+                  <label htmlFor="preview-size" className="shrink-0 text-xs text-muted-foreground">Preview size</label>
+                  <input
+                    id="preview-size"
+                    type="range"
+                    min={PREVIEW_MIN}
+                    max={PREVIEW_MAX}
+                    step={PREVIEW_STEP}
+                    value={previewChoice}
+                    onChange={(e) => setBreathPreviewSize(Number(e.target.value))}
+                    aria-valuetext={`${previewChoice} pixels`}
+                    className="h-11 min-w-0 flex-1"
+                  />
+                  <button type="button" onClick={() => setBreathPreviewSize(DEFAULT_PREVIEW_SIZE)} className="shrink-0 rounded-md border border-border px-2 text-xs min-h-11">Reset</button>
                 </div>
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   {Number.isInteger(cycleSeconds) ? cycleSeconds : cycleSeconds.toFixed(1)}-second breathing cycle
@@ -146,8 +173,10 @@ export function BreathingPopout({
                       })}
                     </div>
                     {technique && (
-                      <p className="text-xs text-muted-foreground text-center">{PRESETS.find((p) => sameTechnique(technique, p))?.desc ?? 'Your own pace'}</p>
+                      <p className="text-xs text-muted-foreground text-center">{PRESETS.find((p) => sameTechnique(technique, p))?.desc ?? `Your own pace: ${paceLabel(technique)} seconds`}</p>
                     )}
+                    <p className="text-xs text-muted-foreground text-center">Stop and return to normal breathing if you feel dizzy or lightheaded. If a pace feels too long, choose a shorter one and build up gradually.</p>
+                    <CustomBreath technique={technique} onApply={onTechniqueChange} steady={STEADY} />
                   </div>
                 )}
               </div>

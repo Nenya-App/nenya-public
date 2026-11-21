@@ -1,28 +1,23 @@
 import { useState } from 'react';
-import { DeletionCode } from '../app/components/DeletionCode';
-import type { SubmitReceipt } from '../lib/reportSubmission';
+import { AlreadySent, DeletionCode } from '../app/components/DeletionCode';
+import { SendConsent } from '../app/components/SendConsent';
+import { useSendFlow } from '../app/components/useSendFlow';
 import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { failureDetails, failureLine, type FailureInfo } from '../lib/coachErrors';
-import { submitReport } from '../lib/reportSubmission';
 
 // Shown when a turn fails: what happened in plain words, the codes behind it, and a way to report it that sends only
 // those codes (and anything the person chooses to add), never their message.
 export function FailureNotice({ info, turn }: { info: FailureInfo; turn: number }) {
   const [comments, setComments] = useState('');
-  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
+  const flow = useSendFlow('error-report', () => setComments('')); // the typed text is cleared once it is sent
+  const { phase: state, receipt } = flow;
   const [copied, setCopied] = useState(false);
   const details = failureDetails(info, turn);
 
-  const send = async () => {
-    setState('sending');
-    try {
-      setReceipt(await submitReport({ type: 'error-report', report: details, comments }));
-      setState('sent');
-    } catch {
-      setState('error');
-    }
+  const send = () => {
+    if (state === 'sending' || state === 'sent') return;
+    void flow.begin(details, comments); // opens the consent screen; nothing is sent yet
   };
 
   return (
@@ -33,20 +28,25 @@ export function FailureNotice({ info, turn }: { info: FailureInfo; turn: number 
         <summary className="cursor-pointer underline underline-offset-2">Report this failure</summary>
         <div className="space-y-2 pt-2">
           <p className="text-muted-foreground">
-            This sends only the technical details above, plus anything you add below. It does not send what you wrote or
-            what the coach said.
+            This can send only the technical details above, plus anything you add below. It does not send what you wrote or
+            what the coach said. You will see exactly what would be sent, and can decide, before anything leaves your device.
           </p>
           <Textarea
             value={comments}
-            onChange={(e) => setComments(e.target.value)}
+            onChange={(e) => {
+              setComments(e.target.value);
+              if (state === 'duplicate') flow.reset();
+              else if (state === 'error') flow.cancel();
+            }}
+            readOnly={state === 'consent' || state === 'sending'}
             maxLength={500}
             rows={2}
             aria-label="Anything you want to add (optional)"
             placeholder="Anything you want to add (optional). Please leave out names and personal details."
           />
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="button" size="sm" disabled={state === 'sending' || state === 'sent'} onClick={send}>
-              {state === 'sending' ? 'Sending…' : 'Send report'}
+            <Button type="button" size="sm" disabled={state !== 'idle' && state !== 'duplicate'} onClick={send}>
+              Review and send
             </Button>
             <button
               type="button"
@@ -60,9 +60,12 @@ export function FailureNotice({ info, turn }: { info: FailureInfo; turn: number 
           </div>
           <p role="status" className="text-muted-foreground">
             {state === 'sent' && 'Sent. Thank you.'}
-            {state === 'error' && 'The report could not be sent. You can copy the details and email them to info@nenya.biz.'}
           </p>
-          {state === 'sent' && <DeletionCode receipt={receipt} />}
+          {(state === 'consent' || state === 'sending' || state === 'error') && flow.pending && (
+            <SendConsent kind="report" parts={[{ label: 'The details', text: flow.pending.report }, { label: 'What you added', text: flow.pending.comments }]} busy={state === 'sending'} failed={state === 'error'} onSend={flow.confirm} onCancel={flow.cancel} />
+          )}
+          {state === 'duplicate' && <AlreadySent fromCoach />}
+          {state === 'sent' && <DeletionCode receipt={receipt} fromCoach />}
         </div>
       </details>
     </div>

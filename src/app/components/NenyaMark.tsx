@@ -1,92 +1,223 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
-// The mark (owner, 2026-11-15): "nenya.biz" with two e's stacked in one letter space. The white e stays; a gold e behind it turns half a circle,
-// counterclockwise, and rests upside down, so the mark reads nənya.biz, "nunya biz": none of your business. The schwa lives only in this mark; everywhere
-// else the name is plain "Nenya". Screen readers hear "nenya.biz". It turns once, when it first comes into view; with reduced motion it simply shows the
-// resting mark. The owner set every value below by eye on the comparison page. Behind VITE_NAME_MARK=on until approved on staging.
+// The mark (owner, 2026-11-15; settings from the editor 2026-11-17): "nenya.biz" with four e's stacked in one letter space. The white e stays; a gold e (in front)
+// turns half a circle when the mark first comes into view and rests upside down, so the mark reads nənya.biz, "nunya biz": none of your business. The schwa lives only in
+// this mark; everywhere else the name is plain "Nenya". Screen readers hear "nenya.biz".
+// It is also a visual form of the session ID: the colours come from the session's two colours, the arrangement of the other e's from the ID. Pointing at the mark (or a tap,
+// or its keyboard button) starts a fidget: a series of half turns of one e at a time, chosen at random, in colours from that pair; it keeps going while the pointer stays.
+// A demonstration, nothing to do with security. With reduced motion it only shows its resting state. Behind VITE_NAME_MARK=on until approved on staging.
+// 2026-11-18: the pivot is exact (the middle of the e's own ink, from the layout engine's baseline and the glyph's outline, re-measured when the font arrives and whenever the size
+// changes), so an e turns in place and only the owner's small net nudge and rise (nameMark.ts) separate it from the white e: it forms the theta, it does not swing.
 
-import { MARK_MOTION, MARK_SETTINGS, type MarkFace as Face } from '../../lib/nameMark';
+import {
+  FALLBACK_PIVOT_EM, MARK_FIDGET, MARK_LAYERS, MARK_MOTION, MARK_SETTINGS, SETTLE, fidgetPlan, hexToRgb, inkCentre, markArrangement, markColourIndexes, markPalette, type MarkFace as Face, type Rgb,
+} from '../../lib/nameMark';
+import { getSessionMarkId, subscribeSessionMark } from '../../lib/sessionMarkStore';
 export { nameMarkOn } from '../../lib/nameMark';
 
-const restTransform = (face: Face) => `translate(${MARK_SETTINGS[face].nudge}em, ${-MARK_SETTINGS[face].rise}em) rotate(${MARK_MOTION.degrees}deg)`;
+const Z = [2, 3, 0, 0]; // the white e; the gold e in front of it; the two more under the white one
 
-// The turning point is the middle of the e's own ink in this font and size (measured on a canvas), so it turns in place.
-function centreOnInk(el: HTMLElement) {
+// The turning point of an e is the middle of its own ink, measured exactly: the glyph's outline from a canvas at a large reference size (scaled to the real size, so there is no
+// rounding at small sizes), and where the baseline really sits in the box from the layout engine (a zero-size marker on the baseline, read by offsetTop, which a transform does not move).
+const REFERENCE = 200;
+function measurePivot(el: HTMLElement, face: Face): { x: number; y: number } {
   const cs = getComputedStyle(el);
-  const ctx = document.createElement('canvas').getContext('2d');
-  if (!ctx) return;
-  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-  const m = ctx.measureText('e');
   const size = parseFloat(cs.fontSize);
-  if (!m.fontBoundingBoxAscent || !size) return;
-  const baseline = (size - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
-  const y = baseline - (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
-  const x = (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2 + m.actualBoundingBoxLeft;
-  el.style.transformOrigin = `${x}px ${y}px`;
+  const ctx = document.createElement('canvas').getContext('2d');
+  const fallback = { x: FALLBACK_PIVOT_EM[face].x * (size || 0), y: FALLBACK_PIVOT_EM[face].y * (size || 0) };
+  if (!ctx || !size) return fallback;
+  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${REFERENCE}px ${cs.fontFamily}`;
+  const m = ctx.measureText('e');
+  if (!m.actualBoundingBoxAscent) return fallback; // a browser that cannot measure the glyph: the measured middle of this face's e, in em
+  const k = size / REFERENCE;
+  // A hidden copy of the e that no transform or animation touches, with a zero-size marker on its baseline: the marker's bottom edge is where the baseline really sits in the box
+  // (read from the layout engine, to a fraction of a pixel, in any browser; ancestors that scale the page cancel out in the ratio).
+  const probe = document.createElement('span');
+  probe.setAttribute('aria-hidden', 'true');
+  probe.style.cssText = 'position:absolute;left:0;top:0;visibility:hidden;pointer-events:none;display:inline-block;line-height:1;white-space:nowrap;transform:none';
+  const marker = document.createElement('i');
+  marker.style.cssText = 'display:inline-block;width:0;height:0';
+  probe.append('e', marker);
+  el.parentElement?.appendChild(probe);
+  const pr = probe.getBoundingClientRect();
+  const scale = pr.height / size || 1;
+  const baseline = (marker.getBoundingClientRect().bottom - pr.top) / scale;
+  probe.remove();
+  return inkCentre({ left: m.actualBoundingBoxLeft * k, right: m.actualBoundingBoxRight * k, ascent: m.actualBoundingBoxAscent * k, descent: m.actualBoundingBoxDescent * k }, baseline);
+}
+
+/** The page's own colour behind the mark, for keeping the mark's colours readable. */
+function pageColour(from: HTMLElement): Rgb {
+  for (let n: HTMLElement | null = from; n; n = n.parentElement) {
+    const c = getComputedStyle(n).backgroundColor;
+    if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return hexToRgb('#' + c.match(/\d+/g)!.slice(0, 3).map((v) => Number(v).toString(16).padStart(2, '0')).join(''));
+  }
+  return [245, 241, 237];
 }
 
 export function NenyaMark({ face = 'body', className = '' }: { face?: Face; className?: string }) {
-  const spinRef = useRef<HTMLSpanElement>(null);
+  const id = useSyncExternalStore(subscribeSessionMark, getSessionMarkId, getSessionMarkId);
   const markRef = useRef<HTMLSpanElement>(null);
+  const layers = useRef<(HTMLSpanElement | null)[]>([]);
+  const [canPlay, setCanPlay] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const control = useRef<{ start: (hold: boolean) => void; stop: () => void } | null>(null);
 
   useEffect(() => {
-    const spin = spinRef.current;
     const mark = markRef.current;
-    if (!spin || !mark) return;
+    const els = layers.current.slice(0, MARK_LAYERS) as HTMLSpanElement[];
+    if (!mark || els.length < MARK_LAYERS || els.some((e) => !e)) return;
     const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let done = false;
-    let observer: IntersectionObserver | null = null;
-    const turn = () => {
-      if (done) return;
-      done = true;
-      centreOnInk(spin);
-      if (reduce || typeof spin.animate !== 'function') {
-        spin.style.transform = restTransform(face);
-        return;
-      }
-      const a = spin.animate([{ transform: 'translate(0em, 0em) rotate(0deg)' }, { transform: restTransform(face) }], {
-        duration: MARK_MOTION.durationMs,
-        delay: MARK_MOTION.delayMs,
-        easing: MARK_MOTION.easing,
-        fill: 'forwards',
-      });
-      a.onfinish = () => {
-        spin.style.transform = restTransform(face);
-        a.cancel();
-      };
+    const motion = MARK_MOTION[face], fidgetSet = MARK_FIDGET[face], place = MARK_SETTINGS[face];
+    const palette = () => markPalette(id, pageColour(mark));
+    // Each e rests at a whole number of half turns: an odd number leaves it upside down, and then it gets the owner's nudge and rise so it sits in the letter space.
+    const angles = [0, 0, 0, 0];
+    const tf = (a: number, scale = 1) => {
+      const odd = Math.abs(a % 180) < 1 && Math.abs(Math.round(a / 180)) % 2 === 1;
+      return `translate(${odd ? place.nudge : 0}em, ${odd ? -place.rise : 0}em) rotate(${a}deg) scale(${scale})`;
     };
-    const ready = typeof document !== 'undefined' && document.fonts ? document.fonts.ready : Promise.resolve();
+    let tokens = 0;
+    let hovering = false;
+    let disposed = false;
+    let started = false; // the single turn has begun (or will not play)
+    const willTurn = !reduce && typeof els[1].animate === 'function';
+    const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+    const colours: (string | null)[] = [null, null, null, null]; // null: the page ink
+    const paint = (i: number) => { els[i].style.transform = tf(angles[i]); els[i].style.color = colours[i] ?? ''; };
+    const rest = () => {
+      const turned = markArrangement(id, face), pal = palette(), pick = markColourIndexes(id, face);
+      for (let i = 0; i < MARK_LAYERS; i++) {
+        angles[i] = turned[i] ? motion.way * motion.degrees : 0;
+        colours[i] = i === 0 ? null : i === 1 ? (motion.goldColour === 'same' ? null : pal[0]) : pal[pick[i]];
+        if (i === 1 && willTurn && !started) { angles[1] = 0; colours[1] = null; } // the gold e waits upright, in the page ink, until it first turns
+        paint(i);
+      }
+    };
+    const pivot = () => { const p = measurePivot(els[0], face); if (p.x || p.y) els.forEach((e) => { e.style.transformOrigin = `${p.x}px ${p.y}px`; }); };
+    pivot();
+    rest();
+
+    // The single turn of the gold e, once, when the mark first comes into view.
+    const firstTurn = () => {
+      if (started || disposed) return;
+      started = true;
+      if (reduce || typeof els[1].animate !== 'function') return;
+      const end = motion.way * motion.degrees; // the gold e always ends turned
+      angles[1] = 0;
+      const ink = getComputedStyle(els[1]).color;
+      const to = motion.goldColour === 'turns' ? palette()[0] : ink;
+      const quarter = motion.way * 90;
+      const frames: Keyframe[] = [{ offset: 0, transform: tf(0), color: ink }];
+      const pausing = motion.pauseMs > 0;
+      if (pausing) {
+        const hold = Math.min(0.5, motion.pauseMs / motion.durationMs), o1 = Math.min(0.45, 0.5 * (1 - hold));
+        frames.push({ offset: o1, transform: tf(quarter, motion.lift), color: ink }, { offset: o1 + hold, transform: tf(quarter, motion.lift), color: to });
+      } else if (motion.lift !== 1) frames.push({ offset: 0.5, transform: tf(end / 2, motion.lift), color: ink });
+      frames.push({ offset: 1, transform: tf(end), color: to });
+      const a = els[1].animate(frames, { duration: motion.durationMs, delay: motion.delayMs, easing: motion.easing, fill: 'both' }); // 'both': the upright pose holds through the delay, so it never jumps
+      a.onfinish = () => { angles[1] = end; colours[1] = motion.goldColour === 'turns' ? to : null; paint(1); a.cancel(); };
+    };
+
+    // The fidget: half turns of one e at a time, in colours from the session's pair; held for as long as it is pointed at, or a fixed number of turns.
+    const turn = async (i: number, way: 1 | -1, colour: string): Promise<void> => {
+      const from = angles[i], to = from + way * 180;
+      angles[i] = to;
+      const colourNow = getComputedStyle(els[i]).color;
+      colours[i] = colour;
+      if (typeof els[i].animate !== 'function') { paint(i); return; }
+      els[i].getAnimations().forEach((x) => x.cancel());
+      const x = els[i].animate([{ transform: tf(from), color: colourNow }, { transform: tf(to), color: colour }], { duration: fidgetSet.turnMs, easing: SETTLE, fill: 'forwards' });
+      await new Promise<void>((res) => { x.onfinish = () => { paint(i); x.cancel(); res(); }; x.oncancel = () => res(); });
+    };
+    const stop = () => { tokens++; hovering = false; setPlaying(false); };
+    const start = async (hold: boolean) => {
+      if (reduce || disposed) return;
+      const my = ++tokens;
+      setPlaying(true);
+      const pal = palette();
+      const plan = fidgetPlan(face);
+      for (let n = 0; tokens === my && !disposed; n++) {
+        if (!hold && n >= plan.length) break;
+        const step = plan[n % plan.length];
+        await turn(step.layer, step.way, pal[step.colour]);
+        if (tokens !== my) return;
+        await sleep(fidgetSet.pauseMs);
+        if (hold && !hovering) break;
+      }
+      if (tokens === my) setPlaying(false);
+    };
+    control.current = { start: (hold) => { hovering = hold; void start(hold); }, stop };
+
+    const enter = () => { hovering = true; void start(true); };
+    const leave = () => { hovering = false; };
+    const tap = () => { if (!hovering) void start(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') stop(); };
+    mark.addEventListener('pointerenter', enter);
+    mark.addEventListener('pointerleave', leave);
+    mark.addEventListener('pointerdown', tap);
+    window.addEventListener('keydown', esc);
+    setCanPlay(!reduce);
+
+    let observer: IntersectionObserver | null = null;
+    // The pivot is measured with the real font: load it for this e first (a pivot taken from a fallback font is what pushes an e off its place), and measure again whenever the size changes.
+    const fontLoaded = (): Promise<unknown> => {
+      try {
+        const cs = getComputedStyle(els[0]);
+        return typeof document !== 'undefined' && document.fonts ? document.fonts.load(`${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`, 'e').then(() => document.fonts.ready) : Promise.resolve();
+      } catch { return Promise.resolve(); }
+    };
+    const resizer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { if (!disposed) pivot(); }) : null;
+    resizer?.observe(mark);
+    const ready = fontLoaded();
     void ready.then(() => {
-      if (typeof IntersectionObserver === 'undefined') return turn();
-      observer = new IntersectionObserver((entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          observer?.disconnect();
-          turn();
-        }
-      });
+      if (disposed) return;
+      pivot();
+      if (typeof IntersectionObserver === 'undefined') return firstTurn();
+      observer = new IntersectionObserver((entries) => { if (entries.some((e) => e.isIntersecting)) { observer?.disconnect(); firstTurn(); } });
       observer.observe(mark);
     });
-    return () => observer?.disconnect();
-  }, [face]);
+    return () => {
+      disposed = true; tokens++;
+      observer?.disconnect();
+      resizer?.disconnect();
+      mark.removeEventListener('pointerenter', enter);
+      mark.removeEventListener('pointerleave', leave);
+      mark.removeEventListener('pointerdown', tap);
+      window.removeEventListener('keydown', esc);
+      els.forEach((e) => e.getAnimations?.().forEach((x) => x.cancel()));
+      control.current = null;
+    };
+  }, [face, id]);
 
   return (
-    <span
-      ref={markRef}
-      role="img"
-      aria-label="nenya.biz"
-      className={`whitespace-nowrap ${className}`}
-      style={face === 'lyric' ? { fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic' } : undefined}
-    >
-      n
-      <span aria-hidden="true" className="relative inline-grid leading-none" style={{ marginRight: `${MARK_SETTINGS[face].after}em` }}>
-        <span ref={spinRef} className="relative z-[1] inline-block leading-none text-nenya-gold-text dark:text-nenya-accent-warm" style={{ gridArea: '1 / 1' }}>
-          e
+    <>
+      <span
+        ref={markRef}
+        role="img"
+        aria-label="nenya.biz"
+        className={`whitespace-nowrap ${className}`}
+        style={face === 'lyric' ? { fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic' } : undefined}
+      >
+        n
+        <span aria-hidden="true" className="relative inline-grid leading-none" style={{ marginRight: `${MARK_SETTINGS[face].after}em` }}>
+          {Z.map((z, i) => (
+            <span key={i} ref={(el) => { layers.current[i] = el; }} className="relative inline-block leading-none" style={{ gridArea: '1 / 1', zIndex: z }}>
+              e
+            </span>
+          ))}
         </span>
-        <span className="relative z-[2] inline-block leading-none" style={{ gridArea: '1 / 1' }}>
-          e
-        </span>
+        nya.biz
       </span>
-      nya.biz
-    </span>
+      {canPlay && (
+        <button
+          type="button"
+          aria-pressed={playing}
+          onClick={() => (playing ? control.current?.stop() : control.current?.start(false))}
+          className="sr-only focus-visible:not-sr-only focus-visible:ml-2 focus-visible:rounded focus-visible:px-2 focus-visible:text-xs focus-visible:underline"
+        >
+          {playing ? 'Stop the mark' : 'Play the mark'}
+        </button>
+      )}
+    </>
   );
 }

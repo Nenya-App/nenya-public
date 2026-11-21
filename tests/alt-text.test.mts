@@ -27,6 +27,7 @@ ok('the link-preview text in index.html is the short logo text', read('index.htm
 const texts = [A.LOGO_ALT_SHORT, A.LOGO_ALT_NO_ORBS, A.LOGO_ALT_LONG, A.DRAWING_ALT_PRESENT, A.DRAWING_ALT_WISH, A.BODY_MAP_ALT];
 ok('no description starts with filler or reads as a file name', texts.every((t) => !/^(image|picture|photo|logo) of\b/i.test(t) && !/\.(png|jpe?g|webp|svg|gif)\b/i.test(t)));
 ok('the short descriptions stay short (one sentence, under 160 characters)', A.LOGO_ALT_SHORT.length < 160 && A.LOGO_ALT_NO_ORBS.length < 160);
+ok('the logo texts do not fix the number of gem sides or leaves (they change with the stone and the look setting)', [A.LOGO_ALT_SHORT, A.LOGO_ALT_NO_ORBS, A.LOGO_ALT_LONG].every((t) => !/\b(hexagon\w*|six|eight|octagon\w*|\d+-petal\w*)\b/i.test(t.replace(/sixteen/gi, ''))));
 ok('the visitor\'s own pictures are not described as if we could see them', [A.DRAWING_ALT_PRESENT, A.DRAWING_ALT_WISH].every((t) => /cannot describe/.test(t)));
 
 // ---- every image in the source has an alt attribute
@@ -49,4 +50,4 @@ ok(`every <img> in the source (${imgCount}) has an alt attribute that is not fil
 const logo = read('src/app/components/NenyaLogo.tsx');
 ok('the logo is decorative unless a description is passed, and never says "Nenya Logo"', /alt = ''/.test(logo) && /alt=\{alt\}/.test(logo) && !/alt="Nenya Logo"/.test(logo));
 ok('the welcome page describes the logo (without orbs when they are off), and the name page uses the long text', /alt=\{orbitEnabled \? LOGO_ALT_SHORT : LOGO_ALT_NO_ORBS\}/.test(read('src/app/components/pages/WelcomePage.tsx')) && /alt=\{LOGO_ALT_LONG\}/.test(read('src/app/components/about/NamePhilosophy.tsx')));
-ok('the review page uses text-alternative alts for the visitor\'s pictures', /alt=\{DRAWING_ALT_PRESENT\}/.test(read('src/app/components/pages/GatewayReviewPage.tsx')) && /alt=\{BODY_MAP_ALT\}/.test(read('src/app/components/pages/GatewayReviewPage.tsx')));
+ok('the review page uses text-alternative alts for the visitor\'s pictures', /alt=\{DRAWING_ALT_PRESENT\}/.test(read('src/app/components/pages/GatewayReviewPage.tsx')) && /alt=\{bodyMapAltFor\(/.test(read('src/app/components/pages/GatewayReviewPage.tsx')));

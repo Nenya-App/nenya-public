@@ -13,6 +13,7 @@ export interface BreathingPreset extends BreathingTechnique {
 // Shared by the breathing counter's pattern list and the first-visit
 // rhythm picker, so the two can never disagree about what a label means.
 export const PRESETS: BreathingPreset[] = [
+  { ih: 6000, hi: 0, ex: 6000, ho: 0, lb: '6·6', desc: 'Steady — slow and even (the default)' },
   { ih: 5000, hi: 0, ex: 5000, ho: 0, lb: '5·5', desc: 'Resonance — HRV coherence' },
   { ih: 4000, hi: 0, ex: 6000, ho: 0, lb: '4·6', desc: 'Calming — extended exhale' },
   { ih: 4000, hi: 0, ex: 8000, ho: 0, lb: '4·8', desc: 'Deep calm — sleep onset' },

@@ -1,25 +1,23 @@
 import { useState } from 'react';
-import { DeletionCode } from './DeletionCode';
-import type { SubmitReceipt } from '../../lib/reportSubmission';
+import { AlreadySent, DeletionCode } from './DeletionCode';
+import { SendConsent } from './SendConsent';
+import { useSendFlow } from './useSendFlow';
 import { Check, Copy, Link as LinkIcon, Mail, Send } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { submitReport } from '../../lib/reportSubmission';
 
 const CONTACT_EMAIL = 'info@nenya.biz';
 const SITE_URL = 'https://nenya.biz';
 const MAX_MESSAGE = 3000;
 
-type Status = 'idle' | 'sending' | 'sent' | 'error';
-
 // Messages go through the same Netlify Forms endpoint as error reports, so
 // they land in the same inbox with no extra setup.
 export function ContactSection() {
   const [message, setMessage] = useState('');
-  const [status, setStatus] = useState<Status>('idle');
-  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
+  const flow = useSendFlow('contact-message', () => setMessage('')); // the typed text is cleared once it is sent
+  const { phase: status, receipt } = flow;
   const [copied, setCopied] = useState<'email' | 'link' | null>(null);
 
   const copy = async (what: 'email' | 'link') => {
@@ -34,15 +32,8 @@ export function ContactSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || status === 'sending') return;
-    setStatus('sending');
-    try {
-      setReceipt(await submitReport({ type: 'contact-message', report: message }));
-      setStatus('sent');
-      setMessage('');
-    } catch {
-      setStatus('error');
-    }
+    if (!message.trim() || status === 'sending' || status === 'sent') return;
+    void flow.begin(message); // opens the consent screen; nothing is sent yet
   };
 
   return (
@@ -96,9 +87,11 @@ export function ContactSection() {
             value={message}
             onChange={(e) => {
               setMessage(e.target.value);
-              if (status !== 'sending') setStatus('idle');
+              if (status === 'sent' || status === 'duplicate') flow.reset(); // a new message is a new send
+              else if (status === 'error') flow.cancel();
             }}
             maxLength={MAX_MESSAGE}
+            readOnly={status === 'consent' || status === 'sending'}
             rows={5}
             placeholder="Say hello, share how Nenya landed for you, or tell us who you'd like to share it with."
             className="min-h-32 resize-y"
@@ -108,25 +101,28 @@ export function ContactSection() {
             If you’d like a reply, include your email address in your message. We only use it to answer you. Please
             leave out anything you wouldn’t want us to keep.
           </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              type="submit"
-              disabled={!message.trim() || status === 'sending'}
-              className="gap-2 bg-nenya-gold text-primary-foreground hover:bg-nenya-gold-light"
-            >
-              <Send className="size-4" />
-              {status === 'sending' ? 'Sending…' : 'Send message'}
-            </Button>
-            <p role="status" aria-live="polite" className="text-sm">
-              {status === 'sent' && <span className="text-muted-foreground">Thank you. Your message is on its way.</span>}
-              {status === 'sent' && <DeletionCode receipt={receipt} />}
-              {status === 'error' && (
-                <span className="text-destructive">
-                  That didn’t send. Please email us at {CONTACT_EMAIL} instead.
-                </span>
-              )}
-            </p>
-          </div>
+          {(status === 'consent' || status === 'sending' || status === 'error') && flow.pending && (
+            <SendConsent kind="message" parts={[{ label: 'Your message', text: flow.pending.report }]} busy={status === 'sending'} failed={status === 'error'} onSend={flow.confirm} onCancel={flow.cancel} />
+          )}
+          {status === 'duplicate' && <AlreadySent />}
+          {status === 'sent' && (
+            <div className="space-y-2">
+              <p role="status" className="text-sm text-muted-foreground">Thank you. Your message is on its way.</p>
+              <DeletionCode receipt={receipt} />
+            </div>
+          )}
+          {(status === 'idle' || status === 'duplicate') && (
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="submit"
+                disabled={!message.trim()}
+                className="gap-2 bg-nenya-gold text-primary-foreground hover:bg-nenya-gold-light"
+              >
+                <Send className="size-4" />
+                Review and send
+              </Button>
+            </div>
+          )}
         </form>
       </Card>
     </section>

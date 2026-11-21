@@ -1,3 +1,6 @@
+import { isAllowedTechnique } from './breathCustom.ts';
+import { DEFAULT_ARRANGEMENT } from './breathArrangements.ts';
+import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_PREVIEW_SIZE, GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, snapLeaves, snapPreviewSize, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 // Everything Nenya may keep on a visitor's device lives behind this one file, so there is a single
@@ -99,11 +102,20 @@ export interface Prefs {
   gemKaleidoscopeLook?: string;
   /** Whether the kaleidoscope moves with the visitor's breathing (opens on the in-breath, settles on the out-breath). */
   gemKaleidoscopeBreath?: boolean;
+  /** How many leaves the logo's ring has (a preset from src/lib/logoLook.ts). */
+  logoLeaves?: number;
+  /** How many sides the gem has: 'match' (follow the leaves) or a preset. */
+  gemSides?: string | number;
+  /** The outer orbs' glow: its style, its width (a preset multiple of the orb) and the seed of the random colours. */
+  orbHalo?: string;
+  orbHaloWidth?: number;
+  orbHaloSeed?: number;
+  /** The size of the animated preview in the breathing and accessibility panel, in pixels (a multiple of 20, 120 to 400). */
+  previewSize?: number;
 }
 
 const VISION = ['', 'deuteranopia', 'protanopia', 'tritanopia', 'achromatopsia'];
 const isBool = (v: unknown): v is boolean => typeof v === 'boolean';
-const ms = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 60000;
 
 // Anything that does not match is dropped, so a hand-edited or stale entry cannot break the page.
 const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
@@ -120,9 +132,15 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   gemKaleidoscopeBreath: isBool,
   breathingSound: (v) => v === 'harp' || v === 'bowls' || v === 'chord' || v === 'scale',
   colorBlindMode: (v) => typeof v === 'string' && VISION.includes(v),
+  logoLeaves: (v) => typeof v === 'number' && (LEAF_PRESETS as readonly number[]).includes(v),
+  gemSides: (v) => v === 'match' || (typeof v === 'number' && (GEM_SIDE_PRESETS as readonly number[]).includes(v)),
+  orbHalo: (v) => (HALO_STYLES as readonly unknown[]).includes(v),
+  orbHaloWidth: (v) => typeof v === 'number' && (HALO_WIDTHS as readonly number[]).includes(v),
+  orbHaloSeed: (v) => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 4294967295,
+  previewSize: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 120 && v <= 400,
   breathingTechnique: (v) => {
-    const t = v as Record<string, unknown> | null;
-    return !!t && typeof t === 'object' && ms(t.ih) && ms(t.hi) && ms(t.ex) && ms(t.ho) && (t.ih as number) > 0 && (t.ex as number) > 0;
+    // A saved pace must be one the site would have allowed (src/lib/breathCustom.ts); earlier saves of the presets all pass.
+    return isAllowedTechnique(v);
   },
 };
 
@@ -242,7 +260,7 @@ export const useGemKaleidoscopeBreath = kaleidoBreath.use;
 export type BreathingSound = 'harp' | 'bowls' | 'chord' | 'scale';
 let soundStyle: BreathingSound | null = null;
 const soundListeners = new Set<() => void>();
-const getSound = (): BreathingSound => (soundStyle ??= (loadPrefs().breathingSound as BreathingSound | undefined) ?? 'harp');
+const getSound = (): BreathingSound => (soundStyle ??= (loadPrefs().breathingSound as BreathingSound | undefined) ?? DEFAULT_ARRANGEMENT);
 export const getBreathingSound = getSound;
 export function setBreathingSound(s: BreathingSound): void {
   soundStyle = s;
@@ -254,7 +272,7 @@ const subscribeSound = (l: () => void) => {
   return () => soundListeners.delete(l);
 };
 export function useBreathingSound(): BreathingSound {
-  const style = useSyncExternalStore(subscribeSound, getSound, () => 'harp' as BreathingSound);
+  const style = useSyncExternalStore(subscribeSound, getSound, () => DEFAULT_ARRANGEMENT as BreathingSound);
   const remembering = useRemembering();
   useEffect(() => {
     if (remembering) savePref('breathingSound', style);
@@ -345,3 +363,70 @@ export function wipeDevice({ keepOwner }: { keepOwner: boolean }) {
   }
   emit();
 }
+
+// The logo's look (src/lib/logoLook.ts): how many leaves and how many sides the gem has. Two visitor settings with the same
+// rules as the others: kept only while "Remember on this device" is on, erased by "Forget me" and Emergency Exit. A stored value
+// that is not a preset is dropped by loadPrefs, and anything set in code snaps to the nearest preset.
+let leavesNow: number | null = null;
+let gemNow: GemSidesChoice | null = null;
+const lookListeners = new Set<() => void>();
+const getLeaves = (): number => (leavesNow ??= snapLeaves(loadPrefs().logoLeaves ?? DEFAULT_LOGO_LEAVES));
+const getGemChoice = (): GemSidesChoice => (gemNow ??= snapGemChoice(loadPrefs().gemSides ?? DEFAULT_GEM_CHOICE));
+export const getLogoLeaves = getLeaves;
+export const getGemSidesChoice = getGemChoice;
+export function setLogoLeaves(n: number): void {
+  leavesNow = snapLeaves(n);
+  savePref('logoLeaves', leavesNow);
+  lookListeners.forEach((l) => l());
+}
+export function setGemSidesChoice(v: GemSidesChoice | number): void {
+  gemNow = snapGemChoice(v);
+  savePref('gemSides', gemNow);
+  lookListeners.forEach((l) => l());
+}
+const subscribeLook = (l: () => void) => {
+  lookListeners.add(l);
+  return () => lookListeners.delete(l);
+};
+export const useLogoLeaves = (): number => useSyncExternalStore(subscribeLook, getLeaves, () => DEFAULT_LOGO_LEAVES);
+export const useGemSidesChoice = (): GemSidesChoice => useSyncExternalStore(subscribeLook, getGemChoice, () => DEFAULT_GEM_CHOICE);
+
+// The outer orbs' glow (style, width, and the seed of the random colours): the same rules as the look above.
+let haloStyleNow: HaloStyle | null = null;
+let haloWidthNow: number | null = null;
+let haloSeedNow: number | null = null;
+const getHaloStyle = (): HaloStyle => (haloStyleNow ??= snapHaloStyle(loadPrefs().orbHalo ?? DEFAULT_HALO_STYLE));
+const getHaloWidth = (): number => (haloWidthNow ??= snapHaloWidth(loadPrefs().orbHaloWidth ?? DEFAULT_HALO_WIDTH));
+const getHaloSeed = (): number => (haloSeedNow ??= snapHaloSeed(loadPrefs().orbHaloSeed ?? 1));
+export const getOrbHaloStyle = getHaloStyle;
+export const getOrbHaloWidth = getHaloWidth;
+export function setOrbHaloStyle(v: HaloStyle | string): void {
+  haloStyleNow = snapHaloStyle(v);
+  savePref('orbHalo', haloStyleNow);
+  lookListeners.forEach((l) => l());
+}
+export function setOrbHaloWidth(v: number): void {
+  haloWidthNow = snapHaloWidth(v);
+  savePref('orbHaloWidth', haloWidthNow);
+  lookListeners.forEach((l) => l());
+}
+/** Deals a new set of random colours. */
+export function shuffleOrbHalo(seed: number = Math.floor(Math.random() * 4294967296)): void {
+  haloSeedNow = snapHaloSeed(seed);
+  savePref('orbHaloSeed', haloSeedNow);
+  lookListeners.forEach((l) => l());
+}
+export const useOrbHaloStyle = (): HaloStyle => useSyncExternalStore(subscribeLook, getHaloStyle, () => DEFAULT_HALO_STYLE);
+export const useOrbHaloWidth = (): number => useSyncExternalStore(subscribeLook, getHaloWidth, () => DEFAULT_HALO_WIDTH);
+export const useOrbHaloSeed = (): number => useSyncExternalStore(subscribeLook, getHaloSeed, () => 1);
+
+// The size of the preview in the breathing panel.
+let previewNow: number | null = null;
+const getPreviewSize = (): number => (previewNow ??= snapPreviewSize(loadPrefs().previewSize ?? DEFAULT_PREVIEW_SIZE));
+export const getBreathPreviewSize = getPreviewSize;
+export function setBreathPreviewSize(n: number): void {
+  previewNow = snapPreviewSize(n);
+  savePref('previewSize', previewNow);
+  lookListeners.forEach((l) => l());
+}
+export const useBreathPreviewSize = (): number => useSyncExternalStore(subscribeLook, getPreviewSize, () => DEFAULT_PREVIEW_SIZE);

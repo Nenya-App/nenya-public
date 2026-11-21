@@ -15,8 +15,14 @@ import { AppFooter } from '../AppFooter';
 import { BodyMapAvatar, BodyMapData } from '../BodyMapAvatar';
 import { TouchSurfaceField } from '../TouchSurfaceField';
 import { MoreDetail } from '../MoreDetail';
+import { PutThisDown, FewerNote, AddToReport, LensCardNav } from '../LensCardParts';
+import { lensTrayOn } from '../../../lib/lensState';
+import { TouchOrb } from '../TouchOrb';
+import { TouchVibrate } from '../TouchVibrate';
+import type { OrbShape } from '../../../lib/touchOrb';
 import { simpleGatewaysOn, STEP_NAMES, TOUCH_COPY } from '../../../lib/gatewayCopy';
 
+import { L } from '../../../lib/vocabulary';
 interface TouchGatewayPageProps {
   onComplete: (data: any) => void;
   onBack: () => void;
@@ -25,12 +31,14 @@ interface TouchGatewayPageProps {
   userColors?: { color1?: string; color2?: string };
   bodyMapData: BodyMapData;
   onUpdateBodyMap: (data: BodyMapData) => void;
+  /** Tray mode: what was added before, so Edit opens with it. */
+  initialData?: any;
 }
 
 const INSTRUCTION_CARDS = [
   {
-    title: 'Welcome to the Touch Gateway',
-    description: 'Physical sensations carry deep emotional information. In this gateway, you\'ll explore the tactile landscape of your inner experience.',
+    title: L('Welcome to the Touch Gateway'),
+    description: L('Physical sensations carry deep emotional information. In this gateway, you\'ll explore the tactile landscape of your inner experience.'),
     detail: 'Consider texture, temperature, pressure, weight, and sharpness. These physical qualities often mirror our emotional states.'
   },
   {
@@ -45,16 +53,34 @@ const INSTRUCTION_CARDS = [
   }
 ];
 
-export default function TouchGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap }: TouchGatewayPageProps) {
+export default function TouchGatewayPage({ onComplete, onBack, currentIndex, totalGateways, userColors, bodyMapData, onUpdateBodyMap, initialData }: TouchGatewayPageProps) {
+  const tray = lensTrayOn();
+  const init = tray && initialData && ('currentSurface' in initialData || 'potentialSurface' in initialData) ? initialData : null;
   // The simpler version (VITE_GATEWAYS_SIMPLE=on): no instruction cards, one main choice per step, the rest under "Add more detail".
-  const simple = simpleGatewaysOn();
+  const simple = simpleGatewaysOn() || tray; // the tray uses the simpler card: one main choice, the rest under the disclosure
   // Step state
   const [step, setStep] = useState<'instructions' | 'selection'>(simple ? 'selection' : 'instructions');
   const [instructionCardIndex, setInstructionCardIndex] = useState(0);
   const [showBodyMap, setShowBodyMap] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<PairStage>('present');
+  // Tray mode: each activity is its own card (owner, 2026-11-18): the surface, the five sliders (the display moves as they do), your own words; the present state first, then the wish, then add.
+  type TrayCard = { stage: 'present' | 'wish' | 'add'; part: 'surface' | 'sliders' | 'words' | 'add'; title: string };
+  const cards: TrayCard[] = tray ? [
+    ...(['present', 'wish'] as const).flatMap((st) => [
+      { stage: st, part: 'surface', title: 'Choose a surface' } as TrayCard,
+      { stage: st, part: 'sliders', title: 'Feel it more' } as TrayCard,
+      { stage: st, part: 'words', title: 'In your own words' } as TrayCard,
+    ]),
+    { stage: 'add', part: 'add', title: 'Add to your report' },
+  ] : [];
+  const [trayIndex, setTrayIndex] = useState(0);
+  const cur = tray ? cards[Math.min(trayIndex, cards.length - 1)] : null;
+  const activeStage = tray ? cur!.stage : stage;
+  const trayOn = (st: 'present' | 'wish', part: TrayCard['part']) => !tray || (cur!.stage === st && cur!.part === part);
+  const [orbShape, setOrbShape] = useState<OrbShape>('sphere'); // the display: a sphere or a flat circle (tray mode)
   useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [stage]);
+  useEffect(() => { scrollContainerRef.current?.scrollTo({ top: 0 }); }, [trayIndex]);
 
   // Advancing between steps swaps content inside this same persistently-
   // mounted scroll container -- it never unmounts, so nothing else resets
@@ -64,22 +90,22 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
   }, [step]);
 
   // Current state
-  const [currentSurface, setCurrentSurface] = useState<string | null>(null);
-  const [currentTexture, setCurrentTexture] = useState(() => unsetSlider());
-  const [currentTemperature, setCurrentTemperature] = useState(() => unsetSlider());
-  const [currentPressure, setCurrentPressure] = useState(() => unsetSlider());
-  const [currentWeight, setCurrentWeight] = useState(() => unsetSlider());
-  const [currentSharpness, setCurrentSharpness] = useState(() => unsetSlider());
-  const [currentDescription, setCurrentDescription] = useState('');
+  const [currentSurface, setCurrentSurface] = useState<string | null>(init?.currentSurface ?? null);
+  const [currentTexture, setCurrentTexture] = useState(() => (typeof init?.currentTexture === 'number' ? [init.currentTexture] : unsetSlider()));
+  const [currentTemperature, setCurrentTemperature] = useState(() => (typeof init?.currentTemperature === 'number' ? [init.currentTemperature] : unsetSlider()));
+  const [currentPressure, setCurrentPressure] = useState(() => (typeof init?.currentPressure === 'number' ? [init.currentPressure] : unsetSlider()));
+  const [currentWeight, setCurrentWeight] = useState(() => (typeof init?.currentWeight === 'number' ? [init.currentWeight] : unsetSlider()));
+  const [currentSharpness, setCurrentSharpness] = useState(() => (typeof init?.currentSharpness === 'number' ? [init.currentSharpness] : unsetSlider()));
+  const [currentDescription, setCurrentDescription] = useState(init?.currentDescription ?? '');
 
   // Potential state
-  const [potentialSurface, setPotentialSurface] = useState<string | null>(null);
-  const [potentialTexture, setPotentialTexture] = useState(() => unsetSlider());
-  const [potentialTemperature, setPotentialTemperature] = useState(() => unsetSlider());
-  const [potentialPressure, setPotentialPressure] = useState(() => unsetSlider());
-  const [potentialWeight, setPotentialWeight] = useState(() => unsetSlider());
-  const [potentialSharpness, setPotentialSharpness] = useState(() => unsetSlider());
-  const [potentialDescription, setPotentialDescription] = useState('');
+  const [potentialSurface, setPotentialSurface] = useState<string | null>(init?.potentialSurface ?? null);
+  const [potentialTexture, setPotentialTexture] = useState(() => (typeof init?.potentialTexture === 'number' ? [init.potentialTexture] : unsetSlider()));
+  const [potentialTemperature, setPotentialTemperature] = useState(() => (typeof init?.potentialTemperature === 'number' ? [init.potentialTemperature] : unsetSlider()));
+  const [potentialPressure, setPotentialPressure] = useState(() => (typeof init?.potentialPressure === 'number' ? [init.potentialPressure] : unsetSlider()));
+  const [potentialWeight, setPotentialWeight] = useState(() => (typeof init?.potentialWeight === 'number' ? [init.potentialWeight] : unsetSlider()));
+  const [potentialSharpness, setPotentialSharpness] = useState(() => (typeof init?.potentialSharpness === 'number' ? [init.potentialSharpness] : unsetSlider()));
+  const [potentialDescription, setPotentialDescription] = useState(init?.potentialDescription ?? '');
 
   const handleNextInstructionCard = () => {
     if (instructionCardIndex < INSTRUCTION_CARDS.length - 1) {
@@ -133,11 +159,11 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                 Touch - Somatosensation
                 <GatewaySubtitleLink href="https://www.ncbi.nlm.nih.gov/books/NBK583711/" />
               </h1>
-              <GatewayProgress index={currentIndex} total={totalGateways} />
+              {!tray && <GatewayProgress index={currentIndex} total={totalGateways} />}
             </div>
           </div>
 
-          <div className="w-20" />
+          {tray ? <PutThisDown onClick={onBack} name={'Touch'} /> : <div className="w-20" />}
         </div>
       </div>
 
@@ -199,6 +225,7 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
               {simple && (
                 <div className="mb-6 space-y-3">
                   <p className="text-center">{TOUCH_COPY.intro}</p>
+                  {tray && <div className="text-center"><FewerNote /></div>}
                   <details className="mx-auto max-w-xl rounded-lg border border-border p-3 text-sm">
                     <summary className="flex min-h-11 cursor-pointer items-center underline underline-offset-4">{TOUCH_COPY.howTitle}</summary>
                     <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
@@ -207,8 +234,16 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   </details>
                 </div>
               )}
-              <StageIntro stage={stage} />
-              <StageSlot stage="present" current={stage}>
+              {tray && (
+                <fieldset className="mb-4 flex flex-wrap items-center justify-center gap-4 text-sm">
+                  <legend className="sr-only">Shape of the display</legend>
+                  <span aria-hidden="true">Show it as</span>
+                  <label className="flex min-h-11 items-center gap-2"><input type="radio" name="touch-orb-shape" checked={orbShape === 'sphere'} onChange={() => setOrbShape('sphere')} /> a sphere</label>
+                  <label className="flex min-h-11 items-center gap-2"><input type="radio" name="touch-orb-shape" checked={orbShape === 'flat'} onChange={() => setOrbShape('flat')} /> a flat circle</label>
+                </fieldset>
+              )}
+              {!tray && <StageIntro stage={stage} />}
+              <StageSlot stage="present" current={activeStage as PairStage}>
               {/* Present State Card */}
               <Card
                 className="transition-all"
@@ -227,9 +262,16 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <CardDescription>{simple ? TOUCH_COPY.pick.present : 'The tactile qualities of where you are now'}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <TouchSurfaceField stateName="Present" value={currentSurface} onChange={setCurrentSurface} slider={currentTexture[0]} onMatchSlider={(v) => setCurrentTexture([v])} />
+                  {trayOn('present', 'surface') && (
+                    <TouchSurfaceField stateName="Present" value={currentSurface} onChange={setCurrentSurface} slider={currentTexture[0]} onMatchSlider={(v) => setCurrentTexture([v])} />
+                  )}
 
-                  <MoreDetail simple={simple} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
+                  {tray && (trayOn('present', 'surface') || trayOn('present', 'sliders')) && <TouchOrb stateName="Present" surfaceId={currentSurface} shape={orbShape} values={{ texture: sliderValue(currentTexture), temperature: sliderValue(currentTemperature), pressure: sliderValue(currentPressure), weight: sliderValue(currentWeight), sharpness: sliderValue(currentSharpness) }} />}
+
+                  <MoreDetail simple={simple && !tray} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
+                  {trayOn('present', 'sliders') && (
+                    <>
+                      <TouchVibrate values={{ texture: sliderValue(currentTexture), temperature: sliderValue(currentTemperature), pressure: sliderValue(currentPressure), weight: sliderValue(currentWeight), sharpness: sliderValue(currentSharpness) }} />
 
                   <SnappingSlider
                     value={currentTexture}
@@ -276,6 +318,10 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                     max={100}
                   />
 
+                    </>
+                  )}
+                  {trayOn('present', 'words') && (
+                    <>
                   <div className="space-y-2">
                     <Label htmlFor="touch-words-present" className="text-sm">{simple ? TOUCH_COPY.wordsLabel : 'Describe the sensations (optional)'}</Label>
                     <Textarea
@@ -286,12 +332,14 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                    </>
+                  )}
                   </MoreDetail>
                 </CardContent>
               </Card>
 
               </StageSlot>
-              <StageSlot stage="wish" current={stage}>
+              <StageSlot stage="wish" current={activeStage as PairStage}>
               {/* Potential State Card */}
               <Card
                 className="transition-all"
@@ -310,9 +358,16 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                   <CardDescription>{simple ? TOUCH_COPY.pick.wish : 'The tactile qualities of where you wish to be'}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <TouchSurfaceField stateName="Wish" value={potentialSurface} onChange={setPotentialSurface} slider={potentialTexture[0]} onMatchSlider={(v) => setPotentialTexture([v])} />
+                  {trayOn('wish', 'surface') && (
+                    <TouchSurfaceField stateName="Wish" value={potentialSurface} onChange={setPotentialSurface} slider={potentialTexture[0]} onMatchSlider={(v) => setPotentialTexture([v])} />
+                  )}
 
-                  <MoreDetail simple={simple} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
+                  {tray && (trayOn('wish', 'surface') || trayOn('wish', 'sliders')) && <TouchOrb stateName="Wish" surfaceId={potentialSurface} shape={orbShape} values={{ texture: sliderValue(potentialTexture), temperature: sliderValue(potentialTemperature), pressure: sliderValue(potentialPressure), weight: sliderValue(potentialWeight), sharpness: sliderValue(potentialSharpness) }} />}
+
+                  <MoreDetail simple={simple && !tray} label={TOUCH_COPY.more} hint={TOUCH_COPY.moreHint}>
+                  {trayOn('wish', 'sliders') && (
+                    <>
+                      <TouchVibrate values={{ texture: sliderValue(potentialTexture), temperature: sliderValue(potentialTemperature), pressure: sliderValue(potentialPressure), weight: sliderValue(potentialWeight), sharpness: sliderValue(potentialSharpness) }} />
 
                   <SnappingSlider
                     value={potentialTexture}
@@ -359,6 +414,10 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                     max={100}
                   />
 
+                    </>
+                  )}
+                  {trayOn('wish', 'words') && (
+                    <>
                   <div className="space-y-2">
                     <Label htmlFor="touch-words-wish" className="text-sm">{simple ? TOUCH_COPY.wordsLabel : 'Describe the sensations (optional)'}</Label>
                     <Textarea
@@ -369,23 +428,39 @@ export default function TouchGatewayPage({ onComplete, onBack, currentIndex, tot
                       className="min-h-20 resize-none text-sm"
                     />
                   </div>
+                    </>
+                  )}
                   </MoreDetail>
                 </CardContent>
               </Card>
             </StageSlot>
-              <StageNav stage={stage} onChange={setStage} />
+              {!tray && <StageNav stage={stage} onChange={setStage} />}
+              {tray && cur && cur.stage !== 'add' && (
+                <>
+                  <p className="text-center text-sm">{cur.title}</p>
+                  <LensCardNav index={trayIndex} total={cards.length} onBack={() => setTrayIndex(Math.max(0, trayIndex - 1))} onNext={() => setTrayIndex(trayIndex + 1)} />
+                </>
+              )}
+              {tray && cur && cur.stage === 'add' && (
+                <div className="mx-auto w-full max-w-2xl space-y-4">
+                  <h2 className="text-xl">Add Touch to your report?</h2>
+                  <p className="text-sm text-muted-foreground">Everything you chose stays here until you add it. If you put it down without adding, your report says: &ldquo;Examined, not included: Touch.&rdquo;</p>
+                  <AddToReport name="Touch" added={!!init} onAdd={handleNext} onPutDown={onBack} />
+                  <Button variant="ghost" onClick={() => setTrayIndex(Math.max(0, trayIndex - 1))}>Back</Button>
+                </div>
+              )}
             </div>
 
             {/* Next Button */}
             <TextureCredits />
-            {stage === 'wish' && (
+            {stage === 'wish' && !tray && (
             <div className="flex justify-center pt-4">
               <Button
                 size="lg"
                 onClick={handleNext}
                 className="px-12"
               >
-                {currentIndex + 1 < totalGateways ? 'Next Gateway' : 'Continue'}
+                {currentIndex + 1 < totalGateways ? L('Next Gateway') : 'Continue'}
               </Button>
             </div>
             )}

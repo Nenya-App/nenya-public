@@ -23,12 +23,12 @@ The first version (a plain scale of short sine notes) was not pleasant to listen
 
 | Style | What is heard |
 | --- | --- |
-| **Harp** (default) | A plucked note a count, an open arpeggio (D4, F#4, A4, D5, F#5 and neighbours) that rings for a couple of seconds and overlaps. Rises on the inhale from the home note, lands on the home note on the exhale. A very soft low drone (D and A) under it. Holds repeat D5 (after the inhale) and D4 (after the exhale), quietly. |
-| **Bowls** | A singing bowl on the home note to open the inhale, a lower bowl (A3, the fifth of the key) to open the exhale, a soft two-voice swell in over the inhale and out over the exhale, and a very soft wooden tick for each count (quieter in holds). The sparsest. |
+| **Harp** | A plucked note a count, an open arpeggio (D4 E4 F#4 A4 B4 D5, spread across by the number of counts, so six counts are six different notes and the top is D5) that rings for a couple of seconds and overlaps. Rises on the inhale from the home note, lands on the home note on the exhale. A very soft low drone (D and A) under it. Holds repeat D5 (after the inhale) and D4 (after the exhale), quietly. |
+| **Bowls** (default) | A singing bowl on the home note to open the inhale, a lower bowl (A3, the fifth of the key) to open the exhale, a soft two-voice swell in over the inhale and out over the exhale, and a very soft wooden tick for each count (quieter in holds). The sparsest. |
 | **Chord** | A voice joins for each count of the inhale (up to six), the full chord is held through a hold, and a voice leaves for each count of the exhale, top first, ending on the root, which lingers quietly through any hold-out. A very soft tick marks every count. |
-| **Scale** | The first version, kept so the others can be compared with it. |
+| **Scale** | The first version, kept so the others can be compared with it. Plain notes, one a count, stepping up the D major pentatonic a degree at a time (D4 E4 F#4 A4 B4 D5) and back down to D4; both halves of a breath share the same top. Re-pitched on 2026-11-20: it used to spread the notes over the C pentatonic with a fixed range, which skipped and leapt (D E G C D E) and was found awkward and unpleasant. |
 
-**Decision (2026-11-08): all four stay as choices.** Still to tune by listening: the loudness of ticks and holds, the reverb amount, the drone, and the harp's range (it reaches F#5, which may be bright). The code is in `src/lib/breathArrangements.ts` (the notes, pure and tested) and `src/lib/breathTones.ts` (the sound and the planner).
+**Decision (2026-11-08): all four stay as choices. Update 2026-11-20: the bowls are now the default, and no pitched note in any style goes above D5 (the top note had been found too high).** Still to tune by listening: the loudness of ticks and holds, the reverb amount, the drone, and the harp's range (it reaches F#5, which may be bright). The code is in `src/lib/breathArrangements.ts` (the notes, pure and tested) and `src/lib/breathTones.ts` (the sound and the planner).
 
 **Changing the style while it plays:** the new style starts on the first note of the next breath, never midway. The style that is playing finishes its breath and its notes ring out. The change is planned at the first breath start after anything already scheduled (so a change made in the last moments of a breath waits one breath more rather than cutting anything off); changing back before then cancels it; choosing twice uses the last choice. When the tones are playing, choosing a style plays no taste (the announcement says "starting with the next breath"); when they are not, a short taste plays. A change of rhythm is different: it restarts the breath (the counter and the ring restart with it), so the tones restart at once. `createPlanner` in `breathTones.ts` does this and is tested by playing whole breaths through it (`tests/breath-planner.test.mts`).
 
@@ -92,7 +92,7 @@ Check each with VoiceOver, then NVDA and TalkBack:
 
 **Current state (checked in the code, 2026-11-06):**
 - `NenyaLogo.tsx` base image: `alt="Nenya Logo"` everywhere it appears. The gem and glow canvases and the bezel are already hidden from screen readers (`aria-hidden`), so only that one image is read. Orbs are CSS shapes and are not read.
-- `index.html`: `og:image:alt` already describes the emblem (and is accurate against the current image, apart from "six-petaled flower": it is two interlaced six-petaled flowers). This is what link previews use.
+- `index.html`: `og:image:alt` already describes the emblem (written so it stays true when the number of leaves or gem sides changes). This is what link previews use.
 - Footer Netlify badge: "Deploys by Netlify". Fractured Atlas donate image: "Donate now at Fractured Atlas!" (inside a link, so the link's purpose is announced; fine).
 - `GatewayReviewPage.tsx`: the visitor's own drawings and body map are labelled "Drawing for the present state", "Drawing for the wish state", "Body emotion map". These say what the picture is but give a blind visitor none of its content; the review page needs a text alternative (see below).
 - SVG widgets: `MusicalStaff` has a group label; `FlavorWheel` has `role="group"` with no label, and the body-map avatar has none checked. These need audit.
@@ -106,10 +106,10 @@ Check each with VoiceOver, then NVDA and TalkBack:
 5. **Social previews:** keep `og:image:alt` in step with the shared description.
 6. **Test:** every `<img>` in the built pages and components has an `alt` attribute (empty only when intentionally decorative and marked so), and none reads as a filename or "image". The existing `render` tests can walk the rendered HTML.
 
-**Draft descriptions** (to be refined once; they are checked against the current `public/og-image.jpg`, which shows two interlaced six-petaled flowers outlined in gold and cream, a hexagonal faceted gem with rainbow colours at the centre, and a ring of sixteen soft-coloured orbs, all softly glowing on a dark brown background):
-- **Logo, short:** "Nenya logo: a faceted rainbow gem at the centre of two interlaced six-petaled flowers, gold and cream, ringed by sixteen coloured orbs."
-- **Logo, long:** "The Nenya emblem. At the centre is a hexagonal gem whose facets show rainbow colours. Around it, two six-petaled flowers drawn in thin gold and cream lines weave over and under each other. A ring of sixteen small orbs surrounds the flowers, each a different soft colour: purples, greens, blues, yellow, orange, red and pink. On the site the orbs slowly change colour and the glow follows the breathing rhythm."
-- **Logo without the orbs** (small header version): "Nenya logo: a faceted rainbow gem at the centre of two interlaced six-petaled flowers, gold and cream."
+**Draft descriptions** (to be refined once; they are checked against the current `public/og-image.jpg`, which shows a ring of interlaced leaves outlined in gold and cream, a faceted gem with rainbow colours at the centre, and a ring of sixteen soft-coloured orbs, all softly glowing on a dark brown background):
+- **Logo, short:** "Nenya logo: a faceted rainbow gem inside a ring of woven leaves, gold and cream, ringed by sixteen coloured orbs."
+- **Logo, long:** "The Nenya emblem. At the centre is a faceted gem whose facets show rainbow colours. Around it, a ring of leaves drawn in thin gold and cream lines weaves over and under itself. A ring of sixteen small orbs surrounds the leaves, each a different soft colour: purples, greens, blues, yellow, orange, red and pink. On the site the orbs slowly change colour and the glow follows the breathing rhythm."
+- **Logo without the orbs** (small header version): "Nenya logo: a faceted rainbow gem inside a ring of woven leaves, gold and cream."
 - **Header / repeated use:** "Nenya" (as a link: "Nenya, home").
 - **Variants for marketing** (dark with glow, dark clean, transparent, for light backgrounds): the same text; mention the background only where it matters to the post ("on a light background").
 
@@ -222,3 +222,6 @@ Written 2026-11-08, nothing built. All four tone styles stay as choices; this ad
 **Saved settings:** one object under the display settings (e.g. `breathingSoundOptions`), validated like the others (numbers clamped, unknown keys dropped), so a hand-edited or stale value cannot break the page.
 
 **Questions to settle by listening and with testers:** which of these controls people actually reach for; whether brightness and room are one control or two; whether any should be hidden behind "more options" so the panel stays simple; how this reads with a screen reader (sliders need names, current values and units announced).
+
+## Switching the tones on mid-breath (2026-11-20)
+The sample note played when the switch is pressed and the first breath's own notes used to sound together, so the start doubled up. The tones now tap in: the player plays nothing of a breath it joined part way through and begins at the next inhale (a start within 300 ms of an inhale plays that inhale). The sample note stands in for the wait. A change of pace still restarts at once. Code: `createPlanner` and `firstBreathStart` in `src/lib/breathTones.ts`, tested in `tests/breath-planner.test.mts`.

@@ -47,7 +47,7 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
 
           <div className="prose dark:prose-invert max-w-none space-y-4">
             <p className="text-lg">
-              Nenya is built by Estëlle, a Minnesota-based designer, educator, and artist. This page exists mainly as a matter of transparency —
+              Nenya is built by Estëlle Streiff, a Minnesota-based designer, educator, and artist. This page exists mainly as a matter of transparency —
               Nenya isn't an anonymous product — but the intention has always been for the work to stand on its own rather than to center its
               maker.
             </p>

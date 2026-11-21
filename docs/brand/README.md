@@ -6,7 +6,7 @@ The logo's petals, orbs and bezel are drawn as vectors. The gem is the one raste
 | Part | In the site | Source |
 |---|---|---|
 | Petals (two interlaced flowers, gold and cream, bevelled, true over-and-under weave) | `src/assets/logo/petals.svg`, drawn by `NenyaLogo.tsx`; its 765-unit box is `size * 0.765` | this folder's settings |
-| Bezel (double hexagon round the gem) | `src/assets/logo/bezel.svg`, drawn by `SpectralGem.tsx` at 1.12 times the gem's frame | same |
+| Bezel (double polygon round the gem, following the stone's sides; a hexagon at six) | `src/assets/logo/bezel.svg`, drawn by `SpectralGem.tsx` at 1.12 times the gem's frame | same |
 | Orbs (16 inner, 16 outer) | CSS in `NenyaLogo.tsx` (`OrbSurface`): the animated colour with four fixed layers over it | same |
 | Glow round the petals and gem | baked in the browser by `LogoGlow.tsx` (`GLOW_SPREAD`, `GLOW_STRENGTH` in `src/lib/glowBake.ts`) | same |
 | Outer orbs' glow | `.nenya-orb-glow` in `src/styles/globals.css` (radii 1.45 times the old ones) | same |

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
+import { ringCorrection } from '../../lib/breathClock';
 
 // Valar Sigils: Dual Focus (Individual/Communal) with 6-Color Chromatic Vectors
 // The first color of each palette is its main color. Palettes are starting points, not a measurement.
@@ -252,6 +253,32 @@ export function ValarBreathingLogo({
   // WAAPI loop. The keyframe shape depends on the technique's phase
   // fractions, so it's generated per epoch rather than declared statically.
   const ringAnimName = `nenya-ring-${ringsEpochKey.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+  // Locked to the shared clock (owner, 2026-11-18: the ring and the counter drifted apart after a while). The ring is a CSS animation on the browser's animation timeline; the counter, the tones and the gem read
+  // the wall clock. Once a second, and when the tab comes back, the ring's time is set back to the shared clock if it has drifted by more than 30 ms (src/lib/breathClock.ts ringCorrection). A running ring
+  // only: a paused one is left alone, and the delay set once above still places it correctly when it starts.
+  const ringRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!enabled || start == null) return;
+    const el = ringRef.current;
+    if (!el || typeof el.getAnimations !== 'function') return;
+    const cycleMs = cycleDur * 1000;
+    const lock = () => {
+      const a = el.getAnimations().find((x) => (x as CSSAnimation).animationName === ringAnimName);
+      if (!a || a.playState !== 'running') return;
+      const progress = a.effect?.getComputedTiming?.().progress;
+      if (progress == null) return;
+      const d = ringCorrection(Date.now() - start, progress, cycleMs);
+      if (d !== 0) a.currentTime = Number(a.currentTime ?? 0) + d;
+    };
+    lock();
+    const id = setInterval(lock, 1000);
+    const onVisible = () => { if (document.visibilityState === 'visible') lock(); };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', lock);
+    window.addEventListener('pageshow', lock);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', onVisible); window.removeEventListener('focus', lock); window.removeEventListener('pageshow', lock); };
+  }, [enabled, start, cycleDur, ringAnimName]);
   const ringKeyframesCss = `@keyframes ${ringAnimName} {
     0% { transform: scale(${minScale}); opacity: 0; }
     ${t1 * 100}% { transform: scale(1); opacity: ${opacity * 0.6}; }
@@ -283,6 +310,7 @@ export function ValarBreathingLogo({
           <>
           <style>{ringKeyframesCss}</style>
           <div
+            ref={ringRef}
             className="absolute rounded-full pointer-events-none"
             style={{
               width: logoSize,

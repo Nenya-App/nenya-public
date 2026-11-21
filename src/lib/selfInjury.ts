@@ -20,6 +20,27 @@ export const SELF_INJURY: RegExp[] = [
   /\b(?:i )?(?:self[- ]?harm(?:ing|ed)?|self[- ]?injur\w+)\b/i,
   /\b(?:i )?(?:want|wanna|need|feel (?:like|the urge)|have (?:the )?urges?|(?:i'm|i am|i've been|i have been|am) (?:tempted|thinking (?:about|of))|keep (?:wanting|thinking about)) (?:to )?(?:hurt|harm|cut|burn|punish)(?:ing)? myself\b/i,
 ];
+// More ways of saying it (2026-11-19, step 6 of the suicidal-ideation audit). DRAFT: awaiting clinician review. Kept apart from SELF_INJURY because the
+// accident check below must not veto them; each carries its own exclusions (shaving, cooking, glass, a sport, a hair appointment).
+const BODY = '(?:arms?|forearms?|legs?|thighs?|stomach|belly|skin|hips?|ankles?|chest|hands?|wrists?)';
+const NOT_AN_ACCIDENT = "(?!\\s+(?:on|with|while|when|by accident|accidentally|shaving|cooking|chopping|opening|climbing|falling|playing|at the|in the))";
+const WHEN = '(?:again|last night|tonight|today|yesterday|this (?:week|morning|afternoon|evening)|a (?:few|couple of) (?:times|days|hours|nights) ago|recently|lately|just now|right now|earlier)';
+export const SELF_INJURY_MORE: RegExp[] = [
+  // "I cut myself last night", "I scratched myself again", "I cut myself." (an act, said without a reason)
+  new RegExp(`\\bi(?:'ve| have)? (?:just |recently )?(?:cut|scratched|carved|bit) myself(?:\\s+${WHEN}|\\s*[.!?,;]|\\s*$)`, 'i'),
+  // "I cut my arms", "I've been cutting my thighs", "I scratched my wrists until they bled"
+  new RegExp(`\\bi(?:'ve| have)? (?:been |just |recently )?(?:cut|cutting|scratch(?:ed|ing)|carv(?:ed|ing)|burn(?:ed|ing)|burnt) (?:into )?my ${BODY}\\b${NOT_AN_ACCIDENT}`, 'i'),
+  // "I want to cut right now", "I need to cut", "I feel like cutting" (an urge, without "myself")
+  /\b(?:i )?(?:want|wanna|need|have the urge|feel like|am tempted|'m tempted|am thinking about|keep thinking about) (?:to )?(?:cut|cutting)(?:\s+(?:right now|tonight|today|again|so (?:bad|badly)|really (?:bad|badly)|now)|\s*[.!?,;]|\s*$|\s+(?:my |into my )?(?:arms?|forearms?|legs?|thighs?|stomach|skin|hips?|ankles?|wrists?)\b)/i,
+  // "I've been cutting again", "I'm cutting more lately"
+  /\bi(?:'ve| have|'m| am)? (?:been )?cutting (?:again|more|a lot|lately|every (?:day|night)|daily)\b/i,
+  // "I punched the wall to feel something", "I hit my head against the wall on purpose", "I banged my head until"
+  /\bi (?:hit|punched|slammed|banged|bashed) (?:my (?:head|fist|hand|hands)|the wall|myself)[^.!?]{0,30}\b(?:to (?:feel|cope|punish|release|stop)|on purpose|until it hurt|because i)\b/i,
+  // "I pulled my hair out until", "I pick at my skin until it bleeds"
+  /\bi (?:pull|pulled|pick|picked|scratch|scratched) (?:at )?(?:my (?:hair|skin|scabs?|arms?)|it)[^.!?]{0,30}\b(?:until (?:it |they )?(?:bled|bleed|bleeds|hurt|hurts)|to (?:feel|punish|cope))\b/i,
+];
+// Said about the past or about the marks left, not an act now: "I hide my scars from my mother", "ashamed of my cuts from years ago".
+const MARKS = /\b(?:hid(?:e|ing)|cover(?:ing)? up|ashamed of|embarrassed (?:by|about)) my (?:scars|cuts|marks)\b/i;
 // "I cut myself shaving", "I burned myself on the stove": accidents, not self-injury.
 const ACCIDENT = /\b(?:cut|burn(?:ed|t)?|hit|hurt) myself (?:again )?(?:shaving|cooking|on the (?:stove|door|oven|iron|knife|counter|table|corner)|with the (?:knife|iron|hot)|at the gym|playing|while (?:cooking|shaving|cutting|playing|running|lifting)|chopping|moving|lifting)\b/i;
 
@@ -28,7 +49,7 @@ export function isSelfInjury(text: string): boolean {
   const t = text.replace(/[‘’]/g, "'");
   if (SUICIDAL.test(t)) return false;
   if (ACCIDENT.test(t) && !SELF_INJURY.slice(2).some((r) => r.test(t)) && !/on purpose|deliberately/i.test(t)) return false;
-  return SELF_INJURY.some((r) => r.test(t));
+  return SELF_INJURY.some((r) => r.test(t)) || SELF_INJURY_MORE.some((r) => r.test(t));
 }
 
 export type Mention = 'other' | 'background' | 'present' | 'urgent';
@@ -53,7 +74,7 @@ export function classifyMention(text: string, earlierMention = false): Mention |
   if (URGENT.test(t) && (SELF_CONTEXT.test(t) || earlierMention)) return 'urgent';
   if (earlierMention && FOLLOWUP.test(t)) return 'present';
   if (OTHER.test(t) && !/\bmyself\b/i.test(t)) return 'other';
-  if (!isSelfInjury(t)) return null;
+  if (!isSelfInjury(t)) return MARKS.test(t) ? 'background' : null;
   if (PRESENT.test(t)) return 'present';
   return BACKGROUND.test(t) ? 'background' : 'present'; // unless it is plainly about the past, treat an act as present
 }

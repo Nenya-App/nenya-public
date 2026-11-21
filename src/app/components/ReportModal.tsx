@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { DeletionCode } from './DeletionCode';
-import type { SubmitReceipt } from '../../lib/reportSubmission';
-import { AlertCircle, CheckCircle2, FileText, Loader2, Send, Shield } from 'lucide-react';
+import { AlreadySent, DeletionCode } from './DeletionCode';
+import { SendConsent } from './SendConsent';
+import { useSendFlow } from './useSendFlow';
+import { AlertCircle, CheckCircle2, FileText, Send, Shield } from 'lucide-react';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -13,40 +14,28 @@ import {
 } from './ui/dialog';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { submitReport } from '../../lib/reportSubmission';
 
 interface ReportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type SubmitState = 'idle' | 'sending' | 'sent' | 'error';
-
 export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
   const [reportText, setReportText] = useState('');
-  const [submitState, setSubmitState] = useState<SubmitState>('idle');
-  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
+  // The free-text field here IS the report -- nothing else rides along, and no file upload is offered anywhere in this form. submitReport() strips markup and
+  // control characters before sending, so only plain text is kept. Pressing the button opens the consent screen; only Send there sends (useSendFlow.ts).
+  const flow = useSendFlow('error-report', () => setReportText('')); // the typed text is cleared once it is sent
+  const { phase: submitState, receipt } = flow;
 
   const handleClose = () => {
     setReportText('');
-    setSubmitState('idle');
+    flow.reset();
     onClose();
   };
 
-  const handleSubmit = async () => {
-    if (submitState === 'sending') return;
-    setSubmitState('sending');
-    try {
-      // The free-text field here IS the report -- nothing else rides
-      // along, and no file upload is offered anywhere in this form.
-      // submitReport() strips markup/control characters before sending,
-      // so only plain text ever reaches the team's inbox.
-      setReceipt(await submitReport({ type: 'error-report', report: reportText }));
-      setSubmitState('sent');
-      setReportText('');
-    } catch {
-      setSubmitState('error');
-    }
+  const handleSubmit = () => {
+    if (submitState === 'sending' || submitState === 'sent') return;
+    void flow.begin(reportText);
   };
 
   return (
@@ -103,17 +92,21 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="report-text">Describe the issue or feedback (Optional)</Label>
+            <Label htmlFor="report-text">Describe the issue or feedback</Label>
             <Textarea
               id="report-text"
               placeholder="Example: The AI kept redirecting me to feelings when I wanted to focus on needs, or: I'd like to submit this conversation as training data for handling grief discussions..."
               value={reportText}
-              onChange={(e) => setReportText(e.target.value)}
+              onChange={(e) => {
+                setReportText(e.target.value);
+                if (submitState === 'duplicate') flow.reset();
+                else if (submitState === 'error') flow.cancel();
+              }}
               className="min-h-[120px] resize-none"
-              disabled={submitState === 'sending' || submitState === 'sent'}
+              disabled={submitState === 'consent' || submitState === 'sending' || submitState === 'sent'}
             />
             <p className="text-xs text-muted-foreground">
-              You can submit this report with or without additional context. Only plain text is sent — no
+              Only plain text is sent — no
               formatting, code, or file attachments are accepted here.
             </p>
           </div>
@@ -125,11 +118,9 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
             </div>
           )}
           {submitState === 'sent' && <DeletionCode receipt={receipt} />}
-          {submitState === 'error' && (
-            <div className="flex items-start gap-2 text-xs sm:text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-              <AlertCircle className="size-4 mt-0.5 flex-shrink-0" />
-              <p>Something went wrong sending this. Please try again in a moment.</p>
-            </div>
+          {submitState === 'duplicate' && <AlreadySent />}
+          {(submitState === 'consent' || submitState === 'sending' || submitState === 'error') && flow.pending && (
+            <SendConsent kind="report" parts={[{ label: 'Your report', text: flow.pending.report }]} busy={submitState === 'sending'} failed={submitState === 'error'} onSend={flow.confirm} onCancel={flow.cancel} />
           )}
         </div>
 
@@ -141,18 +132,14 @@ export default function ReportModal({ isOpen, onClose }: ReportModalProps) {
           >
             {submitState === 'sent' ? 'Close' : 'Cancel'}
           </Button>
-          {submitState !== 'sent' && (
+          {(submitState === 'idle' || submitState === 'duplicate') && (
             <Button
               onClick={handleSubmit}
-              disabled={submitState === 'sending'}
+              disabled={!reportText.trim()}
               className="w-full sm:w-auto order-1 sm:order-2"
             >
-              {submitState === 'sending' ? (
-                <Loader2 className="size-4 mr-2 animate-spin" />
-              ) : (
-                <Send className="size-4 mr-2" />
-              )}
-              {submitState === 'sending' ? 'Sending…' : 'Submit Report'}
+              <Send className="size-4 mr-2" />
+              Review and send
             </Button>
           )}
         </DialogFooter>

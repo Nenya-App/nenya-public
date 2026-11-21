@@ -3,6 +3,7 @@ import { REGION_REASON } from '../../../lib/coachService';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { IpExplainer } from '../../../coach/IpExplainer';
+import { AboutPageLink } from '../AboutPageLink';
 
 // Where the coach demo is open, and why (src/lib/coachRegion.ts), with the same explanation of IP addresses that a visitor sees when it is closed.
 const PLACES = 'the 50 states, Washington, D.C., Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands';
@@ -18,7 +19,7 @@ export default function CoachRegion({ onBack, onOpenTerms }: { onBack: () => voi
         <Card className="space-y-6 p-6 leading-relaxed">
           <p>
             For now, the coach demo is open only to connections our host places in the United States: {PLACES}. Everything
-            else on Nenya works everywhere and sends nothing: the breathing tool, the six gateways, and the report you can
+            else on Nenya works everywhere and sends nothing: the breathing tool, the six lenses, and the report you can
             make from them.
           </p>
 
@@ -40,10 +41,7 @@ export default function CoachRegion({ onBack, onOpenTerms }: { onBack: () => voi
             {onOpenTerms && (
               <>
                 {' '}
-                <button type="button" onClick={onOpenTerms} className="underline underline-offset-2">
-                  Read the Terms
-                </button>
-                .
+                <AboutPageLink page="terms" onOpen={onOpenTerms} className="underline underline-offset-2" />
               </>
             )}
           </p>

@@ -13,13 +13,13 @@ One written set, used by the site (`src/lib/altText.ts`, which a test keeps iden
 ## The logo
 
 **Short** (the large logo on the welcome page, link previews, posts):
-> Nenya logo: a faceted rainbow gem at the center of two interlaced six-petaled flowers, gold and cream, ringed by sixteen colored orbs.
+> Nenya logo: a faceted rainbow gem inside a ring of woven leaves, gold and cream, ringed by sixteen colored orbs.
 
 **Short, without the orbs** (the welcome logo when the orbs are turned off):
-> Nenya logo: a faceted rainbow gem at the center of two interlaced six-petaled flowers, gold and cream.
+> Nenya logo: a faceted rainbow gem inside a ring of woven leaves, gold and cream.
 
 **Long** (the About page that explains the name, a press kit, a "describe this image" note):
-> The Nenya emblem. At the center is a hexagonal gem whose facets show rainbow colors. Around it, two six-petaled flowers drawn in thin gold and cream lines weave over and under each other. A ring of sixteen small orbs surrounds the flowers, each a different soft color: purples, greens, blues, yellow, orange, red and pink. On the site the orbs slowly change color and the glow follows the breathing rhythm.
+> The Nenya emblem. At the center is a faceted gem whose facets show rainbow colors. Around it, a ring of leaves drawn in thin gold and cream lines weaves over and under itself. A ring of sixteen small orbs surrounds the leaves, each a different soft color: purples, greens, blues, yellow, orange, red and pink. On the site the orbs slowly change color and the glow follows the breathing rhythm.
 
 **Header and repeated use:** empty (`alt=""`). The logo sits beside the word "Nenya" or inside a button that already has a name, so reading it again adds noise. Where the logo is the only thing in a link, the link carries the name ("Nenya, home").
 
@@ -35,6 +35,7 @@ Dark with glow, dark clean, transparent, and for light backgrounds all use the s
 | The visitor's freehand drawing, present state | Your freehand drawing for the present state. We cannot describe your drawing; your written answers are listed above. |
 | The visitor's freehand drawing, wish state | Your freehand drawing for the wish state. We cannot describe your drawing; your written answers are listed above. |
 | The visitor's body map picture | Your body map as a picture. The same marks are listed below as text. |
+| The same picture, when it has colored places or paintbrush strokes | Your body map as a picture, with 3 places colored and 2 paintbrush strokes. The same marks are listed below as text. (The counts come from the map; the section's text lists every mark: the lenses picked up, each colored place, and the strokes by paint and where they are.) |
 
 ## Known gap
 PDF and PNG exports are not tagged for screen readers (the PDF library does not tag images or structure). They are listed in the audit checklist as a known gap, not claimed as accessible.

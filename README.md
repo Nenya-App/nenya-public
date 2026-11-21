@@ -68,6 +68,8 @@ The honest edges:
 
 ## About the AI pieces
 
+How much of Nenya was itself written by AI, and which models, is stated in [`AI-DISCLOSURE.md`](./AI-DISCLOSURE.md). Most of the code and much of the text was drafted and redrafted by AI.
+
 **The free tool has no AI in it.** Two things live beside it:
 
 - **A prototype conversation partner on Venice AI.** The About section links out
@@ -209,6 +211,7 @@ docs/legal/           Archive of earlier versions of the Terms and Privacy Polic
 | --- | --- | --- |
 | Coach | `coach.mts` | `/api/coach`: the relay to Venice AI, its checks and limits, signed transcripts |
 | Coach | `screen.mts` | `/api/screen`: the screening model, callable only by the relay (behind `COACH_SCREEN_SECRET`) |
+| Coach | `select.mts` | `/api/select`: selection of modules and cards by meaning, callable only by the relay (behind `COACH_SELECT_SECRET`); counts only, in shadow mode |
 | Coach | `mistake.mts` | `/api/mistake`: "This was a mistake", a count by kind |
 | Coach | `card-drafts.mts` | `/api/card-drafts`: draft learning cards, dev sites only (behind `COACH_CARD_DRAFTS`) |
 | Coach | `terms-agree.mts` | `/api/terms-agree`: signs a note of the visitor's agreement to the Terms; stores nothing |
@@ -224,6 +227,7 @@ docs/legal/           Archive of earlier versions of the Terms and Privacy Polic
 | Guestbook | `guestbook.mts` | "Sign Our Guestbook": keeps one centroid color and the day per signature, one per connection a day; lists them for the 3D view |
 | Counts | `count.mts`, `stats.mts` | Plain daily totals (`/api/count`), and the owner's view of them (`/api/stats`) |
 | Core tool | `colors.mts` | `/api/colors`: optional palette from The Color API (behind `PALETTE_ENABLED`) |
+| Core tool | `words.mts` | `/api/words`: optional word look-up for "a word of your own" through Datamuse and the Free Dictionary API (behind `WORD_HELP_ENABLED`; English only) |
 
 The Terms of Use & Privacy Policy lives in one file,
 [`src/lib/legalDocument.ts`](./src/lib/legalDocument.ts), which feeds the

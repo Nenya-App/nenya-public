@@ -70,3 +70,21 @@ ok('the new rhythm and style together: sounds scheduled after the change (the ea
 const box = session({ from: START + 100, to: START + 40_000, timing: { ih: 4000, hi: 4000, ex: 4000, ho: 4000 }, choose: (now) => (now < START + 5_000 ? 'harp' : 'chord') });
 ok('box breathing (a 16 second breath): the switch lands on its 16 second boundary', box.events.filter((e) => e.at < START + 16_000).every((e) => HARP.has(e.timbre)) && box.events.filter((e) => e.at >= START + 16_000)[0].at === START + 16_000 && box.events.filter((e) => e.at >= START + 16_000).every((e) => !HARP.has(e.timbre)));
 ok('a degenerate rhythm of zero length does not hang or throw', (() => { const p = createPlanner(); try { p(1000, { timing: { ih: 0, hi: 0, ex: 0, ho: 0 }, cycleStart: 0, arrangement: 'harp' }); p(1150, { timing: { ih: 0, hi: 0, ex: 0, ho: 0 }, cycleStart: 0, arrangement: 'bowls' }); return true; } catch { return false; } })());
+
+// ---- tapping in: switching the tones on part way through a breath starts at the next inhale, never over the preview note
+import { firstBreathStart, TAP_IN_MS } from '../src/lib/breathTones.ts';
+const CYCLE = 10_000;
+ok('just after an inhale began, that inhale is played', firstBreathStart(START + 100, START, CYCLE) === START);
+ok('part way through a breath, the next inhale is the first', firstBreathStart(START + 4_000, START, CYCLE) === START + CYCLE && firstBreathStart(START + CYCLE + 5_000, START, CYCLE) === START + 2 * CYCLE);
+ok('the edge of the tap-in window', firstBreathStart(START + TAP_IN_MS, START, CYCLE) === START && firstBreathStart(START + TAP_IN_MS + 1, START, CYCLE) === START + CYCLE);
+ok('a degenerate breath of no length does not hang', firstBreathStart(START, START, 0) === START);
+const midJoin = session({ from: START + 4_000, to: START + 4_000 + 18_000, choose: () => 'bowls' });
+ok('switched on mid-breath: nothing sounds until the next inhale, then the first sound is the start of that breath', midJoin.events.length > 0 && Math.min(...midJoin.events.map((e) => e.at)) >= START + CYCLE - 1 && midJoin.events.filter((e) => e.at < START + CYCLE).length === 0);
+const midFirst = midJoin.events.filter((e) => e.at === Math.min(...midJoin.events.map((x) => x.at)));
+ok('and that first sound is the opening bowl of the inhale', midFirst.some((e) => e.timbre === 'bowl' && e.kind === 'inhale'));
+const early = session({ from: START + 100, to: START + 3_000, choose: () => 'bowls' });
+ok('switched on just after an inhale began: that inhale is played', early.events.some((e) => e.at === START && e.timbre === 'bowl'));
+const noDouble = session({ from: START + 4_000, to: START + 4_000 + 30_000, choose: () => 'harp' });
+ok('no note is scheduled twice when joining mid-breath', new Set(noDouble.events.map((e) => `${e.at}|${e.freq}|${e.timbre}`)).size === noDouble.events.length);
+const rhythmAfter = session({ from: START + 4_000, to: START + 4_000 + 12_000, choose: () => 'bowls', timingAt: (now) => ({ timing: T55, cycleStart: now < START + 8_000 ? START : START + 8_000 }) });
+ok('a change of rhythm after tapping in still restarts at once', rhythmAfter.restarts.length === 1);

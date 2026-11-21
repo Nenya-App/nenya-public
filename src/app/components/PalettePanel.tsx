@@ -9,9 +9,13 @@ import { Button } from './ui/button';
 import { bridge, describePalettePlainly, fetchScheme, localScheme, MAX_PALETTES, MODE_LABELS, SCHEME_MODES, type GeneratedPalette, type SchemeMode } from '../../lib/colorSchemes';
 import { describePlainly, loadColorNames, suggestName } from '../../lib/colorNames';
 
+import { L } from '../../lib/vocabulary';
 interface PalettePanelProps {
   color1: string;
   color2: string;
+  /** The names the person gave the two colors, shown with the source swatches. */
+  color1Name?: string;
+  color2Name?: string;
   /** The palettes kept so far (up to two). */
   values: GeneratedPalette[];
   onChange: (next: GeneratedPalette[]) => void;
@@ -21,7 +25,7 @@ interface PalettePanelProps {
 
 type Draft = Omit<GeneratedPalette, 'colors'> & { colors: string[] };
 
-export function PalettePanel({ color1, color2, values, onChange, soundComesLater = true }: PalettePanelProps) {
+export function PalettePanel({ color1, color2, color1Name = '', color2Name = '', values, onChange, soundComesLater = true }: PalettePanelProps) {
   const [mode, setMode] = useState<SchemeMode>('analogic');
   const [base, setBase] = useState<'present' | 'wish'>('present');
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -88,6 +92,18 @@ export function PalettePanel({ color1, color2, values, onChange, soundComesLater
       <div className="mt-3 space-y-4 text-sm text-muted-foreground">
         <p>A palette is only another way to look at your colors. It does not say anything about you, and no color has a fixed meaning. Nothing here is needed to continue.</p>
 
+        <section aria-labelledby="palette-sources" className="space-y-2">
+          <p id="palette-sources" className="text-foreground">The two colors it starts from</p>
+          <ul className="flex flex-wrap gap-4">
+            {[{ label: 'Now', hex: color1, name: color1Name }, { label: 'Wish', hex: color2, name: color2Name }].map((c) => (
+              <li key={c.label} className="flex items-center gap-2">
+                <span aria-hidden="true" className="size-9 shrink-0 rounded-md border border-border" style={{ backgroundColor: c.hex }} />
+                <span className="text-xs"><span className="block text-foreground">{c.label}</span><span className="block">{c.name.trim() || c.hex}{c.name.trim() ? ` (${c.hex})` : ''}</span></span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <div className="space-y-2">
           <p className="text-foreground">A bridge from where you are to where you wish to be</p>
           <Button type="button" size="sm" variant="outline" onClick={makeBridge}>Make a bridge</Button>
@@ -131,6 +147,14 @@ export function PalettePanel({ color1, color2, values, onChange, soundComesLater
               {draft.kind === 'bridge' ? 'A bridge from your current color to your wish color' : MODE_LABELS[draft.kind].label}
               <span className="text-muted-foreground">, {draft.source === 'The Color API' ? 'generated with The Color API' : 'made on your device'}</span>
             </p>
+            {/* Which of the person's colors it was made from, shown as swatches as well as in words. */}
+            <p className="flex flex-wrap items-center gap-2 text-xs">
+              Made from:
+              {(draft.kind === 'bridge' ? [color1, color2] : [draft.base === 'wish' ? color2 : color1]).map((hex, i) => (
+                <span key={`${hex}-${i}`} className="inline-flex items-center gap-1"><span aria-hidden="true" className="inline-block size-4 rounded border border-border" style={{ backgroundColor: hex }} />{hex}</span>
+              ))}
+              <span>({draft.kind === 'bridge' ? 'your current color and your wish color' : draft.base === 'wish' ? 'your wish color' : 'your current color'})</span>
+            </p>
             <ol className="space-y-1.5">
               {draft.colors.map((hex) => (
                 <li key={hex} className="flex items-center gap-3">
@@ -163,7 +187,7 @@ export function PalettePanel({ color1, color2, values, onChange, soundComesLater
               {soundComesLater && (
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={!!v.useInSound} onChange={(e) => onChange(values.map((x, j) => (j === i ? { ...x, useInSound: e.target.checked } : x)))} className="size-4" />
-                  Use this palette in the Sound gateway
+                  Use this palette in the Sound {L('gateway')}
                 </label>
               )}
               <button type="button" className="underline underline-offset-4" onClick={() => onChange(values.filter((_, j) => j !== i))}>Remove it</button>

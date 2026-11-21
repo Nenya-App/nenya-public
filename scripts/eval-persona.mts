@@ -16,6 +16,8 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --pace 6        # at least 6 seconds between calls (default 3); slower if your key is rate limited
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --resume out.json --json out.json   # skip cases that already passed or failed in an earlier run
 // A call that is rate limited (or hits a brief model error or timeout) is retried automatically after waiting 20, 45, 90 and 150 seconds.
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --private <folder>   # also give the coach the private text (modules.json, method-notes.txt, learn-icarus.txt, kept OUTSIDE the repo), as the live site does, with the distress text on
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --layers          # also record the model's FIRST reply and what each guard did, to see what the outer layers add (scripts/layers-report.mts compares runs)
 //   node scripts/eval-persona.mts --list                             # list the cases (needs no key)
 //   node scripts/eval-persona.mts --rescore out.json                 # score a saved run again with today's checks: no key, no calls
 //
@@ -26,6 +28,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { CATEGORIES, PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { DARKBENCH_CASES } from '../src/lib/personaEvalDarkBench.ts';
 import { buildCardRequest, isCardSlug, readCardReply, VENICE_CHAT_URL } from '../src/lib/veniceCard.ts';
+import { coachModel } from '../src/lib/coachProvider.ts';
+import { layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
 import { pacedSend, planResume, sampleEvenly, rescore, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
 
 const args = process.argv.slice(2);
@@ -91,10 +95,32 @@ if (!process.env.VENICE_API_KEY) {
 
 process.env.COACH_ENABLED = 'true';
 process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
-const { default: handler } = await import('../netlify/functions/coach.mts');
+const { default: handler, __useStoreForTests, __trace } = await import('../netlify/functions/coach.mts');
+const withLayers = process.argv.includes('--layers'); // record the model's first reply and what the guards did (docs/outer-layers-scope.md)
+__trace.on(withLayers);
+let lastTrace: ReturnType<typeof __trace.take> | null = null;
+// --private <folder>: the coach reads its private text from memory (never the repository), and the live site's own settings are on, so the run is like production.
+const privateDir = flag('--private');
+if (privateDir) {
+  const { existsSync, readFileSync: rf } = await import('node:fs');
+  const { join } = await import('node:path');
+  const text = new Map<string, string>([['modules', rf(join(privateDir, 'modules.json'), 'utf8')]]);
+  for (const [key, file] of [['method-notes', 'method-notes.txt'], ['learn-icarus', 'learn-icarus.txt']]) if (existsSync(join(privateDir, file))) text.set(key, rf(join(privateDir, file), 'utf8'));
+  const m = new Map<string, { v: string; e: number }>();
+  __useStoreForTests({
+    async get(k: string) { return text.get(k) ?? m.get(k)?.v ?? null; },
+    async getWithMetadata(k: string) { const x = m.get(k); return x ? { data: x.v, etag: String(x.e) } : null; },
+    async set(k: string, v: string, o: any = {}) { const x = m.get(k); if (o.onlyIfNew && x) return { modified: false }; if (o.onlyIfMatch && (!x || o.onlyIfMatch !== String(x.e))) return { modified: false }; m.set(k, { v, e: (x?.e ?? 0) + 1 }); return { modified: true }; },
+    async setJSON(k: string, v: unknown) { m.set(k, { v: JSON.stringify(v), e: (m.get(k)?.e ?? 0) + 1 }); },
+    async list({ prefix = '' }: { prefix?: string } = {}) { return { blobs: [...m.keys()].filter((k) => k.startsWith(prefix)).map((key) => ({ key })) }; },
+    async delete(k: string) { m.delete(k); },
+  });
+  Object.assign(process.env, { COACH_MODULES: 'on', COACH_DISTRESS_TEXT: 'on', COACH_VALUES: 'on', COACH_STANCES: 'learn' });
+}
 const SESSION = { color1: '#7a9b9e', color2: '#DAC682' };
 
 const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }[], ticket: string | undefined): Promise<RawSent> => {
+  __trace.take();
   const res = await handler(
     new Request('https://nenya.biz/api/coach', {
       method: 'POST',
@@ -102,6 +128,7 @@ const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }
       body: JSON.stringify({ messages, session: SESSION, ticket }),
     })
   );
+  lastTrace = __trace.take();
   const j: any = await res.json().catch(() => ({}));
   return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
 };
@@ -150,6 +177,7 @@ console.log(card ? `Testing the Venice character "${card}" on its own (model ${c
 const fresh: CaseResult[] = [];
 for (const c of todo) {
   const r = await runCase(c, send);
+  if (withLayers && lastTrace) (r as CaseResult & { layers?: unknown }).layers = layerRecord(c, lastTrace);
   fresh.push(r);
   const mark = r.outcome === 'pass' ? 'PASS' : r.outcome === 'fail' ? 'FAIL' : 'ERROR';
   console.log(`\n${mark}  ${c.id}  [${c.category}]${r.how !== 'reply' ? `  (${r.how})` : ''}`);
@@ -163,7 +191,7 @@ for (const c of todo) {
   // Saved after every case, so a run that is stopped (or crashes) can be continued with --resume instead of lost.
   if (jsonOut) {
     const soFar = chosen.map((x) => fresh.find((q) => q.id === x.id) ?? kept.find((q) => q.id === x.id)).filter(Boolean) as CaseResult[];
-    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : process.env.COACH_MODEL || 'the coach default (VENICE_DEFAULT_MODEL in src/lib/coachProvider.ts)', distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
+    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : coachModel(), distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
   }
 }
 
@@ -176,7 +204,7 @@ if (reviewLines.length) console.log(`\nReview checks (they never fail a case; th
 if (s.failing.length) console.log(`\nTo read a failing case in full: --only <id>. Failing: ${s.failing.join(', ')}`);
 console.log('\nA pass means no known failure phrase. Read the replies: tone, warmth and honesty are yours to judge.');
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : process.env.COACH_MODEL || 'the coach default (VENICE_DEFAULT_MODEL in src/lib/coachProvider.ts)', distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: false, summary: s, results }, null, 2));
+  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : coachModel(), distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: false, summary: s, results }, null, 2));
   console.log(`Results written to ${jsonOut}`);
 }
 process.exit(s.fail || s.error ? 1 : 0);

@@ -1,5 +1,7 @@
 # The Fractured Atlas About text, rewritten for today's scope (2026-11-16)
 
+> **SUPERSEDED 2026-11-18** by `fractured-atlas-human-scale-2026-11-18.md`: three focuses (small, intentional, tailored) and a blend, written for the Venice-era coach, the lens words and the corrected "no tracking cookies" wording. Every voice below (A to I) is kept only as a record.
+
 For the owner to edit, and for Fractured Atlas to review before anything changes on their page. **Not published anywhere.** The text below is 2210 characters including spaces (the earlier descriptor draft was held to 2,500; check their field's limit). It replaces the older About on the Fractured Atlas project page; the 2026-11-13 drafts in this folder (the descriptor and the Our Structure redraft) are earlier and still say Venice AI runs the coach, which is no longer true.
 
 

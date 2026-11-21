@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { setSessionMarkId } from '../lib/sessionMarkStore';
+import { sessionIdFrom } from '../lib/savedReflection';
 import SkipLink from '../app/components/SkipLink';
 import { GlobalNavigation } from '../app/components/GlobalNavigation';
 import { BreathingPopout } from '../app/components/BreathingPopout';
@@ -18,7 +20,7 @@ import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../l
 import { PortableBreath, useBreathRhythm } from '../app/components/PortableBreath';
 import { TonesAnnouncer } from '../app/components/BreathTonesSwitch';
 
-const STEADY = { ih: 5000, hi: 0, ex: 5000, ho: 0 };
+const STEADY = { ih: 6000, hi: 0, ex: 6000, ho: 0 };
 const noop = () => undefined;
 
 // The standalone /coach address: the same header as the rest of the site, then
@@ -34,6 +36,8 @@ export default function CoachPage() {
     if (agreed) enableUsageCounts();
   }, [agreed]);
   const [colors, setColors] = useState<{ color1: string; color2: string } | null>(null);
+  // The mark in the footer is a visual form of the session ID: the pair picked here, or a random shadow pair until one is (src/lib/nameMark.ts).
+  useEffect(() => { setSessionMarkId(colors ? sessionIdFrom(colors.color1, colors.color2) : null); }, [colors]);
   // Opened directly, not through the gateways: a breath (and a reflection) is offered first, never required (src/coach/BreathFirst.tsx).
   const [pastBreath, setPastBreath] = useState(false);
   // Witnessed is the coach as it has always been. Sealed is offered only when the server has it switched on (COACH_SEALED).

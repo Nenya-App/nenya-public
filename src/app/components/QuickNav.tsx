@@ -3,6 +3,7 @@ import { Sparkles, Wind, Compass, MessageCircle, X } from 'lucide-react';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 
+import { L } from '../../lib/vocabulary';
 interface QuickNavProps {
   /** Breathe: the home page. */
   onBreathe: () => void;
@@ -10,10 +11,12 @@ interface QuickNavProps {
   onReflect: () => void;
   /** The page of the coach (it lives at its own address). */
   coachHref?: string;
+  /** Which part the visitor is in now (the one marked as the current page). Breathe unless said. */
+  current?: 'breathe' | 'reflect';
 }
 
 // A quick way to move between the three parts of Nenya, in the bottom right corner of the main page. It replaces the welcome message that the sparkle used to reopen.
-export default function QuickNav({ onBreathe, onReflect, coachHref = '/coach/' }: QuickNavProps) {
+export default function QuickNav({ onBreathe, onReflect, coachHref = '/coach/', current = 'breathe' }: QuickNavProps) {
   const [open, setOpen] = useState(false);
   const item = 'flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm transition-colors hover:bg-muted';
   return (
@@ -29,13 +32,13 @@ export default function QuickNav({ onBreathe, onReflect, coachHref = '/coach/' }
             transition={{ duration: 0.18 }}
             className="w-56 overflow-hidden rounded-xl border border-border bg-background p-1 shadow-lg"
           >
-            <button type="button" className={item} aria-current="page" onClick={() => { setOpen(false); onBreathe(); }}>
+            <button type="button" className={item} {...(current === 'breathe' ? { 'aria-current': 'page' as const } : {})} onClick={() => { setOpen(false); onBreathe(); }}>
               <Wind className="size-4 shrink-0" />
               <span className="flex-1"><span className="block">Breathe</span><span className="block text-xs text-muted-foreground">Home</span></span>
             </button>
-            <button type="button" className={item} onClick={() => { setOpen(false); onReflect(); }}>
+            <button type="button" className={item} {...(current === 'reflect' ? { 'aria-current': 'page' as const } : {})} onClick={() => { setOpen(false); onReflect(); }}>
               <Compass className="size-4 shrink-0" />
-              <span className="flex-1"><span className="block">Reflect</span><span className="block text-xs text-muted-foreground">The six gateways</span></span>
+              <span className="flex-1"><span className="block">Reflect</span><span className="block text-xs text-muted-foreground">The six {L('gateways')}</span></span>
             </button>
             <a href={coachHref} className={item}>
               <MessageCircle className="size-4 shrink-0" />

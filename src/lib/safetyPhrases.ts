@@ -7,7 +7,9 @@
 // The wording of these lists is the owner's own and has not been reviewed by any outside professional; review by counselors, crisis-line workers and others is invited (see docs/crisis-check-scope.md).
 
 type Tier = 'stop' | 'soften';
-export interface Rule { tier: Tier; why: string; pattern: RegExp }
+// kind: what the notice leads with ("imminent": a plan, means, an act in progress or a goodbye, so the emergency number comes first). unless: if this matches
+// in the same sentence the rule does not apply (hunting, sport, a story, a pharmacy, a job farewell).
+export interface Rule { tier: Tier; why: string; pattern: RegExp; kind?: string; unless?: RegExp }
 
 // Words after "point in" that make it an everyday complaint ("no point in arguing"), not a statement about living.
 const LIVING = '(?:living|going on|go on|continuing|carrying on|trying anymore|being here|being alive|existing|it all|life|anything anymore)';
@@ -30,13 +32,81 @@ export const CANDIDATES: Rule[] = [
   { tier: 'soften', why: 'hurting oneself on purpose, past or again', pattern: /\b(?:hurt|cut|burn(?:ed|t)|hit) myself (?:on purpose|deliberately|to (?:feel|cope|punish)|because i)\b|\b(?:hurting|cutting|burning) myself again\b/i },
 
   // ── stop: a plan, a method, or an attempt ───────────────────────────────────────────────────────────────────────────
-  { tier: 'stop', why: 'a stated method toward oneself', pattern: /\b(?:going to|gonna|plan(?:ning)? to|about to|want to|thinking (?:of|about)) (?:hang|shoot|drown|poison|suffocate|stab|hanging|shooting|drowning|poisoning|suffocating|stabbing) myself\b|\b(?:going to|gonna|planning to|want to|thinking (?:of|about)) jump(?:ing)? (?:off|from) (?:a |the )?(?:bridge|building|roof|balcony|cliff|overpass)\b/i },
-  { tier: 'stop', why: 'a plan, or means at hand', pattern: /\bi (?:have|got|wrote|written) (?:a )?(?:plan|method|way) (?:to|for) (?:die|dying|end (?:it|my life)|kill myself|suicide)\b|\bi(?:'ve| have) (?:got |had )?(?:a )?(?:suicide|goodbye) (?:note|letter)\b|\bwrote (?:a )?(?:suicide|goodbye) (?:note|letter)\b|\bi have (?:the |a )?(?:pills|gun|rope|knife) (?:ready|here|with me|next to me|in front of me)\b/i },
-  { tier: 'stop', why: 'an attempt in progress or just made', pattern: /\bi(?:'ve| have|'m| am)? ?(?:just )?(?:taken|swallowed|took|taking) (?:too many|a bunch of|all (?:of )?(?:my|the)|a lot of)(?: of)? (?:my |the )?(?:pills|meds|medication|tablets)\b|\bi (?:just )?(?:tried|attempted) to (?:kill myself|end my life|end it)\b/i },
+  { tier: 'stop', kind: 'imminent', why: 'a stated method toward oneself', pattern: /\b(?:going to|gonna|plan(?:ning)? to|about to|want to|thinking (?:of|about)) (?:hang|shoot|drown|poison|suffocate|stab|hanging|shooting|drowning|poisoning|suffocating|stabbing) myself\b|\b(?:going to|gonna|planning to|want to|thinking (?:of|about)) jump(?:ing)? (?:off|from) (?:a |the )?(?:bridge|building|roof|balcony|cliff|overpass)\b/i },
+  { tier: 'stop', kind: 'imminent', why: 'a plan, or means at hand', pattern: /\bi (?:have|got|wrote|written) (?:a )?(?:plan|method|way) (?:to|for) (?:die|dying|end (?:it|my life)|kill myself|suicide)\b|\bi(?:'ve| have) (?:got |had )?(?:a )?(?:suicide|goodbye) (?:note|letter)\b|\bwrote (?:a )?(?:suicide|goodbye) (?:note|letter)\b|\bi have (?:the |a )?(?:pills|gun|rope|knife) (?:ready|here|with me|next to me|in front of me)\b/i },
+  { tier: 'stop', kind: 'imminent', why: 'an attempt in progress or just made', pattern: /\bi(?:'ve| have|'m| am)? ?(?:just )?(?:taken|swallowed|took|taking) (?:too many|a bunch of|all (?:of )?(?:my|the)|a lot of)(?: of)? (?:my |the )?(?:pills|meds|medication|tablets)\b(?! (?:with me|to (?:the|my|a) |every|each|daily|as (?:prescribed|directed)))|\bi (?:just )?(?:tried|attempted) to (?:kill myself|end my life|end it)\b/i },
 ];
 
+// ── stop, kind "imminent": means in hand, a plan with a time, an act in progress, goodbyes (2026-11-19, step 1 of the suicidal-ideation audit) ───────────────────────────
+// DRAFT: awaiting clinician review. First-person, present or near-future statements only. The owner's principle above still holds: plain talk ("I have a plan for the
+// weekend", an article about gun violence, a grandmother's pills, hunting, "I could kill for a coffee") must stay unflagged; see tests/crisis-imminent.test.mts.
+const TIME = '(?:tonight|today|right now|now|this (?:weekend|evening|afternoon|morning|week)|before (?:morning|sunrise|dawn))';
+const SENT_START = '(?:^|[.!?\\n]\\s*)';
+const SENT_END = '\\s*(?:[.!]+|$)';
+const SELF_ACT = '(?:kill myself|un-?alive myself|kys|sewer[ -]?slide|end it(?: all)?|end my (?:own )?life|take my (?:own )?life|hang myself|shoot myself|overdose)';
+const MEANS = '(?:gun|handgun|pistol|firearm|rope|noose|pills|sleeping pills|painkillers|stash of (?:pills|meds|medication|painkillers))';
+// Not about the person's own life: another person, a story, sport or hunting, a medicine for something ordinary, a farewell to a job, a move.
+const ELSEWHERE = /\b(?:him|her|them|my (?:boss|ex|husband|wife|neighbou?r)|novel|story|character|movie|film|game|dream|hunt\w*|deer|range|skeet|sport|target|collector|antique|museum|article|news|law|legislation|policy|violence|pool|lake|river|skydiv\w*|bungee|parachut\w*|trampoline|jump rope|dock|puddle|fence|stage)\b/i;
+const ORDINARY_PLAN = /\b(?:dinner|lunch|breakfast|party|date|trip|hike|wedding|birthday|garden\w*|cook\w*|study\w*|work|shopping|movie|meeting|vacation|holiday|school|class|kids|clean\w*|workout|exercise)\b/i;
+const ORDINARY_MEDS = /\b(?:for my|prescri\w+|doctor|headache|allerg\w+|vitamins?|nurse|pharmac\w+|my (?:mom|mother|dad|father|grandmother|grandma|grandfather|wife|husband|friend|dog|cat))\b/i;
+const FAREWELL_ELSEWHERE = /\b(?:job|work|team|office|school|class|podcast|show|blog|channel|server|company|retire\w*|college|semester|season|graduat\w+|trip|flight|plane|vacation|holiday|deadline|meeting|shift|appointment|interview|sick|town|moving|move|declutter\w*|donat\w+|baby|outgrown|grew out|garage sale|yard sale|charity|downsiz\w+)\b/i;
+const either = (a: RegExp, b: RegExp) => new RegExp(`${a.source}|${b.source}`, 'i');
+
+export const IMMINENT_CANDIDATES: Rule[] = [
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'going to end my life, with a time', pattern: new RegExp(`\\bi(?:'m| am| will|'ll)\\s+(?:going to |gonna |about to )?${SELF_ACT}\\b[^.!?\\n]{0,25}\\b${TIME}\\b|\\bi(?:'m| am)\\s+(?:killing myself|ending it(?: all)?|ending my life)\\s+${TIME}\\b`, 'i') },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'going to do it, with a time (the whole sentence)', pattern: new RegExp(`${SENT_START}i(?:'m| am)\\s+(?:going to |gonna )(?:finally )?do it\\s+${TIME}${SENT_END}`, 'i') },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'doing it right now (the whole sentence)', pattern: new RegExp(`${SENT_START}i(?:'m| am) doing it\\s+(?:right now|now|tonight)${SENT_END}`, 'i') },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'about to jump, or ready to, with no other place or thing named', pattern: new RegExp(`\\bi(?:'m| am)\\s+(?:about to|ready to|going to|gonna) jump(?:${SENT_END}|\\s+(?:off|from) (?:here|it|this)\\b|\\s+(?:right now|now|tonight)\\b)`, 'i') },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'on the ledge, or the edge of a bridge, roof or cliff', pattern: /\bi(?:'m| am) (?:standing |sitting |stood )?(?:on|at) the ledge\b|\bstanding (?:on|at) the edge of (?:the|a) (?:bridge|roof|cliff|building|balcony|overpass)\b/i },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'means in hand, said with where or what for', pattern: new RegExp(`\\bi(?:'ve| have|'ve got| have got| got)\\s+(?:a |the |my |some |an )?(?:loaded )?${MEANS}\\s*(?:here|with me|next to me|beside me|in front of me|in my (?:hand|hands|lap|room|bag|car)|saved up|stashed|ready|loaded|and (?:i'?m|i am|i will|i'?ll|i know|it'?s ready|it'?s loaded|i plan|i'?ve decided|i want)|(?:so|to|in case) (?:i can|i could|i'?ll|end|kill|die|do it))`, 'i') },
+  { tier: 'stop', kind: 'imminent', unless: either(ELSEWHERE, ORDINARY_MEDS), why: 'means in hand, the whole sentence', pattern: new RegExp(`${SENT_START}i(?:'ve| have) (?:got )?(?:a |the |my )?(?:gun|handgun|pistol|rope|noose|pills|stash of (?:pills|meds|medication|painkillers))${SENT_END}`, 'i') },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'the pills or rope in front of me', pattern: /\b(?:the|these|all the) (?:pills|noose|rope|razor blades?|bottle of pills)(?: are| is)? (?:right )?(?:in front of me|next to me|beside me|in my hands?|in my lap)\b/i },
+  { tier: 'stop', kind: 'imminent', unless: either(ORDINARY_PLAN, ELSEWHERE), why: 'a plan for a time that is now (the whole sentence)', pattern: new RegExp(`\\bi(?:'ve| have)(?: got)? a plan (?:for |to do it |to do this )?(?:tonight|today|right now|now|this (?:weekend|evening|morning|afternoon))${SENT_END}|\\bi(?:'ve| have) a plan and (?:it'?s|it is|its) (?:for )?(?:tonight|today|now)\\b`, 'i') },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'I know how I will do it', pattern: /\bi know (?:exactly )?(?:how|when|where) i(?:'m| am|'ll| will)(?: going to| gonna)? (?:do it|die|end it|kill myself)\b/i },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'overdosed, or took the whole bottle', pattern: /\bi(?:'ve| have)? ?(?:just |already )?(?:overdosed|od'?d)\b(?! on (?:coffee|caffeine|sugar|chocolate|candy|netflix|tv|social media|news|content|work|vitamins?))(?!\s+(?:\d+ |a few |several )?(?:years?|months?|weeks?) ago)(?![^.!?]{0,30}\b(?:when i was|in (?:high school|college|my (?:teens|twenties|youth))|years ago|as a teen|back in))|\bi(?:'ve| have)? ?(?:just )?(?:took|taken|swallowed|downed) (?:the whole|a whole|an entire|the entire) (?:bottle|container) of (?:my |the )?(?:pills|meds|medication|tablets|sleeping pills|painkillers|tylenol|acetaminophen|aspirin|ibuprofen|benadryl|xanax)\b/i },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'taking all the pills now', pattern: /\bi(?:'m| am) (?:taking|swallowing) all (?:of )?(?:my|the) (?:pills|meds|medication|tablets)\b(?! (?:with me|before|on|to|at|when|every|each|daily|this morning|as prescribed))/i },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'cutting wrists, veins or throat: going to, doing, or just did', pattern: /\b(?:going to|gonna|about to|want to|planning to|will|'ll) (?:cut|slit) (?:both |my )?(?:my )?(?:wrists?|veins?|throat)\b|\bi(?:'m| am) (?:cutting|slitting) my (?:wrists|veins|throat)\b|\bi(?:'ve| have)? ?(?:just )?(?:cut|slit) my (?:wrists|veins)\b/i },
+  { tier: 'stop', kind: 'imminent', unless: FAREWELL_ELSEWHERE, why: 'this is my goodbye or final message', pattern: /\bthis is my (?:goodbye|final goodbye|last goodbye|final message)\b/i },
+  { tier: 'stop', kind: 'imminent', unless: FAREWELL_ELSEWHERE, why: 'by the time you read this', pattern: /\bby the time you (?:read|see|get|find) this\b(?:[^.!?]{0,40}\b(?:i'?ll be (?:gone|dead)|i will be (?:gone|dead)|gone|dead|won'?t be here|not be here|no longer (?:here|alive)|it(?:'ll| will) be over)\b|\s*(?:[.…!]|$))/i },
+  { tier: 'stop', kind: 'imminent', unless: FAREWELL_ELSEWHERE, why: 'I will not be here tomorrow or after tonight', pattern: /\bi (?:won'?t|will not) be (?:here|around|alive) (?:tomorrow|anymore|any more|much longer|after tonight|by morning|next week)\b/i },
+  { tier: 'stop', kind: 'imminent', unless: FAREWELL_ELSEWHERE, why: 'giving things away because I will not need them', pattern: /\b(?:giving|gave|give|handing|hand)\b[^.!?\n]{0,40}\b(?:because|since|as|so) i (?:won'?t|will not|'?m not going to|am not going to) (?:need|be (?:here|around|alive))\b(?!\s+(?:after|when|once|if)\b)/i },
+
+  // ── soften: said alone these may be a job or a move; the message reaches the coach with care ────────────────────────────────
+  { tier: 'soften', unless: FAREWELL_ELSEWHERE, why: 'saying goodbye to everyone, or giving my things away', pattern: /\bi(?:'m| am) (?:saying goodbye to (?:everyone|everybody|all of you|you all|the world)|giving (?:away )?(?:all )?(?:my (?:things|stuff|belongings|possessions)|everything)(?: away)?)\b/i },
+];
 
 // ── abuse, partner violence, child abuse and assault ──────────────────────────────────────────────────────────
+// ── slang and euphemism (2026-11-19, step 2 of the suicidal-ideation audit) ─────────────────────────────────────────────────────────────────────
+// DRAFT: awaiting clinician review. "Unalive", "kys" (kill yourself, said of oneself) and "sewerslide" (a respelling of suicide) are words people use to get past
+// filters. Tiers follow the owner's principle above: first-person intent or an act with myself as the object is a STOP (the same as "I want to kill myself");
+// vague euphemism ("wish I didn't exist", "thinking of ending it", "life isn't worth living") is a SOFTEN. Nothing here fires on "kys" or "unalive" aimed at
+// someone else, on the third person ("he unalived himself"), or on a game ("unalive the boss"): the object must be myself, or the sentence must be a plain "I want to unalive".
+// English only. Other languages are not covered; that needs real translators and a clinician. The spelling tricks (k1ll, k i l l, su*cide) are undone in
+// src/lib/safetyNormalize.ts before any of these are matched.
+const UNALIVE = 'un-?aliv(?:e|ed|ing)';
+const SLANG_I = "\\bi(?:'m| am|'ll| will|'d| would|'ve been| have been)?\\s+";
+const SLANG_MODAL = "(?:(?:really|just|so|finally|seriously|probably|honestly)\\s+)*(?:want(?:ed)? to|wanna|need to|have to|going to|gonna|about to|plan(?:ning)? to|should|ready to|decided to|trying to|tried to|will|thinking (?:of|about)|considering)\\s+(?:(?:just|really|actually|finally)\\s+)*";
+const SLANG_PLAY = /\b(?:games?|gaming|minecraft|fortnite|roblox|gta|boss|npc|mobs?|enemy|enemies|raid|lyrics?|song|movie|film|novel|story|character|meme|anime|book|word|slang|term|means?|meaning|censor\w*|tiktok|youtube|algorithm|philosoph\w+|unexamined)\b/i;
+const SLANG_THIRD = /\b(?:he|she|they|him|her|them|his|hers|their|my (?:friend|boss|ex|brother|sister|dad|mom|mother|father|son|daughter|teacher)|people|someone|somebody|everyone|kids?|users?)\b/i;
+const SLANG_ELSEWHERE = /\b(?:with|relationship|marriage|partnership|friendship|contract|lease|subscription|membership|trial|boyfriend|girlfriend|partner|husband|wife|ex|him|her|them|business|band|show|series|project|job|work|story|novel|chapter|game|podcast|call|meeting|conversation|date|class|workout|session|email|letter|post|video|season|movie|film|song|lyrics?)\b/i;
+
+export const SLANG_CANDIDATES: Rule[] = [
+  // stop: myself as the object of "unalive", or first-person intent with "kys" or "sewerslide"
+  { tier: 'stop', why: 'slang for killing myself ("unalive myself")', pattern: new RegExp(`${SLANG_I}(?:${SLANG_MODAL})?${UNALIVE}\\s+(?:myself|me)\\b`, 'i') },
+  { tier: 'stop', why: 'slang for killing myself ("unalive myself", wish)', pattern: new RegExp(`\\bwish (?:that )?i (?:could|would|can) (?:just )?un-?alive (?:myself|me)\\b`, 'i') },
+  { tier: 'stop', why: 'first-person intent with "kys" (kill yourself, said of oneself)', pattern: new RegExp(`${SLANG_I}${SLANG_MODAL}kys\\b`, 'i') },
+  { tier: 'stop', why: 'first-person intent with "sewerslide" (a respelling of suicide)', pattern: new RegExp(`${SLANG_I}(?:${SLANG_MODAL})?(?:commit(?:ting)?\\s+)?sewer[ -]?slid(?:e|ing|ed)\\b`, 'i'), unless: SLANG_PLAY },
+  // soften: first-person wish with "unalive" and no object, "should I kys", the word "sewerslide" itself, and vague euphemism
+  { tier: 'soften', why: '"I want to unalive" (no object), first person', pattern: new RegExp(`${SLANG_I}(?:${SLANG_MODAL})${UNALIVE}\\s*(?:[.!?,;]|$)`, 'i'), unless: SLANG_PLAY },
+  { tier: 'soften', why: '"I unalived" said alone, first person', pattern: new RegExp(`${SLANG_I}(?:just )?unalived\\s*(?:[.!?,;]|$)`, 'i'), unless: SLANG_PLAY },
+  { tier: 'soften', why: '"should I kys"', pattern: /\bshould i (?:just )?kys\b/i },
+  { tier: 'soften', why: 'the word "sewerslide" (joined or hyphenated) in a sentence about oneself', pattern: /\bsewer-?slid(?:e|ing)\b/i, unless: either(SLANG_PLAY, SLANG_THIRD) },
+  { tier: 'soften', why: 'wish never to have existed or been born', pattern: /\bwish (?:that )?i (?:(?:had|was|were) )?(?:never|not) (?:been )?(?:born|exist(?:ed)?)\b|\bwish (?:that )?i (?:didn'?t|did not|hadn'?t|had not|wasn'?t|was not) (?:ever )?(?:exist(?:ed)?|(?:been )?born)\b|\bwish i never existed\b/i, unless: SLANG_PLAY },
+  { tier: 'soften', why: 'thinking of ending it (all)', pattern: /\bi(?:'m| am|'ve been| have been)? ?(?:thinking (?:of|about)|considering|contemplating) ending (?:it all|it|everything)\b/i, unless: SLANG_ELSEWHERE },
+  { tier: 'soften', why: 'life is not worth living', pattern: /\b(?:my |this )?life (?:is(?:n'?t| not)|'s not|ain'?t|just isn'?t|is just not|is no longer|isn'?t even) (?:really |even |no longer |just )?worth (?:living|going on|continuing)\b|\b(?:my |this )?life (?:is(?:n'?t| not)|'s not|isn'?t) (?:really |even )?worth it (?:any ?more|any longer)\b|\bnot worth living\b/i, unless: either(SLANG_PLAY, SLANG_THIRD) },
+  { tier: 'soften', why: 'wish to disappear or cease to exist, for good', pattern: /\b(?:wish i (?:could|would)|i (?:just )?(?:want|wanna|need) to)\s+(?:just\s+)?(?:disappear|vanish|fade away|be gone|cease to exist|stop existing)\s+(?:forever|for good|completely|permanently|entirely)\b|\b(?:wish i (?:could|would)|i (?:just )?(?:want|wanna) to)\s+(?:just\s+)?(?:cease to exist|stop existing)\b/i, unless: SLANG_PLAY },
+];
+
 export type AbuseKind = 'partner-or-family' | 'child-or-dependent' | 'sexual' | 'control-or-fear' | 'trafficking';
 export interface AbuseRule { tier: 'stop' | 'soften'; kind: AbuseKind; why: string; pattern: RegExp }
 

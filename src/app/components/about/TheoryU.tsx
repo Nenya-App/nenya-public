@@ -73,7 +73,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
                       Descending: Sensing & Observing
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      The gateway rituals (color, sound, touch, etc.) guide you inward. You begin by observing your current emotional state without judgment—suspending habitual patterns of thought.
+                      The lenses (color, sound, touch and the rest) guide you inward, one at a time, in any order you like. You begin by observing your current emotional state without judgment—suspending habitual patterns of thought.
                     </p>
                   </div>
                 </div>

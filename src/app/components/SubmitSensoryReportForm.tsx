@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Loader2, Mail } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CheckCircle2, ChevronDown, ChevronUp, Mail } from 'lucide-react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { submitReport, type SubmitReceipt } from '../../lib/reportSubmission';
-import { DeletionCode } from './DeletionCode';
+import { AlreadySent, DeletionCode } from './DeletionCode';
+import { SendConsent } from './SendConsent';
+import { useSendFlow } from './useSendFlow';
 
 interface SubmitSensoryReportFormProps {
   /** The exact text produced by generateSensoryReport() -- displayed
@@ -13,23 +14,19 @@ interface SubmitSensoryReportFormProps {
   report: string;
 }
 
-type SubmitState = 'idle' | 'sending' | 'sent' | 'error';
-
 export function SubmitSensoryReportForm({ report }: SubmitSensoryReportFormProps) {
   const [expanded, setExpanded] = useState(false);
   const [comments, setComments] = useState('');
-  const [submitState, setSubmitState] = useState<SubmitState>('idle');
-  const [receipt, setReceipt] = useState<SubmitReceipt | null>(null);
+  const flow = useSendFlow('sensory-reflection', () => setComments('')); // the typed comments are cleared once it is sent
+  const { phase: submitState, receipt, checkAlreadySent } = flow;
+  // The report itself is fixed text: if this tab already sent exactly it (and the page was reopened, or restored by Back), say so instead of offering it again.
+  useEffect(() => {
+    void checkAlreadySent(report, '');
+  }, [report, checkAlreadySent]);
 
-  const handleSubmit = async () => {
-    if (submitState === 'sending') return;
-    setSubmitState('sending');
-    try {
-      setReceipt(await submitReport({ type: 'sensory-reflection', report, comments }));
-      setSubmitState('sent');
-    } catch {
-      setSubmitState('error');
-    }
+  const handleSubmit = () => {
+    if (submitState === 'sending' || submitState === 'sent') return;
+    void flow.begin(report, comments); // opens the consent screen; nothing is sent yet
   };
 
   return (
@@ -53,9 +50,8 @@ export function SubmitSensoryReportForm({ report }: SubmitSensoryReportFormProps
       {expanded && (
         <div className="px-4 pb-4 space-y-4">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            This is entirely optional and separate from downloading your report. If you submit, the exact
-            report below — nothing more, nothing edited — is sent to Nenya's team by email, along with any
-            comments you add. Nothing is submitted unless you press the button below.
+            This is entirely optional and separate from downloading your report. If you choose to send it, you will first see exactly what would be sent, with
+            the report and any comments you add, and what we do with it. Nothing is sent until you press Send on that screen.
           </p>
 
           <div className="space-y-1.5">
@@ -73,9 +69,13 @@ export function SubmitSensoryReportForm({ report }: SubmitSensoryReportFormProps
               id="sensory-report-comments"
               placeholder="Anything you'd like to add for context..."
               value={comments}
-              onChange={(e) => setComments(e.target.value)}
+              onChange={(e) => {
+                setComments(e.target.value);
+                if (submitState === 'duplicate' && e.target.value.trim()) flow.reset(); // adding comments makes it a different send
+                else if (submitState === 'error') flow.cancel();
+              }}
               className="min-h-[80px] resize-none text-sm"
-              disabled={submitState === 'sending' || submitState === 'sent'}
+              disabled={submitState === 'consent' || submitState === 'sending' || submitState === 'sent'}
             />
             <p className="text-xs text-muted-foreground">
               Only plain text is sent — no formatting, code, or file attachments are accepted here.
@@ -89,26 +89,22 @@ export function SubmitSensoryReportForm({ report }: SubmitSensoryReportFormProps
             </div>
           )}
           {submitState === 'sent' && <DeletionCode receipt={receipt} />}
-          {submitState === 'error' && (
-            <div className="flex items-start gap-2 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-              <AlertCircle className="size-4 mt-0.5 flex-shrink-0" />
-              <p>Something went wrong sending this. Please try again in a moment.</p>
-            </div>
+          {submitState === 'duplicate' && <AlreadySent />}
+          {(submitState === 'consent' || submitState === 'sending' || submitState === 'error') && flow.pending && (
+            <SendConsent
+              kind="report"
+              parts={[{ label: 'Your report', text: flow.pending.report }, { label: 'Your comments', text: flow.pending.comments }]}
+              busy={submitState === 'sending'}
+              failed={submitState === 'error'}
+              onSend={flow.confirm}
+              onCancel={flow.cancel}
+            />
           )}
 
-          {submitState !== 'sent' && (
-            <Button
-              onClick={handleSubmit}
-              disabled={submitState === 'sending'}
-              size="sm"
-              className="gap-2"
-            >
-              {submitState === 'sending' ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Mail className="size-4" />
-              )}
-              {submitState === 'sending' ? 'Sending…' : 'Submit This Report'}
+          {submitState === 'idle' && (
+            <Button onClick={handleSubmit} size="sm" className="gap-2">
+              <Mail className="size-4" />
+              Review and send this report
             </Button>
           )}
         </div>

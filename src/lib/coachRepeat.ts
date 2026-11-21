@@ -19,3 +19,15 @@ export function repeatsEarlier(reply: string, earlier: string[], run = 10): bool
   if (mine.size === 0) return false;
   return earlier.some((e) => grams(words(e), run).some((g) => mine.has(g)));
 }
+
+/**
+ * The reply without the sentences that share a run of `run` words with any of `texts` (the words of a card the page showed). The model is not told about the card, so
+ * this is the page's tidying, not an instruction to the model. If every sentence overlaps, or none does, the reply is returned unchanged.
+ */
+export function withoutRepeatedSentences(reply: string, texts: string[], run = 10): string {
+  const theirs = new Set(texts.flatMap((t) => grams(words(t), run)));
+  if (theirs.size === 0) return reply;
+  const parts = reply.split(/(?<=[.!?])\s+/).filter((x) => x.trim());
+  const kept = parts.filter((p) => !grams(words(p), run).some((g) => theirs.has(g)));
+  return kept.length === 0 || kept.length === parts.length ? reply : kept.join(' ');
+}

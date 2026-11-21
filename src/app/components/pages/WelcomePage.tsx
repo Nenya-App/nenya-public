@@ -3,13 +3,16 @@ import { Button } from '../ui/button';
 import NenyaLogo from '../NenyaLogo';
 import { ValarBreathingLogo, BreathingTechnique } from '../ValarBreathingLogo';
 import QuickNav from '../QuickNav';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { AppFooter } from '../AppFooter';
 import { SupportThisWork } from '../SupportThisWork';
 import { ContactSection } from '../ContactSection';
 import { LOGO_ALT_NO_ORBS, LOGO_ALT_SHORT } from '../../../lib/altText';
 import { GATEWAY_SUMMARIES } from '../../../lib/gatewaySummaries';
+import { SenseIcon } from '../SenseIcon';
+import { MoreBelowButton } from '../MoreBelowButton';
 
+import { L } from '../../../lib/vocabulary';
 interface WelcomePageProps {
   onContinue: () => void;
   breathingEnabled: boolean;
@@ -130,27 +133,14 @@ export default function WelcomePage({
         </div>
 
         {/* Breathing Text with Scroll Indicator */}
-        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`pb-8 -mt-2 sm:-mt-4 space-y-3 transition-opacity duration-500`}>
+        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`pb-8 mt-5 sm:mt-8 space-y-6 transition-opacity duration-500`}>
           <p className="text-xl md:text-2xl text-center text-muted-foreground">
-            Give Yourself a Moment to Breathe
+            Take a Moment to Breathe
           </p>
 
-          {/* Animated Scroll Indicator */}
-          <div
-            className="flex flex-col items-center gap-0.5 animate-bounce cursor-pointer pt-1"
-            onClick={scrollToNextSection}
-            role="button"
-            tabIndex={0}
-            aria-label="See more"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                scrollToNextSection();
-              }
-            }}
-          >
-            <span className="text-base font-medium text-muted-foreground">More below</span>
-            <ChevronDown className="size-9 text-muted-foreground" />
+          {/* The "Enter" button: glows, and pulses once at the end of each breath in that breath's colour */}
+          <div className="flex justify-center pt-3">
+            <MoreBelowButton label="Enter" ariaLabel="Enter" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
           </div>
         </div>
       </div>
@@ -168,6 +158,26 @@ export default function WelcomePage({
             </p>
           </div>
 
+          {/* The six gateways in a sentence each: short by default, nothing to open */}
+          <section aria-labelledby="gateways-overview" className="mx-auto max-w-xl space-y-4 text-left">
+            <h2 id="gateways-overview" className="text-center text-xl md:text-2xl">The six {L('gateways')}</h2>
+            <p className="text-center text-base text-muted-foreground">
+              Each one asks about where you are now and where you would like to be. Pick up any of them, in any order, as many or
+              as few as you like. Choosing fewer can be more helpful than choosing many.
+            </p>
+            <dl className="space-y-3">
+              {GATEWAY_SUMMARIES.map((g) => (
+                <div key={g.id}>
+                  <dt className="flex items-center gap-2 font-medium"><SenseIcon id={g.id} />{g.name}</dt>
+                  <dd className="text-muted-foreground">{g.summary}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="text-center text-sm text-muted-foreground">
+              Whatever you add can be seen together and saved as a report, made on your device.
+            </p>
+          </section>
+
           {/* Call to Action */}
           <div className="pt-6">
             <Button
@@ -181,41 +191,8 @@ export default function WelcomePage({
             </Button>
           </div>
 
-          {/* The six gateways in a sentence each: short by default, nothing to open */}
-          <section aria-labelledby="gateways-overview" className="mx-auto max-w-xl space-y-4 text-left">
-            <h2 id="gateways-overview" className="text-center text-xl md:text-2xl">The six gateways</h2>
-            <p className="text-center text-base text-muted-foreground">
-              Each one asks about where you are now and where you would like to be. Choose any of them, in any order, and skip
-              anything you like.
-            </p>
-            <dl className="space-y-3">
-              {GATEWAY_SUMMARIES.map((g) => (
-                <div key={g.id}>
-                  <dt className="font-medium">{g.name}</dt>
-                  <dd className="text-muted-foreground">{g.summary}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="text-center text-sm text-muted-foreground">
-              At the end you can see everything together and save it as a report, made on your device.
-            </p>
-          </section>
-
-          {/* Animated Scroll Indicator */}
-          <div
-            className="flex justify-center animate-bounce pt-8 cursor-pointer"
-            onClick={scrollToNextSection}
-            role="button"
-            tabIndex={0}
-            aria-label="See more"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                scrollToNextSection();
-              }
-            }}
-          >
-            <ChevronDown className="size-8 text-muted-foreground/70" />
+          <div className="flex justify-center pt-8">
+            <MoreBelowButton ariaLabel="Continue" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
           </div>
         </div>
       </div>
@@ -225,21 +202,8 @@ export default function WelcomePage({
         <div className="text-center space-y-8 max-w-3xl w-full">
           <SupportThisWork />
 
-          <div
-            className="flex flex-col items-center gap-0.5 animate-bounce cursor-pointer pt-2"
-            onClick={scrollToNextSection}
-            role="button"
-            tabIndex={0}
-            aria-label="Go to contact"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                scrollToNextSection();
-              }
-            }}
-          >
-            <span className="text-sm text-muted-foreground">Get in touch</span>
-            <ChevronDown className="size-8 text-muted-foreground/70" />
+          <div className="flex justify-center pt-2">
+            <MoreBelowButton label="Get in touch" ariaLabel="Go to contact" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
           </div>
         </div>
       </div>

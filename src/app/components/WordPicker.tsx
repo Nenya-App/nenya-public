@@ -3,6 +3,9 @@ import { X } from 'lucide-react';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import { TermInfo } from './TermInfo';
+import { OnlineLookup } from './WordHelp';
+import { Button } from './ui/button';
+import { cleanLookupWord, localNearWords } from '../../lib/wordHelp';
 import { SENSE_WORDS, type SenseCategory } from '../../lib/senseWords';
 
 interface WordPickerProps {
@@ -15,12 +18,14 @@ interface WordPickerProps {
   idPrefix: string;
   /** A word or phrase of the person's own. Optional: not every list has one. */
   other?: { value: string; onChange: (value: string) => void; placeholder?: string };
+  /** Where "Add" sends a word that is not on the lists: the page's text box (a description). Without it, Add goes to `other`. With either, the bar is also the place to look a word up. */
+  onAddText?: (text: string) => void;
 }
 
 // One picker for every word list in the gateways: the words in labelled groups that open and close, a box to find a word, the words already chosen
 // listed at the top (each can be taken off from there), and a place for a word of the person's own. Plain checkboxes and native disclosure
 // elements, so the keyboard and screen readers work without extra code; nothing here depends on a pointer, a color or a scroll box.
-export function WordPicker({ category, selected, onToggle, idPrefix, other }: WordPickerProps) {
+export function WordPicker({ category, selected, onToggle, idPrefix, other, onAddText }: WordPickerProps) {
   const groups = SENSE_WORDS[category];
   const [query, setQuery] = useState('');
   const findId = useId();
@@ -36,6 +41,17 @@ export function WordPicker({ category, selected, onToggle, idPrefix, other }: Wo
     [groups, q],
   );
   const matches = shown.reduce((n, g) => n + g.words.length, 0);
+  // One bar for finding, near words and Add (owner's comment sheet, 2026-11-18). Near words from this device come by themselves as you type (nothing is sent); only the online look-up needs a press.
+  const word = cleanLookupWord(query);
+  const near = useMemo(() => (word ? localNearWords(word, category) : []), [word, category]);
+  const sink = onAddText ?? (other ? (t: string) => { const cur = other.value.trim(); if (!cur.toLowerCase().split(/[,;]\s*/).includes(t.toLowerCase())) other.onChange(cur ? `${cur}, ${t}` : t); } : null);
+  const send = (raw: string) => {
+    const t = raw.trim();
+    if (!t) return;
+    const own = groups.flatMap((g) => g.words).find((x) => x.term.toLowerCase() === t.toLowerCase());
+    if (own) { if (!selected.includes(own.term)) onToggle(own.term); } else if (sink) sink(t);
+    setQuery('');
+  };
 
   return (
     <div className="space-y-3" role="group">
@@ -62,27 +78,42 @@ export function WordPicker({ category, selected, onToggle, idPrefix, other }: Wo
         )}
       </div>
 
-      <div>
+      <div className="space-y-2">
         <label htmlFor={`${idPrefix}-${findId}`} className="mb-1 block text-xs text-muted-foreground">
-          Find a word
+          Find a word, or look one up
         </label>
-        <Input
-          id={`${idPrefix}-${findId}`}
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Start typing..."
-          className="h-9 text-sm"
-          autoComplete="off"
-        />
+        <div className="flex gap-2">
+          <Input
+            id={`${idPrefix}-${findId}`}
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); send(query); } }}
+            placeholder="Start typing..."
+            className="h-11 text-sm"
+            autoComplete="off"
+          />
+          <Button type="button" variant="outline" className="min-h-11 px-4" onClick={() => send(query)} disabled={!query.trim()}>Add</Button>
+        </div>
         {q && (
-          <p className="mt-1 text-xs text-muted-foreground" role="status">
-            {matches === 0 ? 'No word matches. You can add your own below.' : `${matches} ${matches === 1 ? 'word matches' : 'words match'}.`}
+          <p className="text-xs text-muted-foreground" role="status">
+            {matches === 0 ? 'No word on the lists matches.' : `${matches} ${matches === 1 ? 'word matches' : 'words match'} on the lists.`}
           </p>
         )}
+        {near.length > 0 && (
+          <div className="space-y-1" role="status" aria-live="polite">
+            <p className="text-xs text-muted-foreground">Near words (from this device, nothing sent)</p>
+            <ul className="flex flex-wrap gap-1.5" aria-label="Near words">
+              {near.map((w) => <li key={w}><button type="button" onClick={() => send(w)} className="min-h-11 rounded-full border border-border bg-muted px-3 py-1 text-xs hover:bg-muted/70">Add {w}</button></li>)}
+            </ul>
+          </div>
+        )}
+        <OnlineLookup word={query} onUse={(w) => send(w)} />
       </div>
 
-      <div className="space-y-2">
+      <details open={q ? true : undefined} className="rounded-md border border-border p-2">
+        <summary className="flex min-h-11 cursor-pointer items-center text-sm underline underline-offset-4">Browse the word lists</summary>
+      <div className="mt-2 space-y-2">
         {shown.map((g) => {
           const chosenHere = g.words.filter((w) => selected.includes(w.term)).length;
           return (
@@ -115,8 +146,9 @@ export function WordPicker({ category, selected, onToggle, idPrefix, other }: Wo
           );
         })}
       </div>
+      </details>
 
-      {other && (
+      {other && !onAddText && (
         <div>
           <label htmlFor={`${idPrefix}-other`} className="mb-1 block text-xs text-muted-foreground">
             A word of your own (optional)

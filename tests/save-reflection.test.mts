@@ -64,11 +64,33 @@ ok('every line reads at grade 8 or below', worst.g <= 8, `${worst.g.toFixed(1)}:
 ok('the panel states the limits plainly', /stops a glance/.test(SAVE_COPY.limits) && /no other way back in/.test(SAVE_COPY.saved) && /Nothing is sent to Nenya/.test(SAVE_COPY.intro));
 
 const app = readFileSync('src/app/App.tsx', 'utf8');
-ok('the ID comes from Sight, then Sound, then a shadow pair; it is never stored', /sessionIdFrom\(sightDone\.color1, sightDone\.color2\)\) \|\|\s*\(soundDone && sessionIdFrom\(soundDone\.melodyColor1, soundDone\.melodyColor2\)\) \|\|\s*shadow/.test(app) && !/localStorage[^\n]*sessionId/.test(app));
+ok('the ID comes from Sight, then Sound, then a shadow pair; it is never stored', /sessionIdFor\(sightDone, soundDone, shadow\)/.test(app) && /sessionIdFrom\(sight\.color1, sight\.color2\)\) \|\|\s*\(sound && sessionIdFrom\(sound\.melodyColor1, sound\.melodyColor2\)\) \|\|\s*shadow/.test(readFileSync('src/lib/shadowSession.ts', 'utf8')) && !/localStorage[^\n]*sessionId/.test(app));
 ok('an expired save is cleared on every visit; an opened one resumes at the next unfinished gateway or the review', /if \(saveOn\) purgeExpired\(\);/.test(app) && /navigateTo\(next \?\? 'gateway-review'\)/.test(app));
 ok('the links sit in every gateway header, on the review, and "Continue" on the gateway choice', /<SaveReflectionLink \/>/.test(readFileSync('src/app/components/GatewayProgress.tsx', 'utf8')) && /<SaveReflectionLink \/>/.test(readFileSync('src/app/components/pages/GatewayReviewPage.tsx', 'utf8')) && /<ContinueSavedLink \/>/.test(readFileSync('src/app/components/pages/GatewaysPage.tsx', 'utf8')));
 {
   const { LEGAL_PARTS } = await import('../src/lib/legalDocument.ts');
   const t = JSON.stringify(LEGAL_PARTS);
   ok('the Terms describe it: your choice, this device, encrypted, 24 hours, ID and passcode not stored, erased by Forget me and Emergency Exit, its limits', /Save and return later/.test(t) && /for at most 24 hours/.test(t) && /Neither the ID nor the passcode is stored/.test(t) && /Forget me and Emergency Exit/.test(t) && /stops a glance/.test(t) && /storage tools can see that something locked is saved/.test(t));
+}
+
+// Version 2 (tray mode, VITE_LENS_TRAY): the added lenses plus the ones opened but not added. Version 1 still opens, and the reader gives either one back in the tray's shape.
+{
+  const { readSavedDraft } = await import('../src/lib/lensState.ts');
+  const v2 = { ...payload, v: 2 as const, selectedGateways: ['touch'], examined: ['sight', 'sound'] };
+  mem.clear();
+  await saveReflection(v2, ID, 'watermelon', t0);
+  const open2 = await openReflection(ID, 'watermelon', t0 + 1000);
+  ok('a version 2 draft is sealed like version 1 and opens exactly as saved', JSON.stringify(open2) === JSON.stringify(v2) && !mem.has(SAVED_KEY));
+  ok('the sealed copy does not show which lenses were examined', (await saveReflection(v2, ID, 'watermelon', t0), !/sight|sound|examined/i.test(mem.get(SAVED_KEY)!)));
+  const d2 = readSavedDraft(open2)!;
+  ok('the tray reads version 2: touch is added, sight and sound are examined', d2.gatewayData.map((g) => g.gateway).join() === 'touch' && d2.examined.join() === 'sight,sound');
+  mem.clear();
+  await saveReflection(payload, ID, 'watermelon', t0);
+  const d1 = readSavedDraft(await openReflection(ID, 'watermelon', t0 + 1000))!;
+  ok('a version 1 draft still opens in the tray: its lenses are added, none is examined', d1.gatewayData.length === 1 && d1.examined.length === 0);
+  mem.clear();
+  await saveReflection({ ...payload, v: 3 as any }, ID, 'watermelon', t0);
+  ok('an unknown version opens nothing', (await openReflection(ID, 'watermelon', t0 + 1000)) === null);
+  const app = readFileSync('src/app/App.tsx', 'utf8');
+  ok('App writes version 2 only in tray mode (version 1 otherwise) and opens a draft at the tray', /lensTrayOn\(\)\s*\n\s*\? \{ v: 2, selectedGateways: gatewayData\.map/.test(app) && /: \{ v: 1, selectedGateways, gatewayData/.test(app) && /const draft = readSavedDraft\(saved\);/.test(app) && /setExamined\(draft\.examined\);/.test(app));
 }

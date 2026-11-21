@@ -75,14 +75,14 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
   if (context) lines.push('Parts of a report that the visitor chose to share with the coach:', context, '');
   const siteLines = (after: number) => {
     for (const x of site.filter((y) => y.after === after)) {
-      lines.push(x.kind === 'answer' ? `Note (written by the site): ${x.text}` : `${x.kind === 'notice' ? 'Safety notice' : 'Coach'} (written by the site, not the AI): ${x.text}`);
+      lines.push(x.kind === 'summary' ? `Summary you asked for (the AI's reading of what you wrote, not a record; the exact record is the conversation above; the last sentence is the site's): ${x.text}` : x.kind === 'answer' ? `Note (written by the site): ${x.text}` : `${x.kind === 'notice' ? 'Safety notice' : 'Coach'} (written by the site, not the AI): ${x.text}`);
       for (const r of x.resources ?? []) lines.push(`  - ${r.name}: ${r.detail}`);
       lines.push('');
     }
   };
   siteLines(-1);
   for (const c of checks.filter((y) => y.shared)) {
-    lines.push(`Process note (written by the site): the safety check flagged the report text the visitor chose to share, as ${c.category}${c.kind ? ` / ${c.kind}` : ''} (${c.tier}). The conversation was not ended for this. Why: ${c.source === 'phrase' ? `matched words${c.matched ? `: "${c.matched}"` : ''}` : `the self-injury ladder, rung: ${c.rung ?? 'unknown'}`}. This is simple phrase matching and can be wrong.`, '');
+    lines.push(`Process note (written by the site): the safety check flagged the report text the visitor chose to share, as ${c.category}${c.kind ? ` / ${c.kind}` : ''} (${c.tier}). The conversation was not ended for this. Why: ${c.source === 'phrase' ? `matched words${c.matched ? `: "${c.matched}"` : ''}` : c.source === 'accumulated' ? `${c.rung ?? 'several kinds of distress'}${c.matched ? ` (kinds found: ${c.matched})` : ''}` : `the self-injury ladder, rung: ${c.rung ?? 'unknown'}`}. This is simple phrase matching and can be wrong.`, '');
   }
   messages.forEach((m, i) => {
     lines.push(`${m.role === 'user' ? 'You' : 'Coach'}: ${m.content}`, '');
@@ -90,7 +90,9 @@ export function readableTranscript(messages: TranscriptMsg[], session: SessionCo
       const what = `${c.category}${c.kind ? ` / ${c.kind}` : ''} (${c.tier})`;
       const why = c.source === 'phrase'
         ? `matched words in the message${c.matched ? `: "${c.matched}"` : ''}`
-        : `the self-injury ladder, rung: ${c.rung ?? 'unknown'}${c.matched ? `; matched words: "${c.matched}"` : ''}${c.basedOn?.length ? `; earlier messages counted: ${c.basedOn.join(', ')}` : ''}`;
+        : c.source === 'accumulated'
+        ? `${c.rung ?? 'earlier messages'}${c.matched ? ` (kinds found: ${c.matched})` : ''}, worked out again from the person's messages on each turn and not stored`
+        :`the self-injury ladder, rung: ${c.rung ?? 'unknown'}${c.matched ? `; matched words: "${c.matched}"` : ''}${c.basedOn?.length ? `; earlier messages counted: ${c.basedOn.join(', ')}` : ''}`;
       lines.push(`Process note (written by the site): the safety check flagged this message as ${what}. Why: ${why}. This is simple phrase matching and can be wrong.`, '');
     }
     siteLines(i);

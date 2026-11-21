@@ -1,3 +1,4 @@
+import { sixthLensName } from './vocabulary.ts';
 // One plain sentence per gateway, for the welcome page's short overview (and anywhere else a quick summary is needed). Each says what the
 // person actually does there, matching the gateway pages; nothing about what it means or does for them.
 export const GATEWAY_SUMMARIES: { id: 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight'; name: string; summary: string }[] = [
@@ -6,7 +7,7 @@ export const GATEWAY_SUMMARIES: { id: 'sight' | 'sound' | 'touch' | 'essence' | 
   { id: 'touch', name: 'Touch', summary: 'Describe the feeling by touch: its texture, temperature, pressure, weight and sharpness.' },
   { id: 'essence', name: 'Essence', summary: 'Describe it as a scent or a taste, and how strong it is.' },
   { id: 'movement', name: 'Movement', summary: 'Show which way it moves, with how much energy and speed, in words or a drawing.' },
-  { id: 'insight', name: 'Insight', summary: 'Sketch the shape of your thinking: its pattern, and how clear and deep it feels.' },
+  { id: 'insight', name: sixthLensName(), summary: 'Sketch the shape of your thinking: its pattern, and how clear and deep it feels.' },
 ];
 
 /** Routes through the gateways by choice and order alone: one to six of them, in any order (6 + 30 + 120 + 360 + 720 + 720). */

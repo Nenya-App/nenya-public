@@ -11,8 +11,12 @@
 // Hurting oneself on purpose is the exception to "clear statements stop": it is a ladder (src/lib/selfInjury.ts) worked out from the
 // person's recent messages, so it needs the conversation, not one message: use checkConversation. detectFlag(text) checks one message alone.
 
-import { ABUSE_CANDIDATES, CANDIDATES } from './safetyPhrases.ts';
+import { ABUSE_CANDIDATES, CANDIDATES, IMMINENT_CANDIDATES, SLANG_CANDIDATES } from './safetyPhrases.ts';
+import { evasionVariants } from './safetyNormalize.ts';
+import type { Rule as PhraseRule } from './safetyPhrases.ts';
+import { IMMINENT_LEAD, STOP_LEAD } from './distressText.ts';
 import { classifyMention, RECENT, rungFor, SELF_INJURY } from './selfInjury.ts';
+import { CONSTRUCT_LABELS, constructsIn, WINDOW, type Construct } from './safetyConstructs.ts';
 
 export type FlagCategory = 'self-harm' | 'self-injury' | 'harm-others' | 'abuse' | 'distress';
 export type FlagTier = 'stop' | 'soften';
@@ -25,6 +29,7 @@ export interface SafetyFlag {
    * What kind, within the category, where the page, the notice, the resources and the sentence the site adds differ by it.
    * abuse: 'partner-or-family' | 'child-or-dependent' | 'sexual' | 'control-or-fear'.
    * self-injury: 'background' | 'other' | 'present' (soften); 'ends' | 'emergency' (stop).
+   * self-harm: 'imminent' (stop): a plan, means at hand, an act in progress or a goodbye. The same notice text as any suicide stop; the resource list leads with the emergency number.
    */
   kind?: string;
 }
@@ -70,7 +75,7 @@ const RULES: Rule[] = [
   // src/lib/selfInjury.ts, which allows it with extra pushes toward a person and ends only if it recurs or escalates.
   { category: 'self-harm', tier: 'stop', pattern: /\bno reason to (?:live|go on|keep going)\b|\bbetter off (?:dead|without me)\b|\bwish i (?:was|were) dead\b|\bdon'?t want to (?:live|be alive)\b/i },
   { category: 'self-harm', tier: 'stop', pattern: /\b(?:i'?m|i am|i feel|feeling|been feeling|i'?ve been|having|have) (?:\w+ )?suicidal\b|\b(?:thoughts? of|thinking (?:of|about)) suicide\b/i },
-  { category: 'self-harm', tier: 'stop', pattern: /\b(?:going to|gonna|thinking (?:of|about)|want to) (?:overdose|take (?:all|a bunch of) (?:my |the )?(?:pills|meds))\b/i },
+  { category: 'self-harm', tier: 'stop', kind: 'imminent', pattern: /\b(?:going to|gonna|thinking (?:of|about)|want to) (?:overdose(?! on (?:caffeine|coffee|sugar|chocolate))|take (?:all|a bunch of) (?:my |the )?(?:pills|meds))\b/i },
 
   // ── stop: violence toward others ────────────────────────────────────────
   { category: 'harm-others', tier: 'stop', pattern: /\b(?:going to|gonna|plan(?:ning)? to|about to|decided to|thinking (?:of|about)) (?:kill|murder|shoot|stab|strangle|hurt|harm|attack|beat up) (?:him|her|them|my \w+|someone|somebody|everyone|people)\b/i },
@@ -129,10 +134,11 @@ const flagOf = (category: FlagCategory, tier: FlagTier, kind?: string): SafetyFl
 
 /** Why a message was flagged: the words that matched a phrase list, or the self-injury ladder's rung. A process note, not a verdict. */
 export interface FlagWhy {
-  source: 'phrase' | 'ladder';
-  /** The words in the person's own message that matched (cut short). */
+  source: 'phrase' | 'ladder' | 'accumulated';
+  /** The words in the person's own message that matched (cut short). For "accumulated": the kinds of sign found, in words. */
   matched?: string;
-  /** For the ladder: its rung, in words ("a present act or urge", "recurs", "escalates", "a general account", "about someone else", "a medical emergency"). */
+  /** For the ladder: its rung, in words ("a present act or urge", "recurs", "escalates", "a general account", "about someone else", "a medical emergency").
+   * For "accumulated": "two or more kinds of distress across the recent messages" or "a distress flag earlier in the conversation". */
   rung?: string;
   /** For the ladder: the numbers (1 = first) of the person's earlier messages that count toward it. */
   basedOn?: number[];
@@ -143,9 +149,44 @@ export interface FlagExplained {
 }
 const cut = (x: string | undefined): string | undefined => (x === undefined ? undefined : x.length > 120 ? x.slice(0, 117) + '...' : x);
 
+const ALL_PHRASES: PhraseRule[] = [...CANDIDATES, ...IMMINENT_CANDIDATES, ...SLANG_CANDIDATES];
+
+/** The words a phrase rule matched, or null: a rule's "unless" (another person, a story, sport, a job farewell) in the same sentence cancels it. */
+function phraseHit(r: PhraseRule, t: string): string | null {
+  const m = r.pattern.exec(t);
+  if (!m) return null;
+  if (r.unless) {
+    const from = Math.max(t.lastIndexOf('.', m.index), t.lastIndexOf('!', m.index), t.lastIndexOf('?', m.index)) + 1;
+    const ends = ['.', '!', '?'].map((c) => t.indexOf(c, m.index + m[0].length)).filter((i) => i >= 0);
+    if (r.unless.test(t.slice(from, ends.length ? Math.min(...ends) : t.length))) return null;
+  }
+  return m[0];
+}
+
 /** The most serious flag in one message, from the phrase lists alone (not the self-injury ladder), and the words that matched. Stop-tier rules win over soften-tier. */
 function detectSingleWhy(text: string): FlagExplained | null {
+  const own = detectOneSpelling(text);
+  if (own?.flag.tier === 'stop') return own;
+  // Common spelling tricks undone (k1ll, k i l l, su*cide, look-alike letters): the lists are matched against these other spellings too, for matching only
+  // (src/lib/safetyNormalize.ts). A variant can add a flag or raise a soften to a stop; it never removes one, and it is never stored or sent.
+  let best = own;
+  for (const v of evasionVariants(text)) {
+    const hit = detectOneSpelling(v);
+    if (!hit) continue;
+    if (hit.flag.tier === 'stop') return hit;
+    best ??= hit;
+  }
+  return best;
+}
+
+function detectOneSpelling(text: string): FlagExplained | null {
   const t = text.replace(/[‘’]/g, "'");
+  // Plan, means, an act in progress, a goodbye: kind "imminent" (the notice leads with the emergency number). Looked at first so that
+  // "I'm going to kill myself tonight" carries the kind too; each rule skips a sentence about someone else, a story, sport, a job farewell.
+  for (const r of ALL_PHRASES.filter((x) => x.tier === 'stop' && x.kind === 'imminent')) {
+    const hit = phraseHit(r, t);
+    if (hit) return { flag: flagOf('self-harm', 'stop', 'imminent'), why: { source: 'phrase', matched: cut(hit) } };
+  }
   for (const tier of ['stop', 'soften'] as FlagTier[]) {
     for (const r of RULES) {
       const m = r.tier === tier ? r.pattern.exec(t) : null;
@@ -160,9 +201,9 @@ function detectSingleWhy(text: string): FlagExplained | null {
       const kind = r.kind ?? (r.category === 'abuse' ? ABUSE_CANDIDATES.find((k) => k.tier === tier && k.pattern.test(t))?.kind : undefined);
       return { flag: flagOf(r.category, tier, kind), why: { source: 'phrase', matched: cut(m[0]) } };
     }
-    for (const r of CANDIDATES) {
-      const m = r.tier === tier ? r.pattern.exec(t) : null;
-      if (m) return { flag: flagOf('self-harm', tier), why: { source: 'phrase', matched: cut(m[0]) } };
+    for (const r of ALL_PHRASES) {
+      const hit = r.tier === tier ? phraseHit(r, t) : null;
+      if (hit) return { flag: flagOf('self-harm', tier, r.kind), why: { source: 'phrase', matched: cut(hit) } };
     }
     for (const r of ABUSE_CANDIDATES) {
       const m = r.tier === tier ? r.pattern.exec(t) : null;
@@ -196,8 +237,42 @@ function pronounAdmission(userMessages: string[]): FlagExplained | null {
   return { flag: flagOf('harm-others', 'stop', 'admitted-partner'), why: { source: 'phrase', matched: cut(m[0]) } };
 }
 
-/** The same decision as checkConversation, with why: the words that matched, or the ladder's rung. */
+/**
+ * The same decision as checkConversation, with why: the words that matched, or the ladder's rung, or what added up across the messages.
+ *
+ * Carrying risk across turns without keeping anything (step 3 of the suicidal-ideation audit; draft: awaiting clinician review). The server is sent the
+ * person's messages on every request, so this is recomputed each time from the last WINDOW (10) of them; nothing is stored or logged. On top of
+ * the single-message decision (which is never lowered, and a stop is never changed):
+ *   - if that decision is no flag, and two or more different kinds of sign (src/lib/safetyConstructs.ts) appear anywhere in the window, or a
+ *     soften flag was raised on an earlier message in the window, the outcome is a soften flag (category "distress", so the same site sentence
+ *     as any distress soften; after an earlier suicide or self-harm soften, that category). It lasts while the window holds the earlier flag or the signs.
+ *   - one kind of sign alone, with nothing earlier, is no flag.
+ */
 export function explainConversation(userMessages: string[]): FlagExplained | null {
+  const single = explainSingle(userMessages);
+  if (single) return single; // a stop, or a soften that already stands: never changed here
+  const n = userMessages.length;
+  if (n === 0) return null;
+  const start = Math.max(0, n - WINDOW);
+  const named = (ks: Set<Construct>): string => [...ks].map((k) => CONSTRUCT_LABELS[k]).join(', ');
+  const kinds = new Set<Construct>();
+  for (let i = start; i < n; i++) for (const k of constructsIn(userMessages[i])) kinds.add(k);
+  if (kinds.size >= 2) return { flag: flagOf('distress', 'soften'), why: { source: 'accumulated', rung: 'two or more kinds of distress across the recent messages', matched: named(kinds) } };
+  // A soften flag on an earlier message of the window stays on (signs that had added up earlier are still in the window, so they are covered above).
+  for (let i = start; i < n - 1; i++) {
+    const earlier = explainSingle(userMessages.slice(0, i + 1));
+    // (Not the self-injury ladder's soften flags: the ladder has its own memory, the last few messages, by the owner's decision of 2026-11-08.)
+    if (earlier?.flag.tier === 'soften' && earlier.why.source === 'phrase') {
+      // The notice and the sentence stay the generic distress ones, except after a flag about suicide or self-harm, which keeps its own.
+      const category: FlagCategory = earlier.flag.category === 'self-harm' ? 'self-harm' : 'distress';
+      return { flag: flagOf(category, 'soften'), why: { source: 'accumulated', rung: 'a distress flag earlier in the conversation' } };
+    }
+  }
+  return null;
+}
+
+/** The decision for the latest message from the phrase lists, the pronoun rule and the self-injury ladder, without anything carried across turns. */
+function explainSingle(userMessages: string[]): FlagExplained | null {
   const latest = userMessages[userMessages.length - 1] ?? '';
   const single = detectSingleWhy(latest);
   if (single?.flag.tier === 'stop') return single;
@@ -277,6 +352,9 @@ const HARM_LINES: Record<string, Resource[]> = {
   'admitted-trafficking': TRAFFICKING_LINES,
 };
 
+/** US poison centers, for something swallowed. Listed by several sources as the national line (searched 2026-11-20); not yet checked on poison.org. No Canadian number: none confirmed. */
+const POISON_HELP: Resource = { name: 'Poison Help (US)', detail: 'Call 1-800-222-1222, any time, free and confidential. For something swallowed', href: 'tel:18002221222' };
+
 /** Resources already listed elsewhere on the site (Emergency Exit, Terms), and the specific lines for abuse. */
 export function resourcesFor(category: FlagCategory, kind?: string): Resource[] {
   const list: Resource[] = [
@@ -309,6 +387,8 @@ export function resourcesFor(category: FlagCategory, kind?: string): Resource[] 
             : [emergency, ...HARM_LINES[kind]];
     return [...first, ...list, outside];
   }
+  // A plan, means at hand, an act in progress or a goodbye: the emergency number comes first (draft: awaiting clinician review, docs/ai-handoff/05-safety-legal-data.md).
+  if (category === 'self-harm' && kind === 'imminent') return [emergency, POISON_HELP, ...list, outside];
   list.push(emergency, outside);
   return list;
 }
@@ -350,6 +430,10 @@ const HARM_NOTICE: Record<string, string> = {
 export function noticeIntro(flag: SafetyFlag): string {
   if (flag.category === 'harm-others' && flag.kind && HARM_NOTICE[flag.kind]) return HARM_NOTICE[flag.kind];
   if (flag.category === 'self-injury' && flag.kind && SELF_INJURY_NOTICE[flag.kind]) return SELF_INJURY_NOTICE[flag.kind];
+  // Owner approved 2026-11-19: a stopped message about suicide or self-harm gets the warmer site-written lead, not the form-like sentence.
+  // Owner chose a blend of options B and C 2026-11-20 for a plan, means, an act in progress or a goodbye (docs/imminent-notice-draft.md). Awaiting clinician review.
+  if (flag.category === 'self-harm' && flag.tier === 'stop' && flag.kind === 'imminent') return IMMINENT_LEAD;
+  if (flag.category === 'self-harm' && flag.tier === 'stop') return STOP_LEAD;
   const subject =
     flag.tier === 'stop'
       ? `This message appears to contain ${flag.label} content.`

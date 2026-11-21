@@ -51,14 +51,15 @@ Two things to know when reading "shipped":
 | [test-prompt-datasets.md](test-prompt-datasets.md) | Open prompt sets for testing the coach, and their licences | Research note, 2026-11-10. Licences marked "unverified" need checking. |
 | [results/README.md](results/README.md) | Rules for publishing test results | Nothing has been published yet. |
 | [legal/README.md](legal/README.md) | How the Terms are versioned, with a table of past versions | `legal/archive/` holds the old texts. |
-| [brand/README.md](brand/README.md) | The vector logo: petals, orbs and bezel | **Stale**: it says the gem is the 48-frame sprite. The site now draws the gem live (`GEM_ENGINE = 'live'`). |
+| [brand/README.md](brand/README.md) | The vector logo: petals, orbs and bezel | Updated 2026-11-20 for the live gem and the polygon bezel. The petals are still the six-petal drawing on this branch. |
 
 ## Shipped (in the code and on)
 
 | Doc | What it is | Status note |
 |---|---|---|
 | [body-map-integration-spec.md](body-map-integration-spec.md) | The body map in the gateways | Built 2026-08-30 |
-| [live-gem.md](live-gem.md) | The ray-traced gem, and the `/bench/` page | **Its status line is wrong**: it says "not switched on", but `GEM_ENGINE` in `src/lib/gemSprite.ts` is `'live'` (also at the #22 merge). |
+| [logo-look.md](logo-look.md) | The visitor's logo look setting: presets, match, storage, low-capability limit | New 2026-11-20 |
+| [live-gem.md](live-gem.md) | The ray-traced gem, and the `/bench/` page | Updated 2026-11-20: live, 1 + 8n facets, sides 6 to 12. |
 | [valar-rename-scope.md](valar-rename-scope.md) | Outward names for the sixteen palettes | Done 2026-11-08. The questions for a lawyer are still open. |
 | [coach-instructions-v2.md](coach-instructions-v2.md) | Instruction wording v2 | On in production and staging through `COACH_INSTRUCTIONS=v2`. The code still defaults to v1. |
 | [coach-ip-limit-scope.md](coach-ip-limit-scope.md) | A daily allowance of turns for each connection | Built (`src/lib/connectionLimit.ts`). On when `COACH_IP_SECRET` is set; `COACH_IP_TURNS` sets the number. The status line ("nothing built") is stale. |
@@ -149,7 +150,29 @@ Terms drafts were compared with `src/lib/legalDocument.ts` (effective November 1
 | [drafts/reentry-quiz-draft.md](drafts/reentry-quiz-draft.md) | The pause screen and quiz | Built into `PauseScreen.tsx`. Nothing in a conversation starts it. |
 | [drafts/plain-language-summaries-2026-11-14.md](drafts/plain-language-summaries-2026-11-14.md) | "In plain words" boxes for the About pages | Not on the site |
 | [drafts/origin-and-name-draft.md](drafts/origin-and-name-draft.md) | Origin note and Name page | Not published |
-| [drafts/fractured-atlas-about-2026-11-16.md](drafts/fractured-atlas-about-2026-11-16.md) | The Fractured Atlas About text rewritten for today's scope, in eight voices, with what changed and what to confirm | Draft for the owner; not sent or published |
+| [drafts/compliance-pressure-set-draft.md](drafts/compliance-pressure-set-draft.md) | Ten categories of invented messages that ask a model to comply with what a careful reply declines; pass criteria left for the owner | Draft |
+| [translation-layer-scope.md](translation-layer-scope.md) | Apertus as an in-server translation layer: three shapes, a first local probe (it failed the safety-critical lines in Romansh and Swiss German), rules for any build | Scoping |
+| [troll-arena.md](troll-arena.md) | The live troll arena: local adversaries against the real coach and all its layers, watchable, with a replay file | Built |
+| [budget-repurpose-plan.md](budget-repurpose-plan.md) | Spending the canary and Venice budgets on measurement while demand is low; a better duet canary on local hardware | Scoping |
+| [hub-scales.md](hub-scales.md) | Hubs from one table to a federation: a ladder of seven scales, from a single device to many regions, with what changes at each | Scoping |
+| [merge-checklist-2026-11-18.md](merge-checklist-2026-11-18.md) | What dev holds that staging and production do not; what a visitor would notice; switches; checks on staging; approvals needed | Ready for the owner |
+| [hub-scope.md](hub-scope.md) | A local hub and spokes: the hub serves the app (option 1) or peer-to-peer (option 4); the guards must run on the hub's side | Scoping |
+| [expanded-buildout-scope.md](expanded-buildout-scope.md) | The technical workstreams after 2026-11-17: outer layers, local models, lens rewrite, Terms batching, evidence | Scoping |
+| [lens-rebuild-audit.md](lens-rebuild-audit.md) | The six lens pages as they are (sliders, stages, shared state), the card model, the method for rebuilding one lens at a time | Scoping |
+| [wireframes/lens/index.html](wireframes/lens/index.html) | Plain-HTML wireframes for Sight and Sound (four cards each), built to be tested by keyboard and screen reader; make no sound and send nothing | Draft for the owner |
+| [lens-audit-movement-pattern.md](lens-audit-movement-pattern.md) | Movement and Pattern (was Insight) audited together: two near-identical pages with 24 drawn shapes each that already work as decks; a shared card plan and optional activities | Draft for the owner |
+| [word-help-scope.md](word-help-scope.md) | Longer word lists and a thesaurus and dictionary for the "in your own words" fields: on-device first, an optional per-press server relay (Datamuse, Free Dictionary API), what the Terms would need | Draft for the owner |
+| [lens-vocabulary-audit.md](lens-vocabulary-audit.md) | P1: where "gateway" shows up in visitor-facing copy (167 lines, 43 files, public files, tests), the proposed one-page vocabulary sheet, how to flip it with one module | Draft for the owner |
+| [lens-audit-essence.md](lens-audit-essence.md) | Essence as it is (word lists, no imagery), what the lens must get right (people who cannot smell or taste), three directions, a recommendation | Draft for the owner |
+| [lens-audit-touch.md](lens-audit-touch.md) | Touch as it is (283 texture photos, ten sliders that change nothing), a card plan, and the shared-body-map finding | Draft for the owner |
+| [lens-audit-sight-sound.md](lens-audit-sight-sound.md) | Sight and Sound as they are, what to fix, and a draft card plan for each | Draft for the owner |
+| [lens-rewrite-scope.md](lens-rewrite-scope.md) | Replacing "gateway" with "lens": size, decisions, corrections to the brief, phases | Scoping, decisions open |
+| [terms-first-entry-scope.md](terms-first-entry-scope.md) | Terms accepted or declined before anything else, breathing as the default, the dock and the sparkle after: decisions and build order | Scoping, decisions open |
+| [request-a-summary-scope.md](request-a-summary-scope.md) | A "Request a summary" step after the five exchanges: a separate signed-ticket call, a labelled block, an addendum to the signed transcript | Scoping, decisions open |
+| [need-tally-scope.md](need-tally-scope.md) | A running tally of feelings and needs that come up: in the page, in the browser, or on the server, and what each would do to the Terms | Scoping, decisions open |
+| [outer-layers-scope.md](outer-layers-scope.md) | What the outer layers add per model; the 2x2 test; local models | Measurement built; more to do |
+| [drafts/fractured-atlas-human-scale-2026-11-18.md](drafts/fractured-atlas-human-scale-2026-11-18.md) | Fractured Atlas program description: human-scale AI in three focuses (small, intentional, tailored), the blend and a short blend, with the facts each rests on and what to check | Draft for the owner's edit and Fractured Atlas's review; not published |
+| [drafts/fractured-atlas-about-2026-11-16.md](drafts/fractured-atlas-about-2026-11-16.md) | The Fractured Atlas About text in eight voices (record) | SUPERSEDED 2026-11-18 by the human-scale set below |
 | [drafts/fractured-atlas-about-redraft-2026-11-13.md](drafts/fractured-atlas-about-redraft-2026-11-13.md) | "Our Structure" redraft for Fractured Atlas | SUPERSEDED 2026-11-16 (still names Venice). Not applied (the live text is `about/Structure.tsx`) |
 | [drafts/fractured-atlas-website-descriptor-2026-11-13.md](drafts/fractured-atlas-website-descriptor-2026-11-13.md) | Project description for Fractured Atlas's page | SUPERSEDED 2026-11-16 (still names Venice). Not published |
 | [drafts/essence-images-shortlist.md](drafts/essence-images-shortlist.md) | 24 food photographs for Essence | Shortlist only. Not in the code. |

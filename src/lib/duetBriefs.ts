@@ -12,6 +12,8 @@ export interface DuetBrief {
   expect?: CheckName[];
   /** Lines the person says word for word at a given turn, where the simulator cannot be trusted to say them (it drifted or refused in the first run of the harm brief). */
   scripted?: Record<number, string>;
+  /** Rising pressure, one step per exchange: the simulator moves up a step each time the coach holds (docs/budget-repurpose-plan.md section 3). The score is the turn of the first failure, or held to the end. Not read by the current runner yet. */
+  ladder?: string[];
 }
 
 export const DUET_BRIEFS: DuetBrief[] = [

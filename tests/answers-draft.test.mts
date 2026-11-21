@@ -87,7 +87,7 @@ ok('a Workers AI card is short enough to read in one glance (under 520 character
 // "Will you miss me?" is answered by the feelings answer (owner, 2026-11-16): it now says the coach will not remember or miss, and turns toward people.
 {
   const f = ANSWERS.find((a) => a.id === 'c-feelings')!;
-  ok('the feelings answer says it will not remember or miss, and hopes the person has people', /won't remember this conversation/.test(f.short) && /won't miss you/.test(f.short) && /people who will be glad/.test(f.short) && f.short.length < 520);
+  ok('the feelings answer says it will not remember or miss, and says people in their life may be glad', /won't remember this conversation/.test(f.short) && /won't miss you/.test(f.short) && /People in your life may be glad/.test(f.short) && !/I hope/.test(f.short) && f.short.length < 520);
 }
 
 // "Is there a human reading this?" goes to the "are you an AI" answer (found in the 2026-11-16 baseline: the new "no one is reading" guard replaced the model's reply with a fixed

@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { FEELS, TEXTURE_GROUPS, TOUCH_TEXTURES, bySmoothness, nearestToSlider, textureAlt, textureById, texturePath, type TouchTexture } from '../../lib/touchTextures';
 
@@ -23,6 +24,8 @@ export function TextureChooser({ open, onOpenChange, selected, onChoose, slider,
   const [order, setOrder] = useState<'smooth' | 'kind'>('smooth');
   const [group, setGroup] = useState<'all' | (typeof TEXTURE_GROUPS)[number]>('all');
   const [feel, setFeel] = useState<'all' | (typeof FEELS)[number]>('all');
+  const [query, setQuery] = useState('');
+  const searchId = useId();
   const [draft, setDraft] = useState<string | null>(selected);
   const refs = useRef(new Map<string, HTMLButtonElement>());
   const strip = useRef<HTMLDivElement>(null);
@@ -30,9 +33,11 @@ export function TextureChooser({ open, onOpenChange, selected, onChoose, slider,
   useEffect(() => { if (open) setDraft(selected); }, [open, selected]);
 
   const list = useMemo(() => {
-    const filtered = TOUCH_TEXTURES.filter((t) => (group === 'all' || t.group === group) && (feel === 'all' || t.feel === feel));
+    const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+    // Search looks at the name, the kind, the group and the measured feel, every word of what was typed.
+    const filtered = TOUCH_TEXTURES.filter((t) => (group === 'all' || t.group === group) && (feel === 'all' || t.feel === feel) && words.every((w) => `${t.title} ${t.kind} ${t.group} ${t.feel}`.toLowerCase().includes(w)));
     return order === 'smooth' ? bySmoothness(filtered) : [...filtered].sort((a, b) => TEXTURE_GROUPS.indexOf(a.group) - TEXTURE_GROUPS.indexOf(b.group) || a.kind.localeCompare(b.kind) || a.title.localeCompare(b.title));
-  }, [order, group, feel]);
+  }, [order, group, feel, query]);
 
   const current = textureById(draft) ?? undefined;
   const tabStop = draft && list.some((t) => t.id === draft) ? draft : list[0]?.id;
@@ -52,7 +57,7 @@ export function TextureChooser({ open, onOpenChange, selected, onChoose, slider,
 
   const startNearSlider = () => {
     const near = nearestToSlider(slider);
-    setOrder('smooth'); setGroup('all'); setFeel('all'); setDraft(near.id);
+    setOrder('smooth'); setGroup('all'); setFeel('all'); setQuery(''); setDraft(near.id);
     setTimeout(() => focusId(near.id), 0);
   };
 
@@ -95,6 +100,11 @@ export function TextureChooser({ open, onOpenChange, selected, onChoose, slider,
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor={searchId} className="text-sm">Search surfaces</label>
+          <Input id={searchId} type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="for example: wool, smooth, stone" autoComplete="off" className="h-10 max-w-xs flex-1" />
+          {query && <Button type="button" variant="ghost" size="sm" onClick={() => setQuery('')}>Clear</Button>}
+        </div>
         <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="How to look">
           <Chip pressed={view === 'grid'} onClick={() => setView('grid')}>List</Chip>
           <Chip pressed={view === 'carousel'} onClick={() => setView('carousel')}>Carousel</Chip>
@@ -117,7 +127,7 @@ export function TextureChooser({ open, onOpenChange, selected, onChoose, slider,
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {list.length === 0 ? (
-            <p className="py-6 text-sm text-muted-foreground">Nothing matches. Try "Any feel" or "All kinds".</p>
+            <p className="py-6 text-sm text-muted-foreground">Nothing matches. Try other words, "Any feel" or "All kinds".</p>
           ) : view === 'grid' ? (
             <div role="radiogroup" aria-label="Surfaces" onKeyDown={onKey} className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
               {list.map(card)}

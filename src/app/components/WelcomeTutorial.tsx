@@ -4,6 +4,7 @@ import * as m from 'motion/react-m';
 import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 
+import { L } from '../../lib/vocabulary';
 export type TutorialStepId = 'logo' | 'counter' | 'tools' | 'accessibility' | 'reflection';
 
 interface TutorialStep {
@@ -44,7 +45,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     id: 'reflection',
     targetIds: ['tutorial-cta'],
     title: 'The sensory reflection',
-    body: 'This button begins the reflection. You choose which of the six gateways to explore (Sight, Sound, Touch, Essence, Movement and Insight), and at the end you can save a private report made in your own browser.',
+    body: L('This button begins the reflection. You choose which of the six gateways to explore (Sight, Sound, Touch, Essence, Movement and Insight), and at the end you can save a private report made in your own browser.'),
   },
 ];
 const STEPS = TUTORIAL_STEPS;

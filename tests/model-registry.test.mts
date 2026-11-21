@@ -1,0 +1,10 @@
+import { MODEL_REGISTRY, modelEntry, modelLabel, registryProblems } from '../src/lib/modelRegistry.ts';
+import { VENICE_DEFAULT_MODEL, WORKERS_AI_DEFAULT_MODEL } from '../src/lib/coachProvider.ts';
+import { MODEL_NAMES } from '../src/lib/aboutNenya.ts';
+import { ok } from './helpers.mts';
+ok('the registry is consistent (unique ids, labels, active within total, local is on-device, only Venice E2EE is attested)', registryProblems().length === 0, registryProblems().join(' | '));
+ok('both coach defaults are in the registry', !!modelEntry(VENICE_DEFAULT_MODEL) && !!modelEntry(WORKERS_AI_DEFAULT_MODEL));
+ok('every model the site\'s answers can name is in the registry', Object.keys(MODEL_NAMES).every((id) => !!modelEntry(id)));
+ok('the production default is the attested uncensored Gemma, and the registry does not claim a license or tuner it was not given', modelEntry(VENICE_DEFAULT_MODEL)!.attested && modelEntry(VENICE_DEFAULT_MODEL)!.license === null && modelEntry(VENICE_DEFAULT_MODEL)!.tuner === null);
+ok('local models are named for what the local server calls them, and an unknown id labels as itself', modelEntry('gemma-4-e2b-it-uncensored')?.runsOn === 'local' && modelLabel('some-new-model') === 'some-new-model');
+ok('each entry says what was checked, or says nothing was (null), and the license of a custom-terms model says so', MODEL_REGISTRY.every((m) => m.checked === null || m.checked.length > 15) && /custom terms/.test(modelEntry('llama-3.2-1b-instruct')!.license ?? ''));

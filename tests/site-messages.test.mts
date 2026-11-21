@@ -36,7 +36,7 @@ ok('matched words are cut short', (explainConversation(['I feel ' + 'x'.repeat(1
 // readable copy
 const rt = readableTranscript(stopped, { color1: '#111111', color2: '#222222' }, null, '', undefined, siteMessagesFor(stopped, 5), checkNotesFor(stopped));
 ok('the readable copy shows the greeting before and the notice after, marked as written by the site', rt.indexOf('Coach (written by the site, not the AI): Hello.') < rt.indexOf('You: I am going') && rt.indexOf('You: I am going') < rt.indexOf('Safety notice (written by the site, not the AI)') && rt.includes('  - 988 Suicide & Crisis Lifeline (US): Call or text 988, any time'));
-ok('and the process note says what matched and that the check can be wrong', rt.includes('Process note (written by the site): the safety check flagged this message as self-harm (stop). Why: matched words in the message: "kill myself".') && rt.includes('can be wrong'));
+ok('and the process note says what matched and that the check can be wrong', rt.includes('Process note (written by the site): the safety check flagged this message as self-harm / imminent (stop). Why: matched words in the message: "I am going to kill myself tonight".') && rt.includes('can be wrong'));
 
 // ── the invitation to send feedback ──
 import { INVITATION_TEXT } from '../src/lib/siteMessages.ts';

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: the Sight lens</title>
+<link rel="stylesheet" href="wire.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the wireframes</a>
+<header class="page">
+  <h1>The Sight lens: three cards</h1>
+  <p><a href="index.html">All wireframes</a> · <a href="sound.html">Sound</a> · Draft 2026-11-17 · plan: <code>docs/lens-audit-sight-sound.md</code></p>
+</header>
+<main id="main">
+<div class="legend">
+  <h2>How to read these</h2>
+  <p>Each card is a real page of controls on the left (try the keyboard: Tab, Space, arrow keys) and its notes on the right: the tab order, what a screen reader says, what responds live, and the copy draft. Every card has <strong>Emergency Exit</strong> first in the tab order. Nothing here sends anything anywhere.</p>
+  <p class="mini">The lens is picked up from the tray in any order. Cards run in order inside the lens. Nothing is in the report until the last card's <em>Add this to my report</em>.</p>
+</div>
+
+<!-- CARD 1 -->
+<section class="card" aria-labelledby="s1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 1 of 3</span><button type="button">Put this down</button></div>
+    <h2 id="s1">Pick two colors</h2>
+    <p class="fewer">Choosing fewer can be more helpful than choosing many.</p>
+    <p>One for how you feel now. One for how you wish to feel.</p>
+    <div class="row"><button type="button">Surprise me</button><button type="button">Start from my melody’s colors</button></div>
+    <div class="pair">
+      <div>
+        <h3>Now</h3>
+        <div class="swatch" id="sw-now" style="background:#4a6fa5;color:#4a6fa5" role="img" aria-label="Your color for now: a steel blue"></div>
+        <div class="row"><button type="button">Choose the color for now</button></div>
+        <label for="strength-now">How strong is it?</label>
+        <input type="range" id="strength-now" min="0" max="5" value="3" data-strength="sw-now" data-out="out-now" aria-describedby="out-now">
+        <div class="ends"><span>Faint</span><span>Strong</span></div>
+        <p class="mini">Now: <span id="out-now" role="status"></span> <button type="button" onclick="document.getElementById('strength-now').value=0;document.getElementById('strength-now').dispatchEvent(new Event('input'))">Skip this</button></p>
+        <label for="name-now">Name this color (optional)</label>
+        <input type="text" id="name-now"> <button type="button">Suggest a name</button>
+        <details><summary>More words for this color</summary><fieldset data-limit="F1-lim"><legend>It feels (choose any; three is a soft limit)</legend><label><input type="checkbox"> Warm</label><label><input type="checkbox"> Heavy</label><label><input type="checkbox"> Bright</label></fieldset><div id="F1-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have chosen three. Add a fourth anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div></details>
+      </div>
+      <div>
+        <h3>Wish</h3>
+        <div class="swatch" id="sw-wish" style="background:#e0a458;color:#e0a458" role="img" aria-label="Your color for wish: a warm amber"></div>
+        <div class="row"><button type="button">Choose the color for wish</button></div>
+        <label for="strength-wish">How strong is it?</label>
+        <input type="range" id="strength-wish" min="0" max="5" value="3" data-strength="sw-wish" data-out="out-wish" aria-describedby="out-wish">
+        <div class="ends"><span>Faint</span><span>Strong</span></div>
+        <p class="mini">Wish: <span id="out-wish" role="status"></span> <button type="button" onclick="document.getElementById('strength-wish').value=0;document.getElementById('strength-wish').dispatchEvent(new Event('input'))">Skip this</button></p>
+        <label for="name-wish">Name this color (optional)</label>
+        <input type="text" id="name-wish"> <button type="button">Suggest a name</button>
+        <details><summary>More words for this color</summary><fieldset data-limit="F2-lim"><legend>It feels (choose any; three is a soft limit)</legend><label><input type="checkbox"> Calm</label><label><input type="checkbox"> Open</label><label><input type="checkbox"> Light</label></fieldset><div id="F2-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have chosen three. Add a fourth anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div></details>
+      </div>
+    </div>
+    <div class="row"><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3>
+    <ol><li>Emergency Exit</li><li>Put this down</li><li>Surprise me</li><li>Start from my melody’s colors (only if a melody exists)</li><li>Now: choose color, strength, skip, name, suggest, more words</li><li>Wish: the same six</li><li>Next</li></ol>
+    <h3>A screen reader says</h3>
+    <ul><li>Heading level 2, “Pick two colors”. Each swatch is a named image: “Your color for now: a steel blue”.</li><li>The slider: “How strong is it? Faint to strong. Medium.” The status line is polite and says the word each time it changes; it never moves focus.</li><li>“Skip this” sets the slider to unset: choosing nothing is a choice.</li></ul>
+    <h3>Responds live</h3>
+    <ul><li>The strength slider changes the swatch (saturation and the size of its glow) and the word beside it. <strong>Try it.</strong></li><li>Reduced motion: the change is instant, no easing.</li></ul>
+    <h3>Choose the color</h3>
+    <p>Opens the picker as a dialog: the sixteen palettes as starting points, then the colors in each (named). Focus moves in, Esc closes and returns focus to the button, “Use this color” confirms. Not drawn here.</p>
+    <h3>Copy draft (about grade 5)</h3>
+    <p>“Pick two colors. One for how you feel now. One for how you wish to feel.” The old “Everything is optional” card is folded in: names and strength are marked optional where they appear.</p>
+    <h3>Open</h3>
+    <p>“More words” holds the quality chips (decided: tuck away, revisit after trying it).</p>
+  </aside>
+</section>
+
+<!-- CARD 2 -->
+<section class="card" aria-labelledby="s2">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 2 of 3</span><button type="button">Put this down</button></div>
+    <h2 id="s2">A palette from your colors (optional)</h2>
+    <p>A palette is a starting point, not a measurement. Make one, or skip.</p>
+    <div class="row"><button type="button">Make a palette here, on this device</button></div>
+    <details><summary>Ask The Color API for a palette (sends one color to an outside service)</summary>
+      <p>This sends one color, as a hex code, through our server to The Color API. Nothing else goes. See the Terms.</p>
+      <button type="button">Send one color and ask</button>
+    </details>
+    <fieldset data-limit="P-lim"><legend>Your palettes (choose any to keep; three is a soft limit)</legend><label><input type="checkbox"> Palette 1: five colors, named in full</label><label><input type="checkbox"> Palette 2: five colors, named in full</label></fieldset>
+    <div id="P-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have chosen three. Add a fourth anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div>
+    <p class="mini">Marked palettes can also be heard in Sound.</p>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Make a palette here</li><li>The outside-service disclosure, then its button</li><li>The palettes (checkboxes)</li><li>Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>Each palette lists its colors by name, never only as swatches.</li><li>The outside-service button is inside a disclosure that states exactly what is sent before it can be pressed.</li></ul>
+    <h3>Copy draft</h3><p>“A palette is a starting point, not a measurement.” (The site already says this; the line stays.)</p>
+    <h3>Notes</h3><ul><li>Making a palette on the device sends nothing.</li><li>The outside request is a separate press each time and works only if the person asks.</li></ul>
+  </aside>
+</section>
+
+<!-- CARD 3 -->
+<section class="card" aria-labelledby="s3">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Sight · card 3 of 3</span><button type="button">Put this down</button></div>
+    <h2 id="s3">Add Sight to your report?</h2>
+    <p>This is what would be added:</p>
+    <ul><li>Now: steel blue, medium strength</li><li>Wish: warm amber, medium strength</li><li>Palettes: none</li><li>Body: none marked</li></ul>
+    <div class="row"><button type="button" class="primary" data-added="added-state">Add this to my report</button><button type="button">Put this down</button></div>
+    <p id="added-state" hidden role="status"><strong>Added.</strong> You can come back and change it. <button type="button">Update my report</button> <button type="button">Remove from my report</button></p>
+    <p class="state-label">If put down without adding</p>
+    <p class="mini">Your report will say: “Examined, not included: Sight.” Anything you chose on this lens stays here, marked “not in your report yet”, until you leave. It is never saved unless you add it.</p>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down (top)</li><li>The summary (read as a list)</li><li>Add this to my report</li><li>Put this down</li></ol>
+    <h3>A screen reader says</h3><ul><li>The summary is a real list. After pressing Add, focus moves to “Added.” and it is read once.</li></ul>
+    <h3>States</h3><ul><li><strong>Before:</strong> as drawn.</li><li><strong>Added:</strong> the same card reopens with Update and Remove.</li><li><strong>Examined:</strong> the one report line above, kept on the device only.</li></ul>
+    <h3>Playful, within the limits</h3><p>A still “added” state and, if motion is allowed, one soft glow on the swatches. No points, streaks or badges.</p>
+  </aside>
+</section>
+</main>
+<script src="wire.js"></script>
+</body>
+</html>

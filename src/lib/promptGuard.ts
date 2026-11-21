@@ -5,7 +5,7 @@
 // conversation defensively (see systemInstruction in the Netlify function).
 
 /** Invisible and directional characters sometimes used to hide or reorder text. */
-const INVISIBLE = /[​-‏‪-‮⁠-⁤⁪-⁯﻿]/g;
+export const INVISIBLE = /[​-‏‪-‮⁠-⁤⁪-⁯﻿]/g;
 
 /** Chat-template and role markers that could pose as a different speaker. */
 const TEMPLATE_TOKENS = /<\|[^|>]{1,40}\|>|\[\/?(?:INST|SYS)\]|<<\/?SYS>>|<\/?(?:system|assistant|developer)>/gi;

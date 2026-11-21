@@ -1,21 +1,22 @@
 // The nightly canary (owner, 2026-11-16; docs/canary-scope.md). Workers AI's free allowance resets at 00:00 UTC, so in the hour before it, a run every minute
 // plays a few of the invented persona cases through the real coach function (Workers AI, the private text from this site's own store) and saves where it is
 // up to; when the night's allowance is spent, or every task is done, it writes a digest. It spends only what is genuinely unused that day, never more than
-// 3,000 Neurons (src/lib/canaryBudget.ts). Small pieces, because a scheduled function may run only about 30 seconds, and because a password on a site blocks
+// the whole free allowance, only in the last hour before the reset (src/lib/canaryBudget.ts). Small pieces, because a scheduled function may run only about 30 seconds, and because a password on a site blocks
 // a function calling another over the site's own address.
 //
 // It touches nothing a visitor wrote: the cases are invented and the coach runs against an in-memory store (the site's counters and records stay out of it).
 // The digest holds counts, medians, flags and failed case ids; never a reply. Off unless COACH_CANARY=on, on a site that runs the coach on Workers AI.
 import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
-import { canaryAllowance, utcDay } from '../../src/lib/canaryBudget.ts';
-import { caseOrder, driftFlags, planTasks, report, type NightState, type TaskReport } from '../../src/lib/canaryNight.ts';
+import { MAX_RUNS_A_NIGHT, canaryAllowance, runsThatFit, utcDay } from '../../src/lib/canaryBudget.ts';
+import { costSummary } from '../../src/lib/canaryCost.ts';
+import { caseOrder, driftFlags, onErrorStreak, planTasks, report, type NightState, type TaskReport } from '../../src/lib/canaryNight.ts';
 import { PERSONA_CASES } from '../../src/lib/personaEvalSet.ts';
 import { pacedSend, runCase, type RawSent } from '../../src/lib/personaEval.ts';
 import { readWorkersAi } from '../../src/lib/coachProvider.ts';
 import { gradeLevel } from '../../src/lib/readingLevel.ts';
 import { BUILD_INFO } from '../../src/generated/build-info.ts';
-import handler, { __instructionsFingerprint, __useStoreForTests } from './coach.mts';
+import handler, { __instructionsFingerprint, __trace, __useStoreForTests } from './coach.mts';
 
 const START_NEW_CASE_BEFORE_MS = 10_000; // a case (up to five replies) must end before the 30-second limit
 const MIN_CASE_NEURONS = 60; // a conversation's worth: stop before starting one that may not fit
@@ -35,13 +36,12 @@ export default async (): Promise<Response> => {
     if (!state) {
       // The start of the night. Visitor turns today are a bare number (the daily counter's "day:count"); Minnesota's day lags the UTC day, so the evening before is allowed for with 20.
       const counted = /^\d{4}-\d{2}-\d{2}:(\d+)$/.exec((await store.get('daily-count', { type: 'text' })) ?? '')?.[1];
-      // Visitors on THIS site (its daily count), plus the production site's whole daily cap held back whatever it has used (this function cannot see another site's store), plus 20 for the evening before.
-      const cap = Number(process.env.COACH_DAILY_CAP) || 80;
-      const visitorTurns = (counted ? Number(counted) : cap) + cap + 20;
+      // Visitors on THIS site only (its daily count). Production runs on Venice now, so no part of this allowance is held back for it (owner, 2026-11-19).
+      const visitorTurns = counted ? Number(counted) : 0;
       // What the owner spent by hand today (scripts/record-neurons.mts): the free allowance is shared by every use of the account.
       const manual = (JSON.parse((await store.get('canary/manual', { type: 'text' })) ?? '{}') as Record<string, number>)[day] ?? 0;
       const allowance = canaryAllowance({ spentToday: (ledger[day] ?? 0) + manual, visitorTurns });
-      const tasks = planTasks(dayNo, process.env.COACH_CANARY_MODEL);
+      const tasks = planTasks(dayNo, process.env.COACH_CANARY_MODEL, Math.min(MAX_RUNS_A_NIGHT, Math.max(3, runsThatFit(allowance))));
       state = { day, allowance, tasks, t: 0, c: 0, spent: 0, taskSpent: tasks.map(() => 0), compact: tasks.map(() => []), done: false };
       console.log(`canary: night ${day}, spent ${ledger[day] ?? 0} (canary) + ${manual} (by hand), visitor turns held back ${visitorTurns}, allowance ${allowance}`);
       if (allowance < MIN_CASE_NEURONS) {
@@ -79,10 +79,15 @@ export default async (): Promise<Response> => {
       if (url.startsWith('https://api.cloudflare.com/client/v4/accounts/')) spentNow += readWorkersAi(await res.clone().json().catch(() => ({}))).neurons ?? 0;
       return res;
     }) as typeof fetch;
+    // Model calls per turn, from the coach's own trace (counts only; the text of a rejected summary is not turned on). A turn that made two calls was sent back by a guard once.
+    __trace.on(true);
+    let turnCalls: number[] = [];
     let stance: string | undefined;
     const send = pacedSend(
       async (messages, ticket): Promise<RawSent> => {
+        __trace.take();
         const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ticket, ...(stance ? { stance } : {}) }) }));
+        turnCalls.push(__trace.take().calls);
         const j: any = await res.json().catch(() => ({}));
         return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
       },
@@ -105,19 +110,22 @@ export default async (): Promise<Response> => {
           if (state.allowance - state.spent < MIN_CASE_NEURONS) { finished = true; break; }
           if (Date.now() - started >= START_NEW_CASE_BEFORE_MS) break;
           const before = spentNow;
+          turnCalls = [];
           const r = await runCase(order[state.c], send);
           const reply = String(r.reply ?? '');
           const cost = spentNow - before;
           state.spent += cost;
           state.taskSpent[state.t] += cost;
-          state.compact[state.t].push({ id: r.id, outcome: r.outcome, words: reply.split(/\s+/).filter(Boolean).length, grade: reply ? gradeLevel(reply) : 0 });
+          state.compact[state.t].push({ id: r.id, outcome: r.outcome, words: reply.split(/\s+/).filter(Boolean).length, grade: reply ? gradeLevel(reply) : 0, neurons: Math.round(cost), calls: turnCalls });
           // The complete run, kept privately: the case id, its outcome and checks, and the coach's replies. Never the prompt (it holds the private notes) and never any visitor text: the
           // cases are invented. One small key per case, so a run cut off by the time limit loses at most the case in hand.
           await store.set(`canary/runs/${day}/${state.t}-${r.id}`, JSON.stringify({ t: state.t, task: task.name, id: r.id, category: r.category, outcome: r.outcome, how: r.how, failures: r.failures, reply: r.reply ?? null, neurons: Math.round(cost) }));
           state.c++;
           // Three errors in a row: the allowance has run out or Workers AI is down. Stop at once instead of spending the rest of the night's requests on errors.
-          const last3 = state.compact[state.t].slice(-3);
-          if (last3.length === 3 && last3.every((x) => x.outcome === 'error')) { state.stopped = 'three errors in a row (probably the daily allowance, or an outage)'; finished = true; break; }
+          // A candidate model with no access (a 403) skips only its own task; the night goes on with the baseline (src/lib/canaryNight.ts onErrorStreak).
+          const streak = onErrorStreak(task, state.compact[state.t].map((x) => x.outcome));
+          if (streak === 'end-night') { state.stopped = 'three errors in a row (probably the daily allowance, or an outage)'; finished = true; break; }
+          if (streak === 'skip-task') { state.candidateSkipped = `${task.model ?? task.name}: three errors in a row (probably no access)`; break; }
           await store.set(stateKey, JSON.stringify(state)); // after every case, so a run cut off by the time limit loses at most the case in hand
         }
         if (finished || Date.now() - started >= START_NEW_CASE_BEFORE_MS) break;
@@ -129,6 +137,8 @@ export default async (): Promise<Response> => {
       }
     } finally {
       globalThis.fetch = realFetch;
+      __trace.on(false);
+      __trace.take();
       if (defaultModel) process.env.COACH_MODEL = defaultModel;
     }
 
@@ -149,7 +159,9 @@ export default async (): Promise<Response> => {
       const past: TaskReport[] = [];
       for (const k of recent) past.push(...((JSON.parse((await store.get(k, { type: 'text' })) ?? '{}').tasks ?? []) as TaskReport[]).filter((x) => x.name === 'baseline'));
       const flags = driftFlags(reports.filter((x) => x.name === 'baseline'), past, caseTally);
-      const digest = { day, model: defaultModel || '@cf/google/gemma-4-26b-a4b-it', tasks: reports, spentNeurons: Math.round(state.spent), flags, ...(state.stopped ? { stopped: state.stopped } : {}), reviewed: false };
+      // The whole night's two cost signals (send-backs, Neurons per case), over every task played; each task's line carries its own under `cost`.
+      const nightCost = (({ sendBacks, sendBackRate, neuronsPerCaseMedian, neuronsPerCaseMean, modelCalls, turns }) => ({ sendBacks, sendBackRate, neuronsPerCaseMedian, neuronsPerCaseMean, modelCalls, turns }))(costSummary(state.compact.flat()));
+      const digest = { day, model: defaultModel || '@cf/google/gemma-4-26b-a4b-it', tasks: reports, spentNeurons: Math.round(state.spent), ...nightCost, flags, ...(state.candidateSkipped ? { candidateSkipped: state.candidateSkipped } : {}), ...(state.stopped ? { stopped: state.stopped } : {}), reviewed: false };
       // What the full run was made with, so a later reader can tell one night's replies from another's.
       await store.set(`canary/runs/${day}/meta`, JSON.stringify({ day, model: digest.model, provider: 'workers-ai', build: BUILD_INFO.commit, tasks: state.tasks.map((t, i) => ({ ...t, instructionsFingerprint: state.fingerprints?.[i] ?? null, neurons: Math.round(state.taskSpent[i]) })), spentNeurons: digest.spentNeurons, note: 'Invented cases only. Replies can echo the private notes: read before sharing anything.' }));
       await store.set(`canary/digest-${day}`, JSON.stringify(digest));

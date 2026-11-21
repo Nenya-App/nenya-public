@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes: the Essence lens</title>
+<link rel="stylesheet" href="wire.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the wireframes</a>
+<header class="page">
+  <h1>The Essence lens: the flavor of your life</h1>
+  <p><a href="index.html">All wireframes</a> · <a href="tray.html">Tray</a> · <a href="touch.html">Touch</a> · Draft 2026-11-17 · audit: <code>docs/lens-audit-essence.md</code></p>
+</header>
+<main id="main" data-essence>
+<div class="legend">
+  <h2>The idea (owner, 2026-11-17)</h2>
+  <p>Essence asks one question, twice: <strong>what is the flavor of the life you have, and the one you want?</strong> It is a flavor, not a meal: a person describes it the way a taster describes a drink, with five taste dials, a few notes, a feel in the mouth and what lingers. Nothing needs to be tasted or eaten; it works from imagination. A shape drawn from the dials shows now and wish together, and a tasting note says it in words.</p>
+</div>
+
+<section class="card" aria-labelledby="e0">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Essence · start</span><button type="button">Put this down</button></div>
+    <h2 id="e0">Where would you like to start?</h2>
+    <p class="fewer">Choosing fewer can be more helpful than choosing many.</p>
+    <p>Three ways in. They all lead to the same place: the flavor of the life you have, and the one you want.</p>
+    <fieldset><legend>Start from</legend>
+      <label><input type="radio" name="basis" value="memory"> <strong>A memory.</strong> A smell or taste that takes you back to a time that felt good.</label>
+      <label><input type="radio" name="basis" value="mood" checked> <strong>A mood.</strong> How things taste to you right now.</label>
+      <label><input type="radio" name="basis" value="try"> <strong>A small thing to try.</strong> Start from the flavor you want, and end with one small step toward it.</label>
+    </fieldset>
+    <div class="row"><button type="button">Skip this lens for now</button><button type="button" class="primary">Begin</button></div>
+  </div>
+  <aside class="note">
+    <h3>The three bases (owner, 2026-11-17)</h3>
+    <ul><li><strong>A memory:</strong> begins with a time that tasted good (it often becomes the flavor you want), then asks about now.</li><li><strong>A mood:</strong> begins with now, then the flavor you want (as drawn in the next cards).</li><li><strong>A small thing to try:</strong> begins with the flavor you want, then now, and ends by asking for one small thing that would bring a little of it into today.</li></ul>
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>The three starting points (one radio group, arrow keys)</li><li>Skip this lens, Begin</li></ol>
+    <h3>Notes</h3><ul><li>The choice only sets the first question and the order of the two flavors; every basis ends at the same two shapes and the same tasting note. Try each: the next card's question changes.</li><li>Any of them can be skipped, and the person can change basis later.</li></ul>
+    <h3>Copy draft</h3><p>“Where would you like to start?”</p>
+  </aside>
+</section>
+
+<section class="card" aria-labelledby="e1">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Essence · card 1 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="e1" data-basis-title>What is the flavor of your life right now?</h2>
+    <p data-basis-text>If your life were a flavor, how much of each taste is in it? You can’t taste or smell right now? Imagine it. That works too.</p>
+    <label class="row"><input type="checkbox"> I can’t taste or smell right now: imagine instead</label>
+    <svg class="radar" viewBox="0 0 300 300" role="img" aria-label="A five-pointed shape made from your answers: sweet, sour, salty, bitter and umami. The words below say the same." data-sets="now"><g class="grid"><polygon class="grid" points="150,130 169,144 162,166 138,166 131,144"/><polygon class="grid" points="150,90 188,118 173,163 127,163 112,118"/><polygon class="grid" points="150,50 207,92 185,160 115,160 93,92"/><polygon class="grid" points="150,10 226,66 197,155 103,155 74,66"/></g><line class="axis" x1="150" y1="150" x2="150" y2="10"/><line class="axis" x1="150" y1="150" x2="226" y2="66"/><line class="axis" x1="150" y1="150" x2="197" y2="155"/><line class="axis" x1="150" y1="150" x2="103" y2="155"/><line class="axis" x1="150" y1="150" x2="74" y2="66"/><text x="150" y="8" text-anchor="middle">Sweet</text><text x="228" y="64">Sour</text><text x="200" y="172">Salty</text><text x="80" y="172" text-anchor="end">Bitter</text><text x="70" y="64" text-anchor="end">Umami</text></svg>
+    <label for="now-sweet">Sweet</label><input type="range" id="now-sweet" name="now-sweet" min="0" max="4" value="3"><div class="ends"><span>None</span><span>Very strong</span></div><label for="now-sour">Sour</label><input type="range" id="now-sour" name="now-sour" min="0" max="4" value="1"><div class="ends"><span>None</span><span>Very strong</span></div><label for="now-salty">Salty</label><input type="range" id="now-salty" name="now-salty" min="0" max="4" value="1"><div class="ends"><span>None</span><span>Very strong</span></div><label for="now-bitter">Bitter</label><input type="range" id="now-bitter" name="now-bitter" min="0" max="4" value="2"><div class="ends"><span>None</span><span>Very strong</span></div><label for="now-umami">Umami</label><input type="range" id="now-umami" name="now-umami" min="0" max="4" value="1"><div class="ends"><span>None</span><span>Very strong</span></div>
+    <p class="mini">Right now: <span data-say-taste="now" role="status"></span></p>
+    <div class="row"><button type="button">Surprise me</button><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Imagine-instead switch</li><li>Five dials: sweet, sour, salty, bitter, umami</li><li>Surprise me, Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>Each dial: “Sweet, none to very strong, strong.” The line “Right now: …” is the text twin and updates politely. The shape is described once and never needed: the words say the same.</li></ul>
+    <h3>Responds live (<strong>try it</strong>)</h3><ul><li>Moving a dial reshapes the five-pointed figure. It is a chart of the person’s answers, not a drawing of food. Reduced motion: it simply changes.</li></ul>
+    <h3>Notes</h3><ul><li>With a different starting point this card asks a different first question (try the choice on the first card). In the wireframe the dials are always the same five.</li><li>Each dial can stay at none; none is a choice.</li><li>The five basic tastes are the ones already in the code (<code>senseWords.ts</code>). Open: add “spicy heat” and “richness” as dials?</li><li>No food, diet or hunger language anywhere.</li></ul>
+    <h3>Copy draft</h3><p>“If your life were a flavor, how much of each taste is in it?”</p>
+  </aside>
+</section>
+
+<section class="card" aria-labelledby="e2">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Essence · card 2 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="e2">What else is in it, and what lingers?</h2>
+    <fieldset data-limit="N-lim"><legend>Notes (three is a soft limit)</legend><label><input type="checkbox" name="note" value="smoky"> Smoky</label> <label><input type="checkbox" name="note" value="citrus" checked> Citrus</label> <label><input type="checkbox" name="note" value="earthy"> Earthy</label> <label><input type="checkbox" name="note" value="floral"> Floral</label> <label><input type="checkbox" name="note" value="toasted"> Toasted</label> <label><input type="checkbox" name="note" value="herbal"> Herbal</label> <button type="button">More words</button></fieldset>
+    <div id="N-lim" class="limit" role="alert" hidden><p><strong>Fewer can be more helpful.</strong> You have chosen three. Add a fourth anyway?</p><div class="row"><button type="button" data-limit-yes>Add it anyway</button><button type="button" data-limit-no>Keep three</button></div></div>
+    <label for="feel">How does it feel in the mouth?</label><select id="feel" name="feel"><option value="">Skip</option><option selected>creamy</option><option>dry</option><option>juicy</option><option>thin</option><option>syrupy</option><option>tingly</option></select>
+    <label for="finish">What lingers after?</label><select id="finish" name="finish"><option value="">Skip</option><option>a warmth</option><option selected>a sweetness</option><option>a bitterness</option><option>a coolness</option><option>smoke</option><option>nothing much</option></select>
+    <p class="note-line" role="status"><strong>Your tasting note so far:</strong> <span data-tasting-now></span></p>
+    <div class="row"><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>Notes (checkboxes), More words</li><li>Feel in the mouth, What lingers (two lists)</li><li>Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>Every word has its plain description (the existing “i” text, such as “like dark chocolate or burnt sugar”), read on request. The tasting note is a polite status that rebuilds as choices change.</li></ul>
+    <h3>Notes</h3><ul><li>The notes come from the existing taste and scent lists, so there is nothing new to write and nothing new to translate.</li><li>The tasting note is composed by the page from the choices; the person can edit the sentence on the last card.</li></ul>
+    <h3>Copy draft</h3><p>“What else is in it? What lingers after?”</p>
+  </aside>
+</section>
+
+<section class="card" aria-labelledby="e3">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Essence · card 3 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="e3">What is the flavor of the life you want?</h2>
+    <p>Move the dials toward it. The dashed shape is now. The solid shape is what you want.</p>
+    <svg class="radar" viewBox="0 0 300 300" role="img" aria-label="A five-pointed shape made from your answers: sweet, sour, salty, bitter and umami. The words below say the same." data-sets="now,wish"><g class="grid"><polygon class="grid" points="150,130 169,144 162,166 138,166 131,144"/><polygon class="grid" points="150,90 188,118 173,163 127,163 112,118"/><polygon class="grid" points="150,50 207,92 185,160 115,160 93,92"/><polygon class="grid" points="150,10 226,66 197,155 103,155 74,66"/></g><line class="axis" x1="150" y1="150" x2="150" y2="10"/><line class="axis" x1="150" y1="150" x2="226" y2="66"/><line class="axis" x1="150" y1="150" x2="197" y2="155"/><line class="axis" x1="150" y1="150" x2="103" y2="155"/><line class="axis" x1="150" y1="150" x2="74" y2="66"/><text x="150" y="8" text-anchor="middle">Sweet</text><text x="228" y="64">Sour</text><text x="200" y="172">Salty</text><text x="80" y="172" text-anchor="end">Bitter</text><text x="70" y="64" text-anchor="end">Umami</text></svg>
+    <label for="wish-sweet">Sweet</label><input type="range" id="wish-sweet" name="wish-sweet" min="0" max="4" value="3"><div class="ends"><span>None</span><span>Very strong</span></div><label for="wish-sour">Sour</label><input type="range" id="wish-sour" name="wish-sour" min="0" max="4" value="1"><div class="ends"><span>None</span><span>Very strong</span></div><label for="wish-salty">Salty</label><input type="range" id="wish-salty" name="wish-salty" min="0" max="4" value="1"><div class="ends"><span>None</span><span>Very strong</span></div><label for="wish-bitter">Bitter</label><input type="range" id="wish-bitter" name="wish-bitter" min="0" max="4" value="0"><div class="ends"><span>None</span><span>Very strong</span></div><label for="wish-umami">Umami</label><input type="range" id="wish-umami" name="wish-umami" min="0" max="4" value="2"><div class="ends"><span>None</span><span>Very strong</span></div>
+    <p class="mini">The life you want: <span data-say-taste="wish" role="status"></span></p>
+    <p class="note-line" role="status"><span id="ess-diff"></span></p>
+    <div class="row"><button type="button">Start from my now</button><button type="button">Skip</button><button type="button" class="primary">Next</button></div>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down</li><li>The five dials for the life you want</li><li>Start from my now, Skip, Next</li></ol>
+    <h3>A screen reader says</h3><ul><li>Each dial as before; “From now to what you want: more sweet, less bitter” is a polite status, so the gap is heard as well as seen.</li></ul>
+    <h3>Responds live (<strong>try it</strong>)</h3><ul><li>Two shapes at once, now (dashed) and wish (solid), with a line on how they differ. A table of the ten values is available to a screen reader as the exact data.</li></ul>
+    <h3>Notes</h3><p>Seeing the gap, with no judgement attached, is the point: nothing says one is better. “Start from my now” copies the first set so the person nudges only what differs.</p>
+  </aside>
+</section>
+
+<section class="card" aria-labelledby="e4">
+  <div class="frame">
+    <div class="bar"><button type="button">Emergency Exit</button><span>Essence · card 4 of 4</span><button type="button">Put this down</button></div>
+    <h2 id="e4">Add Essence to your report?</h2>
+    <p>This is your tasting note:</p>
+    <p class="note-line"><strong>Now:</strong> <span data-tasting-now></span><br><strong>What you want:</strong> <span data-tasting-wish></span></p>
+    <label for="ess-try">One small thing that would bring a little of that flavor into today (optional)</label><input type="text" id="ess-try" list="try-ideas" placeholder="for example: open a window"><datalist id="try-ideas"><option value="make something warm to drink"><option value="open a window"><option value="step outside for a minute"><option value="sit near someone"><option value="put on a song that tastes like home"></datalist>
+    <label for="ess-words">Anything to change or add? (optional)</label><input type="text" id="ess-words">
+    <div class="row"><button type="button" class="primary" data-added="added-ess">Add this to my report</button><button type="button">Put this down</button></div>
+    <p id="added-ess" hidden role="status"><strong>Added.</strong> You can come back and change it. <button type="button">Update my report</button> <button type="button">Remove from my report</button></p>
+    <p class="mini">If put down without adding, your report says: “Examined, not included: Essence.” Anything you chose stays here for the visit and is never saved unless you add it.</p>
+  </div>
+  <aside class="note">
+    <h3>Tab order</h3><ol><li>Emergency Exit</li><li>Put this down (top)</li><li>The tasting note (read as text)</li><li>The free-text box</li><li>Add this to my report, Put this down</li></ol>
+    <h3>Notes</h3><ul><li>The report holds the two sentences and the ten dial values (as words), never a picture unless the person asks.</li><li>The question deck from the earlier plan is now only an optional “need an idea?” help here (a few prompts), if it is kept at all.</li><li>The small thing to try is always offered on this card and is the natural end of the third starting point. It is one line, never a task list, and is kept like any other answer (only if added).</li></ul>
+  </aside>
+</section>
+</main>
+<script src="wire.js"></script>
+</body>
+</html>

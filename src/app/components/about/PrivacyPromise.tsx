@@ -1,11 +1,12 @@
 import React from 'react';
 import { onWorkersAi } from '../../../lib/coachService';
-import { ArrowLeft, Shield, Brain, AlertTriangle, BookOpen, Users, TrendingDown, Scale, Eye, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Shield, Brain, AlertTriangle, BookOpen, Users, TrendingDown, Scale, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { ReturnToTop } from '../ReturnToTop';
 import { AppFooter } from '../AppFooter';
+import { AboutPageLink } from '../AboutPageLink';
 
 interface PrivacyPromiseProps {
   onBack: () => void;
@@ -51,14 +52,9 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                 Technology built to watch and to control often promises connection and convenience while taking something in return. Our name—<strong>Nenya</strong>—points the other way: a place to rest, built to protect and never to rule.
               </p>
               {onNavigateToNamePhilosophy && (
-                <Button 
-                  variant="outline" 
-                  onClick={onNavigateToNamePhilosophy}
-                  className="gap-2"
-                >
-                  <ExternalLink className="size-4" />
-                  Read more: Our Name & Philosophy
-                </Button>
+                <p>
+                  <AboutPageLink page="name-philosophy" detail="Our Name & Philosophy" onOpen={onNavigateToNamePhilosophy} />
+                </p>
               )}
             </div>
 
@@ -112,7 +108,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-emerald-900 dark:text-emerald-100">On-Device Processing (The Goal)</h3>
                     <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
-                      We are engineering toward a system where your conversations with Nenya are processed directly on your own device. In that ideal state, your most private reflections never even touch our servers, making data extraction impossible. We are not there yet. The core reflection tools run entirely in your browser. The optional coach demo sends your messages through our server to {onWorkersAi() ? 'Cloudflare’s Workers AI service, an outside service. We do not store them. Cloudflare reads them in order to answer, so they are not encrypted from Cloudflare, and our server also reads them briefly in memory to check them first, so this is not encryption all the way from your device.' : 'Venice AI, an outside service. We do not store them. Our server encrypts them before they go on to Venice, so Venice relays only encrypted data, but our server reads them briefly in memory to check them first, so this is not encryption all the way from your device.'} A sensory report stays on your device unless you choose to bring parts of it to the coach: then you see exactly the words that would go, nothing is selected for you, and what you choose travels the same way as a message and through the same safety checks. You never have to share anything from a report to use the coach. In the Sight gateway, one optional button, “Ask The Color API,” sends a single color, as a hex code, through our server to that outside service to make a palette; making a palette on your device, suggesting a color name, and everything else there send nothing.
+                      We are engineering toward a system where your conversations with Nenya are processed directly on your own device. In that ideal state, your most private reflections never even touch our servers, making data extraction impossible. We are not there yet. The core reflection tools run entirely in your browser. The optional coach demo sends your messages through our server to {onWorkersAi() ? 'Cloudflare’s Workers AI service, an outside service. We do not store them. Cloudflare reads them in order to answer, so they are not encrypted from Cloudflare, and our server also reads them briefly in memory to check them first, so this is not encryption all the way from your device.' : 'Venice AI, an outside service. We do not store them. Our server encrypts them before they go on to Venice, so Venice relays only encrypted data, but our server reads them briefly in memory to check them first, so this is not encryption all the way from your device.'} A sensory report stays on your device unless you choose to bring parts of it to the coach: then you see exactly the words that would go, nothing is selected for you, and what you choose travels the same way as a message and through the same safety checks. You never have to share anything from a report to use the coach. In the Sight lens, one optional button, “Ask The Color API,” sends a single color, as a hex code, through our server to that outside service to make a palette; making a palette on your device, suggesting a color name, and everything else there send nothing.
                     </p>
                   </div>
                 </div>

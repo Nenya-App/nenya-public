@@ -1,18 +1,25 @@
 // The text of a sensory report, one function per part: the review page, the downloads (text and PDF) and the coach hand-off
 // (src/lib/reportShare.ts) all use these, so what the person sees, downloads and may share is the same words.
+import { cleanV2, essenceReportLines } from './flavour.ts';
 import { surfaceLine } from './touchTextures.ts';
 import { getNoteNames, TONAL_SYSTEM_LABELS, type TonalSystem } from './audio.ts';
 import { describePalettePlainly } from './colorSchemes.ts';
 import { shapeById } from './gatewayShapes.ts';
 import { isAnswered } from './optionalSlider.ts';
 import { labelFor, type MapPin } from './bodyMapParts.ts';
+import { describeStrokes, type BrushStroke } from './bodyMapBrush.ts';
 
+import { L, sixthLensName } from './vocabulary.ts';
 export type Gateway = 'sight' | 'sound' | 'touch' | 'essence' | 'movement' | 'insight';
 export interface BodyMapLike {
   placements: { bodyPartId: string; color: string; colorName?: string }[];
   notes: Record<string, string>;
   /** Pins the person placed anywhere on the map (see bodyMapParts.ts). */
   pins?: MapPin[];
+  /** Paintbrush marks (src/lib/bodyMapBrush.ts). */
+  strokes?: BrushStroke[];
+  /** The names of the lenses the body map picked up (lens tray only); the report names them in the body map section. Filled in by the app when the report is made, not kept with the map. */
+  pickedUp?: string[];
 }
 
 /** A line of slider answers, "Label: Pitch 40/100, Volume 60/100". Sliders that were never touched are left out (src/lib/optionalSlider.ts). */
@@ -34,7 +41,7 @@ export const gatewayTitles: Record<Gateway, string> = {
   touch: 'Touch - Somatosensation',
   essence: 'Essence - Aromatic Memory',
   movement: 'Movement - Kinesthesia',
-  insight: 'Insight - Noesis',
+  insight: `${sixthLensName()} - Noesis`,
 };
 
 // Helper function to get body part label from ID
@@ -45,13 +52,15 @@ export const getBodyPartLabel = (bodyPartId: string, pins: MapPin[] = []): strin
 // gateway's data -- true only if at least one color was placed or one note
 // was written.
 export const isBodyMapUsed = (bodyMapData: BodyMapLike): boolean =>
-  bodyMapData.placements.length > 0 || Object.values(bodyMapData.notes).some((note) => note.trim().length > 0);
+  bodyMapData.placements.length > 0 || (bodyMapData.strokes?.length ?? 0) > 0 || Object.values(bodyMapData.notes).some((note) => note.trim().length > 0);
 
 // One line per body part that has a color and/or a note. A part with a
 // note but no color explicitly says "No color chosen" per body-part rather
 // than being silently omitted or ambiguous.
 export const formatBodyMapLines = (bodyMapData: BodyMapLike): string[] => {
   const lines: string[] = [];
+  // The lenses the map picked up are named once, at the top of its own section.
+  if (bodyMapData.pickedUp?.length) lines.push(`Lenses picked up by the body map: ${bodyMapData.pickedUp.join(', ')}`);
   const partIds = new Set([
     ...bodyMapData.placements.map((p) => p.bodyPartId),
     ...Object.keys(bodyMapData.notes).filter((id) => bodyMapData.notes[id]?.trim()),
@@ -66,6 +75,12 @@ export const formatBodyMapLines = (bodyMapData: BodyMapLike): string[] => {
     lines.push(`  Color: ${placement ? placement.colorName || placement.color : 'No color chosen'}`);
     if (note) lines.push(`  Note: ${note}`);
   });
+
+  // The paintbrush marks, as text: one line per paint, with where the marks are. The picture shows the same marks.
+  if (bodyMapData.strokes?.length) {
+    lines.push('Paintbrush marks');
+    describeStrokes(bodyMapData.strokes).forEach((l) => lines.push(`  ${l}`));
+  }
 
   return lines;
 };
@@ -132,7 +147,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
         info.push(`Melody: ${data.melody.filter((n: number | null) => n !== null).map((n: number) => soundNoteNames[n] || '').join(' – ')}`);
         // A longer melody, one phrase for each color: the colors and the note values, as the person set them (nothing here describes how it sounds).
         if (Array.isArray(data.melodyPhrases) && data.melodyPhrases.length > 0) {
-          info.push('Melody phrases, in playing order (the colors are the ones from the Sight gateway; the notes were set separately):');
+          info.push(L('Melody phrases, in playing order (the colors are the ones from the Sight gateway; the notes were set separately):'));
           data.melodyPhrases.forEach((p: any, i: number) => {
             const kind = p?.kind === 'present' ? 'Present' : p?.kind === 'wish' ? 'Wish' : 'Palette';
             const label = String(p?.label ?? '');
@@ -156,6 +171,8 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       break;
       
     case 'essence':
+      // The tray's Essence (src/lib/flavour.ts): the flavor of your life now and the one you want, in words.
+      { const v2 = cleanV2(data); if (v2) { info.push(...essenceReportLines(v2)); break; } }
       if (data.currentTastes && Array.isArray(data.currentTastes) && data.currentTastes.length > 0) {
         info.push(`Present Taste: ${data.currentTastes.join(', ')}`);
       } else if (data.currentTaste) {
@@ -223,6 +240,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       if (data.potentialMovementDrawing) info.push(`  Drawing: captured`);
       info.push(...shapeLine('wish', data.potentialMovementShapes));
+      if (typeof data.movementPathWords === 'string' && data.movementPathWords) info.push(`Path of movement: ${data.movementPathWords}`); // words only: the picture never goes into the text (or to the coach)
       break;
 
     case 'insight':
@@ -261,6 +279,7 @@ export const formatGatewayData = (gateway: Gateway, data: any): string[] => {
       if (data.potentialDescription) info.push(`  Description: ${data.potentialDescription}`);
       if (data.potentialPatternDrawing) info.push(`  Drawing: captured`);
       info.push(...shapeLine('wish', data.potentialPatternShapes));
+      if (typeof data.tapestryWords === 'string' && data.tapestryWords) info.push(`Tapestry: ${data.tapestryWords}`); // words only: the picture never goes into the text (or to the coach)
       break;
   }
   

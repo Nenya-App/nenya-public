@@ -67,7 +67,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nenya.biz/about/six-gateways</loc>
+    <loc>https://nenya.biz/about/six-lenses</loc>
     <lastmod>2026-11-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -135,6 +135,12 @@
   <url>
     <loc>https://nenya.biz/about/where-we-stand</loc>
     <lastmod>2026-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://nenya.biz/about/about-coach</loc>
+    <lastmod>2026-11-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

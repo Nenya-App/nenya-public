@@ -1,3 +1,5 @@
+import { NeedTally } from './NeedTally';
+import { needTallyOn } from '../lib/needTallyView';
 import { useEffect, useRef, useState } from 'react';
 import { Lock } from 'lucide-react';
 import { Button } from '../app/components/ui/button';
@@ -127,6 +129,8 @@ export default function SealedChat({ colors, onBack }: { colors: { color1: strin
         ))}
       </ol>
 
+      {/* VITE_NEED_TALLY: computed here from the messages in this tab; never stored or sent, so it works on the sealed route too. */}
+      {needTallyOn() && !flag && <NeedTally userTexts={lines.filter((l) => l.role === 'user').map((l) => l.text)} />}
       {flag && <FlagNotice flag={flag.flag} flaggedMessage={flag.text} />}
       {error && <p role="alert" className="text-sm">{error}</p>}
       {notice && <p role="status" className="text-sm">{notice}</p>}
