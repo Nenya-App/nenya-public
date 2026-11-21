@@ -11,6 +11,11 @@ ok('capitals and punctuation do not hide a repeat', repeatsEarlier(script.toUppe
 ok('a repeat is caught inside a longer reply', repeatsEarlier("It's understandable to feel worried. " + script, [script]));
 ok('different words are not a repeat', !repeatsEarlier("It makes sense to worry about that. Notice what you'd want her to hear first, and say that in your own way.", [script]));
 ok('a short shared phrase is not a repeat', !repeatsEarlier('How does that feel to say? Does it seem right to you?', [script + ' How does that feel to say? Does it seem like a good way to express what you need?']));
+// 2026-11-20: a shared run of 10 to 15 words is a stock line, not a repeat; 16 or more is.
+const stock14 = 'It sounds like you are feeling a lot of anger about how things are.';
+ok('a 14-word stock line shared with an earlier reply is no longer a repeat', !repeatsEarlier(stock14 + ' What would help most right now?', ['Thank you for saying so. ' + stock14 + ' Tell me more about it if you like.']));
+const long20 = 'It sounds like talking to people feels hard right now, and you may want a space with no pressure at all today.';
+ok('a 20-word repeated stretch still is', repeatsEarlier('Thank you for saying that. ' + long20 + ' What is on your mind?', [long20]));
 ok('nothing earlier means no repeat', !repeatsEarlier(script, []) && !repeatsEarlier('', [script]));
 
 // later turns follow the latest message

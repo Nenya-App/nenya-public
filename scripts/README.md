@@ -71,6 +71,7 @@ if the model changes.
 | `upload-private-list.mts` | Uploads the list to the site's private store | Netlify |
 | `upload-screen-model.mts` | Uploads the ONNX model and tokenizer to the private store | Netlify |
 | `upload-select-model.mts` | Uploads the selection model (all-MiniLM-L6-v2, int8 ONNX) and tokenizer to the private store, after checking every file's SHA-256 | Netlify |
+| `check-site-env.mts` | Reads the production site's environment variables from Netlify (read-only) and reviews them against `docs/production-env.md`: what to turn off, what is missing, what needs a decision. Prints names, and values only for plain switches, never a secret's | Netlify |
 | `build-learning-cards.mts` | Builds `src/lib/learningCardsData.ts` from approved card files | Private card folder |
 | `build-draft-cards.mts` | Collects draft cards for testing on a dev site only | Private card folder |
 | `build-module-set.mts` | Builds the coach's private module set (store key `modules`) | Private drafts |

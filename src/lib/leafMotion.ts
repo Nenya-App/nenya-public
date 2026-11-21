@@ -17,8 +17,15 @@ export interface LeafCapability {
   hardwareConcurrency?: number;
 }
 
-/** Pure choice of preset. Reduced motion always wins: nothing moves. */
-export function chooseLeafPreset(c: LeafCapability): LeafPreset {
+/**
+ * Whether the petals swell with the breath on the site. OFF (owner, 2026-11-21): the petals stay still while the orbs and the gem keep breathing. The motion code below is kept
+ * as it was, so turning this on again, or forcing a preset where one is shown on purpose (the bench's preview passes `preset` to MallornLeaves), brings it back unchanged.
+ */
+export const PETALS_BREATHE = false;
+
+/** Pure choice of preset. With the petals' breathing off nothing moves; otherwise reduced motion wins, then lighter presets for small devices. */
+export function chooseLeafPreset(c: LeafCapability, breathes: boolean = PETALS_BREATHE): LeafPreset {
+  if (!breathes) return 'none';
   if (c.reducedMotion) return 'none';
   if (c.reducedData) return 'low';
   if (c.deviceMemory !== undefined && c.deviceMemory <= 2) return 'low';
