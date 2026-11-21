@@ -211,6 +211,7 @@ docs/legal/           Archive of earlier versions of the Terms and Privacy Polic
 | --- | --- | --- |
 | Coach | `coach.mts` | `/api/coach`: the relay to Venice AI, its checks and limits, signed transcripts |
 | Coach | `screen.mts` | `/api/screen`: the screening model, callable only by the relay (behind `COACH_SCREEN_SECRET`) |
+| Coach | `select.mts` | `/api/select`: selection of modules and cards by meaning, callable only by the relay (behind `COACH_SELECT_SECRET`); counts only, in shadow mode |
 | Coach | `mistake.mts` | `/api/mistake`: "This was a mistake", a count by kind |
 | Coach | `card-drafts.mts` | `/api/card-drafts`: draft learning cards, dev sites only (behind `COACH_CARD_DRAFTS`) |
 | Coach | `terms-agree.mts` | `/api/terms-agree`: signs a note of the visitor's agreement to the Terms; stores nothing |

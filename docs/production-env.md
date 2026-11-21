@@ -39,6 +39,8 @@ Turn these on one at a time, in the order in the PR description, after the match
 | `COACH_LEARNING_MIN_SEVERITY` | a number | Optional floor for offering a card |
 | `COACH_SCREEN_SECRET` | fresh secret | Creates `/api/screen`; production's own value |
 | `COACH_SCREEN` | `shadow`, later `on` | The screening model: counts only, then acting |
+| `COACH_SELECT_SECRET` | fresh secret | Creates `/api/select`; production's own value |
+| `COACH_SELECT` | `shadow` only (for now) | Selection by meaning: counts only, next to what the phrase matcher chose; never changes a reply or which modules are used |
 | `COACH_ARC` | `practice` | The practice arc (later) |
 | `COACH_STANCES` | includes `learn` | The Learn stance (later) |
 | `COACH_SEALED` | `on` | Sealed mode (later; needs an `e2ee-` model) |

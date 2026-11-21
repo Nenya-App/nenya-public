@@ -2,6 +2,7 @@
 // produced them. Event names come from a fixed list in this file, so nothing a visitor sends can become one.
 // One key per event per day, so two events never contend for the same write.
 import { capDay, type CounterStore } from './dailyCap.ts';
+import { TOPICS } from './moduleDescriptions.ts';
 
 /** Why a coach turn was refused. A code, never message text. */
 export const BLOCK_REASONS = ['manipulation', 'context', 'crisis', 'cap', 'ip', 'form.short', 'form.unclear', 'region'] as const;
@@ -64,7 +65,18 @@ export const FIXED_EVENTS = [
   'guestbook.signed',
   'guestbook.refused.once',
   ...(['high', 'mid', 'low'] as const).flatMap((b) => [`coach.screen.vs-list.${b}.list`, `coach.screen.vs-list.${b}.nolist`]),
+  // Selection by meaning in shadow mode (docs/small-model-detection-scope.md): how what the model chose compares with what the phrase matcher chose, and how often it could not answer in time.
+  // Counts only; the per-topic counts below (a module the model found that the phrases did not, and a card it found) use the fixed topic ids.
+  'coach.select.agree',
+  'coach.select.differ',
+  'coach.select.model-only',
+  'coach.select.phrase-only',
+  'coach.select.none',
+  'coach.select.unavailable',
 ] as const;
+
+/** The topic ids a shadow selection count can name: the modules and cards, from the public descriptions. */
+const SELECT_TOPIC_IDS: readonly string[] = TOPICS.map((t) => t.id);
 
 /** The screens a page view can be counted for (the app's own screen ids; the About pages count together as 'about'). */
 export const SCREENS = ['welcome', 'home', 'sight', 'sound', 'touch', 'essence', 'movement', 'insight', 'color-selection', 'gateway-review', 'session', 'cell-creation', 'cell-interface', 'about'] as const;
@@ -88,7 +100,7 @@ const under = (name: string, prefix: string, allowed: readonly string[]): boolea
 export function isKnownEvent(name: string): boolean {
   if ((FIXED_EVENTS as readonly string[]).includes(name) || (BROWSER_FIXED_EVENTS as readonly string[]).includes(name)) return true;
   if (/^coach\.receipt\.issued\.[0-9a-f]{16}$/.test(name)) return true; // one per signing key
-  return under(name, 'coach.turn.blocked.', BLOCK_REASONS) || under(name, 'page.view.', SCREENS) || under(name, 'onboarding.rhythm.', RHYTHM_NAMES) || under(name, 'onboarding.start.', START_CHOICES) || under(name, 'lens.opened.', LENS_IDS) || under(name, 'lens.added.', LENS_IDS);
+  return under(name, 'coach.select.model-found.', SELECT_TOPIC_IDS) || under(name, 'coach.select.card.', SELECT_TOPIC_IDS) || under(name, 'coach.turn.blocked.', BLOCK_REASONS) || under(name, 'page.view.', SCREENS) || under(name, 'onboarding.rhythm.', RHYTHM_NAMES) || under(name, 'onboarding.start.', START_CHOICES) || under(name, 'lens.opened.', LENS_IDS) || under(name, 'lens.added.', LENS_IDS);
 }
 
 export const eventKey = (day: string, event: string): string => `m/${day}/${event}`;
@@ -137,6 +149,7 @@ export const ALL_EVENTS: string[] = [
   ...RHYTHM_NAMES.map((r) => `onboarding.rhythm.${r}`),
   ...START_CHOICES.map((c) => `onboarding.start.${c}`),
   ...SCREENS.map((sc) => `page.view.${sc}`),
+  ...SELECT_TOPIC_IDS.flatMap((id) => [`coach.select.model-found.${id}`, `coach.select.card.${id}`]),
 ];
 
 /** The last `n` Minnesota days, newest first, each as YYYY-MM-DD. */

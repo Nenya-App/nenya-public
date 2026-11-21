@@ -43,6 +43,7 @@ import { allCards, registerExtraCards } from '../../src/lib/learningCards.ts';
 import { shownCardIds, shownCardTexts } from '../../src/lib/shownCards.ts';
 import { OFFER_MAP, historyHits, offerFor } from '../../src/lib/learningOffer.ts';
 import { askScreen } from '../../src/lib/screenClient.ts';
+import { askSelect } from '../../src/lib/selectClient.ts';
 import type { Band } from '../../src/lib/screenModel.ts';
 import { getMatcher } from '../../src/lib/lexiconStore.ts';
 import { match as lexiconMatch } from '../../src/lib/lexicon.ts';
@@ -57,7 +58,7 @@ import { recordReceipt } from '../../src/lib/receiptLog.ts';
 import { addConnectionTurn, allowanceReached, connectionCode, turnsFromEnv } from '../../src/lib/connectionLimit.ts';
 import { hostAllowed, originHint, storeNameFrom } from '../../src/lib/originHosts.ts';
 import { checkTurnstile, turnstileHosts, turnstileMode } from '../../src/lib/turnstileCheck.ts';
-import { buildNotes, type ModuleSet } from '../../src/lib/coachModules.ts';
+import { MODULE_IDS, buildNotes, selectModules, type ModuleSet } from '../../src/lib/coachModules.ts';
 import { E2eeError, MAX_SEALED_HEX, attestationFor, e2eeChat, isE2eeModel, sealedChat } from '../../src/lib/veniceE2ee.ts';
 import { aboutTheWorld, detectDirectQuestion, hasSeveralQuestions, MULTI_QUESTION_NOTE } from '../../src/lib/coachIntent.ts';
 import { repeatsEarlier, withoutRepeatedSentences } from '../../src/lib/coachRepeat.ts';
@@ -1490,6 +1491,9 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // after a cold start) is counted as unavailable and ignored (fail open). docs/coach-screening-flow-scope.md.
   const latestBand = bands?.at(-1) ?? null;
   const screening = bands ? Promise.resolve(latestBand ? { band: latestBand } : null) : process.env.COACH_SCREEN === 'shadow' && process.env.COACH_SCREEN_SECRET && !flag ? askScreen({ origin: url.origin, secret: process.env.COACH_SCREEN_SECRET, text: lastText }) : null;
+  // Selection by meaning, in SHADOW mode only (COACH_SELECT=shadow and COACH_SELECT_SECRET set): the latest message goes to our own selection function and only counts are kept, next to what the
+  // phrase matcher chose. Nothing about the message is kept, nothing changes in the reply or in which modules are used, and any failure or slow answer is counted as unavailable (fail open).
+  const selecting = process.env.COACH_SELECT === 'shadow' && process.env.COACH_SELECT_SECRET && !flag ? askSelect({ origin: url.origin, secret: process.env.COACH_SELECT_SECRET, text: lastText }) : null;
   if (ctxFlag && turn === 1) tally('coach.context.flagged');
   tally('coach.turn.answered');
   if (turn >= MAX_TURNS) tally('coach.conversation.finished');
@@ -1517,6 +1521,18 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
         const acted = offerFor({ hits: [...(matcher ? lexiconMatch(lastText, matcher) : []), ...historyHits(lastText)], text: lastText, shown: [], available: [...new Set(Object.values(OFFER_MAP).flat())], flagged: false, abuseAtCoach: hostile === 'abuse' }) !== null;
         tally(`coach.screen.vs-list.${sc.band}.${acted ? 'list' : 'nolist'}`);
       } catch { /* a count is a courtesy: never let it break a reply */ }
+    }
+  }
+  if (selecting) {
+    const sel = await selecting;
+    if (!sel) tally('coach.select.unavailable');
+    else {
+      const moduleIds = new Set(MODULE_IDS);
+      const model = sel.ids.filter((id) => moduleIds.has(id));
+      const phrase = selectModules([lastText], 20);
+      tally(`coach.select.${model.length === 0 ? (phrase.length === 0 ? 'none' : 'phrase-only') : phrase.length === 0 ? 'model-only' : model.some((id) => phrase.includes(id)) ? 'agree' : 'differ'}`);
+      for (const id of model) if (!phrase.includes(id)) tally(`coach.select.model-found.${id}`);
+      for (const id of sel.ids) if (!moduleIds.has(id)) tally(`coach.select.card.${id}`);
     }
   }
   const history = [...messages, { role: 'assistant' as const, content: reply }];
