@@ -12,7 +12,7 @@ Owner, 2026-11-22: "set the defaults to what is currently set." For a visitor wh
 | Kaleidoscope look (`gemKaleidoscopeLook`) | Gentle | Lively |
 | Kaleidoscope moves with the breath (`gemKaleidoscopeBreath`) | off | on |
 | Breathing colours (`breathColours`) | Original | Night |
-| Orb colours (`orbColours`) | Original | Night |
+| Orb colours (`orbColours`) | Original | ~~Night~~ Original again (owner, 2026-11-22: the outer orbs should be the standard colours; the breathing colours stay Night) |
 | Outer glow (`orbHalo`) | Own colour | Orb's palette |
 | Preview size (`previewPercent`) | 100% | 120% (also what Reset returns to) |
 | Inner lights (`innerOrbs`), leaves (`logoLeaves`), gem sides (`gemSides`) | Moving, 6, 8 | the same |

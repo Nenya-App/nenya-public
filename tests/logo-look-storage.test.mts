@@ -50,7 +50,7 @@ ok('an older stored size in pixels is still accepted when read', M.loadPrefs().p
 
 // The leaves' sway and the colour choices: off and original unless chosen; only the choice is kept; a hand-edited value is dropped.
 const K = await import('../src/lib/keptPalettes.ts');
-ok('before anything is chosen: sway on and the Night colours (the owner\'s defaults, 2026-11-22)', M.getLeafSway() === true && M.getBreathColourChoice() === 'preset:night' && M.getOrbColourChoice() === 'preset:night');
+ok('before anything is chosen: sway on, the breath in the Night colours and the outer orbs in the standard (Original) colours (the owner\'s defaults, 2026-11-22)', M.getLeafSway() === true && M.getBreathColourChoice() === 'preset:night' && M.getOrbColourChoice() === 'original');
 M.setLeafSway(true);
 M.setBreathColourChoice('preset:cool');
 M.setOrbColourChoice('palette:Tide');
@@ -87,7 +87,7 @@ const fresh = async (tag: string, prefs: Record<string, unknown> | null) => {
   return (await import(`../src/lib/deviceMemory.ts?${tag}`)) as typeof M;
 };
 const none = await fresh('none', null);
-ok('a visitor who has set nothing: sway on, Night colours, palette glow, Lively and following the breath, 120% preview, moving lights, six leaves, eight-sided gem', none.getLeafSway() === true && none.getBreathColourChoice() === 'preset:night' && none.getOrbColourChoice() === 'preset:night' && none.getOrbHaloStyle() === 'palette' && none.getBreathPreviewPercent() === 120 && none.getInnerOrbMode() === 'moving' && none.getLogoLeaves() === 6 && none.getGemSidesChoice() === 8);
+ok('a visitor who has set nothing: sway on, Night breathing colours, standard orb colours, palette glow, Lively and following the breath, 120% preview, moving lights, six leaves, eight-sided gem', none.getLeafSway() === true && none.getBreathColourChoice() === 'preset:night' && none.getOrbColourChoice() === 'original' && none.getOrbHaloStyle() === 'palette' && none.getBreathPreviewPercent() === 120 && none.getInnerOrbMode() === 'moving' && none.getLogoLeaves() === 6 && none.getGemSidesChoice() === 8);
 const chose = await fresh('chose', { breathColours: 'original', orbColours: 'original', leafSway: false, orbHalo: 'own', innerOrbs: 'still', previewPercent: 100, gemKaleidoscope: false, gemKaleidoscopeLook: 'calm', gemKaleidoscopeBreath: false, logoLeaves: 8, gemSides: 10 });
 ok('a stored choice always wins, "Original" included: someone who chose it stays on Original, and an off stays off', chose.getBreathColourChoice() === 'original' && chose.getOrbColourChoice() === 'original' && chose.getLeafSway() === false && chose.getOrbHaloStyle() === 'own' && chose.getInnerOrbMode() === 'still' && chose.getBreathPreviewPercent() === 100 && chose.getGemKaleidoscope() === false && chose.getLogoLeaves() === 8 && chose.getGemSidesChoice() === 10);
 const odd = await fresh('odd', { breathColours: 'neon' });

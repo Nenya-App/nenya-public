@@ -11,6 +11,7 @@ import {
   colourChoiceDetail,
   colourChoiceLabel,
   colourChoiceSwatches,
+  MAKE_YOUR_OWN_NOTE,
   resolveColours,
   savedChoicesFor,
 } from '../../lib/logoColours';
@@ -116,11 +117,13 @@ export function ColourChoiceGroup({
           {PALETTE_NAMES.map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
       </div>
-      {saved.length > 0 && (
+      {saved.length > 0 ? (
         <>
-          <p className="pt-1 text-xs text-muted-foreground">Palettes you made and kept in the Sight Lens (held for this visit only):</p>
+          <p className="pt-1 text-xs text-muted-foreground">Palettes you made and kept in the Sight Lens (held for this visit only). To make more, use the Sight Lens.</p>
           {saved.map((id) => row(id, colourChoiceDetail(id, kept)))}
         </>
+      ) : (
+        <p className="pt-1 text-xs text-muted-foreground">{MAKE_YOUR_OWN_NOTE}</p>
       )}
     </fieldset>
   );

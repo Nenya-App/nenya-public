@@ -2,7 +2,7 @@
 // are offered only while they exist, "both" takes turns, and nothing unknown can break the logo.
 import { readFileSync } from 'node:fs';
 import {
-  COLOUR_ORIGINAL, PALETTE_NAMES, PRESETS, breathSequence, colourChoiceDetail, colourChoiceLabel, colourChoiceMessage, colourChoiceSwatches, keptPalettes, orbVectors, resolveColours,
+  COLOUR_ORIGINAL, MAKE_YOUR_OWN_NOTE, PALETTE_NAMES, PRESETS, breathSequence, colourChoiceDetail, colourChoiceLabel, colourChoiceMessage, colourChoiceSwatches, keptPalettes, orbVectors, resolveColours,
   savedChoicesFor, sixColours, snapColourChoice, type PaletteVector,
 } from '../src/lib/logoColours.ts';
 import { HIDDEN_NAMES, displayNameFor } from '../src/lib/paletteNames.ts';
@@ -86,5 +86,11 @@ ok('the colour rules are pure: no storage, no network, no clock, no randomness',
 ok('the ring, the gem and the orbs read the choice (and the original arrays when nothing is chosen)', /useBreathColours\(\)/.test(logoSrc) && /choice === 'original' \? allColors/.test(logoSrc) && /useOrbVectors\(\)/.test(readFileSync('src/app/components/NenyaLogo.tsx', 'utf8')) && /breathColoursRef\.current/.test(readFileSync('src/app/components/SpectralGem.tsx', 'utf8')) && /orbVecRef\.current/.test(readFileSync('src/app/components/SpectralGem.tsx', 'utf8')));
 const set = readFileSync('src/app/components/AccessibilitySettings.tsx', 'utf8');
 ok('settings: both groups and the sway switch are in the Logo look group, announced through the same polite message', /legend="Breathing colours"/.test(set) && /legend="Orb colours"/.test(set) && /<LeafSwaySwitch[^>]*onMessage=\{setLookMessage\}/.test(set) && /setLookMessage\(colourChoiceMessage\('breath', c\)\)/.test(set) && /setLookMessage\(colourChoiceMessage\('orbs', c\)\)/.test(set));
-ok('settings: each colour group is a fieldset with a legend, radios with names, and a note; saved palettes appear only when there are some', /<fieldset/.test(extras) && /<legend/.test(extras) && /type="radio"/.test(extras) && /saved\.length > 0 &&/.test(extras) && /savedChoicesFor\(kept\)/.test(extras));
+ok('settings: each colour group is a fieldset with a legend, radios with names, and a note; saved palettes appear only when there are some', /<fieldset/.test(extras) && /<legend/.test(extras) && /type="radio"/.test(extras) && /saved\.length > 0 \?/.test(extras) && /savedChoicesFor\(kept\)/.test(extras));
 ok('settings: the sway switch is off where motion is not allowed and says why, and has a label and a description', /disabled=\{!!blocked\}/.test(extras) && /htmlFor="leaf-sway-toggle"/.test(extras) && /aria-describedby="leaf-sway-help"/.test(extras));
+
+// The note that points to the Sight Lens (owner, 2026-11-22): shown while no palette has been kept, and the list heading names it when one has.
+const extrasSrc = readFileSync('src/app/components/LogoLookExtras.tsx', 'utf8');
+ok('a note tells visitors to make their own colours in the Sight Lens', /Sight Lens/.test(MAKE_YOUR_OWN_NOTE) && /own colours/.test(MAKE_YOUR_OWN_NOTE) && !/calm|relax|heal|anxiety|stress/i.test(MAKE_YOUR_OWN_NOTE));
+ok('the note shows in the colour group while no palette has been kept, and the kept list still names the Sight Lens', /saved\.length > 0 \?/.test(extrasSrc) && /\{MAKE_YOUR_OWN_NOTE\}/.test(extrasSrc) && /kept in the Sight Lens/.test(extrasSrc));
+ok('the outer orbs start on the standard colours and the breath ring on Night', /DEFAULT_ORB_COLOURS = 'original'/.test(readFileSync('src/lib/logoLook.ts', 'utf8')) && /DEFAULT_BREATH_COLOURS = 'preset:night'/.test(readFileSync('src/lib/logoLook.ts', 'utf8')));
