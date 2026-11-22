@@ -38,6 +38,8 @@ export interface InnerOrbitLook {
   emergeStep: number;
   /** Light style: how dim a light gets between risings, as a fraction of its full brightness (0 to 1). */
   emergeDepth: number;
+  /** Light style: how small a light is at its dimmest, as a fraction of its full size (1 = it does not change size). */
+  emergeScale: number;
 }
 
 export const DEFAULT_INNER_ORBIT: InnerOrbitLook = {
@@ -57,10 +59,15 @@ export const DEFAULT_INNER_ORBIT: InnerOrbitLook = {
   rimDark: 0,
   layer: 'under',
   blend: 'normal',
-  style: 'orb',
-  emergeSeconds: 9,
-  emergeStep: 0.7,
-  emergeDepth: 0.12,
+  // The inner ring is soft lights (owner, 2026-11-22: "I want them to be lights instead of solid orbs"), and their own motion is gentler than the old
+  // orbs' pulse: each light brightens and dims between 60% and 100% (the first bench lights went 12% to 100%), changes size by 10% (the old orbs 22% either
+  // way), and takes 12 seconds plus 0.8 for each later light (the old orbs 3 seconds plus 0.5, and the first bench lights 9 plus 0.7).
+  // 'orb' (the shaded spheres) is still here for the /bench page to compare.
+  style: 'light',
+  emergeSeconds: 12,
+  emergeStep: 0.8,
+  emergeDepth: 0.6,
+  emergeScale: 0.9,
 };
 
 export interface OuterOrbitLook {
@@ -99,6 +106,8 @@ export const DEFAULT_OUTER_ORBIT: OuterOrbitLook = {
  * period (`emergeSeconds` plus `emergeStep` for each later light), so the ring is never lit in step. Orbs ('orb' style) are always 1.
  * The gem multiplies each light's colour by this, so the stone brightens where a light is rising.
  */
+export const restingEmergence = (look: Pick<InnerOrbitLook, 'emergeDepth'>): number => (Math.min(1, Math.max(0, look.emergeDepth)) + 1) / 2;
+
 export function emergence(index: number, tSec: number, look: Pick<InnerOrbitLook, 'style' | 'emergeSeconds' | 'emergeStep' | 'emergeDepth'>): number {
   if (look.style !== 'light') return 1;
   const period = Math.max(1, look.emergeSeconds + index * look.emergeStep);

@@ -417,6 +417,16 @@
     to { transform: rotate(360deg); }
   }
 
+  /* The inner lights' ring swinging back and forth and coming home, as the gem's facets do (amount in --sway; the sine easing is set where it is used). */
+  @keyframes nenya-lights-sway {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(var(--sway)); }
+    75% { transform: rotate(calc(var(--sway) * -1)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nenya-light-breath { animation: none !important; }
+  }
+
   @keyframes nenya-orbit-ccw {
     from { transform: rotate(0deg); }
     to { transform: rotate(-360deg); }

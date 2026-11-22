@@ -318,10 +318,10 @@ export function AccessibilitySettingsContent({
                 )}
               </>
             )}
-            {/* The inner ring of orbs behind the gem: moving (as always), still, or hidden. */}
+            {/* The inner ring of lights behind the gem: moving, still, or hidden. */}
             {orbitEnabled && (
               <fieldset className="space-y-1">
-                <legend className="text-xs text-muted-foreground">Inner orbs behind the gem</legend>
+                <legend className="text-xs text-muted-foreground">Inner lights behind the gem</legend>
                 {INNER_ORB_MODES.map((m) => (
                   <label key={m} className="flex min-h-11 items-start gap-2 py-1 text-sm">
                     <input type="radio" name="inner-orbs" value={m} checked={innerOrbMode === m} onChange={() => { setInnerOrbMode(m); setLookMessage(innerOrbMessage(m)); }} className="mt-1" aria-describedby={`inner-orbs-${m}-d`} />

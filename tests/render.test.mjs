@@ -171,11 +171,11 @@ try {
   // The logo: orbit view with the spectral gem and the baked glow. Effects do not run on the server, so this
   // checks the structure; the drawing itself is checked by the breath-clock and glow-bake tests.
   const { default: Logo } = await vite.ssrLoadModule('/src/app/components/NenyaLogo.tsx');
-  h = render(Logo, { size: 300, showValarOrbit: true, showLogo: true, glow: true, technique: { ih: 4000, hi: 7000, ex: 8000, ho: 0 }, cycleStart: 0 });
+  h = render(Logo, { size: 300, showValarOrbit: true, showLogo: true, glow: true, technique: { ih: 4000, hi: 7000, ex: 8000, ho: 0 }, cycleStart: 0, innerOrbit: { style: 'orb' } });
   const canvases = typeof h === 'string' ? (h.match(/<canvas/g) ?? []).length : 0;
   ok('logo (orbit view): renders the gem canvases, the vector bezel image and the two glow images', typeof h === 'string' && canvases === 4 && /<img[^>]*src="[^"]*(bezel|svg)/.test(h), h.error ?? `${canvases} canvases`);
   ok('logo (orbit view): the overlay gem layer blends with overlay', typeof h === 'string' && h.includes('mix-blend-mode:overlay'));
-  ok('logo (orbit view): the last inner orbs are cut away where the first ones overlap them', typeof h === 'string' && (h.match(/mask-image:radial-gradient/g) ?? []).length >= 8, `${(h.match(/mask-image:radial-gradient/g) ?? []).length} mask-image uses`);
+  ok('logo (orbit view, shaded orbs): the last inner orbs are cut away where the first ones overlap them', typeof h === 'string' && (h.match(/mask-image:radial-gradient/g) ?? []).length >= 8, `${(h.match(/mask-image:radial-gradient/g) ?? []).length} mask-image uses`);
   ok('logo (orbit view): the outer orbs carry their own halo by default, with no blur glow class', typeof h === 'string' && h.includes('nenya-orb-halo') && !h.includes('nenya-orb-glow'));
   const h2 = render(Logo, { size: 300, showValarOrbit: true, showLogo: true, glow: true, technique: { ih: 4000, hi: 7000, ex: 8000, ho: 0 }, cycleStart: 0, outerOrbit: { halo: 'shared' } });
   ok('logo (orbit view): the shared glow is still there when chosen', typeof h2 === 'string' && h2.includes('nenya-orb-glow') && !h2.includes('nenya-orb-halo'));

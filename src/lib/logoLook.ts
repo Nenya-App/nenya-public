@@ -102,19 +102,20 @@ export const effectivePreviewPercent = (choice: number, tier: 'lite' | 'standard
 /** The preview's side in px for a stored choice. */
 export const previewPixels = (choice: number, tier: 'lite' | 'standard' | 'capable', viewport: number): number => Math.round((DEFAULT_PREVIEW_SIZE * effectivePreviewPercent(choice, tier, viewport)) / 100);
 
-// The inner ring of orbs behind the gem (owner, 2026-11-22: too much movement behind the gem). Three choices, kept like the other display settings:
-//   moving  as the logo has always been: the ring turns, and each orb pulses (size and brightness) and fades through its colours
-//   still   the orbs stay where they are, drawn, with no turning, pulsing or drifting; they still fade slowly from colour to colour, as the rest of the logo's colours do
-//   hidden  the inner orbs are not drawn behind the gem at all (the gem keeps its own light)
+// The inner ring of lights behind the gem (owner, 2026-11-22: too much movement behind the gem, and "lights instead of solid orbs"). Three choices, kept like the
+// other display settings. The stored key (innerOrbs) and values are the ones from when they were orbs, so nothing stored breaks.
+//   moving  the ring turns very slowly, and each light rises and fades gently (60% to 100% bright, 10% in size, 12 seconds or more) and fades through its colours
+//   still   the lights stay where they are, drawn, with no turning, rising or fading; they still change slowly from colour to colour, as the rest of the logo's colours do
+//   hidden  the inner lights are not drawn behind the gem at all (the gem keeps its own light)
 export const INNER_ORB_MODES = ['moving', 'still', 'hidden'] as const;
 export type InnerOrbMode = (typeof INNER_ORB_MODES)[number];
 export const DEFAULT_INNER_ORB_MODE: InnerOrbMode = 'moving';
 export const snapInnerOrbMode = (v: unknown): InnerOrbMode => ((INNER_ORB_MODES as readonly unknown[]).includes(v) ? (v as InnerOrbMode) : DEFAULT_INNER_ORB_MODE);
 export const innerOrbLabel = (m: InnerOrbMode): string => ({ moving: 'Moving', still: 'Still', hidden: 'Hidden' })[m];
 export const innerOrbHint = (m: InnerOrbMode): string =>
-  ({ moving: 'The ring turns and the orbs pulse, as the logo always has.', still: 'The orbs stay where they are: no turning, pulsing or drifting. Their colours still fade slowly.', hidden: 'The inner orbs are not drawn behind the gem. The gem keeps its own light.' })[m];
-export const innerOrbMessage = (m: InnerOrbMode): string => `The inner orbs are now ${innerOrbLabel(m).toLowerCase()}.`;
-/** Whether the inner orbs are drawn at all. */
+  ({ moving: 'The ring turns very slowly and the lights rise and fade gently.', still: 'The lights stay where they are: no turning, rising or fading. Their colours still change slowly.', hidden: 'The inner lights are not drawn behind the gem. The gem keeps its own light.' })[m];
+export const innerOrbMessage = (m: InnerOrbMode): string => `The inner lights are now ${innerOrbLabel(m).toLowerCase()}.`;
+/** Whether the inner lights are drawn at all. */
 export const innerOrbsDrawn = (m: InnerOrbMode): boolean => m !== 'hidden';
-/** Whether the inner orbs (and the light the gem takes from their ring) turn and pulse. */
+/** Whether the inner lights (and the light the gem takes from their ring) turn and rise and fade. */
 export const innerOrbsMove = (m: InnerOrbMode): boolean => m === 'moving';

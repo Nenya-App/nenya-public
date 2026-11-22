@@ -4,8 +4,8 @@ import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, emergence } from '../src/lib/
 import { ok } from './helpers.mts';
 
 const L = { ...DEFAULT_INNER_ORBIT, style: 'light' as const };
-ok('the outer orbs default to their own halos (the owner chose this on 2026-11-20); the inner ring keeps the orb look until chosen', DEFAULT_INNER_ORBIT.style === 'orb' && DEFAULT_OUTER_ORBIT.halo === 'own');
-ok('orbs are always fully lit', [0, 3.3, 99].every((t) => emergence(2, t, DEFAULT_INNER_ORBIT) === 1));
+ok('the outer orbs default to their own halos (the owner chose this on 2026-11-20); the inner ring is soft lights, not solid orbs (owner, 2026-11-22; the shaded orbs stay available to the bench)', DEFAULT_INNER_ORBIT.style === 'light' && DEFAULT_OUTER_ORBIT.halo === 'own');
+ok('orbs are always fully lit', [0, 3.3, 99].every((t) => emergence(2, t, { ...DEFAULT_INNER_ORBIT, style: 'orb' }) === 1));
 const samples = (j: number) => Array.from({ length: 600 }, (_, k) => emergence(j, k * 0.1, L));
 ok('a light stays between its dimmest and full', Array.from({ length: 16 }, (_, j) => samples(j)).every((a) => Math.min(...a) >= L.emergeDepth - 1e-9 && Math.max(...a) <= 1 + 1e-9));
 ok('every light reaches (nearly) full brightness and (nearly) its dimmest within a minute', Array.from({ length: 16 }, (_, j) => samples(j)).every((a) => Math.max(...a) > 0.97 && Math.min(...a) < L.emergeDepth + 0.05));

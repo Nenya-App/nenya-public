@@ -23,9 +23,12 @@ import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type Out
 import { GEM_ENGINE, type GemEngine } from '../../lib/gemSprite';
 import { liveGemSupported } from '../../lib/gemRenderer';
 import { deviceProfile } from '../../lib/deviceProfile';
-import { useGemSidesChoice, useInnerOrbMode, useLeafSway, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
+import { useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook, useGemSidesChoice, useInnerOrbMode, useLeafSway, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
 import { effectiveGemSides, innerOrbsDrawn, innerOrbsMove, randomHaloColors } from '../../lib/logoLook';
 import { useZoomedIn } from '../../lib/zoomLite';
+import { DEFAULT_KALEIDOSCOPE, KALEIDOSCOPE_PRESETS } from '../../lib/kaleidoscope';
+import { lightBreathCss, lightBreathKey, lightMotionFor } from '../../lib/lightMotion';
+import { breathLengthMs } from '../../lib/breathClock';
 
 // Above this size, the full-resolution source is used instead -- 128px
 // covers up to ~40px CSS at 3x device pixel ratio (the largest "small"
@@ -50,6 +53,8 @@ const ORB_FADE_GRADIENT = 'radial-gradient(circle at 30% 30%, var(--hc), color-m
 /** Keyframes for one orb: its colours in order and back to the first, with literal colours so every browser fades between them. */
 const hueKeyframes = (name: string, prop: string, cols: readonly string[], shift = 0): string =>
   `@keyframes ${name}{${Array.from({ length: 7 }, (_, k) => `${((k * 100) / 6).toFixed(3)}%{${prop}:${cols[(k + shift) % 6]}}`).join('')}}`;
+/** The gem's own easing for a wave (a sine), as a cubic bezier. */
+const SINE: [number, number, number, number] = [0.37, 0, 0.63, 1];
 const LIGHT_SIZE = 1.6; // a light's diameter as a multiple of an orb's
 
 /** The fixed layers over an orb's changing colour. `d` is the orb's diameter in px. */
@@ -154,9 +159,22 @@ export default function NenyaLogo({
   const leafChoice = useLogoLeaves();
   // The leaves' gentle sway (Settings, Logo look): the visitor's wish, off by default. MallornLeaves decides whether motion is allowed here.
   const swayWish = useLeafSway();
-  // The inner orbs behind the gem: moving (as always), still, or hidden (Settings, Logo look, Inner orbs).
+  // The inner lights behind the gem: moving (they follow the gem's own motion settings), still, or hidden (Settings, Logo look, Inner lights). The shaded
+  // orbs (the bench's 'orb' style) keep their old pulse.
   const innerMode = useInnerOrbMode();
   const innerMoves = innerOrbsMove(innerMode);
+  const kalVisitor = useGemKaleidoscope();
+  const kalLookId = useGemKaleidoscopeLook();
+  const kalBreath = useGemKaleidoscopeBreath();
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const q = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    if (!q) return;
+    const update = () => setReducedMotion(q.matches);
+    update();
+    q.addEventListener?.('change', update);
+    return () => q.removeEventListener?.('change', update);
+  }, []);
   // The orbs' colours: each palette's own unless the visitor chose another set (Settings, Logo look, Orb colours).
   const orbVecs = useOrbVectors();
   const allOrbColours = useMemo(() => orbVecs.flat(), [orbVecs]);
@@ -164,6 +182,16 @@ export default function NenyaLogo({
   // While the page is pinch-zoomed the logo is drawn lighter (no glows, halos or blends; the gem holds its last frame): see src/lib/zoomLite.ts.
   const zoomed = useZoomedIn();
   const isLight = inner.style === 'light';
+  // The same motion settings the gem reads (its kaleidoscope switch, look and "move with my breathing"), turned into the lights' motion (src/lib/lightMotion.ts).
+  const kalLook = { ...DEFAULT_KALEIDOSCOPE, ...liveGem?.kaleidoscope, ...(kalVisitor ? KALEIDOSCOPE_PRESETS[kalLookId] : {}) };
+  const lights = lightMotionFor({
+    mode: innerMode,
+    kaleidoscope: { on: kalVisitor || !!liveGem?.kaleidoscope?.on, periodS: kalLook.periodS, depth: kalLook.depth, pattern: kalLook.pattern, sway: kalLook.sway, turn: kalLook.turn },
+    breathSync: kalVisitor && kalBreath,
+    sides: gemSides,
+    reducedMotion,
+  });
+  const breathMs = breathLengthMs(technique);
   const ownHalo = glow && !zoomed && outer.halo !== 'shared';
   const ORBIT_DURATION = inner.orbitSeconds > 0 ? inner.orbitSeconds : DEFAULT_INNER_ORBIT.orbitSeconds; // seconds for one complete orbit
   const INNER_ORB_OPACITY = [inner.opacityLow, inner.opacityHigh, inner.opacityLow];
@@ -197,6 +225,11 @@ export default function NenyaLogo({
   // pace changes, and recomputing would snap the orbits back to angle 0 in front of the person.
   const [orbitDelay, setOrbitDelay] = useState(0);
   const orbitSet = useRef(false);
+  // Seconds since the shared clock started, read when the logo mounts (and again when the breathing pace changes, for the lights that follow the breath), so the lights' phase matches the gem's.
+  const [clockS, setClockS] = useState(0);
+  useEffect(() => {
+    setClockS(cycleStart == null ? 0 : (Date.now() - cycleStart) / 1000);
+  }, [cycleStart, breathMs]);
   useEffect(() => {
     if (cycleStart == null || orbitSet.current) return;
     orbitSet.current = true;
@@ -264,15 +297,22 @@ export default function NenyaLogo({
             marginTop: -orbitRadius,
             zIndex: inner.layer === 'over' ? 32 : 20,
             mixBlendMode: zoomed ? undefined : inner.blend === 'normal' ? (isLight ? 'screen' : undefined) : inner.blend,
-            willChange: innerMoves ? 'transform' : undefined,
+            willChange: (isLight ? lights.turn !== 'none' : innerMoves) ? 'transform' : undefined,
             // Plain CSS animation rather than Motion's JS-driven `animate` --
             // animation-play-state genuinely freezes this on pause, where
             // Motion's `animate={false}` does not reliably cancel an
             // already-running infinite WAAPI loop. Still: no turning at all.
-            animation: innerMoves ? `nenya-orbit-cw ${ORBIT_DURATION}s linear infinite` : undefined,
-            animationDelay: innerMoves ? `${orbitDelay}s` : undefined,
+            // Lights: the ring turns as the gem's facets do (steadily, or swinging back and forth and coming home), or not at all.
+            ...(isLight
+              ? lights.turn === 'steady'
+                ? { animation: `nenya-orbit-cw ${lights.turnPeriodS}s linear infinite`, animationDelay: `${-(clockS % lights.turnPeriodS)}s` }
+                : lights.turn === 'sway'
+                  ? { animation: `nenya-lights-sway ${lights.turnPeriodS}s cubic-bezier(0.37,0,0.63,1) infinite`, animationDelay: `${-(clockS % lights.turnPeriodS)}s`, ['--sway' as string]: `${lights.turnDeg}deg` }
+                  : { animation: undefined }
+              : { animation: innerMoves ? `nenya-orbit-cw ${ORBIT_DURATION}s linear infinite` : undefined, animationDelay: innerMoves ? `${orbitDelay}s` : undefined }),
                       }}
         >
+          {isLight && lights.rise === 'breath' && <style>{lightBreathCss(technique)}</style>}
           {valarColors.map((valar, index) => {
             // Calculate position on circle
             const angle = (index / valarColors.length) * 2 * Math.PI;
@@ -294,40 +334,64 @@ export default function NenyaLogo({
             const top = orbitRadius - orbSize / 2 + y;
             const d = isLight ? orbSize * LIGHT_SIZE : orbSize; // a light is a little larger than an orb: its edge is a fade
             const off = (d - orbSize) / 2;
+            // A light's own rise and fade: on the gem's wave, with the breath, or at rest (the lights hold still).
+            const lightPeriod = lights.risePeriodS + index * lights.riseStepS;
+            const lightBg = [0, 1, 2, 3, 4, 5, 0].map((k) => lightGradient(colors[k]));
+            const lightAnimate =
+              lights.rise === 'gem'
+                ? { background: lightBg, opacity: [lights.depth, 1, lights.depth], scale: [lights.scale, 1, lights.scale], rotate: 0 }
+                : lights.rise === 'breath'
+                  ? { background: lightBg }
+                  : { background: lightBg, opacity: (1 + lights.depth) / 2, scale: (1 + lights.scale) / 2, rotate: 0 };
+            const lightTransition =
+              lights.rise === 'gem'
+                ? {
+                    background: { duration: colorCycleDuration, repeat: Infinity, ease: 'easeInOut' as const, delay: index * 2 },
+                    opacity: { duration: lightPeriod, repeat: Infinity, ease: SINE },
+                    scale: { duration: lightPeriod, repeat: Infinity, ease: SINE },
+                  }
+                : { background: { duration: colorCycleDuration, repeat: Infinity, ease: 'easeInOut' as const, delay: index * 2 }, default: { duration: 0 } };
             const orb = (
               <m.div
                 key={valar.name}
-                className="absolute"
+                className={isLight && lights.rise === 'breath' ? 'absolute nenya-light-breath' : 'absolute'}
                 style={{
                   width: d,
                   height: d,
                   left: wrapped ? pad : orbitRadius - orbSize / 2 + x - off,
                   top: wrapped ? pad : orbitRadius - orbSize / 2 + y - off,
                   borderRadius: '50%',
-                  willChange: zoomed ? undefined : innerMoves ? 'background, opacity, transform' : 'background',
-                  opacity: isLight ? inner.emergeDepth : INNER_ORB_OPACITY[0],
+                  willChange: zoomed ? undefined : (isLight ? lights.rise !== 'none' : innerMoves) ? 'background, opacity, transform' : 'background',
+                  opacity: isLight ? (lights.rise === 'none' ? (1 + lights.depth) / 2 : lights.depth) : INNER_ORB_OPACITY[0],
+                  ...(isLight && lights.rise === 'breath'
+                    ? { animation: `nl-breath-${lightBreathKey(technique)} ${breathMs}ms ease-in-out infinite`, animationDelay: `${-Math.round((clockS * 1000) % breathMs)}ms`, ['--nl-depth' as string]: lights.depth, ['--nl-scale' as string]: lights.scale }
+                    : {}),
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
                 }}
                 animate={
-                  innerMoves
+                  isLight
+                    ? lightAnimate
+                    : innerMoves
                     ? {
                         background: [0, 1, 2, 3, 4, 5, 0].map((k) => (isLight ? lightGradient(colors[k]) : orbGradient(colors[k]))),
                         opacity: isLight ? [inner.emergeDepth, 1, inner.emergeDepth] : INNER_ORB_OPACITY,
-                        scale: isLight ? [0.55, 1, 0.55] : PULSE,
+                        scale: isLight ? [inner.emergeScale, 1, inner.emergeScale] : PULSE,
                         rotate: isLight ? 0 : -360,
                       }
                     : {
-                        // Still: the colours keep fading, nothing else moves; the orb rests at the middle of its pulse.
+                        // Still: the colours keep fading, nothing else moves; the light rests at the middle of its rise and fade.
                         background: [0, 1, 2, 3, 4, 5, 0].map((k) => (isLight ? lightGradient(colors[k]) : orbGradient(colors[k]))),
                         opacity: isLight ? (inner.emergeDepth + 1) / 2 : (inner.opacityLow + inner.opacityHigh) / 2,
-                        scale: isLight ? 0.78 : 1,
+                        scale: isLight ? (inner.emergeScale + 1) / 2 : 1,
                         rotate: 0,
                       }
                 }
                 transition={
-                  innerMoves
+                  isLight
+                    ? lightTransition
+                    : innerMoves
                     ? {
                         background: { duration: colorCycleDuration, repeat: Infinity, ease: "easeInOut", delay: index * 2 },
                         opacity: { duration: isLight ? inner.emergeSeconds + index * inner.emergeStep : inner.pulseSeconds + (index * inner.pulseStep), repeat: Infinity, ease: "easeInOut" },
@@ -506,6 +570,7 @@ export default function NenyaLogo({
           emerge={inner}
           paused={zoomed}
           orbsStill={!innerMoves}
+          lights={isLight ? lights : undefined}
           onStats={onGemStats}
           {...gemLook}
         />
