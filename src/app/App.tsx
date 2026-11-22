@@ -3,12 +3,13 @@ import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { setSessionMarkId } from '../lib/sessionMarkStore';
 import SkipLink from './components/SkipLink';
 import { ThemeProvider } from './components/ThemeProvider';
-import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
+import { usePref, termsAcceptedFor, useBreathingStrength } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { aboutSectionFromLocation, SITE_TITLE } from '../lib/aboutRoutes';
 import { melodyColorsFor, melodyShared } from '../lib/melodySeed';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
+import { setKeptPalettes } from '../lib/keptPalettes';
 import { BreathingPopout } from './components/BreathingPopout';
 import { WelcomeTutorial, type TutorialStepId } from './components/WelcomeTutorial';
 import { TourOffer } from './components/TourOffer';
@@ -182,6 +183,10 @@ export default function App() {
   // Read by the Back/Forward handler, which is set up before this state exists.
   const gatewayDataRef = useRef<GatewayData[]>([]);
   gatewayDataRef.current = gatewayData;
+  // The palettes the visitor kept in the Sight lens are offered as colour choices for the logo (Settings, Logo look). They are held in memory only, for the visit (src/lib/keptPalettes.ts).
+  useEffect(() => {
+    setKeptPalettes(gatewayData.find((g) => g.gateway === 'sight')?.data?.generatedPalettes ?? []);
+  }, [gatewayData]);
   // Shared across every gateway -- not owned by Sight or any one gateway's
   // data blob, so it persists regardless of which gateways are visited or
   // in what order.
@@ -197,7 +202,7 @@ export default function App() {
   const [breathingEnabled, setBreathingEnabled] = usePref('breathingEnabled', true);
   const [orbitEnabled, setOrbitEnabled] = usePref('orbitEnabled', true);
   const [logoVisible, setLogoVisible] = usePref('logoVisible', true);
-  const [breathingOpacity, setBreathingOpacity] = usePref('breathingOpacity', 1); // Default 100%
+  const [breathingStrength, setBreathingStrength] = useBreathingStrength(); // 50% on the new scale = what 100% was
   const [textSize, setTextSize] = usePref('textSize', 16); // Default text size
   const [showBreathingCounter, setShowBreathingCounter] = usePref('showBreathingCounter', true);
   const [colorBlindMode, setColorBlindMode] = usePref('colorBlindMode', '');
@@ -624,12 +629,12 @@ export default function App() {
           breathingEnabled={breathingEnabled}
           orbitEnabled={orbitEnabled}
           logoVisible={logoVisible}
-          breathingOpacity={breathingOpacity}
+          breathingStrength={breathingStrength}
           textSize={textSize}
           onBreathingToggle={setBreathingEnabled}
           onOrbitToggle={setOrbitEnabled}
           onLogoVisibleToggle={setLogoVisible}
-          onOpacityChange={setBreathingOpacity}
+          onStrengthChange={setBreathingStrength}
           onTextSizeChange={setTextSize}
           showCounter={showBreathingCounter}
           onCounterToggle={setShowBreathingCounter}
@@ -678,7 +683,7 @@ export default function App() {
               breathingEnabled={breathingEnabled}
               orbitEnabled={orbitEnabled}
               logoVisible={logoVisible}
-              breathingOpacity={breathingOpacity}
+              breathingStrength={breathingStrength}
               onNavigateToAbout={handleNavigateToAbout}
               technique={breathingTechnique}
               cvMode={colorBlindMode}
@@ -856,12 +861,12 @@ export default function App() {
           breathingEnabled={breathingEnabled}
           orbitEnabled={orbitEnabled}
           logoVisible={logoVisible}
-          breathingOpacity={breathingOpacity}
+          breathingStrength={breathingStrength}
           textSize={textSize}
           onBreathingToggle={setBreathingEnabled}
           onOrbitToggle={setOrbitEnabled}
           onLogoVisibleToggle={setLogoVisible}
-          onOpacityChange={setBreathingOpacity}
+          onStrengthChange={setBreathingStrength}
           onTextSizeChange={setTextSize}
           showBreathingCounter={showBreathingCounter}
           onCounterToggle={setShowBreathingCounter}

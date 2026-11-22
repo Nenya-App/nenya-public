@@ -6,6 +6,7 @@ import NenyaLogo from './NenyaLogo';
 import type { BreathingTechnique } from '../../lib/breathingPresets';
 import { ThemeToggle } from './ThemeToggle';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
+import { STRENGTH_STANDARD } from '../../lib/breathStrength';
 import { EmergencyExitButton } from './EmergencyExit';
 import { AddToHomeScreen } from './AddToHomeScreen';
 import {
@@ -23,12 +24,12 @@ interface GlobalNavigationProps {
   breathingEnabled?: boolean;
   orbitEnabled?: boolean;
   logoVisible?: boolean;
-  breathingOpacity?: number;
+  breathingStrength?: number;
   textSize?: number;
   onBreathingToggle?: (enabled: boolean) => void;
   onOrbitToggle?: (enabled: boolean) => void;
   onLogoVisibleToggle?: (visible: boolean) => void;
-  onOpacityChange?: (opacity: number) => void;
+  onStrengthChange?: (opacity: number) => void;
   onTextSizeChange?: (size: number) => void;
   showCounter?: boolean;
   onCounterToggle?: (show: boolean) => void;
@@ -51,12 +52,12 @@ export function GlobalNavigation({
   breathingEnabled = true,
   orbitEnabled = true,
   logoVisible = true,
-  breathingOpacity = 1,
+  breathingStrength = STRENGTH_STANDARD,
   textSize = 16,
   onBreathingToggle,
   onOrbitToggle,
   onLogoVisibleToggle,
-  onOpacityChange,
+  onStrengthChange,
   onTextSizeChange,
   showCounter = false,
   onCounterToggle,
@@ -212,7 +213,7 @@ export function GlobalNavigation({
                           <span>About</span>
                         </button>
                         
-                        {showAnimationControls && onBreathingToggle && onOrbitToggle && onOpacityChange ? (
+                        {showAnimationControls && onBreathingToggle && onOrbitToggle && onStrengthChange ? (
                           <>
                             <div className="border-t border-border my-1" />
                             <button
@@ -353,7 +354,7 @@ export function GlobalNavigation({
                   </button>
                 ) : null}
 
-                {showAnimationControls && onBreathingToggle && onOrbitToggle && onOpacityChange ? (
+                {showAnimationControls && onBreathingToggle && onOrbitToggle && onStrengthChange ? (
                   <>
                     <div className="border-t border-border my-2" />
                     <button
@@ -375,7 +376,7 @@ export function GlobalNavigation({
       </nav>
 
       {/* Accessibility Settings Dialog */}
-      {showAnimationControls && onBreathingToggle && onOrbitToggle && onOpacityChange ? (
+      {showAnimationControls && onBreathingToggle && onOrbitToggle && onStrengthChange ? (
         <Dialog open={accessibilityOpen} onOpenChange={setAccessibilityOpen}>
           <DialogContent className="max-w-md max-h-[85dvh] overflow-y-auto">
             <DialogHeader>
@@ -388,11 +389,11 @@ export function GlobalNavigation({
               breathingEnabled={breathingEnabled}
               orbitEnabled={orbitEnabled}
               logoVisible={logoVisible}
-              breathingOpacity={breathingOpacity}
+              breathingStrength={breathingStrength}
               onBreathingToggle={onBreathingToggle}
               onOrbitToggle={onOrbitToggle}
               onLogoVisibleToggle={onLogoVisibleToggle}
-              onOpacityChange={onOpacityChange}
+              onStrengthChange={onStrengthChange}
               onTextSizeChange={onTextSizeChange}
               textSize={textSize}
               showCounter={showCounter}

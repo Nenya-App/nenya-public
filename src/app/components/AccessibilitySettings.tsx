@@ -5,6 +5,12 @@ import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
+import { SettingsCard } from './SettingsCard';
+import { STRENGTH_MAX, STRENGTH_MIN, STRENGTH_STEP, strengthLabel } from '../../lib/breathStrength';
+import { useReducedMotionNow } from './useReducedMotionNow';
+import { MOTION_REDUCED_REASON, MOTION_STOPPED_STATUS, motionButtonLabel, motionMessage } from '../../lib/motionStop';
+import { setMotionStopped, useMotionStopped } from '../../lib/deviceMemory';
+import { CARDS_INSTRUCTION, NO_CARDS_OPEN, allCardsOpen, closeAllCards, noCardsOpen, openAllCards, toggleCard, type OpenCards, type SettingsCardId } from '../../lib/settingsCards';
 import { useTheme } from './ThemeProvider';
 import { DeviceMemoryControls } from './DeviceMemoryControls';
 import { BreathToneStyle, BreathTonesSwitch } from './BreathTonesSwitch';
@@ -13,6 +19,11 @@ import { VISITOR_LOOKS } from '../../lib/kaleidoscope';
 import { GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, LEAF_SETTING_AVAILABLE, gemChoiceLabel, gemChoiceMessage, haloStyleLabel, haloStyleMessage, haloWidthLabel, type GemSidesChoice } from '../../lib/logoLook';
 import { setGemSidesChoice, setLogoLeaves, setOrbHaloStyle, setOrbHaloWidth, shuffleOrbHalo, useGemSidesChoice, useLogoLeaves, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
 import { liveGemSupported } from '../../lib/gemRenderer';
+import { LeafSwaySwitch, ColourChoiceGroup } from './LogoLookExtras';
+import { setBreathColourChoice, setOrbColourChoice, useBreathColourChoice, useOrbColourChoice } from '../../lib/deviceMemory';
+import { colourChoiceMessage } from '../../lib/logoColours';
+import { INNER_ORB_MODES, innerOrbHint, innerOrbLabel, innerOrbMessage } from '../../lib/logoLook';
+import { setInnerOrbMode, useInnerOrbMode } from '../../lib/deviceMemory';
 
 const VISION_MODES: { value: string; label: string }[] = [
   { value: '', label: 'Standard' },
@@ -26,14 +37,14 @@ interface AccessibilitySettingsProps {
   breathingEnabled: boolean;
   orbitEnabled: boolean;
   logoVisible?: boolean;
-  breathingOpacity: number;
+  breathingStrength: number;
   textSize?: number;
   showCounter?: boolean;
   cvMode?: string;
   onBreathingToggle: (enabled: boolean) => void;
   onOrbitToggle: (enabled: boolean) => void;
   onLogoVisibleToggle?: (visible: boolean) => void;
-  onOpacityChange: (opacity: number) => void;
+  onStrengthChange: (opacity: number) => void;
   onTextSizeChange?: (size: number) => void;
   onCounterToggle?: (show: boolean) => void;
   onCvModeChange?: (mode: string) => void;
@@ -46,14 +57,14 @@ export function AccessibilitySettingsContent({
   breathingEnabled,
   orbitEnabled,
   logoVisible = true,
-  breathingOpacity,
+  breathingStrength,
   textSize = 16,
   showCounter = false,
   cvMode = '',
   onBreathingToggle,
   onOrbitToggle,
   onLogoVisibleToggle,
-  onOpacityChange,
+  onStrengthChange,
   onTextSizeChange,
   onCounterToggle,
   onCvModeChange,
@@ -61,19 +72,33 @@ export function AccessibilitySettingsContent({
 }: AccessibilitySettingsProps) {
   const { theme, setTheme } = useTheme();
 
+  // The cards all start closed, every visit; which are open is not stored.
+  const [openCards, setOpenCards] = useState<OpenCards>(NO_CARDS_OPEN);
+  // Stop motion: held by the visitor's button or by the device's reduced-motion request (then the button shows stopped and cannot be pressed).
+  const motionStopped = useMotionStopped();
+  const reducedMotion = useReducedMotionNow();
+  const motionHeld = motionStopped || reducedMotion;
+  const [motionMessageText, setMotionMessageText] = useState('');
+  const card = (id: SettingsCardId, title: string, children: React.ReactNode, status?: string) => (
+    <SettingsCard id={`a11y-${id}`} title={title} status={status} open={!!openCards[id]} onToggle={() => setOpenCards((o) => toggleCard(o, id))}>{children}</SettingsCard>
+  );
+
   // Pending changes state
   const gemKaleidoscope = useGemKaleidoscope();
   const gemChoice = useGemSidesChoice();
   const leafChoice = useLogoLeaves();
   const haloStyle = useOrbHaloStyle();
   const haloWidth = useOrbHaloWidth();
+  const breathColourChoice = useBreathColourChoice();
+  const orbColourChoice = useOrbColourChoice();
+  const innerOrbMode = useInnerOrbMode();
   const [lookMessage, setLookMessage] = useState('');
   const kaleidoLook = useGemKaleidoscopeLook();
   const kaleidoBreath = useGemKaleidoscopeBreath();
   const [pendingBreathingEnabled, setPendingBreathingEnabled] = useState(breathingEnabled);
   const [pendingOrbitEnabled, setPendingOrbitEnabled] = useState(orbitEnabled);
   const [pendingLogoVisible, setPendingLogoVisible] = useState(logoVisible);
-  const [pendingBreathingOpacity, setPendingBreathingOpacity] = useState(breathingOpacity);
+  const [pendingBreathingStrength, setPendingBreathingStrength] = useState(breathingStrength);
   const [pendingTextSize, setPendingTextSize] = useState(textSize);
 
   // Check if there are unsaved changes
@@ -81,7 +106,7 @@ export function AccessibilitySettingsContent({
     pendingBreathingEnabled !== breathingEnabled ||
     pendingOrbitEnabled !== orbitEnabled ||
     (onLogoVisibleToggle && pendingLogoVisible !== logoVisible) ||
-    pendingBreathingOpacity !== breathingOpacity ||
+    pendingBreathingStrength !== breathingStrength ||
     (onTextSizeChange && pendingTextSize !== textSize);
   
   // Apply all pending changes
@@ -91,17 +116,46 @@ export function AccessibilitySettingsContent({
     if (onLogoVisibleToggle) {
       onLogoVisibleToggle(pendingLogoVisible);
     }
-    onOpacityChange(pendingBreathingOpacity);
+    onStrengthChange(pendingBreathingStrength);
     if (onTextSizeChange) {
       onTextSizeChange(pendingTextSize);
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
+      {/* Stop motion: always visible at the very top, not inside a card. One press holds the decorative movement still; Resume brings back what was set. */}
+      <div className="space-y-1">
+        <button
+          type="button"
+          aria-pressed={motionHeld}
+          disabled={reducedMotion}
+          onClick={() => { const next = !motionStopped; setMotionStopped(next); setMotionMessageText(motionMessage(next)); }}
+          aria-describedby="a11y-motion-help"
+          className="min-h-11 w-full rounded-md border-2 border-foreground px-3 text-sm font-medium text-foreground disabled:opacity-80"
+        >
+          {motionButtonLabel(motionHeld)}
+        </button>
+        <p id="a11y-motion-help" className="text-xs text-muted-foreground">
+          {reducedMotion
+            ? MOTION_REDUCED_REASON
+            : 'Holds the leaves, the inner lights, the gem and the orbs still. The breathing ring, the counter and the tones carry on. Your other settings are kept.'}
+        </p>
+        <p role="status" aria-live="polite" className="sr-only">{motionMessageText}</p>
+      </div>
+
+      {/* How the cards work, and open-all / close-all (helpful with a screen reader). */}
+      <div className="space-y-2">
+        <p id="a11y-cards-help" className="text-sm text-foreground">{CARDS_INSTRUCTION}</p>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" disabled={allCardsOpen(openCards)} onClick={() => setOpenCards(openAllCards())} aria-describedby="a11y-cards-help" className="min-h-11 rounded-md border border-border px-3 text-sm disabled:opacity-60">Open all</button>
+          <button type="button" disabled={noCardsOpen(openCards)} onClick={() => setOpenCards(closeAllCards())} aria-describedby="a11y-cards-help" className="min-h-11 rounded-md border border-border px-3 text-sm disabled:opacity-60">Close all</button>
+        </div>
+      </div>
+
       {/* Theme Toggle */}
+      {card('theme', 'Theme', (
       <div className="space-y-3">
-        <Label className="text-sm">Theme</Label>
         <div className="flex items-center justify-between gap-2">
           <Button
             variant={theme === 'light' ? 'default' : 'outline'}
@@ -123,14 +177,14 @@ export function AccessibilitySettingsContent({
           </Button>
         </div>
       </div>
+      ))}
 
       {!compact && (
       <>
-      <Separator />
 
       {/* Animation Controls */}
+      {card('animation', 'Animation', (
       <div className="space-y-3">
-        <Label className="text-sm">Animation Controls</Label>
         
         {/* Breathing Animation Toggle */}
         <div className="flex items-center justify-between">
@@ -166,7 +220,7 @@ export function AccessibilitySettingsContent({
           />
         </div>
 
-        {/* Gem kaleidoscope: the inside of the stone slowly re-cuts itself. Off by default; it takes effect at once and holds still when the device asks for reduced motion. */}
+        {/* Gem kaleidoscope: the inside of the stone slowly re-cuts itself. On by default (not on a light device); it takes effect at once and holds still when the device asks for reduced motion. */}
         {!compact && (
           <div className="space-y-1">
             <div className="flex items-center justify-between">
@@ -179,7 +233,7 @@ export function AccessibilitySettingsContent({
               <Switch id="kaleidoscope-toggle" checked={gemKaleidoscope} onCheckedChange={setGemKaleidoscope} aria-describedby="kaleidoscope-help" />
             </div>
             <p id="kaleidoscope-help" className="pl-6 text-xs text-muted-foreground">
-              The inside of the gem slowly re-cuts itself. Off by default. It holds still if your device asks for reduced motion.
+              The inside of the gem slowly re-cuts itself. On by default (off on a device that draws less). It holds still if your device asks for reduced motion.
             </p>
             {/* Shown only while it is on: the look, and whether it moves with the breath (owner, 2026-11-15). */}
             {gemKaleidoscope && (
@@ -210,10 +264,34 @@ export function AccessibilitySettingsContent({
           </div>
         )}
 
+        {/* Logo Visibility Toggle */}
+        {onLogoVisibleToggle && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {pendingLogoVisible ? (
+                <Eye className="size-4 text-muted-foreground" />
+              ) : (
+                <EyeOff className="size-4 text-muted-foreground" />
+              )}
+              <Label htmlFor="logo-toggle" className="cursor-pointer text-sm">
+                Show Logo
+              </Label>
+            </div>
+            <Switch
+              id="logo-toggle"
+              checked={pendingLogoVisible}
+              onCheckedChange={setPendingLogoVisible}
+            />
+          </div>
+        )}
+      </div>
+      ), motionHeld ? MOTION_STOPPED_STATUS : undefined)}
+
+      {card('logo-look', 'Logo look', (
+      <div className="space-y-3">
         {/* The logo's look: how many sides the gem has (and, once the leaves are in, how many leaves). Presets, applied at once, no motion. */}
         {!compact && (liveGemSupported() || LEAF_SETTING_AVAILABLE || orbitEnabled) && (
           <div className="space-y-2">
-            <p id="logo-look-help" className="text-sm">Logo look</p>
             <p className="text-xs text-muted-foreground">This changes the animated logo. The still logo in some places stays at the standard design.</p>
             {LEAF_SETTING_AVAILABLE && (
               <fieldset className="space-y-1">
@@ -269,33 +347,51 @@ export function AccessibilitySettingsContent({
                 )}
               </>
             )}
+            {/* The inner ring of lights behind the gem: moving, still, or hidden. */}
+            {orbitEnabled && (
+              <fieldset className="space-y-1">
+                <legend className="text-xs text-muted-foreground">Inner lights behind the gem</legend>
+                {INNER_ORB_MODES.map((m) => (
+                  <label key={m} className="flex min-h-11 items-start gap-2 py-1 text-sm">
+                    <input type="radio" name="inner-orbs" value={m} checked={innerOrbMode === m} onChange={() => { setInnerOrbMode(m); setLookMessage(innerOrbMessage(m)); }} className="mt-1" aria-describedby={`inner-orbs-${m}-d`} />
+                    <span>
+                      {innerOrbLabel(m)}
+                      <span id={`inner-orbs-${m}-d`} className="block text-xs text-muted-foreground">{innerOrbHint(m)}</span>
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            {/* The leaves' gentle sway (on by default; the leaves are drawn with the Palette Orbit). */}
+            {orbitEnabled && <LeafSwaySwitch breathingEnabled={breathingEnabled} onMessage={setLookMessage} />}
+            {/* The colours of the breath ring (and the gem's tint that follows it), and of the sixteen orbs. */}
+            {breathingEnabled && (
+              <ColourChoiceGroup
+                legend="Breathing colours"
+                name="breath-colours"
+                choice={breathColourChoice}
+                onChoose={(c) => { setBreathColourChoice(c); setLookMessage(colourChoiceMessage('breath', c)); }}
+                help="The colour of the glow each breath. Original changes it every breath through all the palettes. Changes show at once in the logo."
+              />
+            )}
+            {orbitEnabled && (
+              <ColourChoiceGroup
+                legend="Orb colours"
+                name="orb-colours"
+                choice={orbColourChoice}
+                onChoose={(c) => { setOrbColourChoice(c); setLookMessage(colourChoiceMessage('orbs', c)); }}
+                help="The colours of the sixteen orbs. Original gives each orb its own palette. Changes show at once in the logo."
+              />
+            )}
             <p role="status" aria-live="polite" className="sr-only">{lookMessage}</p>
           </div>
         )}
-
-        {/* Logo Visibility Toggle */}
-        {onLogoVisibleToggle && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {pendingLogoVisible ? (
-                <Eye className="size-4 text-muted-foreground" />
-              ) : (
-                <EyeOff className="size-4 text-muted-foreground" />
-              )}
-              <Label htmlFor="logo-toggle" className="cursor-pointer text-sm">
-                Show Logo
-              </Label>
-            </div>
-            <Switch
-              id="logo-toggle"
-              checked={pendingLogoVisible}
-              onCheckedChange={setPendingLogoVisible}
-            />
-          </div>
-        )}
       </div>
+      ))}
 
       {/* Breathing tones: the same switch that is near the top of the page and on the counter */}
+      {card('sound', 'Sound and counter', (
+      <div className="space-y-4">
       {!compact && <BreathTonesSwitch variant="panel" />}
       {!compact && <BreathToneStyle />}
 
@@ -314,8 +410,10 @@ export function AccessibilitySettingsContent({
       </div>
       </>
       )}
+      </div>
+      ))}
 
-      {onCvModeChange && (
+      {onCvModeChange && card('vision', 'Vision mode', (
       <>
       {/* Vision Mode Selector */}
       <div className="space-y-1.5">
@@ -342,41 +440,43 @@ export function AccessibilitySettingsContent({
         </div>
       </div>
       </>
-      )}
+      ))}
 
-      {/* Opacity Control */}
-      {pendingBreathingEnabled && (
+      {/* Strength Control: 50% is the standard strength (what 100% opacity used to be); below it the ring fades, above it the ring is drawn stronger. */}
+      {pendingBreathingEnabled && card('strength', 'Breathing strength', (
         <>
-          <Separator />
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="opacity-slider" className="text-sm">
-                Breathing Opacity
+              <Label htmlFor="strength-slider" className="text-sm">
+                Breathing strength
               </Label>
               <span className="text-xs text-muted-foreground">
-                {Math.round(pendingBreathingOpacity * 100)}%
+                {strengthLabel(pendingBreathingStrength)}
               </span>
             </div>
             <Slider
-              id="opacity-slider"
-              min={0.1}
-              max={1.0}
-              step={0.05}
-              value={[pendingBreathingOpacity]}
-              onValueChange={(values) => setPendingBreathingOpacity(values[0])}
+              id="strength-slider"
+              min={STRENGTH_MIN}
+              max={STRENGTH_MAX}
+              step={STRENGTH_STEP}
+              value={[pendingBreathingStrength]}
+              onValueChange={(values) => setPendingBreathingStrength(values[0])}
+              aria-describedby="strength-help"
               className="w-full"
             />
+            <p id="strength-help" className="text-xs text-muted-foreground">
+              50% is the standard strength. Below it the breathing ring fades; above it the ring is brighter, with a wider soft edge. It never moves faster or flashes.
+            </p>
           </div>
         </>
-      )}
+      ))}
 
       </>
       )}
 
       {/* Text Size Control */}
-      {onTextSizeChange && (
+      {onTextSizeChange && card('text-size', 'Text size', (
         <>
-          <Separator />
           <div className="space-y-3">
             <Label className="text-sm flex items-center gap-2">
               <Type className="size-4 text-muted-foreground" />
@@ -410,9 +510,9 @@ export function AccessibilitySettingsContent({
             </div>
           </div>
         </>
-      )}
+      ))}
       
-      <DeviceMemoryControls />
+      {card('remember', 'Remember on this device', <DeviceMemoryControls />)}
 
       {/* Apply Changes Button */}
       {hasChanges && (
