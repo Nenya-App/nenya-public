@@ -35,7 +35,9 @@ export const LEGAL_TITLE = 'Terms of Use & Privacy Policy';
 // VITE_SCREEN_MODEL=on, turned on together with COACH_SCREEN on the live site, so these Terms are true whichever switches are live. With it off the text is the November 19 text, and so is the date;
 // with it on the date is November 20, so everyone is asked to agree again. The outgoing text is archived in docs/legal/archive/terms-and-privacy-until-2026-11-20.md.
 const SCREEN_MODEL = import.meta.env?.VITE_SCREEN_MODEL === 'on';
-export const LEGAL_EFFECTIVE_DATE = SCREEN_MODEL ? 'November 20, 2026' : 'November 19, 2026';
+// November 22, 2026: the accuracy corrections (docs/terms-accuracy-fixes-2026-11-22.md) are a material change, so the date moves whatever the switches, and everyone is asked to agree again.
+// (Before this, the date was November 20 with VITE_SCREEN_MODEL on and November 19 with it off.)
+export const LEGAL_EFFECTIVE_DATE = 'November 22, 2026';
 
 // The November 18, 2026 revision (docs/drafts/terms-lens-and-first-entry-draft.md, approved by the owner as written). Each new sentence appears only when the build it
 // describes is on, so these Terms are true whichever switches are live: the tray (VITE_LENS_TRAY) and the Terms-first entry (VITE_TERMS_FIRST). With both off the text is
