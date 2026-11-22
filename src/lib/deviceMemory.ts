@@ -1,6 +1,6 @@
 import { isAllowedTechnique } from './breathCustom.ts';
 import { DEFAULT_ARRANGEMENT } from './breathArrangements.ts';
-import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_PREVIEW_PCT, GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, percentFromOldPixels, snapLeaves, snapPreviewPercent, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
+import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_INNER_ORB_MODE, DEFAULT_PREVIEW_PCT, GEM_SIDE_PRESETS, INNER_ORB_MODES, snapInnerOrbMode, type InnerOrbMode, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, percentFromOldPixels, snapLeaves, snapPreviewPercent, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
 import { snapColourChoice } from './logoColours.ts';
 import { clearKeptPalettes } from './keptPalettes.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
@@ -116,6 +116,8 @@ export interface Prefs {
   previewSize?: number;
   /** The size of the preview as a percentage of the standard one (50 to 200, steps of 10). Replaces previewSize; an older previewSize is converted when this is not set. */
   previewPercent?: number;
+  /** The inner ring of orbs behind the gem: 'moving' (the default), 'still' or 'hidden' (src/lib/logoLook.ts). */
+  innerOrbs?: string;
   /** The leaves sway very slightly, as in a gentle breeze. Off unless the visitor switches it on; never on with reduced motion. */
   leafSway?: boolean;
   /** The colours of the breath ring and the gem's tint, and of the sixteen orbs: a choice from src/lib/logoColours.ts ('original' when none was made). Only the choice is kept, never the colours of a palette the visitor made. */
@@ -149,6 +151,7 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   previewSize: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 120 && v <= 400,
   previewPercent: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 50 && v <= 200,
   leafSway: isBool,
+  innerOrbs: (v) => (INNER_ORB_MODES as readonly unknown[]).includes(v),
   breathColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
   orbColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
   breathingTechnique: (v) => {
@@ -479,3 +482,14 @@ export function setOrbColourChoice(v: string): void {
 export const useLeafSway = (): boolean => useSyncExternalStore(subscribeLook, getSway, () => false);
 export const useBreathColourChoice = (): string => useSyncExternalStore(subscribeLook, getBreathColours, () => 'original');
 export const useOrbColourChoice = (): string => useSyncExternalStore(subscribeLook, getOrbColours, () => 'original');
+
+// The inner orbs behind the gem: moving unless the visitor chose otherwise; the same rules as the look above.
+let innerOrbsNow: InnerOrbMode | null = null;
+const getInnerOrbs = (): InnerOrbMode => (innerOrbsNow ??= snapInnerOrbMode(loadPrefs().innerOrbs));
+export const getInnerOrbMode = getInnerOrbs;
+export function setInnerOrbMode(v: InnerOrbMode | string): void {
+  innerOrbsNow = snapInnerOrbMode(v);
+  savePref('innerOrbs', innerOrbsNow);
+  lookListeners.forEach((l) => l());
+}
+export const useInnerOrbMode = (): InnerOrbMode => useSyncExternalStore(subscribeLook, getInnerOrbs, () => DEFAULT_INNER_ORB_MODE);

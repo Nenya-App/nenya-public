@@ -23,6 +23,13 @@ The halos are gradients, never blurs, and their colours are animated by the brow
 ## Cards in the panel (2026-11-22)
 The breathing and accessibility panel is a set of collapsible cards (Theme, Animation, Logo look, Sound and counter, Vision mode, Breathing opacity, Text size, Remember on this device), all closed on every visit; which are open is not stored. Each heading holds a real button (`aria-expanded`, `aria-controls`), the body is a region named by the heading, targets are 44 px, and nothing animates. The note at the top says "Each card opens when you select its heading. Select it again to close it." and there are Open all and Close all buttons (small, and one press instead of eight for a screen reader user). The live logo preview is in the popout's left column, outside the cards. Code: `SettingsCard.tsx`, `src/lib/settingsCards.ts`, `tests/settings-cards.test.mts`.
 
+## Inner orbs behind the gem (2026-11-22)
+Logo look, **Inner orbs behind the gem**, three radio choices, stored as `innerOrbs` in `nenya.prefs` (`'moving'` the default, `'still'`, `'hidden'`; anything else reads as moving). Shown with the Palette Orbit.
+- **Moving**: as the logo has always been (the ring turns; each orb pulses in size and brightness and fades through its colours).
+- **Still**: the orbs are drawn but nothing moves: no turning, no pulsing, no drifting. Each rests at the middle of its pulse. Their colours still fade slowly (the colour fade is the same slow change the rest of the logo's colours make; say so if it should stop too). The lights the gem takes from the ring stop circling as well, and keep their colours.
+- **Hidden**: the inner ring is not drawn. The gem keeps its own light (its sparkle and the colour it takes from the orbs' palettes), so the stone does not go dull; the leaves, the bezel and the breath ring are drawn exactly as before and nothing is left where the orbs were.
+Code: `INNER_ORB_MODES` and friends in `src/lib/logoLook.ts`, `NenyaLogo.tsx`, `SpectralGem.tsx` (`orbsStill`), `tests/inner-orbs.test.mts`.
+
 ## Leaf sway, breathing colours and orb colours (2026-11-22)
 Three more choices in the same Logo look group (Settings, `AccessibilitySettings.tsx`; the parts are in `LogoLookExtras.tsx`). All three are display settings stored like the rest (`leafSway`, `breathColours`, `orbColours` in `nenya.prefs`, only while "Remember on this device" is on), applied at once, shown live in the preview in the breathing panel and in the header logo, and announced politely ("Orb colours are now cool."). Defaults are unchanged for a visitor who sets nothing: sway off, colours *Original*.
 

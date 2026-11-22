@@ -84,6 +84,8 @@ interface SpectralGemProps {
   emerge?: Pick<InnerOrbitLook, 'style' | 'emergeSeconds' | 'emergeStep' | 'emergeDepth'>;
   /** Hold the last drawn frame and draw no new ones (the page is pinch-zoomed: see src/lib/zoomLite.ts). */
   paused?: boolean;
+  /** The inner orbs are set to stay still (or are hidden): the lights the gem takes from their ring stop circling too, and keep their colours. */
+  orbsStill?: boolean;
   onStats?: (s: GemStats) => void;
 }
 
@@ -134,6 +136,7 @@ export default function SpectralGem({
   colorCycle = DEFAULT_INNER_ORBIT.colorCycle,
   emerge = DEFAULT_INNER_ORBIT,
   paused = false,
+  orbsStill = false,
   onStats,
 }: SpectralGemProps) {
   const bodyRef = useRef<HTMLCanvasElement>(null);
@@ -172,6 +175,8 @@ export default function SpectralGem({
   statsRef.current = onStats;
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
+  const stillRef = useRef(orbsStill);
+  stillRef.current = orbsStill;
   const emergeRef = useRef(emerge);
   emergeRef.current = emerge;
   // The colours the visitor chose in Settings (the original unless they chose): the orbs' vectors and the ring's breath colours that the gem's tint follows. Read through refs, as the other live values are, so a change shows at once without rebuilding the stone.
@@ -315,7 +320,7 @@ export default function SpectralGem({
         const loops = reduced ? 0 : elapsed / (GEM_LOOP_BREATHS * breathMs);
         renderer.render({
           turn: loops * 2 * Math.PI * (L?.spin ?? LIVE_SPIN),
-          orbit: reduced ? 0 : (((orbitT / (oS > 0 ? oS : 120)) % 1) * 2 * Math.PI),
+          orbit: reduced || stillRef.current ? 0 : (((orbitT / (oS > 0 ? oS : 120)) % 1) * 2 * Math.PI),
           orbs: valarColors.map((_v, j) => {
             const c = orbColour(orbVecRef.current[j], j, tSec, cS);
             const e = emergeRef.current.style === 'light' ? emergence(j, tSec, emergeRef.current) : 1;
@@ -352,7 +357,7 @@ export default function SpectralGem({
       if (typeof bctx.createConicGradient === 'function') {
         const tSec = reduced ? 0 : (Date.now() - mountTime.current) / 1000;
         const turnS = timingRef.current.orbitSeconds > 0 ? timingRef.current.orbitSeconds : FIELD_TURN_S;
-        const wheel = bctx.createConicGradient(reduced ? 0 : ((tSec / turnS) % 1) * 2 * Math.PI, px / 2, px / 2);
+        const wheel = bctx.createConicGradient(reduced || stillRef.current ? 0 : ((tSec / turnS) % 1) * 2 * Math.PI, px / 2, px / 2);
         const n = valarColors.length;
         for (let i = 0; i <= n; i++) {
           const j = i % n;

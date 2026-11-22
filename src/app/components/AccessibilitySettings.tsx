@@ -18,6 +18,8 @@ import { liveGemSupported } from '../../lib/gemRenderer';
 import { LeafSwaySwitch, ColourChoiceGroup } from './LogoLookExtras';
 import { setBreathColourChoice, setOrbColourChoice, useBreathColourChoice, useOrbColourChoice } from '../../lib/deviceMemory';
 import { colourChoiceMessage } from '../../lib/logoColours';
+import { INNER_ORB_MODES, innerOrbHint, innerOrbLabel, innerOrbMessage } from '../../lib/logoLook';
+import { setInnerOrbMode, useInnerOrbMode } from '../../lib/deviceMemory';
 
 const VISION_MODES: { value: string; label: string }[] = [
   { value: '', label: 'Standard' },
@@ -80,6 +82,7 @@ export function AccessibilitySettingsContent({
   const haloWidth = useOrbHaloWidth();
   const breathColourChoice = useBreathColourChoice();
   const orbColourChoice = useOrbColourChoice();
+  const innerOrbMode = useInnerOrbMode();
   const [lookMessage, setLookMessage] = useState('');
   const kaleidoLook = useGemKaleidoscopeLook();
   const kaleidoBreath = useGemKaleidoscopeBreath();
@@ -314,6 +317,21 @@ export function AccessibilitySettingsContent({
                   </fieldset>
                 )}
               </>
+            )}
+            {/* The inner ring of orbs behind the gem: moving (as always), still, or hidden. */}
+            {orbitEnabled && (
+              <fieldset className="space-y-1">
+                <legend className="text-xs text-muted-foreground">Inner orbs behind the gem</legend>
+                {INNER_ORB_MODES.map((m) => (
+                  <label key={m} className="flex min-h-11 items-start gap-2 py-1 text-sm">
+                    <input type="radio" name="inner-orbs" value={m} checked={innerOrbMode === m} onChange={() => { setInnerOrbMode(m); setLookMessage(innerOrbMessage(m)); }} className="mt-1" aria-describedby={`inner-orbs-${m}-d`} />
+                    <span>
+                      {innerOrbLabel(m)}
+                      <span id={`inner-orbs-${m}-d`} className="block text-xs text-muted-foreground">{innerOrbHint(m)}</span>
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
             )}
             {/* The leaves' gentle sway (off by default; the leaves are drawn with the Palette Orbit). */}
             {orbitEnabled && <LeafSwaySwitch breathingEnabled={breathingEnabled} onMessage={setLookMessage} />}

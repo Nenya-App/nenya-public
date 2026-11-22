@@ -23,8 +23,8 @@ import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type Out
 import { GEM_ENGINE, type GemEngine } from '../../lib/gemSprite';
 import { liveGemSupported } from '../../lib/gemRenderer';
 import { deviceProfile } from '../../lib/deviceProfile';
-import { useGemSidesChoice, useLeafSway, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
-import { effectiveGemSides, randomHaloColors } from '../../lib/logoLook';
+import { useGemSidesChoice, useInnerOrbMode, useLeafSway, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
+import { effectiveGemSides, innerOrbsDrawn, innerOrbsMove, randomHaloColors } from '../../lib/logoLook';
 import { useZoomedIn } from '../../lib/zoomLite';
 
 // Above this size, the full-resolution source is used instead -- 128px
@@ -154,6 +154,9 @@ export default function NenyaLogo({
   const leafChoice = useLogoLeaves();
   // The leaves' gentle sway (Settings, Logo look): the visitor's wish, off by default. MallornLeaves decides whether motion is allowed here.
   const swayWish = useLeafSway();
+  // The inner orbs behind the gem: moving (as always), still, or hidden (Settings, Logo look, Inner orbs).
+  const innerMode = useInnerOrbMode();
+  const innerMoves = innerOrbsMove(innerMode);
   // The orbs' colours: each palette's own unless the visitor chose another set (Settings, Logo look, Orb colours).
   const orbVecs = useOrbVectors();
   const allOrbColours = useMemo(() => orbVecs.flat(), [orbVecs]);
@@ -249,7 +252,7 @@ export default function NenyaLogo({
       )}
       
       {/* Orbiting Valar - only show if enabled */}
-      {showValarOrbit && inner.show && (
+      {showValarOrbit && inner.show && innerOrbsDrawn(innerMode) && (
         <div
           className="absolute pointer-events-none"
           style={{
@@ -261,13 +264,13 @@ export default function NenyaLogo({
             marginTop: -orbitRadius,
             zIndex: inner.layer === 'over' ? 32 : 20,
             mixBlendMode: zoomed ? undefined : inner.blend === 'normal' ? (isLight ? 'screen' : undefined) : inner.blend,
-            willChange: 'transform',
+            willChange: innerMoves ? 'transform' : undefined,
             // Plain CSS animation rather than Motion's JS-driven `animate` --
             // animation-play-state genuinely freezes this on pause, where
             // Motion's `animate={false}` does not reliably cancel an
-            // already-running infinite WAAPI loop.
-            animation: `nenya-orbit-cw ${ORBIT_DURATION}s linear infinite`,
-            animationDelay: `${orbitDelay}s`,
+            // already-running infinite WAAPI loop. Still: no turning at all.
+            animation: innerMoves ? `nenya-orbit-cw ${ORBIT_DURATION}s linear infinite` : undefined,
+            animationDelay: innerMoves ? `${orbitDelay}s` : undefined,
                       }}
         >
           {valarColors.map((valar, index) => {
@@ -301,41 +304,41 @@ export default function NenyaLogo({
                   left: wrapped ? pad : orbitRadius - orbSize / 2 + x - off,
                   top: wrapped ? pad : orbitRadius - orbSize / 2 + y - off,
                   borderRadius: '50%',
-                  willChange: zoomed ? undefined : 'background, opacity, transform',
+                  willChange: zoomed ? undefined : innerMoves ? 'background, opacity, transform' : 'background',
                   opacity: isLight ? inner.emergeDepth : INNER_ORB_OPACITY[0],
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
                 }}
-                animate={{
-                  background: [0, 1, 2, 3, 4, 5, 0].map((k) => (isLight ? lightGradient(colors[k]) : orbGradient(colors[k]))),
-                  opacity: isLight ? [inner.emergeDepth, 1, inner.emergeDepth] : INNER_ORB_OPACITY,
-                  scale: isLight ? [0.55, 1, 0.55] : PULSE,
-                  rotate: isLight ? 0 : -360,
-                }}
-                transition={{
-                  background: {
-                    duration: colorCycleDuration,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: index * 2,
-                  },
-                  opacity: {
-                    duration: isLight ? inner.emergeSeconds + index * inner.emergeStep : inner.pulseSeconds + (index * inner.pulseStep),
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
-                  scale: {
-                    duration: isLight ? inner.emergeSeconds + index * inner.emergeStep : inner.pulseSeconds + (index * inner.pulseStep),
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
-                  rotate: {
-                    duration: ORBIT_DURATION,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }
-                }}
+                animate={
+                  innerMoves
+                    ? {
+                        background: [0, 1, 2, 3, 4, 5, 0].map((k) => (isLight ? lightGradient(colors[k]) : orbGradient(colors[k]))),
+                        opacity: isLight ? [inner.emergeDepth, 1, inner.emergeDepth] : INNER_ORB_OPACITY,
+                        scale: isLight ? [0.55, 1, 0.55] : PULSE,
+                        rotate: isLight ? 0 : -360,
+                      }
+                    : {
+                        // Still: the colours keep fading, nothing else moves; the orb rests at the middle of its pulse.
+                        background: [0, 1, 2, 3, 4, 5, 0].map((k) => (isLight ? lightGradient(colors[k]) : orbGradient(colors[k]))),
+                        opacity: isLight ? (inner.emergeDepth + 1) / 2 : (inner.opacityLow + inner.opacityHigh) / 2,
+                        scale: isLight ? 0.78 : 1,
+                        rotate: 0,
+                      }
+                }
+                transition={
+                  innerMoves
+                    ? {
+                        background: { duration: colorCycleDuration, repeat: Infinity, ease: "easeInOut", delay: index * 2 },
+                        opacity: { duration: isLight ? inner.emergeSeconds + index * inner.emergeStep : inner.pulseSeconds + (index * inner.pulseStep), repeat: Infinity, ease: "easeInOut" },
+                        scale: { duration: isLight ? inner.emergeSeconds + index * inner.emergeStep : inner.pulseSeconds + (index * inner.pulseStep), repeat: Infinity, ease: "easeInOut" },
+                        rotate: { duration: ORBIT_DURATION, repeat: Infinity, ease: "linear" },
+                      }
+                    : {
+                        background: { duration: colorCycleDuration, repeat: Infinity, ease: "easeInOut", delay: index * 2 },
+                        default: { duration: 0 },
+                      }
+                }
               >
                 {!isLight && <OrbSurface d={orbSize} glass={inner} />}
               </m.div>
@@ -502,6 +505,7 @@ export default function NenyaLogo({
           colorCycle={inner.colorCycle}
           emerge={inner}
           paused={zoomed}
+          orbsStill={!innerMoves}
           onStats={onGemStats}
           {...gemLook}
         />

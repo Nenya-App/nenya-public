@@ -67,3 +67,15 @@ K.setKeptPalettes([{ colors: [{ hex: '#112233' }, { hex: '#445566' }] }]);
 ok('a kept palette is held for the visit, and was not written to the device', K.getKeptPalettes().length === 1 && !Object.values(store).some((v) => v.includes('112233')));
 M.wipeDevice({ keepOwner: true });
 ok('"Forget me" clears the kept palettes held in memory, and the stored choices', K.getKeptPalettes().length === 0 && !('nenya.prefs' in store));
+
+// The inner orbs behind the gem: moving unless chosen, stored as innerOrbs.
+M.setRemembering(true);
+ok('the inner orbs move before anything is chosen', M.getInnerOrbMode() === 'moving');
+M.setInnerOrbMode('hidden');
+ok('a choice is stored as innerOrbs', JSON.parse(store['nenya.prefs']).innerOrbs === 'hidden' && M.getInnerOrbMode() === 'hidden' && M.loadPrefs().innerOrbs === 'hidden');
+M.setInnerOrbMode('still');
+ok('and can be changed to still', JSON.parse(store['nenya.prefs']).innerOrbs === 'still');
+store['nenya.prefs'] = JSON.stringify({ innerOrbs: 'gone' });
+ok('a value that is not offered is dropped when read', M.loadPrefs().innerOrbs === undefined);
+M.setInnerOrbMode('nonsense');
+ok('a value set in code that is not offered becomes moving', M.getInnerOrbMode() === 'moving');
