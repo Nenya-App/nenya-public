@@ -5,6 +5,8 @@ import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
+import { SettingsCard } from './SettingsCard';
+import { CARDS_INSTRUCTION, NO_CARDS_OPEN, allCardsOpen, closeAllCards, noCardsOpen, openAllCards, toggleCard, type OpenCards, type SettingsCardId } from '../../lib/settingsCards';
 import { useTheme } from './ThemeProvider';
 import { DeviceMemoryControls } from './DeviceMemoryControls';
 import { BreathToneStyle, BreathTonesSwitch } from './BreathTonesSwitch';
@@ -64,6 +66,12 @@ export function AccessibilitySettingsContent({
 }: AccessibilitySettingsProps) {
   const { theme, setTheme } = useTheme();
 
+  // The cards all start closed, every visit; which are open is not stored.
+  const [openCards, setOpenCards] = useState<OpenCards>(NO_CARDS_OPEN);
+  const card = (id: SettingsCardId, title: string, children: React.ReactNode) => (
+    <SettingsCard id={`a11y-${id}`} title={title} open={!!openCards[id]} onToggle={() => setOpenCards((o) => toggleCard(o, id))}>{children}</SettingsCard>
+  );
+
   // Pending changes state
   const gemKaleidoscope = useGemKaleidoscope();
   const gemChoice = useGemSidesChoice();
@@ -103,10 +111,19 @@ export function AccessibilitySettingsContent({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
+      {/* How the cards work, and open-all / close-all (helpful with a screen reader). */}
+      <div className="space-y-2">
+        <p id="a11y-cards-help" className="text-sm text-foreground">{CARDS_INSTRUCTION}</p>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" disabled={allCardsOpen(openCards)} onClick={() => setOpenCards(openAllCards())} aria-describedby="a11y-cards-help" className="min-h-11 rounded-md border border-border px-3 text-sm disabled:opacity-60">Open all</button>
+          <button type="button" disabled={noCardsOpen(openCards)} onClick={() => setOpenCards(closeAllCards())} aria-describedby="a11y-cards-help" className="min-h-11 rounded-md border border-border px-3 text-sm disabled:opacity-60">Close all</button>
+        </div>
+      </div>
+
       {/* Theme Toggle */}
+      {card('theme', 'Theme', (
       <div className="space-y-3">
-        <Label className="text-sm">Theme</Label>
         <div className="flex items-center justify-between gap-2">
           <Button
             variant={theme === 'light' ? 'default' : 'outline'}
@@ -128,14 +145,14 @@ export function AccessibilitySettingsContent({
           </Button>
         </div>
       </div>
+      ))}
 
       {!compact && (
       <>
-      <Separator />
 
       {/* Animation Controls */}
+      {card('animation', 'Animation', (
       <div className="space-y-3">
-        <Label className="text-sm">Animation Controls</Label>
         
         {/* Breathing Animation Toggle */}
         <div className="flex items-center justify-between">
@@ -215,10 +232,34 @@ export function AccessibilitySettingsContent({
           </div>
         )}
 
+        {/* Logo Visibility Toggle */}
+        {onLogoVisibleToggle && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {pendingLogoVisible ? (
+                <Eye className="size-4 text-muted-foreground" />
+              ) : (
+                <EyeOff className="size-4 text-muted-foreground" />
+              )}
+              <Label htmlFor="logo-toggle" className="cursor-pointer text-sm">
+                Show Logo
+              </Label>
+            </div>
+            <Switch
+              id="logo-toggle"
+              checked={pendingLogoVisible}
+              onCheckedChange={setPendingLogoVisible}
+            />
+          </div>
+        )}
+      </div>
+      ))}
+
+      {card('logo-look', 'Logo look', (
+      <div className="space-y-3">
         {/* The logo's look: how many sides the gem has (and, once the leaves are in, how many leaves). Presets, applied at once, no motion. */}
         {!compact && (liveGemSupported() || LEAF_SETTING_AVAILABLE || orbitEnabled) && (
           <div className="space-y-2">
-            <p id="logo-look-help" className="text-sm">Logo look</p>
             <p className="text-xs text-muted-foreground">This changes the animated logo. The still logo in some places stays at the standard design.</p>
             {LEAF_SETTING_AVAILABLE && (
               <fieldset className="space-y-1">
@@ -298,30 +339,12 @@ export function AccessibilitySettingsContent({
             <p role="status" aria-live="polite" className="sr-only">{lookMessage}</p>
           </div>
         )}
-
-        {/* Logo Visibility Toggle */}
-        {onLogoVisibleToggle && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {pendingLogoVisible ? (
-                <Eye className="size-4 text-muted-foreground" />
-              ) : (
-                <EyeOff className="size-4 text-muted-foreground" />
-              )}
-              <Label htmlFor="logo-toggle" className="cursor-pointer text-sm">
-                Show Logo
-              </Label>
-            </div>
-            <Switch
-              id="logo-toggle"
-              checked={pendingLogoVisible}
-              onCheckedChange={setPendingLogoVisible}
-            />
-          </div>
-        )}
       </div>
+      ))}
 
       {/* Breathing tones: the same switch that is near the top of the page and on the counter */}
+      {card('sound', 'Sound and counter', (
+      <div className="space-y-4">
       {!compact && <BreathTonesSwitch variant="panel" />}
       {!compact && <BreathToneStyle />}
 
@@ -340,8 +363,10 @@ export function AccessibilitySettingsContent({
       </div>
       </>
       )}
+      </div>
+      ))}
 
-      {onCvModeChange && (
+      {onCvModeChange && card('vision', 'Vision mode', (
       <>
       {/* Vision Mode Selector */}
       <div className="space-y-1.5">
@@ -368,12 +393,11 @@ export function AccessibilitySettingsContent({
         </div>
       </div>
       </>
-      )}
+      ))}
 
       {/* Opacity Control */}
-      {pendingBreathingEnabled && (
+      {pendingBreathingEnabled && card('opacity', 'Breathing opacity', (
         <>
-          <Separator />
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="opacity-slider" className="text-sm">
@@ -394,15 +418,14 @@ export function AccessibilitySettingsContent({
             />
           </div>
         </>
-      )}
+      ))}
 
       </>
       )}
 
       {/* Text Size Control */}
-      {onTextSizeChange && (
+      {onTextSizeChange && card('text-size', 'Text size', (
         <>
-          <Separator />
           <div className="space-y-3">
             <Label className="text-sm flex items-center gap-2">
               <Type className="size-4 text-muted-foreground" />
@@ -436,9 +459,9 @@ export function AccessibilitySettingsContent({
             </div>
           </div>
         </>
-      )}
+      ))}
       
-      <DeviceMemoryControls />
+      {card('remember', 'Remember on this device', <DeviceMemoryControls />)}
 
       {/* Apply Changes Button */}
       {hasChanges && (
