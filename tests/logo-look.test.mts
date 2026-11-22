@@ -28,9 +28,22 @@ ok('the same seed gives the same colours (a reload does not reshuffle)', randomH
 ok('another seed or another orb gives different colours', randomHaloColors(3, 4, sample).join() !== randomHaloColors(4, 4, sample).join() && randomHaloColors(3, 4, sample).join() !== randomHaloColors(3, 5, sample).join());
 ok('every style has a label', HALO_STYLES.every((s) => haloStyleLabel(s).length > 0));
 
-// The preview's size in the breathing panel is adjustable.
-import { DEFAULT_PREVIEW_SIZE, PREVIEW_MAX, PREVIEW_MIN, PREVIEW_STEP, snapPreviewSize } from '../src/lib/logoLook.ts';
-ok('the preview size defaults to a value inside its limits and on a step', DEFAULT_PREVIEW_SIZE >= PREVIEW_MIN && DEFAULT_PREVIEW_SIZE <= PREVIEW_MAX && DEFAULT_PREVIEW_SIZE % PREVIEW_STEP === 0);
-ok('a preview size is rounded to a step and kept between the limits', snapPreviewSize(233) === 240 && snapPreviewSize(10) === PREVIEW_MIN && snapPreviewSize(9999) === PREVIEW_MAX);
-ok('an unreadable preview size becomes the default', snapPreviewSize('big') === DEFAULT_PREVIEW_SIZE && snapPreviewSize(NaN) === DEFAULT_PREVIEW_SIZE && snapPreviewSize(null) === DEFAULT_PREVIEW_SIZE);
-ok('the preview is larger by default than the old fixed 160 pixels', DEFAULT_PREVIEW_SIZE > 160);
+// The preview's size in the breathing panel is a percentage of the standard preview, held to what the device and the screen can take.
+import { DEFAULT_PREVIEW_PCT, DEFAULT_PREVIEW_SIZE, PREVIEW_PCT_MAX, PREVIEW_PCT_MIN, PREVIEW_PCT_STEP, availablePreviewPx, effectivePreviewPercent, percentFromOldPixels, previewCapForTier, previewMaxPercent, previewPixels, snapPreviewPercent } from '../src/lib/logoLook.ts';
+ok('the preview size runs 50% to 200% in steps of 10%, and 100% is the standard 220 px', PREVIEW_PCT_MIN === 50 && PREVIEW_PCT_MAX === 200 && PREVIEW_PCT_STEP === 10 && DEFAULT_PREVIEW_PCT === 100 && DEFAULT_PREVIEW_SIZE === 220 && previewPixels(100, 'capable', 1600) === 220 && previewPixels(200, 'capable', 1600) === 440 && previewPixels(50, 'capable', 1600) === 110);
+ok('a percentage is rounded to a step and kept between the limits', snapPreviewPercent(133) === 130 && snapPreviewPercent(5) === 50 && snapPreviewPercent(999) === 200 && snapPreviewPercent(145) === 150);
+ok('an unreadable percentage becomes 100%', snapPreviewPercent('big') === 100 && snapPreviewPercent(NaN) === 100 && snapPreviewPercent(null) === 100 && snapPreviewPercent(undefined) === 100);
+ok('device caps: a light device 125%, an ordinary one 175%, a capable one 200%', previewCapForTier('lite') === 125 && previewCapForTier('standard') === 175 && previewCapForTier('capable') === 200);
+ok('on a wide screen the cap is the device\'s', previewMaxPercent('lite', 1600) === 125 && previewMaxPercent('standard', 1600) === 175 && previewMaxPercent('capable', 1600) === 200);
+ok('the maximum is a multiple of 10 where it can be, at most the cap, and never below 50%', [320, 375, 414, 600, 768, 900, 1024, 1440, 2560].every((w) => (['lite', 'standard', 'capable'] as const).every((t) => { const m = previewMaxPercent(t, w); return m >= 50 && m <= previewCapForTier(t) && (m % 10 === 0 || m === previewCapForTier(t)); })));
+ok('the preview never needs more room than the screen has: at every width and tier the preview plus the panel\'s padding fits (no sideways scroll)', [320, 375, 414, 600, 700, 768, 900, 1024, 1440].every((w) => (['lite', 'standard', 'capable'] as const).every((t) => { const px = previewPixels(200, t, w); return px <= Math.max(availablePreviewPx(w), 110);})));
+ok('the room grows with the screen', availablePreviewPx(375) < availablePreviewPx(700) && availablePreviewPx(800) < availablePreviewPx(1400) && availablePreviewPx(0) >= 0);
+ok('a stored choice above this device\'s maximum is used at the maximum, and the choice itself is untouched', effectivePreviewPercent(200, 'lite', 1600) === 125 && snapPreviewPercent(200) === 200);
+ok('a stored choice below the maximum is used as it is', effectivePreviewPercent(80, 'standard', 1600) === 80);
+ok('a size kept in pixels by the older version is converted: 220 px is 100%, 120 px about 50%, 400 px 180%', percentFromOldPixels(220) === 100 && percentFromOldPixels(120) === 50 && percentFromOldPixels(400) === 180 && percentFromOldPixels(300) === 140);
+ok('an unreadable or out-of-range old size becomes 100%', percentFromOldPixels(5000) === 100 && percentFromOldPixels(10) === 100 && percentFromOldPixels('x') === 100 && percentFromOldPixels(NaN) === 100);
+
+import { readFileSync } from 'node:fs';
+const popout = readFileSync('src/app/components/BreathingPopout.tsx', 'utf8');
+ok('the popout shows the percentage beside the label, takes the slider\'s top from the device and the width, and has a Reset to 100%', /\{previewPercent\}%/.test(popout) && /max=\{previewMax\}/.test(popout) && /previewMaxPercent\(tier, viewport\)/.test(popout) && /deviceProfile\(\)\.tier/.test(popout) && /setBreathPreviewPercent\(DEFAULT_PREVIEW_PCT\)/.test(popout) && /min=\{PREVIEW_PCT_MIN\}/.test(popout) && /step=\{PREVIEW_PCT_STEP\}/.test(popout));
+ok('the stored choice is never overwritten by the cap (the cap is applied when drawing, not when saving)', !/setBreathPreviewPercent\(previewPercent\)|setBreathPreviewPercent\(previewMax\)/.test(popout));

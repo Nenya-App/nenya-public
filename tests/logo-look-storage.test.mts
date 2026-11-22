@@ -37,13 +37,16 @@ ok('a width set in code snaps to a preset', [3.4, 5, 7].includes(M.getOrbHaloWid
 M.setOrbHaloStyle('palette');
 ok('a style set in code is kept', M.getOrbHaloStyle() === 'palette');
 
-// The preview size is stored like the other display settings.
+// The preview size is a percentage, stored like the other display settings; an older size in pixels is converted.
+store['nenya.prefs'] = JSON.stringify({ previewPercent: 150 });
+ok('a stored preview percentage is read back', M.loadPrefs().previewPercent === 150);
+store['nenya.prefs'] = JSON.stringify({ previewPercent: 5000 });
+ok('a preview percentage outside the limits is dropped', M.loadPrefs().previewPercent === undefined);
+M.setBreathPreviewPercent(133);
+ok('a percentage set in code snaps to a step', M.getBreathPreviewPercent() === 130 && JSON.parse(store['nenya.prefs']).previewPercent === 130);
+ok('the older pixel key is not written any more', JSON.parse(store['nenya.prefs']).previewSize === undefined);
 store['nenya.prefs'] = JSON.stringify({ previewSize: 300 });
-ok('a stored preview size is read back', M.loadPrefs().previewSize === 300);
-store['nenya.prefs'] = JSON.stringify({ previewSize: 5000 });
-ok('a preview size outside the limits is dropped', M.loadPrefs().previewSize === undefined);
-M.setBreathPreviewSize(333);
-ok('a preview size set in code snaps to a step', M.getBreathPreviewSize() === 340);
+ok('an older stored size in pixels is still accepted when read', M.loadPrefs().previewSize === 300 && M.loadPrefs().previewPercent === undefined);
 
 // The leaves' sway and the colour choices: off and original unless chosen; only the choice is kept; a hand-edited value is dropped.
 const K = await import('../src/lib/keptPalettes.ts');

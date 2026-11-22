@@ -1,6 +1,6 @@
 import { isAllowedTechnique } from './breathCustom.ts';
 import { DEFAULT_ARRANGEMENT } from './breathArrangements.ts';
-import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_PREVIEW_SIZE, GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, snapLeaves, snapPreviewSize, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
+import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_PREVIEW_PCT, GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, percentFromOldPixels, snapLeaves, snapPreviewPercent, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
 import { snapColourChoice } from './logoColours.ts';
 import { clearKeptPalettes } from './keptPalettes.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
@@ -114,6 +114,8 @@ export interface Prefs {
   orbHaloSeed?: number;
   /** The size of the animated preview in the breathing and accessibility panel, in pixels (a multiple of 20, 120 to 400). */
   previewSize?: number;
+  /** The size of the preview as a percentage of the standard one (50 to 200, steps of 10). Replaces previewSize; an older previewSize is converted when this is not set. */
+  previewPercent?: number;
   /** The leaves sway very slightly, as in a gentle breeze. Off unless the visitor switches it on; never on with reduced motion. */
   leafSway?: boolean;
   /** The colours of the breath ring and the gem's tint, and of the sixteen orbs: a choice from src/lib/logoColours.ts ('original' when none was made). Only the choice is kept, never the colours of a palette the visitor made. */
@@ -145,6 +147,7 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   orbHaloWidth: (v) => typeof v === 'number' && (HALO_WIDTHS as readonly number[]).includes(v),
   orbHaloSeed: (v) => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 4294967295,
   previewSize: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 120 && v <= 400,
+  previewPercent: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 50 && v <= 200,
   leafSway: isBool,
   breathColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
   orbColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
@@ -431,16 +434,21 @@ export const useOrbHaloStyle = (): HaloStyle => useSyncExternalStore(subscribeLo
 export const useOrbHaloWidth = (): number => useSyncExternalStore(subscribeLook, getHaloWidth, () => DEFAULT_HALO_WIDTH);
 export const useOrbHaloSeed = (): number => useSyncExternalStore(subscribeLook, getHaloSeed, () => 1);
 
-// The size of the preview in the breathing panel.
+// The size of the preview in the breathing panel, as a percentage (50 to 200). A size kept in pixels by an earlier version is converted; the choice is kept as it was
+// set, and the panel holds it to what this device and screen can take without changing what is stored (src/lib/logoLook.ts, previewMaxPercent).
 let previewNow: number | null = null;
-const getPreviewSize = (): number => (previewNow ??= snapPreviewSize(loadPrefs().previewSize ?? DEFAULT_PREVIEW_SIZE));
-export const getBreathPreviewSize = getPreviewSize;
-export function setBreathPreviewSize(n: number): void {
-  previewNow = snapPreviewSize(n);
-  savePref('previewSize', previewNow);
+const getPreviewPercent = (): number => {
+  if (previewNow !== null) return previewNow;
+  const p = loadPrefs();
+  return (previewNow = p.previewPercent !== undefined ? snapPreviewPercent(p.previewPercent) : p.previewSize !== undefined ? percentFromOldPixels(p.previewSize) : DEFAULT_PREVIEW_PCT);
+};
+export const getBreathPreviewPercent = getPreviewPercent;
+export function setBreathPreviewPercent(n: number): void {
+  previewNow = snapPreviewPercent(n);
+  savePref('previewPercent', previewNow);
   lookListeners.forEach((l) => l());
 }
-export const useBreathPreviewSize = (): number => useSyncExternalStore(subscribeLook, getPreviewSize, () => DEFAULT_PREVIEW_SIZE);
+export const useBreathPreviewPercent = (): number => useSyncExternalStore(subscribeLook, getPreviewPercent, () => DEFAULT_PREVIEW_PCT);
 
 // The leaves' sway and the colour choices (src/lib/logoColours.ts): the same rules as the look above. Sway is off, and the colours are the original, unless the visitor chose.
 // The choice is all that is kept: a palette the visitor made is held in memory for the visit only (src/lib/keptPalettes.ts), so if it is gone next time the choice reads as the original.

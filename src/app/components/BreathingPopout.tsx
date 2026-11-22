@@ -11,8 +11,10 @@ import { STEADY } from './PortableBreath';
 import NenyaLogo from './NenyaLogo';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
 import { useIsMobile } from './useIsMobile';
-import { setBreathPreviewSize, useBreathPreviewSize } from '../../lib/deviceMemory';
-import { DEFAULT_PREVIEW_SIZE, PREVIEW_MAX, PREVIEW_MIN, PREVIEW_STEP } from '../../lib/logoLook';
+import { useEffect, useMemo, useState } from 'react';
+import { setBreathPreviewPercent, useBreathPreviewPercent } from '../../lib/deviceMemory';
+import { DEFAULT_PREVIEW_PCT, PREVIEW_PCT_MIN, PREVIEW_PCT_STEP, effectivePreviewPercent, previewMaxPercent, previewPixels } from '../../lib/logoLook';
+import { deviceProfile } from '../../lib/deviceProfile';
 
 interface BreathingPopoutProps {
   isOpen: boolean;
@@ -60,11 +62,23 @@ export function BreathingPopout({
   cycleStart,
 }: BreathingPopoutProps) {
   // The preview's size is the visitor's to set. On a narrow screen it is held to what fits.
-  const previewChoice = useBreathPreviewSize();
+  // The size is a percentage of the standard preview. How high it can go depends on the device (the light-device rules) and on the width of the screen, so the panel never scrolls sideways;
+  // a stored choice above that is held to it for now and kept as it was.
+  const previewChoice = useBreathPreviewPercent();
   const narrow = useIsMobile();
-  const previewSize = narrow ? Math.min(previewChoice, 220) : previewChoice;
-  // The logo block is its size plus the breathing ring's padding (96px) and the column's own padding (48px).
-  const leftWidth = previewSize + 144;
+  const [viewport, setViewport] = useState(() => (typeof window === 'undefined' ? 1024 : window.innerWidth));
+  useEffect(() => {
+    const on = () => setViewport(window.innerWidth);
+    on();
+    window.addEventListener('resize', on);
+    return () => window.removeEventListener('resize', on);
+  }, []);
+  const tier = useMemo(() => deviceProfile().tier, []);
+  const previewMax = previewMaxPercent(tier, viewport);
+  const previewPercent = effectivePreviewPercent(previewChoice, tier, viewport);
+  const previewSize = previewPixels(previewChoice, tier, viewport);
+  // The logo block is its size plus the breathing ring's room (64 or 96px) and the column's own padding (48px).
+  const leftWidth = previewSize + (viewport < 640 ? 64 : 96) + 48;
   const cycleSeconds = breathLengthMs(technique) / 1000;
   return (
     <AnimatePresence>
@@ -134,20 +148,21 @@ export function BreathingPopout({
                     </div>
                   </ValarBreathingLogo>
                 </div>
-                <div className="mt-2 flex w-full max-w-xs items-center gap-3">
+                <div className="mt-2 flex w-full max-w-xs flex-wrap items-center gap-x-3 gap-y-1">
                   <label htmlFor="preview-size" className="shrink-0 text-xs text-muted-foreground">Preview size</label>
+                  <span aria-hidden="true" className="shrink-0 text-xs text-foreground">{previewPercent}%</span>
                   <input
                     id="preview-size"
                     type="range"
-                    min={PREVIEW_MIN}
-                    max={PREVIEW_MAX}
-                    step={PREVIEW_STEP}
-                    value={previewChoice}
-                    onChange={(e) => setBreathPreviewSize(Number(e.target.value))}
-                    aria-valuetext={`${previewChoice} pixels`}
+                    min={PREVIEW_PCT_MIN}
+                    max={previewMax}
+                    step={PREVIEW_PCT_STEP}
+                    value={previewPercent}
+                    onChange={(e) => setBreathPreviewPercent(Number(e.target.value))}
+                    aria-valuetext={`${previewPercent} percent`}
                     className="h-11 min-w-0 flex-1"
                   />
-                  <button type="button" onClick={() => setBreathPreviewSize(DEFAULT_PREVIEW_SIZE)} className="shrink-0 rounded-md border border-border px-2 text-xs min-h-11">Reset</button>
+                  <button type="button" onClick={() => setBreathPreviewPercent(DEFAULT_PREVIEW_PCT)} className="shrink-0 rounded-md border border-border px-2 text-xs min-h-11">Reset</button>
                 </div>
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   {Number.isInteger(cycleSeconds) ? cycleSeconds : cycleSeconds.toFixed(1)}-second breathing cycle
