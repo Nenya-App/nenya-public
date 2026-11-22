@@ -49,7 +49,8 @@ const lightGradient = (c: string): string => `radial-gradient(circle closest-sid
 /** An outer orb's own halo: a gradient (never a blur) in its current colour, fading to nothing; in 'palette' mode the rim fades through another colour from its palette. Cheap to draw and it does not grow with zoom the way a large shadow does. The colours are set by CSS (see .nenya-orb-halo), not by script. */
 const haloGradient = (palette: boolean): string => `radial-gradient(circle closest-side, color-mix(in srgb, var(--hc) 67%, transparent) 0%, color-mix(in srgb, var(--hc) 40%, transparent) 34%, color-mix(in srgb, var(${palette ? '--hc2' : '--hc'}) 14%, transparent) 66%, transparent 100%)`;
 /** An outer orb's sphere, coloured by the fading --hc (the same look as before: bright to a soft rim). */
-const ORB_FADE_GRADIENT = 'radial-gradient(circle at 30% 30%, var(--hc), color-mix(in srgb, var(--hc) 93%, transparent) 50%, color-mix(in srgb, var(--hc) 60%, transparent) 80%, color-mix(in srgb, var(--hc) 27%, transparent))';
+// Solid, every stop fully opaque (owner, 2026-11-22: the outer orbs are 100% opaque so the breathing ring ends behind them): the sphere darkens toward its rim by mixing with black, not by turning transparent.
+const ORB_FADE_GRADIENT = 'radial-gradient(circle at 30% 30%, var(--hc), color-mix(in srgb, var(--hc) 93%, #000) 50%, color-mix(in srgb, var(--hc) 78%, #000) 80%, color-mix(in srgb, var(--hc) 65%, #000))';
 /** Keyframes for one orb: its colours in order and back to the first, with literal colours so every browser fades between them. */
 const hueKeyframes = (name: string, prop: string, cols: readonly string[], shift = 0): string =>
   `@keyframes ${name}{${Array.from({ length: 7 }, (_, k) => `${((k * 100) / 6).toFixed(3)}%{${prop}:${cols[(k + shift) % 6]}}`).join('')}}`;
@@ -195,7 +196,8 @@ export default function NenyaLogo({
   const ownHalo = glow && !zoomed && outer.halo !== 'shared';
   const ORBIT_DURATION = inner.orbitSeconds > 0 ? inner.orbitSeconds : DEFAULT_INNER_ORBIT.orbitSeconds; // seconds for one complete orbit
   const INNER_ORB_OPACITY = [inner.opacityLow, inner.opacityHigh, inner.opacityLow];
-  const OUTER_ORB_OPACITY = [outer.opacityLow, outer.opacityHigh, outer.opacityLow];
+  // The outer orbs are fully opaque at every moment. outer.opacityLow and opacityHigh now belong to the halo only.
+  const OUTER_ORB_OPACITY = 1;
   const PULSE = [1 - inner.pulse, 1 + inner.pulse, 1 - inner.pulse];
 
   // Inner orbit - tight orbit creates dense overlapping effect
@@ -506,8 +508,8 @@ export default function NenyaLogo({
                   left: outerOrbitRadius - outerOrbSize / 2 + x,
                   top: outerOrbitRadius - outerOrbSize / 2 + y,
                   borderRadius: '50%',
-                  willChange: zoomed ? undefined : 'opacity, transform',
-                  opacity: OUTER_ORB_OPACITY[0],
+                  willChange: zoomed ? undefined : 'transform',
+                  opacity: OUTER_ORB_OPACITY,
                   // The colour is the browser's own fade (registered --hc, keyframes nho-c-N), not a script swapping gradient strings.
                   background: ORB_FADE_GRADIENT,
                   ['--hc' as string]: colors[0],
@@ -517,16 +519,10 @@ export default function NenyaLogo({
                   transform: 'translateZ(0)',
                 }}
                 animate={{
-                  opacity: OUTER_ORB_OPACITY,
                   scale: [0.95, 1.05, 0.95],
                   rotate: 360,
                 }}
                 transition={{
-                  opacity: {
-                    duration: 4 + (index * 0.3),
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  },
                   scale: {
                     duration: 4 + (index * 0.3),
                     repeat: Infinity,

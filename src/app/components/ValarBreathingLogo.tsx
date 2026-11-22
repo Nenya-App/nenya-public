@@ -4,6 +4,13 @@ import { ringCorrection } from '../../lib/breathClock';
 import { useBreathColourChoice, useOrbColourChoice } from '../../lib/deviceMemory';
 import { useKeptPalettes } from '../../lib/keptPalettes';
 import { breathSequence, orbVectors, resolveColours } from '../../lib/logoColours';
+import { DEFAULT_OUTER_ORBIT } from '../../lib/orbitLook';
+
+/**
+ * The breathing ring grows to the middle of the ring of outer orbs and no further: its full-size diameter is the orb ring's diameter (2 x the orbs' radius, a fraction of the logo's size,
+ * 0.5 each way so the same as the logo's size), so its outer edge passes behind the orbs, which are fully opaque and drawn above it. Tied to the orbs' radius so the two cannot drift apart.
+ */
+export const RING_END_FRACTION = DEFAULT_OUTER_ORBIT.radius * 2;
 
 // Valar Sigils: Dual Focus (Individual/Communal) with 6-Color Chromatic Vectors
 // The first color of each palette is its main color. Palettes are starting points, not a measurement.
@@ -337,10 +344,10 @@ export function ValarBreathingLogo({
             ref={ringRef}
             className="absolute rounded-full pointer-events-none"
             style={{
-              width: logoSize,
-              height: logoSize,
-              left: 0,
-              top: 0,
+              width: logoSize * RING_END_FRACTION,
+              height: logoSize * RING_END_FRACTION,
+              left: (logoSize * (1 - RING_END_FRACTION)) / 2,
+              top: (logoSize * (1 - RING_END_FRACTION)) / 2,
               // Use closest-side so 100% is at the circle edge, then keep colors fully transparent past that
               // This prevents square corner artifacts when the box is scaled/transformed
               background: `radial-gradient(circle closest-side, transparent 0%, transparent 30%, ${hexToRgba(activeColor, opacity * 0.08)} 50%, ${hexToRgba(activeColor, opacity * 0.15)} 70%, ${hexToRgba(activeColor, opacity * 0.25)} 90%, ${hexToRgba(activeColor, opacity * 0.4)} 99%, transparent 100%)`,
