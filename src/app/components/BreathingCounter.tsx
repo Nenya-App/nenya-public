@@ -214,6 +214,7 @@ export function BreathingCounter({
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <div
                 key={count + phase}
+                className="bc-digit"
                 style={{
                   fontFamily: "'Cinzel',serif",
                   fontSize: '2.75rem',

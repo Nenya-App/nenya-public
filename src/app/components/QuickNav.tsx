@@ -53,7 +53,7 @@ export default function QuickNav({ onBreathe, onReflect, coachHref = '/coach/', 
         aria-expanded={open}
         aria-controls="quick-nav-menu"
         aria-label={open ? 'Close quick navigation' : 'Open quick navigation'}
-        className="rounded-full bg-nenya-accent-warm/90 p-3 shadow-lg backdrop-blur-sm transition-transform hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="nenya-quicknav-glimmer rounded-full bg-nenya-accent-warm/90 p-3 shadow-lg backdrop-blur-sm transition-transform hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={open ? undefined : { animation: 'glimmer-ring 2.5s ease-in-out infinite' }}
       >
         {open ? <X className="size-5 text-primary-foreground" /> : <Sparkles className="size-5 text-primary-foreground" />}

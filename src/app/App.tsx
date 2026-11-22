@@ -30,6 +30,7 @@ import { newShadow, sessionIdFor, termsFirstOn } from '../lib/shadowSession';
 import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
 import { BodyMapBrushContext } from './components/BodyMapBrushContext';
+import { MotionStoppedRoot } from './components/MotionStoppedRoot';
 import { brushesFor, cleanStrokes, lensName } from '../lib/bodyMapBrush';
 
 // Everything past the welcome/breathing screen is code-split: a visitor who
@@ -572,6 +573,7 @@ export default function App() {
     <BodyMapBrushContext.Provider value={brushValue}>
     <ThemeProvider defaultTheme="dark">
       <SkipLink />
+      <MotionStoppedRoot />
       {/* First in the page, above every overlay: the header's Exit is out of reach behind the loading screen, the first-visit panel and the tour. */}
       <EmergencyExitDock
         show={!veilGone || !termsAgreed || tourOffered || tutorialActive}
