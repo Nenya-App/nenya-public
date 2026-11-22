@@ -25,14 +25,14 @@ Section numbers are those of `src/lib/legalDocument.ts`. "Switch" means the text
 
 ### Section 19, "Retention" and "Your rights" (1C, 10, 3B)
 - Old: "The coach's daily codes are deleted within two days, transcript codes within 30 days."
-- New: adds "A signed transcript you send is kept for the time you chose, then deleted; the short codes we keep to spot the same conversation sent twice are deleted with it. The short notices that reach us through our web host's form service are kept until we delete them. The daily codes (the coach demo's, the guestbook's, The Color API button's and the word look-up's) are deleted within two days, transcript codes within 30 days."
+- New: adds "A signed transcript you send is kept for the time you chose, then deleted; the short codes we keep to spot the same conversation sent twice are deleted with it. The emailed copy of each short notice that reaches us through our web host's form service is deleted automatically after 30 days; the form service's own list of entries is kept until we delete it by hand. The daily codes (the coach demo's, the guestbook's, The Color API button's and the word look-up's) are deleted within two days, transcript codes within 30 days."
 - Rights: "you can delete it yourself with its deletion code" now adds "(for a signed transcript, with your signed file at nenya.biz/my-transcript)" (audit claim T83).
-- No deletion time is promised for the form notices (finding 10): "kept until we delete them", as the owner decided.
+- Form notices (finding 10), changed 2026-11-22 at the owner's direction: the emailed copy of each notice is deleted automatically after 30 days (the owner sets up that auto-delete in the mailbox; it is not in the code); the form service's own list is kept until deleted by hand, with no schedule promised.
 - Evidence: `docs/data-register.md` (alerts "until deleted by hand"); `netlify/functions/submit.mts` lines 115-119 and `report.mts` (what the alerts hold).
 
 ### Section 14, first bullet (finding 10)
 - Old: "We are told by email only that something arrived, never what it says."
-- New: "When something is sent, a short notice about it reaches us through our web host's form service, which emails it to us and also keeps the entry in its own list. It holds only the kind of message and its dates (for a signed transcript, its fingerprint and your choices), never what it says. Those notices are kept until we delete them." The opening phrase "not in an email inbox or a form service" gained "; only the short notice described below goes through one".
+- New: "When something is sent, a short notice about it reaches us through our web host's form service, which emails it to us and also keeps the entry in its own list. It holds only the kind of message and its dates (for a signed transcript, its fingerprint and your choices), never what it says. The emailed copy of each notice is deleted automatically after 30 days. The form service also keeps the entry in its own list, which we delete by hand and not on a set schedule." The opening phrase "not in an email inbox or a form service" gained "; only the short notice described below goes through one".
 
 ### Section 14, The Color API and the word look-up (finding 3, option 3B)
 - Color API: "deleted within two days" is kept (it is now true) and "and a plain daily total of uses" is added. Evidence: `colors.mts` lines 70-72 keep `p/<day>/<code>` and `p-total/<day>`; the cleanup now deletes `p/` (section 2 below).

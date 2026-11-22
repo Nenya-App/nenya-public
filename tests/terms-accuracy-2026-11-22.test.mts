@@ -74,9 +74,10 @@ neither('the unqualified "only Venice’s secure processing environment can read
 // Finding 8: learning cards, and the "full list" now has them.
 both('the learning cards are in the list of site-written words', /Short learning cards\. When a message contains language that treats people as less than human[\s\S]*A signed transcript records an offer our server made, marked as written by the site, and the card’s title\./);
 
-// Finding 10: the form notices are kept until we delete them, with no promised time.
-both('the form notices are kept until we delete them', /Those notices are kept until we delete them\./);
-neither('no deletion time is promised for the notices', /notices[^.]*(within|after) \d+ days/);
+// Finding 10: the emailed copy of each form notice is deleted after 30 days (the owner sets this up in the mailbox); the form service's own list is kept until deleted by hand, and no schedule is promised for it.
+both('the emailed copy of each notice is deleted after 30 days, and the form service list has no schedule', /The emailed copy of each notice is deleted automatically after 30 days\. The form service also keeps the entry in its own list, which we delete by hand and not on a set schedule\./);
+both('the retention section says the same', /The emailed copy of each short notice that reaches us through our web host’s form service is deleted automatically after 30 days; the form service’s own list of entries is kept until we delete it by hand\./);
+neither('the old "kept until we delete them" for the notices is gone', /Those notices are kept until we delete them/);
 
 // The archive and the register of versions.
 ok('the outgoing text is archived and the README lists the new version', existsSync('docs/legal/archive/terms-and-privacy-until-2026-11-22.md') && /terms-and-privacy-until-2026-11-22\.md/.test(readFileSync('docs/legal/README.md', 'utf8')));
