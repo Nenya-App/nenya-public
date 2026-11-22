@@ -1,6 +1,8 @@
 import { isAllowedTechnique } from './breathCustom.ts';
 import { DEFAULT_ARRANGEMENT } from './breathArrangements.ts';
 import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_PREVIEW_SIZE, GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, snapLeaves, snapPreviewSize, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
+import { snapColourChoice } from './logoColours.ts';
+import { clearKeptPalettes } from './keptPalettes.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 // Everything Nenya may keep on a visitor's device lives behind this one file, so there is a single
@@ -112,6 +114,11 @@ export interface Prefs {
   orbHaloSeed?: number;
   /** The size of the animated preview in the breathing and accessibility panel, in pixels (a multiple of 20, 120 to 400). */
   previewSize?: number;
+  /** The leaves sway very slightly, as in a gentle breeze. Off unless the visitor switches it on; never on with reduced motion. */
+  leafSway?: boolean;
+  /** The colours of the breath ring and the gem's tint, and of the sixteen orbs: a choice from src/lib/logoColours.ts ('original' when none was made). Only the choice is kept, never the colours of a palette the visitor made. */
+  breathColours?: string;
+  orbColours?: string;
 }
 
 const VISION = ['', 'deuteranopia', 'protanopia', 'tritanopia', 'achromatopsia'];
@@ -138,6 +145,9 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   orbHaloWidth: (v) => typeof v === 'number' && (HALO_WIDTHS as readonly number[]).includes(v),
   orbHaloSeed: (v) => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 4294967295,
   previewSize: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 120 && v <= 400,
+  leafSway: isBool,
+  breathColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
+  orbColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
   breathingTechnique: (v) => {
     // A saved pace must be one the site would have allowed (src/lib/breathCustom.ts); earlier saves of the presets all pass.
     return isAllowedTechnique(v);
@@ -361,6 +371,7 @@ export function wipeDevice({ keepOwner }: { keepOwner: boolean }) {
   } catch {
     // Nothing reachable to erase.
   }
+  clearKeptPalettes();
   emit();
 }
 
@@ -430,3 +441,33 @@ export function setBreathPreviewSize(n: number): void {
   lookListeners.forEach((l) => l());
 }
 export const useBreathPreviewSize = (): number => useSyncExternalStore(subscribeLook, getPreviewSize, () => DEFAULT_PREVIEW_SIZE);
+
+// The leaves' sway and the colour choices (src/lib/logoColours.ts): the same rules as the look above. Sway is off, and the colours are the original, unless the visitor chose.
+// The choice is all that is kept: a palette the visitor made is held in memory for the visit only (src/lib/keptPalettes.ts), so if it is gone next time the choice reads as the original.
+let swayNow: boolean | null = null;
+let breathColoursNow: string | null = null;
+let orbColoursNow: string | null = null;
+const getSway = (): boolean => (swayNow ??= loadPrefs().leafSway === true);
+const getBreathColours = (): string => (breathColoursNow ??= snapColourChoice(loadPrefs().breathColours));
+const getOrbColours = (): string => (orbColoursNow ??= snapColourChoice(loadPrefs().orbColours));
+export const getLeafSway = getSway;
+export const getBreathColourChoice = getBreathColours;
+export const getOrbColourChoice = getOrbColours;
+export function setLeafSway(on: boolean): void {
+  swayNow = on === true;
+  savePref('leafSway', swayNow);
+  lookListeners.forEach((l) => l());
+}
+export function setBreathColourChoice(v: string): void {
+  breathColoursNow = snapColourChoice(v);
+  savePref('breathColours', breathColoursNow);
+  lookListeners.forEach((l) => l());
+}
+export function setOrbColourChoice(v: string): void {
+  orbColoursNow = snapColourChoice(v);
+  savePref('orbColours', orbColoursNow);
+  lookListeners.forEach((l) => l());
+}
+export const useLeafSway = (): boolean => useSyncExternalStore(subscribeLook, getSway, () => false);
+export const useBreathColourChoice = (): string => useSyncExternalStore(subscribeLook, getBreathColours, () => 'original');
+export const useOrbColourChoice = (): string => useSyncExternalStore(subscribeLook, getOrbColours, () => 'original');

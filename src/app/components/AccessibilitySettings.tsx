@@ -13,6 +13,9 @@ import { VISITOR_LOOKS } from '../../lib/kaleidoscope';
 import { GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, LEAF_SETTING_AVAILABLE, gemChoiceLabel, gemChoiceMessage, haloStyleLabel, haloStyleMessage, haloWidthLabel, type GemSidesChoice } from '../../lib/logoLook';
 import { setGemSidesChoice, setLogoLeaves, setOrbHaloStyle, setOrbHaloWidth, shuffleOrbHalo, useGemSidesChoice, useLogoLeaves, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
 import { liveGemSupported } from '../../lib/gemRenderer';
+import { LeafSwaySwitch, ColourChoiceGroup } from './LogoLookExtras';
+import { setBreathColourChoice, setOrbColourChoice, useBreathColourChoice, useOrbColourChoice } from '../../lib/deviceMemory';
+import { colourChoiceMessage } from '../../lib/logoColours';
 
 const VISION_MODES: { value: string; label: string }[] = [
   { value: '', label: 'Standard' },
@@ -67,6 +70,8 @@ export function AccessibilitySettingsContent({
   const leafChoice = useLogoLeaves();
   const haloStyle = useOrbHaloStyle();
   const haloWidth = useOrbHaloWidth();
+  const breathColourChoice = useBreathColourChoice();
+  const orbColourChoice = useOrbColourChoice();
   const [lookMessage, setLookMessage] = useState('');
   const kaleidoLook = useGemKaleidoscopeLook();
   const kaleidoBreath = useGemKaleidoscopeBreath();
@@ -268,6 +273,27 @@ export function AccessibilitySettingsContent({
                   </fieldset>
                 )}
               </>
+            )}
+            {/* The leaves' gentle sway (off by default; the leaves are drawn with the Palette Orbit). */}
+            {orbitEnabled && <LeafSwaySwitch breathingEnabled={breathingEnabled} onMessage={setLookMessage} />}
+            {/* The colours of the breath ring (and the gem's tint that follows it), and of the sixteen orbs. */}
+            {breathingEnabled && (
+              <ColourChoiceGroup
+                legend="Breathing colours"
+                name="breath-colours"
+                choice={breathColourChoice}
+                onChoose={(c) => { setBreathColourChoice(c); setLookMessage(colourChoiceMessage('breath', c)); }}
+                help="The colour of the glow each breath. Original changes it every breath through all the palettes. Changes show at once in the logo."
+              />
+            )}
+            {orbitEnabled && (
+              <ColourChoiceGroup
+                legend="Orb colours"
+                name="orb-colours"
+                choice={orbColourChoice}
+                onChoose={(c) => { setOrbColourChoice(c); setLookMessage(colourChoiceMessage('orbs', c)); }}
+                help="The colours of the sixteen orbs. Original gives each orb its own palette. Changes show at once in the logo."
+              />
             )}
             <p role="status" aria-live="polite" className="sr-only">{lookMessage}</p>
           </div>

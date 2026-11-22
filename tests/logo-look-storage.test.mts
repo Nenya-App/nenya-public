@@ -44,3 +44,23 @@ store['nenya.prefs'] = JSON.stringify({ previewSize: 5000 });
 ok('a preview size outside the limits is dropped', M.loadPrefs().previewSize === undefined);
 M.setBreathPreviewSize(333);
 ok('a preview size set in code snaps to a step', M.getBreathPreviewSize() === 340);
+
+// The leaves' sway and the colour choices: off and original unless chosen; only the choice is kept; a hand-edited value is dropped.
+const K = await import('../src/lib/keptPalettes.ts');
+ok('the sway is off and the colours are the original before anything is chosen', M.getLeafSway() === false && M.getBreathColourChoice() === 'original' && M.getOrbColourChoice() === 'original');
+M.setLeafSway(true);
+M.setBreathColourChoice('preset:cool');
+M.setOrbColourChoice('palette:Tide');
+const lookSaved = JSON.parse(store['nenya.prefs']);
+ok('with Remember on, the sway and both colour choices are stored (the choice only, no colours)', lookSaved.leafSway === true && lookSaved.breathColours === 'preset:cool' && lookSaved.orbColours === 'palette:Tide' && !JSON.stringify(lookSaved).includes('#'));
+ok('and read back', M.loadPrefs().leafSway === true && M.loadPrefs().breathColours === 'preset:cool' && M.loadPrefs().orbColours === 'palette:Tide');
+store['nenya.prefs'] = JSON.stringify({ leafSway: 'yes', breathColours: 'neon', orbColours: 'palette:Nobody' });
+ok('values that are not offered are dropped when read', M.loadPrefs().leafSway === undefined && M.loadPrefs().breathColours === undefined && M.loadPrefs().orbColours === undefined);
+store['nenya.prefs'] = JSON.stringify({ breathColours: 'mine-both', orbColours: 'mine-2' });
+ok('a saved-palette choice is accepted as a choice (whether it can be used depends on the palettes kept in this visit)', M.loadPrefs().breathColours === 'mine-both' && M.loadPrefs().orbColours === 'mine-2');
+M.setOrbColourChoice('not a choice');
+ok('a choice set in code that is not offered becomes the original', M.getOrbColourChoice() === 'original');
+K.setKeptPalettes([{ colors: [{ hex: '#112233' }, { hex: '#445566' }] }]);
+ok('a kept palette is held for the visit, and was not written to the device', K.getKeptPalettes().length === 1 && !Object.values(store).some((v) => v.includes('112233')));
+M.wipeDevice({ keepOwner: true });
+ok('"Forget me" clears the kept palettes held in memory, and the stored choices', K.getKeptPalettes().length === 0 && !('nenya.prefs' in store));

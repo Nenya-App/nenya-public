@@ -6,7 +6,7 @@ import bezelRaw from '../../assets/logo/bezel.svg?raw';
 import { bezelDataUri, bezelFor } from '../../lib/gemBezel';
 import { DEFAULT_GEM_SIDES, clampSides, stoneRadius } from '../../lib/gemCut';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
-import { allColors, valarColors } from './ValarBreathingLogo';
+import { useBreathColours, useOrbVectors, valarColors } from './ValarBreathingLogo';
 import { orbColour } from '../../lib/orbColours';
 import { breathEnvelope, breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
 import { GEM_CENTRE, GEM_ENGINE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite, markGemDrawn, type GemEngine } from '../../lib/gemSprite';
@@ -174,6 +174,13 @@ export default function SpectralGem({
   pausedRef.current = paused;
   const emergeRef = useRef(emerge);
   emergeRef.current = emerge;
+  // The colours the visitor chose in Settings (the original unless they chose): the orbs' vectors and the ring's breath colours that the gem's tint follows. Read through refs, as the other live values are, so a change shows at once without rebuilding the stone.
+  const chosenOrbs = useOrbVectors();
+  const chosenBreath = useBreathColours();
+  const orbVecRef = useRef(chosenOrbs);
+  orbVecRef.current = chosenOrbs;
+  const breathColoursRef = useRef(chosenBreath);
+  breathColoursRef.current = chosenBreath;
   const timingRef = useRef({ orbitSeconds, colorCycle });
   timingRef.current = { orbitSeconds, colorCycle };
   // The orbit's phase is set once, when the logo mounts (NenyaLogo does not move it later), so the gem keeps the same anchor.
@@ -309,8 +316,8 @@ export default function SpectralGem({
         renderer.render({
           turn: loops * 2 * Math.PI * (L?.spin ?? LIVE_SPIN),
           orbit: reduced ? 0 : (((orbitT / (oS > 0 ? oS : 120)) % 1) * 2 * Math.PI),
-          orbs: valarColors.map((v, j) => {
-            const c = orbColour(v.vector, j, tSec, cS);
+          orbs: valarColors.map((_v, j) => {
+            const c = orbColour(orbVecRef.current[j], j, tSec, cS);
             const e = emergeRef.current.style === 'light' ? emergence(j, tSec, emergeRef.current) : 1;
             return e === 1 ? c : c.map((x: number) => x * e);
           }),
@@ -328,7 +335,7 @@ export default function SpectralGem({
           octx.globalAlpha = 1;
         }
       }
-      const [r, g, b] = gemMultiplyColor(allColors, tintIndex(c.idx, liveRef.current?.breathColors, allColors.length), c.p, f, breathingEnabled ? tint : 0, !reduced);
+      const [r, g, b] = gemMultiplyColor(breathColoursRef.current, tintIndex(c.idx, liveRef.current?.breathColors, breathColoursRef.current.length), c.p, f, breathingEnabled ? tint : 0, !reduced);
       bctx.globalCompositeOperation = 'source-over';
       bctx.globalAlpha = 1;
       bctx.clearRect(0, 0, px, px);
@@ -349,7 +356,7 @@ export default function SpectralGem({
         const n = valarColors.length;
         for (let i = 0; i <= n; i++) {
           const j = i % n;
-          const col = orbColour(valarColors[j].vector, j, tSec, timingRef.current.colorCycle);
+          const col = orbColour(orbVecRef.current[j], j, tSec, timingRef.current.colorCycle);
           wheel.addColorStop(i / n, `rgb(${Math.round(col[0])},${Math.round(col[1])},${Math.round(col[2])})`);
         }
         bctx.globalCompositeOperation = 'color';

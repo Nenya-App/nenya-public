@@ -1,6 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { ringCorrection } from '../../lib/breathClock';
+import { useBreathColourChoice, useOrbColourChoice } from '../../lib/deviceMemory';
+import { useKeptPalettes } from '../../lib/keptPalettes';
+import { breathSequence, orbVectors, resolveColours } from '../../lib/logoColours';
 
 // Valar Sigils: Dual Focus (Individual/Communal) with 6-Color Chromatic Vectors
 // The first color of each palette is its main color. Palettes are starting points, not a measurement.
@@ -119,6 +122,24 @@ export const valarColors = [
 // All 96 colours (16 Valar x 6 colours each) in breath order. Shared with the gem, which tints to the
 // same colour as the ring.
 export const allColors: string[] = valarColors.flatMap((valar) => valar.vector);
+const originalOrbVectors: string[][] = valarColors.map((valar) => valar.vector);
+
+/**
+ * The colours of the breath ring and of the gem's tint, one a breath: the original 96 unless the visitor chose another set in Settings
+ * (src/lib/logoColours.ts). The same array every time while the choice and the palettes they kept stay as they are.
+ */
+export function useBreathColours(): string[] {
+  const choice = useBreathColourChoice();
+  const kept = useKeptPalettes();
+  return useMemo(() => (choice === 'original' ? allColors : breathSequence(resolveColours(choice, valarColors, kept))), [choice, kept]);
+}
+
+/** The six-colour vector of each of the sixteen orbs: each palette's own unless the visitor chose another set in Settings. */
+export function useOrbVectors(): string[][] {
+  const choice = useOrbColourChoice();
+  const kept = useKeptPalettes();
+  return useMemo(() => (choice === 'original' ? originalOrbVectors : orbVectors(resolveColours(choice, valarColors, kept), valarColors.length)), [choice, kept]);
+}
 
 // Convert hex to rgba
 function hexToRgba(hex: string, alpha: number): string {
@@ -179,8 +200,11 @@ export function ValarBreathingLogo({
   const { applied, style: fadeStyle } = useFadeSwitch({ tech: technique, cycleDur: cycleDuration, start: cycleStart }, shapeKey);
   const { tech, cycleDur, start } = applied;
 
-  // Total animation cycle = 96 colors × cycleDuration seconds each
-  const totalDuration = allColors.length * cycleDur;
+  // The ring's colours, one a breath: all 96 unless the visitor chose another set (Settings, Logo look, Breathing colours).
+  const colours = useBreathColours();
+
+  // Total animation cycle = every colour (96 by default) × cycleDuration seconds each
+  const totalDuration = colours.length * cycleDur;
 
   // Derive the breath's expand/hold/contract/hold shape from the technique's phase
   // fractions (ih/hi/ex/ho in ms); falls back to an even 4-phase split when none is set.
@@ -234,7 +258,7 @@ export function ValarBreathingLogo({
     const scheduleNext = () => {
       const elapsed = (Date.now() - start) / 1000;
       const cyclePos = ((elapsed % totalDuration) + totalDuration) % totalDuration;
-      const idx = Math.floor(cyclePos / cycleDur) % allColors.length;
+      const idx = Math.floor(cyclePos / cycleDur) % colours.length;
       const phaseIntoRing = cyclePos - idx * cycleDur;
       setActiveIndex(idx);
       const msUntilNext = (cycleDur - phaseIntoRing) * 1000;
@@ -243,9 +267,9 @@ export function ValarBreathingLogo({
     scheduleNext();
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, start, cycleDur, totalDuration, allColors.length, ringsEpochKey]);
+  }, [enabled, start, cycleDur, totalDuration, colours, ringsEpochKey]);
 
-  const activeColor = allColors[activeIndex] ?? allColors[0];
+  const activeColor = colours[activeIndex % colours.length] ?? colours[0];
 
   // Plain CSS animation instead of Motion's JS-driven `animate` -- CSS's
   // animation-play-state genuinely freezes this on pause, where Motion's

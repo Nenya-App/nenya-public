@@ -16,14 +16,14 @@ const leafMask = (count: number) => {
 };
 import MallornLeaves from './MallornLeaves';
 import { weaveSilhouetteSvg } from '../../lib/leafWeave';
-import { valarColors, type BreathingTechnique } from './ValarBreathingLogo';
+import { useOrbVectors, valarColors, type BreathingTechnique } from './ValarBreathingLogo';
 import SpectralGem, { type GemStats, type LiveGemLook } from './SpectralGem';
 import LogoGlow from './LogoGlow';
 import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type OuterOrbitLook } from '../../lib/orbitLook';
 import { GEM_ENGINE, type GemEngine } from '../../lib/gemSprite';
 import { liveGemSupported } from '../../lib/gemRenderer';
 import { deviceProfile } from '../../lib/deviceProfile';
-import { useGemSidesChoice, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
+import { useGemSidesChoice, useLeafSway, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
 import { effectiveGemSides, randomHaloColors } from '../../lib/logoLook';
 import { useZoomedIn } from '../../lib/zoomLite';
 
@@ -45,7 +45,6 @@ const orbGradient = (c: string): string => `radial-gradient(circle at 30% 30%, $
 const lightGradient = (c: string): string => `radial-gradient(circle closest-side, ${c}ff 0%, ${c}cc 28%, ${c}55 62%, ${c}00 100%)`;
 /** An outer orb's own halo: a gradient (never a blur) in its current colour, fading to nothing; in 'palette' mode the rim fades through another colour from its palette. Cheap to draw and it does not grow with zoom the way a large shadow does. The colours are set by CSS (see .nenya-orb-halo), not by script. */
 const haloGradient = (palette: boolean): string => `radial-gradient(circle closest-side, color-mix(in srgb, var(--hc) 67%, transparent) 0%, color-mix(in srgb, var(--hc) 40%, transparent) 34%, color-mix(in srgb, var(${palette ? '--hc2' : '--hc'}) 14%, transparent) 66%, transparent 100%)`;
-const ALL_ORB_COLORS = valarColors.flatMap((v) => v.vector);
 /** An outer orb's sphere, coloured by the fading --hc (the same look as before: bright to a soft rim). */
 const ORB_FADE_GRADIENT = 'radial-gradient(circle at 30% 30%, var(--hc), color-mix(in srgb, var(--hc) 93%, transparent) 50%, color-mix(in srgb, var(--hc) 60%, transparent) 80%, color-mix(in srgb, var(--hc) 27%, transparent))';
 /** Keyframes for one orb: its colours in order and back to the first, with literal colours so every browser fades between them. */
@@ -153,6 +152,11 @@ export default function NenyaLogo({
   // The visitor's look (accessibility panel): the gem follows the leaves unless they chose a number; a prop (the bench) overrides it.
   const sideChoice = useGemSidesChoice();
   const leafChoice = useLogoLeaves();
+  // The leaves' gentle sway (Settings, Logo look): the visitor's wish, off by default. MallornLeaves decides whether motion is allowed here.
+  const swayWish = useLeafSway();
+  // The orbs' colours: each palette's own unless the visitor chose another set (Settings, Logo look, Orb colours).
+  const orbVecs = useOrbVectors();
+  const allOrbColours = useMemo(() => orbVecs.flat(), [orbVecs]);
   const gemSides = gemSidesProp ?? effectiveGemSides(sideChoice, leafChoice, { live: gemEngine === 'live' && liveGemSupported(), low: typeof window !== 'undefined' && deviceProfile().gem.quality === 'low' });
   // While the page is pinch-zoomed the logo is drawn lighter (no glows, halos or blends; the gem holds its last frame): see src/lib/zoomLite.ts.
   const zoomed = useZoomedIn();
@@ -176,13 +180,13 @@ export default function NenyaLogo({
   // Keyframes for every outer orb's colours (and its halo's): rebuilt only when the glow style or the random seed changes.
   const orbHueCss = useMemo(
     () =>
-      valarColors
-        .map((v, i) => {
-          const hc = outer.halo === 'random' ? randomHaloColors(outer.haloSeed, i, ALL_ORB_COLORS) : v.vector;
-          return hueKeyframes(`nho-c-${i}`, '--hc', v.vector) + hueKeyframes(`nho-h-${i}`, '--hc', hc) + hueKeyframes(`nho-h2-${i}`, '--hc2', hc, 2);
+      orbVecs
+        .map((vec, i) => {
+          const hc = outer.halo === 'random' ? randomHaloColors(outer.haloSeed, i, allOrbColours) : vec;
+          return hueKeyframes(`nho-c-${i}`, '--hc', vec) + hueKeyframes(`nho-h-${i}`, '--hc', hc) + hueKeyframes(`nho-h2-${i}`, '--hc2', hc, 2);
         })
         .join(''),
-    [outer.halo, outer.haloSeed],
+    [outer.halo, outer.haloSeed, orbVecs, allOrbColours],
   );
 
   // Set once, when the logo first mounts with a clock anchor, so a fresh mount starts the rotation at the
@@ -223,7 +227,7 @@ export default function NenyaLogo({
           className="absolute"
           style={{ width: size * 0.765, height: size * 0.765, zIndex: 10, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}
         >
-          <MallornLeaves size={size * 0.765} count={leafChoice} cycleStart={cycleStart} technique={technique} breathingEnabled={breathingEnabled} />
+          <MallornLeaves size={size * 0.765} count={leafChoice} cycleStart={cycleStart} technique={technique} breathingEnabled={breathingEnabled} sway={swayWish && !zoomed} />
         </div>
       )}
       {showLogo && !showValarOrbit && (
@@ -274,7 +278,7 @@ export default function NenyaLogo({
             
             // Each orb cycles through its 6-color vector
             const colorCycleDuration = inner.colorCycle; // seconds to cycle through all 6 colors
-            const colors = valar.vector;
+            const colors = orbVecs[index];
             
             // Each orb is partly hidden by the ones after it, all the way round. Drawing order gives that for most of
             // the ring, but the last few orbs would otherwise sit whole on top of the first few. So they are cut away
@@ -399,9 +403,9 @@ export default function NenyaLogo({
             
             // Each orb cycles through its 6-color vector
             const colorCycleDuration = 30; // seconds to cycle through all 6 colors
-            const colors = valar.vector;
+            const colors = orbVecs[index];
             
-            const haloColors = outer.halo === 'random' ? randomHaloColors(outer.haloSeed, index, ALL_ORB_COLORS) : colors;
+            const haloColors = outer.halo === 'random' ? randomHaloColors(outer.haloSeed, index, allOrbColours) : colors;
             const halo = ownHalo ? (
               <div
                 key={`halo-${valar.name}`}

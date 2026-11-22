@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { leafWeave, LOGO_LEAF_COUNT, WEAVE_INNER_WIDTH, WEAVE_OUTER_WIDTH, WEAVE_RIB_WIDTH } from '../../lib/leafWeave';
-import { chooseLeafPreset, flowerAnimationStyle, leafMotionCss, readLeafCapability, type LeafPreset } from '../../lib/leafMotion';
+import { chooseLeafPreset, flowerAnimationStyle, leafBox, leafMotionCss, leafRockCss, leafRockStyle, readLeafCapability, swayAllowed, type LeafPreset } from '../../lib/leafMotion';
 import { breathLengthMs } from '../../lib/breathClock';
 import type { BreathingTechnique } from './ValarBreathingLogo';
 
@@ -26,6 +26,12 @@ interface MallornLeavesProps {
   count?: number;
   /** A hairline midrib on each leaf. Off by default (the owner removed it, 2026-11-20). */
   midrib?: boolean;
+  /**
+   * The visitor's wish for a gentle sway (Settings, Logo look). Off by default. It only takes effect where motion is allowed (see swayAllowed in
+   * src/lib/leafMotion.ts): breathing animation on, no reduced-motion or reduced-data request, not a light device. Then each leaf is drawn as its own layer
+   * and rocks about its base; without it, the leaves are drawn as one picture exactly as before.
+   */
+  sway?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -44,10 +50,23 @@ export function useLeafPreset(force?: LeafPreset): LeafPreset {
   return force ?? preset;
 }
 
+/** Whether the sway may run here: the visitor's wish, the site's breathing switch and what the browser reports (re-read when the reduced-motion setting changes). */
+export function useSwayAllowed(wanted: boolean, breathingEnabled: boolean): boolean {
+  const [allowed, setAllowed] = useState(false); // never on for the first (server or hydration) render
+  useEffect(() => {
+    const update = () => setAllowed(swayAllowed(wanted, breathingEnabled, readLeafCapability()));
+    update();
+    const q = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    q?.addEventListener?.('change', update);
+    return () => q?.removeEventListener?.('change', update);
+  }, [wanted, breathingEnabled]);
+  return allowed;
+}
+
 /** The original petals' lighting: a soft bevel and a specular edge, applied to the metal strokes. */
-function MetalFilter({ id }: { id: string }) {
+function MetalFilter({ id, box = { x: -383, y: -383, w: 766, h: 766 } }: { id: string; box?: { x: number; y: number; w: number; h: number } }) {
   return (
-    <filter id={id} filterUnits="userSpaceOnUse" x="-383" y="-383" width="766" height="766" colorInterpolationFilters="sRGB">
+    <filter id={id} filterUnits="userSpaceOnUse" x={box.x} y={box.y} width={box.w} height={box.h} colorInterpolationFilters="sRGB">
       <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="h" />
       <feSpecularLighting in="h" surfaceScale="4.1" specularConstant="0.98" specularExponent="28" lightingColor="#ffffff" result="sp">
         <feDistantLight azimuth="141" elevation="15" />
@@ -64,7 +83,7 @@ function MetalFilter({ id }: { id: string }) {
   );
 }
 
-export default function MallornLeaves({ size, cycleStart, technique = null, preset: forced, breathingEnabled = true, tones = 'alternate', count = LOGO_LEAF_COUNT, midrib = false, className, style }: MallornLeavesProps) {
+export default function MallornLeaves({ size, cycleStart, technique = null, preset: forced, breathingEnabled = true, tones = 'alternate', count = LOGO_LEAF_COUNT, midrib = false, sway = false, className, style }: MallornLeavesProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const chosen = useLeafPreset(forced);
   const preset: LeafPreset = breathingEnabled ? chosen : 'none';
@@ -81,6 +100,13 @@ export default function MallornLeaves({ size, cycleStart, technique = null, pres
   const flower = flowerAnimationStyle(preset, technique, breathMs, elapsed);
   const id = (n: string) => `${n}${uid}`;
 
+  // The sway (off unless the visitor chose it and this device allows it). The wall clock is read once after mount, so every logo on the page rocks together.
+  const swaying = useSwayAllowed(sway, breathingEnabled);
+  const [clock, setClock] = useState(0);
+  useEffect(() => {
+    if (swaying) setClock(Date.now());
+  }, [swaying]);
+
   // Which leaves are silver outside (and gold inside).
   const silverOuter = (i: number) => tones === 'alternate' && i % 2 === 1;
   const idx = w.ids.map((_, i) => i);
@@ -88,6 +114,56 @@ export default function MallornLeaves({ size, cycleStart, technique = null, pres
   const outerSilver = idx.filter(silverOuter);
   const common = { fill: 'none', strokeLinejoin: 'round', strokeLinecap: 'round' } as const;
   const paths = (list: string[], which: number[]) => which.map((i) => <path key={w.ids[i]} d={list[i]} />);
+
+  if (swaying) {
+    // Each leaf is a layer of its own (an svg the size of the box, stacked), turned by CSS about the leaf's base. The over-and-under weave is cut into the
+    // paths (gaps), not made by stacking order, so the layers can be drawn in any order. Each layer has its own lighting filter, over just that leaf's box,
+    // so the filters run when a layer is first drawn and not on every turn.
+    return (
+      <div className={className} style={{ position: 'relative', width: size, height: size, ...style }} aria-hidden="true" data-leaf-preset={preset} data-leaf-count={w.count} data-leaf-sway="on">
+        <style>{(css || '') + leafRockCss()}</style>
+        {idx.map((i) => {
+          const lid = (n: string) => `${n}${uid}l${i}`;
+          const silver = silverOuter(i);
+          const box = leafBox([w.outer[i], w.inner[i]]);
+          return (
+            <svg key={w.ids[i]} className="lm-rock" style={{ position: 'absolute', left: 0, top: 0, ...leafRockStyle(i, w.count, size, clock) } as React.CSSProperties} viewBox="-382.5 -382.5 765 765" width={size} height={size} focusable="false" aria-hidden="true">
+              <defs>
+                <linearGradient id={lid('gGold')} gradientUnits="userSpaceOnUse" x1="-150.51" y1="-392.1" x2="150.51" y2="392.1">
+                  <stop offset="0" stopColor="#b8803f" />
+                  <stop offset="0.2" stopColor="#fcce96" />
+                  <stop offset="0.56" stopColor="#fff0cf" />
+                  <stop offset="0.92" stopColor="#fcce96" />
+                  <stop offset="1" stopColor="#b8803f" />
+                </linearGradient>
+                <linearGradient id={lid('gCream')} gradientUnits="userSpaceOnUse" x1="-150.51" y1="-392.1" x2="150.51" y2="392.1">
+                  <stop offset="0" stopColor="#b9b09f" />
+                  <stop offset="0.2" stopColor="#f2ead9" />
+                  <stop offset="0.56" stopColor="#ffffff" />
+                  <stop offset="0.92" stopColor="#f2ead9" />
+                  <stop offset="1" stopColor="#b9b09f" />
+                </linearGradient>
+                <radialGradient id={lid('rFill')} cx="0" cy="0" r="380" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stopColor="#4d4d4d" stopOpacity="0.06" />
+                  <stop offset="1" stopColor="#4d4d4d" stopOpacity="0.02" />
+                </radialGradient>
+                <MetalFilter id={lid('fGold')} box={box} />
+                <MetalFilter id={lid('fCream')} box={box} />
+              </defs>
+              <g className="lm-flower" style={flower as React.CSSProperties}>
+                <g id={w.ids[i]} data-leaf={w.ids[i]} data-tone={silver ? 'silver' : 'gold'}>
+                  <path d={w.fill[i]} fill={`url(#${lid('rFill')})`} stroke="none" />
+                </g>
+                <g filter={`url(#${lid(silver ? 'fCream' : 'fGold')})`}><g {...common} strokeWidth={WEAVE_OUTER_WIDTH} stroke={`url(#${lid(silver ? 'gCream' : 'gGold')})`}><path d={w.outer[i]} /></g></g>
+                <g filter={`url(#${lid(silver ? 'fGold' : 'fCream')})`}><g {...common} strokeWidth={WEAVE_INNER_WIDTH} stroke={`url(#${lid(silver ? 'gGold' : 'gCream')})`}><path d={w.inner[i]} /></g></g>
+                {midrib && <g {...common} strokeWidth={WEAVE_RIB_WIDTH} stroke={`url(#${lid('gCream')})`} opacity="0.85"><path d={w.rib[i]} /></g>}
+              </g>
+            </svg>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <svg className={className} style={style} viewBox="-382.5 -382.5 765 765" width={size} height={size} aria-hidden="true" focusable="false" data-leaf-preset={preset} data-leaf-count={w.count}>

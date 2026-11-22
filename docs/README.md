@@ -58,7 +58,7 @@ Two things to know when reading "shipped":
 | Doc | What it is | Status note |
 |---|---|---|
 | [body-map-integration-spec.md](body-map-integration-spec.md) | The body map in the gateways | Built 2026-08-30 |
-| [logo-look.md](logo-look.md) | The visitor's logo look setting: presets, match, storage, low-capability limit | New 2026-11-20 |
+| [logo-look.md](logo-look.md) | The visitor's logo look setting: presets, match, storage, low-capability limit; leaf sway, breathing and orb colours (2026-11-22) | New 2026-11-20 |
 | [live-gem.md](live-gem.md) | The ray-traced gem, and the `/bench/` page | Updated 2026-11-20: live, 1 + 8n facets, sides 6 to 12. |
 | [valar-rename-scope.md](valar-rename-scope.md) | Outward names for the sixteen palettes | Done 2026-11-08. The questions for a lawyer are still open. |
 | [coach-instructions-v2.md](coach-instructions-v2.md) | Instruction wording v2 | On in production and staging through `COACH_INSTRUCTIONS=v2`. The code still defaults to v1. |

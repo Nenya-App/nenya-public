@@ -9,6 +9,7 @@ import { aboutSectionFromLocation, SITE_TITLE } from '../lib/aboutRoutes';
 import { melodyColorsFor, melodyShared } from '../lib/melodySeed';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavigation } from './components/GlobalNavigation';
+import { setKeptPalettes } from '../lib/keptPalettes';
 import { BreathingPopout } from './components/BreathingPopout';
 import { WelcomeTutorial, type TutorialStepId } from './components/WelcomeTutorial';
 import { TourOffer } from './components/TourOffer';
@@ -182,6 +183,10 @@ export default function App() {
   // Read by the Back/Forward handler, which is set up before this state exists.
   const gatewayDataRef = useRef<GatewayData[]>([]);
   gatewayDataRef.current = gatewayData;
+  // The palettes the visitor kept in the Sight lens are offered as colour choices for the logo (Settings, Logo look). They are held in memory only, for the visit (src/lib/keptPalettes.ts).
+  useEffect(() => {
+    setKeptPalettes(gatewayData.find((g) => g.gateway === 'sight')?.data?.generatedPalettes ?? []);
+  }, [gatewayData]);
   // Shared across every gateway -- not owned by Sight or any one gateway's
   // data blob, so it persists regardless of which gateways are visited or
   // in what order.

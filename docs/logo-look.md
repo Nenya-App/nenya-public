@@ -1,6 +1,6 @@
 # Logo look (visitor setting)
 
-Status (2026-11-20): built and on. The leaf count shows in the settings (`LEAF_SETTING_AVAILABLE = true` in `src/lib/logoLook.ts`) now that the
+Status (2026-11-22): built and on. The leaf count shows in the settings (`LEAF_SETTING_AVAILABLE = true` in `src/lib/logoLook.ts`) now that the
 mallorn leaves are in and the ring follows the count; the default is six leaves with an eight-sided gem (the owner's choice, 2026-11-20). Plan and reasons: [eight-sided-gem-scope.md](eight-sided-gem-scope.md), Part 2.
 
 ## What a visitor can change
@@ -19,6 +19,31 @@ The glow round each outer orb is a setting too (Settings, Logo look, Outer glow)
 - **Style** (`orbHalo`): *Own colour* (the default; the halo follows the orb's own colour), *Orb's palette* (the rim fades into another colour from the same palette), *Random colours* (each orb draws from every palette; *Shuffle colours* deals a new set, kept as `orbHaloSeed` so a reload does not reshuffle) or *Old shared glow* (the three large gold blurs, the heaviest to draw).
 - **Width** (`orbHaloWidth`): Soft 3.4, Wide 5 (the default, the owner's choice) or Wider 7, as a multiple of the orb's width. Not offered for the old shared glow.
 The halos are gradients, never blurs, and their colours are animated by the browser, so they are light to draw. Reduced motion holds them still. Code: `src/lib/logoLook.ts` (choices, `randomHaloColors`), `src/lib/deviceMemory.ts` (storage), `NenyaLogo.tsx`.
+
+## Leaf sway, breathing colours and orb colours (2026-11-22)
+Three more choices in the same Logo look group (Settings, `AccessibilitySettings.tsx`; the parts are in `LogoLookExtras.tsx`). All three are display settings stored like the rest (`leafSway`, `breathColours`, `orbColours` in `nenya.prefs`, only while "Remember on this device" is on), applied at once, shown live in the preview in the breathing panel and in the header logo, and announced politely ("Orb colours are now cool."). Defaults are unchanged for a visitor who sets nothing: sway off, colours *Original*.
+
+### Leaves sway gently (default off)
+A switch, shown with the Palette Orbit (the leaves are drawn there). Each leaf rocks about its own base by **1 degree** either way, one full rock every **18 seconds**, eased and looping with no jump. Leaf *i* of *n* starts *i/n* of a rock behind the one before, so a slow wave goes round the ring and joins up with itself. Code: `leafMotion.ts` (`LEAF_ROCK_DEG`, `LEAF_ROCK_PERIOD_MS`, `leafBase`, `rockOffsetMs`, `leafRockCss`, `leafRockStyle`), `MallornLeaves.tsx`.
+- **Where it can run.** Only when the visitor switched it on, Breathing Emanation is on, and the device does not ask for reduced motion, less data (Save-Data) or lighter drawing (2 GB or less memory, 2 or fewer cores), and the page is not pinch-zoomed (the light drawing). Where it cannot run, the switch is off and says why. A stylesheet rule repeats the reduced-motion rule as a backstop. Nothing about the sway is on for the first render.
+- **How it is drawn.** Without sway the leaves are one picture, exactly as before. With it each leaf is its own stacked layer turned by a CSS transform (the only thing animated), with its own lighting filter over just that leaf's box, so the filter runs when a layer is first drawn and not on every turn. The over-and-under weave is cut into the paths as gaps, not made by stacking order, so layers can sit in any order.
+- **The weave.** Neighbouring leaves rock out of step, so the places where they cross move a little against each other. At 1 degree the worst drift at any crossing is 3.5 units in 765 with 6 leaves (less with more); the gaps are cut 7.5 units round a crossing. A test measures this on the real outlines (`tests/leaf-sway.test.mts`) so a larger angle cannot be set by accident.
+- **History.** An earlier sway (up to 1.6 degrees, two breaths a rock, with the leaves opening and closing) was removed 2026-11-20 (commit 3b704fd) for a breath swell, and the swell is now off (`PETALS_BREATHE = false`). Kept from the earlier sway: the keyframe shape, rotation about the leaf's own base, a negative delay per leaf, and no sway under reduced motion or on a light device. New: the fixed slow period, the smaller angle, the wave that joins up, separate layers.
+
+### Breathing colours and Orb colours
+Two groups of radio choices with names (never colour alone: each says in words what it is made of, with small swatches as decoration):
+- **Original**: the logo as it always was (the ring goes through all 96 colours, one a breath; each orb keeps its own palette).
+- **Cool, Warm, Woodland, Night**: named sets built from the sixteen palettes (`PRESETS` in `src/lib/logoColours.ts`; each says which palettes it takes, by their outward names).
+- **One of the sixteen palettes**: a drop-down of the outward names.
+- **Your saved palette 1, 2, or both**: only while those exist (see below). With none kept, nothing appears, not even a disabled control.
+Where the colours go: the *Breathing colours* choice sets the colour of the breath ring and, as before, the tint the gem takes from the same breath. *Orb colours* sets the sixteen orbs, the inner light the gem takes from them, and the outer glow in "Own colour" and "Orb's palette" styles ("Random colours" draws from the chosen colours).
+- **More than one palette** (a named set, or both saved palettes): the palettes take turns. Breath: breath 1 the first palette's first colour, breath 2 the second palette's first colour, and so on round, then each palette's second colour. Orbs: orb *i* of sixteen takes palette *i mod P*, so two palettes alternate all the way round. Each orb fades through six colours: a six-colour palette as it is (shifted along one each time the palettes come round, so orbs sharing a palette do not all start on the same colour); a palette of another size is sampled evenly round its loop, blending between neighbours.
+- **No new animation.** The colours change through the animations the logo already has (one swap a breath for the ring, the orb colour fades), which already hold still under reduced motion.
+
+### Saved palettes
+A visitor "saves" a palette by pressing *Keep this palette in my report* in the Sight Lens (`PalettePanel.tsx`): up to two, in the report data as `generatedPalettes` (`GeneratedPalette`, `src/lib/colorSchemes.ts`). They live in the browser's memory for the visit only (a colour a visitor picks is never written to the device, `deviceMemory.ts`). `src/lib/keptPalettes.ts` is a small in-memory store the Sight page fills whenever its kept palettes change and `App.tsx` refills from the report; the settings read it. A palette with fewer than two usable colours is ignored. Only the *choice* ("your saved palette 1") is stored with the other settings; if the palette is gone next visit, the choice reads as *Original*. Forget me and Emergency Exit empty the store. Nothing is sent anywhere. See [data-register.md](data-register.md).
+
+Tests: `tests/logo-colours.test.mts`, `tests/leaf-sway.test.mts`, `tests/logo-look-storage.test.mts`.
 
 ## Preview size
 The animated preview in the breathing and accessibility panel was a fixed 160 pixels. It now has a **Preview size** slider (120 to 400 pixels, steps of 20, default 220) and a Reset button, kept as `previewSize` like the other display settings. The panel widens to fit it on a wide screen; on a narrow screen the preview is held to 220 pixels so it fits. Code: `src/app/components/BreathingPopout.tsx`, `snapPreviewSize` in `src/lib/logoLook.ts`.
