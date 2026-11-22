@@ -5,7 +5,7 @@ import { breathLengthMs, type BreathTiming } from '../../lib/breathClock';
 import { nextBreathEnd, rgbTriplet } from '../../lib/breathPulse';
 
 interface MoreBelowButtonProps {
-  /** Words beside the arrow ("Enter"); leave out for the arrow alone. */
+  /** Words beside the arrow ("Look into the Mirror?" on the welcome page); leave out for the arrow alone. */
   label?: string;
   /** What a screen reader says. */
   ariaLabel: string;
