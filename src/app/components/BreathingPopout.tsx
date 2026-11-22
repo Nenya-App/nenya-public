@@ -13,6 +13,7 @@ import { AccessibilitySettingsContent } from './AccessibilitySettings';
 import { useIsMobile } from './useIsMobile';
 import { useEffect, useMemo, useState } from 'react';
 import { setBreathPreviewPercent, useBreathPreviewPercent } from '../../lib/deviceMemory';
+import { STRENGTH_STANDARD, strengthParts } from '../../lib/breathStrength';
 import { DEFAULT_PREVIEW_PCT, PREVIEW_PCT_MIN, PREVIEW_PCT_STEP, effectivePreviewPercent, previewMaxPercent, previewPixels } from '../../lib/logoLook';
 import { deviceProfile } from '../../lib/deviceProfile';
 
@@ -22,12 +23,12 @@ interface BreathingPopoutProps {
   breathingEnabled?: boolean;
   orbitEnabled?: boolean;
   logoVisible?: boolean;
-  breathingOpacity?: number;
+  breathingStrength?: number;
   textSize?: number;
   onBreathingToggle?: (enabled: boolean) => void;
   onOrbitToggle?: (enabled: boolean) => void;
   onLogoVisibleToggle?: (visible: boolean) => void;
-  onOpacityChange?: (opacity: number) => void;
+  onStrengthChange?: (opacity: number) => void;
   onTextSizeChange?: (size: number) => void;
   showBreathingCounter?: boolean;
   onCounterToggle?: (show: boolean) => void;
@@ -46,12 +47,12 @@ export function BreathingPopout({
   breathingEnabled = true,
   orbitEnabled = true,
   logoVisible = true,
-  breathingOpacity = 1,
+  breathingStrength = STRENGTH_STANDARD,
   textSize = 16,
   onBreathingToggle,
   onOrbitToggle,
   onLogoVisibleToggle,
-  onOpacityChange,
+  onStrengthChange,
   onTextSizeChange,
   showBreathingCounter = false,
   onCounterToggle,
@@ -128,7 +129,7 @@ export function BreathingPopout({
                 <div>
                   <ValarBreathingLogo
                     enabled={breathingEnabled}
-                    opacity={breathingOpacity}
+                    {...strengthParts(breathingStrength)}
                     logoSize={previewSize}
                     cycleDuration={cycleSeconds}
                     technique={technique}
@@ -198,17 +199,17 @@ export function BreathingPopout({
 
               {/* Right: Accessibility Controls */}
               <div className="p-4 md:max-h-[60vh] md:overflow-y-auto">
-                {onBreathingToggle && onOrbitToggle && onOpacityChange && onTextSizeChange ? (
+                {onBreathingToggle && onOrbitToggle && onStrengthChange && onTextSizeChange ? (
                   <AccessibilitySettingsContent
                     breathingEnabled={breathingEnabled}
                     orbitEnabled={orbitEnabled}
                     logoVisible={logoVisible}
-                    breathingOpacity={breathingOpacity}
+                    breathingStrength={breathingStrength}
                     textSize={textSize}
                     onBreathingToggle={onBreathingToggle}
                     onOrbitToggle={onOrbitToggle}
                     onLogoVisibleToggle={onLogoVisibleToggle}
-                    onOpacityChange={onOpacityChange}
+                    onStrengthChange={onStrengthChange}
                     onTextSizeChange={onTextSizeChange}
                     showCounter={showBreathingCounter}
                     onCounterToggle={onCounterToggle}

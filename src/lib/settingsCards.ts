@@ -1,6 +1,6 @@
 // The cards in the breathing and accessibility panel (src/app/components/AccessibilitySettings.tsx): which are open. Every card starts closed on every visit
 // (owner's request, 2026-11-22), so which cards are open is never stored anywhere; it lives in the panel's own state. Pure, so it is tested.
-export const SETTINGS_CARD_IDS = ['theme', 'animation', 'logo-look', 'sound', 'vision', 'opacity', 'text-size', 'remember'] as const;
+export const SETTINGS_CARD_IDS = ['theme', 'animation', 'logo-look', 'sound', 'vision', 'strength', 'text-size', 'remember'] as const;
 export type SettingsCardId = (typeof SETTINGS_CARD_IDS)[number];
 export type OpenCards = Partial<Record<SettingsCardId, boolean>>;
 

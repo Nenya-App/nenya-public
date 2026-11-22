@@ -3,6 +3,7 @@ import { DEFAULT_ARRANGEMENT } from './breathArrangements.ts';
 import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_INNER_ORB_MODE, DEFAULT_PREVIEW_PCT, DEFAULT_BREATH_COLOURS, DEFAULT_ORB_COLOURS, DEFAULT_LEAF_SWAY, DEFAULT_KALEIDOSCOPE_LOOK, DEFAULT_KALEIDOSCOPE_BREATH, defaultKaleidoscopeOn, GEM_SIDE_PRESETS, INNER_ORB_MODES, snapInnerOrbMode, type InnerOrbMode, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, percentFromOldPixels, snapLeaves, snapPreviewPercent, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
 import { snapColourChoice } from './logoColours.ts';
 import { clearKeptPalettes } from './keptPalettes.ts';
+import { DEFAULT_STRENGTH, STRENGTH_MAX, STRENGTH_MIN, strengthFromOldOpacity } from './breathStrength.ts';
 import { deviceProfile } from './deviceProfile.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
@@ -91,7 +92,10 @@ export interface Prefs {
   breathingEnabled?: boolean;
   orbitEnabled?: boolean;
   logoVisible?: boolean;
+  /** The old Breathing opacity (0.1 to 1). No longer written: read once, as v x 50, when there is no breathingStrength (src/lib/breathStrength.ts). */
   breathingOpacity?: number;
+  /** The breathing animation's strength, 5 to 200 (percent; 50 is standard, what 100% opacity used to be). */
+  breathingStrength?: number;
   showBreathingCounter?: boolean;
   /** Breathing tones: a note for each count of the breath. Off unless the visitor switches it on. */
   breathingTones?: boolean;
@@ -139,6 +143,7 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   orbitEnabled: isBool,
   logoVisible: isBool,
   breathingOpacity: (v) => typeof v === 'number' && v >= 0.1 && v <= 1,
+  breathingStrength: (v) => typeof v === 'number' && Number.isFinite(v) && v >= STRENGTH_MIN && v <= STRENGTH_MAX,
   showBreathingCounter: isBool,
   breathingTones: isBool,
   gemKaleidoscope: isBool,
@@ -508,3 +513,12 @@ export function setMotionStopped(on: boolean): void {
   lookListeners.forEach((l) => l());
 }
 export const useMotionStopped = (): boolean => useSyncExternalStore(subscribeLook, getMotionStopped, () => false);
+
+/**
+ * The breathing strength (percent, 5 to 200, 50 standard): like usePref, but a value kept on the old opacity scale becomes v x 50 when there is no new one, and a visitor who never chose gets 50.
+ * Only the new key is written.
+ */
+export function useBreathingStrength() {
+  const p = loadPrefs();
+  return usePref('breathingStrength', p.breathingOpacity !== undefined ? strengthFromOldOpacity(p.breathingOpacity) : DEFAULT_STRENGTH);
+}

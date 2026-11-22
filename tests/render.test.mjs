@@ -211,7 +211,7 @@ try {
   h = render(AppFooter, {});
   ok('every page footer carries the Forget me link', typeof h === 'string' && h.includes('Forget me'), h.error ?? '');
   const { AccessibilitySettingsContent } = await vite.ssrLoadModule('/src/app/components/AccessibilitySettings.tsx');
-  h = render(AccessibilitySettingsContent, { breathingEnabled: true, orbitEnabled: true, breathingOpacity: 1, onBreathingToggle: noop, onOrbitToggle: noop, onOpacityChange: noop, cvMode: 'deuteranopia', onCvModeChange: noop });
+  h = render(AccessibilitySettingsContent, { breathingEnabled: true, orbitEnabled: true, breathingStrength: 50, onBreathingToggle: noop, onOrbitToggle: noop, onStrengthChange: noop, cvMode: 'deuteranopia', onCvModeChange: noop });
   ok('vision modes: readable colours come from the theme, not a fixed pale amber', typeof h === 'string' && h.includes('Red-Green (D)') && h.includes('text-foreground') && !h.includes('rgba(232,160,32,0.45)'), h.error ?? '');
   ok('vision modes: the chosen option is marked for screen readers', typeof h === 'string' && h.includes('aria-pressed="true"'), h.error ?? '');
 

@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { setSessionMarkId } from '../lib/sessionMarkStore';
 import SkipLink from './components/SkipLink';
 import { ThemeProvider } from './components/ThemeProvider';
-import { usePref, termsAcceptedFor } from '../lib/deviceMemory';
+import { usePref, termsAcceptedFor, useBreathingStrength } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { aboutSectionFromLocation, SITE_TITLE } from '../lib/aboutRoutes';
 import { melodyColorsFor, melodyShared } from '../lib/melodySeed';
@@ -202,7 +202,7 @@ export default function App() {
   const [breathingEnabled, setBreathingEnabled] = usePref('breathingEnabled', true);
   const [orbitEnabled, setOrbitEnabled] = usePref('orbitEnabled', true);
   const [logoVisible, setLogoVisible] = usePref('logoVisible', true);
-  const [breathingOpacity, setBreathingOpacity] = usePref('breathingOpacity', 1); // Default 100%
+  const [breathingStrength, setBreathingStrength] = useBreathingStrength(); // 50% on the new scale = what 100% was
   const [textSize, setTextSize] = usePref('textSize', 16); // Default text size
   const [showBreathingCounter, setShowBreathingCounter] = usePref('showBreathingCounter', true);
   const [colorBlindMode, setColorBlindMode] = usePref('colorBlindMode', '');
@@ -629,12 +629,12 @@ export default function App() {
           breathingEnabled={breathingEnabled}
           orbitEnabled={orbitEnabled}
           logoVisible={logoVisible}
-          breathingOpacity={breathingOpacity}
+          breathingStrength={breathingStrength}
           textSize={textSize}
           onBreathingToggle={setBreathingEnabled}
           onOrbitToggle={setOrbitEnabled}
           onLogoVisibleToggle={setLogoVisible}
-          onOpacityChange={setBreathingOpacity}
+          onStrengthChange={setBreathingStrength}
           onTextSizeChange={setTextSize}
           showCounter={showBreathingCounter}
           onCounterToggle={setShowBreathingCounter}
@@ -683,7 +683,7 @@ export default function App() {
               breathingEnabled={breathingEnabled}
               orbitEnabled={orbitEnabled}
               logoVisible={logoVisible}
-              breathingOpacity={breathingOpacity}
+              breathingStrength={breathingStrength}
               onNavigateToAbout={handleNavigateToAbout}
               technique={breathingTechnique}
               cvMode={colorBlindMode}
@@ -861,12 +861,12 @@ export default function App() {
           breathingEnabled={breathingEnabled}
           orbitEnabled={orbitEnabled}
           logoVisible={logoVisible}
-          breathingOpacity={breathingOpacity}
+          breathingStrength={breathingStrength}
           textSize={textSize}
           onBreathingToggle={setBreathingEnabled}
           onOrbitToggle={setOrbitEnabled}
           onLogoVisibleToggle={setLogoVisible}
-          onOpacityChange={setBreathingOpacity}
+          onStrengthChange={setBreathingStrength}
           onTextSizeChange={setTextSize}
           showBreathingCounter={showBreathingCounter}
           onCounterToggle={setShowBreathingCounter}

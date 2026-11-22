@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
 import { SettingsCard } from './SettingsCard';
+import { STRENGTH_MAX, STRENGTH_MIN, STRENGTH_STEP, strengthLabel } from '../../lib/breathStrength';
 import { useReducedMotionNow } from './useReducedMotionNow';
 import { MOTION_REDUCED_REASON, MOTION_STOPPED_STATUS, motionButtonLabel, motionMessage } from '../../lib/motionStop';
 import { setMotionStopped, useMotionStopped } from '../../lib/deviceMemory';
@@ -36,14 +37,14 @@ interface AccessibilitySettingsProps {
   breathingEnabled: boolean;
   orbitEnabled: boolean;
   logoVisible?: boolean;
-  breathingOpacity: number;
+  breathingStrength: number;
   textSize?: number;
   showCounter?: boolean;
   cvMode?: string;
   onBreathingToggle: (enabled: boolean) => void;
   onOrbitToggle: (enabled: boolean) => void;
   onLogoVisibleToggle?: (visible: boolean) => void;
-  onOpacityChange: (opacity: number) => void;
+  onStrengthChange: (opacity: number) => void;
   onTextSizeChange?: (size: number) => void;
   onCounterToggle?: (show: boolean) => void;
   onCvModeChange?: (mode: string) => void;
@@ -56,14 +57,14 @@ export function AccessibilitySettingsContent({
   breathingEnabled,
   orbitEnabled,
   logoVisible = true,
-  breathingOpacity,
+  breathingStrength,
   textSize = 16,
   showCounter = false,
   cvMode = '',
   onBreathingToggle,
   onOrbitToggle,
   onLogoVisibleToggle,
-  onOpacityChange,
+  onStrengthChange,
   onTextSizeChange,
   onCounterToggle,
   onCvModeChange,
@@ -97,7 +98,7 @@ export function AccessibilitySettingsContent({
   const [pendingBreathingEnabled, setPendingBreathingEnabled] = useState(breathingEnabled);
   const [pendingOrbitEnabled, setPendingOrbitEnabled] = useState(orbitEnabled);
   const [pendingLogoVisible, setPendingLogoVisible] = useState(logoVisible);
-  const [pendingBreathingOpacity, setPendingBreathingOpacity] = useState(breathingOpacity);
+  const [pendingBreathingStrength, setPendingBreathingStrength] = useState(breathingStrength);
   const [pendingTextSize, setPendingTextSize] = useState(textSize);
 
   // Check if there are unsaved changes
@@ -105,7 +106,7 @@ export function AccessibilitySettingsContent({
     pendingBreathingEnabled !== breathingEnabled ||
     pendingOrbitEnabled !== orbitEnabled ||
     (onLogoVisibleToggle && pendingLogoVisible !== logoVisible) ||
-    pendingBreathingOpacity !== breathingOpacity ||
+    pendingBreathingStrength !== breathingStrength ||
     (onTextSizeChange && pendingTextSize !== textSize);
   
   // Apply all pending changes
@@ -115,7 +116,7 @@ export function AccessibilitySettingsContent({
     if (onLogoVisibleToggle) {
       onLogoVisibleToggle(pendingLogoVisible);
     }
-    onOpacityChange(pendingBreathingOpacity);
+    onStrengthChange(pendingBreathingStrength);
     if (onTextSizeChange) {
       onTextSizeChange(pendingTextSize);
     }
@@ -441,27 +442,31 @@ export function AccessibilitySettingsContent({
       </>
       ))}
 
-      {/* Opacity Control */}
-      {pendingBreathingEnabled && card('opacity', 'Breathing opacity', (
+      {/* Strength Control: 50% is the standard strength (what 100% opacity used to be); below it the ring fades, above it the ring is drawn stronger. */}
+      {pendingBreathingEnabled && card('strength', 'Breathing strength', (
         <>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="opacity-slider" className="text-sm">
-                Breathing Opacity
+              <Label htmlFor="strength-slider" className="text-sm">
+                Breathing strength
               </Label>
               <span className="text-xs text-muted-foreground">
-                {Math.round(pendingBreathingOpacity * 100)}%
+                {strengthLabel(pendingBreathingStrength)}
               </span>
             </div>
             <Slider
-              id="opacity-slider"
-              min={0.1}
-              max={1.0}
-              step={0.05}
-              value={[pendingBreathingOpacity]}
-              onValueChange={(values) => setPendingBreathingOpacity(values[0])}
+              id="strength-slider"
+              min={STRENGTH_MIN}
+              max={STRENGTH_MAX}
+              step={STRENGTH_STEP}
+              value={[pendingBreathingStrength]}
+              onValueChange={(values) => setPendingBreathingStrength(values[0])}
+              aria-describedby="strength-help"
               className="w-full"
             />
+            <p id="strength-help" className="text-xs text-muted-foreground">
+              50% is the standard strength. Below it the breathing ring fades; above it the ring is brighter, with a wider soft edge. It never moves faster or flashes.
+            </p>
           </div>
         </>
       ))}

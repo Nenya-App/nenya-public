@@ -5,6 +5,7 @@ import { useBreathColourChoice, useOrbColourChoice } from '../../lib/deviceMemor
 import { useKeptPalettes } from '../../lib/keptPalettes';
 import { breathSequence, orbVectors, resolveColours } from '../../lib/logoColours';
 import { DEFAULT_OUTER_ORBIT } from '../../lib/orbitLook';
+import { ringAlphas, ringEdgeStart } from '../../lib/breathStrength';
 
 /**
  * The breathing ring grows to the middle of the ring of outer orbs and no further: its full-size diameter is the orb ring's diameter (2 x the orbs' radius, a fraction of the logo's size,
@@ -178,6 +179,8 @@ interface ValarBreathingLogoProps {
   children: React.ReactNode;
   enabled?: boolean;
   opacity?: number; // 0.1 to 1.0
+  /** How much stronger than standard the ring is drawn, 1 to 2 (src/lib/breathStrength.ts): a brighter glow with a wider soft edge. The timing is never changed. */
+  boost?: number;
   logoSize?: number; // Size of the logo to match breathing animation to
   cycleDuration?: number; // seconds for one complete breath cycle
   technique?: BreathingTechnique | null; // overrides the default even 40/50/50/... timing shape
@@ -194,6 +197,7 @@ export function ValarBreathingLogo({
   children,
   enabled = true,
   opacity = 0.75,
+  boost = 1,
   logoSize = 200,
   cycleDuration = 10,
   technique = null,
@@ -277,6 +281,9 @@ export function ValarBreathingLogo({
   }, [enabled, start, cycleDur, totalDuration, colours, ringsEpochKey]);
 
   const activeColor = colours[activeIndex % colours.length] ?? colours[0];
+  // The ring's soft gradient for the chosen strength: at standard (boost 1) exactly the old alphas and edge; above it brighter and wider.
+  const alphas = ringAlphas({ opacity, boost });
+  const ringEdge = ringEdgeStart({ opacity, boost });
 
   // Plain CSS animation instead of Motion's JS-driven `animate` -- CSS's
   // animation-play-state genuinely freezes this on pause, where Motion's
@@ -350,7 +357,7 @@ export function ValarBreathingLogo({
               top: (logoSize * (1 - RING_END_FRACTION)) / 2,
               // Use closest-side so 100% is at the circle edge, then keep colors fully transparent past that
               // This prevents square corner artifacts when the box is scaled/transformed
-              background: `radial-gradient(circle closest-side, transparent 0%, transparent 30%, ${hexToRgba(activeColor, opacity * 0.08)} 50%, ${hexToRgba(activeColor, opacity * 0.15)} 70%, ${hexToRgba(activeColor, opacity * 0.25)} 90%, ${hexToRgba(activeColor, opacity * 0.4)} 99%, transparent 100%)`,
+              background: `radial-gradient(circle closest-side, transparent 0%, transparent ${ringEdge}%, ${hexToRgba(activeColor, alphas[0])} 50%, ${hexToRgba(activeColor, alphas[1])} 70%, ${hexToRgba(activeColor, alphas[2])} 90%, ${hexToRgba(activeColor, alphas[3])} 99%, transparent 100%)`,
               borderRadius: '50%',
               zIndex: 1,
               animation: `${ringAnimName} ${cycleDur}s linear infinite`,
