@@ -24,7 +24,7 @@ ok('Share still shares only the site, never anything entered', /const SITE_URL =
 // Every About page scrolls inside the app's fixed-height content area: its root is a scroll container (a root of "min-h-screen" cannot scroll there, which is how Where We Stand and How the Checks Work were stuck).
 import { readdirSync } from 'node:fs';
 const aboutDir = 'src/app/components/about';
-const ROOT_EXEMPT = new Set(['AboutMenu.tsx', 'Mellonamin.tsx', 'PantheonOfNeeds.tsx']); // the menu scrolls its own inner area; the other two are parts of a page that wraps them
+const ROOT_EXEMPT = new Set(['AboutMenu.tsx', 'Mellonamin.tsx', 'PantheonOfNeeds.tsx', 'AboutReferences.tsx']); // the menu scrolls its own inner area; the next two are parts of a page that wraps them; the last is the shared citation pieces
 const unscrollable = readdirSync(join(root, aboutDir)).filter((f) => f.endsWith('.tsx') && !ROOT_EXEMPT.has(f)).filter((f) => !/className="size-full overflow-(auto|y-auto) scroll-container/.test(src(`${aboutDir}/${f}`)));
 ok('every About page has a root that scrolls', unscrollable.length === 0, unscrollable.join(', '));
 ok('no About page root is "min-h-screen" (it cannot scroll inside the app\'s fixed-height area)', readdirSync(join(root, aboutDir)).filter((f) => f.endsWith('.tsx')).every((f) => !/return \(\s*<div className="min-h-screen/.test(src(`${aboutDir}/${f}`))));
