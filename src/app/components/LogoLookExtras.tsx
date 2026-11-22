@@ -31,7 +31,7 @@ function useSwayBlocked(breathingEnabled: boolean): string {
   return reason;
 }
 
-/** The sway switch. Off by default. It can be turned on only where motion is allowed; where it is not, the switch is off and says why. */
+/** The sway switch. On by default (owner, 2026-11-22), and still only where motion is allowed. It can be turned on only where motion is allowed; where it is not, the switch is off and says why. */
 export function LeafSwaySwitch({ breathingEnabled, onMessage }: { breathingEnabled: boolean; onMessage: (m: string) => void }) {
   const wish = useLeafSway();
   const blocked = useSwayBlocked(breathingEnabled);
@@ -51,7 +51,7 @@ export function LeafSwaySwitch({ breathingEnabled, onMessage }: { breathingEnabl
         />
       </div>
       <p id="leaf-sway-help" className="text-xs text-muted-foreground">
-        The leaves rock very slightly, as in a gentle breeze, about one degree and slowly (a full rock takes 18 seconds). Off by default.
+        The leaves rock very slightly, as in a gentle breeze, about one degree and slowly (a full rock takes 18 seconds). On by default.
         {blocked ? ` ${blocked}` : ''}
       </p>
     </div>

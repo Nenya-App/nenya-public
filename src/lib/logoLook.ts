@@ -43,7 +43,7 @@ export const gemChoiceMessage = (c: GemSidesChoice): string => (c === 'match' ? 
 /** The glow styles. 'own': the orb's own current colour. 'palette': the rim fades into another colour from the orb's palette. 'random': colours from every palette mixed. 'shared': the three large gold blurs the site used before (heavier to draw). */
 export const HALO_STYLES = ['own', 'palette', 'random', 'shared'] as const;
 export type HaloStyle = (typeof HALO_STYLES)[number];
-export const DEFAULT_HALO_STYLE: HaloStyle = 'own';
+export const DEFAULT_HALO_STYLE: HaloStyle = 'palette';
 /** A halo's width as a multiple of its orb's width: soft is the first design, 5 the owner's choice (2026-11-20). */
 export const HALO_WIDTHS = [3.4, 5, 7] as const;
 export const DEFAULT_HALO_WIDTH = 5;
@@ -75,8 +75,9 @@ export const DEFAULT_PREVIEW_SIZE = 220;
 export const PREVIEW_PCT_MIN = 50;
 export const PREVIEW_PCT_MAX = 200;
 export const PREVIEW_PCT_STEP = 10;
-export const DEFAULT_PREVIEW_PCT = 100;
-/** A percentage the panel may use: rounded to a step and kept between the limits; anything unreadable becomes 100. */
+/** The preview's default size (owner, 2026-11-22: what she has set, about 120%). 100% is the standard 220 px. */
+export const DEFAULT_PREVIEW_PCT = 120;
+/** A percentage the panel may use: rounded to a step and kept between the limits; anything unreadable becomes the default (120%). */
 export const snapPreviewPercent = (v: unknown): number =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(PREVIEW_PCT_MAX, Math.max(PREVIEW_PCT_MIN, Math.round(v / PREVIEW_PCT_STEP) * PREVIEW_PCT_STEP)) : DEFAULT_PREVIEW_PCT;
 /** A size the panel kept in pixels before it was a percentage (120 to 400), as a percentage of the standard 220 px (so 220 px is 100%, 400 px is 180%). Unreadable or out of range is 100%. */
@@ -119,3 +120,16 @@ export const innerOrbMessage = (m: InnerOrbMode): string => `The inner lights ar
 export const innerOrbsDrawn = (m: InnerOrbMode): boolean => m !== 'hidden';
 /** Whether the inner lights (and the light the gem takes from their ring) turn and rise and fade. */
 export const innerOrbsMove = (m: InnerOrbMode): boolean => m === 'moving';
+
+// What a visitor who has chosen nothing sees (owner, 2026-11-22: "set the defaults to what is currently set"). These are the logo and animation defaults only; theme, text size,
+// colour-blind mode, sound, the breathing pace and opacity are personal or access settings and are not part of this. A stored choice always wins over a default, and "never chose" is
+// told from "chose Original" (the colour choices are stored as 'original' when chosen). The safety rules still decide what actually runs: reduced motion, less data, a light device
+// and pinch zoom hold the motion still whatever the defaults say.
+export const DEFAULT_LEAF_SWAY = true;
+export const DEFAULT_KALEIDOSCOPE_LOOK = 'lively' as const;
+export const DEFAULT_KALEIDOSCOPE_BREATH = true;
+/** The gem's kaleidoscope is on by default except on a light device (the site's "lite" tier), where it stays off until the visitor turns it on. */
+export const defaultKaleidoscopeOn = (tier: 'lite' | 'standard' | 'capable'): boolean => tier !== 'lite';
+/** The breath ring's and the orbs' default colours: the Night set. 'original' is one tap away in Settings. */
+export const DEFAULT_BREATH_COLOURS = 'preset:night';
+export const DEFAULT_ORB_COLOURS = 'preset:night';

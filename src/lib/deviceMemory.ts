@@ -1,8 +1,9 @@
 import { isAllowedTechnique } from './breathCustom.ts';
 import { DEFAULT_ARRANGEMENT } from './breathArrangements.ts';
-import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_INNER_ORB_MODE, DEFAULT_PREVIEW_PCT, GEM_SIDE_PRESETS, INNER_ORB_MODES, snapInnerOrbMode, type InnerOrbMode, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, percentFromOldPixels, snapLeaves, snapPreviewPercent, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
+import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_INNER_ORB_MODE, DEFAULT_PREVIEW_PCT, DEFAULT_BREATH_COLOURS, DEFAULT_ORB_COLOURS, DEFAULT_LEAF_SWAY, DEFAULT_KALEIDOSCOPE_LOOK, DEFAULT_KALEIDOSCOPE_BREATH, defaultKaleidoscopeOn, GEM_SIDE_PRESETS, INNER_ORB_MODES, snapInnerOrbMode, type InnerOrbMode, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, percentFromOldPixels, snapLeaves, snapPreviewPercent, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
 import { snapColourChoice } from './logoColours.ts';
 import { clearKeptPalettes } from './keptPalettes.ts';
+import { deviceProfile } from './deviceProfile.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 // Everything Nenya may keep on a visitor's device lives behind this one file, so there is a single
@@ -214,11 +215,11 @@ export function useBreathingTones(): boolean {
   return on;
 }
 
-// The gem's kaleidoscope: one visitor setting (the switch is in the accessibility panel, the gem reads it), off until switched on, saved only while "Remember on this device" is on and erased by
+// The gem's kaleidoscope: one visitor setting (the switch is in the accessibility panel, the gem reads it), on unless the visitor chose otherwise (owner, 2026-11-22; off by default on a light device), saved only while "Remember on this device" is on and erased by
 // "Forget me" and Emergency Exit like every other saved setting. The stone holds still when the device asks for reduced motion, whatever this says.
 let kaleidoOn: boolean | null = null;
 const kaleidoListeners = new Set<() => void>();
-const getKaleido = (): boolean => (kaleidoOn ??= loadPrefs().gemKaleidoscope === true);
+const getKaleido = (): boolean => (kaleidoOn ??= loadPrefs().gemKaleidoscope ?? defaultKaleidoscopeOn(deviceProfile().tier));
 export const getGemKaleidoscope = getKaleido;
 export function setGemKaleidoscope(on: boolean): void {
   kaleidoOn = on;
@@ -230,7 +231,7 @@ const subscribeKaleido = (l: () => void) => {
   return () => kaleidoListeners.delete(l);
 };
 export function useGemKaleidoscope(): boolean {
-  const on = useSyncExternalStore(subscribeKaleido, getKaleido, () => false);
+  const on = useSyncExternalStore(subscribeKaleido, getKaleido, getKaleido);
   const remembering = useRemembering();
   useEffect(() => {
     if (remembering) savePref('gemKaleidoscope', on);
@@ -264,10 +265,10 @@ function sharedPref<T>(key: 'gemKaleidoscopeLook' | 'gemKaleidoscopeBreath', rea
   };
   return { get, set, use };
 }
-const kaleidoLook = sharedPref<KaleidoscopeLookChoice>('gemKaleidoscopeLook', () => (loadPrefs().gemKaleidoscopeLook as KaleidoscopeLookChoice | undefined) ?? 'gentle', 'gentle');
+const kaleidoLook = sharedPref<KaleidoscopeLookChoice>('gemKaleidoscopeLook', () => (loadPrefs().gemKaleidoscopeLook as KaleidoscopeLookChoice | undefined) ?? DEFAULT_KALEIDOSCOPE_LOOK, DEFAULT_KALEIDOSCOPE_LOOK);
 export const setGemKaleidoscopeLook = kaleidoLook.set;
 export const useGemKaleidoscopeLook = kaleidoLook.use;
-const kaleidoBreath = sharedPref<boolean>('gemKaleidoscopeBreath', () => loadPrefs().gemKaleidoscopeBreath === true, false);
+const kaleidoBreath = sharedPref<boolean>('gemKaleidoscopeBreath', () => loadPrefs().gemKaleidoscopeBreath ?? DEFAULT_KALEIDOSCOPE_BREATH, DEFAULT_KALEIDOSCOPE_BREATH);
 export const setGemKaleidoscopeBreath = kaleidoBreath.set;
 export const useGemKaleidoscopeBreath = kaleidoBreath.use;
 
@@ -453,14 +454,14 @@ export function setBreathPreviewPercent(n: number): void {
 }
 export const useBreathPreviewPercent = (): number => useSyncExternalStore(subscribeLook, getPreviewPercent, () => DEFAULT_PREVIEW_PCT);
 
-// The leaves' sway and the colour choices (src/lib/logoColours.ts): the same rules as the look above. Sway is off, and the colours are the original, unless the visitor chose.
+// The leaves' sway and the colour choices (src/lib/logoColours.ts): the same rules as the look above. Sway is on and the colours are the Night set unless the visitor chose otherwise (owner, 2026-11-22; src/lib/logoLook.ts).
 // The choice is all that is kept: a palette the visitor made is held in memory for the visit only (src/lib/keptPalettes.ts), so if it is gone next time the choice reads as the original.
 let swayNow: boolean | null = null;
 let breathColoursNow: string | null = null;
 let orbColoursNow: string | null = null;
-const getSway = (): boolean => (swayNow ??= loadPrefs().leafSway === true);
-const getBreathColours = (): string => (breathColoursNow ??= snapColourChoice(loadPrefs().breathColours));
-const getOrbColours = (): string => (orbColoursNow ??= snapColourChoice(loadPrefs().orbColours));
+const getSway = (): boolean => (swayNow ??= loadPrefs().leafSway ?? DEFAULT_LEAF_SWAY);
+const getBreathColours = (): string => (breathColoursNow ??= loadPrefs().breathColours === undefined ? DEFAULT_BREATH_COLOURS : snapColourChoice(loadPrefs().breathColours));
+const getOrbColours = (): string => (orbColoursNow ??= loadPrefs().orbColours === undefined ? DEFAULT_ORB_COLOURS : snapColourChoice(loadPrefs().orbColours));
 export const getLeafSway = getSway;
 export const getBreathColourChoice = getBreathColours;
 export const getOrbColourChoice = getOrbColours;
@@ -479,9 +480,9 @@ export function setOrbColourChoice(v: string): void {
   savePref('orbColours', orbColoursNow);
   lookListeners.forEach((l) => l());
 }
-export const useLeafSway = (): boolean => useSyncExternalStore(subscribeLook, getSway, () => false);
-export const useBreathColourChoice = (): string => useSyncExternalStore(subscribeLook, getBreathColours, () => 'original');
-export const useOrbColourChoice = (): string => useSyncExternalStore(subscribeLook, getOrbColours, () => 'original');
+export const useLeafSway = (): boolean => useSyncExternalStore(subscribeLook, getSway, () => DEFAULT_LEAF_SWAY);
+export const useBreathColourChoice = (): string => useSyncExternalStore(subscribeLook, getBreathColours, () => DEFAULT_BREATH_COLOURS);
+export const useOrbColourChoice = (): string => useSyncExternalStore(subscribeLook, getOrbColours, () => DEFAULT_ORB_COLOURS);
 
 // The inner orbs behind the gem: moving unless the visitor chose otherwise; the same rules as the look above.
 let innerOrbsNow: InnerOrbMode | null = null;

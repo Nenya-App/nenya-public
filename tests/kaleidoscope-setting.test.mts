@@ -1,10 +1,13 @@
-// The gem kaleidoscope visitor setting (src/lib/deviceMemory.ts): off by default, saved only while remembering, validated, erased with the rest.
+// The gem kaleidoscope visitor setting (src/lib/deviceMemory.ts): on by default except on a light device, saved only while remembering, validated, erased with the rest.
 const store: Record<string, string> = {};
 (globalThis as any).localStorage = { get length() { return Object.keys(store).length; }, key: (i: number) => Object.keys(store)[i] ?? null, getItem: (k: string) => (k in store ? store[k] : null), setItem: (k: string, v: string) => { store[k] = String(v); }, removeItem: (k: string) => { delete store[k]; } };
 (globalThis as any).window = { addEventListener() {}, removeEventListener() {} };
 import { ok } from './helpers.mts';
 const dm = await import('../src/lib/deviceMemory.ts');
-ok('the kaleidoscope is off by default', dm.getGemKaleidoscope() === false);
+const { defaultKaleidoscopeOn } = await import('../src/lib/logoLook.ts');
+const { deviceProfile } = await import('../src/lib/deviceProfile.ts');
+ok('the kaleidoscope is on by default, except on a light device (this machine\'s tier decides which)', dm.getGemKaleidoscope() === defaultKaleidoscopeOn(deviceProfile().tier));
+ok('the default rule: on for standard and capable devices, off for a light one', defaultKaleidoscopeOn('standard') && defaultKaleidoscopeOn('capable') && !defaultKaleidoscopeOn('lite'));
 dm.setGemKaleidoscope(true);
 ok('switching it on is not saved while the device is not remembering', dm.getGemKaleidoscope() === true && store['nenya.prefs'] === undefined);
 dm.setRemembering(true);

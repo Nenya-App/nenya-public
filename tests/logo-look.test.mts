@@ -17,9 +17,9 @@ ok('without the live gem the stone is the sprite\'s hexagon', effectiveGemSides(
 
 // The outer orbs' glow: style, width and the random colours.
 import { DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, HALO_STYLES, HALO_WIDTHS, haloStyleLabel, randomHaloColors, snapHaloSeed, snapHaloStyle, snapHaloWidth } from '../src/lib/logoLook.ts';
-ok('the glow defaults to each orb\'s own colour at five times the orb\'s width', DEFAULT_HALO_STYLE === 'own' && DEFAULT_HALO_WIDTH === 5);
+ok('the glow defaults to the orb\'s palette (owner, 2026-11-22) at five times the orb\'s width', DEFAULT_HALO_STYLE === 'palette' && DEFAULT_HALO_WIDTH === 5);
 ok('the width presets are 3.4, 5 and 7, and the default is one of them', HALO_WIDTHS.join() === '3.4,5,7' && (HALO_WIDTHS as readonly number[]).includes(DEFAULT_HALO_WIDTH));
-ok('a glow style that is not offered becomes the default', snapHaloStyle('neon') === 'own' && snapHaloStyle(null) === 'own' && HALO_STYLES.every((s) => snapHaloStyle(s) === s));
+ok('a glow style that is not offered becomes the default', snapHaloStyle('neon') === 'palette' && snapHaloStyle(null) === 'palette' && HALO_STYLES.every((s) => snapHaloStyle(s) === s));
 ok('a width snaps to the nearest preset, and anything unreadable becomes the default', snapHaloWidth(4.5) === 5 && snapHaloWidth(3) === 3.4 && snapHaloWidth(99) === 7 && snapHaloWidth('5') === 5 && snapHaloWidth(NaN) === 5);
 ok('a seed is a whole number or it becomes 1', snapHaloSeed(42) === 42 && snapHaloSeed(1.5) === 1 && snapHaloSeed(-1) === 1 && snapHaloSeed('x') === 1);
 const sample = ['#111111', '#222222', '#333333', '#444444', '#555555', '#666666', '#777777', '#888888'];
@@ -30,9 +30,9 @@ ok('every style has a label', HALO_STYLES.every((s) => haloStyleLabel(s).length 
 
 // The preview's size in the breathing panel is a percentage of the standard preview, held to what the device and the screen can take.
 import { DEFAULT_PREVIEW_PCT, DEFAULT_PREVIEW_SIZE, PREVIEW_PCT_MAX, PREVIEW_PCT_MIN, PREVIEW_PCT_STEP, availablePreviewPx, effectivePreviewPercent, percentFromOldPixels, previewCapForTier, previewMaxPercent, previewPixels, snapPreviewPercent } from '../src/lib/logoLook.ts';
-ok('the preview size runs 50% to 200% in steps of 10%, and 100% is the standard 220 px', PREVIEW_PCT_MIN === 50 && PREVIEW_PCT_MAX === 200 && PREVIEW_PCT_STEP === 10 && DEFAULT_PREVIEW_PCT === 100 && DEFAULT_PREVIEW_SIZE === 220 && previewPixels(100, 'capable', 1600) === 220 && previewPixels(200, 'capable', 1600) === 440 && previewPixels(50, 'capable', 1600) === 110);
+ok('the preview size runs 50% to 200% in steps of 10%, the default is 120% (what the owner has set), and 100% is the standard 220 px', PREVIEW_PCT_MIN === 50 && PREVIEW_PCT_MAX === 200 && PREVIEW_PCT_STEP === 10 && (DEFAULT_PREVIEW_PCT as number) === 120 && DEFAULT_PREVIEW_SIZE === 220 && previewPixels(100, 'capable', 1600) === 220 && previewPixels(200, 'capable', 1600) === 440 && previewPixels(50, 'capable', 1600) === 110);
 ok('a percentage is rounded to a step and kept between the limits', snapPreviewPercent(133) === 130 && snapPreviewPercent(5) === 50 && snapPreviewPercent(999) === 200 && snapPreviewPercent(145) === 150);
-ok('an unreadable percentage becomes 100%', snapPreviewPercent('big') === 100 && snapPreviewPercent(NaN) === 100 && snapPreviewPercent(null) === 100 && snapPreviewPercent(undefined) === 100);
+ok('an unreadable percentage becomes the default, 120%', snapPreviewPercent('big') === 120 && snapPreviewPercent(NaN) === 120 && snapPreviewPercent(null) === 120 && snapPreviewPercent(undefined) === 120);
 ok('device caps: a light device 125%, an ordinary one 175%, a capable one 200%', previewCapForTier('lite') === 125 && previewCapForTier('standard') === 175 && previewCapForTier('capable') === 200);
 ok('on a wide screen the cap is the device\'s', previewMaxPercent('lite', 1600) === 125 && previewMaxPercent('standard', 1600) === 175 && previewMaxPercent('capable', 1600) === 200);
 ok('the maximum is a multiple of 10 where it can be, at most the cap, and never below 50%', [320, 375, 414, 600, 768, 900, 1024, 1440, 2560].every((w) => (['lite', 'standard', 'capable'] as const).every((t) => { const m = previewMaxPercent(t, w); return m >= 50 && m <= previewCapForTier(t) && (m % 10 === 0 || m === previewCapForTier(t)); })));
@@ -41,7 +41,7 @@ ok('the room grows with the screen', availablePreviewPx(375) < availablePreviewP
 ok('a stored choice above this device\'s maximum is used at the maximum, and the choice itself is untouched', effectivePreviewPercent(200, 'lite', 1600) === 125 && snapPreviewPercent(200) === 200);
 ok('a stored choice below the maximum is used as it is', effectivePreviewPercent(80, 'standard', 1600) === 80);
 ok('a size kept in pixels by the older version is converted: 220 px is 100%, 120 px about 50%, 400 px 180%', percentFromOldPixels(220) === 100 && percentFromOldPixels(120) === 50 && percentFromOldPixels(400) === 180 && percentFromOldPixels(300) === 140);
-ok('an unreadable or out-of-range old size becomes 100%', percentFromOldPixels(5000) === 100 && percentFromOldPixels(10) === 100 && percentFromOldPixels('x') === 100 && percentFromOldPixels(NaN) === 100);
+ok('an unreadable or out-of-range old size becomes the default, 120%', percentFromOldPixels(5000) === 120 && percentFromOldPixels(10) === 120 && percentFromOldPixels('x') === 120 && percentFromOldPixels(NaN) === 120);
 
 import { readFileSync } from 'node:fs';
 const popout = readFileSync('src/app/components/BreathingPopout.tsx', 'utf8');

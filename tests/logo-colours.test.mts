@@ -77,7 +77,7 @@ ok('no claim of benefit: the names say how the colours look, not what they do fo
 // Where the choice is kept and how the logo reads it (source checks).
 const mem = readFileSync('src/lib/deviceMemory.ts', 'utf8');
 ok('storage: the sway and both colour choices are display settings, validated on load, and only the choice (never a palette\'s colours) is written', /leafSway: isBool/.test(mem) && /breathColours: \(v\) => typeof v === 'string' && snapColourChoice\(v\) === v/.test(mem) && /orbColours: \(v\) => typeof v === 'string' && snapColourChoice\(v\) === v/.test(mem) && !/savePref\('(?:keptPalettes|palettes)'/.test(mem));
-ok('storage: the sway is off and the colours are the original unless chosen', /loadPrefs\(\)\.leafSway === true/.test(mem) && /snapColourChoice\(loadPrefs\(\)\.breathColours\)/.test(mem) && /snapColourChoice\(loadPrefs\(\)\.orbColours\)/.test(mem));
+ok('storage: sway on and the Night colours unless chosen; a stored choice (Original included) wins over the default', /loadPrefs\(\)\.leafSway \?\? DEFAULT_LEAF_SWAY/.test(mem) && /loadPrefs\(\)\.breathColours === undefined \? DEFAULT_BREATH_COLOURS : snapColourChoice\(loadPrefs\(\)\.breathColours\)/.test(mem) && /loadPrefs\(\)\.orbColours === undefined \? DEFAULT_ORB_COLOURS : snapColourChoice\(loadPrefs\(\)\.orbColours\)/.test(mem));
 ok('storage: "Forget me" and Emergency Exit clear the kept palettes held in memory', /clearKeptPalettes\(\);\s*emit\(\);/.test(mem));
 const kp = readFileSync('src/lib/keptPalettes.ts', 'utf8').replace(/\/\/.*$/gm, '');
 ok('the kept palettes are held in memory only: no storage, no network', !/localStorage|sessionStorage|indexedDB|fetch\(|XMLHttpRequest|sendBeacon|document\.cookie/.test(kp));

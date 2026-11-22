@@ -191,7 +191,7 @@ export function AccessibilitySettingsContent({
           />
         </div>
 
-        {/* Gem kaleidoscope: the inside of the stone slowly re-cuts itself. Off by default; it takes effect at once and holds still when the device asks for reduced motion. */}
+        {/* Gem kaleidoscope: the inside of the stone slowly re-cuts itself. On by default (not on a light device); it takes effect at once and holds still when the device asks for reduced motion. */}
         {!compact && (
           <div className="space-y-1">
             <div className="flex items-center justify-between">
@@ -204,7 +204,7 @@ export function AccessibilitySettingsContent({
               <Switch id="kaleidoscope-toggle" checked={gemKaleidoscope} onCheckedChange={setGemKaleidoscope} aria-describedby="kaleidoscope-help" />
             </div>
             <p id="kaleidoscope-help" className="pl-6 text-xs text-muted-foreground">
-              The inside of the gem slowly re-cuts itself. Off by default. It holds still if your device asks for reduced motion.
+              The inside of the gem slowly re-cuts itself. On by default (off on a device that draws less). It holds still if your device asks for reduced motion.
             </p>
             {/* Shown only while it is on: the look, and whether it moves with the breath (owner, 2026-11-15). */}
             {gemKaleidoscope && (
@@ -333,7 +333,7 @@ export function AccessibilitySettingsContent({
                 ))}
               </fieldset>
             )}
-            {/* The leaves' gentle sway (off by default; the leaves are drawn with the Palette Orbit). */}
+            {/* The leaves' gentle sway (on by default; the leaves are drawn with the Palette Orbit). */}
             {orbitEnabled && <LeafSwaySwitch breathingEnabled={breathingEnabled} onMessage={setLookMessage} />}
             {/* The colours of the breath ring (and the gem's tint that follows it), and of the sixteen orbs. */}
             {breathingEnabled && (

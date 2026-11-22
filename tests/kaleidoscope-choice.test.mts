@@ -2,6 +2,7 @@
 // still for reduced motion; with breathing on, the pattern swells on the in-breath and settles on the out-breath, in whole breaths.
 import { readFileSync } from 'node:fs';
 import { KALEIDOSCOPE_PRESETS, VISITOR_LOOKS, breathDepth, breathPeriodS, isVisitorLook } from '../src/lib/kaleidoscope.ts';
+import { DEFAULT_KALEIDOSCOPE_BREATH, DEFAULT_KALEIDOSCOPE_LOOK } from '../src/lib/logoLook.ts';
 import { ok } from './helpers.mts';
 
 ok('four looks in order of movement, each a real preset, Gentle among them', VISITOR_LOOKS.map((l) => l.id).join() === 'calm,gentle,lively,full' && VISITOR_LOOKS.every((l) => l.id in KALEIDOSCOPE_PRESETS));
@@ -13,7 +14,7 @@ ok('a very fast pace still gives at least one breath; no pace leaves the look un
 
 const mem = readFileSync('src/lib/deviceMemory.ts', 'utf8');
 ok('both choices are saved only while remembering, and checked when read back', /gemKaleidoscopeLook: \(v\) => v === 'calm' \|\| v === 'gentle' \|\| v === 'lively' \|\| v === 'full'/.test(mem) && /gemKaleidoscopeBreath: isBool/.test(mem) && /function savePref[\s\S]{0,80}if \(!isRemembering\(\)\) return;/.test(mem));
-ok('the defaults are Gentle and not following the breath', /'gemKaleidoscopeLook', [^\n]*\?\? 'gentle', 'gentle'\);/.test(mem) && /loadPrefs\(\)\.gemKaleidoscopeBreath === true, false\)/.test(mem));
+ok('the defaults are Lively and following the breath (owner, 2026-11-22: what she has set), and a stored choice wins', /'gemKaleidoscopeLook', [^\n]*\?\? DEFAULT_KALEIDOSCOPE_LOOK, DEFAULT_KALEIDOSCOPE_LOOK\);/.test(mem) && /loadPrefs\(\)\.gemKaleidoscopeBreath \?\? DEFAULT_KALEIDOSCOPE_BREATH, DEFAULT_KALEIDOSCOPE_BREATH\)/.test(mem) && DEFAULT_KALEIDOSCOPE_LOOK === 'lively' && DEFAULT_KALEIDOSCOPE_BREATH === true);
 
 const gem = readFileSync('src/app/components/SpectralGem.tsx', 'utf8');
 ok('the gem uses the visitor\'s look only while their switch is on', /\.\.\.\(visitorKaleido \? KALEIDOSCOPE_PRESETS\[visitorLook\] : \{\}\)/.test(gem));

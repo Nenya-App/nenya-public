@@ -3,6 +3,22 @@
 Status (2026-11-22): built and on. The leaf count shows in the settings (`LEAF_SETTING_AVAILABLE = true` in `src/lib/logoLook.ts`) now that the
 mallorn leaves are in and the ring follows the count; the default is six leaves with an eight-sided gem (the owner's choice, 2026-11-20). Plan and reasons: [eight-sided-gem-scope.md](eight-sided-gem-scope.md), Part 2.
 
+## Defaults (2026-11-22)
+Owner, 2026-11-22: "set the defaults to what is currently set." For a visitor who has set nothing, the logo and animation settings now start as follows (old default -> new):
+| Setting | Old | New |
+|---|---|---|
+| Leaves sway gently (`leafSway`) | off | on |
+| Gem kaleidoscope (`gemKaleidoscope`) | off | on (off on a light device) |
+| Kaleidoscope look (`gemKaleidoscopeLook`) | Gentle | Lively |
+| Kaleidoscope moves with the breath (`gemKaleidoscopeBreath`) | off | on |
+| Breathing colours (`breathColours`) | Original | Night |
+| Orb colours (`orbColours`) | Original | Night |
+| Outer glow (`orbHalo`) | Own colour | Orb's palette |
+| Preview size (`previewPercent`) | 100% | 120% (also what Reset returns to) |
+| Inner lights (`innerOrbs`), leaves (`logoLeaves`), gem sides (`gemSides`) | Moving, 6, 8 | the same |
+Not changed: theme, text size, colour-blind mode, breathing sound and tones, the breathing pace and opacity (personal and access settings).
+Rules that still hold: a stored value always wins over a default, and "never chose" is told from "chose Original" (a chosen Original is stored as `'original'` and stays Original); Original is one tap away in both colour groups; sway, the kaleidoscope, the lights and the rest of the motion stay still under reduced motion, less data, a light device and pinch zoom (the kaleidoscope's default is off on a light device, and sway needs the checks in `swayAllowed`). Code: the `DEFAULT_*` constants at the end of `src/lib/logoLook.ts`, read in `src/lib/deviceMemory.ts`; tests in `tests/logo-look-storage.test.mts`.
+
 ## What a visitor can change
 Under **Logo look** in the accessibility panel (`AccessibilitySettings.tsx`), as radio buttons (no sliders), applied at once with no
 motion, and announced politely ("The gem now has 8 sides."). Targets are at least 44 px.
@@ -29,7 +45,7 @@ Logo look, **Inner lights behind the gem**, three radio choices, stored as `inne
 - **Hidden**: not drawn. The gem keeps its own light.
 - **Still**: drawn, nothing turns, rises or fades (they rest at the middle of their range). Their colours still change slowly. The gem's light from them holds at the same level and stops circling.
 - **Moving**: **the lights follow the gem's own motion settings** (`src/lib/lightMotion.ts`, a pure mapping, tested in `tests/light-motion.test.mts`):
-  - *The gem's kaleidoscope switch* (Settings, Animation): off, the lights hold still; on, they move. (It is off by default, so with Moving chosen the lights are still until the gem's kaleidoscope is turned on.)
+  - *The gem's kaleidoscope switch* (Settings, Animation): off, the lights hold still; on, they move. (It is on by default since 2026-11-22, except on a light device, so with Moving chosen the lights move with the gem unless the visitor turned the kaleidoscope off.)
   - *The gem's look* (Calm, Gentle, Lively, Full motion): the gem turns its star and pavilion facets on half of the look's slowest period (150, 100, 60 and 45 seconds). The ring turns on the same period and the same way: with a sway (Calm 6, Gentle 12, Lively 25 degrees, times turn and depth) it swings back and forth with a sine and comes home; with Full motion (no sway) it turns on steadily by one repeat of the cut (360 divided by the gem's sides, times depth) every half period. Each light also rises and fades on that period, a little out of step with the next (4% longer each). How much they dim and shrink is the gem's own measure of how far its star pattern moves (depth times pattern): brightness 1 - 0.5 x that, size 1 - 0.25 x that. Gentle: 79% to 100% bright, 90% to 100% in size. Calm: 88%, 94%. Lively: 60%, 80%. Full motion: 70%, 85%.
   - *"Move with my breathing"*: when it is on, the lights brighten and swell as the breath goes in, hold through the hold, and dim and settle as it goes out, on the shared breath clock (CSS keyframes, `lightBreathCss`), instead of their own wave.
   - *Reduced motion*: nothing moves.
