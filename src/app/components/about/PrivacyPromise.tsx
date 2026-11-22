@@ -46,7 +46,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                 Rejecting Surveillance Capitalism
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Emotional safety requires absolute trust. You cannot be vulnerable if you fear your reflections might be data-mined, sold, or leaked. The prevailing business model of "Surveillance Capitalism"—which seeks to create an <strong>all-seeing eye</strong> that monitors and controls every aspect of human behavior for maximum profit—is fundamentally incompatible with building authentic well-being. Our architecture is a direct countermeasure to this extractive practice.
+                Emotional safety requires trust. You cannot be vulnerable if you fear your reflections might be data-mined, sold, or leaked. The prevailing business model of "Surveillance Capitalism"—which seeks to create an <strong>all-seeing eye</strong> that monitors and controls every aspect of human behavior for maximum profit—is fundamentally incompatible with building authentic well-being. Our architecture is a direct countermeasure to this extractive practice.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
                 Technology built to watch and to control often promises connection and convenience while taking something in return. Our name—<strong>Nenya</strong>—points the other way: a place to rest, built to protect and never to rule.
