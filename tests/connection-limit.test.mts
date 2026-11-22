@@ -1,5 +1,5 @@
 // The per-connection allowance: a one-way daily code per connection, a count of turns under it, and cleanup.
-import { connectionKey, connectionCode, recordKey, allowanceReached, addConnectionTurn, cleanupConnectionRecords, turnsFromEnv, DEFAULT_TURNS_PER_CONNECTION } from '../src/lib/connectionLimit.ts';
+import { connectionKey, connectionCode, recordKey, allowanceReached, addConnectionTurn, cleanupConnectionRecords, CODE_PREFIXES, turnsFromEnv, DEFAULT_TURNS_PER_CONNECTION } from '../src/lib/connectionLimit.ts';
 import { capDay } from '../src/lib/dailyCap.ts';
 import { ok } from './helpers.mts';
 
@@ -65,5 +65,16 @@ ok('cleanup deletes every connection record from before today', removed === 2 &&
 ok("it keeps today's records", cs.keys().includes('c/2026-11-07/cccc'));
 ok('it never touches the plain totals or the daily counter', cs.keys().includes('m/2026-11-05/coach.turn.sent') && cs.keys().includes('daily-count'));
 ok('running it again deletes nothing more', (await cleanupConnectionRecords(cs, new Date('2026-11-07T14:00:00Z'))) === 0);
+
+// The palette button's (p/) and the word look-up's (w/) daily codes are cleaned the same way; their daily totals stay.
+const ps = makeStore();
+ps.put('p/2026-11-05/aaaa'); ps.put('p/2026-11-06/bbbb'); ps.put('p/2026-11-07/cccc');
+ps.put('w/2026-11-05/dddd'); ps.put('w/2026-11-06/eeee'); ps.put('w/2026-11-07/ffff');
+ps.put('p-total/2026-11-05', '4'); ps.put('w-total/2026-11-05', '7'); ps.put('c/2026-11-05/gggg'); ps.put('m/2026-11-05/coach.turn.sent', '9');
+const removedPW = await cleanupConnectionRecords(ps, new Date('2026-11-07T14:00:00Z'));
+ok('cleanup also deletes palette (p/) and word look-up (w/) codes from before today', removedPW === 5 && ['p/2026-11-05/aaaa', 'p/2026-11-06/bbbb', 'w/2026-11-05/dddd', 'w/2026-11-06/eeee', 'c/2026-11-05/gggg'].every((k) => !ps.keys().includes(k)));
+ok("it keeps today's palette and look-up codes", ps.keys().includes('p/2026-11-07/cccc') && ps.keys().includes('w/2026-11-07/ffff'));
+ok('it keeps the aggregate daily totals p-total/ and w-total/ and the plain totals', ps.keys().includes('p-total/2026-11-05') && ps.keys().includes('w-total/2026-11-05') && ps.keys().includes('m/2026-11-05/coach.turn.sent'));
+ok('the prefixes it cleans are exactly c/, p/ and w/', CODE_PREFIXES.join(',') === 'c/,p/,w/');
 
 ok('turns per connection: default 10, parsed from the environment', DEFAULT_TURNS_PER_CONNECTION === 10 && turnsFromEnv(undefined) === 10 && turnsFromEnv('4') === 4 && turnsFromEnv('0') === 10 && turnsFromEnv('x') === 10 && turnsFromEnv('2.5') === 10);
