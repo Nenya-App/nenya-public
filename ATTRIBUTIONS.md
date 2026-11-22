@@ -106,7 +106,7 @@ The same private list also draws on the **English Wiktionary** categories of eth
 
 ## cardiffnlp/twitter-roberta-base-hate-latest (screening model)
 
-Nenya is built to screen messages to the coach with a small hate-speech classifier that runs on Nenya's own server, in memory, and keeps nothing (not yet switched on in production). The model is **cardiffnlp/twitter-roberta-base-hate-latest** (<https://huggingface.co/cardiffnlp/twitter-roberta-base-hate-latest>), a fine-tuned version of `cardiffnlp/twitter-roberta-base-2022-154m`, by the Cardiff NLP group.
+Nenya is built to screen messages to the coach with a small hate-speech classifier that runs on Nenya's own server, in memory, and keeps nothing. The model is **cardiffnlp/twitter-roberta-base-hate-latest** (<https://huggingface.co/cardiffnlp/twitter-roberta-base-hate-latest>), a fine-tuned version of `cardiffnlp/twitter-roberta-base-2022-154m`, by the Cardiff NLP group.
 
 - Paper: Dimosthenis Antypas and Jose Camacho-Collados, "Robust Hate Speech Detection in Social Media: A Cross-Dataset Empirical Evaluation", Proceedings of the 7th Workshop on Online Abuse and Harms (WOAH), 2023. <https://aclanthology.org/2023.woah-1.25>
 - Licence: [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/), as stated on the model's page. The model was fine-tuned by its authors on 13 published hate-speech datasets, which its page lists.
