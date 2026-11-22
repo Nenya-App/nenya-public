@@ -13,12 +13,13 @@ import { SenseIcon } from '../SenseIcon';
 import { MoreBelowButton } from '../MoreBelowButton';
 
 import { L } from '../../../lib/vocabulary';
+import { strengthParts } from '../../../lib/breathStrength';
 interface WelcomePageProps {
   onContinue: () => void;
   breathingEnabled: boolean;
   orbitEnabled: boolean;
   logoVisible?: boolean;
-  breathingOpacity: number;
+  breathingStrength: number;
   onNavigateToAbout?: (section?: string) => void;
   technique?: BreathingTechnique | null;
   cvMode?: string;
@@ -32,7 +33,7 @@ export default function WelcomePage({
   breathingEnabled,
   orbitEnabled,
   logoVisible = true,
-  breathingOpacity,
+  breathingStrength,
   onNavigateToAbout,
   technique = null,
   cvMode = '',
@@ -108,7 +109,7 @@ export default function WelcomePage({
           >
             <ValarBreathingLogo
               enabled={breathingEnabled}
-              opacity={breathingOpacity}
+              {...strengthParts(breathingStrength)}
               logoSize={logoSize}
               cycleDuration={technique ? (technique.ih + (technique.hi || 0) + technique.ex + (technique.ho || 0)) / 1000 : 10}
               technique={technique}

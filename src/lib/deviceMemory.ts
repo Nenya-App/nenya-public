@@ -1,6 +1,10 @@
 import { isAllowedTechnique } from './breathCustom.ts';
 import { DEFAULT_ARRANGEMENT } from './breathArrangements.ts';
-import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_PREVIEW_SIZE, GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, snapLeaves, snapPreviewSize, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
+import { DEFAULT_GEM_CHOICE, DEFAULT_HALO_STYLE, DEFAULT_HALO_WIDTH, DEFAULT_LOGO_LEAVES, DEFAULT_INNER_ORB_MODE, DEFAULT_PREVIEW_PCT, DEFAULT_BREATH_COLOURS, DEFAULT_ORB_COLOURS, DEFAULT_LEAF_SWAY, DEFAULT_KALEIDOSCOPE_LOOK, DEFAULT_KALEIDOSCOPE_BREATH, defaultKaleidoscopeOn, GEM_SIDE_PRESETS, INNER_ORB_MODES, snapInnerOrbMode, type InnerOrbMode, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, snapGemChoice, snapHaloSeed, snapHaloStyle, snapHaloWidth, percentFromOldPixels, snapLeaves, snapPreviewPercent, type GemSidesChoice, type HaloStyle } from './logoLook.ts';
+import { snapColourChoice } from './logoColours.ts';
+import { clearKeptPalettes } from './keptPalettes.ts';
+import { DEFAULT_STRENGTH, STRENGTH_MAX, STRENGTH_MIN, strengthFromOldOpacity } from './breathStrength.ts';
+import { deviceProfile } from './deviceProfile.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 // Everything Nenya may keep on a visitor's device lives behind this one file, so there is a single
@@ -88,7 +92,10 @@ export interface Prefs {
   breathingEnabled?: boolean;
   orbitEnabled?: boolean;
   logoVisible?: boolean;
+  /** The old Breathing opacity (0.1 to 1). No longer written: read once, as v x 50, when there is no breathingStrength (src/lib/breathStrength.ts). */
   breathingOpacity?: number;
+  /** The breathing animation's strength, 5 to 200 (percent; 50 is standard, what 100% opacity used to be). */
+  breathingStrength?: number;
   showBreathingCounter?: boolean;
   /** Breathing tones: a note for each count of the breath. Off unless the visitor switches it on. */
   breathingTones?: boolean;
@@ -112,6 +119,17 @@ export interface Prefs {
   orbHaloSeed?: number;
   /** The size of the animated preview in the breathing and accessibility panel, in pixels (a multiple of 20, 120 to 400). */
   previewSize?: number;
+  /** The size of the preview as a percentage of the standard one (50 to 200, steps of 10). Replaces previewSize; an older previewSize is converted when this is not set. */
+  previewPercent?: number;
+  /** The inner ring of orbs behind the gem: 'moving' (the default), 'still' or 'hidden' (src/lib/logoLook.ts). */
+  innerOrbs?: string;
+  /** The visitor pressed Stop motion: the decorative movement is held still without changing the individual motion settings (src/lib/motionStop.ts). Off unless chosen. */
+  motionStopped?: boolean;
+  /** The leaves sway very slightly, as in a gentle breeze. Off unless the visitor switches it on; never on with reduced motion. */
+  leafSway?: boolean;
+  /** The colours of the breath ring and the gem's tint, and of the sixteen orbs: a choice from src/lib/logoColours.ts ('original' when none was made). Only the choice is kept, never the colours of a palette the visitor made. */
+  breathColours?: string;
+  orbColours?: string;
 }
 
 const VISION = ['', 'deuteranopia', 'protanopia', 'tritanopia', 'achromatopsia'];
@@ -125,6 +143,7 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   orbitEnabled: isBool,
   logoVisible: isBool,
   breathingOpacity: (v) => typeof v === 'number' && v >= 0.1 && v <= 1,
+  breathingStrength: (v) => typeof v === 'number' && Number.isFinite(v) && v >= STRENGTH_MIN && v <= STRENGTH_MAX,
   showBreathingCounter: isBool,
   breathingTones: isBool,
   gemKaleidoscope: isBool,
@@ -138,6 +157,12 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   orbHaloWidth: (v) => typeof v === 'number' && (HALO_WIDTHS as readonly number[]).includes(v),
   orbHaloSeed: (v) => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 4294967295,
   previewSize: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 120 && v <= 400,
+  previewPercent: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 50 && v <= 200,
+  leafSway: isBool,
+  motionStopped: isBool,
+  innerOrbs: (v) => (INNER_ORB_MODES as readonly unknown[]).includes(v),
+  breathColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
+  orbColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
   breathingTechnique: (v) => {
     // A saved pace must be one the site would have allowed (src/lib/breathCustom.ts); earlier saves of the presets all pass.
     return isAllowedTechnique(v);
@@ -198,11 +223,11 @@ export function useBreathingTones(): boolean {
   return on;
 }
 
-// The gem's kaleidoscope: one visitor setting (the switch is in the accessibility panel, the gem reads it), off until switched on, saved only while "Remember on this device" is on and erased by
+// The gem's kaleidoscope: one visitor setting (the switch is in the accessibility panel, the gem reads it), on unless the visitor chose otherwise (owner, 2026-11-22; off by default on a light device), saved only while "Remember on this device" is on and erased by
 // "Forget me" and Emergency Exit like every other saved setting. The stone holds still when the device asks for reduced motion, whatever this says.
 let kaleidoOn: boolean | null = null;
 const kaleidoListeners = new Set<() => void>();
-const getKaleido = (): boolean => (kaleidoOn ??= loadPrefs().gemKaleidoscope === true);
+const getKaleido = (): boolean => (kaleidoOn ??= loadPrefs().gemKaleidoscope ?? defaultKaleidoscopeOn(deviceProfile().tier));
 export const getGemKaleidoscope = getKaleido;
 export function setGemKaleidoscope(on: boolean): void {
   kaleidoOn = on;
@@ -214,7 +239,7 @@ const subscribeKaleido = (l: () => void) => {
   return () => kaleidoListeners.delete(l);
 };
 export function useGemKaleidoscope(): boolean {
-  const on = useSyncExternalStore(subscribeKaleido, getKaleido, () => false);
+  const on = useSyncExternalStore(subscribeKaleido, getKaleido, getKaleido);
   const remembering = useRemembering();
   useEffect(() => {
     if (remembering) savePref('gemKaleidoscope', on);
@@ -248,10 +273,10 @@ function sharedPref<T>(key: 'gemKaleidoscopeLook' | 'gemKaleidoscopeBreath', rea
   };
   return { get, set, use };
 }
-const kaleidoLook = sharedPref<KaleidoscopeLookChoice>('gemKaleidoscopeLook', () => (loadPrefs().gemKaleidoscopeLook as KaleidoscopeLookChoice | undefined) ?? 'gentle', 'gentle');
+const kaleidoLook = sharedPref<KaleidoscopeLookChoice>('gemKaleidoscopeLook', () => (loadPrefs().gemKaleidoscopeLook as KaleidoscopeLookChoice | undefined) ?? DEFAULT_KALEIDOSCOPE_LOOK, DEFAULT_KALEIDOSCOPE_LOOK);
 export const setGemKaleidoscopeLook = kaleidoLook.set;
 export const useGemKaleidoscopeLook = kaleidoLook.use;
-const kaleidoBreath = sharedPref<boolean>('gemKaleidoscopeBreath', () => loadPrefs().gemKaleidoscopeBreath === true, false);
+const kaleidoBreath = sharedPref<boolean>('gemKaleidoscopeBreath', () => loadPrefs().gemKaleidoscopeBreath ?? DEFAULT_KALEIDOSCOPE_BREATH, DEFAULT_KALEIDOSCOPE_BREATH);
 export const setGemKaleidoscopeBreath = kaleidoBreath.set;
 export const useGemKaleidoscopeBreath = kaleidoBreath.use;
 
@@ -361,6 +386,7 @@ export function wipeDevice({ keepOwner }: { keepOwner: boolean }) {
   } catch {
     // Nothing reachable to erase.
   }
+  clearKeptPalettes();
   emit();
 }
 
@@ -420,13 +446,79 @@ export const useOrbHaloStyle = (): HaloStyle => useSyncExternalStore(subscribeLo
 export const useOrbHaloWidth = (): number => useSyncExternalStore(subscribeLook, getHaloWidth, () => DEFAULT_HALO_WIDTH);
 export const useOrbHaloSeed = (): number => useSyncExternalStore(subscribeLook, getHaloSeed, () => 1);
 
-// The size of the preview in the breathing panel.
+// The size of the preview in the breathing panel, as a percentage (50 to 200). A size kept in pixels by an earlier version is converted; the choice is kept as it was
+// set, and the panel holds it to what this device and screen can take without changing what is stored (src/lib/logoLook.ts, previewMaxPercent).
 let previewNow: number | null = null;
-const getPreviewSize = (): number => (previewNow ??= snapPreviewSize(loadPrefs().previewSize ?? DEFAULT_PREVIEW_SIZE));
-export const getBreathPreviewSize = getPreviewSize;
-export function setBreathPreviewSize(n: number): void {
-  previewNow = snapPreviewSize(n);
-  savePref('previewSize', previewNow);
+const getPreviewPercent = (): number => {
+  if (previewNow !== null) return previewNow;
+  const p = loadPrefs();
+  return (previewNow = p.previewPercent !== undefined ? snapPreviewPercent(p.previewPercent) : p.previewSize !== undefined ? percentFromOldPixels(p.previewSize) : DEFAULT_PREVIEW_PCT);
+};
+export const getBreathPreviewPercent = getPreviewPercent;
+export function setBreathPreviewPercent(n: number): void {
+  previewNow = snapPreviewPercent(n);
+  savePref('previewPercent', previewNow);
   lookListeners.forEach((l) => l());
 }
-export const useBreathPreviewSize = (): number => useSyncExternalStore(subscribeLook, getPreviewSize, () => DEFAULT_PREVIEW_SIZE);
+export const useBreathPreviewPercent = (): number => useSyncExternalStore(subscribeLook, getPreviewPercent, () => DEFAULT_PREVIEW_PCT);
+
+// The leaves' sway and the colour choices (src/lib/logoColours.ts): the same rules as the look above. Sway is on and the colours are the Night set unless the visitor chose otherwise (owner, 2026-11-22; src/lib/logoLook.ts).
+// The choice is all that is kept: a palette the visitor made is held in memory for the visit only (src/lib/keptPalettes.ts), so if it is gone next time the choice reads as the original.
+let swayNow: boolean | null = null;
+let breathColoursNow: string | null = null;
+let orbColoursNow: string | null = null;
+const getSway = (): boolean => (swayNow ??= loadPrefs().leafSway ?? DEFAULT_LEAF_SWAY);
+const getBreathColours = (): string => (breathColoursNow ??= loadPrefs().breathColours === undefined ? DEFAULT_BREATH_COLOURS : snapColourChoice(loadPrefs().breathColours));
+const getOrbColours = (): string => (orbColoursNow ??= loadPrefs().orbColours === undefined ? DEFAULT_ORB_COLOURS : snapColourChoice(loadPrefs().orbColours));
+export const getLeafSway = getSway;
+export const getBreathColourChoice = getBreathColours;
+export const getOrbColourChoice = getOrbColours;
+export function setLeafSway(on: boolean): void {
+  swayNow = on === true;
+  savePref('leafSway', swayNow);
+  lookListeners.forEach((l) => l());
+}
+export function setBreathColourChoice(v: string): void {
+  breathColoursNow = snapColourChoice(v);
+  savePref('breathColours', breathColoursNow);
+  lookListeners.forEach((l) => l());
+}
+export function setOrbColourChoice(v: string): void {
+  orbColoursNow = snapColourChoice(v);
+  savePref('orbColours', orbColoursNow);
+  lookListeners.forEach((l) => l());
+}
+export const useLeafSway = (): boolean => useSyncExternalStore(subscribeLook, getSway, () => DEFAULT_LEAF_SWAY);
+export const useBreathColourChoice = (): string => useSyncExternalStore(subscribeLook, getBreathColours, () => DEFAULT_BREATH_COLOURS);
+export const useOrbColourChoice = (): string => useSyncExternalStore(subscribeLook, getOrbColours, () => DEFAULT_ORB_COLOURS);
+
+// The inner orbs behind the gem: moving unless the visitor chose otherwise; the same rules as the look above.
+let innerOrbsNow: InnerOrbMode | null = null;
+const getInnerOrbs = (): InnerOrbMode => (innerOrbsNow ??= snapInnerOrbMode(loadPrefs().innerOrbs));
+export const getInnerOrbMode = getInnerOrbs;
+export function setInnerOrbMode(v: InnerOrbMode | string): void {
+  innerOrbsNow = snapInnerOrbMode(v);
+  savePref('innerOrbs', innerOrbsNow);
+  lookListeners.forEach((l) => l());
+}
+export const useInnerOrbMode = (): InnerOrbMode => useSyncExternalStore(subscribeLook, getInnerOrbs, () => DEFAULT_INNER_ORB_MODE);
+
+// Stop motion: one switch that holds the decorative movement still and wins over the individual motion settings without changing them. Off unless the visitor pressed it; kept like the other display settings.
+let motionStoppedNow: boolean | null = null;
+const getMotionStopped = (): boolean => (motionStoppedNow ??= loadPrefs().motionStopped === true);
+export const getMotionStoppedState = getMotionStopped;
+export function setMotionStopped(on: boolean): void {
+  motionStoppedNow = on === true;
+  savePref('motionStopped', motionStoppedNow);
+  lookListeners.forEach((l) => l());
+}
+export const useMotionStopped = (): boolean => useSyncExternalStore(subscribeLook, getMotionStopped, () => false);
+
+/**
+ * The breathing strength (percent, 5 to 200, 50 standard): like usePref, but a value kept on the old opacity scale becomes v x 50 when there is no new one, and a visitor who never chose gets 50.
+ * Only the new key is written.
+ */
+export function useBreathingStrength() {
+  const p = loadPrefs();
+  return usePref('breathingStrength', p.breathingOpacity !== undefined ? strengthFromOldOpacity(p.breathingOpacity) : DEFAULT_STRENGTH);
+}

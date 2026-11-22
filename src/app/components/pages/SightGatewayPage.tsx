@@ -5,6 +5,7 @@ import { ColorNameSuggest } from '../ColorNameSuggest';
 import { PalettePanel } from '../PalettePanel';
 import { glowFor } from '../../../lib/glow';
 import type { GeneratedPalette } from '../../../lib/colorSchemes';
+import { setKeptPalettes } from '../../../lib/keptPalettes';
 import { Button } from '../ui/button';
 import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, Shuffle, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
@@ -145,6 +146,10 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   const [color1Name, setColor1Name] = useState(init?.color1Name ?? '');
   const [color2Name, setColor2Name] = useState(init?.color2Name ?? '');
   const [generatedPalettes, setGeneratedPalettes] = useState<GeneratedPalette[]>(init?.generatedPalettes ?? []);
+  // The palettes kept here are offered as colour choices for the logo (Settings, Logo look), held in memory for the visit only. On leaving, the store goes back to what the report holds.
+  useEffect(() => { setKeptPalettes(generatedPalettes); }, [generatedPalettes]);
+  const heldPalettes = useRef(init?.generatedPalettes ?? []);
+  useEffect(() => () => setKeptPalettes(heldPalettes.current), []);
   const [color1Qualities, setColor1Qualities] = useState<string[]>(init?.color1Qualities ?? []);
   const [color2Qualities, setColor2Qualities] = useState<string[]>(init?.color2Qualities ?? []);
   // The soft limit of three words on a color (tray mode): the fourth waits for a yes.

@@ -37,10 +37,69 @@ ok('a width set in code snaps to a preset', [3.4, 5, 7].includes(M.getOrbHaloWid
 M.setOrbHaloStyle('palette');
 ok('a style set in code is kept', M.getOrbHaloStyle() === 'palette');
 
-// The preview size is stored like the other display settings.
+// The preview size is a percentage, stored like the other display settings; an older size in pixels is converted.
+store['nenya.prefs'] = JSON.stringify({ previewPercent: 150 });
+ok('a stored preview percentage is read back', M.loadPrefs().previewPercent === 150);
+store['nenya.prefs'] = JSON.stringify({ previewPercent: 5000 });
+ok('a preview percentage outside the limits is dropped', M.loadPrefs().previewPercent === undefined);
+M.setBreathPreviewPercent(133);
+ok('a percentage set in code snaps to a step', M.getBreathPreviewPercent() === 130 && JSON.parse(store['nenya.prefs']).previewPercent === 130);
+ok('the older pixel key is not written any more', JSON.parse(store['nenya.prefs']).previewSize === undefined);
 store['nenya.prefs'] = JSON.stringify({ previewSize: 300 });
-ok('a stored preview size is read back', M.loadPrefs().previewSize === 300);
-store['nenya.prefs'] = JSON.stringify({ previewSize: 5000 });
-ok('a preview size outside the limits is dropped', M.loadPrefs().previewSize === undefined);
-M.setBreathPreviewSize(333);
-ok('a preview size set in code snaps to a step', M.getBreathPreviewSize() === 340);
+ok('an older stored size in pixels is still accepted when read', M.loadPrefs().previewSize === 300 && M.loadPrefs().previewPercent === undefined);
+
+// The leaves' sway and the colour choices: off and original unless chosen; only the choice is kept; a hand-edited value is dropped.
+const K = await import('../src/lib/keptPalettes.ts');
+ok('before anything is chosen: sway on and the Night colours (the owner\'s defaults, 2026-11-22)', M.getLeafSway() === true && M.getBreathColourChoice() === 'preset:night' && M.getOrbColourChoice() === 'preset:night');
+M.setLeafSway(true);
+M.setBreathColourChoice('preset:cool');
+M.setOrbColourChoice('palette:Tide');
+const lookSaved = JSON.parse(store['nenya.prefs']);
+ok('with Remember on, the sway and both colour choices are stored (the choice only, no colours)', lookSaved.leafSway === true && lookSaved.breathColours === 'preset:cool' && lookSaved.orbColours === 'palette:Tide' && !JSON.stringify(lookSaved).includes('#'));
+ok('and read back', M.loadPrefs().leafSway === true && M.loadPrefs().breathColours === 'preset:cool' && M.loadPrefs().orbColours === 'palette:Tide');
+store['nenya.prefs'] = JSON.stringify({ leafSway: 'yes', breathColours: 'neon', orbColours: 'palette:Nobody' });
+ok('values that are not offered are dropped when read', M.loadPrefs().leafSway === undefined && M.loadPrefs().breathColours === undefined && M.loadPrefs().orbColours === undefined);
+store['nenya.prefs'] = JSON.stringify({ breathColours: 'mine-both', orbColours: 'mine-2' });
+ok('a saved-palette choice is accepted as a choice (whether it can be used depends on the palettes kept in this visit)', M.loadPrefs().breathColours === 'mine-both' && M.loadPrefs().orbColours === 'mine-2');
+M.setOrbColourChoice('not a choice');
+ok('a choice set in code that is not offered becomes the original', M.getOrbColourChoice() === 'original');
+K.setKeptPalettes([{ colors: [{ hex: '#112233' }, { hex: '#445566' }] }]);
+ok('a kept palette is held for the visit, and was not written to the device', K.getKeptPalettes().length === 1 && !Object.values(store).some((v) => v.includes('112233')));
+M.wipeDevice({ keepOwner: true });
+ok('"Forget me" clears the kept palettes held in memory, and the stored choices', K.getKeptPalettes().length === 0 && !('nenya.prefs' in store));
+
+// The inner orbs behind the gem: moving unless chosen, stored as innerOrbs.
+M.setRemembering(true);
+ok('the inner orbs move before anything is chosen', M.getInnerOrbMode() === 'moving');
+M.setInnerOrbMode('hidden');
+ok('a choice is stored as innerOrbs', JSON.parse(store['nenya.prefs']).innerOrbs === 'hidden' && M.getInnerOrbMode() === 'hidden' && M.loadPrefs().innerOrbs === 'hidden');
+M.setInnerOrbMode('still');
+ok('and can be changed to still', JSON.parse(store['nenya.prefs']).innerOrbs === 'still');
+store['nenya.prefs'] = JSON.stringify({ innerOrbs: 'gone' });
+ok('a value that is not offered is dropped when read', M.loadPrefs().innerOrbs === undefined);
+M.setInnerOrbMode('nonsense');
+ok('a value set in code that is not offered becomes moving', M.getInnerOrbMode() === 'moving');
+
+// The defaults (owner, 2026-11-22) and "chose Original" against "never chose", read by a fresh copy of the module each time so nothing is cached.
+const fresh = async (tag: string, prefs: Record<string, unknown> | null) => {
+  for (const k of Object.keys(store)) delete store[k];
+  if (prefs) { store['nenya.remember'] = '1'; store['nenya.prefs'] = JSON.stringify(prefs); }
+  return (await import(`../src/lib/deviceMemory.ts?${tag}`)) as typeof M;
+};
+const none = await fresh('none', null);
+ok('a visitor who has set nothing: sway on, Night colours, palette glow, Lively and following the breath, 120% preview, moving lights, six leaves, eight-sided gem', none.getLeafSway() === true && none.getBreathColourChoice() === 'preset:night' && none.getOrbColourChoice() === 'preset:night' && none.getOrbHaloStyle() === 'palette' && none.getBreathPreviewPercent() === 120 && none.getInnerOrbMode() === 'moving' && none.getLogoLeaves() === 6 && none.getGemSidesChoice() === 8);
+const chose = await fresh('chose', { breathColours: 'original', orbColours: 'original', leafSway: false, orbHalo: 'own', innerOrbs: 'still', previewPercent: 100, gemKaleidoscope: false, gemKaleidoscopeLook: 'calm', gemKaleidoscopeBreath: false, logoLeaves: 8, gemSides: 10 });
+ok('a stored choice always wins, "Original" included: someone who chose it stays on Original, and an off stays off', chose.getBreathColourChoice() === 'original' && chose.getOrbColourChoice() === 'original' && chose.getLeafSway() === false && chose.getOrbHaloStyle() === 'own' && chose.getInnerOrbMode() === 'still' && chose.getBreathPreviewPercent() === 100 && chose.getGemKaleidoscope() === false && chose.getLogoLeaves() === 8 && chose.getGemSidesChoice() === 10);
+const odd = await fresh('odd', { breathColours: 'neon' });
+ok('a stored value that is not offered is dropped, so the default applies', odd.getBreathColourChoice() === 'preset:night');
+
+// Stop motion is stored like the other display settings and is off unless pressed.
+const still = await fresh('still', null);
+ok('motion is not stopped before the button is pressed', still.getMotionStoppedState() === false);
+still.setRemembering(true);
+still.setMotionStopped(true);
+ok('with Remember on, the stopped state is stored as motionStopped, and the individual motion settings are not touched', JSON.parse(store['nenya.prefs']).motionStopped === true && JSON.parse(store['nenya.prefs']).leafSway === undefined);
+store['nenya.prefs'] = JSON.stringify({ motionStopped: 'yes' });
+ok('a value that is not true or false is dropped when read', still.loadPrefs().motionStopped === undefined);
+const kept = await fresh('kept', { motionStopped: true, leafSway: true });
+ok('a stopped state stored on the device is read back, next to a sway setting that stays on', kept.getMotionStoppedState() === true && kept.getLeafSway() === true);

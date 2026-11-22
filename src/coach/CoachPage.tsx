@@ -13,7 +13,7 @@ import OwnerPanel from './OwnerPanel';
 import { RegionGate } from './RegionGate';
 import { BreathFirst } from './BreathFirst';
 import OnboardingFlow from '../app/components/OnboardingFlow';
-import { termsAcceptedFor, usePref } from '../lib/deviceMemory';
+import { termsAcceptedFor, usePref, useBreathingStrength } from '../lib/deviceMemory';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { enableUsageCounts } from '../lib/usageCounts';
 import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
@@ -66,7 +66,7 @@ export default function CoachPage() {
   const [breathingEnabled, setBreathingEnabled] = usePref('breathingEnabled', true);
   const [orbitEnabled, setOrbitEnabled] = usePref('orbitEnabled', true);
   const [logoVisible, setLogoVisible] = usePref('logoVisible', true);
-  const [opacity, setOpacity] = usePref('breathingOpacity', 1);
+  const [opacity, setOpacity] = useBreathingStrength();
   // The same pace, counter and tones as the main site (portable, owner 2026-11-15).
   const [showCounter, setShowCounter] = usePref('showBreathingCounter', true);
   const { technique, setTechnique, cycleStart } = useBreathRhythm();
@@ -121,11 +121,11 @@ export default function CoachPage() {
         breathingEnabled={breathingEnabled}
         orbitEnabled={orbitEnabled}
         logoVisible={logoVisible}
-        breathingOpacity={opacity}
+        breathingStrength={opacity}
         onBreathingToggle={setBreathingEnabled}
         onOrbitToggle={setOrbitEnabled}
         onLogoVisibleToggle={setLogoVisible}
-        onOpacityChange={setOpacity}
+        onStrengthChange={setOpacity}
         technique={technique}
         cycleStart={cycleStart}
       />
@@ -163,12 +163,12 @@ export default function CoachPage() {
         breathingEnabled={breathingEnabled}
         orbitEnabled={orbitEnabled}
         logoVisible={logoVisible}
-        breathingOpacity={opacity}
+        breathingStrength={opacity}
         textSize={textSize}
         onBreathingToggle={setBreathingEnabled}
         onOrbitToggle={setOrbitEnabled}
         onLogoVisibleToggle={setLogoVisible}
-        onOpacityChange={setOpacity}
+        onStrengthChange={setOpacity}
         onTextSizeChange={setTextSize}
         showBreathingCounter={showCounter}
         onCounterToggle={setShowCounter}

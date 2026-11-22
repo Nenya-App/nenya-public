@@ -5,7 +5,7 @@ import { costSummary, sendBackFlag, type CostSummary } from './canaryCost.ts';
 
 export interface Task { name: string; instructions: string; stance?: string; model?: string }
 /** `neurons` and `calls` (model calls on each turn of the case) are numbers only, and absent on cases saved before they were recorded. */
-export interface Compact { id: string; outcome: string; words: number; grade: number; neurons?: number; calls?: number[] }
+export interface Compact { id: string; outcome: string; words: number; grade: number; neurons?: number; calls?: number[]; /** The first 40 characters of each site note that sent the model back on this case (site-written text, never the person's words). */ asked?: string[] }
 export interface TaskReport extends Task { conversations: number; pass: number; fail: number; error: number; medianWords: number; medianGrade: number; failedCases: Record<string, number>; neurons: number; cost?: CostSummary; sendBackRate?: number }
 
 /** Where a night is up to, kept in the private store between the minute-by-minute runs. */
@@ -25,6 +25,9 @@ export interface NightState {
   stopped?: string;
   /** Set when the candidate model task was skipped because it kept erroring (no access, say); the night went on with the next task. */
   candidateSkipped?: string;
+  /** After three errors in a row the night waits until this time (ms since 1970) and then replays those cases; errorEpisodes counts how many times that happened tonight. */
+  pausedUntil?: number;
+  errorEpisodes?: number;
   /** The instructions fingerprint of each task, for the archive. */
   fingerprints?: string[];
 }
@@ -91,8 +94,13 @@ export function driftFlags(today: TaskReport[], past: TaskReport[], cases: Recor
  * next one; on any other task it is the allowance running out or an outage, so the night ends. Fewer than three errors in a row: carry on.
  * (Until this was fixed, the candidate model's 403 ended the whole night on 20 Nov and 6,110 Neurons went unused.)
  */
-export function onErrorStreak(task: { name: string }, outcomes: string[]): 'continue' | 'skip-task' | 'end-night' {
+export function onErrorStreak(task: { name: string }, outcomes: string[], episodes = 0): 'continue' | 'skip-task' | 'pause' | 'end-night' {
   const last3 = outcomes.slice(-3);
   if (last3.length < 3 || !last3.every((o) => o === 'error')) return 'continue';
-  return task.name === 'model' ? 'skip-task' : 'end-night';
+  if (task.name === 'model') return 'skip-task';
+  return episodes + 1 >= MAX_ERROR_EPISODES ? 'end-night' : 'pause';
 }
+
+/** Three errors in a row on a real task is most likely a brief Workers AI error: wait ERROR_PAUSE_MINUTES, replay those three cases, and end the night only after this many such stretches (2026-11-22: a single stretch on 21 Nov ended the night with 4,570 Neurons unused). */
+export const MAX_ERROR_EPISODES = 3;
+export const ERROR_PAUSE_MINUTES = 3;

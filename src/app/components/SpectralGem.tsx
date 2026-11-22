@@ -6,7 +6,7 @@ import bezelRaw from '../../assets/logo/bezel.svg?raw';
 import { bezelDataUri, bezelFor } from '../../lib/gemBezel';
 import { DEFAULT_GEM_SIDES, clampSides, stoneRadius } from '../../lib/gemCut';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
-import { allColors, valarColors } from './ValarBreathingLogo';
+import { useBreathColours, useOrbVectors, valarColors } from './ValarBreathingLogo';
 import { orbColour } from '../../lib/orbColours';
 import { breathEnvelope, breathFractions, breathLengthMs, gemClock, gemMultiplyColor, type BreathTiming } from '../../lib/breathClock';
 import { GEM_CENTRE, GEM_ENGINE, GEM_TO_PETALS, SPRITE_CELL, frameOrigin, loadGemSprite, markGemDrawn, type GemEngine } from '../../lib/gemSprite';
@@ -15,9 +15,10 @@ import { deviceProfile } from '../../lib/deviceProfile';
 import { HIGH_QUALITY, LOW_QUALITY, createGemRenderer, type GemLight, type GemQuality, type GemRenderer } from '../../lib/gemRenderer';
 import type { GemCut } from '../../lib/gemCut';
 import { KALEIDOSCOPE_PRESETS, breathDepth, breathPeriodS, kaleidoscopeCut, type KaleidoscopeLook } from '../../lib/kaleidoscope';
-import { DEFAULT_INNER_ORBIT, emergence, type InnerOrbitLook } from '../../lib/orbitLook';
+import { DEFAULT_INNER_ORBIT, emergence, restingEmergence, type InnerOrbitLook } from '../../lib/orbitLook';
+import { lightLevel, lightRingAngle, type LightMotion } from '../../lib/lightMotion';
 import { SITE_LIVE_FIELD_ALPHA, SITE_LIVE_GEM } from '../../lib/siteGem';
-import { useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook } from '../../lib/deviceMemory';
+import { useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook, useMotionStopped } from '../../lib/deviceMemory';
 
 /** The live gem's settings (see src/lib/gemRenderer.ts). All optional: the defaults are the tuned starting point. */
 export interface LiveGemLook {
@@ -84,6 +85,10 @@ interface SpectralGemProps {
   emerge?: Pick<InnerOrbitLook, 'style' | 'emergeSeconds' | 'emergeStep' | 'emergeDepth'>;
   /** Hold the last drawn frame and draw no new ones (the page is pinch-zoomed: see src/lib/zoomLite.ts). */
   paused?: boolean;
+  /** The inner orbs are set to stay still (or are hidden): the lights the gem takes from their ring stop circling too, and keep their colours. */
+  orbsStill?: boolean;
+  /** The inner lights' motion, taken from the gem's own motion settings (src/lib/lightMotion.ts): the ring's angle and each light's brightness follow it. */
+  lights?: LightMotion;
   onStats?: (s: GemStats) => void;
 }
 
@@ -134,6 +139,8 @@ export default function SpectralGem({
   colorCycle = DEFAULT_INNER_ORBIT.colorCycle,
   emerge = DEFAULT_INNER_ORBIT,
   paused = false,
+  orbsStill = false,
+  lights,
   onStats,
 }: SpectralGemProps) {
   const bodyRef = useRef<HTMLCanvasElement>(null);
@@ -156,7 +163,10 @@ export default function SpectralGem({
   // The live settings are read on every frame, so changing them does not restart the loop. Only a change of quality
   // (which rebuilds the shader) does.
   // The visitor's switch (accessibility panel) turns the kaleidoscope on in addition to whatever the look says; a toggle either way puts the stone back to its plain cut first.
-  const visitorKaleido = useGemKaleidoscope();
+  // Stop motion holds the kaleidoscope still (the stone keeps its plain cut) without changing the switch (src/lib/motionStop.ts).
+  const kaleidoSwitch = useGemKaleidoscope();
+  const motionStopped = useMotionStopped();
+  const visitorKaleido = kaleidoSwitch && !motionStopped;
   // The visitor's own look (Calm, Gentle, Lively, Full motion) applies while their switch is on (owner, 2026-11-15).
   const visitorLook = useGemKaleidoscopeLook();
   const visitorBreath = useGemKaleidoscopeBreath();
@@ -172,8 +182,19 @@ export default function SpectralGem({
   statsRef.current = onStats;
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
+  const stillRef = useRef(orbsStill);
+  stillRef.current = orbsStill;
+  const lightsRef = useRef(lights);
+  lightsRef.current = lights;
   const emergeRef = useRef(emerge);
   emergeRef.current = emerge;
+  // The colours the visitor chose in Settings (the original unless they chose): the orbs' vectors and the ring's breath colours that the gem's tint follows. Read through refs, as the other live values are, so a change shows at once without rebuilding the stone.
+  const chosenOrbs = useOrbVectors();
+  const chosenBreath = useBreathColours();
+  const orbVecRef = useRef(chosenOrbs);
+  orbVecRef.current = chosenOrbs;
+  const breathColoursRef = useRef(chosenBreath);
+  breathColoursRef.current = chosenBreath;
   const timingRef = useRef({ orbitSeconds, colorCycle });
   timingRef.current = { orbitSeconds, colorCycle };
   // The orbit's phase is set once, when the logo mounts (NenyaLogo does not move it later), so the gem keeps the same anchor.
@@ -306,12 +327,13 @@ export default function SpectralGem({
         const tSec = reduced ? 0 : (Date.now() - mountTime.current) / 1000;
         const orbitT = (Date.now() - (orbitAnchor.current ?? mountTime.current)) / 1000;
         const loops = reduced ? 0 : elapsed / (GEM_LOOP_BREATHS * breathMs);
+        const lightEnv = reduced ? 0 : breathEnvelope(c.p, f);
         renderer.render({
           turn: loops * 2 * Math.PI * (L?.spin ?? LIVE_SPIN),
-          orbit: reduced ? 0 : (((orbitT / (oS > 0 ? oS : 120)) % 1) * 2 * Math.PI),
-          orbs: valarColors.map((v, j) => {
-            const c = orbColour(v.vector, j, tSec, cS);
-            const e = emergeRef.current.style === 'light' ? emergence(j, tSec, emergeRef.current) : 1;
+          orbit: reduced ? 0 : lightsRef.current ? lightRingAngle(lightsRef.current, orbitT) : stillRef.current ? 0 : (((orbitT / (oS > 0 ? oS : 120)) % 1) * 2 * Math.PI),
+          orbs: valarColors.map((_v, j) => {
+            const c = orbColour(orbVecRef.current[j], j, tSec, cS);
+            const e = lightsRef.current ? lightLevel(lightsRef.current, j, tSec, lightEnv) : emergeRef.current.style === 'light' ? (stillRef.current ? restingEmergence(emergeRef.current) : emergence(j, tSec, emergeRef.current)) : 1;
             return e === 1 ? c : c.map((x: number) => x * e);
           }),
           light: L?.light,
@@ -328,7 +350,7 @@ export default function SpectralGem({
           octx.globalAlpha = 1;
         }
       }
-      const [r, g, b] = gemMultiplyColor(allColors, tintIndex(c.idx, liveRef.current?.breathColors, allColors.length), c.p, f, breathingEnabled ? tint : 0, !reduced);
+      const [r, g, b] = gemMultiplyColor(breathColoursRef.current, tintIndex(c.idx, liveRef.current?.breathColors, breathColoursRef.current.length), c.p, f, breathingEnabled ? tint : 0, !reduced);
       bctx.globalCompositeOperation = 'source-over';
       bctx.globalAlpha = 1;
       bctx.clearRect(0, 0, px, px);
@@ -345,11 +367,11 @@ export default function SpectralGem({
       if (typeof bctx.createConicGradient === 'function') {
         const tSec = reduced ? 0 : (Date.now() - mountTime.current) / 1000;
         const turnS = timingRef.current.orbitSeconds > 0 ? timingRef.current.orbitSeconds : FIELD_TURN_S;
-        const wheel = bctx.createConicGradient(reduced ? 0 : ((tSec / turnS) % 1) * 2 * Math.PI, px / 2, px / 2);
+        const wheel = bctx.createConicGradient(reduced ? 0 : lightsRef.current ? lightRingAngle(lightsRef.current, (Date.now() - (orbitAnchor.current ?? mountTime.current)) / 1000) : stillRef.current ? 0 : ((tSec / turnS) % 1) * 2 * Math.PI, px / 2, px / 2);
         const n = valarColors.length;
         for (let i = 0; i <= n; i++) {
           const j = i % n;
-          const col = orbColour(valarColors[j].vector, j, tSec, timingRef.current.colorCycle);
+          const col = orbColour(orbVecRef.current[j], j, tSec, timingRef.current.colorCycle);
           wheel.addColorStop(i / n, `rgb(${Math.round(col[0])},${Math.round(col[1])},${Math.round(col[2])})`);
         }
         bctx.globalCompositeOperation = 'color';

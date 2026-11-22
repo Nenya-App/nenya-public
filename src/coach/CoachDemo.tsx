@@ -10,6 +10,7 @@ import { scrubPII, describeScrub } from '../lib/piiScrub';
 import { playSignature, signatureNotes } from '../lib/sessionSound';
 import { REFERRAL_NOTE, VENICE_CHARACTER_URL, VENICE_SIGNUP_URL, VENICE_TERMS_URL, VENICE_PRIVACY_URL, VENICE_DIFFERENCES } from '../lib/veniceLinks';
 import { COACH_SERVICE } from '../lib/coachService';
+import { waitingShown, waitingText } from '../lib/waitingMessage';
 import { noteSafetyStop, veniceOfferAllowed } from '../lib/veniceOffer';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
 import { OWNER_KEY, OWNER_TOKEN_KEY, REST_KEY } from '../lib/deviceMemory';
@@ -210,6 +211,17 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     if (!on) setDraft((d) => addWordToDraft(d, p.kind, p.word, MAX_CHARS));
   };
   const [sending, setSending] = useState(false);
+  // Seconds the page has been waiting for a reply, for the words under the dots (src/lib/waitingMessage.ts).
+  const [waited, setWaited] = useState(0);
+  useEffect(() => {
+    if (!sending) {
+      setWaited(0);
+      return;
+    }
+    const t0 = Date.now();
+    const id = window.setInterval(() => setWaited(Math.floor((Date.now() - t0) / 1000)), 1000);
+    return () => window.clearInterval(id);
+  }, [sending]);
   const [failure, setFailure] = useState<FailureInfo | null>(null);
   const [blocked, setBlocked] = useState(false);
   // Too short or no words to read: not sent, no turn used, the draft stays (src/lib/messageGate.ts).
@@ -826,18 +838,20 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                   <div className="coach-msg flex items-end gap-2" role="status">
                     <span aria-hidden="true" className="mb-1 size-7 shrink-0 rounded-full shadow-sm" style={{ background: gradient }} />
                     <div
-                      className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border bg-card px-4 py-3.5 shadow-sm"
+                      className="flex flex-col items-start gap-2 rounded-2xl rounded-bl-md border bg-card px-4 py-3.5 shadow-sm"
                       style={{ borderColor: `${color2}66` }}
                     >
-                      <span className="sr-only">The coach is thinking</span>
-                      {[color1, color1, color2].map((c, i) => (
-                        <span
-                          key={i}
-                          aria-hidden="true"
-                          className="coach-dot size-2 rounded-full"
-                          style={{ backgroundColor: c, animationDelay: `${i * 160}ms` }}
-                        />
-                      ))}
+                      <div className="flex items-center gap-1.5" aria-hidden="true">
+                        {[color1, color1, color2].map((c, i) => (
+                          <span
+                            key={i}
+                            className="coach-dot size-2 rounded-full"
+                            style={{ backgroundColor: c, animationDelay: `${i * 160}ms` }}
+                          />
+                        ))}
+                      </div>
+                      {/* Words for a long wait, in steps (src/lib/waitingMessage.ts): only screen readers get the first; the rest are shown. */}
+                      <span className={waitingShown(waited) ? 'max-w-[26ch] text-sm leading-snug text-muted-foreground' : 'sr-only'}>{waitingText(waited)}</span>
                     </div>
                   </div>
                 )}

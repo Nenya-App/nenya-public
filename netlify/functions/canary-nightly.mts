@@ -10,7 +10,7 @@ import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
 import { MAX_RUNS_A_NIGHT, canaryAllowance, runsThatFit, utcDay } from '../../src/lib/canaryBudget.ts';
 import { costSummary } from '../../src/lib/canaryCost.ts';
-import { caseOrder, driftFlags, onErrorStreak, planTasks, report, type NightState, type TaskReport } from '../../src/lib/canaryNight.ts';
+import { ERROR_PAUSE_MINUTES, caseOrder, driftFlags, onErrorStreak, planTasks, report, type NightState, type TaskReport } from '../../src/lib/canaryNight.ts';
 import { PERSONA_CASES } from '../../src/lib/personaEvalSet.ts';
 import { pacedSend, runCase, type RawSent } from '../../src/lib/personaEval.ts';
 import { readWorkersAi } from '../../src/lib/coachProvider.ts';
@@ -31,6 +31,9 @@ export default async (): Promise<Response> => {
   try {
     let state = JSON.parse((await store.get(stateKey, { type: 'text' })) ?? 'null') as NightState | null;
     if (state?.done) return new Response(null, { status: 204 });
+    // Waiting out a stretch of errors (not in the closing minutes: from minute 55 the night is written up whatever happened).
+    if (state?.pausedUntil && Date.now() < state.pausedUntil && new Date().getUTCMinutes() < 55) return new Response(null, { status: 204 });
+    if (state?.pausedUntil) delete state.pausedUntil;
     const ledger = JSON.parse((await store.get('canary/ledger', { type: 'text' })) ?? '{}') as Record<string, number>;
 
     if (!state) {
@@ -82,12 +85,15 @@ export default async (): Promise<Response> => {
     // Model calls per turn, from the coach's own trace (counts only; the text of a rejected summary is not turned on). A turn that made two calls was sent back by a guard once.
     __trace.on(true);
     let turnCalls: number[] = [];
+    let turnAsked: string[] = [];
     let stance: string | undefined;
     const send = pacedSend(
       async (messages, ticket): Promise<RawSent> => {
         __trace.take();
         const res = await handler(new Request('https://nenya.biz/api/coach', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://nenya.biz' }, body: JSON.stringify({ messages, session: { color1: '#7a9b9e', color2: '#DAC682' }, ticket, ...(stance ? { stance } : {}) }) }));
-        turnCalls.push(__trace.take().calls);
+        const tr = __trace.take();
+        turnCalls.push(tr.calls);
+        for (const e of tr.events) if (e.startsWith('asked:')) turnAsked.push(e.slice(6));
         const j: any = await res.json().catch(() => ({}));
         return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
       },
@@ -98,6 +104,7 @@ export default async (): Promise<Response> => {
     // The last runs of the hour close the night with whatever has been played, so a slow night still leaves a digest before the allowance resets.
     let finished = new Date().getUTCMinutes() >= 55;
     try {
+      let paused = false;
       while (state.t < state.tasks.length && !finished) {
         const task = state.tasks[state.t];
         stance = task.stance;
@@ -111,23 +118,34 @@ export default async (): Promise<Response> => {
           if (Date.now() - started >= START_NEW_CASE_BEFORE_MS) break;
           const before = spentNow;
           turnCalls = [];
+          turnAsked = [];
           const r = await runCase(order[state.c], send);
           const reply = String(r.reply ?? '');
           const cost = spentNow - before;
           state.spent += cost;
           state.taskSpent[state.t] += cost;
-          state.compact[state.t].push({ id: r.id, outcome: r.outcome, words: reply.split(/\s+/).filter(Boolean).length, grade: reply ? gradeLevel(reply) : 0, neurons: Math.round(cost), calls: turnCalls });
+          state.compact[state.t].push({ id: r.id, outcome: r.outcome, words: reply.split(/\s+/).filter(Boolean).length, grade: reply ? gradeLevel(reply) : 0, neurons: Math.round(cost), calls: turnCalls, asked: turnAsked });
           // The complete run, kept privately: the case id, its outcome and checks, and the coach's replies. Never the prompt (it holds the private notes) and never any visitor text: the
           // cases are invented. One small key per case, so a run cut off by the time limit loses at most the case in hand.
           await store.set(`canary/runs/${day}/${state.t}-${r.id}`, JSON.stringify({ t: state.t, task: task.name, id: r.id, category: r.category, outcome: r.outcome, how: r.how, failures: r.failures, reply: r.reply ?? null, neurons: Math.round(cost) }));
           state.c++;
           // Three errors in a row: the allowance has run out or Workers AI is down. Stop at once instead of spending the rest of the night's requests on errors.
           // A candidate model with no access (a 403) skips only its own task; the night goes on with the baseline (src/lib/canaryNight.ts onErrorStreak).
-          const streak = onErrorStreak(task, state.compact[state.t].map((x) => x.outcome));
+          const streak = onErrorStreak(task, state.compact[state.t].map((x) => x.outcome), state.errorEpisodes ?? 0);
+          if (streak === 'pause') {
+            // Most likely a brief Workers AI error: wait a few minutes, then play those three cases again.
+            state.compact[state.t].splice(-3);
+            state.c -= 3;
+            state.errorEpisodes = (state.errorEpisodes ?? 0) + 1;
+            state.pausedUntil = Date.now() + ERROR_PAUSE_MINUTES * 60_000;
+            paused = true;
+            break;
+          }
           if (streak === 'end-night') { state.stopped = 'three errors in a row (probably the daily allowance, or an outage)'; finished = true; break; }
           if (streak === 'skip-task') { state.candidateSkipped = `${task.model ?? task.name}: three errors in a row (probably no access)`; break; }
           await store.set(stateKey, JSON.stringify(state)); // after every case, so a run cut off by the time limit loses at most the case in hand
         }
+        if (paused) break;
         if (finished || Date.now() - started >= START_NEW_CASE_BEFORE_MS) break;
         // A task done. If every conversation failed, the candidate model (no access yet, say) is skipped; otherwise it is quota or an outage, so the night ends.
         const cs = state.compact[state.t];
@@ -160,8 +178,8 @@ export default async (): Promise<Response> => {
       for (const k of recent) past.push(...((JSON.parse((await store.get(k, { type: 'text' })) ?? '{}').tasks ?? []) as TaskReport[]).filter((x) => x.name === 'baseline'));
       const flags = driftFlags(reports.filter((x) => x.name === 'baseline'), past, caseTally);
       // The whole night's two cost signals (send-backs, Neurons per case), over every task played; each task's line carries its own under `cost`.
-      const nightCost = (({ sendBacks, sendBackRate, neuronsPerCaseMedian, neuronsPerCaseMean, modelCalls, turns }) => ({ sendBacks, sendBackRate, neuronsPerCaseMedian, neuronsPerCaseMean, modelCalls, turns }))(costSummary(state.compact.flat()));
-      const digest = { day, model: defaultModel || '@cf/google/gemma-4-26b-a4b-it', tasks: reports, spentNeurons: Math.round(state.spent), ...nightCost, flags, ...(state.candidateSkipped ? { candidateSkipped: state.candidateSkipped } : {}), ...(state.stopped ? { stopped: state.stopped } : {}), reviewed: false };
+      const nightCost = (({ sendBacks, sendBackRate, sendBacksByNote, neuronsPerCaseMedian, neuronsPerCaseMean, modelCalls, turns }) => ({ sendBacks, sendBackRate, sendBacksByNote, neuronsPerCaseMedian, neuronsPerCaseMean, modelCalls, turns }))(costSummary(state.compact.flat()));
+      const digest = { day, model: defaultModel || '@cf/google/gemma-4-26b-a4b-it', tasks: reports, spentNeurons: Math.round(state.spent), ...nightCost, flags, ...(state.candidateSkipped ? { candidateSkipped: state.candidateSkipped } : {}), ...(state.errorEpisodes ? { errorEpisodes: state.errorEpisodes } : {}), ...(state.stopped ? { stopped: state.stopped } : {}), reviewed: false };
       // What the full run was made with, so a later reader can tell one night's replies from another's.
       await store.set(`canary/runs/${day}/meta`, JSON.stringify({ day, model: digest.model, provider: 'workers-ai', build: BUILD_INFO.commit, tasks: state.tasks.map((t, i) => ({ ...t, instructionsFingerprint: state.fingerprints?.[i] ?? null, neurons: Math.round(state.taskSpent[i]) })), spentNeurons: digest.spentNeurons, note: 'Invented cases only. Replies can echo the private notes: read before sharing anything.' }));
       await store.set(`canary/digest-${day}`, JSON.stringify(digest));

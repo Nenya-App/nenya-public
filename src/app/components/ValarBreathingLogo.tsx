@@ -1,6 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { ringCorrection } from '../../lib/breathClock';
+import { useBreathColourChoice, useOrbColourChoice } from '../../lib/deviceMemory';
+import { useKeptPalettes } from '../../lib/keptPalettes';
+import { breathSequence, orbVectors, resolveColours } from '../../lib/logoColours';
+import { DEFAULT_OUTER_ORBIT } from '../../lib/orbitLook';
+import { ringAlphas, ringEdgeStart } from '../../lib/breathStrength';
+
+/**
+ * The breathing ring grows to the middle of the ring of outer orbs and no further: its full-size diameter is the orb ring's diameter (2 x the orbs' radius, a fraction of the logo's size,
+ * 0.5 each way so the same as the logo's size), so its outer edge passes behind the orbs, which are fully opaque and drawn above it. Tied to the orbs' radius so the two cannot drift apart.
+ */
+export const RING_END_FRACTION = DEFAULT_OUTER_ORBIT.radius * 2;
 
 // Valar Sigils: Dual Focus (Individual/Communal) with 6-Color Chromatic Vectors
 // The first color of each palette is its main color. Palettes are starting points, not a measurement.
@@ -119,6 +130,24 @@ export const valarColors = [
 // All 96 colours (16 Valar x 6 colours each) in breath order. Shared with the gem, which tints to the
 // same colour as the ring.
 export const allColors: string[] = valarColors.flatMap((valar) => valar.vector);
+const originalOrbVectors: string[][] = valarColors.map((valar) => valar.vector);
+
+/**
+ * The colours of the breath ring and of the gem's tint, one a breath: the original 96 unless the visitor chose another set in Settings
+ * (src/lib/logoColours.ts). The same array every time while the choice and the palettes they kept stay as they are.
+ */
+export function useBreathColours(): string[] {
+  const choice = useBreathColourChoice();
+  const kept = useKeptPalettes();
+  return useMemo(() => (choice === 'original' ? allColors : breathSequence(resolveColours(choice, valarColors, kept))), [choice, kept]);
+}
+
+/** The six-colour vector of each of the sixteen orbs: each palette's own unless the visitor chose another set in Settings. */
+export function useOrbVectors(): string[][] {
+  const choice = useOrbColourChoice();
+  const kept = useKeptPalettes();
+  return useMemo(() => (choice === 'original' ? originalOrbVectors : orbVectors(resolveColours(choice, valarColors, kept), valarColors.length)), [choice, kept]);
+}
 
 // Convert hex to rgba
 function hexToRgba(hex: string, alpha: number): string {
@@ -150,6 +179,8 @@ interface ValarBreathingLogoProps {
   children: React.ReactNode;
   enabled?: boolean;
   opacity?: number; // 0.1 to 1.0
+  /** How much stronger than standard the ring is drawn, 1 to 2 (src/lib/breathStrength.ts): a brighter glow with a wider soft edge. The timing is never changed. */
+  boost?: number;
   logoSize?: number; // Size of the logo to match breathing animation to
   cycleDuration?: number; // seconds for one complete breath cycle
   technique?: BreathingTechnique | null; // overrides the default even 40/50/50/... timing shape
@@ -166,6 +197,7 @@ export function ValarBreathingLogo({
   children,
   enabled = true,
   opacity = 0.75,
+  boost = 1,
   logoSize = 200,
   cycleDuration = 10,
   technique = null,
@@ -179,8 +211,11 @@ export function ValarBreathingLogo({
   const { applied, style: fadeStyle } = useFadeSwitch({ tech: technique, cycleDur: cycleDuration, start: cycleStart }, shapeKey);
   const { tech, cycleDur, start } = applied;
 
-  // Total animation cycle = 96 colors × cycleDuration seconds each
-  const totalDuration = allColors.length * cycleDur;
+  // The ring's colours, one a breath: all 96 unless the visitor chose another set (Settings, Logo look, Breathing colours).
+  const colours = useBreathColours();
+
+  // Total animation cycle = every colour (96 by default) × cycleDuration seconds each
+  const totalDuration = colours.length * cycleDur;
 
   // Derive the breath's expand/hold/contract/hold shape from the technique's phase
   // fractions (ih/hi/ex/ho in ms); falls back to an even 4-phase split when none is set.
@@ -234,7 +269,7 @@ export function ValarBreathingLogo({
     const scheduleNext = () => {
       const elapsed = (Date.now() - start) / 1000;
       const cyclePos = ((elapsed % totalDuration) + totalDuration) % totalDuration;
-      const idx = Math.floor(cyclePos / cycleDur) % allColors.length;
+      const idx = Math.floor(cyclePos / cycleDur) % colours.length;
       const phaseIntoRing = cyclePos - idx * cycleDur;
       setActiveIndex(idx);
       const msUntilNext = (cycleDur - phaseIntoRing) * 1000;
@@ -243,9 +278,12 @@ export function ValarBreathingLogo({
     scheduleNext();
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, start, cycleDur, totalDuration, allColors.length, ringsEpochKey]);
+  }, [enabled, start, cycleDur, totalDuration, colours, ringsEpochKey]);
 
-  const activeColor = allColors[activeIndex] ?? allColors[0];
+  const activeColor = colours[activeIndex % colours.length] ?? colours[0];
+  // The ring's soft gradient for the chosen strength: at standard (boost 1) exactly the old alphas and edge; above it brighter and wider.
+  const alphas = ringAlphas({ opacity, boost });
+  const ringEdge = ringEdgeStart({ opacity, boost });
 
   // Plain CSS animation instead of Motion's JS-driven `animate` -- CSS's
   // animation-play-state genuinely freezes this on pause, where Motion's
@@ -313,13 +351,13 @@ export function ValarBreathingLogo({
             ref={ringRef}
             className="absolute rounded-full pointer-events-none"
             style={{
-              width: logoSize,
-              height: logoSize,
-              left: 0,
-              top: 0,
+              width: logoSize * RING_END_FRACTION,
+              height: logoSize * RING_END_FRACTION,
+              left: (logoSize * (1 - RING_END_FRACTION)) / 2,
+              top: (logoSize * (1 - RING_END_FRACTION)) / 2,
               // Use closest-side so 100% is at the circle edge, then keep colors fully transparent past that
               // This prevents square corner artifacts when the box is scaled/transformed
-              background: `radial-gradient(circle closest-side, transparent 0%, transparent 30%, ${hexToRgba(activeColor, opacity * 0.08)} 50%, ${hexToRgba(activeColor, opacity * 0.15)} 70%, ${hexToRgba(activeColor, opacity * 0.25)} 90%, ${hexToRgba(activeColor, opacity * 0.4)} 99%, transparent 100%)`,
+              background: `radial-gradient(circle closest-side, transparent 0%, transparent ${ringEdge}%, ${hexToRgba(activeColor, alphas[0])} 50%, ${hexToRgba(activeColor, alphas[1])} 70%, ${hexToRgba(activeColor, alphas[2])} 90%, ${hexToRgba(activeColor, alphas[3])} 99%, transparent 100%)`,
               borderRadius: '50%',
               zIndex: 1,
               animation: `${ringAnimName} ${cycleDur}s linear infinite`,
