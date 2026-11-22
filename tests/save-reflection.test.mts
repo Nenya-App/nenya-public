@@ -70,7 +70,7 @@ ok('the links sit in every gateway header, on the review, and "Continue" on the 
 {
   const { LEGAL_PARTS } = await import('../src/lib/legalDocument.ts');
   const t = JSON.stringify(LEGAL_PARTS);
-  ok('the Terms describe it: your choice, this device, encrypted, 24 hours, ID and passcode not stored, erased by Forget me and Emergency Exit, its limits', /Save and return later/.test(t) && /for at most 24 hours/.test(t) && /Neither the ID nor the passcode is stored/.test(t) && /Forget me and Emergency Exit/.test(t) && /stops a glance/.test(t) && /storage tools can see that something locked is saved/.test(t));
+  ok('the Terms describe it: your choice, this device, encrypted, 24 hours, ID and passcode not stored, erased by Forget me and Emergency Exit, its limits', /Save and return later/.test(t) && /24 hours at most/.test(t) && /Neither the ID nor the passcode is stored/.test(t) && /Forget me and Emergency Exit/.test(t) && /stops a glance/.test(t) && /storage tools can see that something locked is saved/.test(t));
 }
 
 // Version 2 (tray mode, VITE_LENS_TRAY): the added lenses plus the ones opened but not added. Version 1 still opens, and the reader gives either one back in the tray's shape.
