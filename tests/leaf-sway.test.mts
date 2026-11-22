@@ -82,4 +82,4 @@ ok('component: each leaf is a layer of its own, turned by CSS, with its own filt
 ok('component: the layers are hidden from assistive technology like the single picture', (src.match(/aria-hidden="true"/g) ?? []).length >= 3);
 ok('component: the over-and-under comes from the paths, so the layer order does not matter (it says so)', /not made by stacking order/.test(src));
 const logo = readFileSync(new URL('../src/app/components/NenyaLogo.tsx', import.meta.url), 'utf8');
-ok('the logo passes the visitor\'s wish, and never while the page is pinch-zoomed (the light drawing)', /sway=\{swayWish && !zoomed\}/.test(logo) && /useLeafSway\(\)/.test(logo));
+ok('the logo passes the visitor\'s wish, and never while the page is pinch-zoomed (the light drawing)', /sway=\{plan\.leafSway && !zoomed\}/.test(logo) && /useLeafSway\(\)/.test(logo));

@@ -6,6 +6,9 @@ import { Label } from './ui/label';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
 import { SettingsCard } from './SettingsCard';
+import { useReducedMotionNow } from './useReducedMotionNow';
+import { MOTION_REDUCED_REASON, MOTION_STOPPED_STATUS, motionButtonLabel, motionMessage } from '../../lib/motionStop';
+import { setMotionStopped, useMotionStopped } from '../../lib/deviceMemory';
 import { CARDS_INSTRUCTION, NO_CARDS_OPEN, allCardsOpen, closeAllCards, noCardsOpen, openAllCards, toggleCard, type OpenCards, type SettingsCardId } from '../../lib/settingsCards';
 import { useTheme } from './ThemeProvider';
 import { DeviceMemoryControls } from './DeviceMemoryControls';
@@ -70,8 +73,13 @@ export function AccessibilitySettingsContent({
 
   // The cards all start closed, every visit; which are open is not stored.
   const [openCards, setOpenCards] = useState<OpenCards>(NO_CARDS_OPEN);
-  const card = (id: SettingsCardId, title: string, children: React.ReactNode) => (
-    <SettingsCard id={`a11y-${id}`} title={title} open={!!openCards[id]} onToggle={() => setOpenCards((o) => toggleCard(o, id))}>{children}</SettingsCard>
+  // Stop motion: held by the visitor's button or by the device's reduced-motion request (then the button shows stopped and cannot be pressed).
+  const motionStopped = useMotionStopped();
+  const reducedMotion = useReducedMotionNow();
+  const motionHeld = motionStopped || reducedMotion;
+  const [motionMessageText, setMotionMessageText] = useState('');
+  const card = (id: SettingsCardId, title: string, children: React.ReactNode, status?: string) => (
+    <SettingsCard id={`a11y-${id}`} title={title} status={status} open={!!openCards[id]} onToggle={() => setOpenCards((o) => toggleCard(o, id))}>{children}</SettingsCard>
   );
 
   // Pending changes state
@@ -115,6 +123,26 @@ export function AccessibilitySettingsContent({
 
   return (
     <div className="space-y-3">
+      {/* Stop motion: always visible at the very top, not inside a card. One press holds the decorative movement still; Resume brings back what was set. */}
+      <div className="space-y-1">
+        <button
+          type="button"
+          aria-pressed={motionHeld}
+          disabled={reducedMotion}
+          onClick={() => { const next = !motionStopped; setMotionStopped(next); setMotionMessageText(motionMessage(next)); }}
+          aria-describedby="a11y-motion-help"
+          className="min-h-11 w-full rounded-md border-2 border-foreground px-3 text-sm font-medium text-foreground disabled:opacity-80"
+        >
+          {motionButtonLabel(motionHeld)}
+        </button>
+        <p id="a11y-motion-help" className="text-xs text-muted-foreground">
+          {reducedMotion
+            ? MOTION_REDUCED_REASON
+            : 'Holds the leaves, the inner lights, the gem and the orbs still. The breathing ring, the counter and the tones carry on. Your other settings are kept.'}
+        </p>
+        <p role="status" aria-live="polite" className="sr-only">{motionMessageText}</p>
+      </div>
+
       {/* How the cards work, and open-all / close-all (helpful with a screen reader). */}
       <div className="space-y-2">
         <p id="a11y-cards-help" className="text-sm text-foreground">{CARDS_INSTRUCTION}</p>
@@ -256,7 +284,7 @@ export function AccessibilitySettingsContent({
           </div>
         )}
       </div>
-      ))}
+      ), motionHeld ? MOTION_STOPPED_STATUS : undefined)}
 
       {card('logo-look', 'Logo look', (
       <div className="space-y-3">

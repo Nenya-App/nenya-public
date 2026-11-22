@@ -119,6 +119,8 @@ export interface Prefs {
   previewPercent?: number;
   /** The inner ring of orbs behind the gem: 'moving' (the default), 'still' or 'hidden' (src/lib/logoLook.ts). */
   innerOrbs?: string;
+  /** The visitor pressed Stop motion: the decorative movement is held still without changing the individual motion settings (src/lib/motionStop.ts). Off unless chosen. */
+  motionStopped?: boolean;
   /** The leaves sway very slightly, as in a gentle breeze. Off unless the visitor switches it on; never on with reduced motion. */
   leafSway?: boolean;
   /** The colours of the breath ring and the gem's tint, and of the sixteen orbs: a choice from src/lib/logoColours.ts ('original' when none was made). Only the choice is kept, never the colours of a palette the visitor made. */
@@ -152,6 +154,7 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   previewSize: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 120 && v <= 400,
   previewPercent: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 50 && v <= 200,
   leafSway: isBool,
+  motionStopped: isBool,
   innerOrbs: (v) => (INNER_ORB_MODES as readonly unknown[]).includes(v),
   breathColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
   orbColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
@@ -494,3 +497,14 @@ export function setInnerOrbMode(v: InnerOrbMode | string): void {
   lookListeners.forEach((l) => l());
 }
 export const useInnerOrbMode = (): InnerOrbMode => useSyncExternalStore(subscribeLook, getInnerOrbs, () => DEFAULT_INNER_ORB_MODE);
+
+// Stop motion: one switch that holds the decorative movement still and wins over the individual motion settings without changing them. Off unless the visitor pressed it; kept like the other display settings.
+let motionStoppedNow: boolean | null = null;
+const getMotionStopped = (): boolean => (motionStoppedNow ??= loadPrefs().motionStopped === true);
+export const getMotionStoppedState = getMotionStopped;
+export function setMotionStopped(on: boolean): void {
+  motionStoppedNow = on === true;
+  savePref('motionStopped', motionStoppedNow);
+  lookListeners.forEach((l) => l());
+}
+export const useMotionStopped = (): boolean => useSyncExternalStore(subscribeLook, getMotionStopped, () => false);

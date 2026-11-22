@@ -23,11 +23,12 @@ import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type Out
 import { GEM_ENGINE, type GemEngine } from '../../lib/gemSprite';
 import { liveGemSupported } from '../../lib/gemRenderer';
 import { deviceProfile } from '../../lib/deviceProfile';
-import { useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook, useGemSidesChoice, useInnerOrbMode, useLeafSway, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
+import { useMotionStopped, useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook, useGemSidesChoice, useInnerOrbMode, useLeafSway, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
 import { effectiveGemSides, innerOrbsDrawn, innerOrbsMove, randomHaloColors } from '../../lib/logoLook';
 import { useZoomedIn } from '../../lib/zoomLite';
 import { DEFAULT_KALEIDOSCOPE, KALEIDOSCOPE_PRESETS } from '../../lib/kaleidoscope';
 import { lightBreathCss, lightBreathKey, lightMotionFor } from '../../lib/lightMotion';
+import { motionPlan } from '../../lib/motionStop';
 import { breathLengthMs } from '../../lib/breathClock';
 
 // Above this size, the full-resolution source is used instead -- 128px
@@ -162,8 +163,8 @@ export default function NenyaLogo({
   const swayWish = useLeafSway();
   // The inner lights behind the gem: moving (they follow the gem's own motion settings), still, or hidden (Settings, Logo look, Inner lights). The shaded
   // orbs (the bench's 'orb' style) keep their old pulse.
-  const innerMode = useInnerOrbMode();
-  const innerMoves = innerOrbsMove(innerMode);
+  const innerChosen = useInnerOrbMode();
+  const motionStopped = useMotionStopped();
   const kalVisitor = useGemKaleidoscope();
   const kalLookId = useGemKaleidoscopeLook();
   const kalBreath = useGemKaleidoscopeBreath();
@@ -176,6 +177,10 @@ export default function NenyaLogo({
     q.addEventListener?.('change', update);
     return () => q.removeEventListener?.('change', update);
   }, []);
+  // What may move now: the visitor's Stop motion, or the device's reduced-motion request, hold the decorative movement still over every individual setting (src/lib/motionStop.ts).
+  const plan = motionPlan({ stopped: motionStopped, reducedMotion, leafSway: swayWish, kaleidoscope: kalVisitor || !!liveGem?.kaleidoscope?.on, innerLights: innerChosen });
+  const innerMode = plan.innerLights;
+  const innerMoves = innerOrbsMove(innerMode);
   // The orbs' colours: each palette's own unless the visitor chose another set (Settings, Logo look, Orb colours).
   const orbVecs = useOrbVectors();
   const allOrbColours = useMemo(() => orbVecs.flat(), [orbVecs]);
@@ -243,6 +248,7 @@ export default function NenyaLogo({
   return (
     <div 
       className={`relative ${className}`}
+      data-motion-stopped={plan.held ? 'true' : undefined}
       style={{ 
         width: size, 
         height: size,
@@ -265,7 +271,7 @@ export default function NenyaLogo({
           className="absolute"
           style={{ width: size * 0.765, height: size * 0.765, zIndex: 10, left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}
         >
-          <MallornLeaves size={size * 0.765} count={leafChoice} cycleStart={cycleStart} technique={technique} breathingEnabled={breathingEnabled} sway={swayWish && !zoomed} />
+          <MallornLeaves size={size * 0.765} count={leafChoice} cycleStart={cycleStart} technique={technique} breathingEnabled={breathingEnabled} sway={plan.leafSway && !zoomed} />
         </div>
       )}
       {showLogo && !showValarOrbit && (
@@ -459,8 +465,8 @@ export default function NenyaLogo({
             marginTop: -outerOrbitRadius,
             zIndex: 5, // Below inner orbit (20) but above base logo (10)
             willChange: 'transform',
-            animation: `nenya-orbit-ccw ${ORBIT_DURATION}s linear infinite`, // Opposite direction
-            animationDelay: `${orbitDelay}s`,
+            animation: plan.outerOrbsMove ? `nenya-orbit-ccw ${ORBIT_DURATION}s linear infinite` : undefined, // Opposite direction; held still when motion is stopped
+            animationDelay: plan.outerOrbsMove ? `${orbitDelay}s` : undefined,
                       }}
         >
           <style>{orbHueCss}</style>
@@ -494,7 +500,7 @@ export default function NenyaLogo({
                   ['--halo-lo' as string]: outer.opacityLow, ['--halo-hi' as string]: outer.opacityHigh,
                   opacity: outer.opacityLow,
                   // Linear, so the colour is always fading and never rests or snaps; the negative delay puts each orb part way round the cycle from the first frame.
-                  animation: `nho-h-${index} ${colorCycleDuration}s linear -${index * 2}s infinite, nho-h2-${index} ${colorCycleDuration}s linear -${index * 2}s infinite, nenya-halo-breathe ${4 + index * 0.3}s ease-in-out infinite`,
+                  animation: `nho-h-${index} ${colorCycleDuration}s linear -${index * 2}s infinite, nho-h2-${index} ${colorCycleDuration}s linear -${index * 2}s infinite, ${plan.glowSwells ? `nenya-halo-breathe ${4 + index * 0.3}s ease-in-out infinite` : 'none'}`,
                 }}
               />
             ) : null;
@@ -518,11 +524,11 @@ export default function NenyaLogo({
                   WebkitBackfaceVisibility: 'hidden',
                   transform: 'translateZ(0)',
                 }}
-                animate={{
+                animate={plan.outerOrbsMove ? {
                   scale: [0.95, 1.05, 0.95],
                   rotate: 360,
-                }}
-                transition={{
+                } : { scale: 1, rotate: 0 }}
+                transition={plan.outerOrbsMove ? {
                   scale: {
                     duration: 4 + (index * 0.3),
                     repeat: Infinity,
@@ -533,7 +539,7 @@ export default function NenyaLogo({
                     repeat: Infinity,
                     ease: "linear"
                   }
-                }}
+                } : { duration: 0 }}
               >
                 <OrbSurface d={outerOrbSize} />
               </m.div>

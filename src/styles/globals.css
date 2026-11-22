@@ -769,6 +769,8 @@
   .nenya-logo-hover:hover .nenya-orb-halo {
     scale: 1.18;
   }
+  /* Stop motion (src/lib/motionStop.ts): the glow does not swell, not even when the logo is hovered. */
+  [data-motion-stopped="true"] .nenya-orb-halo { scale: 1 !important; transition: none; }
   @media (prefers-reduced-motion: reduce) {
     .nenya-orb-halo { transition: none; animation: none !important; opacity: var(--halo-hi) !important; }
     .nenya-orb-hued { animation: none !important; }

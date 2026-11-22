@@ -18,7 +18,7 @@ import { KALEIDOSCOPE_PRESETS, breathDepth, breathPeriodS, kaleidoscopeCut, type
 import { DEFAULT_INNER_ORBIT, emergence, restingEmergence, type InnerOrbitLook } from '../../lib/orbitLook';
 import { lightLevel, lightRingAngle, type LightMotion } from '../../lib/lightMotion';
 import { SITE_LIVE_FIELD_ALPHA, SITE_LIVE_GEM } from '../../lib/siteGem';
-import { useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook } from '../../lib/deviceMemory';
+import { useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook, useMotionStopped } from '../../lib/deviceMemory';
 
 /** The live gem's settings (see src/lib/gemRenderer.ts). All optional: the defaults are the tuned starting point. */
 export interface LiveGemLook {
@@ -163,7 +163,10 @@ export default function SpectralGem({
   // The live settings are read on every frame, so changing them does not restart the loop. Only a change of quality
   // (which rebuilds the shader) does.
   // The visitor's switch (accessibility panel) turns the kaleidoscope on in addition to whatever the look says; a toggle either way puts the stone back to its plain cut first.
-  const visitorKaleido = useGemKaleidoscope();
+  // Stop motion holds the kaleidoscope still (the stone keeps its plain cut) without changing the switch (src/lib/motionStop.ts).
+  const kaleidoSwitch = useGemKaleidoscope();
+  const motionStopped = useMotionStopped();
+  const visitorKaleido = kaleidoSwitch && !motionStopped;
   // The visitor's own look (Calm, Gentle, Lively, Full motion) applies while their switch is on (owner, 2026-11-15).
   const visitorLook = useGemKaleidoscopeLook();
   const visitorBreath = useGemKaleidoscopeBreath();

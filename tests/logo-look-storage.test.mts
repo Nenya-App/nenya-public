@@ -92,3 +92,14 @@ const chose = await fresh('chose', { breathColours: 'original', orbColours: 'ori
 ok('a stored choice always wins, "Original" included: someone who chose it stays on Original, and an off stays off', chose.getBreathColourChoice() === 'original' && chose.getOrbColourChoice() === 'original' && chose.getLeafSway() === false && chose.getOrbHaloStyle() === 'own' && chose.getInnerOrbMode() === 'still' && chose.getBreathPreviewPercent() === 100 && chose.getGemKaleidoscope() === false && chose.getLogoLeaves() === 8 && chose.getGemSidesChoice() === 10);
 const odd = await fresh('odd', { breathColours: 'neon' });
 ok('a stored value that is not offered is dropped, so the default applies', odd.getBreathColourChoice() === 'preset:night');
+
+// Stop motion is stored like the other display settings and is off unless pressed.
+const still = await fresh('still', null);
+ok('motion is not stopped before the button is pressed', still.getMotionStoppedState() === false);
+still.setRemembering(true);
+still.setMotionStopped(true);
+ok('with Remember on, the stopped state is stored as motionStopped, and the individual motion settings are not touched', JSON.parse(store['nenya.prefs']).motionStopped === true && JSON.parse(store['nenya.prefs']).leafSway === undefined);
+store['nenya.prefs'] = JSON.stringify({ motionStopped: 'yes' });
+ok('a value that is not true or false is dropped when read', still.loadPrefs().motionStopped === undefined);
+const kept = await fresh('kept', { motionStopped: true, leafSway: true });
+ok('a stopped state stored on the device is read back, next to a sway setting that stays on', kept.getMotionStoppedState() === true && kept.getLeafSway() === true);
