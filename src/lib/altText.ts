@@ -1,9 +1,9 @@
 // The site's image descriptions. The same text is written out in docs/brand/alt-text.md for the marketing posts, and a
 // test (tests/alt-text.test.mts) keeps the two identical. See that file for the rules the descriptions follow.
-export const LOGO_ALT_SHORT = 'Nenya logo: a faceted rainbow gem inside a ring of woven leaves, gold and cream, ringed by sixteen colored orbs.';
-export const LOGO_ALT_NO_ORBS = 'Nenya logo: a faceted rainbow gem inside a ring of woven leaves, gold and cream.';
+export const LOGO_ALT_SHORT = 'Nenya logo: a faceted rainbow gem inside a ring of woven leaves, silver and gold, ringed by sixteen colored orbs.';
+export const LOGO_ALT_NO_ORBS = 'Nenya logo: a faceted rainbow gem inside a ring of woven leaves, silver and gold.';
 export const LOGO_ALT_LONG =
-  'The Nenya emblem. At the center is a faceted gem whose facets show rainbow colors. Around it, a ring of leaves drawn in thin gold and cream lines weaves over and under itself. A ring of sixteen small orbs surrounds the leaves, each a different soft color: purples, greens, blues, yellow, orange, red and pink. On the site the orbs slowly change color and the glow follows the breathing rhythm.';
+  'The Nenya emblem. At the center is a faceted gem whose facets show rainbow colors. Around it, a ring of leaves drawn in thin silver and gold lines weaves over and under itself. A ring of sixteen small orbs surrounds the leaves, each a different soft color: purples, greens, blues, yellow, orange, red and pink. On the site the orbs slowly change color and the glow follows the breathing rhythm.';
 
 // A visitor's own pictures: we cannot describe them, so the page says what they are and where the words are.
 export const DRAWING_ALT_PRESENT = 'Your freehand drawing for the present state. We cannot describe your drawing; your written answers are listed above.';
