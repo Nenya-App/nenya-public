@@ -4,7 +4,7 @@
 // Input is numbers only (calls per turn, Neurons per case) and so is the output: no message or reply text can pass through here.
 
 /** What the canary keeps of one case for cost: Neurons spent, and the model calls made on each turn of the case (from the coach's __trace, in process). */
-export interface CostCase { outcome: string; neurons?: number; calls?: number[] }
+export interface CostCase { outcome: string; neurons?: number; calls?: number[]; asked?: string[] }
 
 export interface CostSummary {
   /** Cases counted (answered cases that have call data). */
@@ -19,6 +19,8 @@ export interface CostSummary {
   /** Neurons per case, to the nearest whole Neuron. */
   neuronsPerCaseMedian: number;
   neuronsPerCaseMean: number;
+  /** Send-backs by the site note that asked the model again (the note's first 40 characters: site-written text such as "Your previous attempt repeated words you"). Anything else is counted as "other". */
+  sendBacksByNote: Record<string, number>;
 }
 
 /** Extra calls in one case: each turn's calls beyond the first. A turn with no calls (stopped before the model) adds none. */
@@ -41,6 +43,8 @@ export function costSummary(cases: CostCase[]): CostSummary {
   const modelCalls = used.reduce((a, c) => a + (c.calls as number[]).reduce((x, n) => x + Math.max(0, Math.floor(Number(n) || 0)), 0), 0);
   const sendBacks = used.reduce((a, c) => a + sendBacksIn(c.calls as number[]), 0);
   const costs = used.map((c) => Math.max(0, Number(c.neurons) || 0));
+  const byNote: Record<string, number> = {};
+  for (const c of used) for (const n of c.asked ?? []) { const k = typeof n === 'string' && n.startsWith('Your ') ? n.slice(0, 40) : 'other'; byNote[k] = (byNote[k] ?? 0) + 1; }
   return {
     cases: used.length,
     turns,
@@ -49,6 +53,7 @@ export function costSummary(cases: CostCase[]): CostSummary {
     sendBackRate: turns ? Math.round((sendBacks / turns) * 1000) / 1000 : 0,
     neuronsPerCaseMedian: Math.round(middle(costs)),
     neuronsPerCaseMean: costs.length ? Math.round(costs.reduce((a, b) => a + b, 0) / costs.length) : 0,
+    sendBacksByNote: byNote,
   };
 }
 
