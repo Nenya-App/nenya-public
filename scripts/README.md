@@ -35,6 +35,7 @@ checklist in `CONTRIBUTING.md` for which ones must run before a release.
 | `eval-final-summary.mts` | Reads the fifth reply of invented conversations from a local model for the v2.1 summary (no question, feelings and needs, transcript pointer, no promise, length) | Local |
 | `eval-prompts.mts` | A sample of an open prompt set run against a deployed coach, with a result you can publish | Deployed |
 | `eval-detect.mts` | The site's detection (private list, history patterns, card offers) run over outside test sets. `--record` appends a counts-only run, with the version fingerprint, to `src/lib/checksRuns.json`, the record behind the live figures on "How the Checks Work" (`docs/checks-live-figures.md`) | Research folder |
+| `run-checks-nightly.sh` | Runs `eval-detect.mts`, the per-group bake-off and `--record` in one go, for a nightly schedule you create yourself (nothing is scheduled by the repo; `docs/checks-live-figures.md` has a launchd example) | Research folder, Python packages |
 | `lib/checksRecord.mts` | Version fingerprint, groups-file checks and the record file's appender, used by `eval-detect.mts --record` | n/a |
 | `holistic-coach.mts` | About 50 short conversations across every area of the coach | Deployed |
 | `staging-suite.mts` | Checks staging against `docs/dev-test-script.md` | Deployed |
