@@ -171,7 +171,7 @@ const gateways: Gateway[] = [
     description: 'Understand through pattern & connection',
     explanation: (
       <>
-        Some people like to think about a feeling in terms of patterns and causes. The Pattern Lens asks you to think about your own thinking. This is called metacognition <C n={[34]} />. It also asks you to look for patterns in your feelings. The design inspiration for this lens is the Mirror of Galadriel, in J. R. R. Tolkien&rsquo;s <em>The Fellowship of the Ring</em> (Book 2, chapter 7). In the story, the Mirror shows the past, the present, and what may still happen. Galadriel says even the wise cannot always tell which they are seeing, and that some things do not happen if the viewer turns aside. This lens works the same way. It is meant to help you see your own patterns, what is and what may be, and to leave the choice with you. It does not tell you what to do.
+        Some people like to think about a feeling in terms of patterns and causes. The Pattern Lens asks you to think about your own thinking. This is called metacognition <C n={[34]} />. It also asks you to look for patterns in your feelings. Like all the Lenses, it is inspired by the Mirror of Galadriel (see the top of this page). It is meant to help you see your own patterns, what is and what may be, and to leave the choice with you.
       </>
     ),
     neuroscience: (
@@ -222,6 +222,9 @@ export default function SixGateways({ onBack }: SixGatewaysProps) {
           </p>
           <p>
             <strong>You pick up a lens, look, and decide.</strong> Open any lens, in any order, as many or as few as you like. Some research finds that many options can make a choice harder, and other studies find no effect <C n={[15, 16, 17]} />. So Nenya asks you to pause before a fourth choice on one card. It never stops you. The main choice and two sliders come first; extra words and your own description wait under “More descriptions”. Nothing goes into your report until you press “Add this to my report”. If you only looked through a lens, you can put it down, and the report says so in one plain line: “Examined, not included”.
+          </p>
+          <p>
+            The Lenses are inspired by the Mirror of Galadriel in J. R. R. Tolkien&rsquo;s <em>The Fellowship of the Ring</em> (Book 2, chapter 7). In the story the Mirror shows a person things and leaves the choice of what to do with them. We built the Lenses the same way: each one asks how you sense something, shows you back what you chose and wrote, and does not tell you what it means or what to do.
           </p>
           <p className="text-sm italic">
             <strong>Mirror, not Oracle:</strong> We don't tell you what your emotions mean. We offer ways in that may help you notice what is already there.
