@@ -143,7 +143,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
       case 'intro':
         return {
           title: "Preview: AI translation (planned)",
-          description: "Partner practice is a planned feature and is not built. This scripted walkthrough shows the idea: in a dyadic cell, each person would choose whether to use AI assistance for sending and receiving messages, guided by NVC+ principles. No real AI is involved here.",
+          description: "Partner practice is a planned feature and is not built. This scripted walkthrough shows the idea: in a dyadic cell, each person would choose whether to use AI assistance for sending and receiving messages, guided by feelings-and-needs language from Nonviolent Communication. No real AI is involved here.",
           icon: <Sparkles className="size-6 text-primary" />,
           extraContent: null
         };
@@ -157,27 +157,27 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
       case 'translation-option':
         return {
           title: "Your Translation Option",
-          description: "You can choose to view this message in its raw form (as written) or request an AI-assisted NVC+ translation that identifies feelings and needs. The choice is yours.",
+          description: "You can choose to view this message in its raw form (as written) or request an AI-assisted translation that names feelings and needs. The choice is yours.",
           icon: <Bot className="size-6 text-purple-600" />,
           extraContent: (
             <Card className="p-4 bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800">
               <p className="text-sm text-purple-900 dark:text-purple-100">
-                <strong>Notice the difference:</strong> You can see the partner's raw emotional expression. If you toggle "Receive Translated", this preview shows what an AI-assisted NVC+ translation would look like — the actual translation isn't live yet, this walkthrough uses a scripted example.
+                <strong>Notice the difference:</strong> You can see the partner's raw emotional expression. If you toggle "Receive Translated", this preview shows what an AI-assisted translation would look like — the actual translation isn't live yet, this walkthrough uses a scripted example.
               </p>
             </Card>
           )
         };
       case 'translated-view':
         return {
-          title: "NVC+ Translation Active",
-          description: "The AI has translated the partner's message using NVC+ principles, identifying feelings (hurt, frustrated) and needs (connection, being seen and valued). Notice how it preserves the emotional content while making the underlying needs more explicit.",
+          title: "Translation Active",
+          description: "The AI has translated the partner's message into feelings-and-needs language, identifying feelings (hurt, frustrated) and needs (connection, being seen and valued). Notice how it preserves the emotional content while making the underlying needs more explicit.",
           icon: <Sparkles className="size-6 text-green-600" />,
           extraContent: null
         };
       case 'user-composing':
         return {
           title: "Your Response",
-          description: "Now it's your turn to respond. You can write a raw message or use AI assistance to help craft an NVC+ response. We'll demonstrate using AI assistance.",
+          description: "Now it's your turn to respond. You can write a raw message or use AI assistance to help craft a response in feelings-and-needs language. We'll demonstrate using AI assistance.",
           icon: <MessageCircle className="size-6 text-amber-600" />,
           extraContent: (
             <Card className="p-4 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
@@ -186,7 +186,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
               </p>
               <ul className="text-sm text-amber-900 dark:text-amber-100 space-y-1 list-disc list-inside">
                 <li><strong>Raw:</strong> Send your authentic response as-is</li>
-                <li><strong>AI Assist:</strong> Get help structuring an empathic NVC+ reflection</li>
+                <li><strong>AI Assist:</strong> Get help structuring an empathic reflection</li>
               </ul>
             </Card>
           )
@@ -194,7 +194,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
       case 'user-ai-assist':
         return {
           title: "AI-Assisted Response",
-          description: "The AI has helped you craft a response using NVC+ reflection techniques. It identifies the feelings and needs you heard, then checks for understanding. This demonstrates empathic listening in action.",
+          description: "The AI has helped you craft a response using reflection techniques from Nonviolent Communication. It identifies the feelings and needs you heard, then checks for understanding. This demonstrates empathic listening in action.",
           icon: <Sparkles className="size-6 text-purple-600" />,
           extraContent: null
         };
@@ -341,7 +341,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
                       <div className="space-y-2">
                         <h4 className="text-sm">Receive Translated</h4>
                         <p className="text-xs text-muted-foreground">
-                          When enabled, incoming messages are automatically translated using NVC+ principles. The AI identifies feelings and needs while preserving the emotional content. You can click any translated message to see the original unfiltered text.
+                          When enabled, incoming messages are automatically translated into feelings-and-needs language. The AI identifies feelings and needs while preserving the emotional content. You can click any translated message to see the original unfiltered text.
                         </p>
                       </div>
                     </PopoverContent>
@@ -373,7 +373,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
                       <div className="space-y-2">
                         <h4 className="text-sm">Send with AI</h4>
                         <p className="text-xs text-muted-foreground">
-                          When enabled, the AI helps structure your outgoing messages using NVC+ reflection techniques. It crafts empathic responses that identify feelings and needs, then checks for understanding. Your original message is preserved and can be viewed by clicking the sent message.
+                          When enabled, the AI helps structure your outgoing messages using reflection techniques from Nonviolent Communication. It crafts empathic responses that identify feelings and needs, then checks for understanding. Your original message is preserved and can be viewed by clicking the sent message.
                         </p>
                       </div>
                     </PopoverContent>
@@ -437,7 +437,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
                       {showingRawText.has(message.id) ? (
                         <>
                           <EyeOff className="size-3" />
-                          <span>Raw message (click for NVC+)</span>
+                          <span>Raw message (click for the translation)</span>
                         </>
                       ) : (
                         <>
@@ -450,7 +450,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
                   {message.isTranslated && !showingRawText.has(message.id) && (
                     <Badge variant="secondary" className="absolute -top-2 -right-2 gap-1">
                       <Sparkles className="size-3" />
-                      NVC+
+                      Translated
                     </Badge>
                   )}
                 </div>
@@ -485,7 +485,7 @@ export default function DyadicCellInterface({ userColors, cellCode, onBack }: Dy
                 AI Translation
               </h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Toggle AI assistance for incoming and outgoing messages. AI helps translate to/from NVC+ principles while preserving your authentic expression.
+                Toggle AI assistance for incoming and outgoing messages. AI helps translate to and from feelings-and-needs language while preserving your authentic expression.
               </p>
             </div>
 
