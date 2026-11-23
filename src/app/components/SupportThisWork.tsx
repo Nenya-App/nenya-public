@@ -45,8 +45,8 @@ export function SupportThisWork() {
             more than it takes.
           </p>
           <p className="text-muted-foreground leading-relaxed">
-            Nenya is fiscally sponsored by Fractured Atlas, a 501(c)(3) public
-            charity. Donations are tax-deductible to the extent permitted by law
+            Nenya is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit.
+            Donations are tax-deductible to the extent permitted by law
             and handled with full financial transparency.
           </p>
         </div>
