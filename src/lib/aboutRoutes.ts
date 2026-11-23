@@ -9,7 +9,7 @@ export const ABOUT_TITLES: Record<string, string> = {
   'evolved-leader': 'Evolved Leadership',
   'bio-social-design': 'Our Bio-Social Design',
   'name-philosophy': 'Our Name & Philosophy',
-  'power-of-color': 'The Power of Color',
+  'power-of-color': 'Color and Feeling',
   'six-gateways': 'The Six Lenses',
   'breathing-tool': 'About the Breathing Tool',
   'pantheon-of-needs': 'The Pantheon of Needs',
