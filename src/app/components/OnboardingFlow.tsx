@@ -20,11 +20,11 @@ const STEPS: OnboardingStep[] = ['rhythm', 'terms'];
 // sit behind "More options".
 const RHYTHM_INFO: Record<string, { name: string; blurb: string }> = {
   '6·6': { name: 'Steady', blurb: 'Even breaths, about five a minute. A good place to begin.' },
-  '5·5': { name: 'Resonance', blurb: 'Even breaths, about six a minute.' },
-  '4·6': { name: 'Calming', blurb: 'A longer exhale, to help you settle.' },
-  '3·3': { name: 'Lively', blurb: 'Quicker, lighter breaths to wake you up.' },
-  '4·8': { name: 'Deep calm', blurb: 'A long, slow exhale. Good for winding down.' },
-  Box: { name: 'Box', blurb: 'In, hold, out, hold, all the same length. For focus and reset.' },
+  '5·5': { name: 'Even', blurb: 'Even breaths, about six a minute.' },
+  '4·6': { name: 'Long exhale', blurb: 'In for four, out for six.' },
+  '3·3': { name: 'Quick', blurb: 'Quicker, lighter breaths: in for three, out for three.' },
+  '4·8': { name: 'Longer exhale', blurb: 'In for four, out for eight.' },
+  Box: { name: 'Box', blurb: 'In, hold, out, hold, all the same length.' },
   '4-7-8': { name: '4-7-8', blurb: 'A long hold between breaths. Skip it if holding your breath is uncomfortable.' },
 };
 const MAIN_LABELS = ['6·6', '4·6', '3·3', 'Box'];

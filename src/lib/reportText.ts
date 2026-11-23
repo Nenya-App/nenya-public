@@ -36,7 +36,7 @@ function shapeLine(state: 'present' | 'wish', ids: unknown): string[] {
 }
 
 export const gatewayTitles: Record<Gateway, string> = {
-  sight: 'Sight - Chromesthesia',
+  sight: 'Sight',
   sound: 'Sound - Audition',
   touch: 'Touch - Somatosensation',
   essence: 'Essence - Aromatic Memory',

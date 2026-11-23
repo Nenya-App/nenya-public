@@ -9,7 +9,6 @@ import { setKeptPalettes } from '../../../lib/keptPalettes';
 import { Button } from '../ui/button';
 import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
 import { ArrowLeft, Shuffle, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
-import { GatewaySubtitleLink } from '../GatewaySubtitleLink';
 import PanelLogo from '../PanelLogo';
 import { ValarColorPicker } from '../ValarColorPicker';
 import { Textarea } from '../ui/textarea';
@@ -243,8 +242,7 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
               <PanelLogo size={32} />
               <div className="text-center">
                 <h1 className="text-lg">
-                  Sight - Chromesthesia
-                  <GatewaySubtitleLink href="https://en.wikipedia.org/wiki/Chromesthesia" />
+                  Sight
                 </h1>
                 {!tray && <GatewayProgress index={currentIndex} total={totalGateways} />}
               </div>

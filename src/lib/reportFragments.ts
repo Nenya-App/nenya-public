@@ -80,7 +80,8 @@ export function fragmentsFromText(text: string, lookup: PaletteLookup, words?: C
   let cur: Fragment | null = null;
   for (let i = 0; i < lines.length; i++) {
     const raw = lines[i];
-    const heading = titles.find((t) => raw.trim() === t.title.toUpperCase());
+    // Reports saved before 2026-11-22 headed the Sight piece "SIGHT - CHROMESTHESIA"; they are still read.
+    const heading = titles.find((t) => raw.trim() === t.title.toUpperCase() || (t.id === 'sight' && raw.trim() === 'SIGHT - CHROMESTHESIA'));
     if (heading && /^-{5,}$/.test((lines[i + 1] ?? '').trim())) {
       cur = { id: heading.id, section: heading.section, title: heading.title, lines: [], palettes: [], custom: false };
       out.push(cur);
