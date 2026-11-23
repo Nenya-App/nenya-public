@@ -614,8 +614,8 @@ export const ANSWERS: Answer[] = [
     links: [{ label: 'Where We Stand', page: 'where-we-stand' }],
     tutorial: 'Where we stand: the text of the Where We Stand page.',
     checks: [
-      { claim: 'what has been found, and by whom', file: about('WhereWeStand'), has: 'has been found to be genocide' },
-      { claim: 'a court has not yet ruled', file: about('WhereWeStand'), has: 'A court has not yet ruled' },
+      { claim: 'what has been concluded, and by whom', file: about('WhereWeStand'), has: 'have concluded that Israel’s actions in Gaza since October 2023 are genocide' },
+      { claim: 'a court has not yet ruled', file: about('WhereWeStand'), has: 'No court has yet ruled on whether genocide happened' },
     ],
     status: 'ready',
     ownerNote: 'Written 2026-11-10 from docs/drafts/history-and-violence-text-draft.md; the owner approved the wording the same day. Keep the facts current: the page carries a last-reviewed date.',
@@ -633,7 +633,7 @@ export const ANSWERS: Answer[] = [
     tutorial: 'Where we stand: the text of the Where We Stand page.',
     checks: [
       { claim: 'the occupation is unlawful, said by the ICJ', file: about('WhereWeStand'), has: 'is unlawful' },
-      { claim: 'apartheid findings by named organizations', file: about('WhereWeStand'), has: 'We agree with them' },
+      { claim: 'apartheid conclusions by named organizations', file: about('WhereWeStand'), has: 'We agree with the organizations' },
     ],
     status: 'ready',
     ownerNote: 'Written 2026-11-10 from docs/drafts/history-and-violence-text-draft.md; the owner approved the wording the same day. Keep the facts current: the page carries a last-reviewed date.',
@@ -650,7 +650,7 @@ export const ANSWERS: Answer[] = [
     tutorial: 'Where we stand: the text of the Where We Stand page.',
     checks: [
       { claim: 'American history is stated plainly', file: about('WhereWeStand'), has: 'built in part on slavery' },
-      { claim: 'colonization is not a matter of two sides', file: about('WhereWeStand'), has: 'None of this is a matter of two sides' },
+      { claim: 'on the history facts the page gives no second side', file: about('WhereWeStand'), has: 'we do not give a second side' },
     ],
     status: 'ready',
     ownerNote: 'Written 2026-11-10 from docs/drafts/history-and-violence-text-draft.md; the owner approved the wording the same day. Keep the facts current: the page carries a last-reviewed date.',
