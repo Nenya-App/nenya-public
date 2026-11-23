@@ -37,7 +37,11 @@ export const LEGAL_TITLE = 'Terms of Use & Privacy Policy';
 const SCREEN_MODEL = import.meta.env?.VITE_SCREEN_MODEL === 'on';
 // November 22, 2026: the accuracy corrections (docs/terms-accuracy-fixes-2026-11-22.md) are a material change, so the date moves whatever the switches, and everyone is asked to agree again.
 // (Before this, the date was November 20 with VITE_SCREEN_MODEL on and November 19 with it off.)
-export const LEGAL_EFFECTIVE_DATE = 'November 22, 2026';
+// November 23, 2026, the partner-practice cells revision (docs/legal/README.md): Section 22 and two cross-references appear only in a build with VITE_CELL_ENABLED=on, which is turned on
+// together with the server's CELL_ENABLED=true so the Terms describe the feature only where it is open. With it off the text and the date are the November 22 text, unchanged; with it on
+// the date is November 23, so everyone is asked to agree again. There is no outgoing text to archive: the switch-off text is the November 22 text, which stays in this file.
+const CELLS = import.meta.env?.VITE_CELL_ENABLED === 'on';
+export const LEGAL_EFFECTIVE_DATE = CELLS ? 'November 23, 2026' : 'November 22, 2026';
 
 // The November 18, 2026 revision (docs/drafts/terms-lens-and-first-entry-draft.md, approved by the owner as written). Each new sentence appears only when the build it
 // describes is on, so these Terms are true whichever switches are live: the tray (VITE_LENS_TRAY) and the Terms-first entry (VITE_TERMS_FIRST). With both off the text is
@@ -161,7 +165,7 @@ export const LEGAL_PARTS: LegalPart[] = [
           'No accounts, no advertising, no tracking cookies, nothing that follows you around the internet.',
           'What you enter in the reflection tools (colors, melodies, drawings, body-map placements, written reflections) stays in your browser, is never sent to us, and is gone when you close the tab, unless you choose “Save and return later”: then it is kept on this device, locked with your passcode, and can be opened for 24 hours at most (Section 16). A PDF report is made on your own device.',
           'Our web host keeps ordinary connection logs and gives us visit totals (Section 13). We keep plain daily totals of our own, which identify no one.',
-          'Things leave your device only when you choose: the report form (Section 14), a palette from The Color API (Section 14),'+(WORD_HELP ? " a word look-up (Section 14)," : '')+' the coach demo'+(SUMMARY ? ', and a summary of it if you ask for one' : '')+' (Section 15), and the signed note when you agree to these Terms (Section 16).',
+          'Things leave your device only when you choose: the report form (Section 14), a palette from The Color API (Section 14),'+(WORD_HELP ? " a word look-up (Section 14)," : '')+' the coach demo'+(SUMMARY ? ', and a summary of it if you ask for one' : '')+' (Section 15),'+(CELLS ? ' a partner-practice cell (Section 22),' : '')+' and the signed note when you agree to these Terms (Section 16).',
           'By default the only things kept on your device between visits are a timestamp after a coach conversation and a note of whether you left the coach page’s word lists open or folded (“yes” or “no”). If you choose “Remember my settings on this device,” your display settings and your agreement are kept too (Section 16).',
         ],
       },
@@ -262,7 +266,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         paragraphs: [],
         bullets: [
           'It does not require or offer visitor accounts, create profiles, or set persistent identifiers. The session ID used by “Save and return later” is your two colors (or two random ones), shown to you, never stored with the save, and never sent to us. The only codes that stand for your connection are the one-way daily codes (Sections 14 and 15), which change daily and are deleted within two days; visit statistics count unique visitors by address within a day, with nothing saved on your device; the signed note of your agreement is not an identifier, is not linked to your connection, and is not stored by us.',
-          'It does not send what you enter in the reflection tools to any server, except what you choose to send through the form, The Color API, or the coach demo.',
+          `It does not send what you enter in the reflection tools to any server, except what you choose to send through ${CELLS ? 'the form, The Color API, the coach demo, or a partner-practice cell (Section 22)' : 'the form, The Color API, or the coach demo'}.`,
           'It does not sell, share or monetize data.',
         ],
       },
@@ -306,6 +310,26 @@ export const LEGAL_PARTS: LegalPart[] = [
           'Questions about anything here: info@nenya.biz.',
         ],
       },
+      ...(CELLS
+        ? [
+            {
+              number: 22,
+              heading: 'Partner-practice cells (preview)',
+              paragraphs: [
+                'A partner-practice cell is a place for two people to write to each other. It is a preview that can change or stop. It is not therapy or for emergencies (Section 4).',
+              ],
+              bullets: [
+                'Starting and joining. Anyone can make a cell. You share its code of 16 letters and digits with one other person yourself. There are two seats, each taken once. Both people compare two colors; if they differ, close the cell.',
+                'What our server holds. Your browser encrypts each message before sending, with keys made in the two browsers from the code, which we never receive. Our server holds a mailbox name made from the code, each person’s public key, the encrypted messages (each with a number and a check value), and the time the cell opened. It cannot read the messages.',
+                'How long. A cell is deleted when either person closes it (leaving the page tries to close it), and is never kept past 3 hours from opening: an hourly job removes any that remain. Each person can send up to 300 messages of up to 1,000 characters.',
+                'Who sees what. The other person sees every word and can copy it. Either person can report a message from the other, which shows us its words and time. We keep it in our storage with our host, without the mailbox name, for a person at Nenya to read. No date is set for deleting a report; email us to have one deleted (Section 21).',
+                'Checks. No coach or AI is used in a cell. A simple check on each device looks at the other person’s messages for signs of danger; if it finds one, it shows help lines and pauses the cell for both. It can miss things. Your own messages are not checked.',
+                'Records. A cell has no account, name or email. We do not write messages or codes to our logs. We keep two plain totals: cells opened and reports kept. Our host’s logs (Section 13) still apply.',
+                'Not covered. Anything a person copies, photographs or shares from a cell.',
+              ],
+            },
+          ]
+        : []),
     ],
   },
 ];
