@@ -1,8 +1,8 @@
 # Nenya
 
 A free, private, browser-based tool for structured personal reflection:
-a minute of paced breathing, then six optional sensory "gateways" (Sight,
-Sound, Touch, Essence, Movement, Insight) for checking in with an emotional
+a minute of paced breathing, then six optional sensory "lenses" (Sight,
+Sound, Touch, Essence, Movement, Pattern) for checking in with an emotional
 state without having to put it into words first.
 
 Live at [nenya.biz](https://nenya.biz).
@@ -17,12 +17,12 @@ the in-app Terms of Use for the full statement, including crisis resources.
 - **Breathing first.** A glowing logo and a live counter guide your breath.
   You choose a rhythm on your first screen (Steady 5·5 is the default, about
   six breaths a minute) and can change it any time from the counter.
-- **Six gateways.** Pick one or all of them, in any order:
+- **Six lenses.** Pick one or all of them, in any order:
   - *Sight*: two colors, one for where you are and one for where you wish you were.
   - *Sound*: those colors become a short melody, in six tonal systems
     (Western, Arabic maqam Rast, Javanese Slendro, Indian Bhairav, Japanese
     Miyako-bushi, and the blues), each written in its own notation.
-  - *Touch*, *Essence*, *Movement*, *Insight*: sliders and short prompts, plus a
+  - *Touch*, *Essence*, *Movement*, *Pattern*: sliders and short prompts, plus a
     body map and a freeform drawing canvas.
 - **A report you keep.** A PDF summary, generated entirely in your browser,
   that you can save, print, or bring to someone you trust.
@@ -83,7 +83,7 @@ How much of Nenya was itself written by AI, and which models, is stated in [`AI-
   Venice's service and is not covered by Nenya's privacy and safety systems, and
   the page says so.
 - **The coach demo.** An optional five-exchange conversation with the same
-  character. Inside the site it is the session screen, reached after the gateways
+  character. Inside the site it is the session screen, reached after the lenses
   and reflection tools; it is also available on its own at `nenya.biz/coach`, where
   the visitor first picks the same two interface colors. Those colors theme the
   page and serve as a temporary session label (not an account, not stored); they
@@ -137,13 +137,13 @@ To build static files:
 npm run build   # outputs dist/
 ```
 
-The core tool in `dist/` (breathing, the six gateways, the audio and the PDF report) needs no server-side code, but it
+The core tool in `dist/` (breathing, the six lenses, the audio and the PDF report) needs no server-side code, but it
 has to be served over HTTP rather than opened by double-clicking `index.html` (the files use absolute paths). Any static
 server works, for example `python3 -m http.server` run inside `dist/`. Everything else the site does (the coach, the
 optional forms, counts, partner practice, the owner pages' data) calls the functions in `netlify/functions/`, which a
 static server does not run.
 
-**Offline use.** Once installed and built, the breathing tool, all six gateways,
+**Offline use.** Once installed and built, the breathing tool, all six lenses,
 the audio, and the PDF report work with no internet connection. These do not:
 sending a report or contact message, the `/coach` demo (it needs the relay function and Venice AI), and the outbound links.
 
@@ -193,7 +193,7 @@ The site is one Vite build with several pages. The **core tool** is the first pa
 listed under "the coach and the rest" is optional, separate, and reaches a server function.
 
 ```
-index.html, src/app/  The core tool: breathing, the six gateways, the report, About essays (static)
+index.html, src/app/  The core tool: breathing, the six lenses, the report, About essays (static)
 src/lib/              Shared code, used by the pages and the functions: audio and tonal systems, PDF, legal text,
                       and the coach's checks (safety flags, scrubbing, guards; see docs/coach-features.md)
 src/styles/, public/  Styles; static assets (fonts, icons, PDF assets, web manifest, llms.txt)
