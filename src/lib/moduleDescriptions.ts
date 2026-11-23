@@ -69,4 +69,6 @@ export const TOPICS: Topic[] = [
   { id: "two_intentions", kind: "move", description: "The person wants to say something hard to someone and has not worked out whether they want closeness or to name a pattern." },
   { id: "name_behavior_neutrally", kind: "move", description: "The person describes something another person keeps doing, with how often it happens and what could be seen or heard." },
   { id: "smallest_next_step", kind: "move", description: "The person knows what matters to them and keeps not starting, and says so." },
+  { id: "permission_giving", kind: "move", description: "The person apologizes for having needs, for asking, or for what they feel, or says they should not want or feel it." },
+  { id: "ask_one_question", kind: "move", description: "The person opens the conversation with only a few words and has not yet said what is going on." },
 ];

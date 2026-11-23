@@ -63,6 +63,10 @@ const TRIGGERS: Array<[id: string, group: ModuleGroup, patterns: RegExp[]]> = [
   // Knowing what matters and not starting, said by the person. The older "unable to begin" lens is separate and looks at the whole conversation.
   ['smallest_next_step', 'move', [/(?=[\s\S]*\b(?:i know (?:what (?:matters|i want|i need|i should|i have to|to do)|exactly what)|it matters (?:so much |a lot |deeply )?to me|(?:this|it) is (?:so |really |very )?important to me|i care (?:so much |deeply |a lot )?about (?:this|it|that|getting)|i really want (?:this|to (?:finish|write|start|begin|change|learn|make|get back)))\b)(?=[\s\S]*\b(?:keep (?:putting (?:it|this) off|not (?:starting|doing|getting)|avoiding|delaying|postponing)|(?:haven't|have not|still haven't|never) (?:started|begun|gotten started|got started|made a start|done anything)|can't (?:seem to )?(?:start|begin|get started)|(?:put|putting) (?:it|this) off|procrastinat\w+|just (?:can't|don't) (?:start|begin|do it))\b)/]],
 
+  // Apologising for needing, asking, wanting or feeling, or saying they should not want, feel or need something (owner, 2026-11-22). An apology for something done to
+  // another person ("I'm sorry I yelled at her") does not count. It asks for no action, so it stays available when the person is depleted.
+  ['permission_giving', 'move', [/\b(?:(?:sorry|apologi[sz]e|apologies) (?:for|about) (?:needing|asking|wanting|feeling|being (?:so |such a |too )?(?:needy|emotional|sensitive|a burden|dramatic|clingy|weak|demanding))|sorry to (?:ask|bother|burden|need|be (?:asking|needy|a burden|bothering))|(?:i'?m|i am) (?:so |really |very )?sorry (?:i'?m|i am|i) (?:so |too |being |such a )?(?:needy|emotional|sensitive|a burden|dramatic|clingy|demanding|(?:keep|always|constantly) (?:asking|needing|wanting))|i (?:shouldn'?t|should not) (?:even )?(?:want|feel|need|be (?:feeling|wanting|needing))|(?:i'?m|i am) not supposed to (?:want|feel|need)|is it (?:selfish|wrong|bad|too much) (?:of me )?to (?:want|need|feel|ask)|(?:feel|feeling|felt) guilty (?:for|about) (?:needing|wanting|feeling|asking))\b/]],
+
   // Coaching moves (how the coach answers), written from what the coach does in the calls.
   ['answer_with_words', 'move', [/\b(how (?:do|can|should|could|would) i (?:say|tell|bring up|raise|ask|approach|respond|word|put)|what (?:do|should|can|could) i say|how to (?:say|tell|ask|bring up|raise|approach)|(?:don't|do not) know how to (?:say|tell|ask|bring|raise|start)|what words|how (?:would|do) you (?:say|put))\b/]],
   ['open_a_hard_conversation', 'move', [/\b(hard (?:conversation|talk)|difficult (?:conversation|talk)|bring (?:it |this )?up|raise (?:it|this|the issue)|confront\w*|(?:have|need|want) to (?:tell|talk to|speak to|say something to)|going to (?:tell|talk to|speak to) (?:him|her|them))\b/]],
@@ -78,6 +82,8 @@ const TRIGGERS: Array<[id: string, group: ModuleGroup, patterns: RegExp[]]> = [
   ['reframe_gently', 'move', [/\b(?:(?:he|she|they)(?:'s| is|'re| are) (?:so |just |such |being )?(?:selfish|controlling|lazy|stubborn|manipulative|rude|judgmental|critical|difficult|impossible|a jerk|an idiot|toxic|narcissistic)|always (?:judging|criticiz\w+|complaining))\b/]],
   ['explain_briefly', 'move', [/\b(what (?:is|does|are) (?:a |an |the )?(?:need|needs|nvc|nonviolent communication|request|boundary|trigger|projection)\b|why (?:do|does) (?:i|people|we) react|what does .{1,30} mean|can you explain|explain (?:to me )?(?:what|how|why))/]],
   ['guess_then_check', 'move', [/\b(i feel|i'm feeling|i felt|it hurts|i'm (?:so |really |very )?(?:hurt|sad|angry|upset|frustrated|scared|anxious|lonely|disappointed|resentful|worried)|makes me (?:feel|so))\b/]],
+  // A plain few-word opening (owner, 2026-11-22). The test is in selectModules (it needs the whole conversation, not a phrase); it stands down whenever anything else applies.
+  ['ask_one_question', 'move', []],
 
   // Resources.
   ['crisis_lines', 'resource', [/\b(crisis line|hotline|helpline|where (?:can|do) i (?:get|find) help|who (?:can|should) i call|talk to (?:someone|a person) (?:now|today)|find a therapist|need (?:to talk to )?(?:a )?(?:person|professional))\b/]],
@@ -99,6 +105,7 @@ const CAPS: Record<ModuleGroup, number> = { safety: 1, lens: 2, move: 3, resourc
 export const MODULE_IDS = TRIGGERS.map(([id]) => id);
 export const MODULE_GROUPS: Record<string, ModuleGroup> = Object.fromEntries(TRIGGERS.map(([id, group]) => [id, group]));
 
+const wordCount = (s: string): number => (s.match(/[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*/gu) ?? []).length;
 const fold = (s: string): string => s.normalize('NFKC').toLowerCase().replace(/[‘’]/g, "'");
 
 /** Ids of the modules that fit this conversation, in order of attention (safety, lenses, moves, resources). `exclude` leaves whole groups out. */
@@ -117,6 +124,8 @@ export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup
   for (const lens of Object.keys(SUPPRESS)) if (hit.has(lens)) SUPPRESS[lens].forEach((id) => hit.delete(id));
   // "Offer a smaller step" is one clear offer (space, something lighter, or later) and nothing beside it (owner, 2026-11-22): when it applies, the other moves are left out.
   if (hit.has('offer_a_smaller_step')) for (const [id, group] of TRIGGERS) if (group === 'move' && id !== 'offer_a_smaller_step') hit.delete(id);
+  // "Ask one question" fires only on a plain opening: the person's first message, eight words or fewer (owner, 2026-11-22). The other move wins, and so does any lens, safety module or resource.
+  if (userTexts.length === 1 && wordCount(latest) >= 1 && wordCount(latest) <= 8 && hit.size === 0) hit.add('ask_one_question');
   const out: string[] = [];
   const used: Record<string, number> = { safety: 0, lens: 0, move: 0, resource: 0 };
   for (const [id, group] of TRIGGERS) {
