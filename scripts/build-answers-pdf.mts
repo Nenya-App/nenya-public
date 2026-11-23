@@ -124,7 +124,7 @@ function finish(d: Doc, file: string, footer: string) {
   writeFileSync(join(outDir, file), Buffer.from(doc.output('arraybuffer')));
   console.log('wrote', file, `(${n} pages)`);
 }
-const ABOUT_NAMES: Record<string, string> = { Structure: 'Our Structure', PrivacyPromise: 'Our Privacy Promise', NamePhilosophy: 'Our Name & Philosophy', NVCMethod: 'Our Approach', ContactUs: 'Contact Us', AboutTheFounder: 'About the Designer', SupportUs: 'Support Us', VeniceChat: 'Chat with Nenya’s AI on Venice', AboutMenu: 'the About menu' };
+const ABOUT_NAMES: Record<string, string> = { Structure: 'Our Structure', PrivacyPromise: 'Our Privacy Promise', NamePhilosophy: 'Our Name & Philosophy', NVCMethod: 'Our Approach', ContactUs: 'Contact Us', AboutTheFounder: 'About the Designer', SupportUs: 'Support Us', VeniceChat: 'Chat with Nenya’s AI on Venice', AboutMenu: 'the About menu', WhereWeStand: 'Where We Stand', AboutCoach: 'About the Coach', HowChecksWork: 'How the Checks Work', CoachRegion: 'Where the Coach Is Open', WitnessedConversations: 'Witnessed Conversations', SixGateways: 'The Six Lenses' };
 /** A plain name for a source file, for a reader who does not read code. */
 function sourceName(file: string): string {
   const m = file.match(/about\/([A-Za-z]+)\.tsx$/);
@@ -134,6 +134,8 @@ function sourceName(file: string): string {
     'netlify/functions/coach.mts': 'the coach’s instructions (code)',
     'src/lib/hostility.ts': 'the hostile-turn note (code)',
     'src/lib/personaChecks.ts': 'the persona checks (code)',
+    'src/lib/infraGuard.ts': 'the guard on replies about how Nenya runs (code)',
+    'src/lib/personaGuard.ts': 'the guard on replies that invent a human life (code)',
     'src/coach/FlagNotice.tsx': 'the safety notice (code)',
     'docs/versioning.md': 'versioning notes',
     'docs/translation-scope.md': 'the translation scope',
