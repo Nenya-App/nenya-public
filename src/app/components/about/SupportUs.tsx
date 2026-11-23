@@ -5,6 +5,7 @@ import { Card } from '../ui/card';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollHint } from '../ScrollHint';
 import { AppFooter } from '../AppFooter';
+import { Cite, ReferenceList } from './AboutReferences';
 
 interface SupportUsProps {
   onBack: () => void;
@@ -39,8 +40,10 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                 <h2 className="text-2xl text-nenya-gold-text dark:text-nenya-gold-light">What You're Supporting</h2>
                 <p className="text-muted-foreground leading-relaxed">
                   Nenya is a hybrid work of visual art, literature, and contemplative technology — a digital sanctuary built for reflection, emotional
-                  regulation, and ethical self-inquiry. The breathing interface, the six lenses, the guided reflection: each element is designed to
-                  leave you more present than when you arrived.
+                  regulation, and ethical self-inquiry.
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                  The breathing interface, the six lenses and the guided reflection are meant to help you pause and notice. We have not measured whether they do. Studies of mental health apps in general find small effects on average <Cite pageId="support" n={[1]} />, and one large review found no convincing evidence of benefit <Cite pageId="support" n={[2]} />.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   It is provided free, with no advertising and no profiles of visitors. The plan is for the core breathing and reflection tools to stay free, and people who choose to support it help make that possible. We are exploring subscriptions for additional features.
@@ -56,7 +59,7 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                   <Shield className="size-5 text-nenya-gold-text dark:text-nenya-gold" />
                 </div>
                 <h4 className="font-medium">Privacy-first</h4>
-                <p className="text-sm text-muted-foreground">No surveillance. No data mining. Your inner life stays yours.</p>
+                <p className="text-sm text-muted-foreground">We do not track you or mine your data. Your inner life stays yours.</p>
               </Card>
               <Card className="p-5 space-y-3">
                 <div className="size-10 rounded-full bg-nenya-gold/10 flex items-center justify-center">
@@ -80,12 +83,10 @@ export default function SupportUs({ onBack }: SupportUsProps) {
               <div className="space-y-3 text-left">
                 <h3 className="text-xl">Make a Donation</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Nenya is fiscally sponsored by Fractured Atlas, a 501(c)(3) public charity. Donations are processed through Fractured Atlas's secure
-                  platform, are tax-deductible to the extent permitted by law, and are handled with full financial transparency.
+                  Nenya is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit. Donations are processed through the Fractured Atlas platform and are tax-deductible to the extent permitted by law <Cite pageId="support" n={[3, 4]} />. Fractured Atlas publishes its own current Form 990 and audit <Cite pageId="support" n={[5]} />. Nenya does not publish separate accounts.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Contributions go directly toward keeping the core tools free and the infrastructure maintained — including the servers, the ongoing
-                  development of the reflection and coaching tools, and the research that grounds the work.
+                  Donations go to Fractured Atlas, which charges sponsored projects an administrative fee on donations <Cite pageId="support" n={[4]} />. What is left after the fee is meant for keeping the core tools free and the site running, including servers and the ongoing work on the reflection and coaching tools.
                 </p>
               </div>
               <div className="flex flex-col items-start gap-4">
@@ -111,6 +112,16 @@ export default function SupportUs({ onBack }: SupportUsProps) {
               </div>
             </Card>
           </section>
+          <ReferenceList
+            pageId="support"
+            items={[
+              { n: 1, text: 'Linardon J, Cuijpers P, Carlbring P, Messer M, Fuller‐Tyszkiewicz M (2019). The efficacy of app‐supported smartphone interventions for mental health problems: a meta‐analysis of randomized controlled trials. World Psychiatry.', href: 'https://doi.org/10.1002/wps.20673', linkLabel: 'Free full text' },
+              { n: 2, text: 'Goldberg S, Lam S, Simonsson O, Torous J, Sun S (2022). Mobile phone-based interventions for mental health: A systematic meta-review of 14 meta-analyses of randomized controlled trials. PLOS Digital Health.', href: 'https://doi.org/10.1371/journal.pdig.0000002', linkLabel: 'Free full text' },
+              { n: 3, text: 'ProPublica Nonprofit Explorer (IRS data) (2026). Fractured Atlas Inc (EIN 11-3451703). ProPublica.', href: 'https://projects.propublica.org/nonprofits/organizations/113451703', linkLabel: 'Source page' },
+              { n: 4, text: 'Fractured Atlas (2026). Fiscal sponsorship. fracturedatlas.org.', href: 'https://www.fracturedatlas.org/fiscal-sponsorship', linkLabel: 'Source page' },
+              { n: 5, text: 'Fractured Atlas (2026). What we do. fracturedatlas.org.', href: 'https://www.fracturedatlas.org/what-we-do', linkLabel: 'Source page' },
+            ]}
+          />
         </div>
       </div>
       <ScrollHint />

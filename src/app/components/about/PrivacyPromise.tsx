@@ -1,13 +1,16 @@
 import React from 'react';
 import { onWorkersAi } from '../../../lib/coachService';
-import { ArrowLeft, Shield, Brain, AlertTriangle, BookOpen, Users, TrendingDown, Scale, Eye } from 'lucide-react';
+import { ArrowLeft, Shield, Brain, AlertTriangle, BookOpen, Users, TrendingDown, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { ReturnToTop } from '../ReturnToTop';
 import { AppFooter } from '../AppFooter';
 import { AboutPageLink } from '../AboutPageLink';
+import { Cite, ReferenceList } from './AboutReferences';
 
+// Reworded 2026-11-22 from the About thesis (docs/about-thesis.md): every empirical sentence carries a numbered reference, the storage sentences follow the code and the
+// Terms (Sections 13, 14, 15 and 16), and what no source supports was cut (the economic-cost figures, "ruinous", "foundational resilience").
 interface PrivacyPromiseProps {
   onBack: () => void;
   onNavigateToNamePhilosophy?: () => void;
@@ -32,7 +35,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
         >
           <ArrowLeft className="size-5" />
         </Button>
-        <h1>Architectural Integrity: Rejecting the Costs of Surveillance</h1>
+        <h1>Our Privacy Promise</h1>
       </div>
 
       {/* Content */}
@@ -46,10 +49,19 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                 Rejecting Surveillance Capitalism
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Emotional safety requires trust. You cannot be vulnerable if you fear your reflections might be data-mined, sold, or leaked. The prevailing business model of "Surveillance Capitalism"—which seeks to create an <strong>all-seeing eye</strong> that monitors and controls every aspect of human behavior for maximum profit—is fundamentally incompatible with building authentic well-being. Our architecture is a direct countermeasure to this extractive practice.
+                In studies, people shared more personal details when they trusted who was asking <Cite pageId="privacy" n={[1, 2]} />. If you fear your words may be mined, sold or leaked, it may be harder to be open <Cite pageId="privacy" n={[1, 2]} />.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Technology built to watch and to control often promises connection and convenience while taking something in return. Our name—<strong>Nenya</strong>—points the other way: a place to rest, built to protect and never to rule.
+                Shoshana Zuboff uses the term &ldquo;surveillance capitalism&rdquo;. It means a business model that collects data about people&rsquo;s behavior, predicts it, and sells those predictions <Cite pageId="privacy" n={[3, 4, 5]} />. Scholars debate how best to describe modern surveillance <Cite pageId="privacy" n={[6, 7]} />. We believe a place for reflection should not work this way.
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Nenya is built to keep as little about you as it can. The sections below say exactly what it does keep.
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Studies of health apps found that many send users&rsquo; data to other companies. Many do not say so <Cite pageId="privacy" n={[8, 9]} />. In 2023 the US Federal Trade Commission accused an online counselling service of sharing sensitive data with advertisers <Cite pageId="privacy" n={[10]} />.
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Our name—<strong>Nenya</strong>—points the other way: a place to rest, built to protect and never to rule.
               </p>
               {onNavigateToNamePhilosophy && (
                 <p>
@@ -65,10 +77,16 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="size-10 rounded-full bg-slate-500/10 flex items-center justify-center">
                     <Eye className="size-5 text-slate-600 dark:text-slate-400" />
                   </div>
-                  <h3 className="text-slate-900 dark:text-slate-100">Agency vs. Surveillance</h3>
+                  <h3 className="text-slate-900 dark:text-slate-100">Being watched, and the panopticon</h3>
                 </div>
-                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">
-                  Being watched changes how people think and what they're willing to admit to themselves, even when nothing is said aloud. If a space for reflection is also a space being monitored, that changes what happens inside it. Nenya's commitment to erasing data as it goes is about <strong>restoring agency</strong> — protecting your right to your own self-knowledge, on your own terms.
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                  Studies suggest that people who know they may be watched sometimes say, search for or read less of what feels risky <Cite pageId="privacy" n={[11, 12, 13]} />. Michel Foucault used Bentham&rsquo;s panopticon, a prison where inmates cannot tell when they are watched. He argued that being watched can make people police themselves <Cite pageId="privacy" n={[14]} />. The evidence is mixed. Effects differ by group and topic, and some people get used to being watched <Cite pageId="privacy" n={[15, 16, 17]} />. In a US survey after the 2013 revelations, 38 percent of those who knew a lot about the programs said they had changed an activity <Cite pageId="privacy" n={[18]} />.
+                </p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                  We found no study of reflection tools in particular. This is our own reasoning from the studies above: if you may be watched, you may hold back.
+                </p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                  We keep almost nothing, so there is little to watch. We believe your self-knowledge is yours, on your own terms.
                 </p>
               </div>
             </Card>
@@ -78,10 +96,13 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
           <section className="space-y-6">
             <div className="space-y-4">
               <h2 className="text-3xl bg-gradient-to-r from-nenya-accent-secondary via-nenya-accent-primary to-nenya-accent-warm bg-clip-text text-transparent">
-                Our Architectural Commitment
+                How Nenya is built
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                This is why we have a fundamental, architectural allergy to collecting Personal Identifiable Information (PII). Our design philosophy is a direct rebuttal to the extractive practices of Big Tech. We believe your inner life is not a resource to be mined.
+                Nenya asks for no name, email or account. Our web host still logs connection details such as IP addresses (Section 13 of the terms).
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                We built Nenya as a reply to companies that profit from personal data. We believe your inner life is not a resource to be mined.
               </p>
             </div>
 
@@ -94,7 +115,10 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-blue-900 dark:text-blue-100">You are your Colors, Not a Product</h3>
                     <p className="text-sm text-blue-800/80 dark:text-blue-200/80">
-                      There are no accounts and no profiles here, and nothing you choose in the reflection tools is sent to us. We do not build an advertising profile on you because we see you as a person, not a commodity.
+                      There are no accounts and no profiles. What you choose in the reflection tools stays on your device, apart from the optional steps described below and in the terms (Section 14).
+                    </p>
+                    <p className="text-sm text-blue-800/80 dark:text-blue-200/80">
+                      We do not build an advertising profile of you. We see you as a person, not a product.
                     </p>
                   </div>
                 </div>
@@ -108,7 +132,27 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-emerald-900 dark:text-emerald-100">On-Device Processing (The Goal)</h3>
                     <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
-                      We are engineering toward a system where your conversations with Nenya are processed directly on your own device. In that ideal state, your most private reflections never even touch our servers, making data extraction impossible. We are not there yet. The core reflection tools run entirely in your browser. The optional coach demo sends your messages through our server to {onWorkersAi() ? 'Cloudflare’s Workers AI service, an outside service. We do not store them. Cloudflare reads them in order to answer, so they are not encrypted from Cloudflare, and our server also reads them briefly in memory to check them first, so this is not encryption all the way from your device.' : 'Venice AI, an outside service. We do not store them. Our server encrypts them before they go on to Venice, so Venice relays only encrypted data, but our server reads them briefly in memory to check them first, so this is not encryption all the way from your device.'} A sensory report stays on your device unless you choose to bring parts of it to the coach: then you see exactly the words that would go, nothing is selected for you, and what you choose travels the same way as a message and through the same safety checks. You never have to share anything from a report to use the coach. In the Sight lens, one optional button, “Ask The Color API,” sends a single color, as a hex code, through our server to that outside service to make a palette; making a palette on your device, suggesting a color name, and everything else there send nothing.
+                      We are engineering toward a system where your conversations with Nenya are processed directly on your own device.
+                    </p>
+                    <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
+                      In that state, your reflections would not reach our servers. That would make data extraction much harder. It would not stop everything. Your device, browser and operating system can still collect data, and we cannot control that <Cite pageId="privacy" n={[19, 20, 21]} />.
+                    </p>
+                    <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
+                      We are not there yet. The core reflection tools run entirely in your browser.
+                    </p>
+                    <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
+                      The optional coach demo sends your messages through our server to {onWorkersAi() ? 'Cloudflare’s Workers AI service, an outside service' : 'Venice AI, an outside service'}. We do not store them. If you choose to send a conversation to us as a separate step, we keep it as the terms describe (Section 15).
+                    </p>
+                    <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
+                      {onWorkersAi()
+                        ? 'Cloudflare reads them in order to answer, so they are not encrypted from Cloudflare, and our server also reads them briefly in memory to check them first, so this is not encryption all the way from your device.'
+                        : 'Our server encrypts them before they go on to Venice. Venice says it relays only encrypted data. Our server reads them briefly in memory to check them first, so this is not encryption all the way from your device.'}
+                    </p>
+                    <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
+                      A sensory report stays on your device unless you choose to bring parts of it to the coach. Then you see exactly the words that would go. Nothing is chosen for you. What you choose travels the same way as a message and goes through the same safety checks. You never have to share anything from a report to use the coach.
+                    </p>
+                    <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
+                      In the Sight lens, one optional button, “Ask The Color API,” sends one color, as a hex code, through our server. It goes to an outside service (thecolorapi.com), which makes a palette. Making a palette on your device, suggesting a color name, and everything else there send nothing.
                     </p>
                   </div>
                 </div>
@@ -122,7 +166,13 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-purple-900 dark:text-purple-100">Temporary, Local Storage</h3>
                     <p className="text-sm text-purple-800/80 dark:text-purple-200/80">
-                      What you write, draw, or choose lives only in your device's active memory while the page is open, like a whiteboard wiped clean when you close it. A small amount can stay in your browser between visits: a timestamp after a coach conversation, and, only if you turn it on, your settings. The "Forget me" button erases both, and Emergency Exit erases everything before it leaves the page.
+                      Most of what you write, draw or choose lives only in your device&rsquo;s memory while the page is open. It is like a whiteboard wiped clean when you close it. The one exception is &ldquo;Save and return later&rdquo;. It keeps a sealed copy in your browser, and you can open it for up to 24 hours.
+                    </p>
+                    <p className="text-sm text-purple-800/80 dark:text-purple-200/80">
+                      A little can stay in your browser between visits: a timestamp after a coach conversation, and a yes-or-no note about whether you left the coach page&rsquo;s word lists open or folded. If you turn on &ldquo;Remember&rdquo;, your settings stay too.
+                    </p>
+                    <p className="text-sm text-purple-800/80 dark:text-purple-200/80">
+                      The &ldquo;Forget me&rdquo; button erases these. One small note that you already sent something, which holds short codes and never your text, can last until you close the tab. Emergency Exit erases all of it before it leaves the page, then leaves a one-word flag in that tab so that Back does not return you to the page. The flag goes when you close the tab.
                     </p>
                   </div>
                 </div>
@@ -136,51 +186,47 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-amber-900 dark:text-amber-100">No Tracking, No Profiles, No Ads</h3>
                     <p className="text-sm text-amber-800/80 dark:text-amber-200/80">
-                      We do not track you across the internet. We do not build a profile of you. We do not host advertisements. Our web host counts visits as anonymous totals, with no cookies and nothing stored on your device (Section 13 of the terms). Our success is measured by your growth in emotional literacy, not by your engagement metrics.
+                      We do not track you across the internet. We do not build a profile of you. We do not host advertisements.
+                    </p>
+                    <p className="text-sm text-amber-800/80 dark:text-amber-200/80">
+                      Our web host, Netlify, logs connection details such as IP addresses for security. It also builds visit totals from those logs. No cookie is set and nothing is stored on your device. We see totals, never a list of visitors (Section 13 of the terms).
+                    </p>
+                    <p className="text-sm text-amber-800/80 dark:text-amber-200/80">
+                      We keep daily totals of how often parts of the site are opened, with nothing about who opened them (Section 13 of the terms). We do not try to measure whether you grow.
                     </p>
                   </div>
                 </div>
               </Card>
             </div>
-
-            {/* Economic Cost Addition */}
-            <Card className="p-6 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950 dark:to-pink-950 border-rose-200 dark:border-rose-800">
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Scale className="size-5 text-rose-600 dark:text-rose-400" />
-                  <h3 className="text-rose-900 dark:text-rose-100">The Economic Cost of Emotional and Spiritual Atrophy</h3>
-                </div>
-                <p className="text-sm text-rose-800/80 dark:text-rose-200/80 leading-relaxed">
-                  Our success is measured by your growth in emotional literacy, not by your engagement metrics. The collective economic cost of emotional and spiritual atrophy in the US—amounting to trillions in lost productivity and healthcare <sup>[1]</sup>—proves that exploiting inner life is financially ruinous in the long term. By securing your inner life, we protect the foundational resilience needed for human performance.
-                </p>
-              </div>
-            </Card>
           </section>
 
-          {/* Section 3: The Academic Mandate & Critical Disclaimer */}
+          {/* Section 3: Using the coach with care */}
           <section className="space-y-6">
             <Alert className="border-orange-500/60 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/50 dark:to-amber-950/50">
               <AlertTriangle className="size-5 text-orange-600 dark:text-orange-500" />
               <AlertDescription className="text-orange-900 dark:text-orange-200">
                 <div className="space-y-4">
                   <h3 className="text-lg text-orange-950 dark:text-orange-100">
-                    The Academic Mandate: Critical Thinking and AI Use
+                    Using the coach with care
                   </h3>
                   <p className="text-sm leading-relaxed">
-                    The optional coach demo is written by an AI language model that has been given instructions based on Nonviolent Communication. It is a computational tool, not a human expert, and it can be wrong. The reflection tools do not use AI. The following standards apply to anyone using the coach:
+                    The replies in the optional coach demo are written by an AI language model. It has been given instructions based on Nonviolent Communication. It is a computer program, not a human expert, and it can be wrong. Language models can state false things with confidence <Cite pageId="privacy" n={[22, 23, 24]} />. The reflection tools do not use AI.
+                  </p>
+                  <p className="text-sm leading-relaxed">
+                    Please keep four things in mind when you use the coach:
                   </p>
                   <ol className="space-y-3 text-sm list-decimal list-inside">
                     <li className="leading-relaxed">
-                      <strong>AI is Not Fact:</strong> Any information, insight, or reference presented by the coach should be treated as synthetic analysis, not established fact. We encourage users to verify critical information independently with trusted sources.
+                      <strong>AI is not fact.</strong> Treat what the coach says as a suggestion, not as fact. Check anything important with a source you trust.
                     </li>
                     <li className="leading-relaxed">
-                      <strong>Verify Bias:</strong> Language models are trained on vast and often flawed human data, reflecting systemic biases (e.g., political, cultural, historical). The onus is on the user to apply <strong>critical thinking</strong> and <strong>self-examination</strong> to identify and work with their own internal biases, which may be reflected back by the tool.
+                      <strong>Bias.</strong> Language models learn from large amounts of human writing, and that writing contains biases. Models can repeat them <Cite pageId="privacy" n={[23, 25, 26]} />. Please think about whether a reply fits you. The coach may reflect biases back to you, and you know your own life best.
                     </li>
                     <li className="leading-relaxed">
-                      <strong>No Clinical Authority:</strong> Nenya is for reflection and practice only. It does not provide medical, legal, or therapeutic advice.
+                      <strong>No clinical authority.</strong> Nenya is for reflection and practice only. It does not give medical, legal or therapy advice, and it is not a substitute for a clinician or a lawyer.
                     </li>
                     <li className="leading-relaxed">
-                      <strong>Truth and Creative Expression:</strong> We reject authoritarian attempts to control truth-telling or suppress creative expression. Nenya is designed to facilitate truth-telling for the self, but the ultimate authority on your reality and bias rests with you.
+                      <strong>Truth and creative expression.</strong> We believe people should be free to tell the truth and to make art. Nenya is built to help you be honest with yourself. You are the final judge of your own life.
                     </li>
                   </ol>
                 </div>
@@ -194,11 +240,11 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
               <div className="flex items-center gap-3">
                 <BookOpen className="size-6 text-muted-foreground" />
                 <h2 className="text-3xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
-                  Key Critics and Foundational Research
+                  Writers and research behind this page
                 </h2>
               </div>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Nenya's philosophical framework draws from diverse academic and critical traditions. We encourage you to explore these foundational thinkers and areas of research:
+                These are the writers and studies that shaped how we think about privacy. Reading them is optional. We say where the findings are mixed.
               </p>
             </div>
 
@@ -207,7 +253,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                 <div className="space-y-3">
                   <h3 className="text-foreground">Shoshana Zuboff</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    <strong>Surveillance Capitalism:</strong> Leading critic of the extractive economic model that commodifies human experience and predicts a move toward a "controlled hive".
+                    <strong>Surveillance capitalism:</strong> a scholar who named a business model that turns human behavior into data to predict and sell. Her book is The Age of Surveillance Capitalism (2019) <Cite pageId="privacy" n={[3, 5]} />.
                   </p>
                 </div>
               </Card>
@@ -216,45 +262,29 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                 <div className="space-y-3">
                   <h3 className="text-foreground">Michel Foucault</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    <strong>Power-Knowledge & Surveillance:</strong> Challenged traditional notions of power, showing how institutions use knowledge and surveillance to shape individual reality and behavior.
+                    Discipline and Punish (1975) argues that modern institutions use watching and record-keeping to shape how people behave <Cite pageId="privacy" n={[14]} />. Its chapter on the panopticon is the part we draw on. Other scholars say newer forms of surveillance do not fit that picture <Cite pageId="privacy" n={[6, 7]} />.
                   </p>
                 </div>
               </Card>
 
               <Card className="p-6 bg-muted/30 border-border">
                 <div className="space-y-3">
-                  <h3 className="text-foreground">Digital Rights & Privacy Critics</h3>
+                  <h3 className="text-foreground">Privacy scholars, and a dispute</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    <strong>Dissolution of Rights:</strong> Argued against governmental and corporate overreach in data markets and the deceleration of innovation caused by poorly executed regulations.
+                    Julie Cohen (Between Truth and Power, 2019) argues that law is being reshaped to serve the information economy <Cite pageId="privacy" n={[27]} />. Helen Nissenbaum (Privacy in Context, 2010) describes how societies decide when to let technology lead and when to resist it for privacy <Cite pageId="privacy" n={[28]} />. Whether privacy law slows innovation is disputed. Adam Thierer argues that advance rules slow new technology <Cite pageId="privacy" n={[29]} />. Studies of the EU&rsquo;s GDPR find mixed effects on advertising and on how many vendors firms use <Cite pageId="privacy" n={[30, 31, 32]} />. None of the ones we read settles the question.
                   </p>
                 </div>
               </Card>
 
               <Card className="p-6 bg-muted/30 border-border">
                 <div className="space-y-3">
-                  <h3 className="text-foreground">Patriarchy & Emotional Suppression</h3>
+                  <h3 className="text-foreground">Gender norms and holding back feelings</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    <strong>Costs of Devaluation:</strong> Academic work identifying how ideologies (like patriarchy) assign more worth to rationality than emotion, leading to suppressed feelings and mental health risks. <sup>[2]</sup>
-                  </p>
-                </div>
-              </Card>
-
-              <Card className="p-6 bg-muted/30 border-border">
-                <div className="space-y-3">
-                  <h3 className="text-foreground">The Economic Burden of Emotional and Spiritual Atrophy</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    <strong>Societal Cost of Deficits:</strong> Research quantifying the multi-trillion dollar cost of low emotional intelligence, lack of empathy, and poor self-compassion across the US economy. <sup>[1]</sup>
+                    Feminist philosophers such as Alison Jaggar argue that Western thought long treated emotion as a threat to knowledge <Cite pageId="privacy" n={[33]} />. Separately, studies link habitually hiding feelings with lower well-being and some health risks <Cite pageId="privacy" n={[34, 35, 36]} />. These links are modest. They come from observation, not experiments. Following traditional masculine norms is also linked, modestly, with worse mental health <Cite pageId="privacy" n={[37]} />. No study we found traces the whole chain from patriarchy to illness.
                   </p>
                 </div>
               </Card>
             </div>
-
-            {/* References Note */}
-            <Card className="p-4 bg-muted/20 border-border">
-              <p className="text-xs text-muted-foreground italic">
-                <strong>Note:</strong> [1] and [2] refer to aggregated research on economic and psychological impacts. Users are encouraged to independently verify and explore these topics through academic databases and trusted research institutions.
-              </p>
-            </Card>
           </section>
 
           {/* Section 5: Features Under Development */}
@@ -264,7 +294,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                 Privacy Features We Hope to Build
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                These are privacy and security features we hope to build to further protect your safety and agency. None of them exist yet. They represent our ongoing commitment to user sovereignty and protection against surveillance.
+                These are privacy and safety ideas we hope to build. None of them exists yet. We have not yet tested any of them with survivors of abuse or privacy experts.
               </p>
             </div>
 
@@ -277,10 +307,10 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-cyan-900 dark:text-cyan-100">Shake to Erase</h3>
                     <p className="text-sm text-cyan-800/80 dark:text-cyan-200/80">
-                      A physical gesture-based emergency data wipe. If you need to quickly clear all session data (for example, if someone is looking over your shoulder or you feel unsafe), simply shake your device vigorously and all active conversation data will be immediately purged from memory.
+                      An idea: a shake of your device would clear the page. If someone is looking over your shoulder, you could shake it, and the conversation on the page would be wiped. We have not built or tested this. A shake could also happen by accident.
                     </p>
-                    <p className="text-xs text-cyan-700/70 dark:text-cyan-300/70 italic">
-                      <strong>Use case:</strong> Immediate privacy protection in moments of physical threat or surveillance.
+                    <p className="text-xs text-cyan-700/70 dark:text-cyan-300/70">
+                      <strong>Use case:</strong> a quick way to clear the page if someone may be looking <Cite pageId="privacy" n={[38]} />.
                     </p>
                   </div>
                 </div>
@@ -294,10 +324,10 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-violet-900 dark:text-violet-100">Secondary Passcode Protection</h3>
                     <p className="text-sm text-violet-800/80 dark:text-violet-200/80">
-                      A dual-passcode system that provides protection against coerced access. You would have a primary passcode (for normal use) and a secondary "duress" passcode that, when entered, appears to log you in normally but actually loads a sanitized, empty session—protecting your real data from forced disclosure.
+                      An idea: a second passcode that opens an empty decoy instead of your real data. Nenya has no accounts or passcodes today, so this only makes sense with the encrypted journal described below. We have not built it. A decoy may not fool a determined person.
                     </p>
-                    <p className="text-xs text-violet-700/70 dark:text-violet-300/70 italic">
-                      <strong>Use case:</strong> Protection in domestic abuse situations, authoritarian contexts, or any scenario where you might be forced to unlock your device under duress.
+                    <p className="text-xs text-violet-700/70 dark:text-violet-300/70">
+                      <strong>Use case:</strong> help for people who are forced to unlock a device. Abusive partners often use phones, accounts and spy apps to watch and control people <Cite pageId="privacy" n={[20, 21, 39]} />. We do not know whether a decoy would help.
                     </p>
                   </div>
                 </div>
@@ -311,10 +341,10 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-emerald-900 dark:text-emerald-100">Timed Auto-Purge Sessions</h3>
                     <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
-                      Configurable automatic data deletion based on time intervals or inactivity. You could set your conversations to automatically purge after a set time (e.g., 30 minutes, 2 hours, 24 hours) or after a period of inactivity, ensuring that data doesn't persist longer than you intend.
+                      An idea: you could set a conversation to clear itself after a set time. It could be 30 minutes, 2 hours or 24 hours. Or it could clear after you stop for a while.
                     </p>
-                    <p className="text-xs text-emerald-700/70 dark:text-emerald-300/70 italic">
-                      <strong>Use case:</strong> Reducing the window of vulnerability for sensitive conversations without requiring manual deletion.
+                    <p className="text-xs text-emerald-700/70 dark:text-emerald-300/70">
+                      <strong>Use case:</strong> less to clear by hand.
                     </p>
                   </div>
                 </div>
@@ -328,10 +358,10 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-amber-900 dark:text-amber-100">Interface Disguise Mode</h3>
                     <p className="text-sm text-amber-800/80 dark:text-amber-200/80">
-                      An intentional feature that allows users to disguise the Nenya chat interface as other applications — such as a text messaging interface, notes app, or generic word processor. This protects your conversation content from visual surveillance in public spaces or shared environments.
+                      An idea: the chat screen could look like another app, such as a text-message screen or a notes app. This might help if someone glances at your screen. It would not stop a person who looks closely, and it would not hide anything your device or network can see.
                     </p>
-                    <p className="text-xs text-amber-700/70 dark:text-amber-300/70 italic">
-                      <strong>Use case:</strong> Using Nenya safely in public spaces, shared offices, or anywhere you might be visually surveilled. Your choice, your control.
+                    <p className="text-xs text-amber-700/70 dark:text-amber-300/70">
+                      <strong>Use case:</strong> using Nenya in a public place. People do sometimes see other people&rsquo;s screens, mostly by chance <Cite pageId="privacy" n={[38]} />.
                     </p>
                   </div>
                 </div>
@@ -345,10 +375,10 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                   <div className="space-y-2">
                     <h3 className="text-rose-900 dark:text-rose-100">Encrypted Local Journals (Optional)</h3>
                     <p className="text-sm text-rose-800/80 dark:text-rose-200/80">
-                      For users who want to keep a record of their growth over time, we hope to build optional encrypted local journaling. Your saved reflections would be encrypted on your device using a separate key, never touching our servers, and decryptable only by you.
+                      For people who want a record over time, we hope to build an optional journal. It would be encrypted on your device with a key only you hold. It would never reach our servers. If you lose the key, we could not recover your journal.
                     </p>
-                    <p className="text-xs text-rose-700/70 dark:text-rose-300/70 italic">
-                      <strong>Use case:</strong> Long-term self-tracking without sacrificing privacy. Your journal stays on your device, in your control.
+                    <p className="text-xs text-rose-700/70 dark:text-rose-300/70">
+                      <strong>Use case:</strong> a private record over time. It would stay on your device.
                     </p>
                   </div>
                 </div>
@@ -359,11 +389,63 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
               <Shield className="size-5 text-teal-600 dark:text-teal-500" />
               <AlertDescription className="text-teal-900 dark:text-teal-200">
                 <p className="text-sm leading-relaxed">
-                  <strong>Our Commitment:</strong> We hope to shape these features with input from digital rights activists, survivors of abuse, and privacy researchers. We recognize that privacy isn't just about corporate surveillance—it's also about protection from interpersonal harm, state surveillance, and coercion. Your safety is our architecture.
+                  <strong>Our plan:</strong> we hope to shape these ideas with digital rights groups, survivors of abuse and privacy researchers.
+                </p>
+                <p className="text-sm leading-relaxed mt-2">
+                  Privacy is not only about companies. Partners can use technology to watch and control people <Cite pageId="privacy" n={[21, 39, 40]} />. Governments can watch people too, and studies find that people change what they do online when they know it <Cite pageId="privacy" n={[11, 12]} />.
+                </p>
+                <p className="text-sm leading-relaxed mt-2">
+                  We cannot promise your safety. We can try to build tools that ask for very little.
                 </p>
               </AlertDescription>
             </Alert>
           </section>
+
+          <ReferenceList
+            pageId="privacy"
+            items={[
+              { n: 1, text: 'Joinson A, Reips U, Buchanan T, Schofield C (2010). Privacy, Trust, and Self-Disclosure Online. Human–Computer Interaction.', href: 'https://doi.org/10.1080/07370020903586662', linkLabel: 'Free full text' },
+              { n: 2, text: 'Acquisti A, Brandimarte L, Loewenstein G (2015). Privacy and human behavior in the age of information. Science.', href: 'https://doi.org/10.1126/science.aaa1465', linkLabel: 'Publisher page (may need payment)' },
+              { n: 3, text: 'Zuboff S (2015). Big other: Surveillance Capitalism and the Prospects of an Information Civilization. Journal of Information Technology.', href: 'https://doi.org/10.1057/jit.2015.5', linkLabel: 'Free full text' },
+              { n: 4, text: 'Cinnamon J (2017). Social Injustice in Surveillance Capitalism. Surveillance & Society.', href: 'https://doi.org/10.24908/ss.v15i5.6433', linkLabel: 'Free full text' },
+              { n: 5, text: 'Zuboff S (2019). The Age of Surveillance Capitalism: The Fight for a Human Future at the New Frontier of Power. PublicAffairs (New York); Profile Books (London).' },
+              { n: 6, text: 'Haggerty K, Ericson R (2000). The surveillant assemblage. The British Journal of Sociology.', href: 'https://doi.org/10.1080/00071310020015280', linkLabel: 'Publisher page (may need payment)' },
+              { n: 7, text: 'Galič M, Timan T, Koops B (2016). Bentham, Deleuze and Beyond: An Overview of Surveillance Theories from the Panopticon to Participation. Philosophy & Technology.', href: 'https://doi.org/10.1007/s13347-016-0219-1', linkLabel: 'Free full text' },
+              { n: 8, text: 'Huckvale K, Torous J, Larsen M (2019). Assessment of the Data Sharing and Privacy Practices of Smartphone Apps for Depression and Smoking Cessation. JAMA Network Open.', href: 'https://doi.org/10.1001/jamanetworkopen.2019.2542', linkLabel: 'Free full text' },
+              { n: 9, text: 'Grundy Q, Chiu K, Held F, Continella A, Bero L, Holz R et al. (2019). Data sharing practices of medicines related apps and the mobile ecosystem: traffic, content, and network analysis. BMJ.', href: 'https://doi.org/10.1136/bmj.l920', linkLabel: 'Free full text' },
+              { n: 10, text: 'US Federal Trade Commission (2023). FTC to Ban BetterHelp from Revealing Consumers\' Data, Including Sensitive Mental Health Information, to Facebook and Others for Targeted Advertising. FTC press release, 2 March 2023.', href: 'https://www.ftc.gov/news-events/news/press-releases/2023/03/ftc-ban-betterhelp-revealing-consumers-data-including-sensitive-mental-health-information-facebook', linkLabel: 'Source page' },
+              { n: 11, text: 'Penney J (2016). Chilling Effects: Online Surveillance and Wikipedia Use. Berkeley Technology Law Journal.', href: 'https://doi.org/10.15779/Z38SS13', linkLabel: 'Free full text' },
+              { n: 12, text: 'Marthews A, Tucker C (2017). The Impact of Online Surveillance on Behavior. The Cambridge Handbook of Surveillance Law.', href: 'https://doi.org/10.1017/9781316481127.019', linkLabel: 'Free full text' },
+              { n: 13, text: 'Stoycheff E (2016). Under Surveillance. Journalism & Mass Communication Quarterly.', href: 'https://doi.org/10.1177/1077699016630255', linkLabel: 'Publisher page (may need payment)' },
+              { n: 14, text: 'Foucault M (1975). Discipline and Punish: The Birth of the Prison (Surveiller et punir), translated by Alan Sheridan, Vintage, 1995. Part Three, chapter 3, “Panopticism”.' },
+              { n: 15, text: 'Oulasvirta A, Pihlajamaa A, Perkiö J, Ray D, Vähäkangas T, Hasu T et al. (2012). Long-term effects of ubiquitous surveillance in the home. Proceedings of the 2012 ACM Conference on Ubiquitous Computing.', href: 'https://doi.org/10.1145/2370216.2370224', linkLabel: 'Publisher page (may need payment)' },
+              { n: 16, text: 'Stoycheff E, Liu J, Xu K, Wibowo K (2018). Privacy and the Panopticon: Online mass surveillance’s deterrence and chilling effects. New Media & Society.', href: 'https://doi.org/10.1177/1461444818801317', linkLabel: 'Publisher page (may need payment)' },
+              { n: 17, text: 'Büchi M, Festic N, Latzer M (2022). The Chilling Effects of Digital Dataveillance: A Theoretical Model and an Empirical Research Agenda. Big Data & Society.', href: 'https://doi.org/10.1177/20539517211065368', linkLabel: 'Free full text' },
+              { n: 18, text: 'Rainie L, Madden M, Pew Research Center (2015). Americans\' Privacy Strategies Post-Snowden. Pew Research Center, 16 March 2015.', href: 'https://www.pewresearch.org/internet/2015/03/16/americans-privacy-strategies-post-snowden/', linkLabel: 'Source page' },
+              { n: 19, text: 'Leith D (2021). Web Browser Privacy: What Do Browsers Say When They Phone Home? IEEE Access.', href: 'https://doi.org/10.1109/access.2021.3065243', linkLabel: 'Free full text' },
+              { n: 20, text: 'Chatterjee R, Doerfler P, Orgad H, Havron S, Palmer J, Freed D et al. (2018). The Spyware Used in Intimate Partner Violence. 2018 IEEE Symposium on Security and Privacy (SP).', href: 'https://doi.org/10.1109/SP.2018.00061', linkLabel: 'Publisher page (may need payment)' },
+              { n: 21, text: 'Freed D, Palmer J, Minchala D, Levy K, Ristenpart T, Dell N et al. (2018). “A Stalker\'s Paradise”. Proceedings of the 2018 CHI Conference on Human Factors in Computing Systems.', href: 'https://doi.org/10.1145/3173574.3174241', linkLabel: 'Publisher page (may need payment)' },
+              { n: 22, text: 'Ji Z, Lee N, Frieske R, Yu T, Su D, Xu Y et al. (2023). Survey of Hallucination in Natural Language Generation. ACM Computing Surveys.', href: 'https://doi.org/10.1145/3571730', linkLabel: 'Free full text' },
+              { n: 23, text: 'Bender E, Gebru T, McMillan-Major A, Shmitchell S (2021). On the Dangers of Stochastic Parrots. Proceedings of the 2021 ACM Conference on Fairness, Accountability, and Transparency.', href: 'https://doi.org/10.1145/3442188.3445922', linkLabel: 'Free full text' },
+              { n: 24, text: 'NIST (US National Institute of Standards and Technology) (2024). Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile (NIST AI 600-1). NIST, 26 July 2024.', href: 'https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf', linkLabel: 'Source page' },
+              { n: 25, text: 'Caliskan A, Bryson J, Narayanan A (2017). Semantics derived automatically from language corpora contain human-like biases. Science.', href: 'https://doi.org/10.1126/science.aal4230', linkLabel: 'Free full text' },
+              { n: 26, text: 'Navigli R, Conia S, Ross B (2023). Biases in Large Language Models: Origins, Inventory, and Discussion. Journal of Data and Information Quality.', href: 'https://doi.org/10.1145/3597307', linkLabel: 'Free full text' },
+              { n: 27, text: 'Cohen J (2019). Between Truth and Power. Oxford University Press.', href: 'https://doi.org/10.1093/oso/9780190246693.001.0001', linkLabel: 'Free full text' },
+              { n: 28, text: 'Nissenbaum H (2010). Privacy in Context. Stanford University Press.', href: 'https://doi.org/10.1515/9780804772891', linkLabel: 'Publisher page (may need payment)' },
+              { n: 29, text: 'Thierer A (2016). Permissionless Innovation: The Continuing Case for Comprehensive Technological Freedom (revised and expanded edition). Mercatus Center, George Mason University.', href: 'https://www.mercatus.org/research/books/permissionless-innovation-continuing-case-comprehensive-technological-freedom', linkLabel: 'Source page' },
+              { n: 30, text: 'Goldfarb A, Tucker C (2011). Privacy Regulation and Online Advertising. Management Science.', href: 'https://doi.org/10.1287/mnsc.1100.1246', linkLabel: 'Free full text' },
+              { n: 31, text: 'Johnson G, Shriver S, Goldberg S (2023). Privacy and Market Concentration: Intended and Unintended Consequences of the GDPR. Management Science.', href: 'https://doi.org/10.1287/mnsc.2023.4709', linkLabel: 'Free full text' },
+              { n: 32, text: 'Aridor G, Che Y, Salz T (2023). The effect of privacy regulation on the data industry: empirical evidence from GDPR. The RAND Journal of Economics.', href: 'https://doi.org/10.1111/1756-2171.12455', linkLabel: 'Free full text' },
+              { n: 33, text: 'Jaggar A (1989). Love and knowledge: Emotion in feminist epistemology. Inquiry.', href: 'https://doi.org/10.1080/00201748908602185', linkLabel: 'Free full text' },
+              { n: 34, text: 'Gross J, John O (2003). Individual differences in two emotion regulation processes: Implications for affect, relationships, and well-being. Journal of Personality and Social Psychology.', href: 'https://doi.org/10.1037/0022-3514.85.2.348', linkLabel: 'Publisher page (may need payment)' },
+              { n: 35, text: 'Aldao A, Nolen-Hoeksema S, Schweizer S (2010). Emotion-regulation strategies across psychopathology: A meta-analytic review. Clinical Psychology Review.', href: 'https://doi.org/10.1016/j.cpr.2009.11.004', linkLabel: 'Publisher page (may need payment)' },
+              { n: 36, text: 'Chapman B, Fiscella K, Kawachi I, Duberstein P, Muennig P (2013). Emotion suppression and mortality risk over a 12-year follow-up. Journal of Psychosomatic Research.', href: 'https://doi.org/10.1016/j.jpsychores.2013.07.014', linkLabel: 'Free full text' },
+              { n: 37, text: 'Wong Y, Ho M, Wang S, Miller I (2017). Meta-analyses of the relationship between conformity to masculine norms and mental health-related outcomes. Journal of Counseling Psychology.', href: 'https://doi.org/10.1037/cou0000176', linkLabel: 'Publisher page (may need payment)' },
+              { n: 38, text: 'Eiband M, Khamis M, von Zezschwitz E, Hussmann H, Alt F (2017). Understanding Shoulder Surfing in the Wild. Proceedings of the 2017 CHI Conference on Human Factors in Computing Systems.', href: 'https://doi.org/10.1145/3025453.3025636', linkLabel: 'Publisher page (may need payment)' },
+              { n: 39, text: 'Woodlock D (2016). The Abuse of Technology in Domestic Violence and Stalking. Violence Against Women.', href: 'https://doi.org/10.1177/1077801216646277', linkLabel: 'Publisher page (may need payment)' },
+              { n: 40, text: 'Matthews T, O\'Leary K, Turner A, Sleeper M, Woelfer J, Shelton M et al. (2017). Stories from Survivors. Proceedings of the 2017 CHI Conference on Human Factors in Computing Systems.', href: 'https://doi.org/10.1145/3025453.3025875', linkLabel: 'Free full text' },
+            ]}
+          />
 
           <ReturnToTop onClick={scrollToTop} />
         </div>

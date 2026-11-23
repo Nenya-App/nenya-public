@@ -27,7 +27,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
     {
       icon: Users,
       title: 'Partnership Opportunities',
-      description: 'Interested in collaborating or bringing Nenya to your organization'
+      description: 'Interested in collaborating, or in talking with us about your organization'
     },
     {
       icon: MessageSquare,
@@ -61,7 +61,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
               Contact Us
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We're here to answer your questions and support your journey with Nenya.
+              Write to us with questions, ideas or concerns.
             </p>
           </BloomInstant>
 
@@ -131,7 +131,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
               <div className="space-y-4">
                 <h3 className="text-xl">Questions about the project</h3>
                 <p className="text-sm text-muted-foreground">
-                  For questions about the project's vision, philosophy, or potential collaborations, write to the same address. It is read by the people who look after Nenya.
+                  For questions about the project's vision, philosophy, or potential collaborations, write to the same address. A person at Nenya reads it.
                 </p>
                 <a
                   href="mailto:info@nenya.biz"
@@ -148,7 +148,7 @@ export default function ContactUs({ onBack }: ContactUsProps) {
           <BloomOnScroll>
             <div className="bg-nenya-accent-primary/5 border border-nenya-accent-primary/20 p-6 rounded-lg">
               <p className="text-sm text-center">
-                <strong className="text-nenya-gold-text dark:text-nenya-accent-warm">Privacy Commitment:</strong> We respect your privacy and will never share your contact information with third parties. All correspondence is treated with confidentiality and care.
+                <strong className="text-nenya-gold-text dark:text-nenya-accent-warm">Privacy Commitment:</strong> We use what you send only to reply to you. We do not sell or share your contact details. Your message is also handled by our email provider.
               </p>
             </div>
           </BloomOnScroll>
