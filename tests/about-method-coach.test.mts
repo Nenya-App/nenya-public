@@ -24,7 +24,7 @@ for (const name of PAGES) {
 }
 
 const theory = flat(read('TheoryU'));
-ok('TheoryU: says once that it is an analogy and not a tested method, and that the evidence is thin', /This page is an analogy\. It is our own design, not a tested method/.test(theory) && /no controlled trial/.test(theory));
+ok('TheoryU: says once that it is an analogy and not a tested approach, and that the evidence is thin', /This page is an analogy\. It is our own design, not a tested approach/.test(theory) && /no controlled trial/.test(theory));
 ok('TheoryU: no "deepest truth", "tangible and accessible" or "any order you like" (the lens tray is not on in production)', !/deepest truth|tangible and accessible|any order you like|deepest source/.test(theory));
 ok('TheoryU: the Presencing Institute figures are given as theirs and unchecked', /The Institute says it has a network of over 65,000 people/.test(theory) && /We could not check these figures/.test(theory));
 ok('TheoryU: the outside link says it opens in a new tab', /Presencing Institute →<span className="sr-only"> \(opens an outside site in a new tab\)/.test(theory));
