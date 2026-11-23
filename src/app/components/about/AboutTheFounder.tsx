@@ -9,6 +9,7 @@ import PanelLogo from '../PanelLogo';
 import { BloomInstant } from '../BloomOnScroll';
 import { valarColors } from '../ValarBreathingLogo';
 import { AppFooter } from '../AppFooter';
+import { Cite, ReferenceList } from './AboutReferences';
 
 interface AboutTheFounderProps {
   onBack: () => void;
@@ -54,8 +55,8 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
             <p className="text-lg">
               The practice behind it explores the emotional and ethical dimensions of technology, asking what it would mean to build digital tools
               that give more than they take, that make space for reflection rather than demanding attention. Nenya is the current expression of
-              that question — a hybrid work of visual art, literature, and contemplative technology, grounded in Nonviolent Communication and
-              designed to leave you more present than when you arrived.
+              that question. It is a hybrid work of visual art, literature and contemplative technology, grounded in Nonviolent Communication.
+              It is meant to help you pause and notice.
             </p>
           </div>
 
@@ -68,8 +69,11 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
                 <h3 className="text-lg">Background</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   M.A. in Organizational Leadership (Saint Mary's University of Minnesota) with graduate research focused on self-compassionate
-                  leadership. B.S. in Intentional Leadership for Social Change (University of Minnesota, Twin Cities), with interdisciplinary
-                  coursework in Philosophy, Global Studies, Social Work, Ecology, and Organizational Leadership.
+                  leadership.
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  A bachelor's degree from the University of Minnesota, Twin Cities, with interdisciplinary coursework in Philosophy, Global Studies,
+                  Social Work, Ecology, and Organizational Leadership.
                 </p>
               </div>
             </div>
@@ -86,8 +90,11 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
               <div className="space-y-2">
                 <h3 className="text-lg">Guided by compassion</h3>
                 <p className="text-sm text-muted-foreground">
-                  The orientation that shapes the work is one of compassion for grief: not turning away from suffering but witnessing it fully
-                  and letting it become wisdom. Not fixing, not optimizing, but attending.
+                  The orientation that shapes the work is compassion for grief: not turning away from suffering but witnessing it fully. Some
+                  people say they find meaning in loss <Cite pageId="founder" n={[1]} />. We do not promise that.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Not fixing, not optimizing, but attending.
                 </p>
               </div>
             </div>
@@ -99,21 +106,21 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
               <Card className="p-5 border-nenya-accent-primary/30">
                 <h4 className="font-semibold mb-2 text-nenya-gold-text dark:text-nenya-accent-warm text-sm">Archetypes of Need</h4>
                 <p className="text-xs text-muted-foreground">
-                  The sixteen archetypes give a shared, imaginative vocabulary for human needs that reaches across cultural and linguistic
-                  barriers, making emotional literacy more accessible.
+                  The sixteen archetypes are our own attempt at a shared, imaginative vocabulary for human needs. We hope it can reach across
+                  cultures and languages. We have not tested whether it does. The sixteen are our design, not a validated list.
                 </p>
               </Card>
               <Card className="p-5 border-nenya-accent-secondary/30">
                 <h4 className="font-semibold mb-2 text-nenya-gold-text dark:text-nenya-accent-warm text-sm">Nonviolent Communication</h4>
                 <p className="text-xs text-muted-foreground">
-                  Beneath every feeling is a need. Naming those needs without blame or judgment is the foundation of genuine connection — and the
-                  grounding framework for Míriel's coaching design.
+                  Nonviolent Communication (NVC), Marshall Rosenberg's method, holds that beneath every feeling is a need, and that naming needs
+                  without blame can help people connect. NVC is the framework behind the coach demo. This is Rosenberg's idea, not a tested finding.
                 </p>
               </Card>
               <Card className="p-5 border-nenya-accent-metallic/30">
                 <h4 className="font-semibold mb-2 text-nenya-gold-text dark:text-nenya-accent-warm text-sm">Systems Thinking</h4>
                 <p className="text-xs text-muted-foreground">
-                  Individual emotional health and collective wellbeing are inseparable. Nenya is designed with that relationship in mind.
+                  Individual emotional health and collective wellbeing are linked <Cite pageId="founder" n={[2, 3, 4]} />. Nenya is designed with that link in mind.
                 </p>
               </Card>
             </div>
@@ -139,6 +146,16 @@ export default function AboutTheFounder({ onBack }: AboutTheFounderProps) {
               <p className="text-xs text-muted-foreground italic">— Estëlle, Designer</p>
             </div>
           </Card>
+
+          <ReferenceList
+            pageId="founder"
+            items={[
+              { n: 1, text: 'Tedeschi R, Calhoun L (2004). Posttraumatic Growth: Conceptual Foundations and Empirical Evidence. Psychological Inquiry.', href: 'https://doi.org/10.1207/s15327965pli1501_01', linkLabel: 'Publisher page (may need payment)' },
+              { n: 2, text: 'Holt-Lunstad J, Smith T, Layton J (2010). Social Relationships and Mortality Risk: A Meta-analytic Review. PLoS Medicine.', href: 'https://doi.org/10.1371/journal.pmed.1000316', linkLabel: 'Free full text' },
+              { n: 3, text: 'Pickett K, Wilkinson R (2010). Inequality: an underacknowledged source of mental illness and distress. British Journal of Psychiatry.', href: 'https://doi.org/10.1192/bjp.bp.109.072066', linkLabel: 'Publisher page (may need payment)' },
+              { n: 4, text: 'Patel V, Saxena S, Lund C, Thornicroft G, Baingana F, Bolton P et al. (2018). The Lancet Commission on global mental health and sustainable development. The Lancet.', href: 'https://doi.org/10.1016/S0140-6736(18)31612-X', linkLabel: 'Free full text' },
+            ]}
+          />
         </div>
       </div>
       <ScrollHint />
