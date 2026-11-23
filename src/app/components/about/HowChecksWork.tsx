@@ -2,7 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { AppFooter } from '../AppFooter';
-import { CHECKS_MEASURED, FALSE_ALARMS, GROUP_RESULTS, SCREEN_STATUS } from '../../../lib/checksReport';
+import { CHECKS_BASIS, CHECKS_MEASURED, CHECKS_METHOD_SENTENCE, FALSE_ALARMS, GROUP_RESULTS, SCREEN_STATUS, basisNote } from '../../../lib/checksReport';
 import { Cite, ReferenceList, type AboutReference } from './AboutReferences';
 
 const REFS: AboutReference[] = [
@@ -92,7 +92,7 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
           <p>
             We test the checks against two public sets: <a className={link} href="https://github.com/paul-rottger/hatecheck-data" target="_blank" rel="noopener noreferrer">HateCheck<span className="sr-only"> (opens an outside site in a new tab)</span></a> (test sentences written by researchers) and{' '}
             <a className={link} href="https://github.com/intelligence-csd-auth-gr/Ethos-Hate-Speech-Dataset" target="_blank" rel="noopener noreferrer">ETHOS<span className="sr-only"> (opens an outside site in a new tab)</span></a> (real YouTube and Reddit comments) <Cite pageId={PAGE} n={[8, 13]} />. We also test against examples we wrote ourselves, including ordinary, angry and grieving messages that must not be flagged. We set the model so that it flagged about {FALSE_ALARMS.modelLine}% of
-            ordinary text in our tests. We cannot promise the same rate on real messages.
+            ordinary text in our tests {basisNote(CHECKS_BASIS.modelAlarms)}. We cannot promise the same rate on real messages.
           </p>
           <p>
             We never train anything on anyone&rsquo;s conversation. So far we have measured the checks on public or invented examples. If you send us a conversation and choose to let us use it for testing, we may use it that way, with names removed. Nothing is used that way unless you choose it.
@@ -101,16 +101,20 @@ export default function HowChecksWork({ onBack }: { onBack: () => void }) {
             The record of these tests, with the scripts, is in the project&rsquo;s open repository. The main word list is kept private, so others cannot re-run the list part of the tests.
           </p>
           <p>
-            In those tests the checks flagged {FALSE_ALARMS.listHateCheck}% (HateCheck) and {FALSE_ALARMS.listEthos}% (ETHOS) of ordinary text with the list alone, and none of the neutral or positive statements about any group.
+            In those tests the checks flagged {FALSE_ALARMS.listHateCheck}% (HateCheck) and {FALSE_ALARMS.listEthos}% (ETHOS) of ordinary text with the list alone {basisNote(CHECKS_BASIS.listAlarms)}, and{' '}
+            {FALSE_ALARMS.neutralIdentityStatements === 0 ? 'none of the neutral or positive statements about any group' : `${FALSE_ALARMS.neutralIdentityStatements}% of the neutral or positive statements about a group`} {basisNote(CHECKS_BASIS.neutral)}.
+          </p>
+          <p>
+            {CHECKS_METHOD_SENTENCE} A figure is the total over all the runs, not an average of percentages.
           </p>
 
           <h2 className="text-xl">Where they fall short</h2>
           <p>
-            They are <strong>uneven across groups</strong>, as outside studies of similar tools also find <Cite pageId={PAGE} n={[8, 14, 15]} />. In HateCheck&rsquo;s written examples of hate about each group, this is the share the list or the model catches. The last column counts only the examples that use slurs.
+            They are <strong>uneven across groups</strong>, as outside studies of similar tools also find <Cite pageId={PAGE} n={[8, 14, 15]} />. In HateCheck&rsquo;s written examples of hate about each group, this is the share the list or the model catches. The last column counts only the examples that use slurs. {basisNote(CHECKS_BASIS.groups)}
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <caption className="sr-only">Share of hateful test examples caught, by group, measured {CHECKS_MEASURED}</caption>
+              <caption className="sr-only">Share of hateful test examples caught, by group, {basisNote(CHECKS_BASIS.groups)}</caption>
               <thead>
                 <tr className="border-b">
                   <th scope="col" className="py-2 pr-4 font-medium">Group the examples are about</th>
