@@ -18,6 +18,7 @@ const MUST_BE_UNSET: Record<string, string> = {
   COACH_E2EE_PLAIN_HISTORY: 'a diagnostic for the encrypted route',
   COACH_E2EE_MINIMAL: 'a diagnostic for the encrypted route',
   CELL_ENABLED: 'partner cells are not built for visitors',
+  VITE_CELL_ENABLED: 'the Terms describe partner cells (Section 22) only with this on; set only together with CELL_ENABLED, after the owner approves the text',
 };
 
 /** Switches that are a decision: fine if the owner chose them, but they were meant to be turned on one at a time after the matching staging test. */

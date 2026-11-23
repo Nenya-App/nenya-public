@@ -14,6 +14,26 @@ export const REPO = 'https://github.com/Nenya-App/nenya-public';
 /** The file must stay within what a model can read in one go: 90,000 characters is roughly 22,000 tokens. The 43 ready answers, short and full, come to about 71,000 (the owner's aim of 40,000 is not reachable without cutting answers). */
 export const MAX_CHARS = 90000;
 
+/**
+ * The one sentence about what the Venice Mind costs and what kind of model it runs on, keyed on the privacy label Venice shows in the editor for the
+ * chosen model. It is the ONLY place this wording lives for the facts page. Today the Mind is on a free model, so the variant is 'free'. When the owner
+ * has set the paid model, change MIND_COST_VARIANT to 'paid-private' (the editor shows Private for it) or 'paid-anonymous' (it shows Anonymous), run
+ * `npm run mind-facts`, and commit (docs/mind-facts.md, "When the Mind's model changes"). No model name, price or credit figure belongs in any variant,
+ * and no variant says Nenya does or does not receive the chats: that is not yet checked.
+ */
+export const MIND_COST_LINES = {
+  free: 'It runs on a free model, so it costs nothing to use beyond whatever Venice itself may charge.',
+  'paid-private': 'It runs on a paid model through Venice, which shows that model as Private. Venice\'s own terms, prices and privacy practices apply.',
+  'paid-anonymous': 'It runs on a paid model through Venice, which shows that model as Anonymous, not Private. Venice\'s own terms, prices and privacy practices apply.',
+  // With a markup on the Mind's chat credits (owner, 2026-11-23: intended, amount open). No figure. Nothing about where the money goes beyond what the owner can
+  // confirm, and nothing about the nonprofit or tax. Do not use until the owner has confirmed how Venice pays a creator's markup (docs/mind-facts.md).
+  'paid-private-markup': 'It runs on a paid model through Venice, which shows that model as Private, so chats cost credits. A small markup on those credits helps offset the cost of running the free Nenya site. Venice\'s own terms, prices and privacy practices apply.',
+  'paid-anonymous-markup': 'It runs on a paid model through Venice, which shows that model as Anonymous, not Private, so chats cost credits. A small markup on those credits helps offset the cost of running the free Nenya site. Venice\'s own terms, prices and privacy practices apply.',
+} as const;
+export type MindCostVariant = keyof typeof MIND_COST_LINES;
+export const MIND_COST_VARIANT: MindCostVariant = 'free';
+export const MIND_COST_LINE: string = MIND_COST_LINES[MIND_COST_VARIANT];
+
 // A few ready answers credit a named outside source. The owner's rule for this page is that those names are not repeated here, so each sentence that
 // carries one is replaced by a plain note that the credit is on the linked page. Everything else is the answer as written.
 const NAMED_CREDIT = /Erasmus|Conversations from the Heart/i;
@@ -42,7 +62,7 @@ export function buildMindFacts(asOf: string): string {
     '- No study of Nenya has been done. Nobody has measured whether it helps.',
     '- No clinician or lawyer has reviewed it.',
     '- ' + NON_AFFILIATION,
-    '- The Venice Mind is a separate, premium offering on Venice\'s platform, with Venice\'s own terms. Nenya\'s safety checks (the screening of messages and the crisis handling on the site) do not run there.',
+    '- The Venice Mind is a separate offering on Venice\'s platform, with Venice\'s own terms. ' + MIND_COST_LINE + ' Nenya\'s safety checks (the screening of messages and the crisis handling on the site) do not run there.',
     '- To contact Nenya: info@nenya.biz');
 
   const titles = LEGAL_PARTS.flatMap((part) => [part.title, ...part.sections.map((s) => `  Section ${s.number}: ${s.heading}`)]);

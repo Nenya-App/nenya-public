@@ -33,7 +33,7 @@ interface EssenceGatewayPageProps {
 const INSTRUCTION_CARDS = [
   {
     title: L('Welcome to the Essence Gateway'),
-    description: L('Scent and taste evoke memory and emotion in profound ways. In this gateway, you\'ll explore the aromatic qualities of your inner atmosphere.'),
+    description: L('Scent and taste evoke memory and emotion in strong ways. In this gateway, you\'ll explore the aromatic qualities of your inner atmosphere.'),
     detail: 'Consider the flavors and aromas that capture how you feel. What essences resonate with your current state?'
   },
   {

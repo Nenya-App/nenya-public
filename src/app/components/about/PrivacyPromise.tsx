@@ -378,7 +378,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                       For people who want a record over time, we hope to build an optional journal. It would be encrypted on your device with a key only you hold. It would never reach our servers. If you lose the key, we could not recover your journal.
                     </p>
                     <p className="text-xs text-rose-700/70 dark:text-rose-300/70">
-                      <strong>Use case:</strong> a private record over time. It would stay on your device.
+                      <strong>Use case:</strong> a record you keep over time. It would stay on your device.
                     </p>
                   </div>
                 </div>

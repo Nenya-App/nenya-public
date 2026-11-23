@@ -72,7 +72,7 @@ export const ANSWERS: Answer[] = [
     short: 'Nenya is the name of Galadriel\'s ring in Tolkien\'s Middle-earth, one of the Three Rings of the Elves, which Sauron never held. Its power was a quiet one: it could not command anyone, and it slowed the wearing-away of time so that a place could stay as it was. We borrow the name with respect. Nenya, the tool, is meant to sit alongside you and not to rule.',
     full: [
       'In Tolkien\'s Middle-earth, Nenya is one of the Three Rings of the Elves, worn by Galadriel in Lothlórien. It is called the Ring of Adamant, and sometimes the Ring of Water. Celebrimbor made the Three, and Sauron never held them. They were made in his shadow, and what they kept could not outlast the age they belonged to.',
-      'The Name & Philosophy page sets the ring beside the seeing-stones, which let a person look far and be seen. It is not a story of a good maker and a bad one: the ring and the stones come out of the same line of craft, and both come from the wish to keep something beautiful from being lost. The question the page takes from it is whether what you make works on the person using it, or alongside them. Some tools are built to bring people back and keep them sharing; the page calls those tools that master. Nenya is meant to sit alongside.',
+      'The Name & Philosophy page asks whether what you make works on the person using it, or alongside them, and gives its reasons from research on being watched, with our own position labelled. Some tools are built to bring people back and keep them sharing; the page calls those tools that master. Nenya is meant to sit alongside.',
       'The ring names (Nenya, Vilya, Narya) are Tolkien\'s. We use them as this project\'s shorthand, as inspiration, with no claim of any connection to his estate.',
     ],
     links: [{ label: 'Our Name & Philosophy', page: 'name-philosophy' }],
@@ -81,7 +81,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'Nenya is called the Ring of Adamant, and sometimes the Ring of Water', file: about('NamePhilosophy'), has: 'and sometimes the Ring of Water' },
       { claim: 'Sauron never held the Three, which were made in his shadow', file: about('NamePhilosophy'), has: 'Sauron never held them' },
       { claim: 'the tool is meant to sit alongside, and the names are used as shorthand with no claim of a connection to the estate', file: about('NamePhilosophy'), has: 'Nenya is meant to sit alongside' },
-      { claim: 'the page sets the ring beside the seeing-stones and asks whether what you make works on people or alongside them', file: about('NamePhilosophy'), has: 'work <strong' },
+      { claim: 'the page asks whether what you make works on people or alongside them, and cites research on being watched', file: about('NamePhilosophy'), has: 'work <strong' },
     ],
     status: 'ready',
     ownerNote: "Decided 2026-11-08: keep the last paragraph (the ring names are used as shorthand; no claim of connection to Tolkien's estate). Revised 2026-11-22 to match the rewritten Name & Philosophy page: Sauron 'never held' the Three (made in his shadow), not 'never touched', and the tool is 'meant to sit alongside', not a claim that it never takes anything.",
@@ -451,7 +451,7 @@ export const ANSWERS: Answer[] = [
     short: 'No. Nenya is an independent project and is not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication (CNVC) or the NVC Academy. We encourage you to learn from human NVC trainers as well.',
     full: [
       'Nenya draws on Nonviolent Communication, developed by Dr. Marshall Rosenberg, but it is an independent project. It is not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication (CNVC.org) or the NVC Academy (NVCacademy.com).',
-      'Nenya is a separate tool for practicing the steps of NVC in private. We hope it helps you in real conversations, but we have not tested whether it does. It is not a replacement for what you learn from human connection, and we encourage you to learn from human NVC trainers as well.',
+      'Nenya is a separate tool for practicing the steps of NVC on your own. We hope it helps you in real conversations, but we have not tested whether it does. It is not a replacement for what you learn from human connection, and we encourage you to learn from human NVC trainers as well.',
       'The categories of feelings and needs that Nenya works with were informed by the structure of CNVC\'s Feelings and Needs Inventory, which CNVC shares freely as a starting point. We are expanding and refining them. The credit, with a link to the document\'s own page, is on the Our Approach page. Crediting a source does not mean that group endorses Nenya.',
       'If you practise or teach NVC, we would especially value your feedback, including critical and dissenting views: please send it through the optional form on the site or at info@nenya.biz.',
     ],

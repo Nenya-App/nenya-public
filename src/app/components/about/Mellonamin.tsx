@@ -66,7 +66,7 @@ export default function Mellonamin() {
       {/* Section 2: Privacy */}
       <Card className="p-6 md:p-8 border-nenya-gold/30">
         <div className="space-y-6">
-          <h2 className="text-2xl md:text-3xl">A Private Place</h2>
+          <h2 className="text-2xl md:text-3xl">What stays, and what leaves, your device</h2>
 
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
