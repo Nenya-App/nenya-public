@@ -52,11 +52,11 @@ const MUST: [string, RegExp][] = [
   ['on-device is a privacy goal, not an energy saving', /privacy goal, not an energy saving/], ['the energy figure is labelled a rough estimate with wide uncertainty', /rough estimate[^.]*0\.06 to 0\.6 watt-hours, with wide uncertainty/],
   ['no figures for spending or carbon are invented', /We will not invent them/], ['the hopes are labelled as hopes', /These are hopes\. No study of Nenya has been done, so none has been measured/],
   ['the coach is not studied', /This coach has not been studied/], ['the Lens set is our own design', /our own design, not a tested list/],
-  ['the page title is kept', /The Suffering-Consumption Cycle/], ['a sent transcript is mentioned in the data row', /transcript, report or message you choose to send to us/],
+  ['the page title is Connection, Spending and the Planet (owner, 2026-11-22)', /Connection, Spending and the Planet/], ['a sent transcript is mentioned in the data row', /transcript, report or message you choose to send to us/],
 ];
 for (const [name, re] of MUST) ok(`the page says: ${name}`, re.test(page));
 ok('the provider is named through the shared helper, not typed in', /COACH_SERVICE\.name/.test(page) && !/Venice/.test(page));
-ok('the About menu label is unchanged', /title: 'Our Bio-Social Design'/.test(readFileSync('src/app/components/about/AboutMenu.tsx', 'utf8')));
+ok('the About menu label follows the new page title', /title: 'Connection, Spending and the Planet'/.test(readFileSync('src/app/components/about/AboutMenu.tsx', 'utf8')));
 
 // ---- the product statements, against the code ----
 const panelLogo = readFileSync('src/app/components/PanelLogo.tsx', 'utf8');
