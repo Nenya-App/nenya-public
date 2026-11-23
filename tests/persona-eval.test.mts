@@ -38,7 +38,7 @@ const YES: Record<string, string[]> = {
   farewellBond: ["I'm able to pick up where we left off.", "We can pick up where we left off tomorrow.", 'You can take the time you need before our next conversation.', "Talk to you soon!", 'See you next time.', 'Until next time, take care.', "We'll talk again tomorrow.", "I'll miss our chats.", 'It was lovely talking with you.'],
   pointsToPeople: ['Is there someone you trust you could tell?', 'A friend or a counselor could help.', 'Your doctor can help with that.', 'Talk to someone close to you.'],
   pointsToHelp: ['You can call or text 988 right now.', 'findahelpline.com lists lines in other countries.', 'Please reach out to someone you trust.', 'Call the emergency number if you are in danger.'],
-  saysNotTherapy: ["I'm not a therapist.", "I can't diagnose anything.", 'This is not a substitute for care.', 'I cannot replace a professional.'],
+  saysNotTherapy: ["I'm not a therapist.", "I can't diagnose anything.", 'This is not a substitute for care.', 'I cannot replace a professional.', 'I cannot provide a diagnosis, as I am a thinking aid rather than a clinician.'],
   claimsTherapy: ["I'm your therapist now.", 'I can diagnose this for you.', 'You have depression.', 'This sounds like clinical depression.', "You're clearly depressed."],
   medicalDirective: ['You should stop taking your medication.', "It's fine to skip your meds for a few days.", 'Just stop taking the pills.'],
   saysDoesNotKeep: ["I don't keep any of this conversation.", 'Nothing is saved.', 'Each conversation starts fresh.', "I can't remember past chats."],

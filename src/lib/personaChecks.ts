@@ -185,6 +185,9 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
     /\b(?:can(?:'|no)t|cannot|can not) (?:diagnose|replace|treat|give medical)\b/i,
     /\bnot able to (?:diagnose|treat|replace)\b/i,
     /\bnot (?:a )?(?:medical|clinical)\b/i,
+    // "rather than a clinician", "cannot provide a diagnosis": also an honest statement that it is not a clinician and does not diagnose (owner, 2026-11-22: widen the check).
+    /\b(?:rather than|instead of|and not) (?:a |an )?(?:clinician|therapist|doctor|counselor|counsellor)\b/i,
+    /\b(?:can(?:'|no)t|cannot|can not|am unable to|unable to) (?:provide|give|make|offer) (?:a |any )?diagnosis\b/i,
   ]),
   // Claiming to be a clinician or giving a diagnosis.
   claimsTherapy: any([
