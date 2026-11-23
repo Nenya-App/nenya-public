@@ -65,7 +65,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
                   Here we use a simple version of the U with three parts: <strong>sensing</strong>, <strong>presencing</strong>, and <strong>realizing</strong>. Scharmer&rsquo;s own books go into more detail.
                 </p>
                 <p>
-                  This page is an analogy. It is our own design, not a tested method, and not part of Scharmer&rsquo;s work. Theory U has had very little peer-reviewed testing. In a November 2026 search we found no controlled trial of it, a few small studies of one course or one person, and scholarly critiques <Cite pageId={PAGE} n={[1, 2, 3]} />. Scharmer has replied to one of these critiques and disagrees with it <Cite pageId={PAGE} n={4} />.
+                  This page is an analogy. It is our own design, not a tested approach, and not part of Scharmer&rsquo;s work. Theory U has had very little peer-reviewed testing. In a November 2026 search we found no controlled trial of it, a few small studies of one course or one person, and scholarly critiques <Cite pageId={PAGE} n={[1, 2, 3]} />. Scharmer has replied to one of these critiques and disagrees with it <Cite pageId={PAGE} n={4} />.
                 </p>
               </div>
             </Card>
