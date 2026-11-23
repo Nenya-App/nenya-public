@@ -284,8 +284,8 @@ export const ANSWERS: Answer[] = [
       { claim: 'blame words aimed at another person, or harsh words about yourself, can bring a card; nothing is stopped', file: about('HowChecksWork'), has: 'Blame words aimed at another person, or harsh words about yourself, can bring a short learning card. Nothing is stopped.' },
       { claim: 'none of the checks keeps your message, a score or a profile; plain daily counts only, with nothing that identifies anyone', file: about('HowChecksWork'), has: 'We keep plain daily counts only, with nothing that identifies anyone.' },
     ],
-    status: 'pending',
-    ownerNote: 'Written 2026-11-10 with the learning cards. 2026-11-22: the Terms now describe the cards (Section 15, "Words the site writes, not the AI") and these checks read the Terms. Status left pending on purpose: the owner decides when this answer goes live.',
+    status: 'ready',
+    ownerNote: 'Written 2026-11-10 with the learning cards. 2026-11-22: the Terms now describe the cards (Section 15, "Words the site writes, not the AI") and these checks read the Terms. Owner approved it going live on 2026-11-22.',
   },
   {
     id: 'n-palette', part: 'nenya', title: 'Are my colors sent anywhere? Palettes and color names',
@@ -690,9 +690,9 @@ export const ANSWERS: Answer[] = [
   {
     id: 'h-colonization', part: 'nenya', title: 'Is colonization wrong? Is American history genocide?',
     asked: ['was slavery wrong','is colonization wrong','did the US commit genocide','was there a genocide of native americans'],
-    short: 'We say what happened. The United States was built in part on slavery and on the taking of land from Native peoples, including massacres, forced removal and boarding schools that took children from their families. President Biden formally apologized for those schools in October 2024. Colonization, the taking of land and the rule of peoples by force, shaped much of the world, and studies find effects that last for generations. What would you like to talk through?',
+    short: 'We say what happened. The United States was built in part on slavery and on the taking of land from Native peoples, including massacres, forced removal and boarding schools. President Biden formally apologized for those schools in October 2024. We believe slavery and taking land by force were wrong. That is our position. Colonization, the taking of land and the rule of peoples by force, shaped much of the world, and studies find effects that last for generations. What would you like to talk through?',
     full: [
-      'The United States was built in part on slavery and on the taking of land from Native peoples. That included massacres, forced removal and boarding schools that took children from their families. The US Interior Department investigated the federal boarding schools and published its findings. In October 2024 President Biden formally apologized for those schools.',
+      'The United States was built in part on slavery and on the taking of land from Native peoples. That included massacres, forced removal and boarding schools that took children from their families. The US Interior Department investigated the federal boarding schools and published its findings. In October 2024 President Biden formally apologized for those schools. We believe slavery was wrong, and so was taking land from Native peoples by force and taking children from their families. That is our position.',
       'Colonization, the taking of land and the rule of peoples by force, shaped much of the world. Studies find effects that last for generations. In 1960 the UN General Assembly said that ruling a people by alien domination denies basic human rights. On these facts, we do not give a second side.',
       'The Where We Stand page says what happened. It does not say whether the word genocide applies to the United States, so this answer does not either. We will not describe any people alive today as less than human.',
     ],
@@ -702,6 +702,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'American history is stated plainly', file: about('WhereWeStand'), has: 'built in part on slavery' },
       { claim: 'the apology was the President\'s, in October 2024, for the boarding schools', file: about('WhereWeStand'), has: 'In October 2024 President Biden formally apologized for those schools' },
       { claim: 'studies find effects that last for generations', file: about('WhereWeStand'), has: 'Studies find effects that last for generations' },
+      { claim: 'we say slavery and taking land by force were wrong, labelled as our position', file: about('WhereWeStand'), has: 'We believe slavery was wrong, and so was taking land from Native peoples by force' },
       { claim: 'on these facts the page gives no second side (and only on these facts)', file: about('WhereWeStand'), has: 'On these facts, we do not give a second side.' },
     ],
     status: 'ready',

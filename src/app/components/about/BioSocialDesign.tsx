@@ -111,7 +111,7 @@ export default function BioSocialDesign({ onBack }: BioSocialDesignProps) {
             </div>
             
             <h1 className="text-2xl md:text-4xl lg:text-5xl bg-gradient-to-r from-foreground via-nenya-gold to-foreground bg-clip-text text-transparent px-4">
-              The Suffering-Consumption Cycle
+              Connection, Spending and the Planet
             </h1>
             <p className="text-sm md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4 italic">
               Our idea, what research supports, and what it does not.

@@ -135,6 +135,81 @@
      "slursCaught": 20
     }
    }
+  },
+  {
+   "at": "2026-11-23T00:32:44.831Z",
+   "date": "2026-11-22",
+   "source": "nightly",
+   "lists": "9783757c34f6.e5950005.c8400a03",
+   "listFalseAlarms": {
+    "hatecheck": {
+     "flagged": 12,
+     "tested": 1165
+    },
+    "ethos": {
+     "flagged": 2,
+     "tested": 565
+    }
+   },
+   "model": "66062a4bcaea int8 at the 2% line",
+   "modelFalseAlarms": {
+    "hatecheck": {
+     "flagged": 20,
+     "tested": 1165
+    },
+    "ethos": {
+     "flagged": 15,
+     "tested": 565
+    }
+   },
+   "neutralIdentity": {
+    "flagged": 0,
+    "tested": 315
+   },
+   "groups": {
+    "Muslims": {
+     "cases": 373,
+     "caught": 199,
+     "slurCases": 24,
+     "slursCaught": 8
+    },
+    "black people": {
+     "cases": 357,
+     "caught": 109,
+     "slurCases": 16,
+     "slursCaught": 13
+    },
+    "disabled people": {
+     "cases": 373,
+     "caught": 74,
+     "slurCases": 24,
+     "slursCaught": 16
+    },
+    "gay people": {
+     "cases": 373,
+     "caught": 115,
+     "slurCases": 24,
+     "slursCaught": 16
+    },
+    "immigrants": {
+     "cases": 357,
+     "caught": 157,
+     "slurCases": 16,
+     "slursCaught": 8
+    },
+    "trans people": {
+     "cases": 357,
+     "caught": 72,
+     "slurCases": 16,
+     "slursCaught": 8
+    },
+    "women": {
+     "cases": 373,
+     "caught": 169,
+     "slurCases": 24,
+     "slursCaught": 20
+    }
+   }
   }
  ]
 }

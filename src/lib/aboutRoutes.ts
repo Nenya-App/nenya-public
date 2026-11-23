@@ -7,7 +7,7 @@ export const ABOUT_TITLES: Record<string, string> = {
   'about-founder': 'About the Designer',
   'contact-us': 'Contact Us',
   'evolved-leader': 'Evolved Leadership',
-  'bio-social-design': 'Our Bio-Social Design',
+  'bio-social-design': 'Connection, Spending and the Planet',
   'name-philosophy': 'Our Name & Philosophy',
   'power-of-color': 'Color and Feeling',
   'six-gateways': 'The Six Lenses',

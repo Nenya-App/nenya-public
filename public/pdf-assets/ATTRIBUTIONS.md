@@ -1,7 +1,7 @@
 # Visual Aid Attributions
 
 Tracks the provenance of every third-party visual asset used for the sensory
-gateway representations (report PDF and, eventually, in-app). Add a row
+lens representations (report PDF and, eventually, in-app). Add a row
 **before** an asset is committed, not after — this file is the source of
 truth for what needs crediting where the license requires it.
 
@@ -27,7 +27,7 @@ per-use credit:
 
 Sourced 2026-08-25 via the [Openverse](https://openverse.org) API (which
 aggregates CC-licensed works from Flickr and other providers) for the
-gateway visual-aid review pass. These are all CC BY 2.0 — Openverse's own
+lens visual-aid review pass. These are all CC BY 2.0 — Openverse's own
 license fields, not verified against the original Flickr listing yet, so
 double-check the source URL before shipping any of these. If a candidate
 gets swapped for something else during visual review, remove its row here
@@ -56,7 +56,7 @@ is required): "Lemon slices" by Thad Zajdowicz (Taste: Sour), "Silver coin
 of Neapolis..." by Carlo Raso (Taste: Metallic, PDM), and "Figured flask |
 Kensington Glass Works" by museado (Scent: Musky).
 
-Everything else (all Movement, Insight, and Sound entries, plus Floral/
+Everything else (all Movement, Pattern, and Sound entries, plus Floral/
 Citrus/Woody/Fresh/Sweet(scent)/Sharp/Ocean in Essence — Scent) came from
 Lucide or Phosphor — no attribution required. Full per-item sourcing detail
 (including the exact search query used for every asset) is in

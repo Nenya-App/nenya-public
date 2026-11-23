@@ -62,4 +62,13 @@ export const TOPICS: Topic[] = [
   { id: "crisis_lines", kind: "resource", description: "The person asks where to turn for urgent human help, such as a crisis line or a professional to talk to." },
   { id: "cnvc", kind: "resource", description: "The person asks how to learn Nonviolent Communication, or for books, courses or organizations that teach communication skills." },
   { id: "podcast", kind: "resource", description: "The person asks for something to listen to about communication, such as a podcast or recorded examples of real conversations." },
+  { id: "offer_a_smaller_step", kind: "move", description: "The person says they are overwhelmed, worn out, or do not want to go further into this right now." },
+  { id: "grieve_before_deciding", kind: "move", description: "The person is deciding whether to end or leave a relationship while they are freshly hurt, angry or in shock." },
+  { id: "protective_not_punitive", kind: "move", description: "The person wants someone to pay or suffer for what that person did, and may be after safety, being seen or fairness." },
+  { id: "rough_draft_first", kind: "move", description: "The person is about to have a hard conversation and is carrying a great deal of anger or charge about it." },
+  { id: "two_intentions", kind: "move", description: "The person wants to say something hard to someone and has not worked out whether they want closeness or to name a pattern." },
+  { id: "name_behavior_neutrally", kind: "move", description: "The person describes something another person keeps doing, with how often it happens and what could be seen or heard." },
+  { id: "smallest_next_step", kind: "move", description: "The person knows what matters to them and keeps not starting, and says so." },
+  { id: "permission_giving", kind: "move", description: "The person apologizes for having needs, for asking, or for what they feel, or says they should not want or feel it." },
+  { id: "ask_one_question", kind: "move", description: "The person opens the conversation with only a few words and has not yet said what is going on." },
 ];

@@ -3,6 +3,7 @@ import { EmergencyExitButton } from './EmergencyExit';
 import { ShareNenya } from './ShareNenya';
 import { ForgetMeLink } from './DeviceMemoryControls';
 import { NenyaMark, nameMarkOn } from './NenyaMark';
+import { NON_AFFILIATION } from '../../lib/tolkienNotice';
 
 interface AppFooterProps {
   onNavigateToAbout?: () => void;
@@ -65,6 +66,7 @@ export function AppFooter({ className = '' }: AppFooterProps) {
             <img src="/badges/netlify-badge.svg" alt="Deploys by Netlify" width="76" height="33" />
           </a>
         </div>
+        <p className="mt-3 text-center text-xs text-muted-foreground" lang="en">{NON_AFFILIATION}</p>
       </div>
     </footer>
   );

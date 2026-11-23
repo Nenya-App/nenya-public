@@ -49,11 +49,11 @@ const frags = buildFragments(gd, body, lookup);
 ok('a report is split into one piece per gateway and one for the body map', frags.map((f) => f.id).join() === 'sight,sound,touch,body-map' && frags[3].lines.some((l) => /Note: tight/.test(l)));
 ok('a colour from a palette is named with its palette; a colour of the person\'s own says so', frags[0].palettes.join() === 'Tide' && frags[0].custom === true && frags[0].lines.some((l) => /#1B4F6E is from the Tide palette/.test(l)) && frags[0].lines.some((l) => /#123456 is a colour the person chose themselves/.test(l)));
 const only = buildContext([frags[0]]);
-ok('only what is chosen goes: a summary of the Sight piece has no sound, touch or body-map text', !/Pitch|Texture|hum|tight|BODY|Chest/i.test(only.text) && /## Sight - Chromesthesia/.test(only.text) && only.meta.sections.join() === 'Sight');
+ok('only what is chosen goes: a summary of the Sight piece has no sound, touch or body-map text', !/Pitch|Texture|hum|tight|BODY|Chest/i.test(only.text) && /## Sight/.test(only.text) && only.meta.sections.join() === 'Sight');
 ok('the summary starts with the header, quotes the chosen lines word for word, and adds the notes for the palettes it names, and only those', only.text.startsWith('[[nenya-report palettes=Tide custom=1 sections=Sight]]') && only.text.includes(describePalette('Tide')) && !only.text.includes(describePalette('Ember')));
 const all3 = buildContext(frags);
 ok('several pieces: palettes and sections are collected once each', all3.meta.palettes.join() === 'Tide,Ember' && all3.meta.sections.join() === 'Sight,Sound,Touch,Body map' && all3.fits === (all3.chars <= MAX_SHARED_CHARS));
-const huge = buildContext([{ id: 'x', section: 'Sight', title: 'Sight - Chromesthesia', lines: ['word '.repeat(700)], palettes: [], custom: false }]);
+const huge = buildContext([{ id: 'x', section: 'Sight', title: 'Sight', lines: ['word '.repeat(700)], palettes: [], custom: false }]);
 ok('a summary over the limit says it does not fit (the person is asked to choose less; nothing is cut silently)', huge.fits === false && huge.chars > MAX_SHARED_CHARS);
 ok('an empty selection has nothing to share', buildContext([]).meta.sections.length === 0);
 
