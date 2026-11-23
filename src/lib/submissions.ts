@@ -61,3 +61,15 @@ export function newRecord(type: SubmissionType, report: string, comments: string
 
 export const isDue = (rec: { keepUntil?: unknown } | null, now = new Date()): boolean =>
   !rec || typeof rec.keepUntil !== 'string' || !(new Date(rec.keepUntil).getTime() > now.getTime());
+
+/** Partner-practice reports (netlify/functions/cell.mts) are kept in the same private store under this prefix, for the same KEEP_DAYS, and are deleted by the same daily job. */
+export const CELL_REPORT_PREFIX = 'cell-report/';
+export const cellReportKeepUntil = (now = new Date()): string => new Date(now.getTime() + KEEP_DAYS * 86400000).toISOString();
+
+/** Whether a partner-practice report has reached its date. A report written before keepUntil existed is dated from its receivedAt; one with neither is unreadable, so due. */
+export function cellReportDue(rec: { keepUntil?: unknown; receivedAt?: unknown } | null, now = new Date()): boolean {
+  if (!rec) return true;
+  if (typeof rec.keepUntil === 'string') return isDue(rec, now);
+  const at = typeof rec.receivedAt === 'string' ? new Date(rec.receivedAt) : null;
+  return !at || Number.isNaN(at.getTime()) ? true : isDue({ keepUntil: cellReportKeepUntil(at) }, now);
+}

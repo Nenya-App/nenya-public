@@ -9,19 +9,30 @@
 //   POST {action:'send', box, role, env:{seq,iv,ct,commit}}  add the next message (sequence numbers must follow on)
 //   POST {action:'poll', box, role, after}               the other side's messages from `after` on (at most 50)
 //   POST {action:'close', box, role}                     delete the whole cell now
-//   POST {action:'report', box, role, seq, message, frank}  report one of the other side's messages: kept only if its
-//                                                        franking check passes (the reporter chose to reveal it)
+//   POST {action:'share-ask', box, role, req}            ask to share the whole conversation with Nenya (the asker agrees by asking)
+//   POST {action:'share-answer', box, role, req, agree}  the OTHER person's yes or no (a no sends nothing and ends the request)
+//   POST {action:'report', box, role, req, transcript:[{by,text,assisted?,at}]}  send the whole conversation (up to 600 messages of 1,000
+//                                                        characters). Refused unless BOTH people agreed to this request, and only once per request; kept
+//                                                        unverified for 90 days, then deleted; the mailbox name is not kept with it
 import { getStore } from '@netlify/blobs';
 import { randomBytes } from 'node:crypto';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import type { CounterStore } from '../../src/lib/dailyCap.ts';
 import { addCount as tallyCount } from '../../src/lib/counters.ts';
-import { verifyFranking, type CellMessage, type Envelope, type Role } from '../../src/lib/cellCrypto.ts';
+import { cellReportKeepUntil } from '../../src/lib/submissions.ts';
+import type { Envelope, Role } from '../../src/lib/cellCrypto.ts';
 
 export const CELL_MAX_AGE_MS = 3 * 60 * 60 * 1000;
 const MAX_MESSAGES = 300; // per side
 const MAX_CT_CHARS = 16000; // one envelope's ciphertext, base64 (about 12 KB)
 const MAX_BODY = 24000;
+// A report carries the whole conversation: at most 2 x MAX_MESSAGES messages, each at most MAX_TEXT characters (plus the same again if a person's AI-assisted version is
+// included), so a body can be about 1.3 million characters. Only a report may be that large; every other request keeps MAX_BODY.
+export const MAX_TEXT = 1000;
+export const MAX_REPORT_LINES = 2 * MAX_MESSAGES;
+/** A request to share the conversation is open for 10 minutes; unanswered, or agreed but not yet sent, it lapses and nothing is sent. */
+export const SHARE_ASK_MS = 10 * 60 * 1000;
+export const MAX_REPORT_BODY = 1_300_000;
 const POLL_MAX = 50;
 const BOX = /^[0-9a-f]{32}$/;
 const B64 = /^[A-Za-z0-9+/]+={0,2}$/;
@@ -39,6 +50,22 @@ const privateStore = (): Store => privateOverride ?? getStore(storeNameFrom(proc
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
 
+/** The consent for sharing, kept in the cell and deleted with it: an opaque request id, which seat asked, when, who agreed, and whether it was declined or already used. Nothing else. */
+interface Share {
+  req: string;
+  by: Role;
+  at: number;
+  agreed: Partial<Record<Role, true>>;
+  state?: 'declined' | 'used';
+}
+const REQ = /^[0-9a-f]{16}$/;
+/** What a person's browser is told about the open request (never the transcript). */
+function shareView(sh: Share | null, now: number): { req: string; by: Role; state: 'pending' | 'agreed' | 'declined' | 'used' | 'expired' } | null {
+  if (!sh) return null;
+  const state = sh.state ?? (now - sh.at > SHARE_ASK_MS ? 'expired' : sh.agreed.a && sh.agreed.b ? 'agreed' : 'pending');
+  return { req: sh.req, by: sh.by, state };
+}
+
 interface Meta {
   created: number;
 }
@@ -46,12 +73,25 @@ const keys = (box: string) => ({
   meta: `cell/${box}/meta`,
   hello: (r: Role) => `cell/${box}/${r}/hello`,
   log: (r: Role) => `cell/${box}/${r}/log`,
+  share: `cell/${box}/share`,
 });
 
 /** Deletes every key of one cell. */
 export async function closeCell(s: Store, box: string): Promise<void> {
   const k = keys(box);
-  await Promise.allSettled([k.meta, k.hello('a'), k.hello('b'), k.log('a'), k.log('b')].map((key) => s.delete(key)));
+  await Promise.allSettled([k.meta, k.hello('a'), k.hello('b'), k.log('a'), k.log('b'), k.share].map((key) => s.delete(key)));
+}
+
+/** The transcript in a report, checked line by line and rebuilt from the known fields only; null if it is not acceptable (too long, too large, wrong shape). */
+function parseTranscript(t: unknown): { by: Role; text: string; assisted?: string; at: number }[] | null {
+  if (!Array.isArray(t) || t.length === 0 || t.length > MAX_REPORT_LINES) return null;
+  const out: { by: Role; text: string; assisted?: string; at: number }[] = [];
+  for (const x of t as Record<string, unknown>[]) {
+    if (!x || (x.by !== 'a' && x.by !== 'b') || typeof x.text !== 'string' || x.text.length > MAX_TEXT || !Number.isFinite(x.at)) return null;
+    if (x.assisted !== undefined && (typeof x.assisted !== 'string' || x.assisted.length > MAX_TEXT)) return null;
+    out.push({ by: x.by, text: x.text, ...(typeof x.assisted === 'string' ? { assisted: x.assisted } : {}), at: Number(x.at) });
+  }
+  return out;
 }
 
 const isRole = (r: unknown): r is Role => r === 'a' || r === 'b';
@@ -75,13 +115,14 @@ export default async (req: Request): Promise<Response> => {
   }
   if (!hostAllowed(origin, process.env.COACH_EXTRA_HOSTS)) return json(403, { error: 'origin' });
   const text = await req.text();
-  if (text.length > MAX_BODY) return json(413, { error: 'size' });
+  if (text.length > MAX_REPORT_BODY) return json(413, { error: 'size' });
   let body: Record<string, unknown>;
   try {
     body = JSON.parse(text);
   } catch {
     return json(400, { error: 'json' });
   }
+  if (text.length > MAX_BODY && body.action !== 'report') return json(413, { error: 'size' });
   const box = typeof body.box === 'string' && BOX.test(body.box) ? body.box : '';
   const role = body.role;
   if (!box || !isRole(role)) return json(400, { error: 'cell' });
@@ -137,7 +178,8 @@ export default async (req: Request): Promise<Response> => {
     if (body.action === 'poll') {
       const after = Number.isInteger(body.after) && (body.after as number) >= 0 ? (body.after as number) : 0;
       const log = ((await s.get(k.log(peer), { type: 'json' })) as Envelope[] | null) ?? [];
-      return json(200, { messages: log.slice(after, after + POLL_MAX), total: log.length, closed: false });
+      const share = shareView((await s.get(k.share, { type: 'json' })) as Share | null, now);
+      return json(200, { messages: log.slice(after, after + POLL_MAX), total: log.length, closed: false, share });
     }
 
     if (body.action === 'close') {
@@ -145,18 +187,44 @@ export default async (req: Request): Promise<Response> => {
       return json(200, { closed: true });
     }
 
+    if (body.action === 'share-ask') {
+      // Either person may ask. Asking is the asker's own agreement; the other person must still say yes. One open request at a time.
+      if (!REQ.test(String(body.req))) return json(400, { error: 'req' });
+      const cur = shareView((await s.get(k.share, { type: 'json' })) as Share | null, now);
+      if (cur && (cur.state === 'pending' || cur.state === 'agreed')) return json(409, { error: 'pending' });
+      await s.setJSON(k.share, { req: String(body.req), by: role, at: now, agreed: { [role]: true } } satisfies Share);
+      return json(200, { ok: true, expiresAt: now + SHARE_ASK_MS });
+    }
+
+    if (body.action === 'share-answer') {
+      // Only the other person answers, only for the open request. A no ends it and nothing is sent.
+      const cur = (await s.get(k.share, { type: 'json' })) as Share | null;
+      const view = shareView(cur, now);
+      if (!cur || !view || view.req !== body.req || cur.by === role || view.state !== 'pending' || typeof body.agree !== 'boolean') return json(409, { error: 'no request' });
+      await s.setJSON(k.share, body.agree ? { ...cur, agreed: { ...cur.agreed, [role]: true } } : { ...cur, state: 'declined' });
+      return json(200, { ok: true });
+    }
+
     if (body.action === 'report') {
-      // The reporter reveals one message the other side sent. It is kept only if it matches the commitment this mailbox relayed.
-      const seq = body.seq;
-      const m = body.message as CellMessage | undefined;
-      if (!Number.isInteger(seq) || !m || typeof m.text !== 'string' || m.text.length > 4000 || typeof body.frank !== 'string') return json(400, { error: 'report' });
-      const log = ((await s.get(k.log(peer), { type: 'json' })) as Envelope[] | null) ?? [];
-      const sent = log[seq as number];
-      const msg: CellMessage = { kind: m.kind, text: m.text, ...(typeof m.assisted === 'string' ? { assisted: m.assisted } : {}), at: Number(m.at) };
-      if (!sent || !(await verifyFranking(msg, body.frank, sent.commit))) return json(422, { error: 'not verified' });
+      // The whole conversation as the reporting person's browser has it: both people's text messages, in order, with times. It is accepted only for a request
+      // that BOTH people agreed to (the asker by asking, the other by answering yes), within SHARE_ASK_MS, and once: the request is marked used before anything is kept.
+      // There is no other way in: one person cannot send the other person's words alone.
+      // LIMIT: this mailbox holds only ciphertext and cannot read or check any of it, so it cannot confirm the transcript matches what was written. A report is what the
+      // reporting person's browser sent; it is stored as unverified.
+      const lines = parseTranscript(body.transcript);
+      if (!lines || !REQ.test(String(body.req))) return json(400, { error: 'report' });
+      const cur = (await s.getWithMetadata(k.share, { type: 'json' })) as { data: Share | string; etag?: string } | null;
+      const sh = cur ? ((typeof cur.data === 'string' ? JSON.parse(cur.data) : cur.data) as Share) : null;
+      const view = shareView(sh, now);
+      if (!cur || !sh || !view || view.req !== body.req || view.state !== 'agreed') return json(403, { error: 'not agreed' });
+      const used = cur.etag ? await s.set(k.share, JSON.stringify({ ...sh, state: 'used' }), { onlyIfMatch: cur.etag }) : { modified: false };
+      if (!used.modified) return json(409, { error: 'used' });
       const id = randomBytes(8).toString('hex');
-      // Kept in the private store for the owner to read. The mailbox name is not kept with it.
-      await privateStore().setJSON(`cell-report/${id}`, { receivedAt: new Date(now).toISOString(), message: msg, verified: true });
+      // Kept in the private store for the owner to read, for 90 days (the same KEEP_DAYS as other reports); the daily submission-expiry job removes it then.
+      // Kept with it: the lines (with which seat wrote each) and that both people agreed. Not kept: the mailbox name, the request id, or who asked.
+      await privateStore().setJSON(`cell-report/${id}`, { receivedAt: new Date(now).toISOString(), keepUntil: cellReportKeepUntil(new Date(now)), messages: lines, bothAgreed: true, verified: false });
+      // "Reports kept" (cell.report.verified, a name from when a report was checked; it now counts every report filed) is a plain running count of reports received:
+      // it is never lowered, so a report that expires or is deleted stays in it.
       try {
         await tallyCount(privateStore() as unknown as CounterStore, 'cell.report.verified');
       } catch {

@@ -1,10 +1,10 @@
-// Runs once a day: deletes every report and message whose 90 days have passed (src/lib/submissions.ts), as the Terms promise. It reads only each record's
+// Runs once a day: deletes every report and message (and every partner-practice report) whose 90 days have passed (src/lib/submissions.ts), as the Terms promise. It reads only each record's
 // keeping date. If the store cannot be reached, nothing is lost: the same records are due tomorrow.
 import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
 import { addCount } from '../../src/lib/counters.ts';
 import type { CounterStore } from '../../src/lib/dailyCap.ts';
-import { DUP_PREFIX, PREFIX, isDue } from '../../src/lib/submissions.ts';
+import { CELL_REPORT_PREFIX, DUP_PREFIX, PREFIX, cellReportDue, isDue } from '../../src/lib/submissions.ts';
 
 let storeOverride: unknown = null;
 export const __useStoreForTests = (s: unknown): void => {
@@ -51,10 +51,32 @@ export async function expireSubmissions(now = new Date()): Promise<number> {
   return n;
 }
 
+/** Partner-practice reports (cell-report/<id>) are deleted 90 days after they were filed. The "reports kept" total (cell.report.verified) is a plain count of reports received and is not lowered. */
+export async function expireCellReports(now = new Date()): Promise<number> {
+  const st = store();
+  const { blobs } = await st.list({ prefix: CELL_REPORT_PREFIX });
+  let n = 0;
+  for (const b of blobs) {
+    let rec: { keepUntil?: unknown; receivedAt?: unknown } | null = null;
+    try {
+      rec = (await st.get(b.key, { type: 'json' })) as { keepUntil?: unknown; receivedAt?: unknown } | null;
+    } catch {
+      rec = null;
+    }
+    if (cellReportDue(rec, now)) {
+      await st.delete(b.key);
+      n++;
+    }
+  }
+  return n;
+}
+
 export default async (): Promise<Response> => {
   try {
     const n = await expireSubmissions();
     console.log(`submission-expiry: deleted ${n} submission(s) past 90 days`);
+    const c = await expireCellReports();
+    console.log(`submission-expiry: deleted ${c} partner-practice report(s) past 90 days`);
     return new Response(null, { status: 204 });
   } catch (e) {
     console.error(`submission-expiry: failed ${e instanceof Error ? e.name : 'error'}`);
