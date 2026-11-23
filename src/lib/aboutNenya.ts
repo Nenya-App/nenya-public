@@ -98,7 +98,7 @@ export const ANSWERS: Answer[] = [
     checks: [
       { claim: 'operated by Estëlle Streiff as a sole proprietor, fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity', file: TERMS, has: 'a project operated by Estëlle Streiff as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity' },
       { claim: 'no equity investors, no board seats or approval rights, no federal funding; direction set by the creator', file: about('Structure'), has: 'does not accept federal government funding' },
-      { claim: 'not a startup, platform company or commercial product', file: about('Structure'), has: 'This is not a startup, a platform company, or a commercial product' },
+      { claim: 'not a startup or a platform company', file: about('Structure'), has: 'It is not a startup or a platform company' },
     ],
     status: 'ready',
   },
