@@ -13,7 +13,7 @@ import { setMotionStopped, useMotionStopped } from '../../lib/deviceMemory';
 import { CARDS_INSTRUCTION, NO_CARDS_OPEN, allCardsOpen, closeAllCards, noCardsOpen, openAllCards, toggleCard, type OpenCards, type SettingsCardId } from '../../lib/settingsCards';
 import { useTheme } from './ThemeProvider';
 import { DeviceMemoryControls } from './DeviceMemoryControls';
-import { BreathToneStyle, BreathTonesSwitch } from './BreathTonesSwitch';
+import { BreathToneStyle, BreathToneVolume, BreathTonesQuickControls, BreathTonesSwitch } from './BreathTonesSwitch';
 import { setGemKaleidoscope, setGemKaleidoscopeBreath, setGemKaleidoscopeLook, useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook, type KaleidoscopeLookChoice } from '../../lib/deviceMemory';
 import { VISITOR_LOOKS } from '../../lib/kaleidoscope';
 import { GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, LEAF_SETTING_AVAILABLE, gemChoiceLabel, gemChoiceMessage, haloStyleLabel, haloStyleMessage, haloWidthLabel, type GemSidesChoice } from '../../lib/logoLook';
@@ -143,6 +143,9 @@ export function AccessibilitySettingsContent({
         </p>
         <p role="status" aria-live="polite" className="sr-only">{motionMessageText}</p>
       </div>
+
+      {/* The tones' own off switch and mute, beside Stop motion: Stop motion does not silence them (sound is not motion). */}
+      <BreathTonesQuickControls />
 
       {/* How the cards work, and open-all / close-all (helpful with a screen reader). */}
       <div className="space-y-2">
@@ -394,6 +397,7 @@ export function AccessibilitySettingsContent({
       <div className="space-y-4">
       {!compact && <BreathTonesSwitch variant="panel" />}
       {!compact && <BreathToneStyle />}
+      {!compact && <BreathToneVolume />}
 
       {onCounterToggle && (
       <>
