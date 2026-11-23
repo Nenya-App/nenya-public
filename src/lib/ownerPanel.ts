@@ -1,7 +1,7 @@
 // The owner's testing switches for the coach, kept in the owner's own browser (see deviceMemory.ts, docs/coach-testing.md):
 //   skipRest      skip the six-hour rest after a conversation (the existing nenya.coach.owner flag)
 //   distressText  'site' (follow the site's own setting), 'on' or 'off' for the sentences the site adds after a flagged reply
-//   instructions  'site', 'v1', 'v2' or 'v2.1' (src/lib/instructionsVersions.ts)
+//   instructions  'site', 'v1', 'v2', 'v2.1' or 'v2.2' (src/lib/instructionsVersions.ts)
 // The two coach switches are sent with each message ONLY when the owner's token is also in this browser, and the coach honours them only
 // when it checks the token: a visitor who opens the panel can change nothing about how the coach behaves. Nothing here leaves the device
 // except that header and those two values.

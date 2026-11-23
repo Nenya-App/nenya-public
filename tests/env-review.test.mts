@@ -26,3 +26,9 @@ ok('secret-looking names and flagged secrets never show a value', !showsValue(v(
 ok('no finding carries a secret value in its note', reviewEnv([...BASE, v('COACH_SELECT_SECRET', 'TOPSECRETVALUE', { isSecret: true })]).every((f) => !/TOPSECRETVALUE/.test(f.note)));
 const order = reviewEnv([...BASE, v('COACH_SELECT', 'shadow'), v('COACH_SCREEN', 'shadow')]).map((f) => f.level);
 ok('findings are ordered: turn off first, then missing, review, ok', JSON.stringify(order) === JSON.stringify([...order].sort((a, b) => ['TURN OFF', 'MISSING', 'REVIEW', 'OK'].indexOf(a) - ['TURN OFF', 'MISSING', 'REVIEW', 'OK'].indexOf(b))));
+
+// v2.2: a COACH_INSTRUCTIONS value of v2.2 is shown as set (OK, with the value), not flagged.
+{
+  const r22 = reviewEnv(BASE.map((x) => (x.key === 'COACH_INSTRUCTIONS' ? v('COACH_INSTRUCTIONS', 'v2.2') : x)));
+  ok('the env review accepts COACH_INSTRUCTIONS=v2.2 and shows its value', find(r22, 'COACH_INSTRUCTIONS')?.level === 'OK' && /v2\.2/.test(find(r22, 'COACH_INSTRUCTIONS')?.note ?? ''));
+}

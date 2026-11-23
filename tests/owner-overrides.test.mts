@@ -60,3 +60,8 @@ const refused = async (token?: string) => {
 const visitorRefused = await refused();
 const ownerRefused = await refused('owner-secret');
 ok('a refused origin is a 403 for everyone, and only the owner is told why', visitorRefused.status === 403 && visitorRefused.body.error === 'origin' && visitorRefused.body.reason === undefined && ownerRefused.status === 403 && /COACH_EXTRA_HOSTS is empty or not set/.test(ownerRefused.body.reason ?? ''));
+
+// v2.2: the owner can pick it for one request, and a visitor cannot.
+{
+  ok('parseOverrides accepts v2.2 from the owner only', JSON.stringify(parseOverrides(true, { instructions: 'v2.2' })) === '{"instructions":"v2.2"}' && JSON.stringify(parseOverrides(false, { instructions: 'v2.2' })) === '{}');
+}

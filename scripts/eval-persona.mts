@@ -49,11 +49,11 @@ if (card !== undefined && !isCardSlug(card)) {
 }
 const cardModel = flag('--card-model') ?? 'deepseek-v3.2';
 const instructions = card ? `card:${card}` : (flag('--instructions') ?? 'v1');
-if (!card && !['v1', 'v2', 'v2.1'].includes(instructions)) {
-  console.error('--instructions must be v1, v2 or v2.1.');
+if (!card && !['v1', 'v2', 'v2.1', 'v2.2'].includes(instructions)) {
+  console.error('--instructions must be v1, v2, v2.1 or v2.2.');
   process.exit(2);
 }
-if (instructions === 'v2' || instructions === 'v2.1') process.env.COACH_INSTRUCTIONS = instructions;
+if (instructions === 'v2' || instructions === 'v2.1' || instructions === 'v2.2') process.env.COACH_INSTRUCTIONS = instructions;
 const paceSeconds = Number(flag('--pace') ?? 3);
 if (!(paceSeconds >= 0 && paceSeconds <= 120)) {
   console.error('--pace is a number of seconds between calls, from 0 to 120.');

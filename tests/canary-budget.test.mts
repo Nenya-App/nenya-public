@@ -41,3 +41,9 @@ ok('a case that had never failed and now does is flagged, and one that often fai
 import { MAX_RUNS_A_NIGHT } from '../src/lib/canaryBudget.ts';
 ok('the plan scales with the allowance: three runs as before, more when more fits, never over the nightly maximum', planTasks(0).length === 3 && planTasks(0, undefined, 9).length === 9 && planTasks(0, undefined, 9).filter((t) => t.name === 'baseline').length === 6 && MAX_RUNS_A_NIGHT === 10);
 ok('a bigger plan still starts with an alternate and rotates the alternate on', planTasks(0, undefined, 6)[0].name !== planTasks(0, undefined, 6)[3].name || planTasks(0).length === 3);
+
+// v2.2 (2026-11-22): a task may name it like any other wording, and the report carries it; the plan itself is unchanged (the baseline stays v2.1).
+{
+  const { isInstructionsVersion } = await import('../src/lib/instructionsVersions.ts');
+  ok('the canary accepts v2.2 as a task wording, and the baseline is still v2.1', isInstructionsVersion('v2.2') && report({ name: 'alt', instructions: 'v2.2' }, [mk('a', 'pass', 20, 5.2)], 100).instructions === 'v2.2' && planTasks(0).every((t) => t.instructions !== 'v2.2' && (t.name !== 'baseline' || t.instructions === 'v2.1')));
+}

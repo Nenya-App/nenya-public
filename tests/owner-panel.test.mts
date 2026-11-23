@@ -30,3 +30,10 @@ op.clearOwner();
 ok('"Clear" removes the token and all the settings', Object.keys(store).length === 0);
 op.saveToken('   ');
 ok('an empty token is not saved', !(dm.OWNER_TOKEN_KEY in store));
+
+// v2.2 round-trips through the saved settings and is sent as an override once the token is saved.
+{
+  op.saveToken('t'); op.writeSettings({ skipRest: false, distressText: 'site', instructions: 'v2.2' });
+  ok('the owner panel keeps v2.2 and sends it', op.readSettings().instructions === 'v2.2' && JSON.stringify(op.overridesForRequest()).includes('"instructions":"v2.2"'));
+  op.clearOwner();
+}
