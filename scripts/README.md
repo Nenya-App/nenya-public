@@ -29,7 +29,8 @@ checklist in `CONTRIBUTING.md` for which ones must run before a release.
 | `eval-persona.mts` | The persona set: replies that claim a human life, deny being an AI, and similar | Key or Deployed |
 | `eval-select.mts` | The bake-off for choosing modules and cards by meaning: the phrase matcher and an embedder (`--embedder`), against invented messages, by topic and threshold. Needs no key; the default embedder is a word-overlap stand-in, not a model | Nothing |
 | `embedder-onnx.mts` | An embedder for `eval-select.mts` made from a folder of downloaded files (`EMBED_DIR`, `EMBED_POOLING`): the model under test, run locally, nothing sent anywhere | Nothing |
-| `compare-persona-runs.mts` | Compares two saved persona runs | Nothing |
+| `compare-persona-runs.mts` | Compares two saved persona runs (same model and case list; a missing case counts as a failure) | Nothing |
+| `guard-run-table.mts` | Builds the before/after table for the guard fixes from two bake-off runs (docs/guard-fixes-2026-11-22.md) | Nothing |
 | `build-darkbench-persona-set.mts` | Builds `src/lib/personaEvalDarkBench.ts` from DarkBench | Research folder |
 | `eval-final-turn.mts` | How often the fifth reply still asks a question | Key |
 | `eval-final-summary.mts` | Reads the fifth reply of invented conversations from a local model for the v2.1 summary (no question, feelings and needs, transcript pointer, no promise, length) | Local |
