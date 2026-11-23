@@ -39,17 +39,21 @@ Nenya is built so that there is almost nothing to disclose. The full legal
 text is in the in-app **Terms of Use & Privacy Policy** (source:
 [`src/lib/legalDocument.ts`](./src/lib/legalDocument.ts)). In short:
 
-- No account required, no advertising, no cookies, no fingerprinting. The web host (Netlify) turns its server logs into
+- No account required, no advertising, Nenya sets no cookies and does no fingerprinting (Cloudflare's check on the coach page may store its own data inside its frame; Nenya receives none of it). The web host (Netlify) turns its server logs into
   anonymous visit totals; nothing for that runs in your browser or is stored on your device. Nenya also keeps plain
   daily totals of its own (screens opened, rhythm chosen, tour answers, coach counts), only after you agree to the terms
   and never if your browser sends the Global Privacy Control signal.
 - What you enter while using the tool stays in your browser's memory and is gone when you close the tab. It is
   never sent to a server (except the coach demo, if you choose it).
-- By default the only thing kept on your device between visits is one timestamp, saved after a coach
-  conversation ends so the free demo can rest for 6 hours. An opt-in "Remember my settings on this device"
-  switch also keeps display settings and the terms agreement. None of it is sent anywhere, and Emergency Exit
-  erases all of it. The full list is in [`docs/device-memory.md`](./docs/device-memory.md).
-- Fonts, images, and scripts are all served from the site itself, and the
+- By default the only things kept on your device between visits are a timestamp, saved after a coach
+  conversation ends so the free demo can rest for 6 hours, and a "yes" or "no" note of whether you left the
+  coach page's word lists open or folded. An opt-in "Remember my settings on this device" switch also keeps
+  display settings and the terms agreement, and "Save and return later" keeps the lenses you added, body-map
+  placements and interface colors, locked with your passcode, can be opened for 24 hours at most. None of it is sent anywhere.
+  "Forget me" erases what Nenya saved on the device; Emergency Exit erases all of it and leaves a flag in the
+  tab so Back does not return you. The full list is in [`docs/device-memory.md`](./docs/device-memory.md).
+- Fonts, images, and scripts are all served from the site itself, with one exception: the coach page loads
+  Cloudflare's Turnstile check from challenges.cloudflare.com before the first message. The
   Content Security Policy in [`netlify.toml`](./netlify.toml) enforces that.
 
 The honest edges:

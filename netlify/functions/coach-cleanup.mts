@@ -1,4 +1,4 @@
-// A small daily job: deletes the previous days' connection records (see src/lib/connectionLimit.ts), so that
+// A small daily job: deletes the previous days' one-way daily-code records (the coach's, the palette button's and the word look-up's: c/, p/ and w/; see src/lib/connectionLimit.ts), so that
 // none outlives about a day and a half, and receipt records older than 30 days (src/lib/receiptLog.ts), as the Terms promise. It holds no secrets and reads no message text.
 import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
@@ -10,7 +10,7 @@ export default async (): Promise<Response> => {
     const store = getStore(storeNameFrom(process.env.COACH_STORE_NAME));
     const n = await cleanupConnectionRecords(store);
     const r = await cleanupReceiptRecords(store);
-    console.log(`coach-cleanup: deleted ${n} old connection record(s) and ${r} old receipt record(s)`);
+    console.log(`coach-cleanup: deleted ${n} old daily-code record(s) and ${r} old receipt record(s)`);
     return new Response(null, { status: 204 });
   } catch (e) {
     console.error(`coach-cleanup: failed ${e instanceof Error ? e.name : 'error'}`);

@@ -54,6 +54,8 @@ Turn these on one at a time, in the order in the PR description, after the match
 
 **Build switches for new screens (Builds scope; "Clear cache and deploy site" after a change).** Staging first; on production only after the owner approves what staging shows.
 
+**Not set in production today (checked 2026-11-22, terms audit).** The eight page switches `VITE_LENS_COPY`, `VITE_LENS_TRAY`, `VITE_LENS_RING`, `VITE_LENS_TAPESTRY`, `VITE_LENS_PATH`, `VITE_TERMS_FIRST`, `VITE_SUMMARY_REQUEST` and `VITE_WORD_HELP` (the rows from `VITE_LENS_COPY` to `VITE_WORD_HELP` below) are **build-time variables set in Netlify's site settings, and they are NOT set in production's site settings.** The live build was made without them, so those screens are off for visitors and the Terms show the "switches off" text. The "On value" column below is only the value that would turn each one on. `netlify env:list --context production` can show them as `on` anyway, because the CLI also reads `netlify.toml` lines 15-23 (`[context.dev.environment]`), which reach builds of the `dev` branch (staging) and never production. Setting them is a separate decision; see `docs/terms-accuracy-fixes-2026-11-22.md` for the order (merge the Terms corrections first).
+
 | Variable | On value | What it turns on |
 |---|---|---|
 | `VITE_SECTION_ADDRESSES` | `on` | One address per part (`/breath`, `/senses`, `/coach`; src/lib/sections.ts). On whenever the lens tray is on. **Replaces `VITE_START_CHOOSER`**: the start chooser (three rings to pick where to begin) was removed on 2026-11-18 at the owner's direction, so that variable is no longer read and can be deleted from a site's settings |
