@@ -86,6 +86,8 @@ if the model changes.
 | `build-agreement-pdf.mts` | Branded PDFs of the draft contributor agreement | Nothing |
 | `build-answers-pdf.mts` | Branded PDFs of the draft pre-written answers | Nothing |
 | `logo-export.vite.config.mts` | Builds only the `logo-export/` page, for the two scripts below (`npm run logo:render`) | Nothing |
+| `build-mind-facts.mts` | Generates `public/mind-facts.txt` (the plain-text facts page for the owner's Venice Mind) from the ready answers, the Terms date and section titles, and the standing statements; `npm run mind-facts`, with `-- --as-of YYYY-MM-DD` to move the date (`docs/mind-facts.md`) | Nothing |
+| `lib/mindFacts.mts` | The builder it and `tests/mind-facts.test.mts` share | n/a |
 | `render-logo-assets.mts` | Draws every static logo asset from the live gem in headless Chrome (`docs/logo-regeneration.md`) | Chrome |
 | `render-logo-video.mts` | Renders the live gem as frames, then as animated WebP and MP4/WebM | Chrome, img2webp (ffmpeg optional) |
 | `lib/brandedPdf.mts` | Shared by the two PDF scripts | n/a |
