@@ -5,7 +5,6 @@ import { ArrowLeft, Wind } from 'lucide-react';
 import { IpExplainer } from './IpExplainer';
 import { OWNER_TOKEN_KEY } from '../lib/deviceMemory';
 
-import { L } from '../lib/vocabulary';
 import { AboutPageLink } from '../app/components/AboutPageLink';
 // The coach is open only to connections our host places in the United States (src/lib/coachRegion.ts). The page asks the
 // server once; the server enforces it on every message regardless, so a failed check here simply lets the page continue.
@@ -97,8 +96,8 @@ export function RegionNotice({ country, onBack, onBreathe, inline = false }: { c
         {placed} {REGION_REASON} Nothing you could type here has been sent.
       </p>
       <p>
-        The rest of Nenya works everywhere and sends nothing: the breathing tool, the six {L('gateways')}, and the report you can
-        make from them.
+        The rest of Nenya works everywhere. The breathing tool, the six Lenses and the report you can make from them run in your
+        browser. Anything that sends something to us or to another service says so where you use it.
       </p>
       <p>
         <AboutPageLink page="coach-region" detail="Where the Coach Is Open" />

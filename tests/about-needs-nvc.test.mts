@@ -94,7 +94,7 @@ const t = (a: (typeof ANSWERS)[number]) => [a.short, ...a.full].join(' ');
 ok('the NVC answer says the lessons and the coach use the four parts (not "every reflection") and that our addition has not been tested', !/every reflection/.test(t(nvcAnswer)) && /lessons and its optional coach are built on/.test(t(nvcAnswer)) && /has not been tested/.test(t(nvcAnswer)));
 ok('the affiliation answer says "learn from human NVC trainers as well" and that we have not tested whether Nenya helps, with no "certified" or "strongly"', /learn from human NVC trainers as well/.test(t(aff)) && /have not tested whether it does/.test(t(aff)) && !/certified human|strongly encourage/.test(t(aff)));
 ok('the coach\'s self-description says the added layer is our own and untested, and still says it was not trained by any individual teacher', /our own extension and has not been tested/.test(t(methods)) && /I was not trained by any individual teacher/.test(t(methods)) && /human NVC trainers/.test(t(methods)));
-ok('the Venice differences line no longer says "most features need an account" (unverified)', !/need an account/.test(VENICE_DIFFERENCES) && /under 18/.test(VENICE_DIFFERENCES));
+ok('the Venice differences line says "most features need an account" (the owner confirmed it is accurate for Venice, 2026-11-22) and still mentions under 18', /most features need an account/.test(VENICE_DIFFERENCES) && /under 18/.test(VENICE_DIFFERENCES));
 
 // ---- the public files ----
 const pub = read('public/about-nenya.html') + read('public/llms.txt');

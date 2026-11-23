@@ -325,7 +325,7 @@ export const ANSWERS: Answer[] = [
     full: [
       'For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands. The replies are written by a model that Venice AI runs, and Venice AI\'s terms say its service is intended for people located in the United States; our own terms promise to respect theirs.',
       'Our host, Netlify, works out the country from your connection\'s IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.',
-      'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six lenses, and the report you can make from them.',
+      'Everything else on Nenya works everywhere. The breathing tool, the six Lenses and the report you can make from them run in your browser. Anything that sends something to us or to another service says so where you use it.',
     ],
     links: [{ label: 'Where the Coach Is Open', page: 'coach-region' }, { label: 'Terms, Section 15: The coach demo', page: 'terms' }],
     tutorial: 'Privacy lesson: what an IP address is, and what Nenya does with yours.',
@@ -343,7 +343,7 @@ export const ANSWERS: Answer[] = [
       full: [
         'For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands, while we work out what offering it elsewhere would require.',
         'Our host, Netlify, works out the country from your connection\'s IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.',
-        'Everything else on Nenya works everywhere and sends nothing: the breathing tool, the six lenses, and the report you can make from them.',
+        'Everything else on Nenya works everywhere. The breathing tool, the six Lenses and the report you can make from them run in your browser. Anything that sends something to us or to another service says so where you use it.',
       ],
       checks: [
         { claim: 'US-only for now, while offering it elsewhere is worked out', file: WAI_TERMS, has: 'while we work out what offering it elsewhere would require' },

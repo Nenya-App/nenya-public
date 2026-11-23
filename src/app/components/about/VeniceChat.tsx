@@ -100,7 +100,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                   Conversation partner, set up with a prompt
                 </h3>
                 <p className="text-sm text-purple-800 dark:text-purple-200">
-                  The character is a Venice &ldquo;character&rdquo;: a written description and prompt, not a model we trained. Its public description asks you open questions and gives no advice. We built the prompt around Nonviolent Communication, Socratic questions, and the Pantheon of Needs.
+                  The character is a Venice &ldquo;character&rdquo;: a written description and prompt, not a model we trained. Its public description asks you open questions and gives no advice. We built the prompt around Nonviolent Communication, Socratic questions, and the Pantheon of Needs. The character on Venice is an older version of our prompt. We still need to update it.
                 </p>
               </Card>
 
@@ -167,7 +167,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
             <Card className="p-6 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/20">
               <div className="space-y-3">
                 <p className="text-sm text-purple-900 dark:text-purple-100">
-                  To chat with the Nenya character on Venice, you may need to create an account on{' '}
+                  To chat with the Nenya character on Venice, you need to create an account on{' '}
                   <a
                     href={VENICE_SIGNUP_URL}
                     target="_blank"
@@ -177,7 +177,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
                     Venice.ai
                     <ExternalLink className="size-3" />
                   </a>
-                  . Venice&rsquo;s pricing page (read 22 November 2026) lists 10 text prompts a day on the free plan. Pro costs $18 a month and has unlimited text prompts. The page does not say plainly whether free accounts can chat with characters, so check before you sign up. These limits can change. Check Venice for its current terms.
+                  . Venice&rsquo;s pricing page (read 22 November 2026) lists 10 text prompts a day on the free plan. Pro costs $18 a month and has unlimited text prompts. A free account can chat with characters for up to 10 turns. These limits can change. Check Venice for its current terms.
                 </p>
                 <p className="text-xs text-purple-800 dark:text-purple-200 italic">{REFERRAL_NOTE}</p>
               </div>

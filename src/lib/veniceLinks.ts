@@ -14,4 +14,4 @@ export const VENICE_PRIVACY_URL = 'https://venice.ai/legal/privacy-policy';
 
 /** How Venice AI's own terms differ from Nenya's, for anyone about to go there (from its Terms, sections 4, 5, 19 and 20). */
 export const VENICE_DIFFERENCES =
-  'Venice AI’s terms differ from ours. For example: anyone under 18 needs a parent’s or guardian’s consent; the service is intended for people in the United States; and disputes go to binding individual arbitration with no class actions, unless you opt out by mail within 30 days.';
+  'Venice AI’s terms differ from ours. For example: most features need an account; anyone under 18 needs a parent’s or guardian’s consent; the service is intended for people in the United States; and disputes go to binding individual arbitration with no class actions, unless you opt out by mail within 30 days.';
