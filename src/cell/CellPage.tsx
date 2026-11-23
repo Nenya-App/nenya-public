@@ -5,7 +5,7 @@ import { Card } from '../app/components/ui/card';
 import { EmergencyExitDock } from '../app/components/EmergencyExit';
 import OnboardingFlow from '../app/components/OnboardingFlow';
 import { FlagNotice } from '../coach/FlagNotice';
-import { CellClient } from '../lib/cellClient';
+import { CellClient, type ShareState } from '../lib/cellClient';
 import { normalizeCode, type Opened } from '../lib/cellCrypto';
 import type { SafetyFlag } from '../lib/safetyFlags';
 import { termsAcceptedFor } from '../lib/deviceMemory';
@@ -17,7 +17,7 @@ import { MODES } from '../lib/privacyModes';
 // mailbox holds ciphertext and deletes everything within three hours, or at once when either person closes the cell.
 //
 // Screens: start (make or join) → waiting for the other person → compare the safety colours → the conversation (with a
-// pause both people see when a message is flagged, a report for any message the other person sent, and closing).
+// pause both people see when a message is flagged, a request, either person's, to share the whole conversation with Nenya if the other agrees, and closing).
 // "Send with AI" and "Receive translated" are shown as not available yet: they would send one person's own words to the
 // coach route, which is not wired in.
 
@@ -26,7 +26,6 @@ interface Line {
   from: 'me' | 'them' | 'site';
   text: string;
   opened?: Opened;
-  reported?: 'sending' | 'done' | 'failed';
 }
 const STEADY = { ih: 6000, hi: 0, ex: 6000, ho: 0 };
 const noop = () => undefined;
@@ -45,6 +44,9 @@ export default function CellPage() {
   const [paused, setPaused] = useState<null | { by: 'me' | 'them'; flag?: SafetyFlag; text?: string }>(null);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [share, setShare] = useState<ShareState | null>(null);
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shared, setShared] = useState(false);
   const [closedWhy, setClosedWhy] = useState('');
   const client = useRef<CellClient | null>(null);
   const exiting = useRef(false);
@@ -89,6 +91,8 @@ export default function CellPage() {
         setPaused({ by: 'me', flag, text: m.text });
         void c.send({ kind: 'pause', text: '' }).catch(() => undefined);
       },
+      onShare: (st) => setShare(st),
+      onReported: () => setShared(true),
       onClosed: (why) => {
         setClosedWhy(why === 'me' ? 'You closed the cell.' : why === 'expired' ? 'The cell reached its three-hour limit and was deleted.' : 'The other person closed the cell.');
         setStage('closed');
@@ -142,16 +146,29 @@ export default function CellPage() {
     }
   };
 
-  const report = async (i: number) => {
-    const line = lines[i];
-    if (!line.opened || !client.current) return;
-    setLines((l) => l.map((x, j) => (j === i ? { ...x, reported: 'sending' } : x)));
+  const ask = async () => {
+    if (!client.current) return;
+    setShareBusy(true);
+    setError('');
     try {
-      await client.current.report(line.opened);
-      setLines((l) => l.map((x, j) => (j === i ? { ...x, reported: 'done' } : x)));
-    } catch {
-      setLines((l) => l.map((x, j) => (j === i ? { ...x, reported: 'failed' } : x)));
+      const req = await client.current.askToShare();
+      setShare({ req, mine: true, state: 'pending' });
+    } catch (e) {
+      setError(e instanceof Error && e.message === 'pending' ? 'A request is already open.' : 'The request could not be sent. Nothing was shared.');
     }
+    setShareBusy(false);
+  };
+
+  const answer = async (agree: boolean) => {
+    if (!client.current || !share) return;
+    setShareBusy(true);
+    try {
+      await client.current.answerShare(share.req, agree);
+      setShare({ ...share, state: agree ? 'agreed' : 'declined' });
+    } catch {
+      setError('Your answer could not be sent. Nothing was shared.');
+    }
+    setShareBusy(false);
   };
 
   const close = async () => {
@@ -274,19 +291,6 @@ export default function CellPage() {
                     <li key={i} className={`max-w-[85%] rounded-lg border p-3 text-sm ${l.from === 'me' ? 'ml-auto border-primary/30 bg-primary/5' : 'border-border'}`}>
                       <p className="mb-1 text-xs text-muted-foreground">{l.from === 'me' ? 'You' : 'The other person'}</p>
                       <p className="whitespace-pre-wrap">{l.text}</p>
-                      {l.from === 'them' && (
-                        <div className="mt-2 text-right">
-                          {l.reported === 'done' ? (
-                            <span className="text-xs text-muted-foreground">Reported to Nenya</span>
-                          ) : l.reported === 'failed' ? (
-                            <span className="text-xs">The report could not be sent.</span>
-                          ) : (
-                            <button type="button" className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={() => void report(i)} disabled={l.reported === 'sending'}>
-                              <Flag className="size-3" aria-hidden="true" /> Report this message
-                            </button>
-                          )}
-                        </div>
-                      )}
                     </li>
                   ))}
                 </ol>
@@ -331,6 +335,30 @@ export default function CellPage() {
                   <p className="font-medium text-foreground">AI help</p>
                   <p>"Send with AI" and "Receive translated" are not available yet. Your messages go only to the other person.</p>
                 </Card>
+                <Card className="space-y-2 p-3 text-muted-foreground">
+                  <p className="font-medium text-foreground">Share this conversation with Nenya</p>
+                  {share?.state === 'pending' && !share.mine ? (
+                    <div role="alert" className="space-y-2 text-foreground">
+                      <p>The other person asks to share this whole conversation with Nenya. It includes your words and theirs, with the times. A person at Nenya would read it. It is kept for 90 days, then deleted. Nenya cannot confirm it matches what was written.</p>
+                      <p>If you say No, nothing is sent.</p>
+                      <div className="flex gap-2">
+                        <Button className="gap-2" onClick={() => void answer(true)} disabled={shareBusy}>Yes, share it</Button>
+                        <Button variant="outline" onClick={() => void answer(false)} disabled={shareBusy}>No, send nothing</Button>
+                      </div>
+                    </div>
+                  ) : share?.state === 'pending' ? (
+                    <p role="status">Waiting for the other person to answer. Nothing has been sent. The request lapses after 10 minutes.</p>
+                  ) : share?.state === 'agreed' || share?.state === 'used' || shared ? (
+                    <p role="status">{shared || share?.state === 'used' ? 'The conversation was shared with Nenya, because you both agreed.' : share.mine ? 'You both agreed. Sending now.' : 'You agreed. The other person\u2019s device sends it.'}</p>
+                  ) : (
+                    <>
+                      {(share?.state === 'declined' || share?.state === 'expired') && <p role="status">{share.state === 'declined' ? 'It was not shared. Nothing was sent.' : 'The request ran out. Nothing was sent.'}</p>}
+                      <p>Either of you can ask. It is shared only if the other person agrees. What would be shared: the whole conversation, your messages and theirs, with the times. A person at Nenya would keep it for 90 days. Nenya cannot confirm it matches what was written.</p>
+                      <Button variant="outline" className="gap-2" onClick={() => void ask()} disabled={shareBusy || lines.length === 0}><Flag className="size-4" aria-hidden="true" /> Ask to share the conversation</Button>
+                    </>
+                  )}
+                  <p>If the other person is hurting or threatening you, you do not need their agreement to leave: close the cell. You can then email info@nenya.biz yourself with your own copy of what you saw. Nenya cannot see this conversation unless you both agree.</p>
+                </Card>
                 <div className="flex flex-col gap-2">
                   <Button variant="outline" className="gap-2" onClick={pauseMine} disabled={!!paused}><Pause className="size-4" /> Pause</Button>
                   <Button variant="outline" className="gap-2" onClick={close}><X className="size-4" /> Close and delete the cell</Button>
@@ -342,8 +370,8 @@ export default function CellPage() {
           {stage === 'closed' && (
             <Card className="space-y-3 p-6">
               <h2 className="text-xl">The cell is closed</h2>
-              <p className="text-sm text-muted-foreground">{closedWhy} Nothing from it was kept on Nenya&rsquo;s side, except any message you chose to report.</p>
-              <Button onClick={() => { setLines([]); setColors(null); setPaused(null); setCode(''); setJoinCode(''); setError(''); setStage('start'); }}>Start again</Button>
+              <p className="text-sm text-muted-foreground">{closedWhy} Nothing from it was kept on Nenya&rsquo;s side, except the conversation, if you both agreed to share it (kept 90 days).</p>
+              <Button onClick={() => { setLines([]); setShare(null); setShared(false); setColors(null); setPaused(null); setCode(''); setJoinCode(''); setError(''); setStage('start'); }}>Start again</Button>
             </Card>
           )}
         </main>

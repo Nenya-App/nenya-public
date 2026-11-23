@@ -17,7 +17,7 @@ const LABELS: Record<string, string> = {
   'coach.sealed.turn.sent': 'Sealed mode: encrypted messages relayed',
   'coach.sealed.turn.answered': 'Sealed mode: encrypted replies passed back',
   'cell.opened': 'Partner practice: encrypted cells opened',
-  'cell.report.verified': 'Partner practice: reported messages verified',
+  'cell.report.verified': 'Partner practice: reports filed (whole conversations; we cannot verify them)',
   'coach.turn.hostile.abuse': 'Messages hostile toward the coach',
   'coach.turn.hostile.critique': 'Messages critical of the coach\'s reply',
   'coach.turn.hostile.thanks-added': 'Thank-yous added to replies to critique',

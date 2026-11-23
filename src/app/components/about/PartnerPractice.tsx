@@ -97,8 +97,8 @@ export default function PartnerPractice({ onBack, onOpenPreview }: PartnerPracti
               stays viewable.
             </li>
             <li>
-              A cell would pause if the crisis check flags a message, and either person could report a
-              problem. The crisis check is simple and can miss things.
+              A cell would pause if the crisis check flags a message, and either person could ask to share the
+              conversation with Nenya, which happens only if the other person agrees. The crisis check is simple and can miss things.
             </li>
             <li>
               In keeping with Nenya&rsquo;s privacy design, we would aim to keep as little as possible. There would be no accounts. Messages would be kept only while the cell is open, for up to 3 hours in the test version.
