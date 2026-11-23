@@ -284,8 +284,8 @@ export const ANSWERS: Answer[] = [
       { claim: 'blame words aimed at another person, or harsh words about yourself, can bring a card; nothing is stopped', file: about('HowChecksWork'), has: 'Blame words aimed at another person, or harsh words about yourself, can bring a short learning card. Nothing is stopped.' },
       { claim: 'none of the checks keeps your message, a score or a profile; plain daily counts only, with nothing that identifies anyone', file: about('HowChecksWork'), has: 'We keep plain daily counts only, with nothing that identifies anyone.' },
     ],
-    status: 'pending',
-    ownerNote: 'Written 2026-11-10 with the learning cards. 2026-11-22: the Terms now describe the cards (Section 15, "Words the site writes, not the AI") and these checks read the Terms. Status left pending on purpose: the owner decides when this answer goes live.',
+    status: 'ready',
+    ownerNote: 'Written 2026-11-10 with the learning cards. 2026-11-22: the Terms now describe the cards (Section 15, "Words the site writes, not the AI") and these checks read the Terms. Owner approved it going live on 2026-11-22.',
   },
   {
     id: 'n-palette', part: 'nenya', title: 'Are my colors sent anywhere? Palettes and color names',

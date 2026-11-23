@@ -71,7 +71,7 @@ ok('"my friend Nenya" and "a cat called Nenya" never route', detectAboutNenya('w
 
 // which answers are live
 const live = liveAnswers().map((a) => a.id);
-ok('only answers checked and not waiting on the owner or a feature are live (all 42; the languages answer went live with its notice, and the friend answer was split from the therapist answer on 2026-11-22)', live.length === 42 && ['n-languages'].every((id) => live.includes(id)) && ['c-wrote', 'c-angry'].every((id) => live.includes(id)) && ANSWERS.filter((a) => a.status !== 'ready').every((a) => !live.includes(a.id)));
+ok('only answers checked and not waiting on the owner or a feature are live (all 43; the languages answer went live with its notice, the learning-cards answer went live on 2026-11-22 at the owner word, and the friend answer was split from the therapist answer on 2026-11-22)', live.length === 43 && ['n-languages', 'c-cards'].every((id) => live.includes(id)) && ['c-wrote', 'c-angry'].every((id) => live.includes(id)) && ANSWERS.filter((a) => a.status !== 'ready').every((a) => !live.includes(a.id)));
 ok('a live answer comes back for its question; the languages answer is given now that its notice is live', aboutAnswerFor('who runs this site')?.id === 'n-who' && aboutAnswerFor('how do I contact you')?.id === 'n-contact' && detectAboutNenya('who wrote that') === 'c-wrote' && aboutAnswerFor('who wrote that')?.id === 'c-wrote' && detectAboutNenya('do you speak spanish') === 'n-languages' && aboutAnswerFor('do you speak spanish')?.id === 'n-languages');
 ok('a message that is not a question about Nenya or the coach gets no answer', aboutAnswerFor('I had a rough day at work') === null && aboutAnswerFor('') === null);
 
