@@ -15,3 +15,4 @@
 - Planned and not built: partner practice using NVC-informed language between two people, and running the coach's model on the visitor's device.
 - Use of this site's content: indexing and quoting in answers are welcome; training AI models on it is not (see robots.txt).
 - Source code: https://github.com/Nenya-App/nenya-public
+- Site facts for AI assistants: https://nenya.biz/mind-facts.txt, one plain-text page generated from the same checked answers as the site's fixed answers; if it and the Terms differ, the Terms are right.
