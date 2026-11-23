@@ -67,7 +67,7 @@ function start(title: string, subtitle: string, tagline: string, stamp: string):
   doc.text(stamp, W / 2, 156, { align: 'center' });
   doc.setFontSize(8.5); doc.text(`Prepared ${MONTH}`, W / 2, H - 32, { align: 'center' });
   doc.setFont('ManropeSemiBold', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...COLORS.goldDark);
-  drawTracked(doc, 'PRIVACY-FIRST · USER-SOVEREIGN · OPEN & TRANSPARENT', W / 2, H - 24, { align: 'center', tracking: 0.3 });
+  drawTracked(doc, 'FREE · NO ACCOUNT · NO ADVERTISING', W / 2, H - 24, { align: 'center', tracking: 0.3 });
   newPage(d);
   return d;
 }

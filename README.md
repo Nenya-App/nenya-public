@@ -1,6 +1,6 @@
 # Nenya
 
-A free, private, browser-based tool for structured personal reflection:
+A free, browser-based tool for structured personal reflection:
 a minute of paced breathing, then six optional sensory "lenses" (Sight,
 Sound, Touch, Essence, Movement, Pattern) for checking in with an emotional
 state without having to put it into words first.

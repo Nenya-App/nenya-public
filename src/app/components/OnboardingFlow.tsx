@@ -206,7 +206,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                         Welcome to Nenya
                       </h2>
                         <p className="text-sm text-muted-foreground">
-                          A private place to listen to yourself. Let’s begin with your breath.
+                          A free place to listen to yourself. Let’s begin with your breath.
                         </p>
                     </div>
                   </div>

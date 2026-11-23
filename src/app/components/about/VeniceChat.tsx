@@ -211,7 +211,7 @@ export default function VeniceChat({ onBack }: VeniceChatProps) {
           {/* Footer Note */}
           <div className="text-sm text-muted-foreground border-t border-border pt-6">
             <p>
-              <strong>Note:</strong> This represents an exploration of AI-assisted empathy practice. What we hope to build is a conversation partner, not a companion. It would have a privacy-first design: on-device processing where possible, minimal data, and strong protection of personal details. It would also have much stronger safety checks, with human review. Today, the coach runs in the cloud through Venice AI and has only basic versions of those protections.
+              <strong>Note:</strong> This represents an exploration of AI-assisted empathy practice. What we hope to build is a conversation partner, not a companion. It would aim to work on your device where possible, to collect as little data as it can, and to say plainly what it keeps. It would also have much stronger safety checks, with human review. Today, the coach on this site runs through Venice AI, with basic checks. The Venice Mind, which is on Venice's own platform, has none of Nenya's safety checks.
             </p>
           </div>
         </div>

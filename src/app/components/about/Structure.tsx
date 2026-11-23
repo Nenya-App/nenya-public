@@ -29,13 +29,13 @@ export default function Structure({ onBack }: StructureProps) {
 
       <div className="w-full">
         <div className="mx-auto max-w-4xl px-6 py-12 space-y-12">
-          {/* A Private Artistic Project */}
+          {/* An Independent Artistic Project */}
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-6 px-2">
               <div className="p-3 bg-nenya-gold/20 rounded-lg">
                 <Heart className="size-6 text-nenya-gold-text dark:text-nenya-gold" />
               </div>
-              <h2 className="text-2xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">A Private Artistic Project</h2>
+              <h2 className="text-2xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">An Independent Artistic Project</h2>
             </div>
             <Card className="p-6 md:p-8 bg-muted/50 border-border">
               <div className="space-y-4 text-foreground leading-relaxed text-sm md:text-base">

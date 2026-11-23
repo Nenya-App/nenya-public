@@ -385,7 +385,7 @@ export default function EvolvedLeadership({ onBack }: EvolvedLeadershipProps) {
           <Alert className="border-yellow-500/40 bg-yellow-50/50 dark:bg-yellow-950/20">
             <AlertTriangle className="size-4 text-yellow-600" />
             <AlertDescription className="text-yellow-900 dark:text-yellow-100">
-              <strong>Important Safety Notice:</strong> No tool can ever be completely safe. While Nenya is designed with privacy-first principles and safety protocols, it is important to proceed mindfully with its use. Trust your instincts, honor your boundaries, and remember that you are always in control of what you choose to share and explore.
+              <strong>Important Safety Notice:</strong> No tool can ever be completely safe. Nenya is built to keep little of what you enter, and its safety checks can be wrong, so it is important to proceed mindfully with its use. Trust your instincts, honor your boundaries, and remember that you are always in control of what you choose to share and explore.
             </AlertDescription>
           </Alert>
 
