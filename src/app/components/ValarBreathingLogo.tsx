@@ -20,7 +20,7 @@ export const valarColors = [
   {
     name: 'Manwë',
     vector: ['#2C6E9E', '#6EA8D4', '#DCE9F2', '#8F9DB0', '#E9C46A', '#1E3F63'],
-    individualFocus: 'Perspective, Clarity, Non-Attachment, Detachment',
+    individualFocus: 'Perspective, Clarity, Stepping Back, Letting Go',
     communalFocus: 'Fair Governance, Systemic Oversight, Peaceful Order',
   },
   {
@@ -40,7 +40,7 @@ export const valarColors = [
   {
     name: 'Nienna',
     vector: ['#8B8B9E', '#6F7F95', '#A8BCCF', '#A58BBE', '#E3E6EC', '#4A4F63'],
-    individualFocus: 'Grief Processing, Self-Compassion, Emotional Release',
+    individualFocus: 'Grieving, Self-Compassion, Letting Feelings Move',
     communalFocus: 'Empathy, Shared Lament, Communal Witnessing of Pain',
   },
 
@@ -68,28 +68,28 @@ export const valarColors = [
   {
     name: 'Mandos',
     vector: ['#5C4B6E', '#2B2540', '#8FA0BF', '#D08AA2', '#E4DCCB', '#6F6C7A'],
-    individualFocus: 'Finality, Acceptance, Non-Attachment, Reckoning',
-    communalFocus: 'Justice, Accountability, Collective Reckoning',
+    individualFocus: 'Endings, Acceptance, Honesty About Limits, Owning Your Choices',
+    communalFocus: 'Justice, Accountability, Shared Acknowledgment',
   },
   {
     name: 'Vairë',
     vector: ['#3A6B6B', '#2F4B7A', '#D8B25A', '#B04A50', '#E8DCC4', '#86ACAC'],
     individualFocus: 'Meaning-Making, Memory, Personal Narrative',
-    communalFocus: 'Historiography, Cultural Record, Collective Identity/History',
+    communalFocus: 'History, Cultural Record, Shared Identity',
   },
 
   // WILD & VITALITY — Instinct, Motion, Freedom
   {
     name: 'Oromë',
     vector: ['#4D6E3B', '#A87D4B', '#E3CFA4', '#E0B04A', '#8BA7B8', '#253A2A'],
-    individualFocus: 'Action, Ethical Defense, Clear Boundaries',
-    communalFocus: 'Just Protection, Ethical Vigilance, Enforcing Shared Boundaries',
+    individualFocus: 'Action, Standing Up for Yourself, Clear Boundaries',
+    communalFocus: 'Protection, Care for the Vulnerable, Shared Boundaries',
   },
   {
     name: 'Tulkas',
     vector: ['#E3752B', '#F2B84B', '#B8392B', '#FBE2CC', '#6B3A22', '#F2AA74'],
-    individualFocus: 'Strength, Vitality, Uncomplicated Physical Power',
-    communalFocus: 'Collective Vigor, Energetic Defense, Uncomplicated Action',
+    individualFocus: 'Strength, Vitality, Feeling Capable',
+    communalFocus: 'Shared Energy, Resilience, Protecting Life',
   },
   {
     name: 'Nessa',
@@ -116,14 +116,14 @@ export const valarColors = [
   {
     name: 'Melkor',
     vector: ['#5C2E2E', '#D9552B', '#6E6A6A', '#A9CFE8', '#EAF2F8', '#1E1818'],
-    individualFocus: 'Raw Power, Sovereignty, Radical Self-Will',
-    communalFocus: 'Disruptive Innovation, Challenging Orthodoxy, Unconstrained Creation',
+    individualFocus: 'Self-Expression, Personal Strength, Having a Say',
+    communalFocus: 'New Ideas, Questioning Old Habits, Fresh Starts',
   },
   {
     name: 'Ungoliant',
     vector: ['#1E1E2A', '#3A3A50', '#8585A0', '#DCDCE8', '#D01C1F', '#B3B3C8'],
-    individualFocus: 'Fixed Corruption, Despair, Self-Domination',
-    communalFocus: 'Oppression, Nihilism, Systematic Destruction (Need for release)',
+    individualFocus: 'Control, Feeling Powerless, Wanting Relief',
+    communalFocus: 'Safety, Fairness, Repair',
   },
 ];
 

@@ -1,8 +1,9 @@
 import * as m from 'motion/react-m';
-import { useState, RefObject } from 'react';
+import { useState, RefObject, ReactNode } from 'react';
 import { ChevronDown, ChevronUp, User, Users } from 'lucide-react';
 import { valarColors } from '../ValarBreathingLogo';
 import { ScrollIndicator } from '../ScrollIndicator';
+import { Cite, ReferenceList, type AboutReference } from './AboutReferences';
 
 interface PantheonOfNeedsProps {
   /** The ancestor scroll container that actually scrolls this page (this
@@ -21,11 +22,36 @@ interface ArchetypeData {
   individualFocus: string;
   communalFocus: string;
   domain: string;
-  individualNeed: string;
+  individualNeed: ReactNode;
   communalNeed: string;
   interconnectedWith: string[];
   section: 'cosmic' | 'creative' | 'embodied' | 'dynamic' | 'weavers' | 'shadow';
 }
+
+const PAGE_ID = 'pantheon';
+
+const PANTHEON_REFS: AboutReference[] = [
+  { n: 1, text: "Chen B, Vansteenkiste M, Beyers W, Boone L, Deci E, Van der Kaap-Deeder J, et al. (2014). Basic psychological need satisfaction, need frustration, and need strength across four cultures. Motivation and Emotion.", href: "https://dipot.ulb.ac.be/dspace/bitstream/2013/409773/3/Chen2015.pdf", linkLabel: "Free full text (author manuscript)" },
+  { n: 2, text: "Martela F, Sheldon K (2019). Clarifying the Concept of Well-Being: Psychological Need Satisfaction as the Common Core Connecting Eudaimonic and Subjective Well-Being. Review of General Psychology.", href: "https://research.aalto.fi/en/publications/49998c82-03fe-42c0-846a-8bf0cf9c16a8", linkLabel: "Free full text" },
+  { n: 3, text: "Doyal L, Gough I (1991). A Theory of Human Need. (book, Macmillan; no free copy, listed as a non-academic source)." },
+  { n: 4, text: "Kenrick D, Griskevicius V, Neuberg S, Schaller M (2010). Renovating the Pyramid of Needs. Perspectives on Psychological Science.", href: "https://www.ncbi.nlm.nih.gov/pmc/articles/3161123", linkLabel: "Free full text" },
+  { n: 5, text: "Bellis M, Hughes K, Leckenby N, Perkins C, Lowey H (2014). National household survey of adverse childhood experiences and their relationship with resilience to health-harming behaviors in England. BMC Medicine.", href: "https://bmcmedicine.biomedcentral.com/counter/pdf/10.1186/1741-7015-12-72", linkLabel: "Free full text" },
+  { n: 6, text: "Fonseka R, Minnis A, Gomez A (2015). Impact of Adverse Childhood Experiences on Intimate Partner Violence Perpetration among Sri Lankan Men. PLOS ONE.", href: "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0136321&type=printable", linkLabel: "Free full text" },
+  { n: 7, text: "Miller E, Breslau J, Chung W, Green J, McLaughlin K, Kessler R, et al. (2011). Adverse childhood experiences and risk of physical violence in adolescent dating relationships. Journal of Epidemiology and Community Health.", href: "https://www.ncbi.nlm.nih.gov/pmc/articles/3686487", linkLabel: "Free full text" },
+  { n: 8, text: "DeWall C, Twenge J, Gitter S, Baumeister R (2009). It's the thought that counts: The role of hostile cognition in shaping aggressive responses to social exclusion. Journal of Personality and Social Psychology.", href: "https://pmc.ncbi.nlm.nih.gov/articles/PMC2775524/", linkLabel: "Free full text" },
+  { n: 9, text: "Norton M, Gino F (2014). Rituals alleviate grieving for loved ones, lovers, and lotteries. Journal of Experimental Psychology: General.", href: "http://nrs.harvard.edu/urn-3:HUL.InstRepos:10683152", linkLabel: "Free full text" },
+  { n: 10, text: "Hobson N, Schroeder J, Risen J, Xygalatas D, Inzlicht M (2017). The Psychology of Rituals: An Integrative Review and Process-Based Framework. Personality and Social Psychology Review.", href: "https://escholarship.org/content/qt88p7357w/qt88p7357w.pdf?t=pcqaxk", linkLabel: "Free full text" },
+  { n: 11, text: "Burrell A, Selman L (2020). How do Funeral Practices Impact Bereaved Relatives' Mental Health, Grief and Bereavement? A Mixed Methods Review with Implications for COVID-19. OMEGA - Journal of Death and Dying.", href: "https://doi.org/10.1177/0030222820941296", linkLabel: "Free full text" },
+  { n: 12, text: "Strang H, Sherman L, Mayo-Wilson E, Woods D, Ariel B (2013). Restorative Justice Conferencing (RJC) Using Face-to-Face Meetings of Offenders and Victims: Effects on Offender Recidivism and Victim Satisfaction. A Systematic Review. Campbell Systematic Reviews: Better Evidence for a Better World.", href: "https://doi.org/10.4073/csr.2013.12", linkLabel: "Free full text" },
+  { n: 13, text: "Sherman L, Strang H, Mayo-Wilson E, Woods D, Ariel B (2014). Are Restorative Justice Conferences Effective in Reducing Repeat Offending? Findings from a Campbell Systematic Review. Journal of Quantitative Criminology.", href: "https://link.springer.com/content/pdf/10.1007/s10940-014-9222-9.pdf", linkLabel: "Free full text" },
+  { n: 14, text: "Nascimento A, Andrade J, de Castro Rodrigues A (2022). The Psychological Impact of Restorative Justice Practices on Victims of Crimes—a Systematic Review. Trauma, Violence, & Abuse.", href: "https://journals.sagepub.com/doi/pdf/10.1177/15248380221082085", linkLabel: "Free full text" },
+  { n: 15, text: "Jonauskaite D, Abu-Akel A, Dael N, Oberfeld D, Abdel-Khalek A, Al-Rasheed A, et al. (2020). Universal Patterns in Color-Emotion Associations Are Further Shaped by Linguistic and Geographic Proximity. Psychological Science.", href: "http://intellectum.unisabana.edu.co/bitstreams/bb7fa6db-a6b6-4254-bb5a-f7525047dfaf/download", linkLabel: "Free full text" },
+  { n: 16, text: "Elliot A (2015). Color and psychological functioning: a review of theoretical and empirical work. Frontiers in Psychology.", href: "https://www.frontiersin.org/articles/10.3389/fpsyg.2015.00368/pdf", linkLabel: "Free full text" },
+  { n: 17, text: "Kawai C, Zhang Y, Lukács G, Chu W, Zheng C, Gao C, et al. (2022). The good, the bad, and the red: implicit color-valence associations across cultures. Psychological Research.", href: "https://link.springer.com/content/pdf/10.1007/s00426-022-01697-5.pdf", linkLabel: "Free full text" },
+  { n: 18, text: "Further reading, not counted as support: Baumeister R, Smart L, Boden J (1996). Relation of threatened egotism to violence and aggression: The dark side of high self-esteem. Psychological Review.", href: "https://doi.org/10.1037/0033-295x.103.1.5", linkLabel: "Publisher page (may need payment)" },
+  { n: 19, text: "Further reading, not counted as support: Fast N, Chen S (2009). When the Boss Feels Inadequate. Psychological Science.", href: "https://doi.org/10.1111/j.1467-9280.2009.02452.x", linkLabel: "Publisher page (may need payment)" },
+  { n: 20, text: "Further reading, not counted as support: Tay L, Diener E (2011). Needs and subjective well-being around the world. Journal of Personality and Social Psychology.", href: "https://doi.org/10.1037/a0023779", linkLabel: "Publisher page (may need payment)" },
+];
 
 // The sixteen archetypes, with extended descriptions (the internal ids and the colour data keep their older names; the names shown are the outward ones)
 const archetypeData: ArchetypeData[] = [
@@ -63,7 +89,7 @@ const archetypeData: ArchetypeData[] = [
     individualFocus: valarColors[13].individualFocus,
     communalFocus: valarColors[13].communalFocus,
     domain: 'Restoration, Sanctuary, & Deep Peace',
-    individualNeed: 'The need for stillness, deep restorative rest, and a psychological sanctuary for healing from depletion or trauma.',
+    individualNeed: 'The need for stillness, deep rest, and a place that feels safe enough to recover when you are worn out or hurting.',
     communalNeed: 'The need for accessible, non-transactional care, safe collective spaces for retreat, and cultural norms that value presence and the regenerative cycle of rest.',
     interconnectedWith: ['Soft Rain (Healing)', 'Reverie (Dreams)'],
     section: 'embodied'
@@ -75,9 +101,9 @@ const archetypeData: ArchetypeData[] = [
     colorVector: valarColors[9].vector,
     individualFocus: valarColors[9].individualFocus,
     communalFocus: valarColors[9].communalFocus,
-    domain: 'Action, Ethical Defense, & Boundary',
-    individualNeed: 'The need for courageous, grounded action, to establish and defend personal boundaries, and to engage with reality with vigor and presence.',
-    communalNeed: 'The need for swift, protective intervention against harm, the courage to challenge systemic oppression, and the collective commitment to ethical defense and the safety of the vulnerable.',
+    domain: 'Action, Protection, & Boundaries',
+    individualNeed: 'The need for courageous, grounded action, to set and keep personal boundaries, and to meet what is in front of you with energy and presence.',
+    communalNeed: 'The need for people to be kept safe from harm, the courage to speak up about unfair systems, and a shared commitment to the safety of the vulnerable.',
     interconnectedWith: ['Craft (Foundation)', 'Sky (Justice)'],
     section: 'dynamic'
   },
@@ -89,7 +115,7 @@ const archetypeData: ArchetypeData[] = [
     individualFocus: valarColors[2].individualFocus,
     communalFocus: valarColors[2].communalFocus,
     domain: 'Flow, Systemic Connection, & Deep Intuition',
-    individualNeed: 'The need for unimpeded emotional movement and process, to access the deep, subtle currents of subconscious wisdom, and to feel fluidity in one\'s life choices.',
+    individualNeed: 'The need to let feelings move and be noticed, and to feel free to change course in your choices.',
     communalNeed: 'The need for the uninterrupted flow of vital resources and communication, collective emotional processing, and the empathetic bond that connects all members of the system.',
     interconnectedWith: ['Soft Rain (Grief)', 'Greenwood (Flow)'],
     section: 'cosmic'
@@ -101,8 +127,8 @@ const archetypeData: ArchetypeData[] = [
     colorVector: valarColors[3].vector,
     individualFocus: valarColors[3].individualFocus,
     communalFocus: valarColors[3].communalFocus,
-    domain: 'Grief, Transmutation of Suffering, & Compassion',
-    individualNeed: 'The need for the safe release and processing of deep sorrow and loss, to find the wisdom inherent in pain, and to cultivate unconditional self-compassion.',
+    domain: 'Grief, Comfort, & Compassion',
+    individualNeed: 'The need to let sorrow and loss move through you safely, to find some meaning in pain if you can, and to be kind to yourself.',
     communalNeed: 'The need for restorative processes that heal systemic harm, shared rituals of mourning and acknowledgment, and the radical inclusion of all suffering within the collective heart.',
     interconnectedWith: ['Haven (Calm)', 'Tide (Deep Process)'],
     section: 'creative'
@@ -166,9 +192,9 @@ const archetypeData: ArchetypeData[] = [
     colorVector: valarColors[10].vector,
     individualFocus: valarColors[10].individualFocus,
     communalFocus: valarColors[10].communalFocus,
-    domain: 'Strength, Vitality, & Uncomplicated Power',
-    individualNeed: 'The need to feel physically strong and capable, to meet challenges with confidence, and to express power without apology or manipulation.',
-    communalNeed: 'The need for collective resilience, the celebration of embodied strength, and the willingness to use force ethically in defense of life.',
+    domain: 'Strength, Vitality, & Energy',
+    individualNeed: 'The need to feel physically strong and capable, to meet challenges with confidence, and to use your strength honestly and with care.',
+    communalNeed: 'The need for collective resilience, the celebration of embodied strength, and a shared will to keep people safe and protect life without harming others.',
     interconnectedWith: ['Stride (Action)', 'Rhythm (Energy)'],
     section: 'dynamic'
   },
@@ -192,21 +218,25 @@ const archetypeData: ArchetypeData[] = [
     colorVector: valarColors[14].vector,
     individualFocus: valarColors[14].individualFocus,
     communalFocus: valarColors[14].communalFocus,
-    domain: 'Power, Sovereignty, & The Will to Be',
-    individualNeed: 'The need for authentic, radical self-expression, to claim one\'s full power, and to stand in sovereign "I Am" presence without dilution or apology.',
-    communalNeed: 'The recognition of legitimate power needs, the transformation of dominance into shared empowerment, and the healing of power wounds.',
+    domain: 'Power, Self-Direction, & Being Yourself',
+    individualNeed: 'The need for honest self-expression, to feel your own strength, and to stand as yourself without having to shrink.',
+    communalNeed: 'The need for a fair say, for power to be shared rather than held over others, and for people who have been shut out to be heard.',
     interconnectedWith: ['Sky (Balance)', 'Soft Rain (Transformation)'],
     section: 'shadow'
   },
   {
     id: 'hollow',
     name: 'Hollow',
-    title: 'Power turned destructive',
+    title: 'Control and the hurt beneath it',
     colorVector: valarColors[15].vector,
     individualFocus: valarColors[15].individualFocus,
     communalFocus: valarColors[15].communalFocus,
-    domain: 'Corruption, Domination, & The Will to Break',
-    individualNeed: 'When the need for power twists into the urge to control, dominate, or destroy, it often signals real pain underneath — something that calls for compassion, not just judgment.',
+    domain: 'Control, Hurt, & Wanting Relief',
+    individualNeed: (
+      <>
+        When the need for power turns into an urge to control, dominate, or destroy, there may be pain underneath. Studies link harming others with earlier hurt, such as childhood abuse or being rejected <Cite pageId={PAGE_ID} n={[5, 6, 7, 8]} />. This does not excuse harm. It points to where help may be needed.
+      </>
+    ),
     communalNeed: 'The collective responsibility to recognize and redirect destructive patterns, providing pathways to healing rather than judgment or abandonment.',
     interconnectedWith: ['Haven (Healing)', 'Soft Rain (Compassion)'],
     section: 'shadow'
@@ -369,11 +399,14 @@ export default function PantheonOfNeeds({ containerRef }: PantheonOfNeedsProps) 
         <div className="space-y-4">
           <h1 className="text-center">The Pantheon of Needs</h1>
           <p className="text-center text-muted-foreground">
-            16 archetypal energies bridging individual and communal needs, each represented by a 6-color chromatic vector
+            Sixteen archetypes of need. Each has a personal side, a shared side, and a palette of six colors.
           </p>
           <div className="bg-muted/50 dark:bg-muted/30 p-4 rounded-lg">
             <p className="text-sm">
-              <strong>Dual Focus:</strong> Each archetype holds both an <strong>Individual dimension</strong> (needs of the Self) and a <strong>Communal dimension</strong> (needs of the System). The first color in each palette is its main color; the others are lighter and darker companions to it.
+              <strong>Dual Focus:</strong> Each archetype holds both an <strong>Individual dimension</strong> (needs of the Self) and a <strong>Communal dimension</strong> (needs of the System). The first color in each palette is its main color. The others are companion colors, some lighter, some darker, and some in contrast.
+            </p>
+            <p className="text-sm mt-3">
+              This is our own design. It is not a tested scale, and no study shows that needs divide into these sixteen. A few of the sixteen touch themes that researchers have studied, such as competence (Craft) and autonomy (Stride) <Cite pageId={PAGE_ID} n={[1, 2, 3]} />. Researchers do not agree on one list of needs <Cite pageId={PAGE_ID} n={[4, 2, 3]} />.
             </p>
           </div>
         </div>
@@ -400,15 +433,33 @@ export default function PantheonOfNeeds({ containerRef }: PantheonOfNeedsProps) 
           </div>
         ))}
 
+        {/* Where research touches a few of the cards (the About thesis, 2026-11-22) */}
+        <div className="space-y-4">
+          <div className="border-l-4 border-border pl-4">
+            <h2>What research says about a few of the cards</h2>
+          </div>
+          <p className="text-sm">
+            Soft Rain speaks of shared ways to mourn. In experiments, doing a ritual after a loss lowered reported grief, apparently by restoring a sense of control <Cite pageId={PAGE_ID} n={[9, 10]} />. A review of funeral practices found the evidence mixed <Cite pageId={PAGE_ID} n={11} />.
+          </p>
+          <p className="text-sm">
+            Twilight points to restorative justice. In trials with random assignment, meetings between victims and offenders cut repeat crime a little <Cite pageId={PAGE_ID} n={[12, 13]} />. Victims were also more satisfied <Cite pageId={PAGE_ID} n={[12, 14]} />.
+          </p>
+          <p className="text-sm">
+            These notes show where research touches the cards. They do not make the sixteen archetypes a tested set.
+          </p>
+        </div>
+
         {/* Footer */}
         <div className="bg-muted/50 dark:bg-muted/30 p-6 rounded-lg space-y-3">
           <p className="text-sm">
-            <strong>Starting points, not a measurement:</strong> The sixteen palettes are simple starting points, offered so you do not have to begin with the whole spectrum. Nothing here calculates, scores or decodes your colors, and no color has a fixed meaning. A color means what it means to you.
+            <strong>Starting points, not a measurement:</strong> The sixteen palettes are simple starting points, offered so you do not have to begin with the whole spectrum. Nothing here calculates, scores or decodes your colors. Studies find some color and feeling links that are shared across many countries, and many that differ by place and by person <Cite pageId={PAGE_ID} n={[15, 16, 17]} />. A color means what it means to you here. That is our approach.
           </p>
           <p className="text-sm">
-            The breathing animations you see cycle through all 16 archetypes × 6 colors = <strong>96 total color transitions</strong>, creating a continuous, gentle flow through all of the palettes.
+            By default, the breathing animation moves through all sixteen palettes, six colors each. That is <strong>96 colors</strong> in one full cycle.
           </p>
         </div>
+
+        <ReferenceList pageId={PAGE_ID} items={PANTHEON_REFS} />
       </div>
       
       {/* Scroll indicator for page scrolling */}
