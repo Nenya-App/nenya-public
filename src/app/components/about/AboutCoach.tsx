@@ -59,7 +59,7 @@ export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => vo
           <p>Three things shape how the coach answers.</p>
           <ul className="list-disc space-y-2 pl-5">
             <li>
-              <strong>Nonviolent Communication (NVC).</strong> It was developed by Dr. Marshall Rosenberg. The coach looks for what happened, feelings, needs, and requests. Its feeling and need categories follow the Feelings and Needs Inventory of the Center for Nonviolent Communication, which is credited on the {goto('nvc-method')}, Our Approach.
+              <strong>Nonviolent Communication (NVC).</strong> It was developed by Dr. Marshall Rosenberg. The coach looks for what happened, feelings, needs, and requests. Its feeling and need categories were informed by the structure of the Feelings and Needs Inventory of the Center for Nonviolent Communication, which is credited on the {goto('nvc-method')}, Our Approach.
             </li>
             <li>
               <strong>The owner&apos;s own lens framework.</strong> Nenya&apos;s owner developed a way of looking at a situation through different lenses. It is our own design, not a tested instrument. The coach uses it to ask what else might be true.

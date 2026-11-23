@@ -98,7 +98,7 @@ export const ANSWERS: Answer[] = [
     links: [{ label: 'Our Structure', page: 'structure' }, { label: 'About the Designer', page: 'about-founder' }],
     tutorial: 'Trust lesson: who is behind this, and what funders cannot do.',
     checks: [
-      { claim: 'operated by Estëlle Streiff as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc. (the Terms add the IRS class "public charity", which the page and this answer do not claim: see discrepancy d10)', file: TERMS, has: 'a project operated by Estëlle Streiff as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc.' },
+      { claim: 'operated by Estëlle Streiff as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc. (the Terms, the page and this answer all say "501(c)(3) nonprofit"; the owner chose that wording on 2026-11-22, which settled discrepancy d10)', file: TERMS, has: 'a project operated by Estëlle Streiff as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc.' },
       { claim: 'a 501(c)(3) nonprofit arts service organization', file: about('Structure'), has: 'a 501(c)(3) nonprofit arts service organization' },
       { claim: 'the sponsor has some oversight of how donated money is spent, and reviews fundraising requests and grant applications', file: about('Structure'), has: 'has some oversight of how donated money is spent' },
       { claim: 'it reviews fundraising requests and does not own the work; the independence is a belief', file: about('Structure'), has: 'We believe this does not cost the project its independence.' },
@@ -107,7 +107,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'not a startup or a platform company', file: about('Structure'), has: 'It is not a startup or a platform company' },
     ],
     status: 'ready',
-    ownerNote: 'Revised 2026-11-22 to match the rewritten Our Structure page (About thesis, chapter 6): "public charity" is gone because the IRS classification was not confirmed (the pages say nonprofit arts service organization; the Terms still say public charity, see discrepancy d10); the sponsor\'s oversight of how donated money is spent, and its review of fundraising requests and grant applications, are stated; "keeps its creative and directional independence" became the page\'s creative direction set by the creator, with independence as a belief; "not a commercial product" is gone.',
+    ownerNote: 'Revised 2026-11-22 to match the rewritten Our Structure page (About thesis, chapter 6): "public charity" is gone because the IRS classification was not confirmed (the pages say nonprofit arts service organization; the Terms now say 501(c)(3) nonprofit, which settled discrepancy d10 on 2026-11-22); the sponsor\'s oversight of how donated money is spent, and its review of fundraising requests and grant applications, are stated; "keeps its creative and directional independence" became the page\'s creative direction set by the creator, with independence as a belief; "not a commercial product" is gone.',
   },
   {
     id: 'n-founder', part: 'nenya', title: 'Who is behind it',

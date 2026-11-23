@@ -150,7 +150,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 11,
         heading: 'Who we are',
         paragraphs: [
-          'This policy covers nenya.biz (the “site”). Nenya is a project operated by Estëlle Streiff as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) public charity. Contact: info@nenya.biz, for anything in this document. We do not publish a postal address; if a data protection authority or other regulator needs one, we will provide it on request.',
+          'This policy covers nenya.biz (the “site”). Nenya is a project operated by Estëlle Streiff as a sole proprietor and fiscally sponsored by Fractured Atlas, Inc., a 501(c)(3) nonprofit. Contact: info@nenya.biz, for anything in this document. We do not publish a postal address; if a data protection authority or other regulator needs one, we will provide it on request.',
         ],
       },
       {
