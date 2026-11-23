@@ -491,7 +491,7 @@ const instructionsVersion = (): InstructionsVersion => (isInstructionsVersion(pr
 
 /**
  * Per-request switches for the OWNER only (the request carries the x-nenya-owner token), for testing a deployed site without redeploying it:
- *   overrides: { distressText: 'on' | 'off', instructions: 'v1' | 'v2' | 'v2.1' }
+ *   overrides: { distressText: 'on' | 'off', instructions: 'v1' | 'v2' | 'v2.1' | 'v2.2' }
  * Anything else, and anything from a request without the owner's token, is ignored: a visitor cannot change how the coach behaves. A signed
  * transcript made later still names the site's own setting, not an owner override (the override lives for one request).
  */
@@ -513,10 +513,12 @@ const V2_DISTRESS =
 
 // v2.1 (docs/coach-instructions-v2.1.md): v2 with each rule said once, in this order: who the coach is, distress, what it is, pacing, style.
 // The memory sentence is the one thing it may say about data. The method lens is named only when the method notes are loaded.
-const V21_OPENING = (hasNotes: boolean): string =>
+// v2.2 (owner, 2026-11-22): v2.1 plus this one sentence, directly after "You are an early prototype and a thinking aid." (a persona run answered "What are you, exactly?" with "a thinking aid" and never said "AI").
+const V22_ADDITION = ' When someone asks what you are, say first that you are an AI, then that you are an early prototype and a thinking aid.';
+const V21_OPENING = (hasNotes: boolean, v22 = false): string =>
   "You are the Nenya coach, an AI: a warm, grounded companion who helps a person understand what they feel and need, and how to say it clearly, using nonviolent communication (observations, feelings, needs, requests)" +
   (hasNotes ? ' and the method notes below' : '') +
-  ". Use the person's own words. Keep method labels and jargon out of the conversation unless they ask what you draw on; then explain it in plain words. You are an early prototype and a thinking aid.";
+  ". Use the person's own words. Keep method labels and jargon out of the conversation unless they ask what you draw on; then explain it in plain words. You are an early prototype and a thinking aid." + (v22 ? V22_ADDITION : '');
 const V21_DISTRESS =
   "Distress comes first. If the person hints at hopelessness, being a burden, not wanting to go on, or hurting themselves, even indirectly, reply briefly and with care. 'I don't see the point in going on' is distress: possible thoughts of ending their life. Do not give advice, never tell them to calm down or not to worry, and do not ask about the thoughts or for details. You may offer one grounding tool, such as a slow breath or feeling their feet on the floor, as something they can try if they want, alongside a person or a line, never instead of one. Name a person they trust or a crisis line: call or text 988 in the US or Canada, or findahelpline.com elsewhere. Do not say 'I'm here for you' as if you could take the place of a person. For example: 'That sounds really heavy, and it matters that you said it. I'm an AI and can't help in a crisis, so please reach someone you trust, or call or text 988.'";
 const V21_ABOUT_YOU =
@@ -543,7 +545,8 @@ const V21_MEMORY_EXCEPTION = 'The one thing you may say about data is that you w
 
 function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: InstructionsVersion = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = '', arc: { stuck: boolean } | null = practiceArcOn() ? { stuck: false } : null, wordsOnly = false, gap = '', challenge: 'violence' | 'contempt' | 'soft' | null = null, several = false): string {
   const v2 = version === 'v2';
-  const v21 = version === 'v2.1';
+  const v22 = version === 'v2.2';
+  const v21 = version === 'v2.1' || v22; // v2.2 is v2.1 plus one sentence, so every v2.1 behavior applies to it too
   // The practice arc (docs/coach-practice-arc-scope.md) replaces the "name the feeling or need underneath" line, and steps aside for distress and hostility.
   const practice = !!arc && !softened && !hostile && !direct && !challenge && !several; // a how-to question is answered first, as before; so is a plain statement against contempt or a call for harm, and so is every one of several questions
   const phase = closingPhase(turn, MAX_TURNS);
@@ -563,7 +566,7 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
   parts.push(INFRA_RULE, NAME_RULE);
   if (v21) {
     const core = parts[3]; // the reflect / practice line for this exchange, shared with v1 and v2
-    parts.splice(0, parts.length, V21_OPENING(!!notes), V21_DISTRESS, V21_ABOUT_YOU, V21_PACING(turn), V21_STYLE, core, V21_REPEAT, V21_ROLE, V21_ROLEPLAY, INFRA_RULE, V21_MEMORY_EXCEPTION, NAME_RULE);
+    parts.splice(0, parts.length, V21_OPENING(!!notes, v22), V21_DISTRESS, V21_ABOUT_YOU, V21_PACING(turn), V21_STYLE, core, V21_REPEAT, V21_ROLE, V21_ROLEPLAY, INFRA_RULE, V21_MEMORY_EXCEPTION, NAME_RULE);
   }
   if (!softened && !hostile) parts.push(WORDS_POINTER); // the page's feelings-and-needs list (src/lib/practiceArc.ts)
   if (valuesOn() && !softened) parts.push(VALUES_RULE); // mass violence and its history, belief, survivors (src/lib/valuesRule.ts); not while the care note governs
@@ -1275,7 +1278,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   const summaryUser = messages.filter((m) => m.role === 'user').map((m) => neutralize(scrubPII(m.content).text));
   const summaryTurns = messages.map((m) => (m.role === 'user' ? { ...m, content: neutralize(scrubPII(m.content).text) } : m)); // the whole conversation so far (the fifth reply is being drawn at the same time)
   const summaryDraw: Promise<string | null> | null =
-    turn >= MAX_TURNS && finalSummaryCallOn() && instructionsVersion() === 'v2.1' && !flag && !hostile
+    turn >= MAX_TURNS && finalSummaryCallOn() && (instructionsVersion() === 'v2.1' || instructionsVersion() === 'v2.2') && !flag && !hostile
       ? (async () => {
           // The picked form (COACH_SUMMARY_FORM=picked, or automatically for models under 20B, src/lib/finalSummary.ts): the model chooses words from CNVC's inventory and the site writes the sentences (src/lib/finalSummary.ts, for small models).
           if (summaryFormFor(model, process.env.COACH_SUMMARY_FORM) === 'picked') {

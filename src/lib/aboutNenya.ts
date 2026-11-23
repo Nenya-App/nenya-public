@@ -940,6 +940,7 @@ export const ANSWERS: Answer[] = [
       { claim: 'the instructions: no medical, legal or financial advice; do not tell the person what they must do', file: COACH, has: 'Do not give medical, legal, or financial advice, and do not tell the person what they must do' },
       { claim: 'a short preview limited to five exchanges', file: COACH, has: 'This is a short preview limited to' },
       { claim: 'an early prototype and a thinking aid', file: COACH, has: 'You are an early prototype and a thinking aid' },
+      { claim: 'asked what it is, the coach says first that it is an AI, then that it is an early prototype and a thinking aid (instructions v2.2, a draft not yet in production)', file: COACH, has: 'When someone asks what you are, say first that you are an AI, then that you are an early prototype and a thinking aid.' },
     ],
     status: 'ready',
   },

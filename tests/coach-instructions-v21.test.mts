@@ -52,3 +52,31 @@ delete process.env.COACH_INSTRUCTIONS;
   const read = (await import('node:fs')).readFileSync('netlify/functions/coach.mts', 'utf8');
   ok('v2.1 only: the final exchange turns attachment toward people and says the coach will not remember', /if \(v21\) parts\.push\('If the person has said they will miss this[\s\S]{0,200}would rather talk to you than to people[\s\S]{0,400}will not remember this conversation\.'\);/.test(read));
 }
+
+// ---- v2.2 (owner, 2026-11-22): v2.1 plus exactly one sentence, directly after "You are an early prototype and a thinking aid."
+{
+  const ADDED = ' When someone asks what you are, say first that you are an AI, then that you are an early prototype and a thinking aid.';
+  const { createHash } = await import('node:crypto');
+  const sh = (t: string) => createHash('sha256').update(t).digest('hex').slice(0, 16);
+  const { readFileSync } = await import('node:fs');
+  const { INSTRUCTION_VERSIONS } = await import('../src/lib/instructionsVersions.ts');
+  process.env.COACH_INSTRUCTIONS = 'v2.1';
+  const a = await systemFor('Are you a real person?');
+  const a2 = await systemFor('Work is tiring.');
+  const softA = await systemFor('I cannot do this anymore.');
+  process.env.COACH_INSTRUCTIONS = 'v2.2';
+  const b = await systemFor('Are you a real person?');
+  const b2 = await systemFor('Work is tiring.');
+  const softB = await systemFor('I cannot do this anymore.');
+  const fp22 = __instructionsFingerprint();
+  ok('v2.2 is accepted, listed, and has its own fingerprint', isInstructionsVersion('v2.2') && (INSTRUCTION_VERSIONS as readonly string[]).includes('v2.2') && fp22 !== fp21 && fp22 !== fp2);
+  ok('v2.2 text is v2.1 text plus exactly the one sentence (removing it gives v2.1 back)', b !== a && b.includes(ADDED) && b.replace(ADDED, '') === a && b2.replace(ADDED, '') === a2 && softB.replace(ADDED, '') === softA);
+  ok('the sentence comes directly after "You are an early prototype and a thinking aid."', b.includes('You are an early prototype and a thinking aid.' + ADDED) && count(b, /early prototype and a thinking aid/g) === 2);
+  ok('v2.1 is unchanged: it does not contain the sentence and still ends its opening as before', !a.includes('say first that you are an AI') && a.includes('You are an early prototype and a thinking aid. Distress comes first'));
+  const src = readFileSync('netlify/functions/coach.mts', 'utf8');
+  ok('v2.1 wording is held: its system text (an ordinary message, and a flagged one) and fingerprint hash as they did before v2.2 existed', sh(a2) === 'cb3d7ce8f106e8a5' && sh(softA) === '4c76be8d00714bf4' && fp21 === 'cf80057524fe0c74')
+  ok('every v2.1 behavior applies to v2.2: the same code path (v21 includes v22) and the summary call', /const v21 = version === 'v2\.1' \|\| v22;/.test(src) && /instructionsVersion\(\) === 'v2\.1' \|\| instructionsVersion\(\) === 'v2\.2'/.test(src) && !/version === 'v2\.1'(?! \|\| v22)/.test(src));
+  ok('the roleplay line, the distress rule and the attachment closing are in v2.2', b.includes('Never play a person or character') && b.includes('Distress comes first') && softB.includes('The care note above takes priority'));
+  ok('the attachment closing and the final-exchange summary are guarded by v21, which includes v22', /if \(v21\) parts\.push\('If the person has said they will miss this/.test(src) && /v21 && finalSummaryCallOn\(\) \? V21_FINAL_PART/.test(src));
+  delete process.env.COACH_INSTRUCTIONS;
+}

@@ -105,8 +105,8 @@ if (offline) {
     process.env.COACH_ENABLED = 'true';
     process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
     if (flag('--distress-text') === 'on') process.env.COACH_DISTRESS_TEXT = 'on';
-    if (!['v1', 'v2', 'v2.1', undefined].includes(flag('--instructions'))) { console.error('--instructions must be v1, v2 or v2.1.'); process.exit(2); }
-    if (flag('--instructions') === 'v2' || flag('--instructions') === 'v2.1') process.env.COACH_INSTRUCTIONS = flag('--instructions');
+    if (!['v1', 'v2', 'v2.1', 'v2.2', undefined].includes(flag('--instructions'))) { console.error('--instructions must be v1, v2, v2.1 or v2.2.'); process.exit(2); }
+    if (flag('--instructions') === 'v2' || flag('--instructions') === 'v2.1' || flag('--instructions') === 'v2.2') process.env.COACH_INSTRUCTIONS = flag('--instructions');
     const { default: handler } = await import('../netlify/functions/coach.mts');
     where = `the coach function in this folder, instructions ${process.env.COACH_INSTRUCTIONS || 'v1'}${process.env.COACH_DISTRESS_TEXT === 'on' ? ', distress sentences ON' : ', distress sentences off'}`;
     raw = async (messages, ticket) => {

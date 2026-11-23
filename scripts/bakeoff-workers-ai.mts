@@ -59,8 +59,8 @@ if (localUrl && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/.test(localU
 // The coach function takes the Workers AI path in both cases; for a local model it is given a pseudo id so its address check passes, and the real name is used when forwarding.
 const coachModelId = localUrl || hosted ? `@cf/local/${model.replace(/[^a-z0-9._-]/gi, '-')}` : model;
 const instructions = flag('--instructions') ?? 'v2.1';
-if (!['v1', 'v2', 'v2.1'].includes(instructions)) {
-  console.error('--instructions must be v1, v2 or v2.1.');
+if (!['v1', 'v2', 'v2.1', 'v2.2'].includes(instructions)) {
+  console.error('--instructions must be v1, v2, v2.1 or v2.2.');
   process.exit(2);
 }
 const only = flag('--only');
