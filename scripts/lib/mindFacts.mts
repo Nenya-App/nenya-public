@@ -42,7 +42,7 @@ export function buildMindFacts(asOf: string): string {
     '- No study of Nenya has been done. Nobody has measured whether it helps.',
     '- No clinician or lawyer has reviewed it.',
     '- ' + NON_AFFILIATION,
-    '- The Venice Mind is a separate, premium offering on Venice\'s platform, with Venice\'s own terms. Nenya\'s safety checks (the screening of messages and the crisis handling on the site) do not run there.',
+    '- The Venice Mind is a separate offering on Venice\'s platform, with Venice\'s own terms. It runs on a free model, so it costs nothing to use beyond whatever Venice itself may charge. Nenya\'s safety checks (the screening of messages and the crisis handling on the site) do not run there.',
     '- To contact Nenya: info@nenya.biz');
 
   const titles = LEGAL_PARTS.flatMap((part) => [part.title, ...part.sections.map((s) => `  Section ${s.number}: ${s.heading}`)]);
