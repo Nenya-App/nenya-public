@@ -74,7 +74,7 @@ export default function HumanCenteredDesign({ onBack }: HumanCenteredDesignProps
             <Card className="p-6 md:p-8 bg-muted/30 border-border">
               <div className="space-y-4 text-foreground leading-relaxed">
                 <p>
-                  <strong className="text-nenya-gold-text dark:text-nenya-gold-light">Human-Centered Design (HCD)</strong> means involving the people who will use something from the start, testing with them, and changing the design as you learn <Cite pageId={PAGE} n={[1, 2, 3, 4]} />. Studies find that this usually, but not always, helps <Cite pageId={PAGE} n={2} />. We used some ideas from HCD, such as giving several ways in. We have not done the user testing that HCD asks for, so Nenya is not human-centered design in the full sense.
+                  <strong className="text-nenya-gold-text dark:text-nenya-gold-light">Human-Centered Design (HCD)</strong> means involving the people who will use something from the start, testing with them, and changing the design as you learn <Cite pageId={PAGE} n={[1, 2, 3, 4]} />. Studies find that this usually, but not always, helps <Cite pageId={PAGE} n={2} />. We used some ideas from HCD, such as giving several ways in. We have done no user testing, and no study of Nenya has been done. HCD asks for that testing, so Nenya is not human-centered design in the full sense.
                 </p>
                 <p>
                   We did not want to give one &ldquo;right way&rdquo; to begin reflecting. People differ in how strongly they notice sights, sounds, touch, and movement, and in what colours mean to them <Cite pageId={PAGE} n={[5, 6, 7]} />. So we offer several ways in.
