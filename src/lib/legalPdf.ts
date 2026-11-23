@@ -102,7 +102,7 @@ export async function downloadLegalPdf() {
   doc.setFont('ManropeSemiBold', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(...COLORS.goldDark);
-  drawTracked(doc, 'PRIVACY-FIRST · USER-SOVEREIGN · OPEN & TRANSPARENT', centerX, pageHeight - 24, {
+  drawTracked(doc, 'FREE · NO ACCOUNT · NO ADVERTISING', centerX, pageHeight - 24, {
     align: 'center',
     tracking: 0.3,
   });
