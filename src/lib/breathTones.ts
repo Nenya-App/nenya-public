@@ -3,6 +3,7 @@
 // The notes themselves, for each tone style, are laid out in breathArrangements.ts (pure, tested); this file plays them.
 import { arrangementEvents, ARRANGEMENTS, DEFAULT_ARRANGEMENT, type Arrangement, type ToneEvent, type Timbre } from './breathArrangements.ts';
 import type { BreathTiming } from './breathClock.ts';
+import { DEFAULT_TONE_VOLUME, HUM_HIGH_HZ, HUM_HIGH_LEVEL, humCurve, toneLevel, clampVolume } from './breathHum.ts';
 
 export {
   GAIN_FIRM,
@@ -43,6 +44,41 @@ export function eventsBetween(
 
 type Ctx = AudioContext;
 let ctx: Ctx | null = null;
+const buses = new WeakMap<Ctx, Bus>();
+
+// The person's own control over how loud the tones are, apart from the device's volume (WCAG 1.4.2): a volume (0 to 100, kept by
+// deviceMemory.ts when the visitor asks it to remember) and a mute that is held in memory only. Both act on the master gain, so every
+// style obeys them, with a short ramp so a change never clicks.
+const level = { volume: DEFAULT_TONE_VOLUME, muted: false };
+const levelListeners = new Set<() => void>();
+function applyLevel(): void {
+  const bus = ctx ? buses.get(ctx) : undefined;
+  if (ctx && bus) {
+    try {
+      bus.master.gain.cancelScheduledValues(ctx.currentTime);
+      bus.master.gain.setTargetAtTime(toneLevel(level.volume, level.muted), ctx.currentTime, 0.04);
+    } catch {
+      /* the context is closed */
+    }
+  }
+  levelListeners.forEach((l) => l());
+}
+export function setToneVolume(pct: number): void {
+  const v = clampVolume(pct);
+  if (v === level.volume) return;
+  level.volume = v;
+  applyLevel();
+}
+export function setToneMuted(muted: boolean): void {
+  if (muted === level.muted) return;
+  level.muted = muted;
+  applyLevel();
+}
+export const isToneMuted = (): boolean => level.muted;
+export const subscribeToneLevel = (l: () => void): (() => void) => {
+  levelListeners.add(l);
+  return () => levelListeners.delete(l);
+};
 
 /**
  * The audio context. Browsers allow sound only after the visitor has done something on the page, so this must first be
@@ -65,15 +101,16 @@ export function unlockAudio(): Ctx | null {
 // A small shared mixing desk: everything goes to a gentle compressor (so overlapping notes cannot clip), with a short,
 // soft reverb added to the rung and swelling sounds so they sit in a room instead of ticking dryly.
 interface Bus {
+  master: GainNode;
   dry: GainNode;
   send: GainNode;
 }
-const buses = new WeakMap<Ctx, Bus>();
+
 function busFor(c: Ctx): Bus {
   const found = buses.get(c);
   if (found) return found;
   const master = c.createGain();
-  master.gain.value = 0.9;
+  master.gain.value = toneLevel(level.volume, level.muted);
   const comp = c.createDynamicsCompressor();
   comp.threshold.value = -20;
   comp.ratio.value = 3;
@@ -97,7 +134,7 @@ function busFor(c: Ctx): Bus {
   dry.connect(master);
   const send = c.createGain();
   send.connect(conv);
-  const bus = { dry, send };
+  const bus = { master, dry, send };
   buses.set(c, bus);
   return bus;
 }
@@ -105,7 +142,7 @@ function busFor(c: Ctx): Bus {
 type Stop = () => void;
 
 /** Plays one sound of the given style at an audio-clock time. Returns a function that fades it out at once. */
-export function playEvent(c: Ctx, when: number, e: Pick<ToneEvent, 'freq' | 'gain' | 'timbre' | 'dur' | 'attack' | 'release'>): Stop {
+export function playEvent(c: Ctx, when: number, e: Pick<ToneEvent, 'freq' | 'gain' | 'timbre' | 'dur' | 'attack' | 'release' | 'shape'>): Stop {
   const bus = busFor(c);
   const env = c.createGain();
   const oscs: OscillatorNode[] = [];
@@ -165,6 +202,14 @@ export function playEvent(c: Ctx, when: number, e: Pick<ToneEvent, 'freq' | 'gai
     env.gain.setValueAtTime(e.gain, Math.max(when + attack, end - release));
     env.gain.linearRampToValueAtTime(0, end);
     reverb(0.6);
+  } else if (T === 'hum') {
+    // The hum: two sine tones (174 Hz and 261 Hz at 0.6), under a raised-cosine swell drawn from the breath's rhythm (breathHum.ts).
+    // Dry, no reverb, as in the owner's video. The swell is a line of short straight pieces from zero to zero, so it has no clicks.
+    osc('sine', e.freq, 1, env);
+    osc('sine', HUM_HIGH_HZ, HUM_HIGH_LEVEL, env);
+    env.gain.setValueAtTime(0, when);
+    const shape = e.shape ?? { ih: (e.dur * 1000) / 2, hi: 0, ex: (e.dur * 1000) / 2, ho: 0 };
+    for (const p of humCurve(shape, e.gain)) env.gain.linearRampToValueAtTime(p.gain, when + p.at);
   } else if (T === 'tick') {
     // A soft wooden tick: a very short triangle blip.
     osc('triangle', e.freq, 1, env);
@@ -228,6 +273,11 @@ function startDrone(c: Ctx): Stop {
 export function playPreview(arrangement: Arrangement): void {
   const c = unlockAudio();
   if (!c) return;
+  // The hum's taste is one short whole swell (two seconds in, two out), so it is never cut off part way up.
+  if (arrangement === 'hum') {
+    for (const e of arrangementEvents('hum', { ih: 2000, hi: 0, ex: 2000, ho: 0 })) playEvent(c, c.currentTime + 0.03, e);
+    return;
+  }
   const events = arrangementEvents(arrangement, { ih: 5000, hi: 0, ex: 5000, ho: 0 }).filter((e) => e.t < 3000);
   for (const e of events) playEvent(c, c.currentTime + 0.03 + e.t / 1000, { ...e, dur: Math.min(e.dur, 3.5) });
 }

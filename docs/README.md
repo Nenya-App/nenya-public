@@ -27,7 +27,7 @@ Two things to know when reading "shipped":
 |---|---|---|
 | [coach-features.md](coach-features.md) | Each coach feature sorted into tiers: core, shipped, experiment, retire | New 2026-11-15 |
 | [maintenance-plan.md](maintenance-plan.md) | Plan for bringing the repository under control after an outside review | New 2026-11-15. Update its "Where things stand" column as items land. |
-| [mind-facts.md](mind-facts.md) | The generated facts page `public/mind-facts.txt` for the Venice Mind: what it is, why, how it stays current | New 2026-11-23. `tests/mind-facts.test.mts` fails if it is stale. |
+| [mind-facts.md](mind-facts.md) | The generated facts page `public/mind-facts.txt` for AI assistants: what it is, why, how it stays current | New 2026-11-23. `tests/mind-facts.test.mts` fails if it is stale. |
 | [production-env.md](production-env.md) | Every environment variable, with the production value and the order to switch them on | `tests/docs-drift.test.mts` checks that every variable the code reads is named here. |
 | [branches-and-previews.md](branches-and-previews.md) | Branches, preview sites, and the checks to run | Current |
 | [versioning.md](versioning.md) | The build label, and how transcripts record it | Current |
@@ -111,8 +111,8 @@ Switches with no scope document of their own (see production-env.md and coach-fe
 | [translation-scope.md](translation-scope.md) | An English-only notice, and an invitation to translators | The notice is built (the footer and the coach page). The translator document and the string layer are not. |
 | [solresol-scope.md](solresol-scope.md) | Type a phrase, hear a melody | Not built. The Sound gateway only links to solresol.xyz. |
 | [reflection-submission-scope.md](reflection-submission-scope.md) | Signed public submission of reflections | A draft for the owner, 2026-11-15. Not built. |
-| [venice-character-card-scope.md](venice-character-card-scope.md) | Rebuilding the Venice character card | Active (2026-11-10). The test harness is built; the new card is not live. |
-| [venice-card-v2/](venice-card-v2/README.md) | Draft field texts for the new Venice character | Draft, 2026-11-10. Not yet pasted into Venice. |
+| [venice-character-card-scope.md](venice-character-card-scope.md) | Rebuilding the Venice character card | Parked 2026-11-24 (character retired; not live). |
+| [venice-card-v2/](venice-card-v2/README.md) | Draft field texts for the new Venice character | Parked (drafts not pasted into Venice; not planned). |
 
 ## Superseded or abandoned
 

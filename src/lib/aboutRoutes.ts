@@ -16,7 +16,7 @@ export const ABOUT_TITLES: Record<string, string> = {
   'nvc-method': 'Our Approach',
   'privacy-promise': 'Our Privacy Promise',
   'pii-scrubbing': 'PII Scrubbing Tutorial',
-  'venice-chat': 'Chat with Nenya\'s AI on Venice',
+  'venice-chat': 'The Early Venice Character (Retired)',
   witnessed: 'Witnessed Conversations',
   'where-we-stand': 'Where We Stand',
   'about-coach': 'About the Coach',

@@ -7,7 +7,7 @@ const src = readFileSync('src/lib/legalDocument.ts', 'utf8');
 const archive = 'docs/legal/archive/terms-and-privacy-until-2026-11-18.md';
 const text = LEGAL_PARTS.flatMap((p) => p.sections).map((s) => [s.heading, ...s.paragraphs, ...(s.bullets ?? []), ...(s.after ?? []), ...(s.subsections ?? []).flatMap((x) => x.paragraphs)].join(' ')).join(' ');
 
-ok('the effective date is November 22, 2026 (this revision was made on November 18; later ones moved it)', LEGAL_EFFECTIVE_DATE === 'November 22, 2026');
+ok('the effective date is November 24, 2026 (this revision was made on November 18; later ones moved it)', LEGAL_EFFECTIVE_DATE === 'November 24, 2026');
 ok('the outgoing text is archived and the README lists both versions', existsSync(archive) && /terms-and-privacy-until-2026-11-18\.md/.test(readFileSync('docs/legal/README.md', 'utf8')) && /from 2026-11-18/.test(readFileSync('docs/legal/README.md', 'utf8')));
 ok('the archive is the live text as it stood (with every switch off), under its own header', /superseded on November 18, 2026/.test(readFileSync(archive, 'utf8')) && /Effective:\*\* November 16, 2026/.test(readFileSync(archive, 'utf8')));
 // With the switches off (the default here) the new sentences do not appear, so the Terms say only what is live.

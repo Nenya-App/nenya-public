@@ -28,8 +28,10 @@ ok('SupportUs: new card heading and body, old ones gone', support.includes('>No 
 // Row 8 and 9
 const evo = read(C + 'about/EvolvedLeadership.tsx');
 ok('EvolvedLeadership: safety notice reworded', evo.includes('Nenya is built to keep little of what you enter, and its safety checks can be wrong, so it is important to proceed mindfully with its use.') && !/privacy-first/i.test(evo));
+// 2026-11-24: the old closing note of the Venice page ("It would aim to work on your device where possible" and the Venice Mind sentence) left with the page's old content; the retirement note
+// must still carry none of the old privacy overclaims.
 const venice = read(C + 'about/VeniceChat.tsx');
-ok('VeniceChat: closing note reworded (option B)', venice.includes('It would aim to work on your device where possible') && venice.includes("The Venice Mind, which is on Venice's own platform, has none of Nenya's safety checks.") && !/privacy-first|strong protection of personal details|only basic versions/.test(venice));
+ok('VeniceChat: the retirement note carries none of the old privacy overclaims', !/privacy-first|strong protection of personal details|only basic versions|Venice Mind|work on your device/.test(venice));
 
 // Rows 10 to 19
 const gone: Array<[string, RegExp]> = [

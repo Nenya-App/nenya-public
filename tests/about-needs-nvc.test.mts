@@ -6,7 +6,6 @@ import { readFileSync } from 'node:fs';
 import { ok } from './helpers.mts';
 import { gradeLevel } from '../src/lib/readingLevel.ts';
 import { ANSWERS } from '../src/lib/aboutNenya.ts';
-import { VENICE_DIFFERENCES } from '../src/lib/veniceLinks.ts';
 import { ABOUT_TITLES } from '../src/lib/aboutRoutes.ts';
 
 const read = (f: string) => readFileSync(f, 'utf8');
@@ -53,7 +52,7 @@ ok('the overclaims and old phrases the chapter removed are gone from the three p
 // ---- decision 3: the name NVC+ is not used (the pages, the menu, the titles and the visitor-facing files) ----
 const visitorFiles = [
   dir + 'PantheonOfNeeds.tsx', dir + 'NVCMethod.tsx', dir + 'Mellonamin.tsx', dir + 'AboutMenu.tsx', 'src/lib/aboutRoutes.ts', 'src/app/components/DyadicCellInterface.tsx',
-  'public/about-nenya.html', 'public/llms.txt', 'README.md', 'ATTRIBUTIONS.md', 'src/lib/veniceLinks.ts', 'src/app/components/ValarBreathingLogo.tsx',
+  'public/about-nenya.html', 'public/llms.txt', 'README.md', 'ATTRIBUTIONS.md', 'src/app/components/ValarBreathingLogo.tsx',
 ];
 ok('NVC+ does not appear in the three pages, the menu, the route titles, the walkthrough, the public files or the README', visitorFiles.every((f) => !/NVC\+|NVC plus|NVCPlus/.test(read(f))), visitorFiles.filter((f) => /NVC\+|NVC plus|NVCPlus/.test(read(f))).join(', '));
 const aboutNenyaSrc = read('src/lib/aboutNenya.ts');
@@ -94,7 +93,8 @@ const t = (a: (typeof ANSWERS)[number]) => [a.short, ...a.full].join(' ');
 ok('the NVC answer says the lessons and the coach use the four parts (not "every reflection") and that our addition has not been tested', !/every reflection/.test(t(nvcAnswer)) && /lessons and its optional coach are built on/.test(t(nvcAnswer)) && /has not been tested/.test(t(nvcAnswer)));
 ok('the affiliation answer says "learn from human NVC trainers as well" and that we have not tested whether Nenya helps, with no "certified" or "strongly"', /learn from human NVC trainers as well/.test(t(aff)) && /have not tested whether it does/.test(t(aff)) && !/certified human|strongly encourage/.test(t(aff)));
 ok('the coach\'s self-description says the added layer is our own and untested, and still says it was not trained by any individual teacher', /our own extension and has not been tested/.test(t(methods)) && /I was not trained by any individual teacher/.test(t(methods)) && /human NVC trainers/.test(t(methods)));
-ok('the Venice differences line says "most features need an account" (the owner confirmed it is accurate for Venice, 2026-11-22) and still mentions under 18', /most features need an account/.test(VENICE_DIFFERENCES) && /under 18/.test(VENICE_DIFFERENCES));
+// Replaced 2026-11-24: veniceLinks.ts (and its VENICE_DIFFERENCES line, "most features need an account") was deleted with the Venice links; the check now pins that nothing visitor-facing links to Venice any more.
+ok('no source file or public page links to venice.ai (the links and the referral code were removed 2026-11-24)', ['src/coach/CoachDemo.tsx', 'src/app/components/pages/GatewayReviewPage.tsx', dir + 'VeniceChat.tsx', dir + 'Structure.tsx', 'public/why-nenya.html', 'public/about-nenya.html', 'README.md'].every((f) => !/venice\.ai\/(c\/|chat|legal)|ref=IHj/.test(read(f))));
 
 // ---- the public files ----
 const pub = read('public/about-nenya.html') + read('public/llms.txt');

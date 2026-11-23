@@ -6,8 +6,9 @@
 // note and a hold after the exhale rests on the tonic. All are in D, on the pentatonic scale, so any note sits well with
 // any other. See docs/accessibility-audio-scope.md.
 import type { BreathTiming } from './breathClock.ts';
+import { HUM_DESCRIPTION, HUM_LABEL, HUM_LOW_HZ, HUM_PEAK, humRamps } from './breathHum.ts';
 
-export type Arrangement = 'harp' | 'bowls' | 'chord' | 'scale';
+export type Arrangement = 'harp' | 'bowls' | 'chord' | 'scale' | 'hum';
 /** The style heard by default: the bowls (the owner's choice, 2026-11-20). A visitor's own choice, kept on their device, still wins. */
 export const DEFAULT_ARRANGEMENT: Arrangement = 'bowls';
 
@@ -16,11 +17,12 @@ export const ARRANGEMENTS: { id: Arrangement; label: string; description: string
   { id: 'bowls', label: 'Bowls', description: 'A singing bowl at the start of the inhale and a lower one at the start of the exhale, a soft swell between, and a gentle tick for each count.', drone: false },
   { id: 'chord', label: 'Chord', description: 'A chord that adds a voice for each count of the inhale and lets one go for each count of the exhale.', drone: false },
   { id: 'scale', label: 'Scale', description: 'Plain notes rising and falling, one a count. The first version, kept for comparison.', drone: false },
+  { id: 'hum', label: HUM_LABEL, description: HUM_DESCRIPTION, drone: false },
 ];
 
 export const isArrangement = (v: unknown): v is Arrangement => typeof v === 'string' && ARRANGEMENTS.some((a) => a.id === v);
 
-export type Timbre = 'sine' | 'harp' | 'bowl' | 'pad' | 'tick';
+export type Timbre = 'sine' | 'harp' | 'bowl' | 'pad' | 'tick' | 'hum';
 export type Kind = 'inhale' | 'hold-in' | 'exhale' | 'hold-out';
 
 export interface ToneEvent {
@@ -36,6 +38,8 @@ export interface ToneEvent {
   /** For pads: seconds to swell in, and seconds to fade out at the end of `dur`. */
   attack?: number;
   release?: number;
+  /** For the hum: the breath's rhythm in ms, which draws its swell (src/lib/breathHum.ts). */
+  shape?: BreathTiming;
 }
 
 const hz = (midi: number): number => 440 * Math.pow(2, (midi - 69) / 12);
@@ -175,8 +179,16 @@ function chordEvents(t: BreathTiming): ToneEvent[] {
   return out;
 }
 
+// ---- Hum: one soft sound a breath, two sine tones that swell in over the inhale and fade over the exhale (src/lib/breathHum.ts). No notes, no ticks.
+// The event is the whole breath long; its swell is drawn from `shape`, so it follows whichever rhythm is active.
+function humEvents(t: BreathTiming): ToneEvent[] {
+  const { cycle } = humRamps(t);
+  if (!(cycle > 0)) return [];
+  return [{ t: 0, freq: HUM_LOW_HZ, gain: HUM_PEAK, kind: 'inhale', timbre: 'hum', dur: cycle / 1000, shape: { ih: t.ih, hi: t.hi || 0, ex: t.ex, ho: t.ho || 0 } }];
+}
+
 /** Every note in one breath for a tone style, in time order, with its time from the start of the breath. */
 export function arrangementEvents(arrangement: Arrangement, t: BreathTiming): ToneEvent[] {
-  const events = arrangement === 'harp' ? harpEvents(t) : arrangement === 'bowls' ? bowlEvents(t) : arrangement === 'chord' ? chordEvents(t) : scaleEvents(t);
+  const events = arrangement === 'harp' ? harpEvents(t) : arrangement === 'bowls' ? bowlEvents(t) : arrangement === 'chord' ? chordEvents(t) : arrangement === 'hum' ? humEvents(t) : scaleEvents(t);
   return events.sort((a, b) => a.t - b.t);
 }

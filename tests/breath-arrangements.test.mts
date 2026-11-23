@@ -1,4 +1,4 @@
-// The four tone styles (harp, bowls, chord, scale): the notes of one breath for each, and the setting that picks one.
+// The five tone styles (harp, bowls, chord, scale, hum): the notes of one breath for each, and the setting that picks one.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
@@ -25,7 +25,7 @@ const PENTATONIC_D = new Set([2, 4, 6, 9, 11]); // D E F# A B as pitch classes
 const inD = (f: number) => PENTATONIC_D.has(((midiOf(f) % 12) + 12) % 12);
 
 // ---- the list of styles
-ok('there are four styles: harp, bowls, chord and the original scale; bowls is the default (owner, 2026-11-20)', A.ARRANGEMENTS.map((a) => a.id).join() === 'harp,bowls,chord,scale' && A.DEFAULT_ARRANGEMENT === 'bowls');
+ok('there are five styles: harp, bowls, chord, the original scale and the hum (added 2026-11-23); bowls is still the default (owner, 2026-11-20)', A.ARRANGEMENTS.map((a) => a.id).join() === 'harp,bowls,chord,scale,hum' && A.DEFAULT_ARRANGEMENT === 'bowls');
 ok('every style has a plain description for the panel', A.ARRANGEMENTS.every((a) => a.label.length > 2 && a.description.length > 30));
 ok('only the harp has a drone under it', A.ARRANGEMENTS.filter((a) => a.drone).map((a) => a.id).join() === 'harp');
 ok('anything that is not a style is refused', A.isArrangement('harp') && A.isArrangement('scale') && !A.isArrangement('organ') && !A.isArrangement(null));
@@ -39,11 +39,11 @@ for (const arr of A.ARRANGEMENTS.map((a) => a.id)) {
     for (const e of A.arrangementEvents(arr, p)) {
       if (!(e.t >= 0 && e.t < cycle)) bad = `${arr}: a note outside the breath`;
       if (!Number.isFinite(e.freq) || !(e.gain > 0 && e.gain <= 0.25) || !(e.dur > 0)) bad = `${arr}: bad freq/gain/dur`;
-      if (arr !== 'scale' && e.timbre !== 'tick' && e.timbre !== 'bowl' && !inD(e.freq)) bad = `${arr}: ${e.freq} Hz is not in D pentatonic`;
+      if (arr !== 'scale' && arr !== 'hum' && e.timbre !== 'tick' && e.timbre !== 'bowl' && !inD(e.freq)) bad = `${arr}: ${e.freq} Hz is not in D pentatonic`;
     }
   }
 }
-ok('every note of every style, for every preset, is inside the breath, finite and not loud; apart from the original scale (which is C pentatonic), notes other than ticks and bowl partials are in D pentatonic', bad === '', bad);
+ok('every note of every style, for every preset, is inside the breath, finite and not loud; apart from the original scale (which is C pentatonic) and the hum (174 and 261 Hz, the owner\'s own pair), notes other than ticks and bowl partials are in D pentatonic', bad === '', bad);
 ok('every style gives the same events however it is asked (pure and in time order)', A.ARRANGEMENTS.every((a) => { const x = A.arrangementEvents(a.id, sec(4, 4, 4, 4)); return JSON.stringify(x) === JSON.stringify(A.arrangementEvents(a.id, sec(4, 4, 4, 4))) && x.every((e, i) => i === 0 || e.t >= x[i - 1].t); }));
 ok('a window on the shared clock works for each style', A.ARRANGEMENTS.every((a) => eventsBetween(sec(5, 0, 5, 0), 1000, 1000, 11000, a.id).length === A.arrangementEvents(a.id, sec(5, 0, 5, 0)).length));
 

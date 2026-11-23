@@ -148,13 +148,13 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-free', part: 'nenya', title: 'Is it free, and who pays for it',
     asked: ['is this free', 'how much does it cost', 'who pays for this', 'how do you make money', 'is there a paid version'],
-    short: 'Yes, Nenya is provided free, with no advertising. The plan is for the core breathing and reflection tools to stay free. We are exploring subscriptions for extra features and will say so before anything changes. Donations go through our fiscal sponsor, Fractured Atlas, which charges an administrative fee. Venice AI\'s referral program also gives Nenya credits, which is disclosed wherever the Venice links appear.',
+    short: 'Yes, Nenya is provided free, with no advertising. The plan is for the core breathing and reflection tools to stay free. We are exploring subscriptions for extra features and will say so before anything changes. Donations go through our fiscal sponsor, Fractured Atlas, which charges an administrative fee.',
     full: [
       'Nenya is provided free of charge, with no advertising. The plan is for the core breathing and reflection tools to stay free indefinitely. We are exploring subscriptions for additional features; nothing like that exists today, and we will say so on the Our Structure page before anything changes.',
       'Donations go through Fractured Atlas, our fiscal sponsor, and are tax-deductible to the extent permitted by law. Fractured Atlas charges sponsored projects an administrative fee on donations. What is left after the fee is meant for keeping the core tools free and the site running, including servers and the ongoing work on the reflection and coaching tools. Nenya does not publish separate accounts; Fractured Atlas publishes its own Form 990 and audit.',
-      'Each coach reply costs real money to produce, which is why the free demo is limited to five exchanges, rests after a conversation, and has daily limits. Separately, the links to Venice AI carry Nenya\'s referral code: if you sign up for a paid Pro account through them, Nenya earns $10 in Venice credits and you receive a $10 welcome bonus. The credits help pay for the coach demo, it costs you nothing extra, and you can go to venice.ai directly instead.',
+      'Each coach reply costs real money to produce, which is why the free demo is limited to five exchanges, rests after a conversation, and has daily limits. There is no referral link on the site.',
     ],
-    links: [{ label: 'Support Us', page: 'support-us' }, { label: 'Our Structure', page: 'structure' }, { label: 'Chat with Nenya\'s AI on Venice', page: 'venice-chat' }],
+    links: [{ label: 'Support Us', page: 'support-us' }, { label: 'Our Structure', page: 'structure' }],
     tutorial: 'Trust lesson: how it is paid for, and why the demo has limits.',
     checks: [
       { claim: 'provided free of charge', file: TERMS, has: 'Nenya is a free space' },
@@ -162,7 +162,6 @@ export const ANSWERS: Answer[] = [
       { claim: 'Fractured Atlas charges an administrative fee; what is left is meant for the free tools and the site', file: about('SupportUs'), has: 'What is left after the fee is meant for keeping the core tools free and the site running' },
       { claim: 'Nenya publishes no separate accounts; Fractured Atlas publishes its own Form 990 and audit', file: about('SupportUs'), has: 'Nenya does not publish separate accounts.' },
       { claim: 'we are exploring subscriptions and will say so before anything changes', file: about('Structure'), has: 'We are exploring subscriptions for extra features, and we will say so here before anything changes.' },
-      { claim: 'the referral terms: Nenya earns $10 in Venice credits, the visitor gets a $10 welcome bonus', file: TERMS, has: 'Nenya earns $10 in Venice credits, which help pay for the demo, and you receive a $10 welcome bonus' },
       { claim: 'each reply costs real money', file: TERMS, has: 'Each reply costs real money, so there are limits' },
       { claim: 'subscriptions for additional features are being considered (paid options for stance layers)', file: "docs/coach-lenses-scope.md", has: 'may become paid options' },
     ],
@@ -377,9 +376,9 @@ export const ANSWERS: Answer[] = [
       'The coach demo is free, and each reply costs real money to produce. To keep it affordable for everyone, a conversation is limited to five exchanges, and each message to 500 characters.',
       'After a conversation ends, the page saves the time, and only the time, in your browser, and the demo rests for six hours before opening again. This is a courtesy, not a lock: it lives only on your device.',
       'There are also two daily limits. One covers all visitors together: the demo can handle a set number of messages each day. The other covers each connection: up to 10 messages a day, which is two full conversations. A conversation already under way is never cut off; you find out only when you try to start a new one. Shared networks count together.',
-      'If you want to keep going after the five exchanges, the page offers other places: the breathing tool, a person you trust, a journal, a professional, or the same character on Venice AI\'s own site, which has its own limits and its own privacy policy.',
+      'If you want to keep going after the five exchanges, the page offers other places: the breathing tool, a person you trust, a journal, or a professional.',
     ],
-    links: [{ label: 'Terms, Section 15: The coach demo', page: 'terms' }, { label: 'Chat with Nenya\'s AI on Venice', page: 'venice-chat' }],
+    links: [{ label: 'Terms, Section 15: The coach demo', page: 'terms' }],
     tutorial: 'Coach tutorial lesson 3: making the five exchanges count (with the NVC structure).',
     checks: [
       { claim: 'two daily limits; 10 messages a day per connection, two full conversations', file: TERMS, has: 'up to 10 messages a day (two full conversations)' },
@@ -879,7 +878,7 @@ export const ANSWERS: Answer[] = [
     asked: ['is this a scam', 'are you collecting my data', 'what do you do with my information', 'are you selling my data', 'can I trust this'],
     short: 'It\'s fair to ask. Nenya is free, has no advertising, and doesn\'t sell or share data. I\'m an AI, and Nenya doesn\'t keep this conversation. The full details are in the Terms, which also say what the web host and the AI service do.',
     full: [
-      'Wanting to know whether you can trust this is reasonable, and there is a straight answer. Nenya is provided free of charge. It has no advertising, no tracking cookies, and no accounts, and it does not sell, share, or monetize data. The project is supported by donations and Venice AI\'s referral credits, and it says so.',
+      'Wanting to know whether you can trust this is reasonable, and there is a straight answer. Nenya is provided free of charge. It has no advertising, no tracking cookies, and no accounts, and it does not sell, share, or monetize data. The project is supported by donations, and it says so.',
       'For the coach specifically: Nenya does not keep the conversation. Your messages pass through our server to Venice AI, which writes the replies and handles what it receives under its own policy. Our web host keeps ordinary connection logs, Nenya keeps plain daily totals with no information about who produced them, and a one-way daily code applies the daily limit. The Terms describe each of these, and the code is public, so you can check rather than take our word for it.',
       'If something still doesn\'t sit right with you, that is worth listening to. What would help you feel able to trust it, or not?',
     ],
@@ -889,19 +888,17 @@ export const ANSWERS: Answer[] = [
       { claim: 'free; no ads; no tracking; no sale of data', file: TERMS, has: 'It does not sell, share or monetize data' },
       { claim: 'the coach: Nenya does not keep the conversation', file: TERMS, has: 'We do not store your messages or the replies' },
       { claim: 'the one-way daily code', file: TERMS, has: 'one-way code' },
-      { claim: 'the referral credits are disclosed', file: TERMS, has: 'which help pay for the demo' },
     ],
     status: 'ready',
-    ownerNote: 'Approved 2026-11-08: keep the closing question and the mention of donations and Venice referral credits.',
+    ownerNote: 'Approved 2026-11-08: keep the closing question and the mention of donations and Venice referral credits. Changed 2026-11-24 (owner): the referral links and code were removed from the site, so the answer says only that the project is supported by donations.',
     workersAi: {
       full: [
-        'Wanting to know whether you can trust this is reasonable, and there is a straight answer. Nenya is provided free of charge. It has no advertising, no tracking cookies, and no accounts, and it does not sell, share, or monetize data. The project is supported by donations and Venice AI\'s referral credits, and it says so.',
+        'Wanting to know whether you can trust this is reasonable, and there is a straight answer. Nenya is provided free of charge. It has no advertising, no tracking cookies, and no accounts, and it does not sell, share, or monetize data. The project is supported by donations, and it says so.',
         'For the coach specifically: Nenya does not keep the conversation. Your messages pass through our server to Cloudflare\'s Workers AI service, which runs the model that writes the replies; Cloudflare says it does not keep them once a reply is made or train AI on them. Our web host keeps ordinary connection logs, Nenya keeps plain daily totals with no information about who produced them, and a one-way daily code applies the daily limit. The Terms describe each of these, and the code is public, so you can check rather than take our word for it.',
         'If something still doesn\'t sit right with you, that is worth listening to. What would help you feel able to trust it, or not?',
       ],
       checks: [
         { claim: 'messages pass to Workers AI', file: WAI_TERMS, has: 'to Cloudflare\'s Workers AI service, which runs the model that writes the replies' },
-        { claim: 'the referral credits are disclosed', file: TERMS, has: 'which help pay for the demo' },
       ],
     },
   },

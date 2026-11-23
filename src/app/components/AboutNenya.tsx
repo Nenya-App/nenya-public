@@ -178,7 +178,7 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOp
         <PartnerPractice onBack={handleBackToMenu} onOpenPreview={onOpenPartnerPreview} />
       )}
       {currentSection === 'venice-chat' && (
-        <VeniceChat onBack={handleBackToMenu} />
+        <VeniceChat onBack={handleBackToMenu} onOpenSection={(s) => setCurrentSection(s as AboutSection)} />
       )}
       {currentSection === 'where-we-stand' && (
         <WhereWeStand onBack={handleBackToMenu} />

@@ -40,7 +40,7 @@ try {
 
   store['nenya.coach.rest'] = String(Date.now() - 3600000);
   h = render(CoachDemo, { colors });
-  ok('coach: inside the 6-hour rest it shows the resting screen with Venice and sharing', typeof h === 'string' && h.includes('resting') && h.includes('Share Nenya') && h.includes('venice.ai/c/nenya-20'), h.error ?? '');
+  ok('coach: inside the 6-hour rest it shows the resting screen with sharing and no Venice link (the offer was removed 2026-11-24; this replaces the check that the venice.ai/c/nenya-20 link was shown)', typeof h === 'string' && h.includes('resting') && h.includes('Share Nenya') && !h.includes('venice.ai') && !h.includes('Continue on Venice'), h.error ?? '');
 
   store['nenya.coach.rest'] = String(Date.now() - 7 * 3600000);
   h = render(CoachDemo, { colors });
@@ -58,7 +58,7 @@ try {
     gatewayData: [{ gateway: 'sight', data: { color1: '#7A9B9E', color2: '#DAC682', color1Qualities: [], color2Qualities: [] } }],
     selectedGateways: ['sight'], bodyMapData: { placements: [], notes: {} }, onEditGateway: noop, onContinue: noop, onBack: noop,
   });
-  ok('review page: renders with the Venice link and its disclosure', typeof h === 'string' && h.includes('Take it to Venice') && h.includes('venice.ai/c/nenya-20') && h.includes('referral code'), h.error ?? '');
+  ok('review page: renders with no Venice link, no "Take it to Venice" button and no referral text (removed 2026-11-24; replaces the check that they were shown)', typeof h === 'string' && !h.includes('Take it to Venice') && !h.includes('venice.ai') && !h.includes('referral') && h.includes('Download PDF Report'), h.error ?? '');
 
   // The first-visit panel gates the whole site, so it must be visible in the very first render: no layer may
   // start at opacity 0 waiting for the animation engine to arrive.
