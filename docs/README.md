@@ -50,6 +50,7 @@ Two things to know when reading "shipped":
 | [lexicon-sources.md](lexicon-sources.md) | The sources for the detection list, their licences, and the attestation | Registry: `src/lib/lexiconSources.ts` |
 | [test-prompt-datasets.md](test-prompt-datasets.md) | Open prompt sets for testing the coach, and their licences | Research note, 2026-11-10. Licences marked "unverified" need checking. |
 | [results/README.md](results/README.md) | Rules for publishing test results | Nothing has been published yet. |
+| [checks-live-figures.md](checks-live-figures.md) | The live, averaged figures on "How the Checks Work": the counts-only record of runs, version matching, adding a run, the nightly script | Built 2026-11-22. No schedule is created; the owner decides. |
 | [legal/README.md](legal/README.md) | How the Terms are versioned, with a table of past versions | `legal/archive/` holds the old texts. |
 | [brand/README.md](brand/README.md) | The vector logo: petals, orbs and bezel | Updated 2026-11-20 for the live gem and the polygon bezel. The petals are still the six-petal drawing on this branch. |
 

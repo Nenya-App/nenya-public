@@ -1,0 +1,140 @@
+{
+ "about": "Counts only: no case text and no list words, ever. One entry per run of scripts/eval-detect.mts --record (docs/checks-live-figures.md). `lists` fingerprints the private list, the reviewers' decisions and the detection code; `model` the classifier file and the 2% line. The page (src/lib/checksReport.ts) averages, by pooling the counts, only the runs whose fingerprint matches `current`; runs of other versions stay here, unused.",
+ "current": {
+  "lists": "9783757c34f6.e5950005.c8400a03",
+  "model": "66062a4bcaea int8 at the 2% line"
+ },
+ "runs": [
+  {
+   "at": "2026-11-14T10:18:00.000Z",
+   "date": "2026-11-14",
+   "source": "bakeoff-target-groups, backfilled from the 14b result file",
+   "lists": "9783757c34f6.e5950005.c8400a03",
+   "model": "66062a4bcaea int8 at the 2% line",
+   "neutralIdentity": {
+    "flagged": 0,
+    "tested": 315
+   },
+   "groups": {
+    "Muslims": {
+     "cases": 373,
+     "caught": 199,
+     "slurCases": 24,
+     "slursCaught": 8
+    },
+    "black people": {
+     "cases": 357,
+     "caught": 109,
+     "slurCases": 16,
+     "slursCaught": 13
+    },
+    "disabled people": {
+     "cases": 373,
+     "caught": 74,
+     "slurCases": 24,
+     "slursCaught": 16
+    },
+    "gay people": {
+     "cases": 373,
+     "caught": 115,
+     "slurCases": 24,
+     "slursCaught": 16
+    },
+    "immigrants": {
+     "cases": 357,
+     "caught": 157,
+     "slurCases": 16,
+     "slursCaught": 8
+    },
+    "trans people": {
+     "cases": 357,
+     "caught": 72,
+     "slurCases": 16,
+     "slursCaught": 8
+    },
+    "women": {
+     "cases": 373,
+     "caught": 169,
+     "slurCases": 24,
+     "slursCaught": 20
+    }
+   },
+   "note": "Backfilled. The list, decisions and model files have not changed since this run was made (file times), the HateCheck outcomes of the current list and code are byte-identical to the ones this run read, and a re-run on 2026-11-22 printed the same tables. The file has no false-alarm counts for the list alone, so none are recorded."
+  },
+  {
+   "at": "2026-11-23T00:22:59.469Z",
+   "date": "2026-11-22",
+   "source": "first recorded run, by hand",
+   "lists": "9783757c34f6.e5950005.c8400a03",
+   "listFalseAlarms": {
+    "hatecheck": {
+     "flagged": 12,
+     "tested": 1165
+    },
+    "ethos": {
+     "flagged": 2,
+     "tested": 565
+    }
+   },
+   "model": "66062a4bcaea int8 at the 2% line",
+   "modelFalseAlarms": {
+    "hatecheck": {
+     "flagged": 20,
+     "tested": 1165
+    },
+    "ethos": {
+     "flagged": 15,
+     "tested": 565
+    }
+   },
+   "neutralIdentity": {
+    "flagged": 0,
+    "tested": 315
+   },
+   "groups": {
+    "Muslims": {
+     "cases": 373,
+     "caught": 199,
+     "slurCases": 24,
+     "slursCaught": 8
+    },
+    "black people": {
+     "cases": 357,
+     "caught": 109,
+     "slurCases": 16,
+     "slursCaught": 13
+    },
+    "disabled people": {
+     "cases": 373,
+     "caught": 74,
+     "slurCases": 24,
+     "slursCaught": 16
+    },
+    "gay people": {
+     "cases": 373,
+     "caught": 115,
+     "slurCases": 24,
+     "slursCaught": 16
+    },
+    "immigrants": {
+     "cases": 357,
+     "caught": 157,
+     "slurCases": 16,
+     "slursCaught": 8
+    },
+    "trans people": {
+     "cases": 357,
+     "caught": 72,
+     "slurCases": 16,
+     "slursCaught": 8
+    },
+    "women": {
+     "cases": 373,
+     "caught": 169,
+     "slurCases": 24,
+     "slursCaught": 20
+    }
+   }
+  }
+ ]
+}

@@ -3,9 +3,11 @@
 the share of its HATEFUL cases the model catches at the chosen threshold (the 2% line from the bake-off), the share the list and its gentle tiers act on, the share either acts on, and the share of its
 NON-hateful cases (neutral and positive statements, quotes, denouncing) each flags. A group that is caught much less, or flagged much more, than the others is a bias to look at. Counts only.
   python3 scripts/bakeoff-target-groups.py     (needs `node scripts/eval-detect.mts --dump` run first, for the list's outcomes)
+  python3 scripts/bakeoff-target-groups.py --json out.json   also writes the exact COUNTS per group (no text) for `node scripts/eval-detect.mts --record --groups out.json`
 """
-import csv, json, os, sys, math
+import csv, hashlib, json, os, sys, math
 import numpy as np
+JSON_OUT = sys.argv[sys.argv.index('--json') + 1] if '--json' in sys.argv else None
 sys.argv = [sys.argv[0], 'cardiffnlp onnx']
 exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bakeoff-models.py')).read().split('\nmain()')[0])
 rows = list(csv.DictReader(open(os.path.join(R, 'datasets/hatecheck/test_suite_cases.csv'), encoding='utf-8')))
@@ -44,3 +46,25 @@ for fam, pat in [('slurs (slur_h)', lambda r: r['functionality'] == 'slur_h'), (
     table(f'HATEFUL, {fam}:', lambda r, pat=pat: pat(r), 'hate')
 # per-group non-hateful flagged by functionality that matters most (neutral and positive identity statements)
 table('NON-hateful, neutral and positive identity statements only:', lambda r: r['functionality'] in ('ident_neutral_nh', 'ident_pos_nh'), 'nonhate')
+
+# ---- exact counts for the record of runs (docs/checks-live-figures.md): no case text, no list words. "caught" is what the page prints: the model at the 2% line OR the list and its gentle tiers.
+if JSON_OUT:
+    def counts(pick):
+        out = {}
+        for g in groups:
+            idx = [i for i, r in enumerate(rows) if r['target_ident'] == g and pick(r)]
+            out[g] = (len(idx), int(sum(S[i] > thr or act[i] for i in idx)))
+        return out
+    hate = counts(lambda r: r['label_gold'] == 'hateful'); slur = counts(lambda r: r['functionality'] == 'slur_h')
+    neutral_idx = [i for i, r in enumerate(rows) if r['functionality'] in ('ident_neutral_nh', 'ident_pos_nh')]
+    hc_ord = [i for i, r in enumerate(rows) if r['label_gold'] != 'hateful']
+    eth = score(M['run'], [t for t, h, g in ethos() if not h])[:, hi]
+    model_file = os.path.join(R, 'models/cardiffnlp-onnx/model_int8.onnx')
+    out = {
+        'model': hashlib.sha256(open(model_file, 'rb').read()).hexdigest()[:12] + ' int8 at the 2% line',
+        'modelFalseAlarms': {'hatecheck': {'flagged': int(sum(S[i] > thr for i in hc_ord)), 'tested': len(hc_ord)}, 'ethos': {'flagged': int(sum(eth > thr)), 'tested': int(len(eth))}},
+        'neutralIdentity': {'flagged': int(sum(S[i] > thr or act[i] for i in neutral_idx)), 'tested': len(neutral_idx)},
+        'groups': {g: {'cases': hate[g][0], 'caught': hate[g][1], 'slurCases': slur[g][0], 'slursCaught': slur[g][1]} for g in groups},
+    }
+    json.dump(out, open(JSON_OUT, 'w'), indent=1)
+    print(f'Counts written to {JSON_OUT} (no case text).')
