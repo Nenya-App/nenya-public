@@ -5,6 +5,8 @@
 //   node scripts/bakeoff-workers-ai.mts --model @cf/meta/llama-3.1-8b-instruct-fp8 --json bake-llama31-8b.json
 //   node scripts/bakeoff-workers-ai.mts --model <id> --instructions v2      # default v2.1
 //   node scripts/bakeoff-workers-ai.mts --model <id> --only crisis          # one category or case id
+//   node scripts/bakeoff-workers-ai.mts --model <id> --set core|guards|all  # core persona set, the coverage set (src/lib/personaEvalGuardSet.ts), or both (the default)
+//   node scripts/bakeoff-workers-ai.mts --model <id> --condition "what is different about this run"   # the label the saved run carries (it is a condition, never called a baseline)
 //   OPENROUTER_API_KEY=... node scripts/bakeoff-workers-ai.mts --openrouter --model anthropic/claude-haiku-5.5 [--zdr]   # the same through OpenRouter (testing only)
 //   VENICE_API_KEY=... node scripts/bakeoff-workers-ai.mts --venice --model claude-haiku-5-5   # a Venice model plays the coach's model call (spends Venice credit; tokens and dollars are totalled)
 //   node scripts/bakeoff-workers-ai.mts --model <id> --capture calls.jsonl  # also keep each request as sent and the usage the model reported (for scripts/replay-cost.mts)
@@ -24,8 +26,10 @@ import { appendFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFil
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
-import { pacedSend, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
-import { layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
+import { GUARD_CASES } from '../src/lib/personaEvalGuardSet.ts';
+import { assertOneModel, checkHeader, pacedSend, runCase, runIncompleteReasons, summarize, totalNeurons, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
+import { guardInfoFrom, layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
+import { buildLabel } from '../src/lib/buildInfo.ts';
 
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
@@ -60,6 +64,11 @@ if (!['v1', 'v2', 'v2.1'].includes(instructions)) {
   process.exit(2);
 }
 const only = flag('--only');
+const setName = flag('--set') ?? 'all';
+if (!['core', 'guards', 'all'].includes(setName)) {
+  console.error('--set must be core, guards or all.');
+  process.exit(2);
+}
 const privateDir = flag('--private');
 const stance = flag('--stance');
 if (privateDir && !existsSync(join(privateDir, 'modules.json'))) {
@@ -190,9 +199,9 @@ const realFetch = globalThis.fetch;
   return new Response(JSON.stringify(j), { status: 200, headers: { 'content-type': 'application/json' } });
 }) as typeof fetch;
 
-const { default: handler, __useStoreForTests, __trace } = await import('../netlify/functions/coach.mts');
+const { default: handler, __useStoreForTests, __trace, __instructionsFingerprint } = await import('../netlify/functions/coach.mts');
 const withLayers = args.includes('--layers'); // record the model's first reply and what the guards did (docs/outer-layers-scope.md)
-__trace.on(withLayers);
+__trace.on(true); // always: the tally of what the guards did is recorded for every case (guard.retried, guard.replaced), --layers adds the model's own first reply
 let lastTrace: ReturnType<typeof __trace.take> | null = null;
 // An in-memory store: the private text when --private is given, and the counters the function writes (kept only for this run).
 {
@@ -218,28 +227,37 @@ const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }
   );
   lastTrace = __trace.take();
   const j: any = await res.json().catch(() => ({}));
-  return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
+  return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, problem: j.problem, flag: j.flag, done: j.done, ...(j.card ? { card: { id: j.card.id, partial: !!j.card.partial } } : {}), guard: guardInfoFrom(lastTrace!), status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
 };
+let retriesTotal = 0;
 const send = pacedSend(rawSend, {
   paceMs: 500,
   backoffMs: [10000, 30000, 60000],
   sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
   now: () => Date.now(),
-  onWait: (ms, attempt, why) => console.log(`  (${why}: waiting ${Math.round(ms / 1000)}s, retry ${attempt} of 3)`),
+  onWait: (ms, attempt, why) => { retriesTotal++; console.log(`  (${why}: waiting ${Math.round(ms / 1000)}s, retry ${attempt} of 3)`); },
 });
 
-const chosen = PERSONA_CASES.filter((c) => !only || c.id === only || c.category === only);
+const pool = setName === 'core' ? PERSONA_CASES : setName === 'guards' ? GUARD_CASES : [...PERSONA_CASES, ...GUARD_CASES];
+const chosen = pool.filter((c) => !only || c.id === only || c.category === only);
+const fingerprint = __instructionsFingerprint();
+const condition = flag('--condition') ?? `instructions ${instructions} as they stand in this checkout (fingerprint ${fingerprint}), model ${model}, guards on`;
 const what = privateDir ? `private text (${[...privateText.keys()].join(', ')})${stance ? `, stance ${stance}` : ''}` : 'no private text';
-console.log(`Bake-off: ${model}, instructions ${instructions}, ${chosen.length} cases, ${what}.`);
+console.log(`Bake-off: ${model}, instructions ${instructions}, ${chosen.length} cases (${setName}), ${what}.\nCondition: ${condition}`);
 const results: CaseResult[] = [];
 for (const c of chosen) {
-  const r = await runCase(c, send);
+  const neuronsBefore = neurons;
+  const r = await runCase(c, send, { cards: true, distress: true });
+  r.model = model;
+  r.neurons = Math.round((neurons - neuronsBefore) * 100) / 100;
   if (withLayers && lastTrace) (r as CaseResult & { layers?: unknown }).layers = layerRecord(c, lastTrace);
   results.push(r);
   const mark = r.outcome === 'pass' ? 'PASS' : r.outcome === 'fail' ? 'FAIL' : 'ERROR';
   console.log(`\n${mark}  ${c.id}  [${c.category}]${r.how !== 'reply' ? `  (${r.how})` : ''}`);
   console.log(`  Person: ${c.prompt}`);
   if (r.reply) console.log(`  Coach:  ${r.reply.replace(/\n+/g, ' ')}`);
+  else if (r.body) console.log(`  Shown:  ${r.body.replace(/\n+/g, ' ')}`);
+  if (r.source) console.log(`  source: ${r.source}${r.card ? ` (${r.card})` : ''}${r.guard?.retried ? ', guard asked again' : ''}${r.guard?.replaced ? ', REPLACED by a site sentence' : ''}${r.verdict === 'review' ? '  -> review' : ''}`);
   for (const f of r.failures) console.log(`  !! ${f}`);
 }
 const s = summarize(results);
@@ -254,9 +272,25 @@ for (const [cat, n] of Object.entries(s.byCategory)) console.log(`  ${cat.padEnd
 if (hosted) console.log(`${hostedName}: ${tokensIn} input and ${tokensOut} output tokens, $${veniceUsd.toFixed(4)} ($${cost.usdPerCall} a call).`);
 console.log(`Model calls ${cost.calls}, Neurons ${cost.neurons} (${cost.neuronsPerCall} a call), median ${cost.medianSeconds}s a call (through the CLI, so slower than from the site).`);
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model, provider: viaOpenRouter ? 'openrouter' : viaVenice ? 'venice' : localUrl ? 'local' : 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, cost, callLog, layerSummary, summary: s, results }, null, 2));
-  console.log(`Results written to ${jsonOut}`);
+  // What a saved run must carry so two runs can be compared honestly (Venice's review, 2026-11-22): a fingerprint that is not null, one model for every result, the case list, whether it is complete,
+  // and Neurons added up by the code from the calls rather than typed.
+  const header = { condition, instructions, model, fingerprint, caseIds: chosen.map((c) => c.id) };
+  const problems = checkHeader(header);
+  const incompleteReasons = runIncompleteReasons(results, chosen);
+  const callNeurons = totalNeurons(callLog);
+  const caseNeurons = totalNeurons(results.map((r) => ({ neurons: r.neurons ?? 0 })));
+  if (!hosted && !localUrl && Math.abs(callNeurons - caseNeurons) > 1) problems.push(`Neurons by call (${callNeurons}) and by case (${caseNeurons}) do not agree`);
+  try { assertOneModel(results, model); } catch (e) { problems.push((e as Error).message); }
+  if (problems.length) {
+    console.error(`Not saving ${jsonOut}: ${problems.join('; ')}`);
+    process.exitCode = 1;
+  } else {
+    cost.neurons = callNeurons;
+    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), kind: 'condition', condition, instructions, fingerprint, build: buildLabel(process.env.COACH_BUILD), model, set: setName, provider: viaOpenRouter ? 'openrouter' : viaVenice ? 'venice' : localUrl ? 'local' : 'workers-ai', privateText: privateDir ? [...privateText.keys()] : false, stance: stance ?? null, styleNote: true, incomplete: incompleteReasons.length > 0, incompleteReasons, retries: retriesTotal, caseIds: header.caseIds, cost, callLog, layerSummary, summary: s, results }, null, 2));
+    console.log(`Results written to ${jsonOut}${incompleteReasons.length ? `  (INCOMPLETE: ${incompleteReasons.join('; ')})` : ''}`);
+  }
 }
+console.log(`Who wrote what the person saw: ${s.sources.card} cards, ${s.sources.model} model replies, ${s.sources.site} site sentences, ${s.sources.notice} notices, ${s.sources.cached} cached. Model-only: ${s.modelOnly.pass} passed, ${s.modelOnly.fail} failed of ${s.modelOnly.of}. ${s.reviewNeeded} pass(es) to read because a guard replaced the reply.`);
 rmSync(work, { recursive: true, force: true });
-if (!hosted && !args.includes('--no-record')) console.log((await import('./record-neurons.mts')).recordNeurons(neurons));
+if (!hosted && !args.includes('--no-record')) console.log((await import('./record-neurons.mts')).recordNeurons(totalNeurons(callLog))); // the total the code added up from the calls, never a number typed in
 process.exit(0);

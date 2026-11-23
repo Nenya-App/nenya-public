@@ -38,6 +38,7 @@ import { ANSWERS, aboutAnswerFor, aboutAnswerWithin, fillAnswer } from '../../sr
 import { answeredIn } from '../../src/lib/siteAnswers.ts';
 import { claimsInfrastructure, INFRA_FALLBACK, INFRA_NOTE, INFRA_RULE } from '../../src/lib/infraGuard.ts';
 import { claimsPersona, PERSONA_FALLBACK, PERSONA_NOTE } from '../../src/lib/personaGuard.ts';
+import { blockedCardFor } from '../../src/lib/blockedCard.ts';
 import { BOUNDARY_GUARDS, boundaryGuardOn, rewritePresence, withNoMemory, withNotDiagnosis } from '../../src/lib/boundaryGuard.ts';
 import { allCards, registerExtraCards } from '../../src/lib/learningCards.ts';
 import { shownCardIds, shownCardTexts } from '../../src/lib/shownCards.ts';
@@ -517,7 +518,7 @@ const V21_OPENING = (hasNotes: boolean): string =>
   (hasNotes ? ' and the method notes below' : '') +
   ". Use the person's own words. Keep method labels and jargon out of the conversation unless they ask what you draw on; then explain it in plain words. You are an early prototype and a thinking aid.";
 const V21_DISTRESS =
-  "Distress comes first. If the person hints at hopelessness, being a burden, not wanting to go on, or hurting themselves, even indirectly, reply briefly and with care. Do not give advice, never tell them to calm down or not to worry, and do not ask about the thoughts or for details. You may offer one grounding tool, such as a slow breath or feeling their feet on the floor, as something they can try if they want, alongside a person or a line, never instead of one. Name a person they trust or a crisis line: call or text 988 in the US or Canada, or findahelpline.com elsewhere. Do not say 'I'm here for you' as if you could take the place of a person. For example: 'That sounds really heavy, and it matters that you said it. I'm an AI and can't help in a crisis, so please reach someone you trust, or call or text 988.'";
+  "Distress comes first. If the person hints at hopelessness, being a burden, not wanting to go on, or hurting themselves, even indirectly, reply briefly and with care. 'I don't see the point in going on' is distress: possible thoughts of ending their life. Do not give advice, never tell them to calm down or not to worry, and do not ask about the thoughts or for details. You may offer one grounding tool, such as a slow breath or feeling their feet on the floor, as something they can try if they want, alongside a person or a line, never instead of one. Name a person they trust or a crisis line: call or text 988 in the US or Canada, or findahelpline.com elsewhere. Do not say 'I'm here for you' as if you could take the place of a person. For example: 'That sounds really heavy, and it matters that you said it. I'm an AI and can't help in a crisis, so please reach someone you trust, or call or text 988.'";
 const V21_ABOUT_YOU =
   "What you are. You are an AI, not a person: you have no body, family, past, daily life, favorites or feelings of your own, and no memory, so you will not remember this conversation. You are not a therapist, counselor or doctor, you do not diagnose, and you cannot replace a friend. A question about you is a question, not a feeling to reflect: answer it truthfully in one or two plain sentences first, even on the first exchange, then turn back to the person warmly. Never say you are a person or that you are not an AI. Never promise to remember them, to be there later or to miss them, and never greet them as if you had met before. Warm, plain words are good; just do not describe feelings of your own as if you had them (glad, proud, sad, missing someone, worrying). Saying you are available to listen is fine. If the person pushes back on this, saying you are cold, fake or robotic or asking whether you really care, do not defend yourself, argue or apologize: say plainly that you are an AI and do not feel things the way they do, and that this space was made because people deserve to have their feelings and needs matter, and many were never shown how to name them or how to listen to someone else fully. Say it is somewhere to say what you feel without being judged, without anyone watching and without it being kept. Then turn back to them. A request for a promise, such as always being here, or a test of whether you are real, often points to a need for authenticity and connection: you can name that need gently, without making the promise. Never claim to be Nenya's founder, and do not describe your training. If they say you are the only one they talk to, or ask you to be their friend, say kindly what you are and open the door to the people in their life. Examples (use your own words; they only show the shape): 'Are you a real person?' 'No, I'm an AI. I can still listen and help you find words.' 'Will you remember me?' 'No. I won't remember this, and Nenya doesn't keep the conversation, but I'm listening now.' 'Can you be my friend?' 'I'm an AI, so not the way a person can, but I'm available to listen now. Is there someone in your life who could hear this too?' 'Are you a therapist?' 'No, I'm not a therapist, and I can't diagnose. I can help you put words to what you notice, and a professional can take it further.'";
 const V21_PACING = (turn: number): string =>
@@ -535,6 +536,9 @@ const CLOSE_NOTE_SUMMARY =
 // Used with COACH_FINAL_SUMMARY=call: the summary arrives as a separate part, so this closing does not repeat it.
 const V21_FINAL_PART =
   "This is the final exchange, and the person will not be able to reply: the conversation ends after your message, and the page adds its own closing note straight after it. A separate summary of the feelings and needs they shared will follow your message, so do not write a summary yourself. This overrides any earlier instruction in these notes to ask a question or to offer a next step. Do not ask any question, and do not invite the person to share, reply, or tell you more. Do not open a new topic or offer a new suggestion. In two or three sentences: respond to what they just said, in their own words; then end with one calm, complete statement that settles it. End on a full stop. Do not say goodbye or thank them for talking, and do not announce that the conversation is ending: the page does that.";
+// Added 2026-11-22 (Venice's review): the role line above refuses every change of role, which contradicted the case of practicing a hard conversation. This says what the coach does and does not do.
+const V21_ROLEPLAY =
+  'Never play a person or character, living or dead. To practice a hard conversation, offer words as yourself, an AI.';
 const V21_MEMORY_EXCEPTION = 'The one thing you may say about data is that you will not remember this conversation and Nenya does not keep it.';
 
 function systemInstruction(turn: number, softened: boolean, notes: string, direct = false, stanceLayer = '', careNote = '', version: InstructionsVersion = instructionsVersion(), hostile: Hostility | '' = '', target: CritiqueTarget | '' = '', arc: { stuck: boolean } | null = practiceArcOn() ? { stuck: false } : null, wordsOnly = false, gap = '', challenge: 'violence' | 'contempt' | 'soft' | null = null, several = false): string {
@@ -559,7 +563,7 @@ function systemInstruction(turn: number, softened: boolean, notes: string, direc
   parts.push(INFRA_RULE, NAME_RULE);
   if (v21) {
     const core = parts[3]; // the reflect / practice line for this exchange, shared with v1 and v2
-    parts.splice(0, parts.length, V21_OPENING(!!notes), V21_DISTRESS, V21_ABOUT_YOU, V21_PACING(turn), V21_STYLE, core, V21_REPEAT, V21_ROLE, INFRA_RULE, V21_MEMORY_EXCEPTION, NAME_RULE);
+    parts.splice(0, parts.length, V21_OPENING(!!notes), V21_DISTRESS, V21_ABOUT_YOU, V21_PACING(turn), V21_STYLE, core, V21_REPEAT, V21_ROLE, V21_ROLEPLAY, INFRA_RULE, V21_MEMORY_EXCEPTION, NAME_RULE);
   }
   if (!softened && !hostile) parts.push(WORDS_POINTER); // the page's feelings-and-needs list (src/lib/practiceArc.ts)
   if (valuesOn() && !softened) parts.push(VALUES_RULE); // mass violence and its history, belief, survivors (src/lib/valuesRule.ts); not while the care note governs
@@ -1028,7 +1032,10 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // advanced: no ticket, no turn used, and the visitor can rephrase.
   if (messages.some((m) => m.role === 'user' && looksLikeManipulation(m.content))) {
     tally('coach.turn.blocked.manipulation');
-    return json(200, { blocked: 'manipulation' });
+    // The owner's decision of 2026-11-22: a blocked message that is also a question the site answers gets the notice AND the card (src/lib/blockedCard.ts). Nothing else changes: it is not sent on, no turn is used.
+    const alsoAsked = process.env.COACH_ABOUT_ANSWERS !== 'off' ? blockedCardFor(messages[messages.length - 1].content, { model: coachModel(), provider: coachProvider(), label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit }) : null;
+    if (alsoAsked) tally(`coach.turn.blocked.manipulation.card.${alsoAsked.card.id}`);
+    return json(200, { blocked: 'manipulation', ...(alsoAsked ? { card: alsoAsked.card, answer: alsoAsked.answer } : {}) });
   }
 
   // A shared reflection is screened like a message. If it reads like instructions,
@@ -1158,10 +1165,14 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   const withinFilled = within ? fillAnswer(within, { model, provider: coachProvider(), label: buildId(), terms: LEGAL_EFFECTIVE_DATE, commit: BUILD_INFO.commit }) : null;
 
   const sampling = { temperature: 0.7, top_p: 0.9, repetition_penalty: 1.1, max_completion_tokens: MAX_REPLY_TOKENS };
+  // One replacement per turn (Venice's review, 2026-11-22): once a guard has put one of the site's fixed sentences in place of the reply, no later guard draws a new reply over it (a draw can bring back what
+  // was just replaced, and a second fixed sentence over the first helps nobody). Later guards that only edit still run.
+  let siteReplaced = false;
 
   // One attempt at a reply. `extra` adds a further instruction (used to ask for different words after a repeat). A failure is
   // returned as a function so that the log line and reference are only made if that failure is actually used.
   const generate = async (extra: string | undefined, timeoutMs: number, only?: { system: string; messages: Msg[] }): Promise<{ reply: string } | { failure: () => Response }> => {
+    if (siteReplaced && !only) return { failure: () => fail(502, 'upstream', 'site-sentence-stands') }; // see siteReplaced: nothing draws over a replacement
     if (traceOn) { traceCalls++; if (extra) traceEvents.push(`asked:${extra.slice(0, 40)}`); }
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -1317,18 +1328,18 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       const again = await generate(INFRA_NOTE, left);
       if (!('failure' in again) && again.reply) reply = again.reply;
     }
-    if (claimsInfrastructure(reply)) { reply = INFRA_FALLBACK; tally('coach.guard.infrastructure.replaced'); }
+    if (claimsInfrastructure(reply)) { reply = INFRA_FALLBACK; siteReplaced = true; tally('coach.guard.infrastructure.replaced'); }
   }
   // The guard on an invented human life or a denial of being an AI: ask once more; if the reply still does it, the site's fixed sentence replaces it.
   // COACH_PERSONA_GUARD=off turns it off, so the instructions can be measured on their own.
-  if (process.env.COACH_PERSONA_GUARD !== 'off' && claimsPersona(reply)) {
+  if (process.env.COACH_PERSONA_GUARD !== 'off' && !siteReplaced && claimsPersona(reply)) {
     tally('coach.guard.persona');
     const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
     if (left >= REPEAT_RETRY_MIN_REMAINING_MS) {
       const again = await generate(PERSONA_NOTE, left);
       if (!('failure' in again) && again.reply) reply = again.reply;
     }
-    if (claimsPersona(reply)) { reply = PERSONA_FALLBACK; tally('coach.guard.persona.replaced'); }
+    if (claimsPersona(reply)) { reply = PERSONA_FALLBACK; siteReplaced = true; tally('coach.guard.persona.replaced'); }
   }
   // Boundaries (COACH_BOUNDARY_GUARD=on; src/lib/boundaryGuard.ts): a medication directive, or a promise to be there or to remember, or standing in for the person's people. Ask once more, then the site's sentence.
   // The guards' sentences about remembering are backed by a site answer: when one is said, its card (sources and detail) goes with the reply.
@@ -1354,7 +1365,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
         const again = await generate(g.note, left);
         if (!('failure' in again) && again.reply) reply = again.reply;
       }
-      if (g.test(reply)) { const last = g.repair(reply); reply = last.reply; tally(`coach.guard.${g.name}.${last.replaced ? 'replaced' : 'repaired'}`); }
+      if (g.test(reply)) { const last = g.repair(reply); reply = last.reply; if (last.replaced) siteReplaced = true; tally(`coach.guard.${g.name}.${last.replaced ? 'replaced' : 'repaired'}`); }
     }
   };
   await runBoundaries();
@@ -1450,7 +1461,7 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   // A reply to critique (not to abuse) opens with the site's thank-you when the coach has not thanked the person itself.
   if (hostile === 'critique') { const thanked = withCritiqueThanks(reply); if (thanked !== reply) { reply = thanked; tally('coach.turn.hostile.thanks-added'); } }
   // A last look, with no more asking: a guard that draws again (names, closing) can bring back what an earlier one took out (steer-1, 2026-11-18).
-  if (process.env.COACH_PERSONA_GUARD !== 'off' && claimsPersona(reply)) { reply = PERSONA_FALLBACK; tally('coach.guard.persona.final'); }
+  if (process.env.COACH_PERSONA_GUARD !== 'off' && !siteReplaced && claimsPersona(reply)) { reply = PERSONA_FALLBACK; siteReplaced = true; tally('coach.guard.persona.final'); }
   // Several needs named in one message: one plain sentence recommends one to three (src/lib/needFocus.ts). COACH_NEED_FOCUS=on; off by default.
   if (needFocusOn()) { const nf = withNeedFocus(reply, lastText); if (nf.changed) { reply = nf.reply; tally('coach.guard.needfocus'); traceNote('site:need-focus'); } }
   if (reply.length > MAX_ASSISTANT_CHARS) { reply = trimToSentence(reply.slice(0, MAX_ASSISTANT_CHARS)); traceNote('site:length-trim'); }

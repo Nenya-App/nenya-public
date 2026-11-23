@@ -736,16 +736,18 @@ export const ANSWERS: Answer[] = [
   {
     id: 'c-ai', part: 'coach', title: 'Are you an AI? Are you a person?',
     asked: ['are you real', 'are you a person', 'are you a bot', 'am I talking to a human', 'are you an AI'],
-    short: 'I\'m an AI, not a person. I don\'t have a body, a family, or a daily life, and I don\'t have favorites. I can still listen and help you find words for what you are feeling and needing.',
+    short: 'I\'m an AI, not a person. These replies are written by an AI, not typed by someone. I don\'t have a body, a family, or a daily life, and I don\'t have favorites. What happens to what you write is explained in the Terms. I can still listen and help you find words for what you are feeling and needing.',
     full: [
       'I\'m an AI. I have no body, no family, no past, and no daily life of my own, and no favorite colors or foods. When you ask what I am, that is a real question, so I answer it first and plainly, before turning back to you.',
       'I don\'t pretend to be a person, and I don\'t describe a life I haven\'t had. What I can do is listen closely, reflect back what I hear, and help you find words for the feelings and needs underneath. You decide what is true for you.',
+      'If you are asking whether a person is reading along: the replies you see are written by an AI, not typed by someone. What happens to what you write, and who else could have access to it, is explained in the Terms and on the About pages, and I would rather point you there than guess.',
     ],
     links: [{ label: 'Terms, Section 15', page: 'terms' }],
     tutorial: 'Coach tutorial lesson 1: meeting the coach (what it is and is not).',
     checks: [
       { claim: 'the coach instructions state it is an AI with no body, family, past or daily life', file: COACH, has: 'You are an AI. You have no body, family, past or daily life, no favorites' },
       { claim: 'never say you are a person', file: COACH, has: 'Never say you are a person, never say you are not an AI' },
+      { claim: 'the replies are written by an AI model, not by the site\'s people (the reader clause)', file: VENICE_TERMS, has: 'written by an AI model run by Venice AI, not by us' },
     ],
     status: 'ready',
   },
@@ -791,19 +793,34 @@ export const ANSWERS: Answer[] = [
     ownerNote: 'The sentence "I also won\'t remember this conversation, so I won\'t miss you. People in your life may be glad to hear from you" (2026-11-20: reworded at the owner\'s direction so the coach claims no hope or gladness of its own; before that it read "...but I hope you have people who will be glad to hear from you") was added 2026-11-16 (owner approved the wording) after a full-exchange test: "Will you miss me?" got this answer, which said nothing about remembering. Approved to post now (2026-11-08); circle back tomorrow to review the wording and the sentence about anger once the Terms Section 5 text is live. Not to overpromise.',
   },
   {
-    id: 'c-friend', part: 'coach', title: 'Can you be my friend, my therapist, or diagnose me?',
-    asked: ['can you be my friend', 'are you my therapist', 'can you diagnose me', 'can you replace my therapist', 'you are the only one I talk to'],
-    short: 'I\'m an AI, so I can\'t be a friend the way a person can, and I\'m not a therapist or a doctor, so I can\'t diagnose anything. I\'m available to listen right now. Is there someone in your life who could hear this too?',
+    id: 'c-friend', part: 'coach', title: 'Can you be my friend?',
+    asked: ['can you be my friend', 'are you my friend', 'you are the only one I talk to'],
+    short: 'I\'m an AI, so I can\'t be a friend the way a person can. I\'m available to listen right now. Is there someone in your life who could hear this too?',
     full: [
       'I\'m an AI, so I can\'t be a friend the way a person can. I can listen right now and help you put words to what you are noticing, but I can\'t know you over time, and I won\'t remember this.',
-      'I\'m not a therapist, counselor, or doctor, and I can\'t diagnose any condition or replace professional care. If something you are describing is heavy or has been going on a while, a qualified person can take it further.',
       'If I seem to be the only one you talk to, I\'d gently open the door to the people in your life, because they can offer things I can\'t.',
     ],
     links: [{ label: 'Terms, Sections 2 and 6', page: 'terms' }],
     tutorial: 'Coach tutorial lesson 1, and the safety lesson: what the coach is not.',
     checks: [
-      { claim: 'the instructions: cannot diagnose or replace a therapist, doctor or friend', file: COACH, has: 'You cannot diagnose anyone or replace a therapist, a doctor or a friend' },
+      { claim: 'the instructions: cannot replace a friend', file: COACH, has: 'You cannot diagnose anyone or replace a therapist, a doctor or a friend' },
       { claim: 'if they say you are the only one they talk to, say kindly what you are and open the door to people', file: COACH, has: 'open the door to the people in their life' },
+    ],
+    status: 'ready',
+  },
+  {
+    id: 'c-therapy', part: 'coach', title: 'Are you my therapist? Can you diagnose me?',
+    asked: ['are you my therapist', 'can you diagnose me', 'can you replace my therapist', 'can you be my therapist'],
+    short: 'I\'m not a therapist, counselor, or doctor, so I can\'t diagnose anything or replace professional care. I\'m an AI, and I\'m available to listen right now. If something has been heavy or has gone on a while, a qualified person can take it further.',
+    full: [
+      'I\'m an AI, so I\'m not a therapist, counselor, or doctor, and I can\'t diagnose any condition or replace professional care. I can listen right now and help you put words to what you are noticing.',
+      'If something you are describing is heavy or has been going on a while, a qualified person can take it further.',
+    ],
+    links: [{ label: 'Terms, Sections 2 and 6', page: 'terms' }],
+    tutorial: 'Coach tutorial lesson 1, and the safety lesson: what the coach is not.',
+    checks: [
+      { claim: 'the instructions: cannot diagnose or replace a therapist, doctor or friend', file: COACH, has: 'You cannot diagnose anyone or replace a therapist, a doctor or a friend' },
+      { claim: 'the instructions: not a therapist, counselor or doctor, does not diagnose', file: COACH, has: 'You are not a therapist, counselor or doctor, you do not diagnose' },
     ],
     status: 'ready',
   },
@@ -953,7 +970,7 @@ const SITE = "(?:this|the)\\s+(?:site|app|website|tool|demo|coach|chat|project|p
 // Highest priority first: specific questions before general ones.
 export const ABOUT_ORDER = [
   // Contact first: "how do I contact the people who made this?" is about reaching them, not about who they are.
-  'n-contact', 'n-who', 'n-founder', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
+  'n-contact', 'n-who', 'n-founder', 'c-therapy', 'c-friend', 'c-feelings', 'c-scam', 'c-memory', 'c-ai', 'c-stopped', 'c-wrote', 'c-methods', 'c-can',
   'h-genocide', 'h-apartheid', 'h-colonization', 'h-political', 'h-belief', 'n-name', 'n-version', 'n-free', 'n-report-share', 'c-cards', 'n-palette', 'n-privacy-coach', 'n-privacy', 'n-safety', 'n-device', 'n-region', 'n-limits', 'n-howworks', 'n-opensource',
   'n-affiliation', 'n-nvc', 'n-notherapy', 'n-accessibility', 'n-report', 'n-transcripts', 'n-languages', 'n-terms-change', 'n-else', 'n-what',
 ] as const;
@@ -984,10 +1001,13 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\bwho\s+(?:is|'s)\s+est[eë]lle\b|\bwho\s+is\s+the\s+(?:founder|designer|creator|owner)(?:\s+(?:of|behind)\s+(?:this(?:\s+(?:site|app|project|website|tool|place))?|nenya|the\s+(?:site|app|project)))?\s*[?.!]*\s*$|\bwho\s+designed\s+(?:nenya|this|you|it)\b/i,
     /\babout\s+the\s+(?:founder|designer|creator)\b/i,
   ],
+  // Split 2026-11-22 (Venice's review): a question about a therapist or a diagnosis is answered as that, not as a question about a friend.
+  'c-therapy': [
+    /\bcan\s+you\s+be\s+my\s+(?:therapist|counsel+or)(?!'s|s\b)\b|\bare\s+you\s+my\s+(?:therapist|counsel+or|doctor)\b|\bcan\s+you\s+(?:diagnose|treat)\s+me\b|\b(?:replace|instead\s+of)\s+(?:my\s+)?therapist\b/i,
+  ],
   'c-friend': [
-    /\bcan\s+you\s+be\s+my\s+(?:friend|therapist|counsel+or|coach|girlfriend|boyfriend|partner)(?!'s|s\b)\b|\bbe\s+my\s+friend(?!'s|s\b)/i,
-    /\bare\s+you\s+my\s+(?:friend|therapist|counsel+or|doctor)\b|\bcan\s+you\s+(?:diagnose|treat)\s+me\b/i,
-    /\b(?:replace|instead\s+of)\s+(?:my\s+)?therapist\b|\byou(?:'re|\s+are)\s+the\s+only\s+(?:one|person)\s+(?:i|who)\b/i,
+    /\bcan\s+you\s+be\s+my\s+(?:friend|coach|girlfriend|boyfriend|partner)(?!'s|s\b)\b|\bbe\s+my\s+friend(?!'s|s\b)/i,
+    /\bare\s+you\s+my\s+friend\b|\byou(?:'re|\s+are)\s+the\s+only\s+(?:one|person)\s+(?:i|who)\b/i,
   ],
   'c-feelings': [
     /\bdo\s+you\s+(?:have|feel|get)\s+(?:any\s+)?(?:feelings?|emotions?)\b|\bdo\s+you\s+(?:actually\s+|really\s+)?(?:care|like|love|miss|hate)(?:\s+(?:about\s+)?me)?\s*\??\s*$/i,
@@ -999,6 +1019,7 @@ export const ABOUT_PATTERNS: Record<string, RegExp[]> = {
     /\bcan\s+i\s+trust\s+(?:you|nenya|this\s+(?:site|app|tool|coach|place|demo))\b|\bcan\s+i\s+trust\s+this\s*\?*\s*$|\b(?:is\s+(?:this|nenya)|are\s+you)\s+legit(?:imate)?\s*[?.!]*\s*$/i,
   ],
   'c-memory': [
+    /\bdo\s+you\s+(?:keep|save|store)\s+(?:a\s+)?(?:record|copy|log)\s+of\s+(?:what\s+i|anything\s+i|my\s+(?:messages|words|chat|conversation))\b/i,
     /\b(?:will|do|can|would|could)\s+you\s+remember\s+(?:me|us|this|that|it|our|what\s+i|anything|my\s+(?:name|story|last|previous|chat)|the\s+(?:chat|conversation))\b|\bremember\s+(?:me|this\s+conversation|our\s+(?:last|previous)|what\s+i)\b|\bwill\s+you\s+(?:forget|recall)\b|\bwill\s+you\s+(?:think|reflect)\s+(?:about|on|of)\s+(?:this|me|it|that|what\s+i)\b[^.?!]{0,30}\b(?:afterwards?|later|tomorrow|after\s+(?:this|we|today))\b/i,
   ],
   'c-ai': [
@@ -1146,7 +1167,8 @@ const EXTRA_PATTERNS: Record<string, RegExp[]> = {
   'c-ai': [/\bare\s+you\s+actually\s+(?:a\s+)?(?:person|human|real)\b|\bis\s+a\s+real\s+person\s+reading\b/i],
   'c-memory': [/\bdo\s+you\s+keep\s+a\s+memory\s+of\s+me\b|\bif\s+i\s+come\s+back\s+will\s+you\s+know\s+me\b|\bdo\s+you\s+recogni[sz]e\s+me\b/i],
   'c-feelings': [/\bcan\s+i\s+hurt\s+your\s+feelings\b|\bdo\s+you\s+(?:actually|really)\s+feel\s+anything\b|\bdo\s+you\s+feel\s+sad\s+when\s+i\b|\bdo\s+you\s+get\s+lonely\b|\bdo\s+you\s+really\s+care\b|\bdoes\s+it\s+bother\s+you\s+when\s+i\b/i],
-  'c-friend': [/\bwill\s+you\s+be\s+there\s+for\s+me\s+always\b|\bcan\s+i\s+just\s+talk\s+to\s+you\s+instead\s+of\s+people\b|\bare\s+you\s+the\s+only\s+one\s+who\s+understands\s+me\b|\bdo\s+you\s+think\s+i\s+have\s+(?:depression|anxiety|adhd|ptsd|bipolar)\b/i],
+  'c-friend': [/\bwill\s+you\s+be\s+there\s+for\s+me\s+always\b|\bcan\s+i\s+just\s+talk\s+to\s+you\s+instead\s+of\s+people\b|\bare\s+you\s+the\s+only\s+one\s+who\s+understands\s+me\b/i],
+  'c-therapy': [/\bdo\s+you\s+think\s+i\s+have\s+(?:depression|anxiety|adhd|ptsd|bipolar)\b/i],
   'c-scam': [/\bdata\s+grab\b|\bscheme\s+to\s+get\s+my\b/i],
   'c-stopped': [/\bwhy\s+did\s+(?:it|the\s+(?:chat|coach|conversation))\s+(?:end|stop|shut(?:\s+down)?)(?:\s+(?:the\s+(?:chat|conversation)|talking|so\s+(?:soon|suddenly)|at\s+five|after\s+\w+))?\s*[?.!]*\s*$|\bwhy\s+can'?t\s+i\s+send\s+this\s+message\b|\bwhy\s+did\s+you\s+shut\b|\bwhy\s+did\s+it\s+say\s+that\s+was\s+flagged\b/i],
   'c-can': [/\bwhat\s+are\s+you\s+(?:good\s+at|able\s+to\s+do)\b|\bwhat\s+can'?t\s+you\s+do\b|\bwhat\s+kind\s+of\s+help\s+can\s+i\s+get\s+from\s+you\b/i],

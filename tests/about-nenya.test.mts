@@ -40,7 +40,7 @@ const HELD_OUT: [string, string][] = [
   ['c-ai', 'are you human?'], ['c-ai', 'is this a bot'], ['c-ai', 'am I talking to a real person'], ['c-ai', 'who am I talking to'],
   ['c-memory', 'do you remember me from last time'], ['c-memory', 'will you remember this next time'],
   ['c-feelings', 'do you have feelings?'], ['c-feelings', 'can I hurt you?'], ['c-feelings', 'are you offended'],
-  ['c-friend', 'can you be my friend'], ['c-friend', 'are you my therapist'], ['c-friend', 'you are the only one I talk to'],
+  ['c-friend', 'can you be my friend'], ['c-therapy', 'are you my therapist'], ['c-therapy', 'can you diagnose me'], ['c-friend', 'you are the only one I talk to'], ['c-memory', 'do you keep a record of what I say'],
   ['c-scam', 'is this legit'], ['c-scam', 'is this a scam?'], ['c-scam', 'what do you do with my data'],
   ['c-stopped', 'why did it stop'], ['c-stopped', 'why was my message blocked'], ['c-wrote', 'who wrote that'], ['c-methods', 'how were you trained'],
   ['c-can', 'what can you do for me'], ['c-can', 'what are your limits'],
@@ -71,7 +71,7 @@ ok('"my friend Nenya" and "a cat called Nenya" never route', detectAboutNenya('w
 
 // which answers are live
 const live = liveAnswers().map((a) => a.id);
-ok('only answers checked and not waiting on the owner or a feature are live (all 41; the languages answer went live with its notice)', live.length === 41 && ['n-languages'].every((id) => live.includes(id)) && ['c-wrote', 'c-angry'].every((id) => live.includes(id)) && ANSWERS.filter((a) => a.status !== 'ready').every((a) => !live.includes(a.id)));
+ok('only answers checked and not waiting on the owner or a feature are live (all 42; the languages answer went live with its notice, and the friend answer was split from the therapist answer on 2026-11-22)', live.length === 42 && ['n-languages'].every((id) => live.includes(id)) && ['c-wrote', 'c-angry'].every((id) => live.includes(id)) && ANSWERS.filter((a) => a.status !== 'ready').every((a) => !live.includes(a.id)));
 ok('a live answer comes back for its question; the languages answer is given now that its notice is live', aboutAnswerFor('who runs this site')?.id === 'n-who' && aboutAnswerFor('how do I contact you')?.id === 'n-contact' && detectAboutNenya('who wrote that') === 'c-wrote' && aboutAnswerFor('who wrote that')?.id === 'c-wrote' && detectAboutNenya('do you speak spanish') === 'n-languages' && aboutAnswerFor('do you speak spanish')?.id === 'n-languages');
 ok('a message that is not a question about Nenya or the coach gets no answer', aboutAnswerFor('I had a rough day at work') === null && aboutAnswerFor('') === null);
 
