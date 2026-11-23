@@ -7,6 +7,15 @@ import { ScrollIndicator } from '../ScrollIndicator';
 import { AppFooter } from '../AppFooter';
 import { AboutPageLink } from '../AboutPageLink';
 import { ExternalLink } from '../ExternalLink';
+import { Cite, ReferenceList, type AboutReference } from './AboutReferences';
+
+const REFS: AboutReference[] = [
+  {"n": 1, "text": "Abd-Alrazaq A; Rababeh A; Alajlani M; Bewick B; Househ M (2020). Effectiveness and Safety of Using Chatbots to Improve Mental Health: Systematic Review and Meta-Analysis. Journal of Medical Internet Research.", "href": "https://doi.org/10.2196/16021", "linkLabel": "Free full text"},
+  {"n": 2, "text": "Li H; Zhang R; Lee Y; Kraut R; Mohr D (2023). Systematic review and meta-analysis of AI-based conversational agents for promoting mental health and well-being. npj Digital Medicine.", "href": "https://doi.org/10.1038/s41746-023-00979-5", "linkLabel": "Free full text"},
+  {"n": 3, "text": "Moore J; Grabb D; Agnew W; Klyman K; Chancellor S; Ong D; et al. (2025). Expressing stigma and inappropriate responses prevents LLMs from safely replacing mental health providers. Proceedings of the 2025 ACM Conference on Fairness, Accountability, and Transparency.", "href": "https://doi.org/10.1145/3715275.3732039", "linkLabel": "Free full text"},
+];
+
+const PAGE = 'about-coach';
 
 // "About the Coach": what the coach is, what it is built on, how its guidance was made, what is sent, what it is not, and how to ask for removal.
 // The credit sentence is approved by the person it names, in writing, and is used word for word. Her wording is "source material for identifying
@@ -38,10 +47,10 @@ export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => vo
         <Card className="space-y-4 p-6 leading-relaxed">
           <h2 className="text-xl">What the coach is</h2>
           <p>
-            The coach is an AI. It is not a person. It is optional: the breathing tool and the six gateways work without it.
+            The coach is an AI. It is not a person. It is optional: the breathing tool and the six lenses work without it.
           </p>
           <p>
-            A conversation is short. You and the coach take up to five exchanges. Then it closes, and you can read what was said or start again.
+            A conversation is short. You and the coach take up to five exchanges. Then it closes, and you can read what was said. You can start again after a rest of 6 hours, within daily limits.
           </p>
         </Card>
 
@@ -50,10 +59,10 @@ export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => vo
           <p>Three things shape how the coach answers.</p>
           <ul className="list-disc space-y-2 pl-5">
             <li>
-              <strong>Nonviolent Communication (NVC).</strong> It was developed by Dr. Marshall Rosenberg. The coach looks for what happened, feelings, needs, and requests. Its feeling and need categories follow the Feelings and Needs Inventory of the Center for Nonviolent Communication, which is credited on the {goto('nvc-method')}, Our NVC+ Method.
+              <strong>Nonviolent Communication (NVC).</strong> It was developed by Dr. Marshall Rosenberg. The coach looks for what happened, feelings, needs, and requests. Its feeling and need categories were informed by the structure of the Feelings and Needs Inventory of the Center for Nonviolent Communication, which is credited on the {goto('nvc-method')}, Our Approach.
             </li>
             <li>
-              <strong>The owner&apos;s own lens framework.</strong> Nenya&apos;s owner developed a way of looking at a situation through different lenses. The coach uses it to ask what else might be true.
+              <strong>The owner&apos;s own lens framework.</strong> Nenya&apos;s owner developed a way of looking at a situation through different lenses. It is our own design, not a tested instrument. The coach uses it to ask what else might be true.
             </li>
             <li>
               <strong>Patterns from source material.</strong> The people who made Nenya studied how some helpers talk with people, to identify patterns of relational coaching. One source of that material is credited here, in words approved by the person named:
@@ -86,6 +95,9 @@ export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => vo
             The coach runs on a model hosted by an outside company. With each conversation, the guidance text is sent along with what you write. The raw calls are not sent. They are not part of Nenya at all.
           </p>
           <p>
+            At the fifth exchange, the coach&apos;s last reply may include a short summary. To write it, our server sends the conversation (your messages with identifiers replaced, and the coach&apos;s replies) to the model host once more, in the same way as a message. We do not store it. If any message was flagged by the checks, or your last message was critical of the coach or abusive toward it, no summary is written.
+          </p>
+          <p>
             You can read about what our host and the model host can see on the {goto('terms')} and on the {goto('coach-region')}, Where the Coach Is Open.
           </p>
         </Card>
@@ -93,7 +105,7 @@ export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => vo
         <Card className="space-y-4 p-6 leading-relaxed">
           <h2 className="text-xl">What the coach is not</h2>
           <ul className="list-disc space-y-2 pl-5">
-            <li>It is not therapy, and it is not a substitute for a therapist, a doctor, or a trained NVC teacher.</li>
+            <li>It is not therapy, and it is not a substitute for a therapist, a doctor, or a trained NVC teacher. Studies of similar chatbots find some short-term help with low mood in small trials, and also clear risks. The evidence is not strong enough for a chatbot to replace a clinician <Cite pageId={PAGE} n={[1, 2, 3]} />. Nobody has tested this coach.</li>
             <li>It is not a person, and it does not have a life of its own.</li>
             <li>Nobody named on this page is behind Nenya. Nobody credited here reviewed, supervised, or partnered with it. A credit for a source does not mean they stand behind the coach.</li>
           </ul>
@@ -128,6 +140,10 @@ export default function AboutCoach({ onBack, onOpenSection }: { onBack: () => vo
               <ExternalLinkIcon className="size-4" aria-hidden="true" />
             </ExternalLink>
           </p>
+        </Card>
+
+        <Card className="p-6 leading-relaxed">
+          <ReferenceList pageId={PAGE} items={REFS} />
         </Card>
 
         <ReturnToTop onClick={scrollToTop} />

@@ -3,6 +3,16 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { AppFooter } from '../AppFooter';
+import { Cite, ReferenceList, type AboutReference } from './AboutReferences';
+
+const REFS: AboutReference[] = [
+  {"n": 1, "text": "Brendel J; Cremers C; Jackson D; Zhao M (2021). The Provable Security of Ed25519: Theory and Practice. 2021 IEEE Symposium on Security and Privacy (SP).", "href": "https://doi.org/10.1109/sp40001.2021.00042", "linkLabel": "Free full text"},
+  {"n": 2, "text": "Bernstein D; Duif N; Lange T; Schwabe P; Yang B (2012). High-speed high-security signatures. Journal of Cryptographic Engineering.", "href": "https://doi.org/10.1007/s13389-012-0027-1", "linkLabel": "Free full text"},
+  {"n": 3, "text": "National Institute of Standards and Technology (2023). FIPS 186-5: Digital Signature Standard (DSS). NIST. Read 22 November 2026.", "href": "https://csrc.nist.gov/pubs/fips/186-5/final", "linkLabel": "Web page"},
+  {"n": 4, "text": "Josefsson, S., & Liusvaara, I. (2017). RFC 8032: Edwards-Curve Digital Signature Algorithm (EdDSA). IETF. Read 22 November 2026.", "href": "https://datatracker.ietf.org/doc/html/rfc8032", "linkLabel": "Web page"},
+];
+
+const PAGE = 'witnessed-conversations';
 
 // "Witnessed conversations": conversations with the Nenya coach that people chose to share, without their names (docs/transcript-consent-scope.md). Each one was
 // anonymized by the site and then read and edited by a person at Nenya before it was shown. It is read live from /api/witnessed, never cached, so a copy that
@@ -42,8 +52,7 @@ export default function WitnessedConversations({ onBack }: { onBack: () => void 
       <div className="mx-auto max-w-3xl space-y-8 px-6 py-10">
         <section className="space-y-3 text-sm leading-relaxed md:text-base">
           <p>
-            A window of openness and accountability. These are conversations with Nenya&rsquo;s AI coach that the people who had them chose to share, without their names. Nenya signed
-            each conversation when it happened, which is what &ldquo;witnessed&rdquo; means here: the site vouches that it took place as written, before anything was removed.
+            Our position: this page is meant as a window of openness and accountability. These are conversations with Nenya&rsquo;s AI coach that the people who had them chose to share, without their names. Here, &ldquo;witnessed&rdquo; means that Nenya&rsquo;s server signed the conversation when the person asked for a signed copy. The signature shows that the text matches an exchange this server produced, and the date it was signed <Cite pageId={PAGE} n={[1, 2, 3, 4]} />. It does not show who typed the person&rsquo;s side, and it cannot check the edited copy shown here. The signature is not an identity check.
           </p>
           <p>
             Before a conversation appears here, the site removes names, emails, phone numbers and addresses, and then a person at Nenya reads and edits it by hand. Software cannot
@@ -51,9 +60,8 @@ export default function WitnessedConversations({ onBack }: { onBack: () => void 
             A conversation in which our safety check stopped a message is never offered for this page.
           </p>
           <p>
-            Because names were taken out, a stranger cannot check the signature on what you read here. Each one carries a short fingerprint that matches the fingerprint of the
-            signed file its owner holds. Each message says who wrote it: the person, the AI, or the site (the greeting, the safety notices and a few pre-written answers are written by
-            us, not by the AI).
+            Names were taken out and a person edited the text, so a stranger cannot check the signature on what you read here. Each one carries a short fingerprint that matches the fingerprint of the
+            signed file its owner holds. The fingerprint links this copy to that file. It does not prove that the text here is word for word the same. Each message says who wrote it: the person, the AI, or the site. The site wrote the greeting, the closing note, the safety notices and the pre-written answers, not the AI.
           </p>
           <p className="text-muted-foreground">
             The coach is an AI. It is not therapy and it is not for emergencies. In the US, call or text 988.
@@ -97,9 +105,13 @@ export default function WitnessedConversations({ onBack }: { onBack: () => void 
           </p>
           <p>
             <strong className="text-foreground">Adding yours.</strong> After a conversation with the coach, you can download a signed copy and send it to us with the choice to show it. You choose what is
-            shown and for how long, and nothing is shown without a person reading it first.
+            shown and for how long, and nothing is shown without a person reading it first. If you send us a conversation, we keep it for the time you choose, even if we never show it. You can take it back at{' '}
+            <a className="underline underline-offset-4" href="/my-transcript/">nenya.biz/my-transcript</a>.
           </p>
         </section>
+
+        <h2 className="sr-only">Sources</h2>
+        <ReferenceList pageId={PAGE} items={REFS} />
       </div>
       <AppFooter />
     </div>

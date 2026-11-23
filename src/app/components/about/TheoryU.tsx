@@ -5,6 +5,17 @@ import { useIsMobile } from '../useIsMobile';
 import { BloomInstant, BloomOnScroll } from '../BloomOnScroll';
 import { ReturnToTop } from '../ReturnToTop';
 import React from 'react';
+import { Cite, ReferenceList, type AboutReference } from './AboutReferences';
+
+const REFS: AboutReference[] = [
+  {"n": 1, "text": "Kühl S (2020). The Blind Spots in Theory U: The Reconstruction of a (Change-) Management Fashion. Journal of Change Management.", "href": "https://doi.org/10.1080/14697017.2020.1744883", "linkLabel": "Free full text"},
+  {"n": 2, "text": "Heller P (2018). The Philosophy of Theory U: A Critical Examination. Philosophy of Management.", "href": "https://doi.org/10.1007/s40926-018-0087-0", "linkLabel": "Free full text"},
+  {"n": 3, "text": "Calia R; Oliveira M; Demarzo M (2018). Mindfulness and Theory U for the professional sense of purpose. RAM. Revista de Administração Mackenzie.", "href": "https://doi.org/10.1590/1678-6971/eramg180021", "linkLabel": "Free full text"},
+  {"n": 4, "text": "Scharmer O (2020). Social Systems as If People Mattered Response to the Kühl Critique of Theory U. Journal of Change Management.", "href": "https://doi.org/10.1080/14697017.2020.1744884", "linkLabel": "Publisher page (may need payment)"},
+  {"n": 5, "text": "Presencing Institute (2026). Home page. presencing.org. Read 22 November 2026.", "href": "https://www.presencing.org/", "linkLabel": "Web page"},
+];
+
+const PAGE = 'theory-u';
 
 interface TheoryUProps {
   onBack: () => void;
@@ -40,7 +51,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
               Theory U
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Leading from the emerging future through presencing
+              A framework by Otto Scharmer, used here as an analogy
             </p>
           </BloomInstant>
 
@@ -48,10 +59,13 @@ export default function TheoryU({ onBack }: TheoryUProps) {
             <Card className="p-6 md:p-8 bg-muted/30 border-border">
               <div className="space-y-4 text-foreground leading-relaxed">
                 <p>
-                  <strong className="text-nenya-gold-text dark:text-nenya-gold-light">Theory U</strong>, developed by Otto Scharmer at MIT, is a framework for transformational change that emphasizes <em>presencing</em>—connecting to your deepest source of knowing and acting from that place.
+                  <strong className="text-nenya-gold-text dark:text-nenya-gold-light">Theory U</strong> is a framework for change made by Otto Scharmer, who teaches at MIT. Its main idea is <em>presencing</em>. Scharmer describes it as reaching a deeper kind of knowing and acting from there.
                 </p>
                 <p>
-                  The U-shaped journey moves through three phases: <strong>sensing</strong> (downloading and observing), <strong>presencing</strong> (connecting to source at the bottom of the U), and <strong>realizing</strong> (prototyping and performing).
+                  Here we use a simple version of the U with three parts: <strong>sensing</strong>, <strong>presencing</strong>, and <strong>realizing</strong>. Scharmer&rsquo;s own books go into more detail.
+                </p>
+                <p>
+                  This page is an analogy. It is our own design, not a tested method, and not part of Scharmer&rsquo;s work. Theory U has had very little peer-reviewed testing. In a November 2026 search we found no controlled trial of it, a few small studies of one course or one person, and scholarly critiques <Cite pageId={PAGE} n={[1, 2, 3]} />. Scharmer has replied to one of these critiques and disagrees with it <Cite pageId={PAGE} n={4} />.
                 </p>
               </div>
             </Card>
@@ -59,7 +73,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
 
           <BloomOnScroll className="space-y-6">
             <h2 className="text-2xl md:text-3xl text-nenya-gold-text dark:text-nenya-gold-light">
-              The U Journey in Nenya
+              How Nenya fits the U (an analogy)
             </h2>
             
             <div className="space-y-4">
@@ -73,7 +87,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
                       Descending: Sensing & Observing
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      The lenses (color, sound, touch and the rest) guide you inward, one at a time, in any order you like. You begin by observing your current emotional state without judgment—suspending habitual patterns of thought.
+                      The lenses (color, sound, touch and the rest) invite you to look inward through different senses. In Scharmer&rsquo;s picture, this is the sensing part: noticing what is there without trying to fix it.
                     </p>
                   </div>
                 </div>
@@ -89,7 +103,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
                       Presencing: Connecting to Source
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Through the NVC+ practice, you connect with your authentic feelings and needs. This is the "presencing" moment—where you access your deepest truth beneath reactive patterns.
+                      In our approach, you put words to the feelings and needs you notice. We use this as our version of the presencing step. We do not claim it reaches a deeper truth. It is a way to find words for what is happening.
                     </p>
                   </div>
                 </div>
@@ -105,7 +119,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
                       Ascending: Realizing & Performing
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      From this place of clarity, you can identify actionable requests and strategies that align with your authentic needs—leading from your emerging future rather than your habitual past.
+                      In the realizing step you think about a small request to make or a small thing to try. Nenya does not follow up, so we cannot know whether this happens.
                     </p>
                   </div>
                 </div>
@@ -117,13 +131,13 @@ export default function TheoryU({ onBack }: TheoryUProps) {
             <Card className="p-6 md:p-8 bg-muted/30 border-border">
               <div className="space-y-4 text-foreground leading-relaxed">
                 <h3 className="text-xl text-nenya-gold-text dark:text-nenya-gold-light">
-                  Why Theory U Matters for Evolved Leadership
+                  Why we use Theory U
                 </h3>
                 <p>
-                  In a world of accelerating complexity, leaders can no longer rely solely on past experience. Theory U teaches us to sense emerging futures and act from a place of deeper knowing—which requires emotional literacy and connection to our authentic needs.
+                  Scharmer says that leaders in new situations cannot rely only on what worked before. He proposes that leaders pause, sense what is happening, and act from a deeper kind of knowing. We think this takes some emotional skill, such as naming what you feel and need. That is our view, not a research finding.
                 </p>
                 <p>
-                  Nenya provides a daily practice space for this inner work, making the abstract concepts of presencing tangible and accessible.
+                  Nenya is a place to practice looking at your own feelings and needs. You can use it as often as you like, and it has no accounts. We have not tested whether it makes presencing easier to grasp.
                 </p>
               </div>
             </Card>
@@ -136,7 +150,7 @@ export default function TheoryU({ onBack }: TheoryUProps) {
                   Learn More About Theory U
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Theory U is taught at the Presencing Institute, co-founded by Otto Scharmer. It's used by leaders, educators, and change agents worldwide to navigate complex challenges through deeper listening and collective awareness.
+                  The Presencing Institute, co-founded by Scharmer, teaches Theory U. The Institute says it has a network of over 65,000 people and that the approach is used worldwide. We could not check these figures <Cite pageId={PAGE} n={5} />.
                 </p>
                 <a 
                   href="https://www.presencing.org/"
@@ -144,9 +158,15 @@ export default function TheoryU({ onBack }: TheoryUProps) {
                   rel="noopener noreferrer"
                   className="inline-block text-purple-700 dark:text-purple-300 hover:underline"
                 >
-                  Explore Theory U at the Presencing Institute →
+                  Explore Theory U at the Presencing Institute →<span className="sr-only"> (opens an outside site in a new tab)</span>
                 </a>
               </div>
+            </Card>
+          </BloomOnScroll>
+
+          <BloomOnScroll>
+            <Card className="p-6 md:p-8 bg-muted/30 border-border">
+              <ReferenceList pageId={PAGE} items={REFS} />
             </Card>
           </BloomOnScroll>
 

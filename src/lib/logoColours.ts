@@ -19,6 +19,9 @@
 import { displayNameFor, PALETTE_DISPLAY_NAMES } from './paletteNames.ts';
 
 export const COLOUR_ORIGINAL = 'original';
+
+/** Shown under the colour choices while the visitor has kept no palette of their own: where to make one (owner, 2026-11-22). */
+export const MAKE_YOUR_OWN_NOTE = 'To make your own colours, build a palette in the Sight Lens and keep it. It will show up here for the rest of this visit.';
 export const SAVED_CHOICES = ['mine-1', 'mine-2', 'mine-both'] as const;
 export type SavedChoice = (typeof SAVED_CHOICES)[number];
 

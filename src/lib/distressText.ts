@@ -63,10 +63,11 @@ export function selfInjuryNote(kind?: string): string {
 
 export const distressTextOn = (env: Record<string, string | undefined> = process.env): boolean => env.COACH_DISTRESS_TEXT === 'on';
 
-/** The coach's reply with the distress sentence added after it, the reply trimmed (at a whole sentence) so the two fit in `maxChars`. */
+/** The coach's reply with the distress sentence added after it (always), the reply trimmed (at a whole sentence) so the two fit in `maxChars`. */
 export function withDistressText(category: FlagCategory, reply: string, maxChars: number, kind?: string): string {
   const add = (category === 'self-injury' && kind && SELF_INJURY_APPEND[kind]) || DISTRESS_APPEND[category];
-  if (/\b988\b/.test(reply) && /\b(?:call|text)\b/i.test(reply)) return reply; // it already names the line
+  // The sentence is ALWAYS added (the owner's decision, 2026-11-22). It used to be skipped when the reply already said "call or text 988", which left a reply that named the line but not a person and not
+  // the free numbers on the page; the sentence is the site's, not the model's, so it does not depend on what the model happened to say.
   const room = maxChars - add.length - 2;
   let body = reply.trim();
   if (body.length > room) {

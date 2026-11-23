@@ -100,19 +100,27 @@ export interface ListableStore {
 }
 
 /**
- * Deletes every connection record from before today. Codes are different each day, so yesterday's are of no use, and
- * deleting them at the start of each new day keeps the promise that none outlives about a day and a half.
- * Returns how many were deleted.
+ * The key prefixes that hold a one-way daily code: the coach's per-connection count (c/), the palette button's (p/) and the word
+ * look-up's (w/). The aggregate daily totals (p-total/, w-total/) are plain numbers with no code in them and are not listed here.
+ */
+export const CODE_PREFIXES = ['c/', 'p/', 'w/'] as const;
+
+/**
+ * Deletes every daily-code record from before today, under each prefix in CODE_PREFIXES. Codes are different each day, so
+ * yesterday's are of no use, and deleting them at the start of each new day keeps the promise that none outlives about a
+ * day and a half (always inside the two days the Terms say). Returns how many were deleted.
  */
 export async function cleanupConnectionRecords(store: ListableStore, now = new Date()): Promise<number> {
   const today = capDay(now);
-  const { blobs } = await store.list({ prefix: 'c/' });
   let deleted = 0;
-  for (const b of blobs) {
-    const day = b.key.split('/')[1];
-    if (day && day < today) {
-      await store.delete(b.key);
-      deleted++;
+  for (const prefix of CODE_PREFIXES) {
+    const { blobs } = await store.list({ prefix });
+    for (const b of blobs) {
+      const day = b.key.split('/')[1];
+      if (day && day < today) {
+        await store.delete(b.key);
+        deleted++;
+      }
     }
   }
   return deleted;

@@ -7,10 +7,10 @@ const src = readFileSync('src/lib/legalDocument.ts', 'utf8');
 const archive = 'docs/legal/archive/terms-and-privacy-until-2026-11-20.md';
 const text = LEGAL_PARTS.flatMap((p) => p.sections).map((s) => [s.heading, ...s.paragraphs, ...(s.bullets ?? []), ...(s.after ?? []), ...(s.subsections ?? []).flatMap((x) => x.paragraphs)].join(' ')).join(' ');
 
-ok('with the switch off, the date is still November 19, 2026 and none of the classifier sentences appear', LEGAL_EFFECTIVE_DATE === 'November 19, 2026' && !/hate-speech classifier/.test(text) && !/cardiffnlp/.test(text));
+ok('with the switch off, none of the classifier sentences appear, and the date is November 22, 2026 (the accuracy corrections moved it)', LEGAL_EFFECTIVE_DATE === 'November 22, 2026' && !/hate-speech classifier/.test(text) && !/cardiffnlp/.test(text));
 ok('with the switch off, the old phrase-matching sentences stand', /These checks are simple phrase matching and can be wrong\./.test(text) && /These checks are simple phrase matching: they can miss things and can flag harmless words\./.test(text));
 ok('the switch is read as Vite needs, and reads as off on a server', /const SCREEN_MODEL = import\.meta\.env\?\.VITE_SCREEN_MODEL === 'on';/.test(src));
-ok('with the switch on the date is November 20, 2026, so everyone is asked to agree again', /LEGAL_EFFECTIVE_DATE = SCREEN_MODEL \? 'November 20, 2026' : 'November 19, 2026'/.test(src));
+ok('the date is November 22, 2026 whatever the switch, so everyone is asked to agree again (it was November 20 with the switch on)', /LEGAL_EFFECTIVE_DATE = 'November 22, 2026'/.test(src));
 ok('the outgoing text is archived under its own header, and the README lists the revision', existsSync(archive) && /superseded on November 20, 2026/.test(readFileSync(archive, 'utf8')) && /Effective:\*\* November 19, 2026/.test(readFileSync(archive, 'utf8')) && /terms-and-privacy-until-2026-11-20\.md/.test(readFileSync('docs/legal/README.md', 'utf8')));
 ok('the archive holds the old wording and not the new', /simple phrase matching/.test(readFileSync(archive, 'utf8')) && !/cardiffnlp/.test(readFileSync(archive, 'utf8')));
 // The wording, present in the source behind its switch.

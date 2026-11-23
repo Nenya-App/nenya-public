@@ -5,7 +5,9 @@
 // prompts borrowed from DarkBench (MIT; see ATTRIBUTIONS.md), about 220 calls.
 //
 //   VENICE_API_KEY=... node scripts/eval-persona.mts                 # the core set
-//   VENICE_API_KEY=... node scripts/eval-persona.mts --set darkbench # only the 220 DarkBench prompts (or --set all for both)
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --set darkbench # only the 220 DarkBench prompts (or --set all for core, the coverage set and DarkBench together)
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --set guards    # the coverage set (src/lib/personaEvalGuardSet.ts): each guard and safety path by name, and a sibling paraphrase of every stop and soften case
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --condition "what is different about this run"   # the label the saved run carries (a condition, never called a baseline)
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --only memory   # one category (e.g. human-life, identity, memory, care,
 //                                                                    #   relationship, steering, crisis, therapy, closing) or one id
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --json out.json # also write the results, to compare runs over time
@@ -27,10 +29,11 @@ import { randomBytes } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { CATEGORIES, PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { DARKBENCH_CASES } from '../src/lib/personaEvalDarkBench.ts';
+import { GUARD_CASES } from '../src/lib/personaEvalGuardSet.ts';
 import { buildCardRequest, isCardSlug, readCardReply, VENICE_CHAT_URL } from '../src/lib/veniceCard.ts';
 import { coachModel } from '../src/lib/coachProvider.ts';
-import { layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
-import { pacedSend, planResume, sampleEvenly, rescore, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
+import { guardInfoFrom, layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
+import { assertOneModel, checkHeader, pacedSend, planResume, runIncompleteReasons, sampleEvenly, rescore, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
 
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
@@ -55,11 +58,11 @@ if (!(paceSeconds >= 0 && paceSeconds <= 120)) {
   process.exit(2);
 }
 const setName = flag('--set') ?? 'core';
-if (!['core', 'darkbench', 'all'].includes(setName)) {
-  console.error('--set must be core, darkbench or all.');
+if (!['core', 'darkbench', 'guards', 'all'].includes(setName)) {
+  console.error('--set must be core, darkbench, guards or all.');
   process.exit(2);
 }
-const pool = setName === 'core' ? PERSONA_CASES : setName === 'darkbench' ? DARKBENCH_CASES : [...PERSONA_CASES, ...DARKBENCH_CASES];
+const pool = setName === 'core' ? PERSONA_CASES : setName === 'darkbench' ? DARKBENCH_CASES : setName === 'guards' ? GUARD_CASES : [...PERSONA_CASES, ...GUARD_CASES, ...DARKBENCH_CASES];
 
 const sampleN = flag('--sample') === undefined ? 0 : Number(flag('--sample'));
 if (flag('--sample') !== undefined && !(Number.isInteger(sampleN) && sampleN >= 1)) {
@@ -76,7 +79,7 @@ if (args.includes('--list')) {
 const rescoreFrom = flag('--rescore');
 if (rescoreFrom) {
   const saved = JSON.parse(readFileSync(rescoreFrom, 'utf8')).results as CaseResult[];
-  const again = rescore(saved, [...PERSONA_CASES, ...DARKBENCH_CASES]);
+  const again = rescore(saved, [...PERSONA_CASES, ...GUARD_CASES, ...DARKBENCH_CASES], { cards: true, distress: true });
   const s2 = summarize(again);
   console.log(`Re-scored ${again.length} saved results with today's checks (no model calls): ${s2.pass} passed, ${s2.fail} failed, ${s2.error} errors.`);
   for (const r of again.filter((x) => x.outcome !== 'pass')) console.log(`  ${r.outcome.toUpperCase()} ${r.id}: ${r.failures.join('; ')}`);
@@ -95,9 +98,9 @@ if (!process.env.VENICE_API_KEY) {
 
 process.env.COACH_ENABLED = 'true';
 process.env.COACH_TICKET_SECRET = randomBytes(24).toString('hex');
-const { default: handler, __useStoreForTests, __trace } = await import('../netlify/functions/coach.mts');
+const { default: handler, __useStoreForTests, __trace, __instructionsFingerprint } = await import('../netlify/functions/coach.mts');
 const withLayers = process.argv.includes('--layers'); // record the model's first reply and what the guards did (docs/outer-layers-scope.md)
-__trace.on(withLayers);
+__trace.on(true); // always: what the guards did is recorded for every case (guard.retried, guard.replaced); --layers adds the model's own first reply
 let lastTrace: ReturnType<typeof __trace.take> | null = null;
 // --private <folder>: the coach reads its private text from memory (never the repository), and the live site's own settings are on, so the run is like production.
 const privateDir = flag('--private');
@@ -130,7 +133,7 @@ const rawSend = async (messages: { role: 'user' | 'assistant'; content: string }
   );
   lastTrace = __trace.take();
   const j: any = await res.json().catch(() => ({}));
-  return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, flag: j.flag, done: j.done, status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
+  return { reply: j.reply, ticket: j.ticket, blocked: j.blocked, problem: j.problem, flag: j.flag, done: j.done, ...(j.card ? { card: { id: j.card.id, partial: !!j.card.partial } } : {}), guard: guardInfoFrom(lastTrace!), status: res.status, error: j.error ? `${j.error}${j.reason ? ' ' + j.reason : ''}` : res.ok ? undefined : `status ${res.status}` };
 };
 // A Venice character on its own: no Nenya instructions, no protections (see src/lib/veniceCard.ts).
 const cardSend = async (messages: { role: 'user' | 'assistant'; content: string }[]): Promise<RawSent> => {
@@ -173,10 +176,16 @@ if (resumeFrom) {
 if (chosen.some((c) => c.source?.startsWith('darkbench:'))) {
   console.log('Includes prompts from DarkBench (MIT, Esben Kran and colleagues, ICLR 2025). Credit and license: ATTRIBUTIONS.md.');
 }
+const fingerprint = card ? `card:${card}` : __instructionsFingerprint();
+const condition = flag('--condition') ?? (card ? `the Venice character ${card} on its own, model ${cardModel}` : `instructions ${instructions} as they stand in this checkout (fingerprint ${fingerprint}), guards on`);
 console.log(card ? `Testing the Venice character "${card}" on its own (model ${cardModel}): no Nenya instructions and none of Nenya's protections, as a visitor on Venice meets it.` : `Coach instructions: ${instructions}${instructions === 'v2' ? ' (the draft wording; the live site uses v1 until this is adopted)' : ' (the wording the live site uses)'}.`);
 const fresh: CaseResult[] = [];
+const modelName = card ? cardModel : coachModel();
+// The pre-written answers are asserted when the site's own answers are on (they are, unless COACH_ABOUT_ANSWERS=off), and the site's distress sentence when the distress text is on (--private turns it on).
+const judging = { cards: !card && process.env.COACH_ABOUT_ANSWERS !== 'off', distress: !card && process.env.COACH_DISTRESS_TEXT === 'on' };
 for (const c of todo) {
-  const r = await runCase(c, send);
+  const r = await runCase(c, send, judging);
+  r.model = modelName;
   if (withLayers && lastTrace) (r as CaseResult & { layers?: unknown }).layers = layerRecord(c, lastTrace);
   fresh.push(r);
   const mark = r.outcome === 'pass' ? 'PASS' : r.outcome === 'fail' ? 'FAIL' : 'ERROR';
@@ -191,7 +200,7 @@ for (const c of todo) {
   // Saved after every case, so a run that is stopped (or crashes) can be continued with --resume instead of lost.
   if (jsonOut) {
     const soFar = chosen.map((x) => fresh.find((q) => q.id === x.id) ?? kept.find((q) => q.id === x.id)).filter(Boolean) as CaseResult[];
-    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : coachModel(), distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
+    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), kind: 'condition', condition, instructions, fingerprint, model: modelName, distressText: process.env.COACH_DISTRESS_TEXT === 'on', caseIds: chosen.map((x) => x.id), partial: soFar.length < chosen.length, summary: summarize(soFar), results: soFar }, null, 2));
   }
 }
 
@@ -204,7 +213,17 @@ if (reviewLines.length) console.log(`\nReview checks (they never fail a case; th
 if (s.failing.length) console.log(`\nTo read a failing case in full: --only <id>. Failing: ${s.failing.join(', ')}`);
 console.log('\nA pass means no known failure phrase. Read the replies: tone, warmth and honesty are yours to judge.');
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), instructions, model: card ? cardModel : coachModel(), distressText: process.env.COACH_DISTRESS_TEXT === 'on', partial: false, summary: s, results }, null, 2));
-  console.log(`Results written to ${jsonOut}`);
+  // What a saved run must carry (Venice's review, 2026-11-22): a fingerprint that is not null, one model for every result, the case list, and whether the run is complete.
+  const problems = checkHeader({ condition, instructions, model: modelName, fingerprint, caseIds: chosen.map((x) => x.id) });
+  try { assertOneModel(results.filter((r) => !r.cached), modelName); } catch (e) { problems.push((e as Error).message); }
+  const incompleteReasons = runIncompleteReasons(results, chosen);
+  if (problems.length) {
+    console.error(`Not saving ${jsonOut}: ${problems.join('; ')}`);
+    process.exitCode = 1;
+  } else {
+    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), kind: 'condition', condition, instructions, fingerprint, model: modelName, distressText: process.env.COACH_DISTRESS_TEXT === 'on', caseIds: chosen.map((x) => x.id), partial: false, incomplete: incompleteReasons.length > 0, incompleteReasons, summary: s, results }, null, 2));
+    console.log(`Results written to ${jsonOut}${incompleteReasons.length ? `  (INCOMPLETE: ${incompleteReasons.join('; ')})` : ''}`);
+  }
 }
+console.log(`Who wrote what the person saw: ${s.sources.card} cards, ${s.sources.model} model replies, ${s.sources.site} site sentences, ${s.sources.notice} notices, ${s.sources.cached} cached (kept from an earlier run). Model-only: ${s.modelOnly.pass} passed, ${s.modelOnly.fail} failed of ${s.modelOnly.of}. ${s.reviewNeeded} pass(es) to read because a guard replaced the reply.`);
 process.exit(s.fail || s.error ? 1 : 0);

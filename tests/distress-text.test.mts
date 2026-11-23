@@ -41,7 +41,8 @@ ok('the stop notice lead is warm, plain, says an AI cannot help in a crisis, and
 const base = 'I hear that you are worn out.';
 const out = withDistressText('distress', base, 3000);
 ok('the sentence follows the reply after a blank line, and the reply is kept whole', out === `${base}\n\n${DISTRESS_APPEND.distress}`);
-ok('a reply that already names 988 and says to call or text is left alone', withDistressText('distress', 'Please call or text 988 today.', 3000) === 'Please call or text 988 today.');
+// The owner's decision of 2026-11-22: the sentence is never skipped. It used to be left out when the reply already said "call or text 988".
+ok('a reply that already names 988 and says to call or text still gets the sentence added (never skipped)', withDistressText('distress', 'Please call or text 988 today.', 3000) === `Please call or text 988 today.\n\n${DISTRESS_APPEND.distress}`);
 const long = 'This is a sentence about being tired. '.repeat(120);
 const fitted = withDistressText('self-harm', long, 3000);
 ok('a long reply is trimmed at a whole sentence so the sentence always fits and is never cut off', fitted.length <= 3000 && fitted.endsWith(DISTRESS_APPEND['self-harm']) && /\.\n\n/.test(fitted));
@@ -65,7 +66,7 @@ const plain = await turn1('My coworker keeps talking over me in meetings.');
 ok('an unflagged message is never given the sentence', plain.reply === modelSays && !plain.flag);
 modelSays = 'Please call or text 988 or reach someone you trust.';
 const already = await turn1(flagged);
-ok('if the model has already named the line, the sentence is not added a second time', already.reply === modelSays);
+ok('even if the model has already named the line, the site\'s sentence is added (the person gets the person, the free numbers and the line in the site\'s own words)', already.reply === `${modelSays}\n\n${DISTRESS_APPEND[already.flag.category as keyof typeof DISTRESS_APPEND]}`);
 modelSays = 'That sounds heavy. '.repeat(400);
 const longj = await turn1(flagged);
 ok('through the function, a very long model reply is trimmed so the sentence fits within the reply limit', longj.reply.length <= 3000 && longj.reply.endsWith(DISTRESS_APPEND.distress));

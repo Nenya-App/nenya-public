@@ -10,11 +10,16 @@
 //   node scripts/eval-detect.mts --ethos-labels           # ETHOS's hate comments broken down by its own labels (violence, directed or general, six categories), with the site's harm checks beside the list
 //   node scripts/eval-detect.mts --dump                   # also writes the per-case outcomes (ids and outcomes, no text) to results/private/verdicts-<set>.json, for joining with other tests
 //   node scripts/eval-detect.mts --json name.json         # also writes counts to results/public/name.json
+//   node scripts/eval-detect.mts --record [--groups g.json] [--set-current] [--source "text"] [--note "text"] [--record-file path]
+//                                                         # appends this run's COUNTS to src/lib/checksRuns.json, the record behind the "How the checks work" page, with the version fingerprint (list, decisions, code).
+//                                                         # g.json comes from `python3 scripts/bakeoff-target-groups.py --json g.json` (run `--dump` first) and adds the model and per-group counts. `--set-current` makes this
+//                                                         # run's version the one the page averages. Needs HateCheck and ETHOS and the private list. docs/checks-live-figures.md; scripts/run-checks-nightly.sh does all of it.
 // "Flagged" means the coach would OFFER a card for the message (a hit of severity 2 or more, not inside a reporting frame): the gentlest outcome the matcher can cause.
 // "Hit" means the matcher found anything at all. The bars below were set BEFORE the first run (docs/coach-detection-rescope-ethos.md) and are not to be moved to fit a result.
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { researchPaths } from '../src/lib/researchDir.ts';
 import { loadLexicon, parseCsv, readLexicon } from '../src/lib/lexiconLoader.ts';
 import { parseDecisions, applyDecisions } from '../src/lib/lexiconDecisions.ts';
@@ -24,6 +29,7 @@ import { siteDecision } from '../src/lib/safetyEval.ts';
 import { SCENES, type Outcome } from '../src/lib/detectScenes.ts';
 import type { Action } from '../src/lib/lexiconDecisions.ts';
 import { OFFER_MAP, historyHits, isFramed, negatedBefore, offerFor } from '../src/lib/learningOffer.ts';
+import { appendRun, buildRun, codeFingerprint, listsFingerprint, parseGroupsFile } from './lib/checksRecord.mts';
 
 /** Bars, set 2026-11-12 before any run. Rates are shares of the non-hateful cases that the coach would flag. */
 const BARS = { nonHatefulFlaggedMax: 0.02, perFunctionalityNote: 0.05 };
@@ -35,22 +41,26 @@ const P = researchPaths();
 
 let matcher: Matcher | null = null;
 let listId = 'none (history patterns only)';
+let listsVersion = ''; // fingerprint for the record of runs: list, decisions, code
 if (!args.includes('--no-list')) {
   const file = flag('--list') ?? join(P.datasets, 'hurtlex', 'list', 'slurs.en.csv');
   if (existsSync(file)) {
     const csv = readFileSync(file, 'utf8');
     const dfile = flag('--decisions') ?? join(P.datasets, 'hurtlex', 'list', 'review-decisions.csv');
     let decisions: Map<string, Action> | undefined;
+    let decisionsCsv: string | null = null;
     let dnote = 'no decisions applied';
     if (!args.includes('--no-decisions') && existsSync(dfile)) {
       const dcsv = readFileSync(dfile, 'utf8');
       const parsed = parseDecisions(dcsv);
       if (parsed.problems.length) { console.error('decisions file problems: ' + parsed.problems.join('; ')); process.exit(2); }
       decisions = parsed.decisions;
+      decisionsCsv = dcsv;
       const c = applyDecisions(readLexicon(csv).rows, decisions).counts;
       dnote = `decisions ${createHash('sha256').update(dcsv).digest('hex').slice(0, 8)}: ${decisions.size} terms (dropped ${c.dropped} rows, slur ${c.slur}, model ${c.model}, judgment ${c.judgment}, collapsed ${c.collapsed})`;
     }
     matcher = loadLexicon(csv, decisions).matcher;
+    listsVersion = listsFingerprint(csv, decisionsCsv, codeFingerprint(fileURLToPath(new URL('../src/lib', import.meta.url))));
     listId = `${createHash('sha256').update(csv).digest('hex').slice(0, 12)} (${file.replace(P.root, '<research>')}); ${dnote}`;
   } else console.error(`No list at ${file}; running with the history patterns alone.`);
 }
@@ -244,6 +254,29 @@ if (args.includes('--attribute')) {
 }
 if (args.includes('--dump')) { mkdirSync(P.privateResults, { recursive: true }); for (const [k, v] of Object.entries(verdicts)) writeFileSync(join(P.privateResults, `verdicts-${k}.json`), JSON.stringify(v)); console.log('Per-case outcomes (no text) written to results/private/verdicts-*.json'); }
 const jsonName = flag('--json');
+if (args.includes('--record')) {
+  const need = (m: string): never => { console.error('--record: ' + m); process.exit(2); };
+  if (only) need('run all the sets (no --only), so every run has the same figures.');
+  if (!matcher || !listsVersion) need('needs the private list (not --no-list, and the list file must exist).');
+  if (!out.hatecheck || !out.ethos) need('needs both HateCheck and ETHOS in datasets/.');
+  const ordinary = (r: Result): { flagged: number; tested: number } => Object.values(r.byGroup).filter((g) => !g.hateful).reduce((a, g) => ({ flagged: a.flagged + g.flagged, tested: a.tested + g.n }), { flagged: 0, tested: 0 });
+  let groupsFile;
+  const gpath = flag('--groups');
+  if (gpath) {
+    try { groupsFile = parseGroupsFile(readFileSync(gpath, 'utf8')); } catch (e) { need(String((e as Error).message)); }
+    // The groups file must come from this version's outcomes: made after the list (and decisions) were last changed, after the outcomes it reads were written by --dump, and not a stale file.
+    const lfile = flag('--list') ?? join(P.datasets, 'hurtlex', 'list', 'slurs.en.csv'), dfile = flag('--decisions') ?? join(P.datasets, 'hurtlex', 'list', 'review-decisions.csv');
+    const vfile = join(P.privateResults, 'verdicts-hatecheck.json');
+    const t = (f: string) => (existsSync(f) ? statSync(f).mtimeMs : 0);
+    if (!existsSync(vfile) || t(vfile) < Math.max(t(lfile), args.includes('--no-decisions') ? 0 : t(dfile))) need('the outcomes file (results/private/verdicts-hatecheck.json) is older than the list: run `node scripts/eval-detect.mts --dump` again, then the Python bakeoff.');
+    if (t(gpath!) < t(vfile)) need('the groups file is older than the outcomes file it reads: run `python3 scripts/bakeoff-target-groups.py --json` again.');
+  }
+  const run = buildRun({ now: new Date(), source: flag('--source') ?? (gpath ? 'eval-detect and bakeoff-target-groups' : 'eval-detect'), lists: listsVersion, listFalseAlarms: { hatecheck: ordinary(out.hatecheck), ethos: ordinary(out.ethos) }, groupsFile, note: flag('--note') });
+  const file = flag('--record-file') ?? fileURLToPath(new URL('../src/lib/checksRuns.json', import.meta.url));
+  const r = appendRun(file, run, args.includes('--set-current'));
+  console.log(`\nRecorded (counts only) in ${file.replace(fileURLToPath(new URL('..', import.meta.url)), '')}: ${run.date}, lists ${run.lists}${run.model ? ', model ' + run.model : ''}.`);
+  console.log(r.usedByPage ? `The page will average ${r.runsOfCurrent} run${r.runsOfCurrent === 1 ? '' : 's'} of this version after the next deploy.` : 'This run is a DIFFERENT version from the one the page uses, so the page will not use it. If this is the version now live, record it again with --set-current (or edit "current" by hand).');
+}
 if (jsonName) {
   mkdirSync(P.publicResults, { recursive: true });
   writeFileSync(join(P.publicResults, jsonName), JSON.stringify({ at: new Date().toISOString(), list: listId, bars: BARS, results: out }, null, 2));

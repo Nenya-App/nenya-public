@@ -13,7 +13,7 @@ interface AboutMenuProps {
 /** The About page's sections, in order, and which entries each holds. */
 export const ABOUT_SECTIONS: { key: string; title: string; blurb: string; ids: string[] }[] = [
   { key: 'nenya', title: 'About Nenya', blurb: 'What Nenya is, where the name comes from, and who makes it.', ids: ['mellonamin', 'name-philosophy', 'about-founder', 'structure', 'support-us', 'contact-us'] },
-  { key: 'how', title: 'How It Works', blurb: 'The practice itself: breathing, the six lenses, color, needs and the method behind them.', ids: ['breathing-tool', 'six-gateways', 'power-of-color', 'pantheon-of-needs', 'nvc-method'] },
+  { key: 'how', title: 'How It Works', blurb: 'The practice itself: breathing, the six lenses, color, needs and the approach behind them.', ids: ['breathing-tool', 'six-gateways', 'power-of-color', 'pantheon-of-needs', 'nvc-method'] },
   { key: 'ideas', title: 'Ideas Behind It', blurb: 'The research and thinking that shaped the design.', ids: ['bio-social-design', 'evolved-leader'] },
   { key: 'coach', title: 'The Coach and What Is Planned', blurb: 'The optional AI coach demo, how it is checked, and what we hope to build next.', ids: ['about-coach', 'how-checks-work', 'coach-region', 'venice-chat', 'witnessed', 'pii-scrubbing', 'partner-practice'] },
   { key: 'trust', title: 'Privacy, Safety and Where We Stand', blurb: 'What we collect, what we promise, and the lines we will not cross.', ids: ['privacy-promise', 'where-we-stand', 'terms'] },
@@ -42,13 +42,13 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
     {
       id: 'evolved-leader',
       title: 'Evolved Leadership',
-      description: 'The co-evolutionary imperative and the trillion-dollar case for intervention',
+      description: 'Our view of shared leadership, and what research says about it and its limits',
       icon: Users,
     },
     {
       id: 'bio-social-design',
       title: 'Our Bio-Social Design',
-      description: 'Built on evolutionary biology and social neuroscience',
+      description: 'Our idea about connection, spending and the planet, with the research behind it, and what it does not show',
       icon: Network,
     },
     {
@@ -59,14 +59,14 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
     },
     {
       id: 'power-of-color',
-      title: 'The Power of Color',
-      description: 'Why we use color-based identity instead of usernames',
+      title: 'Color and Feeling',
+      description: 'What research says about color and feeling, and other ways to say a feeling',
       icon: Palette,
     },
     {
       id: 'six-gateways',
       title: 'The Six Lenses',
-      description: 'Multi-sensory pathways to emotional intelligence',
+      description: 'Six ways in to a feeling, beyond color',
       icon: Eye,
     },
     {
@@ -78,13 +78,13 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
     {
       id: 'pantheon-of-needs',
       title: 'The Pantheon of Needs',
-      description: 'Re-sanctifying your inner world through mythic archetypes',
+      description: 'Sixteen archetypes of need, each with its own colors',
       icon: Crown,
     },
     {
       id: 'nvc-method',
-      title: 'Our NVC+ Method',
-      description: 'Nonviolent Communication with systemic context',
+      title: 'Our Approach',
+      description: 'Nonviolent Communication, our added layer, and what research says',
       icon: MessageSquare,
     },
     {

@@ -139,7 +139,7 @@ export function AccessibilitySettingsContent({
         <p id="a11y-motion-help" className="text-xs text-muted-foreground">
           {reducedMotion
             ? MOTION_REDUCED_REASON
-            : 'Holds the leaves, the inner lights, the gem and the orbs still. The breathing ring, the counter and the tones carry on. Your other settings are kept.'}
+            : 'Holds the leaves, the inner lights, the gem, the orbs and the page\u2019s pulses still, including the counter\u2019s circle and number pulse and the front page button\u2019s pulse. The breathing ring and the tones carry on, and the counter still shows the number and the word. Your other settings are kept.'}
         </p>
         <p role="status" aria-live="polite" className="sr-only">{motionMessageText}</p>
       </div>

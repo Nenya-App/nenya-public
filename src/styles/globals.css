@@ -1100,6 +1100,19 @@ html {
   .bc-arc { display: none; }
 }
 
+/* "Stop motion" (Settings, Animation; src/app/components/MotionStoppedRoot.tsx): the decorative pulses of the page hold still too, not only the logo.
+   The counter keeps its number and its word (they change, they do not move); its number stops pulsing, including the stronger pulse that opens each breath, and its filling circle goes, as with reduced motion.
+   The "Enter" and "more below" buttons keep their steady glow and lose the swell at the end of each breath; the arrow's pulse, the quick navigation's glimmer and the background's slow glow hold still. */
+:root[data-page-motion-stopped] .bc-arc { display: none; }
+:root[data-page-motion-stopped] .bc-digit { animation: none !important; opacity: 0.95; }
+:root[data-page-motion-stopped] .nenya-more-below-glow.is-pulsing { animation: none !important; }
+:root[data-page-motion-stopped] .nenya-more-below { transition: none; }
+:root[data-page-motion-stopped] .nenya-scroll-hint-arrow,
+:root[data-page-motion-stopped] .nenya-scroll-pulse { animation: none !important; opacity: 0.85; }
+:root[data-page-motion-stopped] .nenya-quicknav-glimmer { animation: none !important; }
+:root[data-page-motion-stopped] .nenya-background::before,
+:root[data-page-motion-stopped] .nenya-background::after { animation: none !important; }
+
 /* WCAG 2.2 AAA, 2.4.13 Focus Appearance: every focused control gets a solid 3px outline (at least 3:1 against the page in both themes) with a 2px gap, and a keyboard-focused control is never hidden behind the fixed header, dock or quick navigation (2.4.11, 2.4.12). */
 :root { --focus-ring: #2A2623; }
 .dark { --focus-ring: #FAF8F5; }

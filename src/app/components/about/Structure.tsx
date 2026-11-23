@@ -5,6 +5,7 @@ import { Card } from '../ui/card';
 import { ReturnToTop } from '../ReturnToTop';
 import { ScrollHint } from '../ScrollHint';
 import { AppFooter } from '../AppFooter';
+import { Cite, ReferenceList } from './AboutReferences';
 
 interface StructureProps {
   onBack: () => void;
@@ -39,16 +40,19 @@ export default function Structure({ onBack }: StructureProps) {
             <Card className="p-6 md:p-8 bg-muted/50 border-border">
               <div className="space-y-4 text-foreground leading-relaxed text-sm md:text-base">
                 <p>
-                  Nenya is an independent artistic and technology project — a privately held creative work focused on building safe, accessible,
-                  ethical tools for personal reflection and social restoration.
+                  Nenya is an independent artistic and technology project. It is a privately held creative work. It aims to build tools for personal reflection and social restoration. We want them to be safe, accessible and ethical.
                 </p>
                 <p>
-                  This is not a startup, a platform company, or a commercial product. It is a project built around a specific set of values:
-                  anti-extractive design, radical privacy, and the belief that your inner world belongs only to you.
+                  It is not a startup or a platform company. It is free today. We are exploring subscriptions for extra features, and we will say so here before anything changes.
                 </p>
                 <p>
-                  Nenya accepts no equity investors, grants no board seats or approval rights to funders, and does not accept federal government
-                  funding. The project's direction is determined solely by its creator, Estëlle Streiff, who runs Nenya as a sole proprietor.
+                  It is built around our values: design that does not extract, privacy first, and the belief that your inner world belongs to you.
+                </p>
+                <p>
+                  Nenya accepts no equity investors, grants no board seats or approval rights to funders, and does not accept federal government funding.
+                </p>
+                <p>
+                  The project&apos;s creative direction is set by its creator, Estëlle Streiff, who runs Nenya as a sole proprietor. Fractured Atlas, as sponsor, has some oversight of how donated money is spent <Cite pageId="structure" n={[1]} />.
                 </p>
               </div>
             </Card>
@@ -65,9 +69,10 @@ export default function Structure({ onBack }: StructureProps) {
             <Card className="p-6 md:p-8 border-border">
               <div className="space-y-6">
                 <p className="text-sm md:text-base text-foreground leading-relaxed">
-                  Nenya is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit arts service organization. Fiscal sponsorship allows
-                  independent creative projects to receive tax-deductible donations without forming their own nonprofit — a model widely used in
-                  the arts community to preserve creative autonomy while enabling public support.
+                  Nenya is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit arts service organization.
+                </p>
+                <p className="text-sm md:text-base text-foreground leading-relaxed">
+                  Fiscal sponsorship lets a creative project receive donations that can be tax-deductible. It does not need to form its own nonprofit <Cite pageId="structure" n={[2]} />. Fractured Atlas says projects it sponsors have raised $310 million in all <Cite pageId="structure" n={[3]} />.
                 </p>
                 <div className="grid md:grid-cols-2 gap-4">
                   <Card className="p-5 bg-card border-nenya-gold/30">
@@ -79,11 +84,11 @@ export default function Structure({ onBack }: StructureProps) {
                       </li>
                       <li className="flex gap-2">
                         <Shield className="size-3 md:size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
-                        <span>Fractured Atlas handles financial administration and accountability</span>
+                        <span>Fractured Atlas processes donations. It also provides some oversight of how the money is spent</span>
                       </li>
                       <li className="flex gap-2">
                         <Shield className="size-3 md:size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
-                        <span>Nenya retains full creative and directional independence</span>
+                        <span>Nenya keeps its creative direction. Fractured Atlas does not own the project&apos;s work. It does review fundraising requests and grant applications.</span>
                       </li>
                       <li className="flex gap-2">
                         <Shield className="size-3 md:size-4 text-nenya-gold-text flex-shrink-0 mt-0.5" />
@@ -94,8 +99,7 @@ export default function Structure({ onBack }: StructureProps) {
                   <Card className="p-5 bg-card border-nenya-gold/30">
                     <h3 className="text-base md:text-lg text-nenya-gold-text dark:text-nenya-gold-light mb-3">Fractured Atlas</h3>
                     <p className="text-xs md:text-sm text-muted-foreground mb-4">
-                      A leading 501(c)(3) arts service organization supporting thousands of independent artists and projects across the US since
-                      1998.
+                      A 501(c)(3) arts service organization, founded in 1998. It acts as fiscal sponsor for artists and projects across the US <Cite pageId="structure" n={[3, 4]} />.
                     </p>
                     <div className="flex flex-col gap-3">
                       <Button variant="outline" size="sm" className="gap-2 justify-start" asChild>
@@ -135,18 +139,13 @@ export default function Structure({ onBack }: StructureProps) {
             <Card className="p-6 md:p-8 bg-muted/50 border-border">
               <div className="space-y-4">
                 <p className="text-sm md:text-base text-foreground leading-relaxed">
-                  Fiscal sponsorship is a well-established model in the arts and nonprofit world, used by independent projects that want to accept
-                  charitable donations and maintain financial accountability without the administrative overhead of forming a separate nonprofit
-                  entity.
+                  Fractured Atlas describes fiscal sponsorship as a way to work under an existing 501(c)(3). A project does not have to form its own nonprofit <Cite pageId="structure" n={[2]} />.
                 </p>
                 <p className="text-sm md:text-base text-foreground leading-relaxed">
-                  For Nenya, it is also an ideological choice. The project's anti-extractive design principles require that its organizational
-                  structure match its values: no corporate shell, no investors, no stakeholders with claims on its direction.
+                  For Nenya it is also a choice about values. We want the way Nenya is organized to match the way it is built: no investors, no outside owners with claims on its direction.
                 </p>
                 <p className="text-sm md:text-base text-foreground leading-relaxed">
-                  Fractured Atlas has supported thousands of independent artists and projects since 1998. Their model gives Nenya the credibility
-                  and infrastructure of a recognized nonprofit without compromising the creative and ethical independence that makes the project
-                  what it is.
+                  Fractured Atlas has been a registered 501(c)(3) since 1998 <Cite pageId="structure" n={[4]} />. Working under it gives Nenya a legal home for donations. We believe this does not cost the project its independence. Fractured Atlas does review fundraising requests and how donated money is spent <Cite pageId="structure" n={[1]} />.
                 </p>
               </div>
             </Card>
@@ -164,20 +163,20 @@ export default function Structure({ onBack }: StructureProps) {
               <Card className="p-5 bg-gradient-to-br from-background-secondary to-background">
                 <h3 className="mb-2 text-foreground">Anti-Extractive by Design</h3>
                 <p className="text-sm text-muted-foreground">
-                  No data mining, no surveillance, no advertising. Your use of this tool generates nothing of commercial value for anyone.
+                  No data mining, no surveillance, no advertising. We do not sell or share data from your use. One exception to know about: the links to Venice AI carry a referral code. If you sign up for a paid Venice account through one, Nenya earns $10 in Venice credits (Section 15 of the terms).
                 </p>
               </Card>
               <Card className="p-5 bg-gradient-to-br from-background-secondary to-background">
                 <h3 className="mb-2 text-foreground">Privacy as Architecture</h3>
-                <p className="text-sm text-muted-foreground">The commitment to privacy is structural, not a policy. We cannot share what we do not collect.</p>
+                <p className="text-sm text-muted-foreground">Privacy is built into the code, not only promised. We cannot share what we do not keep. We do keep a few things: plain daily totals, and anything you choose to send us. The terms list them.</p>
               </Card>
               <Card className="p-5 bg-gradient-to-br from-background-secondary to-background">
                 <h3 className="mb-2 text-foreground">Provided Free</h3>
                 <p className="text-sm text-muted-foreground">Nenya is provided free, with no advertising. The plan is for the core breathing and reflection tools to stay free. We are exploring subscriptions for additional features, and will say so plainly here before anything changes.</p>
               </Card>
               <Card className="p-5 bg-gradient-to-br from-background-secondary to-background">
-                <h3 className="mb-2 text-foreground">Sovereign Direction</h3>
-                <p className="text-sm text-muted-foreground">No equity investors, no federal funding, no outside stakeholders with claims on how this project develops.</p>
+                <h3 className="mb-2 text-foreground">Independent Direction</h3>
+                <p className="text-sm text-muted-foreground">No equity investors and no federal funding. No outsiders hold a claim on how this project grows.</p>
               </Card>
             </div>
           </div>
@@ -202,9 +201,13 @@ export default function Structure({ onBack }: StructureProps) {
                   >
                     GNU Affero General Public License v3.0
                   </a>
-                  . Every claim about what the site’s code does — that nothing you enter is tracked, and that nothing is stored by Nenya between
-                  sessions — is something you can verify yourself by reading the code, not just something you have
-                  to take our word for. The web host’s connection logs and visit totals sit outside the code; Section 13 of the terms describes them.
+                  .
+                </p>
+                <p>
+                  Every claim about what the site&rsquo;s code does is something you can check by reading the code. Two examples: the reflection tools do not send what you enter, and Nenya stores very little between visits. The terms list the exceptions.
+                </p>
+                <p>
+                  The web host&rsquo;s connection logs and visit totals sit outside the code; Section 13 of the terms describes them.
                 </p>
                 <p className="text-muted-foreground text-xs md:text-sm">
                   The Nenya name and logo are reserved separately from the code license — see the repository's{' '}
@@ -221,6 +224,17 @@ export default function Structure({ onBack }: StructureProps) {
             </Card>
           </div>
         </div>
+      </div>
+      <div className="mx-auto max-w-4xl px-6 pb-12">
+        <ReferenceList
+          pageId="structure"
+          items={[
+            { n: 1, text: 'Fractured Atlas (2026). Questions To Ask When Finding a Fiscal Sponsor. Fractured Atlas blog.', href: 'https://blog.fracturedatlas.org/questions-finding-a-fiscal-sponsor', linkLabel: 'Source page' },
+            { n: 2, text: 'Fractured Atlas (2026). Fiscal sponsorship. fracturedatlas.org.', href: 'https://www.fracturedatlas.org/fiscal-sponsorship', linkLabel: 'Source page' },
+            { n: 3, text: 'Fractured Atlas (2026). What we do. fracturedatlas.org.', href: 'https://www.fracturedatlas.org/what-we-do', linkLabel: 'Source page' },
+            { n: 4, text: 'ProPublica Nonprofit Explorer (IRS data) (2026). Fractured Atlas Inc (EIN 11-3451703). ProPublica.', href: 'https://projects.propublica.org/nonprofits/organizations/113451703', linkLabel: 'Source page' },
+          ]}
+        />
       </div>
       <ScrollHint />
       <ReturnToTop onClick={scrollToTop} />

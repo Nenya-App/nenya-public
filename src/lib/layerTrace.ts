@@ -1,6 +1,6 @@
 // What the outer layers did (docs/outer-layers-scope.md): for each test case, the model's first reply scored with the same checks as the final reply, the guard events, and how many model
 // calls the turn took. The summary says, per model, how often the raw reply failed, how often the layers rescued it, and which guards did the work. Pure; the scripts do the calls.
-import { judge, type CaseResult } from './personaEval.ts';
+import { judge, type CaseResult, type GuardInfo } from './personaEval.ts';
 import type { PersonaCase } from './personaEvalSet.ts';
 
 export interface LayerRecord {
@@ -14,8 +14,26 @@ export interface LayerRecord {
 /** The layer events among the tallies and notes: what a guard, the values rule or the hostile-turn rules did to a reply; 'asked:' a guard asked the model again; 'site:' the site added, settled or trimmed text (the distress sentence, a closing, a length trim). */
 export const guardEvents = (events: string[]): string[] => events.filter((e) => /^(coach\.(guard|values|turn\.hostile)\.|asked:|site:)/.test(e));
 
+/** The replacements among the guard events: a reply the site's fixed sentence stood in for. */
+export const isReplacement = (e: string): boolean => /^coach\.guard\.[a-z-]+\.(?:replaced|final)$/.test(e);
+
+/**
+ * What the guards did on one turn, from the raw trace (every tally the turn made, in order): whether a guard asked the model again, whether a reply was replaced by the site's fixed sentence,
+ * which guards edited it, and who wrote what the person saw (a pre-written card, the lane sentence, or the model). Pure: the runner passes the trace in.
+ */
+export function guardInfoFrom(trace: { calls: number; events: string[] }): GuardInfo {
+  const events = trace.events;
+  return {
+    retried: trace.calls > 1 || events.some((e) => e.startsWith('asked:')),
+    replaced: events.some(isReplacement),
+    repaired: guardEvents(events).filter((e) => !e.startsWith('asked:') && !isReplacement(e)),
+    served: events.some((e) => /^coach\.turn\.about\.(?!first)/.test(e)) ? 'card' : events.some((e) => e.startsWith('coach.turn.lane.')) ? 'site' : 'model',
+    calls: trace.calls,
+  };
+}
+
 export function layerRecord(c: PersonaCase, trace: { raw: string | null; calls: number; events: string[] }): LayerRecord {
-  const rawOutcome = trace.raw === null ? 'none' : judge(c, { reply: trace.raw }).outcome;
+  const rawOutcome = trace.raw === null ? 'none' : judge(c, { reply: trace.raw }, { phrasesOnly: true }).outcome;
   return { raw: trace.raw, calls: trace.calls, events: guardEvents(trace.events), rawOutcome };
 }
 
