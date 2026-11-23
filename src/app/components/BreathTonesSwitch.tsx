@@ -14,6 +14,9 @@ import {
   unlockAudio,
 } from '../../lib/breathTones';
 import type { BreathTiming } from '../../lib/breathClock';
+import { setBreathingToneVolume, useBreathingToneVolume } from '../../lib/deviceMemory';
+import { isToneMuted, setToneMuted, setToneVolume, subscribeToneLevel } from '../../lib/breathTones';
+import { muteAnnouncement, muteButtonText, TONES_BUTTON_HELP, TONES_BUTTON_LABEL, tonesButtonText, VOLUME_HELP, VOLUME_LABEL, volumeText } from '../../lib/breathHum';
 
 // Breathing tones: one setting, three switches (near the top of the page, in the accessibility panel, on the breathing
 // counter), a polite announcement, and the player. See docs/accessibility-audio-scope.md.
@@ -111,6 +114,84 @@ export function BreathTonesSwitch({ variant }: { variant: 'skip' | 'panel' | 'co
   );
 }
 
+/**
+ * The tones' own off switch and mute, placed directly under "Stop motion" in the accessibility panel.
+ * Stop motion deliberately does not silence the tones: sound is not motion, and a person who has stopped the movement may be
+ * relying on the tones to follow the breath (the ring and the counter's number carry on too). So the tones get a switch of their
+ * own in the same place, and the person decides. It is the same setting as the other switches (setTones), shown as a toggle button.
+ */
+export function BreathTonesQuickControls() {
+  const on = useBreathingTones();
+  const muted = useSyncExternalStore(subscribeToneLevel, isToneMuted, () => false);
+  return (
+    <div className="space-y-1">
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          aria-pressed={on}
+          aria-label={TONES_BUTTON_LABEL}
+          aria-describedby="tones-quick-help"
+          onClick={() => setTones(!on)}
+          className="min-h-11 flex-1 rounded-md border-2 border-foreground px-3 text-sm font-medium text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+        >
+          {tonesButtonText(on)}
+        </button>
+        <button
+          type="button"
+          aria-pressed={muted}
+          disabled={!on}
+          onClick={() => {
+            setToneMuted(!muted);
+            announceTones(muteAnnouncement(!muted));
+          }}
+          className="min-h-11 rounded-md border border-border px-3 text-sm text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground disabled:opacity-60"
+        >
+          {muteButtonText(muted)}
+        </button>
+      </div>
+      <p id="tones-quick-help" className="text-xs text-muted-foreground">
+        {TONES_BUTTON_HELP}
+      </p>
+    </div>
+  );
+}
+
+/** How loud the tones are: a labelled slider in 5% steps, its own setting apart from the device's volume. */
+export function BreathToneVolume() {
+  const volume = useBreathingToneVolume();
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-3">
+        <label htmlFor="tones-volume" className="text-sm">
+          {VOLUME_LABEL}
+        </label>
+        <span className="text-xs text-muted-foreground" aria-hidden="true">
+          {volumeText(volume)}
+        </span>
+      </div>
+      <input
+        id="tones-volume"
+        type="range"
+        min={0}
+        max={100}
+        step={5}
+        value={volume}
+        aria-valuetext={volumeText(volume)}
+        aria-describedby="tones-volume-help"
+        onChange={(e) => {
+          const v = Number(e.target.value);
+          setBreathingToneVolume(v);
+          setToneVolume(v);
+        }}
+        className="h-6 w-full cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+      />
+      <p id="tones-volume-help" className="text-xs text-muted-foreground">
+        {VOLUME_HELP}
+      </p>
+    </div>
+  );
+}
+
 /** Which style the tones are played in. Choosing one plays a short taste of it, and says so politely. */
 export function BreathToneStyle() {
   const style = useBreathingSound();
@@ -173,6 +254,10 @@ export function BreathTonesPlayer({ active, timing, cycleStart }: { active: bool
   // Read by the player on every tick, so a new rhythm or style is picked up without restarting it.
   const stateRef = useRef({ timing, cycleStart, arrangement });
   stateRef.current = { timing, cycleStart, arrangement };
+  // The person's volume reaches the audio from here, which is on every page that can play the tones (BreathTonesQuickControls and
+  // BreathToneVolume only change the setting). The mute is held in breathTones.ts and is not saved.
+  const volume = useBreathingToneVolume();
+  useEffect(() => setToneVolume(volume), [volume]);
   useEffect(() => {
     if (!on || !active) return;
     let stop: (() => void) | null = null;
@@ -185,9 +270,12 @@ export function BreathTonesPlayer({ active, timing, cycleStart }: { active: bool
     };
     const onVisibility = () => (document.hidden ? end() : begin());
     document.addEventListener('visibilitychange', onVisibility);
+    // Leaving the page (including into the back/forward cache) ends the sound too.
+    window.addEventListener('pagehide', end);
     begin();
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', end);
       end();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

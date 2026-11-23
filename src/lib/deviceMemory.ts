@@ -99,8 +99,10 @@ export interface Prefs {
   showBreathingCounter?: boolean;
   /** Breathing tones: a note for each count of the breath. Off unless the visitor switches it on. */
   breathingTones?: boolean;
-  /** Which style the breathing tones are played in: harp, bowls, chord or scale. */
+  /** Which style the breathing tones are played in: harp, bowls, chord, scale or hum. */
   breathingSound?: string;
+  /** How loud the breathing tones are, 0 to 100 (percent of the level they are designed at). A saved display setting like the others; the mute is not saved. */
+  breathingToneVolume?: number;
   colorBlindMode?: string;
   breathingTechnique?: { ih: number; hi: number; ex: number; ho: number };
   /** The gem's kaleidoscope: the inside of the stone slowly re-cuts itself. Off unless the visitor switches it on. */
@@ -149,7 +151,8 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   gemKaleidoscope: isBool,
   gemKaleidoscopeLook: (v) => v === 'calm' || v === 'gentle' || v === 'lively' || v === 'full',
   gemKaleidoscopeBreath: isBool,
-  breathingSound: (v) => v === 'harp' || v === 'bowls' || v === 'chord' || v === 'scale',
+  breathingSound: (v) => v === 'harp' || v === 'bowls' || v === 'chord' || v === 'scale' || v === 'hum',
+  breathingToneVolume: (v) => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 100,
   colorBlindMode: (v) => typeof v === 'string' && VISION.includes(v),
   logoLeaves: (v) => typeof v === 'number' && (LEAF_PRESETS as readonly number[]).includes(v),
   gemSides: (v) => v === 'match' || (typeof v === 'number' && (GEM_SIDE_PRESETS as readonly number[]).includes(v)),
@@ -282,7 +285,7 @@ export const useGemKaleidoscopeBreath = kaleidoBreath.use;
 
 // The style the tones are played in: the same kind of shared setting (the choice is made in the accessibility panel,
 // the sound is played from the page).
-export type BreathingSound = 'harp' | 'bowls' | 'chord' | 'scale';
+export type BreathingSound = 'harp' | 'bowls' | 'chord' | 'scale' | 'hum';
 let soundStyle: BreathingSound | null = null;
 const soundListeners = new Set<() => void>();
 const getSound = (): BreathingSound => (soundStyle ??= (loadPrefs().breathingSound as BreathingSound | undefined) ?? DEFAULT_ARRANGEMENT);
@@ -305,10 +308,34 @@ export function useBreathingSound(): BreathingSound {
   return style;
 }
 
+// How loud the tones are: the same kind of shared setting (the slider is in the accessibility panel, the player reads it), 100 until the visitor lowers it.
+let toneVolume: number | null = null;
+const volumeListeners = new Set<() => void>();
+const getVolume = (): number => (toneVolume ??= loadPrefs().breathingToneVolume ?? 100);
+export const getBreathingToneVolume = getVolume;
+export function setBreathingToneVolume(v: number): void {
+  toneVolume = Math.min(100, Math.max(0, Math.round(v)));
+  savePref('breathingToneVolume', toneVolume);
+  volumeListeners.forEach((l) => l());
+}
+const subscribeVolume = (l: () => void) => {
+  volumeListeners.add(l);
+  return () => volumeListeners.delete(l);
+};
+export function useBreathingToneVolume(): number {
+  const v = useSyncExternalStore(subscribeVolume, getVolume, () => 100);
+  const remembering = useRemembering();
+  useEffect(() => {
+    if (remembering) savePref('breathingToneVolume', v);
+  }, [remembering, v]);
+  return v;
+}
+
 /** For tests: forget the in-memory values so the next read starts from storage again. */
 export const __resetBreathingTonesForTests = (): void => {
   tonesOn = null;
   soundStyle = null;
+  toneVolume = null;
 };
 
 export const TERMS_RECEIPT_KEY = 'nenya.terms.receipt';

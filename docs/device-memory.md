@@ -39,6 +39,8 @@ The person picks 10, 15 or 20 minutes of quiet, or "Leave open", before starting
 
 `gemKaleidoscope` is another saved display setting (on by default since 2026-11-22, except on a light device where it is off until chosen; the logo's other defaults are listed in [logo-look.md](logo-look.md); saved only while "Remember on this device" is on; erased by "Forget me" and Emergency Exit). It is shared by the switch in the accessibility panel ("Gem Kaleidoscope") and the gem, and lives in `src/lib/deviceMemory.ts`. The stone holds still when the device asks for reduced motion, whatever it says.
 
-`breathingSound` (harp, bowls, chord or scale; bowls by default) is the style the tones are played in, kept and erased the same way.
+`breathingSound` (harp, bowls, chord, scale or hum; bowls by default) is the style the tones are played in, kept and erased the same way.
+
+`breathingToneVolume` (0 to 100, 100 by default) is how loud the tones are, kept and erased the same way (saved only while "Remember on this device" is on; erased by "Forget me" and Emergency Exit). The mute is not saved: it is held in memory for the visit only, so the tones never come back muted without the person knowing. Nothing about the tones is counted or sent, and no audio is captured.
 
 `breathingStrength` replaced `breathingOpacity` (2026-11-22): the breathing animation's strength in percent, 5 to 200, where 50 is the standard (what 100% opacity used to be). It is a saved display setting like the others (only while "Remember on this device" is on; erased by "Forget me" and Emergency Exit). An old stored `breathingOpacity` (0.1 to 1) is read once when there is no `breathingStrength` and becomes v x 50; the old key is no longer written. See [logo-look.md](logo-look.md).
