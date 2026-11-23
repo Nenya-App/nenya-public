@@ -59,14 +59,14 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
     },
     {
       id: 'power-of-color',
-      title: 'The Power of Color',
-      description: 'Why we use color-based identity instead of usernames',
+      title: 'Color and Feeling',
+      description: 'What research says about color and feeling, and other ways to say a feeling',
       icon: Palette,
     },
     {
       id: 'six-gateways',
       title: 'The Six Lenses',
-      description: 'Multi-sensory pathways to emotional intelligence',
+      description: 'Six ways in to a feeling, beyond color',
       icon: Eye,
     },
     {
