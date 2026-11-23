@@ -39,13 +39,13 @@ for (const [label, others] of [['page switches off', {}], ['page switches on', o
   const offAll = off.sections.map(textOf).join(' ');
 
   // Switch off: nothing about cells, the old date, sections 1 to 21.
-  ok(`off (${label}): the date is unchanged, November 22, 2026`, off.date === 'November 22, 2026');
+  ok(`off (${label}): the date is the base date, November 24, 2026 (moved from November 22 by the 2026-11-24 Venice-character retirement)`, off.date === 'November 24, 2026');
   ok(`off (${label}): sections 1 to 21 only`, off.sections.map((s) => s.number).join() === Array.from({ length: 21 }, (_, i) => i + 1).join());
   ok(`off (${label}): the Terms do not mention cells`, !/partner-practice|partner practice|Section 22|\bcell\b/i.test(offAll));
   ok(`off (${label}): a switch that is not "on" (such as "off" or "true") also leaves it off`, (await render({ ...others, VITE_CELL_ENABLED: 'true' })).sections.length === 21);
 
   // Switch on: only Section 22, two cross-references and the date differ.
-  ok(`on (${label}): the new date is November 23, 2026`, on.date === 'November 23, 2026');
+  ok(`on (${label}): the cells-on date is November 25, 2026, later than the base date (it was November 23 before the base date moved to November 24)`, on.date === 'November 25, 2026');
   ok(`on (${label}): sections 1 to 22 without gaps`, on.sections.map((s) => s.number).join() === Array.from({ length: 22 }, (_, i) => i + 1).join());
   const undo = (s: Sec): Sec => {
     const f = (t: string) => t.replace(' a partner-practice cell (Section 22),', '').replace('the form, The Color API, the coach demo, or a partner-practice cell (Section 22)', 'the form, The Color API, or the coach demo');

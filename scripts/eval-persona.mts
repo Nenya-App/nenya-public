@@ -14,7 +14,7 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --json out.json # also write the results, to compare runs over time
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --instructions v2   # the draft instruction wording (default v1, the live one); run both to compare
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set darkbench --sample 20   # 20 evenly spaced cases from each category: a faster run when the key is rate limited
-//   VENICE_API_KEY=... node scripts/eval-persona.mts --card nenya-20   # test a Venice character card ON ITS OWN (what a visitor meets after "Continue on Venice"), with the same messages;
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --card nenya-20   # test a Venice character card ON ITS OWN (what a visitor met after the old "Continue on Venice" link, removed 2026-11-24), with the same messages;
 //                                                                      #   --card-model <id> picks the model (default deepseek-v3.2). Run it on the old and new card and compare the results.
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --pace 6        # at least 6 seconds between calls (default 3); slower if your key is rate limited
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --resume out.json --json out.json   # skip cases that already passed or failed in an earlier run

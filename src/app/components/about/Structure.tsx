@@ -163,7 +163,7 @@ export default function Structure({ onBack }: StructureProps) {
               <Card className="p-5 bg-gradient-to-br from-background-secondary to-background">
                 <h3 className="mb-2 text-foreground">Anti-Extractive by Design</h3>
                 <p className="text-sm text-muted-foreground">
-                  No data mining, no surveillance, no advertising. We do not sell or share data from your use. One exception to know about: the links to Venice AI carry a referral code. If you sign up for a paid Venice account through one, Nenya earns $10 in Venice credits (Section 15 of the terms).
+                  No data mining, no surveillance, no advertising. We do not sell or share data from your use.
                 </p>
               </Card>
               <Card className="p-5 bg-gradient-to-br from-background-secondary to-background">

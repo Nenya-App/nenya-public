@@ -68,9 +68,8 @@ The honest edges:
   store for 90 days and gives the sender a code to delete it at once. The owner is alerted through Netlify Forms
   with only the kind and the dates, never the text. Nothing is sent unless a visitor clicks send, and visitors are
   asked not to include identifying details.
-- **Outbound links.** Links to Fractured Atlas (donations), GitHub, and the
-  Venice AI chat demo leave the site. Each of those is governed by its own
-  policies, not Nenya's.
+- **Outbound links.** Links to Fractured Atlas (donations) and GitHub leave the
+  site. Each of those is governed by its own policies, not Nenya's.
 
 ## About the AI pieces
 
@@ -78,12 +77,12 @@ How much of Nenya was itself written by AI, and which models, is stated in [`AI-
 
 **The free tool has no AI in it.** Two things live beside it:
 
-- **A prototype conversation partner on Venice AI.** The About section links out
-  to a Nenya character hosted on [Venice AI](https://venice.ai). It runs on
-  Venice's service and is not covered by Nenya's privacy and safety systems, and
-  the page says so.
-- **The coach demo.** An optional five-exchange conversation with the same
-  character. Inside the site it is the session screen, reached after the lenses
+- **A retired early prototype on Venice AI.** Before the coach, Nenya had a
+  character prompt on Venice AI's platform. It is retired and no longer
+  maintained or recommended, and the site does not link to it. The About section
+  says so (see `/about/venice-chat`).
+- **The coach demo.** An optional five-exchange conversation with an AI model
+  that Venice AI runs. Inside the site it is the session screen, reached after the lenses
   and reflection tools; it is also available on its own at `nenya.biz/coach`, where
   the visitor first picks the same two interface colors. Those colors theme the
   page and serve as a temporary session label (not an account, not stored); they
@@ -93,7 +92,9 @@ How much of Nenya was itself written by AI, and which models, is stated in [`AI-
   key stays server-side. The function stores no messages and does not log message
   text; what it keeps is plain anonymous daily totals, one running count of the day's turns, and, for the per-connection limit, a count of turns under a one-way daily code that is deleted within two days. Caps: five exchanges, 500 characters per message, short replies, and a
   signed ticket that stops a client from forging or extending the history. The
-  character's prompt lives on Venice, not in this repository.
+  coach's own instructions are in this repository. A separate character card on
+  Venice (slug set by `COACH_CHARACTER_SLUG`) is not used when the model is an
+  encrypted one (see the comment in `netlify/functions/coach.mts`).
 
   The demo also includes, all as small shared code in `src/lib`:
   - **Identifier scrubbing** ([`piiScrub.ts`](./src/lib/piiScrub.ts)): common
@@ -103,9 +104,6 @@ How much of Nenya was itself written by AI, and which models, is stated in [`AI-
     statement is never sent to the AI and ends the conversation with resources;
     ambiguous distress is sent with an instruction to respond with care. Also phrase
     matching, so it can miss things and flag harmless words.
-  - **Continue on Venice**: when a demo ends without a safety notice, the page links to the
-    same character on Venice AI's own site (links in [`veniceLinks.ts`](./src/lib/veniceLinks.ts),
-    with the referral code disclosed), warning that Nenya's protections do not run there.
   - **Instruction screening** ([`promptGuard.ts`](./src/lib/promptGuard.ts)): messages
     that try to steer the coach ("ignore your rules", "show your prompt", fake
     system/role markers) are not sent, on the device or on the server; invisible

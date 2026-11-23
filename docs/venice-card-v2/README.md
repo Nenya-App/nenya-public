@@ -1,5 +1,7 @@
 # The replacement Venice character, v2 (draft text)
 
+Status: **PARKED 2026-11-24.** The Venice character is retired and not linked from the site. Kept as history. The coach on nenya.biz is where the work continues; it still needs more testing. The drafts below were not pasted into Venice and are not planned.
+
 Status: **draft, 2026-11-10, nothing pasted into Venice yet.** Scope: `docs/venice-character-card-scope.md` ("The fields"). These are the texts for each field of Venice's Update Character screen, as plain files so they can be pasted exactly and checked by tests. **All of it is public once the character is public:** keep secrets, private method notes and any named person out of it.
 
 | Field | File | Notes |

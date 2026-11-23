@@ -1,5 +1,7 @@
 # Scope: rebuilding the Venice character card, and switching to it safely
 
+Status: **PARKED 2026-11-24.** The Venice character is retired and not linked from the site. Kept as history. The coach on nenya.biz is where the work continues; it still needs more testing. The text below describes how things were before this date (the links, the panel and `src/lib/veniceLinks.ts` it names are gone).
+
 Status: **active again (2026-11-10)**: the owner is gathering the character's real fields (screenshots of Venice's "Update Character" screen, see "The fields" below) and will ask Venice about the open questions. It was parked on 2026-11-08 because the live coach mattered more. The old card named a trainer's voice and style; **the replacement is not structured after any named person** (owner, 2026-11-10). Written 2026-11-08. Related: `docs/coach-instructions-v2.md`, `docs/coach-persona-scope.md`, `docs/coach-self-questions-scope.md`.
 
 ## What the card is used for today

@@ -1,4 +1,5 @@
-// Talks to a Venice character on its own, the way a visitor who follows the "Continue on Venice" link would meet it: the character
+// A test helper for the retired Venice character card. Not used by the site.
+// Talks to a Venice character on its own, the way a visitor who followed the old "Continue on Venice" link (removed 2026-11-24) would have met it: the character
 // card is the only instruction, with none of Nenya's protections (no identifier scrub, no crisis check, no steering screen, no
 // exchange limit). Used by the persona evaluation (scripts/eval-persona.mts --card <slug>) to test a card, old or new, with the
 // same messages as the coach itself. Pure: it builds the request and reads the answer; the script sends it.

@@ -6,9 +6,10 @@ import { gradeLevel } from '../src/lib/readingLevel.ts';
 
 const dir = 'src/app/components/about/';
 const flat = (s: string) => s.replace(/\s+/g, ' ');
-const PAGES = ['TheoryU', 'HumanCenteredDesign', 'HowChecksWork', 'VeniceChat', 'WitnessedConversations', 'AboutCoach', 'PartnerPractice'] as const;
+const PAGES = ['TheoryU', 'HumanCenteredDesign', 'HowChecksWork', 'WitnessedConversations', 'AboutCoach', 'PartnerPractice'] as const;
 const read = (name: string) => readFileSync(dir + name + '.tsx', 'utf8');
 
+// 2026-11-24: VeniceChat left this list: the page is now the short retirement note, with no citations and no references (it makes no benefit claim that would need one); it is pinned below.
 // Numbers cited in the text and numbers in the list: every cited number has a list entry, and every entry is cited.
 for (const name of PAGES) {
   const src = read(name);
@@ -54,13 +55,14 @@ ok('HowChecksWork: "at most" is gone from the false-alarm line, and the figure s
 ok('HowChecksWork: no user testing and no study of Nenya, said plainly (owner, 2026-11-22)', /We have done no user testing and no study of how people use Nenya/.test(checks));
 ok('HowChecksWork: the old pinned phrases are kept', ['plain daily counts only', 'reports you to anyone', 'No outside professional has reviewed these checks', 'would like them to be', 'This was a mistake'].every((s) => checks.includes(s)));
 
+// 2026-11-24 (owner, option A): the VeniceChat page is the retirement note. These replace the old assertions about the Venice page's content (trained/encrypted wording, Venice's dated statements,
+// the account and 10-turn text, the Venice terms and referral links, "nobody has tested this character"), all of which were removed with that content.
 const venice = flat(read('VeniceChat'));
-ok('VeniceChat: no longer says "trained", "Encrypted & Private", "companion" or that free accounts can use characters', !/trained in|NVC\+ Trained|Encrypted &amp; Private|Encrypted & Private|AI companion|without needing a paid subscription/.test(venice) && /a written description and prompt, not a model we trained/.test(venice));
-ok('VeniceChat: Venice\'s statements are given in its voice, dated, with "we cannot check"', /Venice says its default private mode/.test(venice) && /read 22 November 2026/.test(venice) && /We cannot check these statements/.test(venice) && /updated 8 June 2026/.test(venice));
-ok('VeniceChat: the account is needed, free accounts can chat with characters for up to 10 turns (owner, 2026-11-22), and the card is called an older version still to be updated', /you need to create an account/.test(venice) && /A free account can chat with characters for up to 10 turns\./.test(venice) && !/does not say plainly whether free accounts/.test(venice) && /older version of our prompt\. We still need to update it\./.test(venice));
+ok('VeniceChat: the title and the drafted note are on the page, word for word', /The Early Venice Character \(Retired\)/.test(venice) && /Before the coach on this site existed, Nenya had an early prototype: a written character prompt on Venice AI&rsquo;s platform\. It was an early test of an idea\. It is retired\. It is no longer maintained, and Nenya does not recommend it\. This site does not link to it\./.test(venice) && /Nenya does not run or review any chat on Venice AI&rsquo;s platform\. If you find a Nenya-named character or assistant there, it is outside Nenya, and none of Nenya&rsquo;s checks run on it\./.test(venice));
+ok('VeniceChat: the coach is described with the standing statements only (optional, early prototype, needs more testing, not therapy, not a crisis service, no study, no clinician review) and its model host is disclosed', /The coach on this site is where the work continues\. It is optional, and it is still an early prototype that needs more testing\. It is not therapy and not a crisis service\. No study of it has been done, and no clinician has reviewed it\. Its replies are written by an AI model that Venice AI runs, reached through our server; the Terms \(Section 15\) say what is sent, what is checked and what is not kept\./.test(venice) && /call or text 988/.test(venice));
+ok('VeniceChat: no link to Venice, no signup, referral, price, privacy or upload text, and no benefit claim', !/venice\.ai|href=\{VENICE|VENICE_|REFERRAL|referral|target="_blank"|<Cite|ReferenceList|ExternalLink|Sign up|sign up|account|Pro\b|\$\d|upload|helps|works better|safer|replaces/i.test(venice));
+ok('VeniceChat: only internal links (the menu, the coach demo at /coach/, the Terms page)', /href="\/coach\/"/.test(venice) && !/href="https?:/.test(venice) && /AboutPageLink page="terms"/.test(venice));
 ok('RegionGate: the rest of Nenya "works everywhere" without claiming it sends nothing (owner, 2026-11-22), in the gate and in the two fixed answers', /The rest of Nenya works everywhere\. The breathing tool, the six Lenses/.test(readFileSync('src/coach/RegionGate.tsx', 'utf8')) && !/sends nothing: the breathing tool/.test(readFileSync('src/coach/RegionGate.tsx', 'utf8') + readFileSync('src/lib/aboutNenya.ts', 'utf8')));
-ok('VeniceChat: still links Venice\'s terms and privacy policy and keeps the referral disclosure', /VENICE_TERMS_URL/.test(venice) && /VENICE_PRIVACY_URL/.test(venice) && /REFERRAL_NOTE/.test(venice));
-ok('VeniceChat: nobody has tested this character, said before any evidence', /Nobody has tested this character\./.test(venice) && /Nobody has tested this character that way/.test(venice));
 
 const partner = flat(read('PartnerPractice'));
 ok('PartnerPractice: the "no one can join a cell" notice shows only while the test cell is off', /\{cellOpen \? \(.*Planned, and only partly built.*\) : \(.*Planned, not built for visitors.*No one can join a cell now/.test(partner));

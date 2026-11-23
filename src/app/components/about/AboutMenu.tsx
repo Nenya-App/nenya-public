@@ -101,8 +101,8 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
     },
     {
       id: 'venice-chat',
-      title: 'Chat with Nenya\'s AI on Venice',
-      description: 'Using Nenya\'s AI character on Venice AI\'s own site (outside Nenya)',
+      title: 'The Early Venice Character (Retired)',
+      description: 'An early prototype on Venice AI\'s platform. Retired; no longer maintained or recommended.',
       icon: MessageCircle,
     },
     {

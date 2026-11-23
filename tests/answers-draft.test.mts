@@ -45,7 +45,8 @@ ok('no answer claims what the site cannot keep (end-to-end, compliance, "nothing
 ok('the coach\'s answers never offer to remember, pass on, or be there', ANSWERS.filter((a) => a.part === 'coach').every((a) => !/\bI(?:'ll| will) (?:remember|pass|be there|be waiting|miss)/i.test(all(a))));
 ok('the privacy answers say "does not keep the conversation" or "do not store", never an absolute', ['n-privacy-coach', 'c-memory'].every((id) => /does(?:n't| not) keep|do not store|doesn't keep/i.test(all(ANSWERS.find((a) => a.id === id)!))));
 ok('the data answer names Venice AI and says it has its own policy', /Venice AI/.test(all(ANSWERS.find((a) => a.id === 'n-privacy-coach')!)) && /own (?:terms|policy)|own terms and privacy policy/i.test(all(ANSWERS.find((a) => a.id === 'n-privacy-coach')!)));
-ok('the cost answer discloses both the donations and the referral credits', /donations/i.test(all(ANSWERS.find((a) => a.id === 'n-free')!)) && /referral/i.test(all(ANSWERS.find((a) => a.id === 'n-free')!)));
+// 2026-11-24: the referral links and code were removed from the site, so the cost answer now discloses the donations and says there is no referral link (it used to require the referral credits to be disclosed).
+ok('the cost answer discloses the donations and says there is no referral link on the site', /donations/i.test(all(ANSWERS.find((a) => a.id === 'n-free')!)) && /There is no referral link on the site\./.test(all(ANSWERS.find((a) => a.id === 'n-free')!)) && !/referral (?:code|credits|program)|\$10/i.test(all(ANSWERS.find((a) => a.id === 'n-free')!)));
 ok('the version answer keeps its two placeholders for the site to fill', /\{version\}/.test(ANSWERS.find((a) => a.id === 'n-version')!.short) && /\{terms\}/.test(ANSWERS.find((a) => a.id === 'n-version')!.short));
 
 // the tutorial map
@@ -59,13 +60,11 @@ const quoted: [string, string, string][] = [
 ];
 const unreal = quoted.filter(([, f, s]) => !text(f).includes(norm(s))).map(([d, f, s]) => `${d}: "${s}" not in ${f}`);
 ok('what the discrepancies quote is really there (so the list does not go stale unnoticed)', unreal.length === 0, unreal.join(' | '));
-// d5 (the Venice page calling the character "trained in NVC+ principles") is fixed by the About thesis (chapter 5, 2026-11-22): the page says the character is "set up with a written prompt",
-// and the name NVC+ is gone from visitor text. Until that page change is merged the old quote is still in the file; after it, the new wording must be there and the old one gone. Exactly one of the two.
+// d5 (the Venice page calling the character "trained in NVC+ principles") is fixed for good: on 2026-11-24 the page became the retirement note, which has neither the old wording nor the
+// "set up with a written prompt" wording that replaced it on 2026-11-22. The check now requires that the old wording stays gone and that the note says the character is retired.
 {
   const venicePage = text('src/app/components/about/VeniceChat.tsx');
-  const hasOld = venicePage.includes(norm('trained in NVC+ principles'));
-  const hasNew = venicePage.includes(norm('set up with a written prompt'));
-  ok('d5: the Venice page says either its old wording or the corrected one ("set up with a written prompt"), never both and never neither', hasOld !== hasNew, `old: ${hasOld}, new: ${hasNew}`);
+  ok('d5: the Venice page no longer says "trained in NVC+ principles" and says the character is retired', !venicePage.includes(norm('trained in NVC+ principles')) && venicePage.includes(norm('It is retired.')));
 }
 // fixed on 2026-11-09 (Privacy Promise rewrite): the old wording must stay gone
 const fixedGone: [string, string, string][] = [
