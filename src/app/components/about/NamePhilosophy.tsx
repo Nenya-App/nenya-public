@@ -10,6 +10,7 @@ import { ScrollHint } from '../ScrollHint';
 import { AppFooter } from '../AppFooter';
 import { LOGO_ALT_LONG } from '../../../lib/altText';
 import { Cite, ReferenceList } from './AboutReferences';
+import { NON_AFFILIATION } from '../../../lib/tolkienNotice';
 
 interface NamePhilosophyProps {
   onBack: () => void;
@@ -107,7 +108,7 @@ export default function NamePhilosophy({ onBack }: NamePhilosophyProps) {
                 People who mean well build both kinds. The difference shows in what the tool is built to keep. Nenya is meant to sit alongside, and the next section says what that means in practice.
               </p>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                The ring names (Nenya, Vilya, Narya) are Tolkien&rsquo;s. We use them as this project&rsquo;s shorthand, as inspiration, with no claim of any connection to his estate.
+                The ring names (Nenya, Vilya, Narya) are Tolkien&rsquo;s. We use them as this project&rsquo;s shorthand, as inspiration. {NON_AFFILIATION}
               </p>
             </section>
           </BloomOnScroll>

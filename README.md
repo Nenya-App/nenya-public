@@ -7,6 +7,8 @@ state without having to put it into words first.
 
 Live at [nenya.biz](https://nenya.biz).
 
+Nenya is an independent, free project inspired by J. R. R. Tolkien's books. It is not affiliated with or endorsed by the Tolkien Estate, Middle-earth Enterprises, or any Tolkien licensee.
+
 Nenya is not a medical device or a substitute for professional care. See
 the in-app Terms of Use for the full statement, including crisis resources.
 

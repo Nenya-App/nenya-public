@@ -1,6 +1,7 @@
 # Nenya
 
 > Nenya (nenya.biz) is a free, open-source (AGPL-3.0) browser tool for a pause: a minute of paced breathing, then six optional sensory lenses, with an optional AI coach demo. No account is required. It is not therapy, medical care or a crisis service; in the US, call or text 988. Named for Galadriel's ring in Tolkien's Middle-earth; independent, and not affiliated with the Tolkien Estate. Fiscally sponsored by Fractured Atlas.
+> Nenya is an independent, free project inspired by J. R. R. Tolkien's books. It is not affiliated with or endorsed by the Tolkien Estate, Middle-earth Enterprises, or any Tolkien licensee.
 
 ## Read these first
 - [About Nenya](https://nenya.biz/about-nenya.html): what it is, what each part does, and how it handles data.
