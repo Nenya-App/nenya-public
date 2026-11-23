@@ -27,8 +27,8 @@ export const MIND_COST_LINES = {
   'paid-anonymous': 'It runs on a paid model through Venice, which shows that model as Anonymous, not Private. Venice\'s own terms, prices and privacy practices apply.',
   // With a markup on the Mind's chat credits (owner, 2026-11-23: intended, amount open). No figure. Nothing about where the money goes beyond what the owner can
   // confirm, and nothing about the nonprofit or tax. Do not use until the owner has confirmed how Venice pays a creator's markup (docs/mind-facts.md).
-  'paid-private-markup': 'It runs on a paid model through Venice, which shows that model as Private, so chats cost credits. A small markup on those credits helps pay for running the free Nenya site. Venice\'s own terms, prices and privacy practices apply.',
-  'paid-anonymous-markup': 'It runs on a paid model through Venice, which shows that model as Anonymous, not Private, so chats cost credits. A small markup on those credits helps pay for running the free Nenya site. Venice\'s own terms, prices and privacy practices apply.',
+  'paid-private-markup': 'It runs on a paid model through Venice, which shows that model as Private, so chats cost credits. A small markup on those credits helps offset the cost of running the free Nenya site. Venice\'s own terms, prices and privacy practices apply.',
+  'paid-anonymous-markup': 'It runs on a paid model through Venice, which shows that model as Anonymous, not Private, so chats cost credits. A small markup on those credits helps offset the cost of running the free Nenya site. Venice\'s own terms, prices and privacy practices apply.',
 } as const;
 export type MindCostVariant = keyof typeof MIND_COST_LINES;
 export const MIND_COST_VARIANT: MindCostVariant = 'free';
