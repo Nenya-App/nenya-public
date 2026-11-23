@@ -34,7 +34,8 @@ checklist in `CONTRIBUTING.md` for which ones must run before a release.
 | `eval-final-turn.mts` | How often the fifth reply still asks a question | Key |
 | `eval-final-summary.mts` | Reads the fifth reply of invented conversations from a local model for the v2.1 summary (no question, feelings and needs, transcript pointer, no promise, length) | Local |
 | `eval-prompts.mts` | A sample of an open prompt set run against a deployed coach, with a result you can publish | Deployed |
-| `eval-detect.mts` | The site's detection (private list, history patterns, card offers) run over outside test sets | Research folder |
+| `eval-detect.mts` | The site's detection (private list, history patterns, card offers) run over outside test sets. `--record` appends a counts-only run, with the version fingerprint, to `src/lib/checksRuns.json`, the record behind the live figures on "How the Checks Work" (`docs/checks-live-figures.md`) | Research folder |
+| `lib/checksRecord.mts` | Version fingerprint, groups-file checks and the record file's appender, used by `eval-detect.mts --record` | n/a |
 | `holistic-coach.mts` | About 50 short conversations across every area of the coach | Deployed |
 | `staging-suite.mts` | Checks staging against `docs/dev-test-script.md` | Deployed |
 | `dev-coach.mts` | Sends one conversation to a deployed coach from the terminal | Deployed |
@@ -48,7 +49,7 @@ if the model changes.
 | Script | What it does | Needs |
 | --- | --- | --- |
 | `bakeoff-models.py` | Scores the candidate models on HateCheck and ETHOS at a 2% false-alarm line, with their cost. Counts only | Research folder |
-| `bakeoff-target-groups.py` | Catch and false-alarm rates for each target group, for the model and the list (run `eval-detect.mts --dump` first) | Research folder |
+| `bakeoff-target-groups.py` | Catch and false-alarm rates for each target group, for the model and the list (run `eval-detect.mts --dump` first). `--json out.json` also writes exact counts for `eval-detect.mts --record --groups out.json` | Research folder |
 | `bakeoff-heldout-bias.py` | Threshold checked on held-out halves, plus flag rates on invented neutral sentences about 27 groups | Research folder |
 | `bakeoff-second-reading.py` | Tests whether a second model (toxic-bert) closes the per-group gaps on the same budget | Research folder |
 | `bakeoff-workers-ai.mts` | Runs the persona set through the real coach function with the model call sent to Workers AI instead of Venice (or to a local model server with `--local-url`); `--layers` records what the guards did; `--capture` keeps each request and the usage reported; `--venice` or `--openrouter` sends the model call to a Venice or OpenRouter model instead (tokens and dollars totalled; OpenRouter asks for no-data-collection hosts, `--zdr` for zero-retention hosts; testing only) | Cloudflare account (Venice testing key with `--venice`) |
