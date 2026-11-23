@@ -1,5 +1,16 @@
 # A values-based quote library as its own Lens: scope
 
+> **Owner decisions, 2026-11-22 (these settle the rights and first-release questions below).**
+> - **Rights policy A: Tier 1 only** (public domain or open licence). No in-copyright quotes: Tolkien, Sailor Moon and NVC appear, if at all, only as paraphrase and citation.
+> - **Tolkien in marketing: paraphrase and cite only.** No Tolkien quotes or images in posts (the Estate's FAQ says it does not permit them in marketing, including non-profit use; Middle-earth Enterprises holds NENYA for jewelry). A short quote on the library page only if a lawyer agrees.
+> - **Social posts from quotes: text only, Tier 1 sources.** No quote graphics.
+> - **The Lens is called "Voices"** (no "Nonviolent Communication" or "Tolkien" in the name or the title).
+> - **Data lives in a private store added at build time;** the repo holds the format, the checker and invented placeholder text. Cleared Tier 1 quotes may move to the public repo later as a separate decision.
+> - **First set: a small verified seed** (about 30 to 40 public-domain quotes), each verified by the owner against her own copy before it can show. **Secular sources first; faith pages later**, each read by someone from that tradition before it goes live.
+> - **Permission requests: not now.** They go on the lawyer's question sheet.
+> - The LM Studio candidates (55) are NOT a source: they are model output with misattributions and rights problems. Verified quotes are rebuilt from public-domain editions.
+
+
 Written 2026-11-22. **Scoping only.** No feature code was written and **no quote text is in the repository**, in this file or anywhere else. Base: `dev` at `af331a0`. Everything here is a proposal for the owner to approve, change or drop. Nothing on the site changes.
 
 ## What was and was not read
