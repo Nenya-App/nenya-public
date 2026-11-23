@@ -212,9 +212,10 @@ ok('deliberate harm holds back the perspective-taking and skill-building new mov
   const g = selectModules(["He's doing it on purpose. Every time I raise it he changes the subject. I want him to understand, it's a hard conversation and I'm furious, I need to tell him."]);
   return g.includes('harm_named_as_intended') && !['name_behavior_neutrally', 'two_intentions', 'rough_draft_first', 'smallest_next_step'].some((id) => g.includes(id));
 })());
-ok('deliberate harm does not hold back protective_not_punitive or offer_a_smaller_step', (() => {
+ok('deliberate harm does not hold back protective_not_punitive', selectModules(["He did it on purpose and I want him to pay for it."]).includes('protective_not_punitive'));
+ok('deliberate harm does not hold back offer_a_smaller_step (which then stands alone among the moves)', (() => {
   const g = selectModules(["He did it on purpose and I want him to pay for it, and I'm overwhelmed."]);
-  return g.includes('protective_not_punitive') && g.includes('offer_a_smaller_step');
+  return g.includes('offer_a_smaller_step') && !g.includes('protective_not_punitive');
 })());
 ok('at most three modules and safety first when the new moves also match', (() => {
   const g = selectModules(["I had a panic attack. I'm overwhelmed. I want him to pay for what he did. Every time I raise it he goes quiet. I'm devastated and I'm leaving my husband."]);
@@ -243,4 +244,12 @@ ok('softened conversations get the core only, even when a new move matches', (()
   ok(`the worst case for one reply stays under the 12,000-character cap (${worst})`, worst < 12000);
   const notes = buildNotes({ core, modules: stand }, ["I'm overwhelmed. I want him to pay for what he did. Every time I raise it he goes quiet."], { maxChars: 9000 });
   ok('a real selection with long text still fits the 9,000-character notes budget', notes.length <= 9000);
+}
+
+// Owner, 2026-11-22: "offer a smaller step" is one clear offer; when it applies, no other move is chosen beside it.
+{
+  const sel = selectModules(["I'm overwhelmed. He goes quiet every time I raise it, and I want to say something hard to him."]);
+  ok('offer_a_smaller_step holds the other moves back when it applies', sel.includes('offer_a_smaller_step') && sel.filter((id) => MODULE_GROUPS[id] === 'move').length === 1);
+  const other = selectModules(['He goes quiet every time I raise it.']);
+  ok('without it the other moves are still chosen', other.includes('name_behavior_neutrally') && !other.includes('offer_a_smaller_step'));
 }

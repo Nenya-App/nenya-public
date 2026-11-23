@@ -115,6 +115,8 @@ export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup
   }
   // Leave out moves that pull against a lens that applies.
   for (const lens of Object.keys(SUPPRESS)) if (hit.has(lens)) SUPPRESS[lens].forEach((id) => hit.delete(id));
+  // "Offer a smaller step" is one clear offer (space, something lighter, or later) and nothing beside it (owner, 2026-11-22): when it applies, the other moves are left out.
+  if (hit.has('offer_a_smaller_step')) for (const [id, group] of TRIGGERS) if (group === 'move' && id !== 'offer_a_smaller_step') hit.delete(id);
   const out: string[] = [];
   const used: Record<string, number> = { safety: 0, lens: 0, move: 0, resource: 0 };
   for (const [id, group] of TRIGGERS) {
