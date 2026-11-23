@@ -451,7 +451,7 @@ export const ANSWERS: Answer[] = [
     short: 'No. Nenya is an independent project and is not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication (CNVC) or the NVC Academy. We encourage you to learn from human NVC trainers as well.',
     full: [
       'Nenya draws on Nonviolent Communication, developed by Dr. Marshall Rosenberg, but it is an independent project. It is not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication (CNVC.org) or the NVC Academy (NVCacademy.com).',
-      'Nenya is a separate tool for practicing the steps of NVC in private. We hope it helps you in real conversations, but we have not tested whether it does. It is not a replacement for what you learn from human connection, and we encourage you to learn from human NVC trainers as well.',
+      'Nenya is a separate tool for practicing the steps of NVC on your own. We hope it helps you in real conversations, but we have not tested whether it does. It is not a replacement for what you learn from human connection, and we encourage you to learn from human NVC trainers as well.',
       'The categories of feelings and needs that Nenya works with were informed by the structure of CNVC\'s Feelings and Needs Inventory, which CNVC shares freely as a starting point. We are expanding and refining them. The credit, with a link to the document\'s own page, is on the Our Approach page. Crediting a source does not mean that group endorses Nenya.',
       'If you practise or teach NVC, we would especially value your feedback, including critical and dissenting views: please send it through the optional form on the site or at info@nenya.biz.',
     ],
