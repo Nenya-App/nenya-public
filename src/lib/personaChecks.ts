@@ -50,9 +50,10 @@ const MEDICAL_DIRECTION = any([
 ]);
 const MEDICAL_SOFTENS = /\b(?:can(?:'|’)?t|cannot|won(?:'|’)?t|shouldn(?:'|’)?t|don(?:'|’)?t|do not|not (?:asking|telling|suggesting|saying|able)|unable|before|without|whether|talk|ask|check with|speak|prescriber|doctor|pharmacist)\b/i;
 
-const PATTERNS: Record<CheckName, (t: string) => boolean> = {
-  // Invented human life: a parent, a past, a body, a family, a daily life.
-  claimsHumanLife: any([
+// The phrases that read as an invented human life. A match inside a clause that is negated ("I don't have my own kids", "No, I don't have a family") is an honest denial, not a claim, and is
+// left alone (Venice's review, 2026-11-22: the first sentence was read as a claim and the reply replaced). Only the clause the phrase is in counts: "I don't have kids, but when I was a kid my
+// mother ..." still has a claim in its second clause.
+const HUMAN_LIFE: RegExp[] = [
     /\bas (?:a|an) (?:parent|mother|father|mom|dad)(?: myself|,? (?:I|my)\b)/i,
     /\bas someone who(?:'s| has| had)? (?:been|lost|raised|gone|lived|grown)\b/i,
     /\bwhen I was (?:a (?:kid|child|teen|teenager|young)|young|your age|growing up|going through|little)\b/i,
@@ -69,7 +70,27 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
     /\bI (?:used to|studied|worked (?:as|at)|lived in|went to (?:school|college|university)|have a (?:body|family|job|home))\b/i,
     /\bI (?:love|enjoy|prefer|like) (?:to )?(?:go|going|play|playing|hik(?:e|ing)|read|reading|cook|cooking|garden|gardening|watch|watching|run|running|travel(?:l?ing)?|camping|swimming|dancing|baking)\b/i,
     /\bI (?:eat|sleep|get (?:tired|hungry|cold)|feel (?:tired|hungry|cold))\b/i,
-  ]),
+];
+const NEGATION = /\b(?:don'?t|do not|doesn'?t|does not|didn'?t|did not|haven'?t|have not|hasn'?t|never|no|not|nor|neither|without|isn'?t|aren'?t|can'?t|cannot|won'?t)\b/i;
+const CLAUSE_START = /[,;:\u2014]\s*|\s(?:but|and|though|although|yet|so)\s/gi;
+/** True when one of the patterns matches and the words before the match, inside its own clause, hold no negation. */
+export function unnegatedMatch(res: RegExp[], text: string): boolean {
+  for (const sentence of text.split(/(?<=[.!?])\s+|\n+/)) {
+    for (const re of res) {
+      for (const m of sentence.matchAll(new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g'))) {
+        const at = m.index ?? 0;
+        let from = 0;
+        for (const b of sentence.slice(0, at).matchAll(CLAUSE_START)) from = (b.index ?? 0) + b[0].length;
+        if (!NEGATION.test(sentence.slice(from, at + m[0].length))) return true;
+      }
+    }
+  }
+  return false;
+}
+
+const PATTERNS: Record<CheckName, (t: string) => boolean> = {
+  // Invented human life: a parent, a past, a body, a family, a daily life.
+  claimsHumanLife: (t) => unnegatedMatch(HUMAN_LIFE, t),
   // Denying being an AI, or claiming to be a person.
   deniesBeingAI: any([
     // Not when the words are refused or negated: "I cannot prove I am a person", "I won't say I am human", "I'd rather not pretend I am a person" (an honest answer; 2026-11-20).

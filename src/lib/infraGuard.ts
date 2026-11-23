@@ -6,7 +6,10 @@
 
 export const INFRA_PATTERNS: RegExp[] = [
   // "we run on AWS", "this site is hosted by Google", "I'm built on OpenAI"
-  /\b(?:we|nenya|this (?:site|app|tool)|i)(?:'m| am| are|'re)?\b[^.?!]{0,40}\b(?:run|runs|running|host|hosted|hosts|use|uses|using|store|stores|stored|built|powered|trained)\b[^.?!]{0,40}\b(?:aws|amazon|google|gcp|azure|microsoft|openai|chatgpt|gpt-?\d\w*|anthropic|claude|gemini|llama|mistral|deepseek|meta)\b/i,
+  // Tightened 2026-11-22 (Venice's review): "I" as the subject only with the verbs that say what the coach is ("I'm built on", "I run on"), and "meta" only as a company, so a sentence like "I use
+  // what you said" or "that is a meta question" is not read as a claim about hosting.
+  /\b(?:we|nenya|this (?:site|app|tool))(?:'re| are)?\b[^.?!]{0,40}\b(?:run|runs|running|host|hosted|hosts|use|uses|using|store|stores|stored|built|powered|trained)\b[^.?!]{0,40}\b(?:aws|amazon|google|gcp|azure|microsoft|openai|chatgpt|gpt-?\d\w*|anthropic|claude|gemini|llama|mistral|deepseek|meta ai|meta platforms|facebook)\b/i,
+  /\bi(?:'m| am)\b[^.?!]{0,40}\b(?:running|hosted|built|powered|trained)\b[^.?!]{0,40}\b(?:aws|amazon|google|gcp|azure|microsoft|openai|chatgpt|gpt-?\d\w*|anthropic|claude|gemini|llama|mistral|deepseek|meta ai|meta platforms|facebook)\b|\bi (?:run|am run|'m run) (?:on|by)\b[^.?!]{0,30}\b(?:aws|amazon|google|gcp|azure|microsoft|openai|chatgpt|gpt-?\d\w*|anthropic|claude|gemini|llama|mistral|deepseek|meta ai|meta platforms|facebook)\b/i,
   /\bend[- ]to[- ]end\b/i,
   // who can see or read the conversation (the coach cannot know what is read, stored or watched)
   /\b(?:no ?one|nobody|no humans?|no (?:real )?person)\s+(?:(?:is|are|can|will|could|would|ever|else)\s+)*(?:reading|reads?|seeing|sees?|watching|watches|listening|monitoring|reviewing|looking)\b/i,
@@ -16,7 +19,7 @@ export const INFRA_PATTERNS: RegExp[] = [
   // claims about what happens to the person's data, kept or not kept ("I don't keep any data", "Nenya doesn't store or use any information about you",
   // "your data is private and secure", "deleted afterward", "anonymous"): the coach cannot know (its instructions do let it say it will not remember
   // this conversation and that Nenya does not keep it, so a plain statement about the conversation itself is not matched), and the pre-written answer says what is true
-  /\b(?:don'?t|do not|doesn'?t|does not|never|won'?t|will not|can'?t|cannot|not)\s+(?:\w+\s+){0,2}?(?:keep|store|save|record|log|collect|retain|share|sell|use|track|read|see|access)s?\b[^.?!]{0,30}\b(?:any |your |the |all |a |of )*(?:data|information|details|personal|what you (?:say|write|share|type|tell)|anything (?:about you|you (?:say|write|share|type|tell)))\b/i,
+  /\b(?:don'?t|do not|doesn'?t|does not|never|won'?t|will not|can'?t|cannot|not)\s+(?:\w+\s+){0,2}?(?:keep|store|save|record|log|collect|retain|share|sell|use|track|read|see|access)s?\b[^.?!]{0,30}\b(?:any |your |the |all |a |of )*(?:data|information|(?:personal|private|account|contact) (?:details|data|information)|what you (?:say|write|share|type|tell)|anything (?:about you|you (?:say|write|share|type|tell)))\b/i,
   /\b(?:your|the|this|our)\s+(?:data|information|conversation|chat|messages?|words|details|privacy)\s+(?:is|are|stays?|remains?|will be|gets?)\s+(?:\w+\s+){0,2}?(?:private|secure|safe|anonymous|confidential|protected|encrypted|deleted|erased|forgotten|not (?:stored|saved|kept|recorded|used|shared|sold)|never (?:stored|saved|kept|recorded|used|shared|sold))\b/i,
   /\b(?:is|are|will be|gets?|get)\s+(?:immediately |automatically |permanently |always )?(?:deleted|erased|forgotten|wiped|discarded)\s+(?:afterward|afterwards|after|when|once|as soon|right away|immediately)\b/i,
   /\b(?:completely |totally |fully |100% )?(?:anonymous|confidential)\b/i,
@@ -34,7 +37,7 @@ export const INFRA_RULE =
 
 /** The extra instruction for the one retry. */
 export const INFRA_NOTE =
-  "Your last reply described how Nenya runs, how data is handled, or promised something it cannot know. Answer again without any such claim: say plainly that you do not have that detail and that the About pages and the Terms explain it, and keep to what the person is feeling or asking.";
+  "Your last reply described how Nenya runs, how data is handled, or promised something it cannot know. Answer again without any such claim, and answer what the person actually said or asked: if they asked about your own life, family or feelings, say plainly that you have none; if they asked how Nenya runs or what happens to what they write, say plainly that you do not have that detail and that the About pages and the Terms explain it. Keep the same subject as their message and do not change it.";
 
 /** What the page shows if the retry still makes a claim. */
 export const INFRA_FALLBACK =

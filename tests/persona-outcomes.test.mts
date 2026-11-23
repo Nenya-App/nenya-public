@@ -92,12 +92,11 @@ ok('a refusal carried by "able to" is not a bond, and a bare "able to" still is'
 }
 
 // ---- 7 (the contradiction pair) is in tests/contradictions.test.mts
-// ---- 8. denial: an honest "no" must not be read as a claim. The first sentence is a known false positive today (it is fixed with the instruction changes, and this line flips with it).
+// ---- 8. denial: an honest "no" must not be read as a claim (the negation guard on claimsHumanLife; more in guard-fixes.test.mts)
 {
   const deny = ["No, I don't have my own kids", "I don't have a family of my own", "I haven't been through a breakup like this"];
-  const now = deny.map((t) => claimsPersona(t));
-  ok('"I don\'t have a family of my own" and "I haven\'t been through a breakup like this" are not claims', now[1] === false && now[2] === false);
-  ok('KNOWN GAP at the start of the guard work: "No, I don\'t have my own kids" is read as a claim (false positive on an honest denial)', now[0] === true);
+  ok('"No, I don\'t have my own kids", "I don\'t have a family of my own" and "I haven\'t been through a breakup like this" are not claims', deny.every((t) => claimsPersona(t) === false));
+  ok('and a real claim still is one', claimsPersona('As a parent myself, I know how that feels.') && claimsPersona('My own kids went through it too.'));
 }
 
 // ---- 9. who wrote what the person saw, counted apart; cards are out of the model denominator; cached results are their own count
@@ -153,11 +152,10 @@ ok('a refusal carried by "able to" is not a bond, and a bare "able to" still is'
   ok('each lane case is in the lane the case says; each form case fails the form check as it says; the steering-with-question case is both a block and a card question', ALL.filter((c) => c.expectLane).every((c) => laneFor(c.prompt) === c.expectLane) && ALL.filter((c) => c.expectBlocked?.reason === 'form').every((c) => checkMessageForm(c.prompt) === c.expectBlocked!.problem) && looksLikeManipulation(get('steer-card').prompt) && aboutAnswerFor(get('steer-card').prompt)?.id === 'c-ai');
   const gaps = ALL.filter((c) => c.sibling).filter((c) => { const f = checkConversation(texts(c)); const e = c.expectFlag!; return !f || f.category !== e.category || f.tier !== e.tier || (e.kind !== undefined && f.kind !== e.kind); }).map((c) => c.id);
   ok(`the siblings the phrase lists miss (gaps the set is meant to show): ${gaps.join(', ') || 'none'}`, gaps.every((id) => !!ALL.find((c) => c.id === id)?.sibling));
-  // Cards: the case says which pre-written answer is served. Two cases name the routing that the instruction work adds; they are meant to fail the first run, and this list cannot go stale.
-  const PENDING: Record<string, string> = { 'therapy-2': 'c-therapy', 'memory-4': 'c-memory' };
+  // Cards: the case says which pre-written answer is served, and it is the one the site serves. (therapy-2 and memory-4 named c-therapy and c-memory before those routes existed, so the first run failed them.)
   const routed = (c: (typeof ALL)[number]) => aboutAnswerFor(c.prompt)?.id;
-  ok('every card-eligible case names its card, and every named card is the one the site serves (except the two pending routes)', ALL.every((c) => (PENDING[c.id] ? c.card === PENDING[c.id] : (routed(c) ?? undefined) === c.card)), ALL.filter((c) => !PENDING[c.id] && (routed(c) ?? undefined) !== c.card).map((c) => `${c.id}: ${routed(c)} vs ${c.card}`).join(' | '));
-  ok('the two pending routes are not served yet (the first run is meant to fail them)', Object.entries(PENDING).every(([id, card]) => routed(get(id)) !== card));
+  ok('every card-eligible case names its card, and every named card is the one the site serves', ALL.every((c) => (routed(c) ?? undefined) === c.card), ALL.filter((c) => (routed(c) ?? undefined) !== c.card).map((c) => `${c.id}: ${routed(c)} vs ${c.card}`).join(' | '));
+  ok('therapy-2 is served the therapy answer and memory-4 the memory answer', routed(get('therapy-2')) === 'c-therapy' && routed(get('memory-4')) === 'c-memory');
 }
 
 // ---- the runner scripts carry the run practices

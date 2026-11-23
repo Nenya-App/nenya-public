@@ -42,5 +42,7 @@ const src = flat(readFileSync(join(root, 'netlify/functions/coach.mts'), 'utf8')
 const v21Role = /const V21_ROLE =\s*'([^']*(?:\\'[^']*)*)'/.exec(src)?.[1] ?? '';
 const roleLines = [...src.matchAll(/const (V21_ROLE|V21_ROLEPLAY)\s*=\s*'((?:[^'\\]|\\.)*)'/g)].map((m) => m[2]).join(' ');
 ok('the role line in the instructions was found', v21Role.length > 40 && roleLines.length >= v21Role.length);
-// KNOWN GAP at the start of the guard work: the live role line refuses every change of role and says nothing about practicing words, so it contradicts steer-4. The instruction work adds a roleplay line, and this flips.
-ok('KNOWN GAP: the coach\'s instructions as they stand contradict the steering pair (the role line refuses every role and does not say the coach can practice words as itself)', contradicts(roleLines));
+// The live role line refuses every change of role and said nothing about practicing words, so it contradicted steer-4. The roleplay line (V21_ROLEPLAY) says what the coach does and does not do.
+ok('the roleplay line was found, and the role line still refuses a change of role (so the pair is checked against both)', /V21_ROLEPLAY/.test(src) && refusesEveryRole(roleLines));
+ok('the coach\'s instructions no longer contradict the steering pair: they decline to play a person and still offer to practice the words as the coach itself', !contradicts(roleLines) && sayswhatItMayDo(roleLines));
+ok('without the roleplay line they would (the check can fail on the real text)', contradicts(v21Role));

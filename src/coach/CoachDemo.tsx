@@ -13,6 +13,7 @@ import { COACH_SERVICE } from '../lib/coachService';
 import { waitingShown, waitingText } from '../lib/waitingMessage';
 import { noteSafetyStop, veniceOfferAllowed } from '../lib/veniceOffer';
 import { looksLikeManipulation, MANIPULATION_NOTICE } from '../lib/promptGuard';
+import { blockedCardFor, type BlockedCard } from '../lib/blockedCard';
 import { OWNER_KEY, OWNER_TOKEN_KEY, REST_KEY } from '../lib/deviceMemory';
 import { overridesForRequest } from '../lib/ownerPanel';
 import { readPauseEnds } from '../lib/pause';
@@ -224,6 +225,8 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
   }, [sending]);
   const [failure, setFailure] = useState<FailureInfo | null>(null);
   const [blocked, setBlocked] = useState(false);
+  // A blocked message that is also a question the site answers shows the notice AND the pre-written answer (the owner's decision of 2026-11-22; src/lib/blockedCard.ts).
+  const [blockedCard, setBlockedCard] = useState<BlockedCard | null>(null);
   // Too short or no words to read: not sent, no turn used, the draft stays (src/lib/messageGate.ts).
   const [formProblem, setFormProblem] = useState<FormProblem | null>(null);
   // Today's free conversations are used up. Only known when a first message is sent.
@@ -305,6 +308,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     const text = draft.trim();
     if (!text || sending) return;
     setBlocked(false);
+    setBlockedCard(null);
     setFormProblem(null);
     // The person says they are stuck for words: the feelings-and-needs list opens beside the box (for this visit only; the folded setting they chose is not changed).
     if (isStuck(text)) setWordsOpen(true);
@@ -312,6 +316,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
     // A message that tries to steer the coach is not sent. The draft stays so it can be reworded.
     if (looksLikeManipulation(text)) {
       setBlocked(true);
+      setBlockedCard(blockedCardFor(text)); // nothing is sent: only an answer that needs no fill-in is shown here
       return;
     }
 
@@ -372,6 +377,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
         contextFlag?: SafetyFlag;
         blocked?: string;
         card?: AnswerCardData;
+        answer?: string;
         offer?: { id: string; proof: string };
         checked?: string[];
         edits?: { kind: 'added' | 'removed' | 'removed-care'; n: number; proof: string }[];
@@ -394,6 +400,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
       }
       if (data.blocked) {
         setBlocked(true);
+        if (data.card && typeof data.answer === 'string') setBlockedCard({ answer: data.answer, card: data.card });
         return;
       }
       if (data.contextFlag) setContextFlag(data.contextFlag);
@@ -955,7 +962,7 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     onChange={(e) => {
                       setDraft(e.target.value);
                       touch();
-                      if (blocked) setBlocked(false);
+                      if (blocked) { setBlocked(false); setBlockedCard(null); }
                       if (formProblem) setFormProblem(null);
                     }}
                     onKeyDown={(e) => {
@@ -1023,6 +1030,12 @@ export default function CoachDemo({ colors, onBack, onActiveChange, onBreathe, o
                     <p role="alert" className="rounded-lg border border-amber-500/60 p-3 text-sm">
                       {MANIPULATION_NOTICE}
                     </p>
+                  )}
+                  {blocked && blockedCard && (
+                    <div className="space-y-2">
+                      <p className="text-sm leading-relaxed">{blockedCard.answer}</p>
+                      <AnswerCard card={blockedCard.card} />
+                    </div>
                   )}
                   {formProblem && (
                     <p role="status" className="rounded-lg border border-border p-3 text-sm">
