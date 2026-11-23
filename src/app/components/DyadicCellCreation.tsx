@@ -39,7 +39,7 @@ export default function DyadicCellCreation({ onCreateCell, onBack }: DyadicCellC
             </Badge>
           </div>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto">
-            Create a private, facilitated space for dialogue. Share this code with one person to begin.
+            Start a two-person dialogue (preview). Share this code with one person to begin.
           </p>
         </div>
 

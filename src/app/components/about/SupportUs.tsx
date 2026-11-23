@@ -58,8 +58,8 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                 <div className="size-10 rounded-full bg-nenya-gold/10 flex items-center justify-center">
                   <Shield className="size-5 text-nenya-gold-text dark:text-nenya-gold" />
                 </div>
-                <h4 className="font-medium">Privacy-first</h4>
-                <p className="text-sm text-muted-foreground">We do not track you or mine your data. Your inner life stays yours.</p>
+                <h4 className="font-medium">No account, no ads</h4>
+                <p className="text-sm text-muted-foreground">What you enter in the reflection tools stays on your device unless you choose to send it.</p>
               </Card>
               <Card className="p-5 space-y-3">
                 <div className="size-10 rounded-full bg-nenya-gold/10 flex items-center justify-center">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Check, Share2 } from 'lucide-react';
 
 const SITE_URL = 'https://nenya.biz';
-const SHARE_TEXT = 'Nenya: a free, private place to pause, breathe, and find words for what you feel.';
+const SHARE_TEXT = 'Nenya: a free place to pause, breathe, and find words for what you feel.';
 
 interface ShareNenyaProps {
   /** "link" is a quiet text control for footers; "button" is an outlined button; "header" is a small ghost button with the word "Share" and "icon" is the icon alone (for narrow headers). */

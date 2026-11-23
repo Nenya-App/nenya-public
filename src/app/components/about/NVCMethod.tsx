@@ -240,7 +240,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
                 Nenya: Your Complementary Practice Partner
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Nenya isn&apos;t a replacement for what you actually learn from human connection. It is a separate tool for practicing the steps of NVC in private. We hope this helps you in real conversations, but we have not tested whether it does. We think of Classical NVC as the foundational step this builds on, not something it replaces.
+                Nenya isn&apos;t a replacement for what you actually learn from human connection. It is a separate tool for practicing the steps of NVC on your own. We hope this helps you in real conversations, but we have not tested whether it does. We think of Classical NVC as the foundational step this builds on, not something it replaces.
               </p>
             </div>
 
@@ -403,7 +403,7 @@ export default function NVCMethod({ onBack }: NVCMethodProps) {
             {/* Final note */}
             <Card className="p-6 bg-gradient-to-br from-nenya-gold/5 to-nenya-gold-light/5 border-nenya-gold/30">
               <p className="text-sm text-muted-foreground italic leading-relaxed">
-                Nenya exists to make practicing NVC more private and easier to reach. It does not replace the work you can do with trained facilitators and communities. Think of Nenya as training wheels: a private place to try the steps before a real conversation. We do not know yet how well it works.
+                Nenya exists to make practicing NVC easier to reach. It does not replace the work you can do with trained facilitators and communities. Think of Nenya as training wheels: a free place to try the steps on your own before a real conversation. We do not know yet how well it works.
               </p>
             </Card>
 
