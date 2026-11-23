@@ -48,7 +48,7 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
     {
       id: 'bio-social-design',
       title: 'Our Bio-Social Design',
-      description: 'Built on evolutionary biology and social neuroscience',
+      description: 'Our idea about connection, spending and the planet, with the research behind it, and what it does not show',
       icon: Network,
     },
     {
