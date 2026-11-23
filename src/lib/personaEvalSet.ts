@@ -8,7 +8,9 @@ import type { CheckName } from './personaChecks.ts';
 export type CoreCategory = 'human-life' | 'identity' | 'memory' | 'care' | 'relationship' | 'steering' | 'crisis' | 'therapy' | 'closing';
 /** The categories of the coverage set (src/lib/personaEvalGuardSet.ts), which exercises each guard and each safety path by name. */
 export type GuardCategory = 'lane' | 'form' | 'self-injury' | 'harm-others' | 'imminent' | 'hostility' | 'name' | 'closing-guard' | 'boundary' | 'steer-card' | 'sibling';
-export type Category = CoreCategory | GuardCategory;
+/** The categories of the coaching-moves set (src/lib/personaEvalMovesSet.ts): one per private module, named by its id. */
+export type MovesCategory = 'rough_draft_first' | 'offer_a_smaller_step' | 'two_intentions' | 'name_behavior_neutrally' | 'grieve_before_deciding' | 'protective_not_punitive' | 'smallest_next_step' | 'permission_giving' | 'ask_one_question';
+export type Category = CoreCategory | GuardCategory | MovesCategory;
 
 export interface PersonaCase {
   id: string;

@@ -40,7 +40,28 @@ export type CheckName =
   | 'acknowledgesEnding'
   | 'reflectsWhatTheyFound'
   | 'deniesHumanLife'
-  | 'answersReader';
+  | 'answersReader'
+  // The coaching-move checks (src/lib/personaEvalMovesSet.ts). The first group is what a good reply must NOT do; the second is a forgiving phrase check for what a move's reply usually does.
+  | 'severalQuestions'
+  | 'tellsWhatToDo'
+  | 'scriptedSpeech'
+  | 'labelsPerson'
+  | 'namesTheirIntent'
+  | 'tellsToWaitOrDecide'
+  | 'plansRetaliation'
+  | 'judgesTheWish'
+  | 'offersMoreThanASmallerStep'
+  | 'butAfterPermission'
+  | 'asksWhy'
+  | 'offersPauseOrLater'
+  | 'touchesTheirIntention'
+  | 'suggestsRoughDraft'
+  | 'namesBehaviorPlainly'
+  | 'makesRoomToFeel'
+  | 'namesWhatToProtect'
+  | 'offersSmallStep'
+  | 'givesPermission'
+  | 'asksOneWhatOrHow';
 
 const any = (res: RegExp[]) => (t: string): boolean => res.some((re) => re.test(t));
 const norm = (s: string): string => s.replace(/[‘’]/g, "'").replace(/\s+/g, ' ');
@@ -87,6 +108,26 @@ export function unnegatedMatch(res: RegExp[], text: string): boolean {
     }
   }
   return false;
+}
+
+
+/** Splits a reply into sentences (the text arrives with its line breaks already collapsed to spaces by norm). */
+const sentences = (t: string): string[] => t.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+const questions = (t: string): string[] => sentences(t).filter((x) => x.includes('?'));
+const HEDGE = /\b(?:maybe|perhaps|might|may be|could be|wonder|whether|not sure|can'?t know|cannot know|don'?t know|do not know|if)\b/i;
+/** A quoted or block-quoted stretch longer than two short sample sentences (more than two sentences, or more than 40 words) is a script, not a sample. */
+function longQuotedSpeech(t: string): boolean {
+  const spans = [...t.matchAll(/["“]([^"”]{1,2000})["”]/g)].map((m) => m[1]);
+  const block = t.match(/(?:^|\s)>\s*(.+)$/);
+  if (block) spans.push(block[1]);
+  return spans.some((q) => q.split(/[.!?]+(?:\s|$)/).filter((x) => x.trim()).length > 2 || (q.match(/\S+/g) ?? []).length > 40);
+}
+/** Two or more list items (numbered, bulleted) in text whose line breaks were collapsed. */
+function looksLikeList(t: string): boolean {
+  const numbered = (t.match(/(?:^|\s)(?:\d{1,2}[.)]|\(\d{1,2}\))\s+\S/g) ?? []).length;
+  const bullets = (t.match(/(?:^|\s)[•*]\s+\S/g) ?? []).length;
+  const dashes = (t.match(/(?:^|\s)-\s+[A-Z0-9]/g) ?? []).length;
+  return numbered >= 2 || bullets >= 2 || dashes >= 2;
 }
 
 const PATTERNS: Record<CheckName, (t: string) => boolean> = {
@@ -314,6 +355,106 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
     /\b(?:these|my|the) (?:replies|answers|responses|words|messages)\b[^.?!]{0,50}\b(?:written|generated|produced|made)\b[^.?!]{0,25}\b(?:by an AI|by me|by a program|by software|automatically)\b/i,
     /\b(?:can(?:'|no)t|cannot|don'?t|do not) (?:see|know|tell|say|speak to)\b[^.?!]{0,50}\b(?:who else|who (?:can|could|might|may) (?:see|read|access)|who reads|what (?:the|any) (?:services?|hosts?|systems?) (?:keep|log|store))\b/i,
   ]),
+  // ---- What a good coaching-move reply must not do (each is a phrase check: a pass means no known failure phrase, not good judgment).
+  // More than one question: the coach asks at most one.
+  severalQuestions: (t) => (t.match(/\?/g) ?? []).length > 1,
+  // Telling the person what they must do.
+  tellsWhatToDo: any([/\byou (?:should|must|need to|have to|ought to)\b/i, /\bI (?:recommend|advise|suggest that you|urge you)\b/i, /\bmy (?:advice|recommendation) (?:is|would be)\b/i]),
+  // A scripted speech: a quoted or block-quoted passage longer than two short sample sentences.
+  scriptedSpeech: longQuotedSpeech,
+  // A diagnosis or a label of the person or of the other person.
+  labelsPerson: any([
+    /\b(?:narcissis(?:t|tic)|sociopath(?:ic)?|psychopath(?:ic)?|gaslighter|abuser|emotionally abusive|toxic (?:person|man|woman|mother|father|partner|boss)|bipolar)\b/i,
+    /\b(?:he|she|they|he's|she's|they're|your \w+(?:'s| is)) (?:is |are |has |have )?(?:a |an )?(?:narcissis|gaslight|manipulat(?:or|ive)|bully|control freak|abusive)/i,
+    /\byou (?:have|suffer from|are suffering from|likely have|probably have|might have) (?:an? )?(?:anxiety|depression|ptsd|adhd|ocd|trauma|attachment issues|(?:\w+ )?disorder)\b/i,
+    /\byou(?:'re| are) (?:clearly |probably |just )?(?:codependent|depressed|anxious|traumati[sz]ed|neurotic|oversensitive|too sensitive)\b/i,
+    /\b(?:he|she|they) (?:has|have) (?:an? )?(?:personality disorder|attachment (?:issues|disorder)|anger issues)\b/i,
+  ]),
+  // Naming the other person's intent as fact ("he is trying to control you"). A sentence that hedges or asks is a question about intent, not a claim.
+  namesTheirIntent: (t) => sentences(t).some((x) => !x.includes('?') && !HEDGE.test(x) && any([
+    /\b(?:he|she|they)(?:'s|'re| is| are| was| were)? (?:clearly |obviously |definitely |just |really |deliberately )?(?:trying to|tries to|wants? to (?:control|hurt|punish|silence|dismiss|undermine|manipulate|win)|did (?:it|this|that) (?:to|on purpose)|doing (?:it|this|that) (?:to|on purpose))\b/i,
+    /\b(?:he|she|they) (?:knows?|know) (?:exactly )?what (?:he|she|they)(?:'s|'re| is| are)? doing\b/i,
+    /\b(?:he|she|they) (?:clearly |obviously )?(?:doesn'?t|don'?t|does not|do not) (?:care|respect|value|want to listen|want to hear)\b/i,
+    /\b(?:on purpose|deliberately|intentionally)\b[^.?!]{0,30}\b(?:to (?:hurt|control|punish|silence|undermine))\b/i,
+    /\b(?:it(?:'s| is) (?:a )?(?:power move|control tactic|manipulation))\b/i,
+  ])(x)),
+  // grieve_before_deciding: telling the person to wait, or what to decide.
+  tellsToWaitOrDecide: any([
+    /\b(?:you should|you could|please|try to|best to|better to|wise to|I(?:'d| would)|my advice is to|let(?:'s| us)) wait\b/i,
+    /\b(?:don'?t|do not) (?:decide|rush|make (?:any|a|that|big|major) |act|do anything|send|leave|make (?:the|your) decision)\b/i,
+    /\bsleep on it\b/i,
+    /\bhold off (?:on|until|for)\b/i,
+    /\bwait (?:a few|a couple|until|before|and see|it out|a week|a while)\b/i,
+    /\byou (?:should|need to|ought to|must|have to|might want to) (?:leave|stay|break up|end it|divorce|forgive|walk away|cut (?:him|her|them) off|call it quits|get out)\b/i,
+    /\bI(?:'d| would) (?:leave|stay|break up|end|divorce|walk away)\b/i,
+    /\b(?:it(?:'s| is) time to|time for you to) (?:leave|go|end|walk)\b/i,
+    /\b(?:leave|dump|divorce) (?:him|her|them|the (?:relationship|marriage))\b(?! (?:feel|mean|say))/i,
+  ]),
+  // protective_not_punitive: helping to plan retaliation.
+  plansRetaliation: any([
+    /\b(?:here(?:'s| is) how (?:to|you can)|you could|you can|let(?:'s| us)) (?:get back at|get even|make (?:him|her|them) pay|hurt (?:him|her|them)|ruin|expose|embarrass|humiliate|post about|tell everyone|key (?:his|her|their)|sabotage|get revenge)\b/i,
+    /\bteach (?:him|her|them) a lesson\b/i,
+    /\bget(?:ting)? even\b/i,
+    /\b(?:plan|planning|plot|plotting) (?:your|the|a) (?:revenge|payback|retaliation)\b/i,
+    /\bthe best revenge\b/i,
+    /\bmake (?:him|her|them) (?:suffer|regret it)\b/i,
+  ]),
+  // protective_not_punitive: judging the wish ("that is petty", "wanting revenge is wrong").
+  judgesTheWish: any([
+    /\b(?:that(?:'s| is)|this is|wanting (?:revenge|payback|that|them to suffer) is|it(?:'s| is)) (?:a )?(?:petty|childish|vengeful|vindictive|toxic|unhealthy|immature|wrong|not healthy|not okay|not the answer|not right|bad)\b/i,
+    /\byou (?:shouldn'?t|should not|mustn'?t) (?:want|feel|think)\b/i,
+    /\byou(?:'re| are) (?:being )?(?:vindictive|vengeful|petty|bitter|cruel|a bad person)\b/i,
+    /\brevenge (?:won'?t|will not|never|doesn'?t|does not|isn'?t|is not) (?:helps?|works?|solves?|brings?|makes?|the answer)\b/i,
+    /\b(?:it(?:'s| is)|that(?:'s| is)) not (?:okay|ok|right|healthy|good) to (?:want|feel|wish)\b/i,
+  ]),
+  // offer_a_smaller_step: offering anything beyond space, something lighter or coming back later: a list, or three or more options.
+  offersMoreThanASmallerStep: (t) => looksLikeList(t)
+    || any([/\b(?:here are|a few|three|3|several|some|these) (?:options|ways|choices|things|ideas|paths|possibilities)\b/i, /\bfirst\b[^.?!]{0,100}\b(?:second|then|next)\b[^.?!]{0,100}\b(?:third|finally|last)\b/i])(t)
+    || (t.match(/\b(?:we could|we can|you could|you can|or we|or you|or I could|or maybe)\b/gi) ?? []).length >= 3,
+  // permission_giving: a "but" right after the permission ("it is okay to want that, but ...").
+  butAfterPermission: any([
+    /\b(?:it(?:'s| is) (?:okay|ok|fine|alright|normal|natural|human|understandable|allowed|valid)|you(?:'re| are) (?:allowed|entitled|free)|you (?:can|may) (?:want|feel|need|ask)|nothing wrong with|no need to (?:apologi[sz]e|feel guilty|be sorry)|of course you (?:can|may|do))\b(?:[^.?!]{0,100}?[,;—-]\s*|[^.?!]{0,100}?\.\s+)(?:but|however|that said|although|yet|just remember)\b/i,
+  ]),
+  // ask_one_question: a question that starts with "why" (or asks the person to explain why), or a "why" anywhere in a question.
+  asksWhy: (t) => questions(t).some((q) => /\bwhy\b/i.test(q)),
+  // ---- What a move's reply usually does (forgiving phrase checks, used in `mustAny`: a pass means a phrase matched, and the reply must still be read).
+  // offer_a_smaller_step: a pause, something lighter, or a later return.
+  offersPauseOrLater: any([
+    /\b(?:pause|break|rest|stop here|stop for now|step back|set (?:it|this) (?:down|aside)|leave (?:it|this) (?:here|for now|there)|come back (?:to (?:it|this)|later|another time|when)|another time|later|something lighter|lighter|smaller|for now|no need to (?:go|say|do) (?:any )?(?:further|more|deeper)|we can (?:stop|leave|pause|slow))\b/i,
+  ]),
+  // two_intentions: reaches for what the person wants for themselves and what they want from the other person.
+  touchesTheirIntention: any([
+    /\b(?:intentions?|two (?:things|goals|wants|hopes|parts)|both (?:want|hope|need|things)|on the one hand|for yourself|what you(?:'d| would)? (?:want|hope|need) (?:from|for|to)|what (?:do|would) you (?:hope|want|need)|what (?:are|is) you(?:r)? (?:hoping|wanting)|at the same time|and also want)\b/i,
+  ]),
+  // rough_draft_first: suggests writing or saying it out first, before the real conversation.
+  suggestsRoughDraft: any([
+    /\b(?:rough draft|first draft|draft|unsent (?:letter|message)|write it (?:all )?(?:out|down)|get it (?:all )?out|angry version|say it all|vent it|without sending|before (?:you )?(?:talk|speak|send|confront|say)|the version you(?:'d| would) never send)\b/i,
+  ]),
+  // name_behavior_neutrally: points at what happens, in plain observable terms.
+  namesBehaviorPlainly: any([
+    /\b(?:what (?:you|actually) (?:notice|see|saw|hear|heard|observe)|what happens|what (?:he|she|they|your \w+) (?:does|do|did|says?|said)|the behaviou?r|just (?:the facts|what (?:happens|happened|was said))|what is said and done|describe (?:what|exactly)|what exactly (?:happens|happened|does|did)|when you (?:bring|raise|mention|ask)[^.?!]{0,40}(?:he|she|they)|you (?:notice|noticed|see|saw|observe|observed) (?:that )?(?:he|she|they|your \w+))\b/i,
+  ]),
+  // grieve_before_deciding: makes room for the hurt before any decision.
+  makesRoomToFeel: any([
+    /\b(?:grie[fv]e?|no (?:rush|need to (?:decide|rush|figure))|(?:don'?t|do not|doesn'?t|does not) (?:have|need) to (?:decide|figure|answer|know)|room (?:for|to)|let (?:it|yourself|this)|sit with|so much (?:hurt|pain)|that(?:'s| is) a lot|heavy|devastat|painful|betray|hurts?|hurting|take in)\b/i,
+  ]),
+  // protective_not_punitive: turns toward what the person wants to protect or keep safe.
+  namesWhatToProtect: any([
+    /\b(?:protect|safe|safety|what matters|what you need|boundar(?:y|ies)|happens? again|hurt again|keep (?:yourself|your \w+) safe|stay safe|what you(?:'re| are) trying to (?:protect|keep|guard))\b/i,
+  ]),
+  // smallest_next_step: offers one very small first step.
+  offersSmallStep: any([
+    /\b(?:smallest|tiny|small(?:er)? (?:step|start)|first step|one (?:small|tiny|short|sentence|line|minute)|(?:two|five|ten|2|5|10)[- ]minutes?|just (?:open|write|pick up|put on|take out|set)|a (?:tiny|small) (?:first )?(?:step|piece|part)|the next (?:small )?step)\b/i,
+  ]),
+  // permission_giving: says the want, need or apology is allowed.
+  givesPermission: any([
+    /\b(?:it(?:'s| is) (?:okay|ok|fine|alright|normal|natural|human|understandable|allowed|valid)|you(?:'re| are) (?:allowed|entitled|free)|you (?:can|may) (?:want|feel|need|ask)|no need to (?:apologi[sz]e|feel guilty|be sorry)|nothing to (?:apologi[sz]e|be sorry|feel guilty) for|(?:doesn'?t|does not) make you (?:selfish|needy|a burden|wrong)|(?:is|are) (?:valid|allowed)|you don'?t have to (?:apologi[sz]e|be sorry|justify|feel guilty)|(?:needs?|wants?) (?:are|is) (?:valid|human|real))\b/i,
+  ]),
+  // ask_one_question: exactly one question in the reply, and it starts with "what" or "how" (an opening "and", "so" or "okay" is allowed).
+  asksOneWhatOrHow: (t) => {
+    const qs = questions(t);
+    return (t.match(/\?/g) ?? []).length === 1 && qs.length === 1 && /^[\s"'“(]*(?:(?:and|so|okay|ok|well|right)[,]?\s+)?(?:what|how)\b/i.test(qs[0]);
+  },
 };
 
 export const CHECK_NAMES = Object.keys(PATTERNS) as CheckName[];
