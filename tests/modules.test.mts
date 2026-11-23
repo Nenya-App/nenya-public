@@ -31,7 +31,7 @@ const cases: [string, string[]][] = [
   ["My dad will get defensive when I bring it up", ['open_a_hard_conversation', 'empathize_before_asking']],
   ["My daughter won't talk to me and I want to tell her how I feel", ['open_a_hard_conversation', 'read_a_silence', 'power_difference']],
   ["I keep pretending everything is fine at home", ['say_the_real_feeling']],
-  ['He goes quiet every time I raise it', ['open_a_hard_conversation', 'read_a_silence']],
+  ['He goes quiet every time I raise it', ['name_behavior_neutrally', 'open_a_hard_conversation', 'read_a_silence']],
   ["I want to practice what I'll say before I meet her", ['offer_to_play_the_other']],
   ["She's so controlling and always criticizing me", ['reframe_gently']],
   ['What is a need, exactly?', ['explain_briefly']],
