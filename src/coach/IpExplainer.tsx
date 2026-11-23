@@ -1,26 +1,31 @@
 // What an IP address is, how a country is worked out from one, and what Nenya does with yours. Shown when the coach is closed
 // for a visitor (RegionGate) and on the About page "Where the Coach Is Open", so both say the same words.
-export function IpExplainer({ level = 2 }: { level?: 2 | 3 }) {
+// With `cited`, the sentences that rest on research carry numbers that link to the list on the About page "Where the Coach Is Open"
+// (pageId 'coach-region'); the coach gate has no list, so it shows the same words without the numbers.
+import { Cite } from '../app/components/about/AboutReferences';
+
+export function IpExplainer({ level = 2, cited = false }: { level?: 2 | 3; cited?: boolean }) {
   const Sub = level === 3 ? 'h3' : 'h2';
+  const c = (n: number | number[]) => (cited ? <Cite pageId="coach-region" n={n} /> : null);
   return (
     <>
       <div className="space-y-3">
         <Sub className="text-lg">What an IP address is</Sub>
         <p>
-          Every device on the internet is reached through an address, called an IP (Internet Protocol) address, so that
-          what it asks for can find its way back, like the return address on an envelope. Usually the address belongs to
-          your internet provider or mobile network, which lends it to you. Many people can share one, and it can change
-          from day to day.
+          Websites answer you through an address called an IP (Internet Protocol) address, like the return address on an
+          envelope. Often the address is shared by many devices {c(1)}. Usually the address belongs to your internet provider
+          or mobile network, which lends it to you. Many people can share one, and it can change, sometimes every day {c([1, 2])}.
         </p>
       </div>
 
       <div className="space-y-3">
         <Sub className="text-lg">How a country is worked out from it</Sub>
         <p>
-          Some companies keep lists that match blocks of addresses to the places where providers use them. A match is
-          usually right about the country and often wrong about the city. It can be wrong altogether: near borders, on
-          some mobile and satellite networks, on workplace or school networks, and through a VPN or private relay, which
-          shows the address of a server somewhere else.
+          Some companies keep lists that match blocks of addresses to the places where providers use them {c(3)}. Our host,
+          Netlify, looks up a country for each connection and gives it to us {c(4)}. A match is usually right about the
+          country and often wrong about the city {c([3, 5])}. It can be wrong altogether. A VPN or a private relay shows the
+          address of a server somewhere else. Shared addresses on some mobile and workplace networks can also give the wrong
+          place {c([1, 3, 6])}.
         </p>
       </div>
 
@@ -37,8 +42,10 @@ export function IpExplainer({ level = 2 }: { level?: 2 | 3 }) {
             store it or write it to our logs. We count only that a visit was turned away, with nothing about who or where.
           </li>
           <li>
-            Where the coach is open, our server also turns the IP address into a one-way code that changes every day, to
-            apply the daily limit (Section 15 of the Terms). Where it is closed, no message is sent, so that never happens.
+            Where the coach is open, our server also turns your IP address into a one-way code that changes every day. We use
+            it to apply the daily limit (Section 15 of the Terms). Where the coach is closed, no message is sent, so that
+            never happens. A few optional tools, such as the guestbook, make their own one-way codes for their own limits.
+            The Terms list them.
           </li>
         </ul>
       </div>
@@ -46,9 +53,9 @@ export function IpExplainer({ level = 2 }: { level?: 2 | 3 }) {
       <div className="space-y-3">
         <Sub className="text-lg">If you are in the United States</Sub>
         <p>
-          The lookup may have placed you wrongly. A VPN or private relay is the most common reason: turning it off for
-          this page and reloading may help. Some mobile and workplace networks also route traffic through other
-          countries. We cannot change the result by hand.
+          The lookup may have placed you wrongly. A VPN or private relay is one common reason: turning it off for this
+          page and reloading may help. Some mobile and workplace networks also share addresses that can show up in the
+          wrong country. We cannot change the result by hand.
         </p>
         <p>
           If you are outside the US, please do not use a VPN to get around this: the limit follows the terms of the
