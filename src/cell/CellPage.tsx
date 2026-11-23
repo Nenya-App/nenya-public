@@ -357,7 +357,7 @@ export default function CellPage() {
                       <Button variant="outline" className="gap-2" onClick={() => void ask()} disabled={shareBusy || lines.length === 0}><Flag className="size-4" aria-hidden="true" /> Ask to share the conversation</Button>
                     </>
                   )}
-                  <p>If the other person is hurting or threatening you, you do not need their agreement to leave: close the cell. You can then email info@nenya.biz yourself with your own copy of what you saw. Nenya cannot see this conversation unless you both agree.</p>
+                  <p>If someone is threatening you or you are in danger, leave and call your local emergency number: Nenya cannot step in during a cell. If the other person is hurting or threatening you, you do not need their agreement to leave: close the cell. You can then email info@nenya.biz yourself with your own copy of what you saw. Nenya cannot see this conversation unless you both agree.</p>
                 </Card>
                 <div className="flex flex-col gap-2">
                   <Button variant="outline" className="gap-2" onClick={pauseMine} disabled={!!paused}><Pause className="size-4" /> Pause</Button>
