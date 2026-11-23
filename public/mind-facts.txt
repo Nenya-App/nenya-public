@@ -1,6 +1,6 @@
 NENYA SITE FACTS
 Address: https://nenya.biz/mind-facts.txt
-As of: 2026-11-22
+As of: 2026-11-24
 Terms of Use & Privacy Policy in force: effective November 24, 2026
 
 What this file is: a plain-text description of how the Nenya website works, written for AI assistants and for a person to read from top to bottom. It is generated from the same checked sources as the fixed answers on the site, and is rebuilt whenever those change. It is long (several tens of thousands of characters) but short enough to read in one go.
