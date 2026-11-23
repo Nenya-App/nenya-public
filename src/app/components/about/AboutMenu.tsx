@@ -42,7 +42,7 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
     {
       id: 'evolved-leader',
       title: 'Evolved Leadership',
-      description: 'The co-evolutionary imperative and the trillion-dollar case for intervention',
+      description: 'Our view of shared leadership, and what research says about it and its limits',
       icon: Users,
     },
     {
