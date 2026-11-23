@@ -13,7 +13,7 @@ export const ABOUT_TITLES: Record<string, string> = {
   'six-gateways': 'The Six Lenses',
   'breathing-tool': 'About the Breathing Tool',
   'pantheon-of-needs': 'The Pantheon of Needs',
-  'nvc-method': 'Our NVC+ Method',
+  'nvc-method': 'Our Approach',
   'privacy-promise': 'Our Privacy Promise',
   'pii-scrubbing': 'PII Scrubbing Tutorial',
   'venice-chat': 'Chat with Nenya\'s AI on Venice',

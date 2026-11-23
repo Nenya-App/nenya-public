@@ -124,7 +124,7 @@ function finish(d: Doc, file: string, footer: string) {
   writeFileSync(join(outDir, file), Buffer.from(doc.output('arraybuffer')));
   console.log('wrote', file, `(${n} pages)`);
 }
-const ABOUT_NAMES: Record<string, string> = { Structure: 'Our Structure', PrivacyPromise: 'Our Privacy Promise', NamePhilosophy: 'Our Name & Philosophy', NVCMethod: 'Our NVC+ Method', ContactUs: 'Contact Us', AboutTheFounder: 'About the Designer', SupportUs: 'Support Us', VeniceChat: 'Chat with Nenya’s AI on Venice', AboutMenu: 'the About menu' };
+const ABOUT_NAMES: Record<string, string> = { Structure: 'Our Structure', PrivacyPromise: 'Our Privacy Promise', NamePhilosophy: 'Our Name & Philosophy', NVCMethod: 'Our Approach', ContactUs: 'Contact Us', AboutTheFounder: 'About the Designer', SupportUs: 'Support Us', VeniceChat: 'Chat with Nenya’s AI on Venice', AboutMenu: 'the About menu' };
 /** A plain name for a source file, for a reader who does not read code. */
 function sourceName(file: string): string {
   const m = file.match(/about\/([A-Za-z]+)\.tsx$/);

@@ -55,11 +55,18 @@ ok('the discrepancies each say where, what is said, the conflict, and a suggesti
 // the discrepancies are real: what is quoted is actually in the pages
 const quoted: [string, string, string][] = [
   ['d3', 'docs/legal/archive/terms-and-privacy-until-2026-11-16.md', 'in a mode Venice labels'], // the Venice-era Terms, kept in the archive
-  ['d5', 'src/app/components/about/VeniceChat.tsx', 'trained in NVC+ principles'],
   ['d6', 'src/app/components/about/ContactUs.tsx', '2-3 business days'],
 ];
 const unreal = quoted.filter(([, f, s]) => !text(f).includes(norm(s))).map(([d, f, s]) => `${d}: "${s}" not in ${f}`);
 ok('what the discrepancies quote is really there (so the list does not go stale unnoticed)', unreal.length === 0, unreal.join(' | '));
+// d5 (the Venice page calling the character "trained in NVC+ principles") is fixed by the About thesis (chapter 5, 2026-11-22): the page says the character is "set up with a written prompt",
+// and the name NVC+ is gone from visitor text. Until that page change is merged the old quote is still in the file; after it, the new wording must be there and the old one gone. Exactly one of the two.
+{
+  const venicePage = text('src/app/components/about/VeniceChat.tsx');
+  const hasOld = venicePage.includes(norm('trained in NVC+ principles'));
+  const hasNew = venicePage.includes(norm('set up with a written prompt'));
+  ok('d5: the Venice page says either its old wording or the corrected one ("set up with a written prompt"), never both and never neither', hasOld !== hasNew, `old: ${hasOld}, new: ${hasNew}`);
+}
 // fixed on 2026-11-09 (Privacy Promise rewrite): the old wording must stay gone
 const fixedGone: [string, string, string][] = [
   ['d1', 'src/app/components/about/Structure.tsx', 'will remain free'],
