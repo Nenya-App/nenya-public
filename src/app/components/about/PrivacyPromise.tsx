@@ -223,7 +223,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                       <strong>Bias.</strong> Language models learn from large amounts of human writing, and that writing contains biases. Models can repeat them <Cite pageId="privacy" n={[23, 25, 26]} />. Please think about whether a reply fits you. The coach may reflect biases back to you, and you know your own life best.
                     </li>
                     <li className="leading-relaxed">
-                      <strong>No clinical authority.</strong> Nenya is for reflection and practice only. It does not give medical, legal or therapy advice, and it is not a substitute for a clinician or a lawyer.
+                      <strong>No clinical authority.</strong> Nenya is for reflection and practice only. It does not give medical, legal or therapy advice, and it is not a substitute for a clinician or a lawyer. No clinician or lawyer has reviewed Nenya.
                     </li>
                     <li className="leading-relaxed">
                       <strong>Truth and creative expression.</strong> We believe people should be free to tell the truth and to make art. Nenya is built to help you be honest with yourself. You are the final judge of your own life.
