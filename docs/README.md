@@ -27,6 +27,7 @@ Two things to know when reading "shipped":
 |---|---|---|
 | [coach-features.md](coach-features.md) | Each coach feature sorted into tiers: core, shipped, experiment, retire | New 2026-11-15 |
 | [maintenance-plan.md](maintenance-plan.md) | Plan for bringing the repository under control after an outside review | New 2026-11-15. Update its "Where things stand" column as items land. |
+| [mind-facts.md](mind-facts.md) | The generated facts page `public/mind-facts.txt` for the Venice Mind: what it is, why, how it stays current | New 2026-11-23. `tests/mind-facts.test.mts` fails if it is stale. |
 | [production-env.md](production-env.md) | Every environment variable, with the production value and the order to switch them on | `tests/docs-drift.test.mts` checks that every variable the code reads is named here. |
 | [branches-and-previews.md](branches-and-previews.md) | Branches, preview sites, and the checks to run | Current |
 | [versioning.md](versioning.md) | The build label, and how transcripts record it | Current |

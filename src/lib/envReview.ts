@@ -60,7 +60,7 @@ export function reviewEnv(vars: EnvVar[]): Finding[] {
   }
   for (const key of MUST_BE_SET) if (!prod.has(key)) out.push({ level: 'MISSING', key, note: key === 'COACH_ENABLED' ? 'the coach is off without it (fine only if you meant that)' : 'expected on a live production coach' });
   const instr = prod.get('COACH_INSTRUCTIONS');
-  if (!instr) out.push({ level: 'REVIEW', key: 'COACH_INSTRUCTIONS', note: 'unset means v1; the docs say production is set to v2 (v2.1 since 2026-11-16)' });
+  if (!instr) out.push({ level: 'REVIEW', key: 'COACH_INSTRUCTIONS', note: 'unset means v1; the docs say production is set to v2 (v2.1 since 2026-11-16; v2.2 is a draft, not set anywhere)' });
   else if (showsValue(instr)) out.push({ level: 'OK', key: 'COACH_INSTRUCTIONS', note: `value: ${instr.value}` });
   const order = { 'TURN OFF': 0, MISSING: 1, REVIEW: 2, OK: 3 } as const;
   return out.sort((a, b) => order[a.level] - order[b.level] || a.key.localeCompare(b.key));

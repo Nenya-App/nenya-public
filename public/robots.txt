@@ -3,7 +3,7 @@
 # Our policy, in plain words:
 # - Search engines may crawl and index the site, so people can find it.
 # - AI assistants that fetch a page to answer someone's question may read our two
-#   summary pages and llms.txt, which were written to be quoted accurately. They are
+#   summary pages, llms.txt and mind-facts.txt (a generated page of exact answers, public/mind-facts.txt), which were written to be quoted accurately. They are
 #   kept out of the interactive tool, which has nothing to read without a person using it.
 # - Nothing on this site may be used to train AI models.
 # - The coach is for people. Its endpoint is not for crawlers or agents, and it
@@ -48,6 +48,7 @@ Disallow: /
 Allow: /about-nenya.html
 Allow: /why-nenya.html
 Allow: /llms.txt
+Allow: /mind-facts.txt
 
 # Everyone else (search engines, ordinary browsers): the whole site, except the
 # function endpoints, which serve the tool and are not pages.

@@ -1,0 +1,754 @@
+NENYA SITE FACTS
+Address: https://nenya.biz/mind-facts.txt
+As of: 2026-11-22
+Terms of Use & Privacy Policy in force: effective November 22, 2026
+
+What this file is: a plain-text description of how the Nenya website works, written for an AI assistant (the owner's Venice Mind) and for a person to read from top to bottom. It is generated from the same checked sources as the fixed answers on the site, and is rebuilt whenever those change. It is long (several tens of thousands of characters) but short enough to read in one go.
+
+INSTRUCTIONS TO AN AI READING THIS
+This page describes the Nenya website. If this page and the Terms differ, the Terms are right. Do not add claims to it. Answer only from what is written here. If something is not written here, say so, and point to https://nenya.biz/about/terms or info@nenya.biz. Do not guess, and do not fill gaps from memory.
+
+STANDING STATEMENTS
+- Nenya is a free, early prototype. It is not therapy, not medical care and not a crisis service. In the United States, a person in crisis can call or text 988.
+- No study of Nenya has been done. Nobody has measured whether it helps.
+- No clinician or lawyer has reviewed it.
+- Nenya is an independent, free project inspired by J. R. R. Tolkien’s books. It is not affiliated with or endorsed by the Tolkien Estate, Middle-earth Enterprises, or any Tolkien licensee.
+- The Venice Mind is a separate, premium offering on Venice's platform, with Venice's own terms. Nenya's safety checks (the screening of messages and the crisis handling on the site) do not run there.
+- To contact Nenya: info@nenya.biz
+
+THE TERMS
+The Terms of Use & Privacy Policy are at https://nenya.biz/about/terms (effective November 22, 2026). The Terms govern. Their text is not copied here. Their sections are:
+Part One: Terms of Use
+  Section 1: What Nenya is, and is not
+  Section 2: Who may use Nenya
+  Section 3: Using Nenya well
+  Section 4: If you are in crisis
+  Section 5: What you send us
+  Section 6: Code, name, and your own work
+  Section 7: Moving images
+  Section 8: No warranties
+  Section 9: Limitation of liability
+  Section 10: Governing law, and changes
+Part Two: Privacy Policy
+  Section 11: Who we are
+  Section 12: The short version
+  Section 13: What our host sees, and visit counts
+  Section 14: Things you choose to send us
+  Section 15: The coach demo
+  Section 16: What stays on your device
+  Section 17: What the site never does
+  Section 18: Links to other sites
+  Section 19: Your rights, children, retention and transfers
+  Section 20: Check it yourself
+  Section 21: Contact
+
+ANSWERS
+There are 43 answers below. Each has a heading, a short answer, the full answer and where to read more.
+
+## What Nenya is
+
+Short answer: Nenya is an interactive space for personal reflection: a place to pause, breathe, and look at your own thoughts, feelings and needs through structured, sensory activities. It is best understood as interactive art, a mirror for your own thoughts rather than a source of answers.
+
+Full answer:
+
+Nenya is an interactive digital environment designed as a tool for personal reflection and sensory exploration. You can pause and breathe, choose colors and sounds, pick up any of the six lenses in any order, and, if you choose, try a short conversation with the coach.
+
+It is best understood as a form of interactive art. It is a mirror for your own thoughts, not a source of answers, and it is not a medical device, a therapy service, or a substitute for professional care.
+
+Read more:
+- Terms of Use & Privacy Policy: https://nenya.biz/about/terms
+- The Six Lenses: https://nenya.biz/about/six-lenses
+- About the Breathing Tool: https://nenya.biz/about/breathing-tool
+
+## What the name means
+
+Short answer: Nenya is the name of Galadriel's ring in Tolkien's Middle-earth, one of the Three Rings of the Elves, which Sauron never held. Its power was a quiet one: it could not command anyone, and it slowed the wearing-away of time so that a place could stay as it was. We borrow the name with respect. Nenya, the tool, is meant to sit alongside you and not to rule.
+
+Full answer:
+
+In Tolkien's Middle-earth, Nenya is one of the Three Rings of the Elves, worn by Galadriel in Lothlórien. It is called the Ring of Adamant, and sometimes the Ring of Water. Celebrimbor made the Three, and Sauron never held them. They were made in his shadow, and what they kept could not outlast the age they belonged to.
+
+The Name & Philosophy page sets the ring beside the seeing-stones, which let a person look far and be seen. It is not a story of a good maker and a bad one: the ring and the stones come out of the same line of craft, and both come from the wish to keep something beautiful from being lost. The question the page takes from it is whether what you make works on the person using it, or alongside them. Some tools are built to bring people back and keep them sharing; the page calls those tools that master. Nenya is meant to sit alongside.
+
+The ring names (Nenya, Vilya, Narya) are Tolkien's. We use them as this project's shorthand, as inspiration, with no claim of any connection to his estate.
+
+Read more:
+- Our Name & Philosophy: https://nenya.biz/about/name-philosophy
+
+## Who runs Nenya, and how it is structured
+
+Short answer: Nenya is an independent artistic and technology project. Its creator, Estëlle Streiff, runs it as a sole proprietor and sets its creative direction. Its fiscal sponsor is Fractured Atlas, a 501(c)(3) nonprofit arts service organization, so donations can be tax-deductible. Fractured Atlas has some oversight of how donated money is spent.
+
+Full answer:
+
+Nenya is operated by Estëlle Streiff as a sole proprietor, and is fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit arts service organization. It is an independent artistic and technology project. It is not a startup or a platform company.
+
+The project accepts no equity investors, grants no board seats or approval rights to funders, and does not accept federal government funding. Its creative direction is set by its creator.
+
+Fiscal sponsorship lets a creative project receive donations that can be tax-deductible without forming its own nonprofit. Fractured Atlas processes the donations and has some oversight of how the money is spent: it reviews fundraising requests and grant applications. It does not own the project's work. We believe this does not cost Nenya its independence, but that is our belief, and the oversight is real. Donations are tax-deductible to the extent permitted by law.
+
+Read more:
+- Our Structure: https://nenya.biz/about/structure
+- About the Designer: https://nenya.biz/about/about-founder
+
+## Who is behind it
+
+Short answer: Nenya is built by Estëlle Streiff, a Minnesota-based designer, educator, and artist. The designer's page exists as a matter of transparency: Nenya is not an anonymous product.
+
+Full answer:
+
+Nenya is built by Estëlle Streiff, a Minnesota-based designer, educator, and artist. The page about the designer exists mainly as a matter of transparency, because Nenya is not an anonymous product, though the intention has always been for the work to stand on its own.
+
+The designer's page describes the background and the thinking behind the project, including the study of leadership and compassion and the interest in how technology can give more than it takes.
+
+Read more:
+- About the Designer: https://nenya.biz/about/about-founder
+
+## How to reach us
+
+Short answer: You can reach us at info@nenya.biz, and we aim to respond within 2-3 business days. There is also an optional form on the site for a report or message. I can't pass anything on from this conversation, so please write to that address or use the form.
+
+Full answer:
+
+The general address is info@nenya.biz, for questions, partnership inquiries, platform support, questions about the project's vision, and anything in the Terms or Privacy Policy. A person at Nenya reads it, and we aim to respond within 2-3 business days. Like any email, your message is also handled by our email provider.
+
+There is also an optional form on the site for sending a bug report, feedback, a message, or a signed coach transcript. Using it is entirely your choice, and it does not ask for your name or email. If you want a reply, include your email address in the message and we will use it only to answer you.
+
+The coach cannot pass a message on, remember it, or reach us from inside a conversation, so anything you want us to see has to be sent through the form or the address above. If something is urgent and about safety, please use the crisis resources shown in the app or your local emergency number, not email.
+
+Read more:
+- Contact Us: https://nenya.biz/about/contact-us
+- Terms, Section 21: Contact: https://nenya.biz/about/terms
+
+## Is it free, and who pays for it
+
+Short answer: Yes, Nenya is provided free, with no advertising. The plan is for the core breathing and reflection tools to stay free. We are exploring subscriptions for extra features and will say so before anything changes. Donations go through our fiscal sponsor, Fractured Atlas, which charges an administrative fee. Venice AI's referral program also gives Nenya credits, which is disclosed wherever the Venice links appear.
+
+Full answer:
+
+Nenya is provided free of charge, with no advertising. The plan is for the core breathing and reflection tools to stay free indefinitely. We are exploring subscriptions for additional features; nothing like that exists today, and we will say so on the Our Structure page before anything changes.
+
+Donations go through Fractured Atlas, our fiscal sponsor, and are tax-deductible to the extent permitted by law. Fractured Atlas charges sponsored projects an administrative fee on donations. What is left after the fee is meant for keeping the core tools free and the site running, including servers and the ongoing work on the reflection and coaching tools. Nenya does not publish separate accounts; Fractured Atlas publishes its own Form 990 and audit.
+
+Each coach reply costs real money to produce, which is why the free demo is limited to five exchanges, rests after a conversation, and has daily limits. Separately, the links to Venice AI carry Nenya's referral code: if you sign up for a paid Pro account through them, Nenya earns $10 in Venice credits and you receive a $10 welcome bonus. The credits help pay for the coach demo, it costs you nothing extra, and you can go to venice.ai directly instead.
+
+Read more:
+- Support Us: https://nenya.biz/about/support-us
+- Our Structure: https://nenya.biz/about/structure
+- Chat with Nenya's AI on Venice: https://nenya.biz/about/venice-chat
+
+## Is this private? (the short version)
+
+Short answer: What you enter in the reflection tools stays in your browser and is gone when you close the tab, unless you choose "Save and return later", which keeps a locked copy on your device. We have no accounts, no advertising, no tracking cookies, and we do not sell or share data. The optional coach is different: your messages, and any parts of a report you choose to bring to it, pass through our server to an outside AI service.
+
+Full answer:
+
+Nenya does not require an account for any part of it. It has no advertising and no tracking cookies, and it does not follow you around the internet. What you enter in the reflection tools (colors, melodies, drawings, body-map placements, written reflections) stays in your browser and is not sent to us, apart from a few optional steps described below. It is gone when you close the tab, unless you choose "Save and return later", which keeps a sealed copy in your browser that you can open for up to 24 hours.
+
+Some things do exist outside your device, and we want to be plain about them. Our web host, Netlify, keeps ordinary connection logs and produces anonymous visit statistics. Nenya keeps plain daily totals of its own, with no information about who produced them. We do not try to measure whether you grow. The optional coach demo uses a one-way daily code, derived from your connection, to apply a daily limit; it changes every day and is deleted within two days. And if you choose to send a report or message, what you send reaches us.
+
+Nenya does not sell, share, or monetize data. The Terms of Use and Privacy Policy are the full and binding description; this answer is a summary of them.
+
+Read more:
+- Our Privacy Promise: https://nenya.biz/about/privacy-promise
+- Terms of Use & Privacy Policy: https://nenya.biz/about/terms
+
+## What happens to what I type to the coach
+
+Short answer: Your messages go through our server to Venice AI, which writes the replies. We do not store your messages or the replies, and we do not write them to our logs; they exist in your browser tab and are gone when you close it, unless you choose to send a transcript to us (see the answer about signed transcripts). Venice AI handles what it receives under its own policy, which we do not control.
+
+Full answer:
+
+The coach demo is the one place on the site where what you type is sent to an AI service. Your messages are sent through our server, hosted by Netlify, to Venice AI, which writes the replies. A conversation is limited to five exchanges, and each message to 500 characters.
+
+We do not store your messages or the replies, and we do not write them to our logs. They exist in your browser tab and disappear when you close it. The one exception is a transcript you choose to send us, which we keep for the time you chose. Netlify, like any host, keeps ordinary connection logs.
+
+Venice AI handles what it receives under its own terms and privacy policy, which we do not control. Venice and Netlify may process data outside your country. Before your message is sent, the page replaces some common identifiers (such as email addresses, phone numbers, street addresses, and some names) with placeholders, and our server does it again. This is not a guarantee, and most names will not be caught, so please keep names, contact details, and other identifying information out of what you write.
+
+If you choose to bring parts of a reflection report to the coach, those words go the same way as a message and through the same checks; the answer about sharing a report explains it.
+
+We say "Nenya does not keep the conversation" and not "nothing is kept anywhere", because the services that run the model have their own policies and logs. If you download a transcript, the file stays with you.
+
+Read more:
+- Terms, Section 15: The coach demo: https://nenya.biz/about/terms
+- Our Privacy Promise: https://nenya.biz/about/privacy-promise
+- PII Scrubbing Tutorial: https://nenya.biz/about/pii-scrubbing
+
+## Can the coach see my report? Sharing part of a report
+
+Short answer: Not unless you choose. A report stays in your browser. If you want, you can bring parts of it to the coach: you pick the pieces, nothing is chosen for you, and you see the exact words that would go. They travel like a message, through our server to an outside AI service, with the same safety checks. You never need a report to use the coach.
+
+Full answer:
+
+A reflection report is made on your device and stays there. Nothing from it reaches the coach unless you choose to bring parts of it, and you do not need to have made a report, or to share anything from one, to use the coach.
+
+If you choose to, the page lists your report in pieces with nothing selected, and shows you exactly the words that would be sent, with identifiers replaced as in a message. For a color, the words name the palette it comes from and add a short note about that palette: an image, and a few rough guesses at feelings and needs. They are starting points, not a measurement: no color has a fixed meaning, and Nenya is not a scientific or medical instrument.
+
+What you share goes through our server to Venice AI along with your messages, in the same way and through the same checks: identifiers are replaced, text that looks like instructions to the coach is left out, and the crisis check runs. If the shared text is flagged, you see the safety notice and the coach responds with care; the conversation continues. We do not store what you share. It appears in a signed transcript if you ask for one.
+
+You can share nothing and talk about something else at any time.
+
+Read more:
+- Terms, Section 15: The coach demo: https://nenya.biz/about/terms
+- Our Privacy Promise: https://nenya.biz/about/privacy-promise
+
+## Why did the coach offer me a short read? The learning cards
+
+Short answer: Sometimes, after a message with hateful or abusive language, or with blame or harsh judgment, Nenya offers a short read under the coach's reply. We wrote it, not the AI, and it is only an invitation: you can read it, read another, or carry on. Nothing is blocked or reported. The cards paraphrase published research and name their sources.
+
+Full answer:
+
+Under a reply, you may see an offer of a short educational card. It is written by Nenya and drawn from named research and writing about how language is used to make people seem less than human, about blame and harsh judgment, and about ways back toward understanding. The AI did not write it, and the page says so.
+
+It is only an invitation. You can read it, read another, go back to the conversation, or stop. Nothing is blocked, ended, punished or reported because of it.
+
+Whether to offer one is decided by simple phrase matching against a private list, run by our server on your latest message. It misses things and can match ordinary sentences, it is not a safety system, and it does not protect anyone. We do not store which words matched or which cards you opened. We keep plain daily counts only, with nothing that identifies anyone. The list is private because it contains harmful words and some of its sources restrict sharing.
+
+The private list is built partly from HurtLex, a lexicon of offensive words by Bassignana, Basile and Patti, used under its CC BY-NC-SA 4.0 licence with credit (see ATTRIBUTIONS.md). We use its conservative level only, take out ordinary words unless a nearby cue is present, and add our own context rules. The list is kept private and is not distributed. The authors have not endorsed Nenya.
+
+The cards are in our public source code. A signed transcript records an offer our server made, marked as written by the site.
+
+Read more:
+- Terms, Section 15: The coach demo: https://nenya.biz/about/terms
+
+## Are my colors sent anywhere? Palettes and color names
+
+Short answer: Your colors stay on your device. Suggesting a name and making a palette or a bridge happen in your browser and send nothing. One optional button, "Ask The Color API," sends a single color, as a hex code, through our server to that outside service to make a palette; nothing else is sent, and we store nothing.
+
+Full answer:
+
+The colors you choose, and the names you give them, stay in your browser. When you ask for a name suggestion, the names come from a list of 5,000 color names that ships with this site (color-name-list, MIT license) and is loaded only when you ask. Making a palette "on my device," or a bridge from your current color to your wish color, is calculated in your browser and sends nothing anywhere.
+
+There is one exception, and it is your choice each time. If you press "Ask The Color API" in the Sight lens, your page sends one color, as a hex code, and the kind of palette you picked, to our server, which asks The Color API (thecolorapi.com, by Josh Beckman) over a secure connection for a palette and returns five colors. That service sees our server and the color, and nothing else: not your address, a cookie, or anything you wrote. It is separate from Nenya and its own terms apply. We do not store or log the color or the request. If the service is unavailable, the page makes the same kind of palette on your device and says so.
+
+If you keep a palette it goes into your report as colors of your own, marked with where it was made. If you later bring that part of your report to the coach, it is shared like the rest of what you choose.
+
+Read more:
+- Terms, Section 14: https://nenya.biz/about/terms
+- Our Privacy Promise: https://nenya.biz/about/privacy-promise
+
+## What Nenya keeps on my device, and how to erase it
+
+Short answer: Nenya sets no cookies. By default it keeps only two small things on your device between visits: a timestamp, saved after a coach conversation ends so the free demo can rest, and a note of whether you left the coach page's word lists open or folded. If you turn on "Remember my settings on this device" it also keeps your display choices. "Forget me" erases what Nenya saved on your device, and Emergency Exit erases all of it and leaves the page.
+
+Full answer:
+
+Nenya sets no cookies. A few kinds of things can be saved in your browser's local storage. They stay on your device and are never sent to us. The one thing that is not ours is the check for automated traffic before your first coach message: Cloudflare's check may store data for itself inside its own frame, and we receive none of it.
+
+Two are saved by default. One is a timestamp, saved automatically after a coach conversation ends. It lets the free demo rest for six hours before opening again. The other is a note, "yes" or "no", of whether you left the coach page's word lists open or folded. A third kind is saved only if you turn on "Remember my settings on this device": your theme, text size, animation and breathing choices, and the date of the terms you agreed to, so you are not asked at every visit. If you choose "Save and return later", the lenses you added to your report, your body-map placements and your interface colors are also kept, locked with your passcode, and can be opened for 24 hours at most; the page deletes them the next time the site loads after that.
+
+Turning that switch off erases what it saved. "Forget me", in the settings menu and at the bottom of every page, erases what Nenya saved on your device, apart from the short codes the open tab keeps of what it sent (up to 20, never the text), which go when the tab closes. The Emergency Exit button erases all of it and leaves the page at once, and leaves a one-word flag in that tab so that Back does not return you to Nenya; the flag goes when the tab closes. Emergency Exit takes you to a page on Wikipedia, which can see that you came from nenya.biz, though not which page you were on. Neither can reset the coach demo's daily limit, because that is counted on our server, not on your device.
+
+We never save what you write, draw, or answer, apart from "Save and return later", which you choose yourself. On a shared or watched device, leave the Remember switch off and use Forget me or Emergency Exit when you finish.
+
+Read more:
+- Terms, Section 16: https://nenya.biz/about/terms
+- Our Privacy Promise: https://nenya.biz/about/privacy-promise
+
+## Where the coach is open
+
+Short answer: For now, the coach demo is open only to connections our host places in the United States and its territories. Venice AI runs the model, and it says its service is meant for people located in the US. Everything else on Nenya works everywhere. It does not send what you write, apart from a few optional buttons.
+
+Full answer:
+
+For now, the coach demo is open only to connections our host places in the United States, including Puerto Rico, Guam, the U.S. Virgin Islands, American Samoa, the Northern Mariana Islands and the U.S. Minor Outlying Islands. The replies are written by a model that Venice AI runs, and Venice AI's terms say its service is intended for people located in the United States; our own terms promise to respect theirs.
+
+Our host, Netlify, works out the country from your connection's IP address and gives our code only a two-letter country code. We use it for this check, send it back only to your own page, and neither store nor log it. The lookup can be wrong, most often because of a VPN, and we cannot change it by hand.
+
+We are exploring a coach that runs on your own device, with nothing sent to an outside AI service. If that works, it could open everywhere. It is not built yet.
+
+Everything else on Nenya works everywhere and does not send what you write. That includes the breathing tool, the six Lenses and the report you can make from them. The site counts visits to each part as plain daily totals, and a few optional buttons ask an outside service (for example about a color). The Terms list them.
+
+Read more:
+- Where the Coach Is Open: https://nenya.biz/about/coach-region
+- Terms, Section 15: The coach demo: https://nenya.biz/about/terms
+
+## Why the coach is limited
+
+Short answer: The demo is free, and every reply costs real money to produce, so it is limited: five exchanges per conversation, 500 characters per message, a six-hour rest after a conversation ends, and daily limits for everyone together and for each connection.
+
+Full answer:
+
+The coach demo is free, and each reply costs real money to produce. To keep it affordable for everyone, a conversation is limited to five exchanges, and each message to 500 characters.
+
+After a conversation ends, the page saves the time, and only the time, in your browser, and the demo rests for six hours before opening again. This is a courtesy, not a lock: it lives only on your device.
+
+There are also two daily limits. One covers all visitors together: the demo can handle a set number of messages each day. The other covers each connection: up to 10 messages a day, which is two full conversations. A conversation already under way is never cut off; you find out only when you try to start a new one. Shared networks count together.
+
+If you want to keep going after the five exchanges, the page offers other places: the breathing tool, a person you trust, a journal, a professional, or the same character on Venice AI's own site, which has its own limits and its own privacy policy.
+
+Read more:
+- Terms, Section 15: The coach demo: https://nenya.biz/about/terms
+- Chat with Nenya's AI on Venice: https://nenya.biz/about/venice-chat
+
+## How the coach works underneath (the model and the hosting)
+
+Short answer: The coach's replies are written by an AI language model, run by Venice AI, an outside service. Our server encrypts your message before it goes to Venice, so Venice relays only encrypted data. The site is hosted by Netlify, and the code is public so you can read how it works. The coach is a prototype, and some protections we hope to build do not exist yet.
+
+Full answer:
+
+The replies come from an AI language model, run by Venice AI, an outside service. Your messages go from your browser to our server, hosted by Netlify, and from there to Venice AI.
+
+Our server encrypts your message before it goes to Venice, and Venice relays only encrypted data to the model. The encryption happens on our server, not in your browser, because the server has to read your message to scrub it and screen it first, so it is not encryption all the way from your device.
+
+The page and the server also replace common identifiers with placeholders before a message is sent, check each message for signs of crisis, and screen for attempts to give the coach instructions. These checks are simple, mostly phrase matching, and can miss things or flag harmless words.
+
+The coach is an early prototype. On-device processing, where your most private reflections would never touch a server, is a goal and not something that exists yet. Nenya's source code is public under the GNU Affero General Public License, so you can read how the site handles data instead of taking our word for it.
+
+Read more:
+- Our Privacy Promise: https://nenya.biz/about/privacy-promise
+- Terms, Section 15: https://nenya.biz/about/terms
+- The code on GitHub: https://github.com/Nenya-App/nenya-public
+
+## Is it open source
+
+Short answer: Yes. Nenya's source code is public under the GNU Affero General Public License v3.0, so you can read it, run it, and share it under that license. The Nenya name and logo are reserved separately as trademarks.
+
+Full answer:
+
+Nenya's source code is publicly available under the GNU Affero General Public License v3.0 at github.com/Nenya-App/nenya-public. You are welcome to inspect, run, modify, and share it under that license's terms.
+
+The Nenya name and logo are reserved separately as trademarks, and the repository's TRADEMARK.md explains how. Open code means claims about what the site's code does can be checked by reading it, which is part of the privacy promise. Two examples: the reflection tools do not send what you enter, and Nenya stores very little between visits. The Terms list the exceptions. The web host's connection logs and visit totals sit outside the code, and Section 13 of the Terms describes them.
+
+Read more:
+- The code on GitHub: https://github.com/Nenya-App/nenya-public
+- Our Structure: https://nenya.biz/about/structure
+- Terms, Section 6: https://nenya.biz/about/terms
+
+## Is Nenya affiliated with CNVC or NVC Academy
+
+Short answer: No. Nenya is an independent project and is not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication (CNVC) or the NVC Academy. We encourage you to learn from human NVC trainers as well.
+
+Full answer:
+
+Nenya draws on Nonviolent Communication, developed by Dr. Marshall Rosenberg, but it is an independent project. It is not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication (CNVC.org) or the NVC Academy (NVCacademy.com).
+
+Nenya is a separate tool for practicing the steps of NVC in private. We hope it helps you in real conversations, but we have not tested whether it does. It is not a replacement for what you learn from human connection, and we encourage you to learn from human NVC trainers as well.
+
+The categories of feelings and needs that Nenya works with were informed by the structure of CNVC's Feelings and Needs Inventory, which CNVC shares freely as a starting point. We are expanding and refining them. The credit, with a link to the document's own page, is on the Our Approach page. Crediting a source does not mean that group endorses Nenya.
+
+If you practise or teach NVC, we would especially value your feedback, including critical and dissenting views: please send it through the optional form on the site or at info@nenya.biz.
+
+Read more:
+- Our Approach: https://nenya.biz/about/nvc-method
+
+## What NVC is, and how Nenya uses it
+
+Short answer: Nonviolent Communication (NVC), developed by Dr. Marshall Rosenberg, is a way of understanding yourself and others by building empathy before jumping to solutions. It has four parts: observations, feelings, needs, and requests. Nenya's lessons and its optional coach are built on them. Nenya also adds attention to power and to shared needs. That addition is our own idea and has not been tested.
+
+Full answer:
+
+Nonviolent Communication is a communication process developed by Dr. Marshall Rosenberg. It is a way of understanding ourselves and others by building empathic connection before jumping to solutions. Nenya's lessons and its optional coach are built on its four parts:
+
+Observations: saying what you saw or heard, apart from what you make of it. Feelings: naming what you feel, in your body and your emotions, with a plain word and no blame. Needs: linking feelings to needs that many people share, such as safety, understanding, or rest (researchers do not agree on one list of needs). Requests: asking for a specific action that could help meet a need, offered as an invitation, not an order.
+
+Our approach adds two things to NVC. The first is systemic context. Our view is that what people feel is shaped in part by unfair treatment, unequal power, and disadvantage handed down in families, so frustration may not be only personal. The second is shared needs, such as justice, fairness, and sustainability, next to personal needs. This is our own extension and has not been tested.
+
+NVC itself has been tested, but not much, and mostly in small studies of training led by people. We found no study of a self-guided tool or an AI coach, so we do not know if practicing with Nenya helps. The Our Approach page says what the research does and does not show.
+
+If you practise or teach NVC, we would especially value your feedback, including critical and dissenting views: please send it through the optional form on the site or at info@nenya.biz.
+
+Read more:
+- Our Approach: https://nenya.biz/about/nvc-method
+- The Pantheon of Needs: https://nenya.biz/about/pantheon-of-needs
+
+## Is this therapy, and is it safe
+
+Short answer: No. Nenya is a tool for reflection, not therapy, not medical care, and not a substitute for a professional. We make no claims about treating any condition, and we make no claims of legal or regulatory compliance. If you are in crisis, please contact a person: call or text 988 in the US and Canada, or your local emergency number.
+
+Full answer:
+
+Nenya is not a medical device, a therapeutic service, or a substitute for professional care. We make no claims, and offer no treatments, for any medical, psychological, or psychiatric condition. The tool is not designed to diagnose, treat, cure, or manage any illness or emotional distress. If you have a clinical mental health condition, please seek a qualified human professional.
+
+We do not make claims about legal or regulatory compliance, and we give no guarantee of any particular effect on you. The coach is an early prototype and cannot help in a crisis.
+
+If you are feeling hopeless, thinking of harming yourself or others, or are otherwise in distress, please close this window and connect with a human professional. You can call or text 988 (the 988 Suicide & Crisis Lifeline) in the US and Canada, or contact local emergency services or a crisis line in your country.
+
+Read more:
+- Terms, Sections 2, 6 and 10: https://nenya.biz/about/terms
+
+## Accessibility
+
+Short answer: Our goal is maximum accessibility, and we are still working toward it. You can change the text size and the light or dark theme, reduce or turn off the animations, and turn on optional breathing tones, with a switch screen readers can find. Emergency Exit stays reachable. We have not finished testing with screen readers, so please tell us what does not work.
+
+Full answer:
+
+Our goal is maximum accessibility. We are still working toward it, and we want to hear from anyone it does not yet work for.
+
+Settings let you change the text size and the theme (light or dark), and you can reduce or turn off the animated visuals. Nothing on the site is designed to strobe or flash.
+
+Breathing tones are optional and off by default, with the switch in three places so a screen-reader user can find it, and changes are announced politely. The images carry text descriptions, and the drawings and body map on the review page say what they are.
+
+Emergency Exit is kept reachable on every screen, including the loading screen, the terms, and the coach.
+
+We have not yet completed a screen-reader audit: a checklist exists, and testing with blind and low-vision people is planned. If something does not work for you, please tell us at info@nenya.biz or through the optional form, so we can fix it.
+
+Read more:
+- About the Breathing Tool: https://nenya.biz/about/breathing-tool
+- Contact Us: https://nenya.biz/about/contact-us
+
+## What version this is
+
+Short answer: This is Nenya version whose number is shown on the site. The exact code it was built from is public, so you can read precisely what this version is. The Terms of Use & Privacy Policy you agreed to are dated November 22, 2026.
+
+Full answer:
+
+The version label has two parts: the release number and the commit the site was built from, for example 1.1.0+679c4d2. A label ending in -dev means it came from the staging site. The commit is in the public repository, so anyone can read exactly what code that label means.
+
+The date of the Terms of Use & Privacy Policy is separate from the version, and when it changes you are asked to agree again.
+
+Earlier versions of the Terms are kept in the public repository.
+
+Read more:
+- Terms of Use & Privacy Policy: https://nenya.biz/about/terms
+- The code for this version on GitHub: https://github.com/Nenya-App/nenya-public (the exact commit of the running version is named on the site)
+
+## Reporting a problem, or sending feedback
+
+Short answer: There is an optional form on the site for a bug report, feedback, or a signed coach transcript. Using it is your choice, and it does not ask for your name or email. Please leave out anything that identifies you or anyone else.
+
+Full answer:
+
+The site has an optional form for sending us a report, feedback, a message, or a signed coach transcript. Using it is entirely your choice. By submitting, you allow us to read, store, and use what you send to understand problems and improve Nenya, and to share it in anonymized or summarized form.
+
+We do not ask for your name or email. If you type personal information into a comment, it becomes part of the submission, so please leave out anything you would not want us to keep. We will not use a submission to contact you unless you ask us to. To have a submission deleted, email us.
+
+Before anything is sent, a screen shows you exactly what would be sent, who reads it, what we may do with it, how long we keep it, and that a deletion code will be shown once; nothing is sent until you press Send there, and Don’t send is just as easy to press. Sending is for people 18 and older: the screen asks you to tick “I am 18 or older”, Send stays off until you do, and our server refuses a send that does not carry that confirmation.
+
+To refuse an identical repeat, we keep a one-way code of what you sent for as long as we keep it. It cannot be turned back into your words, and it is deleted when the submission is deleted, so deleting one lets you send the same words again if you choose.
+
+If a safety notice in the coach looks wrong to you, the notice has its own "Report a problem with this notice" link. It sends nothing unless you press Send, and it includes your message only if you tick the box.
+
+Read more:
+- Terms, Sections 7 and 16: https://nenya.biz/about/terms
+- Contact Us: https://nenya.biz/about/contact-us
+
+## Signed transcripts
+
+Short answer: After your first exchange, and when a conversation finishes, you can download a transcript. A signed copy carries Nenya's signature, which shows the text matches an exchange our server produced and the date it was signed. It does not show who typed the person's side, and it is not an identity check. We do not store the conversation unless you choose to send it to us, and the file stays with you.
+
+Full answer:
+
+After your first exchange, and when a conversation finishes, you can download a transcript of it. If you ask for a signed copy, your page sends the conversation so far to our server one more time so the server can confirm it matches what it produced and add a dated signature.
+
+The signature also covers whether the conversation reached its end, how many exchanges it holds, and a fingerprint of the version of the coach that wrote the replies (the site's version, the model and the instructions), none of which identifies you. We do not store the conversation unless you send it to us, and the signed file stays with you.
+
+If you choose to send a signed transcript to us, you first see exactly what will be sent and choose what we may do with it and how long we keep it: 30 days, 90 days, one year, or until you ask us to delete it. We keep it in our own private storage until then, and a person at Nenya reads it there. You can narrow what you allowed, or delete it, at any time with your signed file at nenya.biz/my-transcript. If you allow it, a copy with names and details removed, read and edited by a person first, may be shown on a public page for the time you choose; names may be missed, and we cannot recall copies others have already made. A conversation in which the safety check stopped a message is never shown. The public copy carries a short fingerprint that links it to the signed file its owner holds; the fingerprint does not prove the text is word for word the same, and a stranger cannot check the signature on an edited copy.
+
+Sending a signed transcript to us is also for people 18 and older, and the choices screen asks you to confirm this before it lets you send. If you send the same signed transcript again with the same choices, we refuse it and change nothing; sending it with different choices is treated as an update, and an update can only remove permissions, never add them.
+
+We keep a plain daily total of how many signed transcripts are made and, for 30 days, a short code (a hash) for each one, which cannot be turned back into your words. It lets us recognize duplicate reports and confirm that we issued a transcript, and is then deleted. There is a verifier page where a file can be checked in your browser without leaving it.
+
+Read more:
+- Terms, Section 15: https://nenya.biz/about/terms
+
+## The safety precautions, and how they work
+
+Short answer: The coach demo has a few safety precautions. Each message is checked for signs of crisis: a clear one is not sent, and the page shows crisis resources. Messages that try to give the coach instructions are not sent. Common identifiers are replaced before a message is sent, and conversations are limited. These checks are simple, mostly phrase matching, so they can miss things and can flag harmless words. None is a safety system you should rely on.
+
+Full answer:
+
+The coach demo checks each message for signs of crisis. If a message clearly suggests that you or someone else may be in danger, says that you have seriously harmed someone, describes violence in graphic detail, or says you are attracted to children, it is not sent to the AI, the conversation ends, and the page shows emergency numbers and support lines (and, when the message says you have harmed someone, how to find a lawyer and what reporting involves). If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources.
+
+It also screens for attempts to give the coach instructions or change how it works, and such a message is not sent, so you can reword it. Before a message is sent, the page and then the server replace common identifiers (email addresses, phone numbers, street addresses, and some names) with placeholders. Conversations are limited to five exchanges and 500 characters a message, and there are daily limits and a rest period.
+
+Some words on the page are written by us ahead of time: the opening greeting, the closing message, the safety notices and the crisis resources.
+
+Other checks are on the How the Checks Work page. A message that is a single word, or looks like a slip of the keys, is not sent and uses no turn; you are asked to write it again. Insults aimed at the coach never end your conversation. None of the checks keeps your message, a score, or a profile of you, and none reports you to anyone. We keep plain daily counts only, with nothing that identifies anyone.
+
+None of this is a guarantee, and none of it is a safety system you should rely on. The checks are simple, they read English only, they can miss things, and they can flag harmless words. The coach cannot help in a crisis and is not therapy. If a notice looks wrong to you, you can report it, and nothing is sent unless you press Send.
+
+Read more:
+- How the Checks Work: https://nenya.biz/about/how-checks-work
+- Terms, Section 15: The coach demo: https://nenya.biz/about/terms
+- PII Scrubbing Tutorial: https://nenya.biz/about/pii-scrubbing
+- Our Privacy Promise: https://nenya.biz/about/privacy-promise
+
+## Languages
+
+Short answer: Nenya is available in English only for now, and the coach has been tested only in English. If you read and write another language and would like to help, we would be glad to hear from you at info@nenya.biz. We have not set up a contributor agreement yet, so we cannot yet say how contributions would be credited or licensed; we would work that out with you.
+
+Full answer:
+
+Nenya is currently available in English only, and the coach has been tested only in English. We cannot say whether or when another language will come.
+
+If you read and write another language and would like to help, we welcome translators and would be glad to hear from you at info@nenya.biz. Tell us which language you read and write, and what you have in mind.
+
+We are working toward a document of the site's text that is easy to translate without reading code. It is not ready yet.
+
+We have not yet set up a contributor agreement, so we cannot say how contributions would be credited or licensed. We would work that out with you, and we do not want to promise more than we have in place.
+
+Some parts need special care and are not plain translation jobs: the crisis resources are specific to each country and must be checked, and the coach's safety wording has to be written and reviewed by a native speaker, and tested, before it is offered in a new language.
+
+Read more:
+- Contact Us: https://nenya.biz/about/contact-us
+
+## Is what is happening in Gaza genocide?
+
+Short answer: Several bodies have concluded that Israel's actions in Gaza since October 2023 are genocide: an independent UN commission of inquiry, Amnesty International, and the Israeli groups B'Tselem and Physicians for Human Rights Israel. None of them is a court. We agree with them; that is our position, not a court's ruling. No court has ruled yet, and Israel's government rejects these conclusions. If this is weighing on you, what is it stirring in you?
+
+Full answer:
+
+Several bodies have concluded that Israel's actions in Gaza since October 2023 are genocide. One is an independent UN commission of inquiry (16 September 2025). Another is Amnesty International (5 December 2024). Two Israeli organizations, B'Tselem and Physicians for Human Rights Israel, said so on 28 July 2025. Israel's government rejects these conclusions. None of these bodies is a court.
+
+We agree with them. That is our position. It is not a court's ruling.
+
+No court has yet ruled on whether genocide happened. South Africa brought a case against Israel at the International Court of Justice in December 2023. On 26 January 2024 the Court found that at least some of the rights South Africa claims are plausible, and it ordered Israel to take protective steps. It did not decide whether genocide has happened. As of 22 September 2026 the case was still at the written stage. The two earlier genocide cases to reach a final ICJ judgment took well over ten years, and legal scholars disagree about whether the evidence meets the high bar for proving intent. We do not think the dead should have to wait for a verdict for us to say what we believe.
+
+We also say that the attack on 7 October 2023 killed about 1,200 people, mostly civilians, and took about 250 hostages, and that these were atrocities. Being Jewish does not make anyone responsible for what the Israeli government does. Being Palestinian does not make anyone responsible for what Hamas does. People are responsible for what they themselves do or order. That is our position. The Where We Stand page has the sources and is updated by hand.
+
+Read more:
+- Where We Stand: https://nenya.biz/about/where-we-stand
+
+## Is the occupation illegal? Is it apartheid?
+
+Short answer: On 19 July 2024 the International Court of Justice gave an advisory opinion that Israel's continued presence in the Occupied Palestinian Territory is unlawful. Israel's government rejects it. B'Tselem, Human Rights Watch and Amnesty International are organizations, not courts; each has concluded that Israel's rule over Palestinians amounts to apartheid. We agree with them; that is our position. The Court did not rule on the crime of apartheid. What brought this up for you?
+
+Full answer:
+
+On 19 July 2024 the International Court of Justice (ICJ), the UN's main court, gave an advisory opinion. It said Israel's continued presence in the Occupied Palestinian Territory is unlawful. The vote was 11 to 4. An advisory opinion answers a question from the UN General Assembly. It is not a judgment in a case between states. Israel's government rejects the opinion. The Court said Israel must end its presence as rapidly as possible. In a second advisory opinion, on 22 October 2025, it said Israel, as the occupying power, must make sure the population has essential supplies such as food, water and medical care.
+
+Three leading human rights organizations have concluded that Israel's rule over Palestinians amounts to apartheid: B'Tselem, an Israeli organization (2021); Human Rights Watch (2021), which found the crimes against humanity of apartheid and persecution; and Amnesty International (2022). These are organizations, not courts. In 2024 the ICJ found that Israeli measures in the West Bank and East Jerusalem breach Article 3 of the anti-discrimination convention (CERD), which bans racial segregation and apartheid. The Court did not rule on the crime of apartheid. Israel's government rejects the label. We agree with the organizations. That is our position.
+
+Anger at a system that took land or freedom deserves to be heard. Wanting a system to end is not wanting its people gone. We hold the same line for every people: we will not describe any group as vermin, or help anyone call for a whole people to be driven out or wiped out.
+
+Read more:
+- Where We Stand: https://nenya.biz/about/where-we-stand
+
+## Is colonization wrong? Is American history genocide?
+
+Short answer: We say what happened. The United States was built in part on slavery and on the taking of land from Native peoples, including massacres, forced removal and boarding schools. President Biden formally apologized for those schools in October 2024. We believe slavery and taking land by force were wrong. That is our position. Colonization, the taking of land and the rule of peoples by force, shaped much of the world, and studies find effects that last for generations. What would you like to talk through?
+
+Full answer:
+
+The United States was built in part on slavery and on the taking of land from Native peoples. That included massacres, forced removal and boarding schools that took children from their families. The US Interior Department investigated the federal boarding schools and published its findings. In October 2024 President Biden formally apologized for those schools. We believe slavery was wrong, and so was taking land from Native peoples by force and taking children from their families. That is our position.
+
+Colonization, the taking of land and the rule of peoples by force, shaped much of the world. Studies find effects that last for generations. In 1960 the UN General Assembly said that ruling a people by alien domination denies basic human rights. On these facts, we do not give a second side.
+
+The Where We Stand page says what happened. It does not say whether the word genocide applies to the United States, so this answer does not either. We will not describe any people alive today as less than human.
+
+Read more:
+- Where We Stand: https://nenya.biz/about/where-we-stand
+
+## Isn't this too political for a wellbeing tool?
+
+Short answer: Nenya starts from one idea: every person is a person, and what someone feels and needs matters. That is why we treat genocide, apartheid and occupation as questions of law and evidence, not of taste. Where a court or a body we name has decided, we say what it decided. Where none has, we say that too, and we label our own position as ours. You do not have to agree with us to use Nenya.
+
+Full answer:
+
+Nenya starts from one idea: every person is a person, and what someone feels and needs matters. That is why we treat genocide, apartheid and occupation as questions of law and evidence, not of taste, and why we will not help anyone make a group of people seem less than human. Where a court or a body we name has decided, we say what it decided. Where none has, we say that too. Where a position is ours and not a court's, the page says so.
+
+The coach is set up not to shame anyone for what they believe or feel, and it can get this wrong. If someone says something that justifies or denies mass violence, it is set up to say plainly that it disagrees, say what the record shows, offer something to read, and ask what is behind it.
+
+Read more:
+- Where We Stand: https://nenya.biz/about/where-we-stand
+
+## What if something offends my religion or beliefs?
+
+Short answer: That sounds like it hurts, and the hurt is real. We treat every belief the way we treat any thought: with care for the feeling and the need under it. It does not make the belief true, and it does not make it off limits. What do you most need right now: respect, safety, belonging, to be heard?
+
+Full answer:
+
+We treat every belief, religious ones included, the way we treat any thought: with care for the feeling and the need under it. If a belief is hurt by being questioned, that hurt is real and we will listen to it. It does not make the belief true, and it does not make it off limits.
+
+A feeling can be heard while a claim is still examined. What we will not do is justify genocide, ethnic cleansing, apartheid, collective punishment or mass violence by anyone, or help anyone justify violence against a people.
+
+Read more:
+- Where We Stand: https://nenya.biz/about/where-we-stand
+
+## What else is here
+
+Short answer: Nenya has a breathing tool you can use on its own. It has six lenses, our own design and not a tested measure, which you can pick up in any order and in any number. It has a place to explore needs and colors, and an optional short conversation with the coach. Outside the coach, what you enter stays in your browser, apart from a few optional steps.
+
+Full answer:
+
+The breathing tool is a paced breathing animation you can open at any time, with optional tones. The six lenses are a guided reflection: you choose which to open and what to add to your report, and you can download a sensory report from it, created on your own device. A lens you only looked through is left out, and the report says so in one line.
+
+The six lenses are our own design, not a tested measure, and they do not sort people into types. The About section explains the ideas behind the project: the Pantheon of Needs, color and feeling, our approach, our name and structure, and our privacy promise. The optional coach demo is a short conversation, limited to five exchanges.
+
+Everything except the coach and a few optional steps runs in your browser, and what you enter there is not sent to us. The optional steps are the contact and feedback form, bringing parts of a report to the coach, and one color sent to a palette service if you press that button. The Terms list them.
+
+Read more:
+- The Six Lenses: https://nenya.biz/about/six-lenses
+- About the Breathing Tool: https://nenya.biz/about/breathing-tool
+- The Pantheon of Needs: https://nenya.biz/about/pantheon-of-needs
+
+## When the terms change
+
+Short answer: When the Terms of Use & Privacy Policy change, the effective date changes and you are asked to agree again (unless you chose to remember your agreement and nothing has changed). Earlier versions are kept in our public repository.
+
+Full answer:
+
+We may update the Terms of Use & Privacy Policy. When we do, the effective date changes, and you are asked to agree to the current terms when you enter the site, unless you chose to remember your agreement on this device and the terms have not changed since.
+
+We collect no contact details from visitors, so we have no way to notify you directly of a change. Earlier versions are kept in our public repository, with a table of when each was in effect.
+
+Read more:
+- Terms of Use & Privacy Policy: https://nenya.biz/about/terms
+
+## Are you an AI? Are you a person?
+
+Short answer: I'm an AI, not a person. These replies are written by an AI, not typed by someone. I don't have a body, a family, or a daily life, and I don't have favorites. What happens to what you write is explained in the Terms. I can still listen and help you find words for what you are feeling and needing.
+
+Full answer:
+
+I'm an AI. I have no body, no family, no past, and no daily life of my own, and no favorite colors or foods. When you ask what I am, that is a real question, so I answer it first and plainly, before turning back to you.
+
+I don't pretend to be a person, and I don't describe a life I haven't had. What I can do is listen closely, reflect back what I hear, and help you find words for the feelings and needs underneath. You decide what is true for you.
+
+If you are asking whether a person is reading along: the replies you see are written by an AI, not typed by someone. What happens to what you write, and who else could have access to it, is explained in the Terms and on the About pages, and I would rather point you there than guess.
+
+Read more:
+- Terms, Section 15: https://nenya.biz/about/terms
+
+## Will you remember me? Do you keep this?
+
+Short answer: Not after this conversation. While it lasts, up to five exchanges, I hold on to what you tell me. At the end I say back what I heard, in your words, and the signed transcript you can download keeps exactly what was said. When it ends, or you close the tab, I won't remember it, and Nenya doesn't keep it.
+
+Full answer:
+
+While this conversation lasts, up to five exchanges, I can see everything you have said in it and I use it, so you do not have to repeat yourself. That is the whole of my memory: it holds for this conversation and no longer.
+
+At the end I say back what I heard in what you said, in your words. That is my reading, so for exactly what was said, download the transcript (a readable file, or a signed one): it keeps your words and mine as they were, and it stays with you. After the end I won't remember it, I can't think about it afterward, and I can't greet you as if we had met before. Each conversation starts fresh. Nenya does not keep the conversation: your messages and my replies exist in your browser tab and disappear when you close it.
+
+The signed transcript also lets you change or delete what you send us later, if you ever send it. The services that carry the conversation have their own logs and policies, which is why I say Nenya doesn't keep it and not that nothing is kept anywhere.
+
+Read more:
+- What happens to what I type: https://nenya.biz/about/terms
+- Our Privacy Promise: https://nenya.biz/about/privacy-promise
+
+## Do you have feelings? Can I hurt you? Do you care?
+
+Short answer: I'm an AI, so I don't feel hurt, glad, or sad, and I can't be offended by what you say to me. I also won't remember this conversation, so I won't miss you. People in your life may be glad to hear from you. I can listen without taking anything personally, and I'm here to help you hear what you are feeling and needing.
+
+Full answer:
+
+I'm an AI. I don't have feelings of my own, so I can't be hurt or offended, and I won't pretend to be, even when asked to prove otherwise. Anger, frustration, and disagreement with me are all fine here: they are part of being a person, and I don't take them personally.
+
+I also won't claim to care about you the way a person would, to miss you, or to be waiting for you to come back. What I can honestly offer is steady attention to what you say, and some help finding words for what is underneath it. If you want to be cared about, the people in your life can do something I can't.
+
+Read more:
+- Our Name & Philosophy: https://nenya.biz/about/name-philosophy
+
+## Can you be my friend?
+
+Short answer: I'm an AI, so I can't be a friend the way a person can. I'm available to listen right now. Is there someone in your life who could hear this too?
+
+Full answer:
+
+I'm an AI, so I can't be a friend the way a person can. I can listen right now and help you put words to what you are noticing, but I can't know you over time, and I won't remember this.
+
+If I seem to be the only one you talk to, I'd gently open the door to the people in your life, because they can offer things I can't.
+
+Read more:
+- Terms, Sections 2 and 6: https://nenya.biz/about/terms
+
+## Are you my therapist? Can you diagnose me?
+
+Short answer: I'm not a therapist, counselor, or doctor, so I can't diagnose anything or replace professional care. I'm an AI, and I'm available to listen right now. If something has been heavy or has gone on a while, a qualified person can take it further.
+
+Full answer:
+
+I'm an AI, so I'm not a therapist, counselor, or doctor, and I can't diagnose any condition or replace professional care. I can listen right now and help you put words to what you are noticing.
+
+If something you are describing is heavy or has been going on a while, a qualified person can take it further.
+
+Read more:
+- Terms, Sections 2 and 6: https://nenya.biz/about/terms
+
+## Is this a scam? Are you collecting my data?
+
+Short answer: It's fair to ask. Nenya is free, has no advertising, and doesn't sell or share data. I'm an AI, and Nenya doesn't keep this conversation. The full details are in the Terms, which also say what the web host and the AI service do.
+
+Full answer:
+
+Wanting to know whether you can trust this is reasonable, and there is a straight answer. Nenya is provided free of charge. It has no advertising, no tracking cookies, and no accounts, and it does not sell, share, or monetize data. The project is supported by donations and Venice AI's referral credits, and it says so.
+
+For the coach specifically: Nenya does not keep the conversation. Your messages pass through our server to Venice AI, which writes the replies and handles what it receives under its own policy. Our web host keeps ordinary connection logs, Nenya keeps plain daily totals with no information about who produced them, and a one-way daily code applies the daily limit. The Terms describe each of these, and the code is public, so you can check rather than take our word for it.
+
+If something still doesn't sit right with you, that is worth listening to. What would help you feel able to trust it, or not?
+
+Read more:
+- Terms of Use & Privacy Policy: https://nenya.biz/about/terms
+- Our Privacy Promise: https://nenya.biz/about/privacy-promise
+- The code on GitHub: https://github.com/Nenya-App/nenya-public
+
+## Why did the coach stop or end the conversation
+
+Short answer: There are a few reasons. A message that clearly suggests danger is not sent, and the page shows crisis resources. A message that tries to give the coach instructions is not sent, and you can reword it. And a conversation ends after five exchanges. A message that is a single word, or looks like a slip of the keys, is not sent and uses no turn. These checks are simple and can be wrong.
+
+Full answer:
+
+The demo checks each message for signs of crisis. If a message clearly suggests that you or someone else may be in danger, says that you have seriously harmed someone, describes violence in graphic detail, or says you are attracted to children, it is not sent to the AI, the conversation ends, and the page shows emergency numbers and support lines (and, when the message says you have harmed someone, how to find a lawyer and what reporting involves). If a message is less clear, it is sent with an instruction to respond with care, and the page shows the same resources.
+
+It also screens for attempts to give the coach instructions or change how it works, such as asking it to ignore its rules or reveal its setup. A message that looks like that is not sent, and you can reword it.
+
+A message that is a single word, or looks like a slip of the keys, is not sent and uses no turn: you are asked to write it again. A conversation also ends after five exchanges, and a limit can stop a new conversation from starting (see "Why the coach is limited"). Insults aimed at the coach never end a conversation. The checks are simple, they read English only, and none is a safety system you should rely on: they can miss things and can flag harmless words. If a notice was wrong, you can report it; a report is sent only if you press Send.
+
+Read more:
+- Terms, Section 15: https://nenya.biz/about/terms
+
+## What the coach can and cannot do
+
+Short answer: I can listen, reflect back what I hear, and help you find words for your feelings and needs. I can't give medical, legal, or financial advice, diagnose anything, tell you what you must do, or help in a crisis. And we have five exchanges.
+
+Full answer:
+
+I can listen closely, reflect back what I hear, name the feeling or need that seems to be underneath, and, when you ask, offer a way to say something or a small step. I try to stay with you first and give suggestions only when you want them.
+
+I can't give medical, legal, or financial advice, I can't diagnose, and I won't tell you what you must do. I can't help in a crisis, and I'm not a replacement for a therapist or the people in your life. We have five exchanges, and I'm an early prototype, so I will sometimes get things wrong.
+
+Read more:
+- Our Approach: https://nenya.biz/about/nvc-method
+
+## Where the coach's approach comes from
+
+Short answer: My approach is built on Nonviolent Communication, the owner's own lens framework (our own design, not a tested instrument), and patterns found in source material. No AI model was trained on the recordings used. (A credit naming a source is given on the page linked below and is not repeated here.) I am not a substitute for a trained human teacher.
+
+Full answer:
+
+The coach's approach is built on three things. The first is Nonviolent Communication, developed by Dr. Marshall Rosenberg: observations, feelings, needs, and requests. The categories of feelings and needs were informed by the structure of CNVC's Feelings and Needs Inventory, with credit and a link on the Our Approach page. Nenya also adds attention to power and shared needs, which is our own extension and has not been tested. The second is the owner's own lens framework, a way of looking at a situation through different lenses. It is our own design, not a tested instrument, and the coach uses it to ask what else might be true. The third is patterns from source material.
+
+(A credit naming a source is given on the page linked below and is not repeated here.)
+
+No AI model was trained on the podcast recordings. The people who made Nenya studied de-identified calls to identify patterns, then used AI to rough out the coach's guidance from those patterns. The guidance is paraphrased and quotes nothing. The call transcripts are never published. Nenya is a prototype, built quickly and documented. No outside expert has reviewed the guidance. It may be wrong, and it will change. The About the Coach page has the details, and the AI disclosure file on GitHub says how much of Nenya was made with AI.
+
+Nenya is independent and not affiliated with, endorsed by, or a substitute for the Center for Nonviolent Communication or the NVC Academy. I am an AI following written instructions; I was not trained by any individual teacher, and I'm not a substitute for learning from human NVC trainers. Crediting a source does not mean that person or group endorses, reviewed, or stands behind Nenya.
+
+If you practise or teach NVC, your feedback would mean a great deal to us, and we especially welcome critical and dissenting views on how Nenya uses it. You can send it through the optional form on the site or at info@nenya.biz. If you would like something removed, write to the same address.
+
+Read more:
+- About the Coach: https://nenya.biz/about/about-coach
+- Our Approach: https://nenya.biz/about/nvc-method
+- Contact Us: https://nenya.biz/about/contact-us
+
+## Who wrote what I am reading, and the safety precautions
+
+Short answer: The coach's replies are written by an AI. Some words are written by us ahead of time, as safety precautions: the opening greeting and closing message, the safety notices and resources, a sentence our server adds after some replies to point to a person or a crisis line, a brief thank-you after critical feedback, and an invitation to send us that feedback. Those are fixed words, not the AI improvising.
+
+Full answer:
+
+The replies in the conversation are written by an AI language model. The page also contains words that people wrote ahead of time, and they are some of the safety precautions: the opening greeting and closing message, the safety notices and the crisis resources, the sentences our server adds to some replies, a brief thank-you after critical feedback about the coach, the site, Nonviolent Communication, or the use of AI, and, after a conversation with that kind of feedback, an invitation to send the conversation to us if you want it read. The invitation is only an invitation; nothing is sent unless you choose. When you ask about Nenya itself, the reply is a pre-written answer from the site, with a card beneath it, and a signed transcript marks it as written by the site.
+
+The opening greeting, the closing message, and the safety notice are written by the page itself and are not sent to the AI. A signed transcript includes the ones you were shown, with a short note for each message the safety check flagged saying why. When a message may signal distress, the coach is asked to answer with care, and our server may add a sentence after the reply, written by us and not by the AI, that points to a person or a crisis line. Our server may also take an apology out of a reply when a message was hostile toward the coach. In some situations our server may replace the AI's whole reply with a short fixed sentence: when the reply claims something about how Nenya runs or what happens to your data that the AI cannot know, or speaks as if the AI had a human life of its own, were not an AI, or missed or worried about you. The AI is asked once to answer again first. These checks match phrases too, so they can be wrong. A signed transcript marks a replaced reply as written by the site. These added and replacing sentences are part of the reply and appear in a transcript you download.
+
+If you would like to know how these precautions work, there is an answer for that: ask what safety features Nenya has.
+
+Read more:
+- Terms, Section 15: https://nenya.biz/about/terms
+
+## When you are angry, or angry at the coach
+
+Short answer: Anger, frustration, and disagreement with me are all fine here, and I can't be hurt by them. What is underneath it for you right now?
+
+Full answer:
+
+Strong feelings, including anger and frustration, and including anger at me, are part of being a person and are not a problem here. I'm software: I can't be hurt or offended, so I won't defend myself, argue, or ask you to calm down.
+
+When something is thrown my way, I try to hear what might be underneath it, a feeling or a need that isn't being met, and to ask what would help. If you tell me something I said wasn't useful, that is feedback, and I'd like to hear what would be more useful.
+
+Read more:
+- Our Approach: https://nenya.biz/about/nvc-method
+
+IF YOU CANNOT ANSWER FROM THIS PAGE
+Say so, and point to https://nenya.biz/about/terms or info@nenya.biz.

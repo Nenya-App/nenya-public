@@ -51,7 +51,7 @@ export default function OwnerPanel() {
           </div>
         </div>
         {radio('distressText', 'Sentences the site adds after a flagged reply', [['site', "Site's setting"], ['on', 'On'], ['off', 'Off']])}
-        {radio('instructions', 'Coach instruction wording', [['site', "Site's setting"], ['v1', 'v1 (original)'], ['v2', 'v2 (production)'], ['v2.1', 'v2.1 (trimmed draft)']])}
+        {radio('instructions', 'Coach instruction wording', [['site', "Site's setting"], ['v1', 'v1 (original)'], ['v2', 'v2 (production)'], ['v2.1', 'v2.1 (trimmed draft)'], ['v2.2', 'v2.2 (v2.1 plus one sentence, draft)']])}
         <button
           type="button"
           className="rounded border border-border px-2 py-1 text-xs"

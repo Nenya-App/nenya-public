@@ -7,7 +7,7 @@ const robots = readFileSync('public/robots.txt', 'utf8');
 const groups = robots.split(/\n\s*\n/).map((g) => g.split('\n').filter((l) => !l.startsWith('#')).join('\n').trim() + '\n').filter((g) => g.startsWith('User-agent:'));
 ok('two groups: the named AI crawlers, and everyone else', groups.length === 2 && /User-agent: \*/.test(groups[1]));
 ok('every group signals search yes, AI answers yes, AI training no', groups.every((g) => /Content-Signal: search=yes, ai-input=yes, ai-train=no/.test(g)));
-ok('named AI crawlers may read only the two summary pages and llms.txt', /Disallow: \/\n/.test(groups[0]) && ['/about-nenya.html', '/why-nenya.html', '/llms.txt'].every((p) => groups[0].includes(`Allow: ${p}`)) && (groups[0].match(/^Allow:/gm) ?? []).length === 3);
+ok('named AI crawlers may read only the two summary pages, llms.txt and the generated facts page mind-facts.txt (owner, 2026-11-23)', /Disallow: \/\n/.test(groups[0]) && ['/about-nenya.html', '/why-nenya.html', '/llms.txt', '/mind-facts.txt'].every((p) => groups[0].includes(`Allow: ${p}`)) && (groups[0].match(/^Allow:/gm) ?? []).length === 4);
 ok('the named list includes the assistants that fetch a page for someone', ['ChatGPT-User', 'Claude-User', 'Perplexity-User', 'Meta-ExternalFetcher', 'DuckAssistBot', 'MistralAI-User', 'GPTBot', 'ClaudeBot', 'Google-Extended', 'CCBot'].every((a) => groups[0].includes(`User-agent: ${a}\n`)));
 ok('everyone else may crawl the site, but not the function endpoints', /Disallow: \/api\//.test(groups[1]) && /Disallow: \/\.netlify\//.test(groups[1]) && /Allow: \/\n/.test(groups[1]));
 ok('the sitemap is listed, and no private page is named', /Sitemap: https:\/\/nenya\.biz\/sitemap\.xml/.test(robots) && !/admin|bench|cell/i.test(robots));

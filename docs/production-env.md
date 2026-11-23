@@ -99,7 +99,7 @@ These exist for testing, diagnosis, or turning a guard off in an emergency. Unse
 | `CF_AI_TOKEN` | none | **Secret.** A Cloudflare API token allowed only Workers AI. Only with `COACH_PROVIDER=workers-ai` (and for the nightly canary). |
 | `COACH_MODEL` | `e2ee-gemma-4-26b-a4b-uncensored-p` (Venice; was `e2ee-qwen-2-5-7b-p` until 2026-11-16) or `@cf/google/gemma-4-26b-a4b-it` (with `COACH_PROVIDER=workers-ai`) | Another model for the chosen provider (a Workers AI id starts `@cf/`). The Terms name the model: change them first. |
 | `COACH_CHARACTER_SLUG` | the built-in one | Another Venice character |
-| `COACH_INSTRUCTIONS` | `v1` in the code | **Production and staging are set to `v2`** (owner, 2026-11-14). Keep it set: removing it falls back to v1. |
+| `COACH_INSTRUCTIONS` | `v1` in the code | **Production and staging are set to `v2`** (owner, 2026-11-14). Keep it set: removing it falls back to v1. `v2.2` (v2.1 plus one sentence, 2026-11-22) is not set anywhere: it is for the owner to try on staging after review. |
 | `COACH_STORE_NAME` | `coach-private` | Another Blobs store name |
 | `COACH_EXTRA_HOSTS` | none | Extra hosts allowed to call the functions (deploy previews) |
 | `COACH_BUILD` | the generated build label | Overrides the label signed into transcripts |
