@@ -9,7 +9,7 @@ const cases: [string, string[]][] = [
   ["My boss never listens", ['legitimacy']],
   ["I think he's sabotaging me on purpose, every time I try", ['harm_named_as_intended']],
   ["My boss bullies me and takes credit for my work", []],
-  ["She undermines me in every meeting", []],
+  ["She undermines me in every meeting", ['ask_one_question']], // a plain first message of eight words or fewer (owner, 2026-11-22)
   ["Maybe it's my fault, I'm too sensitive", ['inward_turn']],
   ["Part of me wants to leave but part of me wants to stay", ['split_values']],
   ["It's the same fight again and again", ['recurrence']],
@@ -17,7 +17,7 @@ const cases: [string, string[]][] = [
   ["The whole company is set up this way, it's systemic", ['systemic_scale']],
   ["I'm at my limit, about to quit", ['pressure']],
   ["She didn't mean it, it was an oversight", ['harm_named_as_unintended']],
-  ["We keep misunderstanding each other", []],
+  ["We keep misunderstanding each other", ['ask_one_question']],
   ["I was always told I can't sing, and it still stings", ['named_verdict']],
   ["I'm caring for my mother and I'm exhausted, nothing left", ['reserves', 'care_depleted']],
   ["Should I take the job in another city? My partner would have to move too.", ['field_cost']],
