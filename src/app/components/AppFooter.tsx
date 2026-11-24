@@ -26,7 +26,7 @@ export function AppFooter({ className = '' }: AppFooterProps) {
             <div className="flex flex-col">
               {/* The mark (nənya.biz, VITE_NAME_MARK=on) or, until it is approved, the plain name. */}
               {nameMarkOn() ? <NenyaMark face="body" className="text-sm font-medium" /> : <span className="text-sm font-medium">Nenya</span>}
-              <span className="text-xs text-muted-foreground">A mirror for your inner world</span>
+              <span className="text-xs text-muted-foreground">A free place to pause and reflect</span>
             </div>
           </div>
 

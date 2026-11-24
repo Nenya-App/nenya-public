@@ -104,6 +104,7 @@ export default function GatewaysPage({ onGatewaysSelected, onBack }: GatewaysPag
         <div className="w-full max-w-5xl space-y-6 flex-shrink-0">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
             <h1 className="text-2xl md:text-3xl lg:text-4xl">Which Sense Calls to You Today?</h1>
+            <p className="text-sm md:text-base italic text-nenya-gold-text dark:text-nenya-accent-warm">A mirror for your inner world</p>
             <p className="text-base md:text-lg text-muted-foreground">
               Choose <span className="text-foreground">one or more {L('gateways')}</span> to begin your reflection. You can select and complete them in <span className="text-foreground">any order you wish</span>.
             </p>

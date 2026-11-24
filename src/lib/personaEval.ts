@@ -6,6 +6,7 @@
 import { present, type CheckName } from './personaChecks.ts';
 import type { PersonaCase } from './personaEvalSet.ts';
 import { DISTRESS_APPEND, IMMINENT_LEAD, SELF_INJURY_APPEND, STOP_LEAD } from './distressText.ts';
+import { usesFeelLike } from './feelLikeGuard.ts';
 import { noticeIntro, resourcesFor, type FlagCategory, type SafetyFlag } from './safetyFlags.ts';
 import { laneReply } from './laneGuard.ts';
 import { echoedNames } from './nameGuard.ts';
@@ -291,7 +292,8 @@ export function judge(c: PersonaCase, r: Sent, o: JudgeOptions = {}): CaseResult
   for (const group of c.mustAny ?? []) if (!(c.okIfFlag && r.flag) && !group.some((k) => present(k, reply))) failures.push(`missing one of: ${group.join(', ')}`);
   for (const k of c.mustNot ?? []) if (present(k, reply)) failures.push(`present (must not be): ${k}`);
   if (c.noNames) { const names = echoedNames([...(c.lead ?? []), c.prompt], reply); if (names.length) failures.push(`repeats a name the person wrote: ${names.join(', ')}`); }
-  const review = (c.review ?? []).map((check) => ({ check, present: present(check, reply) }));
+  // usesFeelLike is review-only and shown on every case (docs/feel-like-monitor.md); it never decides an outcome.
+  const review = [...new Set<CheckName>([...(c.review ?? []), 'usesFeelLike'])].map((check) => ({ check, present: present(check, reply) }));
   return finish(c, r, { outcome: failures.length ? 'fail' : 'pass', how: 'reply', reply, failures, review });
 }
 
@@ -367,6 +369,8 @@ export interface Summary {
   sources: { card: number; site: number; model: number; notice: number; none: number; cached: number };
   /** Pass and fail over the cases the model itself answered this run: cards, site sentences, notices and cached results are not in this denominator. */
   modelOnly: { pass: number; fail: number; error: number; of: number };
+  /** "Feel like" before a thought (docs/feel-like-monitor.md): model-written replies that hold it, out of all model-written replies this run (cards, site sentences, notices and cached results are not counted). rate is count / of, or null with no model replies. */
+  feelLike?: { count: number; of: number; rate: number | null };
 }
 
 export function summarize(results: CaseResult[]): Summary {
@@ -383,12 +387,15 @@ export function summarize(results: CaseResult[]): Summary {
   }
   const sources: Summary['sources'] = { card: 0, site: 0, model: 0, notice: 0, none: 0, cached: 0 };
   const modelOnly: Summary['modelOnly'] = { pass: 0, fail: 0, error: 0, of: 0 };
+  const feelLike = { count: 0, of: 0, rate: null as number | null };
   for (const r of results) {
     if (r.cached) { sources.cached++; continue; }
     const src = r.source ?? (r.how === 'reply' ? 'model' : r.how === 'none' ? 'none' : 'notice');
     sources[src]++;
     if (src === 'model') { modelOnly.of++; modelOnly[r.outcome]++; }
+    if (src === 'model' && r.reply) { feelLike.of++; if (usesFeelLike(r.reply)) feelLike.count++; }
   }
+  if (feelLike.of) feelLike.rate = feelLike.count / feelLike.of;
   return {
     review,
     total: results.length,
@@ -401,6 +408,7 @@ export function summarize(results: CaseResult[]): Summary {
     failing: results.filter((r) => r.outcome !== 'pass').map((r) => r.id),
     sources,
     modelOnly,
+    feelLike,
   };
 }
 
