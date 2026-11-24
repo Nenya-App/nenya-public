@@ -1,5 +1,6 @@
 // The orbits' look: everything about the 16 orbs round the gem that can be tuned on the /bench page. NenyaLogo uses these
 // defaults when it is given no options, so the live site looks as it always has.
+import { DEFAULT_BREATH_TURN, DEFAULT_OUTER_RING_BREATH_PACED, DEFAULT_OUTER_RING_SECONDS, DEFAULT_OUTER_RING_TURNING, DEFAULT_RING_DIRECTION, type RingDirection } from './outerRing.ts';
 
 export interface InnerOrbitLook {
   show: boolean;
@@ -88,6 +89,17 @@ export interface OuterOrbitLook {
   haloWidth: number;
   /** Seeds the 'random' halo's colours. */
   haloSeed: number;
+  /**
+   * How the ring of orbs turns round the logo (src/lib/outerRing.ts). The site takes these from the visitor's settings (Settings, Logo look, Outer ring movement) unless this look sets them.
+   * It is held still whenever motion is stopped or the device asks for reduced motion, whatever these say (src/lib/motionStop.ts).
+   */
+  turn: boolean;
+  direction: RingDirection;
+  /** Seconds for the ring to turn once: its own pace, no longer the inner ring's (30 is the fastest allowed, 2 turns a minute). */
+  turnSeconds: number;
+  /** When true the ring turns a fixed fraction of a turn for each breath (1 / breathTurn), following the shared breathing clock, and `turnSeconds` is not used. */
+  breathPaced: boolean;
+  breathTurn: number;
 }
 
 export const DEFAULT_OUTER_ORBIT: OuterOrbitLook = {
@@ -99,6 +111,12 @@ export const DEFAULT_OUTER_ORBIT: OuterOrbitLook = {
   halo: 'own',
   haloWidth: 5,
   haloSeed: 1,
+  // The outer ring keeps turning counter-clockwise, at its own pace: 144 s a turn, twelve 12-second breaths at the default 6 s in, 6 s out (about 0.42 turns a minute). It used to share the inner ring's 120 s.
+  turn: DEFAULT_OUTER_RING_TURNING,
+  direction: DEFAULT_RING_DIRECTION,
+  turnSeconds: DEFAULT_OUTER_RING_SECONDS,
+  breathPaced: DEFAULT_OUTER_RING_BREATH_PACED,
+  breathTurn: DEFAULT_BREATH_TURN,
 };
 
 /**

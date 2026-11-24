@@ -216,6 +216,7 @@ export function BreathingPopout({
                     onCounterToggle={onCounterToggle}
                     cvMode={cvMode}
                     onCvModeChange={onCvModeChange}
+                    technique={technique}
                   />
                 ) : (
                   <div className="text-sm text-muted-foreground text-center py-8">

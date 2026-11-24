@@ -1,5 +1,6 @@
 import * as m from 'motion/react-m';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useOuterRingTurn } from './useOuterRingTurn';
 // The flat logo (petals, bezel and gem, no orbs) is a 768 px WebP rendered from the vector drawings, and most call
 // sites use this component as a small persistent header mark (28-40px), where that is over 25 times more image
 // data than the display can show. A pre-resized 128 px WebP is swapped in below for those small sizes instead.
@@ -23,7 +24,7 @@ import { DEFAULT_INNER_ORBIT, DEFAULT_OUTER_ORBIT, type InnerOrbitLook, type Out
 import { GEM_ENGINE, type GemEngine } from '../../lib/gemSprite';
 import { liveGemSupported } from '../../lib/gemRenderer';
 import { deviceProfile } from '../../lib/deviceProfile';
-import { useMotionStopped, useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook, useGemSidesChoice, useInnerOrbMode, useLeafSway, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
+import { useMotionStopped, useGemKaleidoscope, useGemKaleidoscopeBreath, useGemKaleidoscopeLook, useGemSidesChoice, useInnerOrbMode, useLeafSway, useLogoLeaves, useOrbHaloSeed, useOrbHaloStyle, useOrbHaloWidth, useOuterRingBreathPaced, useOuterRingBreathTurn, useOuterRingDirection, useOuterRingSeconds, useOuterRingTurning } from '../../lib/deviceMemory';
 import { effectiveGemSides, innerOrbsDrawn, innerOrbsMove, randomHaloColors } from '../../lib/logoLook';
 import { useZoomedIn } from '../../lib/zoomLite';
 import { DEFAULT_KALEIDOSCOPE, KALEIDOSCOPE_PRESETS } from '../../lib/kaleidoscope';
@@ -155,7 +156,13 @@ export default function NenyaLogo({
   const haloStyleChoice = useOrbHaloStyle();
   const haloWidthChoice = useOrbHaloWidth();
   const haloSeedChoice = useOrbHaloSeed();
-  const outer = { ...DEFAULT_OUTER_ORBIT, halo: haloStyleChoice, haloWidth: haloWidthChoice, haloSeed: haloSeedChoice, ...outerOrbit };
+  // The ring's movement (Settings, Logo look, Outer ring movement): turning or still, direction, its own pace, and "pace to my breathing"; a prop (the bench) overrides them.
+  const ringTurnChoice = useOuterRingTurning();
+  const ringDirectionChoice = useOuterRingDirection();
+  const ringSecondsChoice = useOuterRingSeconds();
+  const ringBreathPacedChoice = useOuterRingBreathPaced();
+  const ringBreathTurnChoice = useOuterRingBreathTurn();
+  const outer = { ...DEFAULT_OUTER_ORBIT, halo: haloStyleChoice, haloWidth: haloWidthChoice, haloSeed: haloSeedChoice, turn: ringTurnChoice, direction: ringDirectionChoice, turnSeconds: ringSecondsChoice, breathPaced: ringBreathPacedChoice, breathTurn: ringBreathTurnChoice, ...outerOrbit };
   // The visitor's look (accessibility panel): the gem follows the leaves unless they chose a number; a prop (the bench) overrides it.
   const sideChoice = useGemSidesChoice();
   const leafChoice = useLogoLeaves();
@@ -178,7 +185,7 @@ export default function NenyaLogo({
     return () => q.removeEventListener?.('change', update);
   }, []);
   // What may move now: the visitor's Stop motion, or the device's reduced-motion request, hold the decorative movement still over every individual setting (src/lib/motionStop.ts).
-  const plan = motionPlan({ stopped: motionStopped, reducedMotion, leafSway: swayWish, kaleidoscope: kalVisitor || !!liveGem?.kaleidoscope?.on, innerLights: innerChosen });
+  const plan = motionPlan({ stopped: motionStopped, reducedMotion, leafSway: swayWish, kaleidoscope: kalVisitor || !!liveGem?.kaleidoscope?.on, innerLights: innerChosen, outerRingTurning: outer.turn });
   const innerMode = plan.innerLights;
   const innerMoves = innerOrbsMove(innerMode);
   // The orbs' colours: each palette's own unless the visitor chose another set (Settings, Logo look, Orb colours).
@@ -230,6 +237,9 @@ export default function NenyaLogo({
   // Set once, when the logo first mounts with a clock anchor, so a fresh mount starts the rotation at the
   // correct phase. Deliberately NOT recomputed when the anchor changes later: that happens when the breathing
   // pace changes, and recomputing would snap the orbits back to angle 0 in front of the person.
+  // The outer ring turns at its own pace and direction (src/lib/outerRing.ts), from the same clock, and is held still with the rest of the motion.
+  const outerRingRef = useRef<HTMLDivElement>(null);
+  useOuterRingTurn(outerRingRef, showValarOrbit && outer.show && plan.outerRingTurns, { direction: outer.direction, seconds: outer.turnSeconds, breathPaced: outer.breathPaced, breathTurn: outer.breathTurn, technique }, cycleStart);
   const [orbitDelay, setOrbitDelay] = useState(0);
   const orbitSet = useRef(false);
   // Seconds since the shared clock started, read when the logo mounts (and again when the breathing pace changes, for the lights that follow the breath), so the lights' phase matches the gem's.
@@ -452,9 +462,10 @@ export default function NenyaLogo({
         </div>
       )}
 
-      {/* Outer Orbiting Valar - smaller orbs at breathing animation edge, rotating opposite direction */}
+      {/* Outer Orbiting Valar - smaller orbs at breathing animation edge, turning round the logo (counter-clockwise by default, at its own pace) */}
       {showValarOrbit && outer.show && (
         <div
+          ref={outerRingRef}
           className="absolute pointer-events-none"
           style={{
             width: outerOrbitRadius * 2,
@@ -465,9 +476,8 @@ export default function NenyaLogo({
             marginTop: -outerOrbitRadius,
             zIndex: 5, // Below inner orbit (20) but above base logo (10)
             willChange: 'transform',
-            animation: plan.outerOrbsMove ? `nenya-orbit-ccw ${ORBIT_DURATION}s linear infinite` : undefined, // Opposite direction; held still when motion is stopped
-            animationDelay: plan.outerOrbsMove ? `${orbitDelay}s` : undefined,
-                      }}
+            // The ring's turn is set from the script above (useOuterRingTurn): its own pace and direction, and still when motion is stopped.
+          }}
         >
           <style>{orbHueCss}</style>
           {valarColors.map((valar, index) => {

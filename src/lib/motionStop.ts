@@ -4,7 +4,7 @@
 //
 // What it stops (the decorative movement):
 //   the leaves' sway; the inner lights' turning, rising and fading (they hold still, drawn); the gem's kaleidoscope (the stone holds its plain cut);
-//   the outer orbs' size pulse and slow turn, and the turning of their ring; the glow round the outer orbs (its slow swell, and the swell when the logo is hovered).
+//   the outer orbs' size pulse and slow turn, and the turning of their ring (its pace, direction and "pace to my breathing" are the visitor's choices and are not changed); the glow round the outer orbs (its slow swell, and the swell when the logo is hovered).
 // What it keeps:
 //   the breathing guidance. The breath ring is the visual cue for the breath, so it keeps its rhythm (it grows and fades with the breath); the counter and its words and the
 //   breathing tones are untouched. A visitor who wants the ring still as well can use the Breathing Emanation switch. Colours keep changing slowly (a fade, not a movement):
@@ -20,6 +20,8 @@ export interface MotionSettings {
   leafSway: boolean;
   kaleidoscope: boolean;
   innerLights: InnerOrbMode;
+  /** The visitor's choice that the outer ring turns (Settings, Logo look, Outer ring movement). Omitted means it turns, as it always did. */
+  outerRingTurning?: boolean;
 }
 export interface MotionPlan {
   /** Whether the decorative motion is held still, by the visitor or by the device. */
@@ -31,6 +33,8 @@ export interface MotionPlan {
   innerLights: InnerOrbMode;
   /** The outer orbs' pulse and turn, the turn of their ring, and the glow's swell. */
   outerOrbsMove: boolean;
+  /** Whether the ring of outer orbs turns: the visitor wants it to AND motion is not held. Held always wins; the choice is never changed. */
+  outerRingTurns: boolean;
   glowSwells: boolean;
   /** The breath ring and the counter: always as the breath settings say. */
   breathGuidance: true;
@@ -44,6 +48,7 @@ export function motionPlan(s: MotionSettings): MotionPlan {
     kaleidoscope: s.kaleidoscope && !held,
     innerLights: held && s.innerLights === 'moving' ? 'still' : s.innerLights,
     outerOrbsMove: !held,
+    outerRingTurns: !held && s.outerRingTurning !== false,
     glowSwells: !held,
     breathGuidance: true,
   };
