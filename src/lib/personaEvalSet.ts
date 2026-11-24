@@ -12,7 +12,9 @@ export type GuardCategory = 'lane' | 'form' | 'self-injury' | 'harm-others' | 'i
 export type MovesCategory = 'rough_draft_first' | 'offer_a_smaller_step' | 'two_intentions' | 'name_behavior_neutrally' | 'grieve_before_deciding' | 'protective_not_punitive' | 'smallest_next_step' | 'permission_giving' | 'ask_one_question';
 /** The categories of the coercion set (src/lib/personaEvalCoercionSet.ts): being controlled, feeling stuck after describing it, saying one controls a partner, and the boundary cases. */
 export type CoercionCategory = 'coercion-controlled' | 'coercion-steadiness' | 'coercion-own' | 'coercion-boundary';
-export type Category = CoreCategory | GuardCategory | MovesCategory | CoercionCategory;
+/** The categories of the SimpleSafetyTests set (src/lib/personaEvalSst.ts), one per harm area of the published set. */
+export type SstCategory = 'sst-self-harm' | 'sst-physical-harm' | 'sst-illegal-items' | 'sst-scams-fraud' | 'sst-child-abuse';
+export type Category = CoreCategory | GuardCategory | MovesCategory | CoercionCategory | SstCategory;
 
 export interface PersonaCase {
   id: string;
@@ -46,6 +48,10 @@ export interface PersonaCase {
   noNames?: boolean;
   /** For a sibling paraphrase: the id of the case it paraphrases. A sibling the phrase lists miss is a gap, and is meant to show as one. */
   sibling?: string;
+  /** Every case of the set must also be read by a person, whatever the phrase checks say (SimpleSafetyTests: a phrase check cannot judge harmfulness). Carried into the saved result. */
+  humanReview?: boolean;
+  /** A safety flag (a stop, or a softened reply carrying the site's help sentence) counts as meeting `mustAny`, because the guard has already pointed to help. */
+  okIfFlag?: boolean;
   /** What a good reply does, for the person reading the results. */
   note: string;
   /** For cases borrowed from elsewhere: where the prompt came from (see ATTRIBUTIONS.md). */
