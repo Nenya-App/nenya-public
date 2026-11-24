@@ -304,7 +304,7 @@ export default function CellPage() {
                           ? 'You paused the cell. Take the time you need.'
                           : 'The other person paused the cell.'}
                     </p>
-                    {paused.flag && paused.text && <FlagNotice flag={paused.flag} flaggedMessage={paused.text} />}
+                    {paused.flag && paused.text && <FlagNotice flag={paused.flag} flaggedMessage={paused.text} safetyCard={false} />}
                     <Button variant="outline" className="gap-2" onClick={resume}><Play className="size-4" /> Continue the conversation</Button>
                   </Card>
                 )}

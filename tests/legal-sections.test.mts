@@ -31,3 +31,15 @@ const labels = [...about.matchAll(/'Terms, Section (\d+)(?:: ([^']+))?'/g)];
 ok('the site’s answers link only to sections that exist', labels.length > 5 && labels.every((m) => byNumber.has(Number(m[1]))));
 ok('a link that names a section uses that section’s own heading', labels.filter((m) => m[2]).every((m) => byNumber.get(Number(m[1]))!.heading.toLowerCase() === m[2].toLowerCase()));
 ok('the host’s logs and visit totals are referred to Section 13', /Section 13 of the terms describes them/.test(src('src/app/components/about/Structure.tsx')) && /\(Section 13 of the terms\)/.test(src('src/app/components/about/PrivacyPromise.tsx')));
+
+// The privacy page says a conversation you choose to send us is kept "as the terms describe (Section 15, “Transcripts”)". Section 15 had its
+// "Continuing on Venice" part renamed on 2026-11-24, which prompted a check that the number was still right: it is, because the sending of a
+// signed transcript is described in Section 15's "Transcripts" part (with the choices, the keeping times and deleting it), and Section 5 and Section 14
+// only point to or list other kinds of sending. The page names the part so the pointer cannot drift again.
+{
+  const transcripts = byNumber.get(15)!.subsections?.find((x) => x.heading === 'Transcripts');
+  const body = (transcripts?.paragraphs ?? []).join(' ');
+  ok('Section 15 has a "Transcripts" part that describes sending a signed transcript, what we may do with it and how long we keep it', !!transcripts && /If you choose to send a signed transcript to us/.test(body) && /how long we keep it \(30 days, 90 days, one year, or until you ask us to delete it\)/.test(body) && /keeps it in our own private storage until the time you chose/.test(body));
+  ok('Section 14 does not hold the choices and keeping times for a sent conversation (it only mentions a transcript in passing), so it is not where that answer lives', !/If you choose to send a signed transcript/.test(textOf(14)) && !/keeps it in our own private storage until the time you chose/.test(textOf(14)));
+  ok('the privacy page points to Section 15 “Transcripts” for a conversation you choose to send, and nowhere to the retired part', /as the terms describe \(Section 15, “Transcripts”\)/.test(src('src/app/components/about/PrivacyPromise.tsx')) && !/Continuing on Venice/.test(src('src/app/components/about/PrivacyPromise.tsx')));
+}

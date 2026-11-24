@@ -7,6 +7,8 @@ import { Button } from '../app/components/ui/button';
 import { Textarea } from '../app/components/ui/textarea';
 import { LinkedText } from '../app/components/ExternalLink';
 import { admitsHarm, noticeIntro, REPORTING_FACTS, resourcesFor, type SafetyFlag } from '../lib/safetyFlags';
+import { shouldShowSafetyCard } from '../lib/safetyCardRule';
+import { SafetyFeaturesCard } from '../app/components/SafetyFeaturesCard';
 
 interface FlagNoticeProps {
   flag: SafetyFlag;
@@ -14,12 +16,17 @@ interface FlagNoticeProps {
   flaggedMessage: string;
   /** Where the flag came from. 'report' means the part of a report the visitor chose to share, not one of their messages: the notice says so, and nothing is ended. */
   source?: 'message' | 'report';
+  /**
+   * Whether the safety features card may appear under the help lines (it still appears only for the abuse kinds: src/lib/safetyCardRule.ts). The partner cell passes
+   * false: there, Emergency Exit also closes the cell with our server, so the card's line "It sends nothing to us" would not be true on that page.
+   */
+  safetyCard?: boolean;
 }
 
 // What the visitor sees when a message is flagged: the notice, resources they can
 // tap, and an optional way to tell us the notice was wrong. Nothing is sent
 // anywhere unless they press Send on the report.
-export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNoticeProps) {
+export function FlagNotice({ flag, flaggedMessage, source = 'message', safetyCard = true }: FlagNoticeProps) {
   const [open, setOpen] = useState(false);
   const [comment, setComment] = useState('');
   const flow = useSendFlow('error-report', () => {
@@ -79,6 +86,9 @@ export function FlagNotice({ flag, flaggedMessage, source = 'message' }: FlagNot
           </li>
         ))}
       </ul>
+
+      {/* Pre-written site text about the Emergency Exit button and Forget me, for the abuse notices only, under the help lines and never in place of them (docs/safety-features-card.md). */}
+      {safetyCard && shouldShowSafetyCard(flag) && <SafetyFeaturesCard />}
 
       {/* Only when the message admits an act: what reporting involves, as facts, closed until opened (docs/harm-disclosure-directions.md). */}
       {admitsHarm(flag) && (
