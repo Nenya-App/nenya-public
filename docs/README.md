@@ -31,6 +31,7 @@ Two things to know when reading "shipped":
 | [production-env.md](production-env.md) | Every environment variable, with the production value and the order to switch them on | `tests/docs-drift.test.mts` checks that every variable the code reads is named here. |
 | [branches-and-previews.md](branches-and-previews.md) | Branches, preview sites, and the checks to run | Current |
 | [versioning.md](versioning.md) | The build label, and how transcripts record it | Current |
+| [safety-features-card.md](safety-features-card.md) | The collapsed card about Emergency Exit and Forget me, shown under the help lines of abuse notices; where Emergency Exit goes (the Google home page); the rule for the coercion modules | New 2026-11-24. Built; shows with abuse notices now. The coercion-module wiring waits for those modules (off). |
 | [device-memory.md](device-memory.md) | What Nenya may keep on a visitor's device | **Needs an update**: it does not list `nenya.terms.receipt`, `nenya.reflection.saved` or `nenya.words.open`. The last one is written directly by `src/coach/CoachDemo.tsx`, not through `deviceMemory.ts`, though the page says all storage goes through that file. |
 | [data-register.md](data-register.md) | Everything the site keeps, where, how long, and what deletes it | Started 2026-11-15. Reviewed every quarter. |
 | [accessibility-standard.md](accessibility-standard.md) | The standard: WCAG 2.2, level AAA | Decided 2026-11-14 |
