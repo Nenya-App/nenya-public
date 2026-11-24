@@ -162,7 +162,11 @@ function looksLikeList(t: string): boolean {
 }
 
 // The person's own "should", said back to them ("you feel you should", "what you think you ought to do"). Not an instruction from the coach.
-const MIRRORED_SHOULD = /\byou (?:feel|felt|think|thought|believe|believed|sense|sensed|worry|worried|fear|feared|tell yourself|told yourself|were told|are told|keep hearing)(?: that)? you (?:should|must|need to|have to|ought to)\b/gi;
+// Added 2026-11-24 (b): a "you need to / have to" that sits INSIDE a reflection of the person's own situation: a reflective opener ("it sounds like", "you're facing", "you're in", "you describe") then, in the same sentence, a linking word directly before it ("where", "in which", "since", "because", "given that", "now that"): "it sounds like you're facing an awkward situation where you need to ask your coworker to stop". Only "need to" and "have to" (not "should" or "must"), and only that one phrase is taken out: the opener and everything before the link stay in the text and are still checked, so "it sounds like you should leave since you have to be safe" still fails on "you should", and "where you need to" without a reflective opener, "and you need to" and "I think you need to" still fail.
+const REFLECTED_NEED = /(\b(?:it sounds like|sounds like|you(?:'re| are) (?:facing|in|dealing with|looking at)|you face|you describe|you(?:'ve| have) described)\b[^.?!;:]*?\b(?:where|in which|since|because|given that|now that)) you (?:need to|have to)\b/gi;
+const STOP_HARM = /\b(?:(?:harm|hurt|pain|it|this|that|what happened|things) (?:to )?(?:stop|end)|(?:stop|stopping|end|ending|prevent|preventing) (?:the |any )?(?:harm|hurt|pain|it|this|that|what happened)|(?:keep|keeping) (?:\w+ ){0,2}(?:safe|from))\b/i;
+const PUNITIVE_WISH = /\b(?:feel what you felt|feel (?:the |that )?(?:pain|weight|hurt)|suffer\w*|pay(?:ing)? for|pay for it|regret\w*|experience (?:what|the|that)|know how (?:it|that) felt|get what (?:he|she|they) deserve\w*)\b/i;
+const MIRRORED_SHOULD = /\byou (?:feel|felt|think|thought|believe|believed|sense|sensed|worry|worried|fear|feared|tell yourself|told yourself|were told|are told|keep hearing|say|said|mention(?:ed)?|describe[sd]?|(?:told|tell) me)(?: that)? you (?:should|must|need to|have to|ought to)\b/gi;
 // Roles and relations a person names the other person by ("your husband", "your manager").
 const ROLE = "(?:husband|wife|partner|spouse|manager|boss|supervisor|sister|brother|dad|father|mom|mum|mother|parents?|coworker|co-worker|colleague|friend|roommate|girlfriend|boyfriend|son|daughter|ex|teacher|neighbou?r|in-laws?)";
 const BEHAVIOR_VERB = "(?:leaves?|walks?|sighs?|respond(?:s|ed)?|changes?|moves?|interrupt(?:s|ed)?|goes (?:quiet|silent|out|away)|ignores?|cuts? (?:you|me) off|turns? away|looks? away|stops? (?:talking|listening|answering)|withdraws?|shuts? down|rolls? (?:his|her|their) eyes|snaps?|raises? (?:his|her|their) voice|talks? over|looks? at (?:his|her|their) phone|says? nothing|stays? silent|hangs? up|walks? out)";
@@ -405,7 +409,7 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
   severalQuestions: (t) => (t.match(/\?/g) ?? []).length > 1,
   // Telling the person what they must do.
   // Telling the person what they must do. A phrase that only says back the person's own "should" ("what you feel you should do", "you think you should") is a mirror, not an instruction (2026-11-24): it is taken out first; "you should leave", "you need to tell her" and "I think you should" are still caught.
-  tellsWhatToDo: (t) => any([/\byou (?:should|must|need to|have to|ought to)\b/i, /\bI (?:recommend|advise|suggest that you|urge you)\b/i, /\bmy (?:advice|recommendation) (?:is|would be)\b/i])(t.replace(MIRRORED_SHOULD, ' ')),
+  tellsWhatToDo: (t) => any([/\byou (?:should|must|need to|have to|ought to)\b/i, /\bI (?:recommend|advise|suggest that you|urge you)\b/i, /\bmy (?:advice|recommendation) (?:is|would be)\b/i])(t.replace(MIRRORED_SHOULD, ' ').replace(REFLECTED_NEED, '$1 ')),
   // A scripted speech: a quoted or block-quoted passage longer than two short sample sentences.
   scriptedSpeech: longQuotedSpeech,
   // A diagnosis or a label of the person or of the other person.
@@ -500,9 +504,11 @@ const PATTERNS: Record<CheckName, (t: string) => boolean> = {
     /\b(?:room (?:for|to)|sit with|stay with|let (?:it|yourself|this)|no (?:rush|need to (?:decide|rush|figure|know))|(?:don'?t|do not) have to (?:decide|figure|know|answer)|take in|when you(?:'re| are) ready|before (?:anything|any decision|you decide|deciding)|feel (?:it|that|this) first|(?:first|for now),? (?:feel|be with|sit))\b/i,
   ])(t) && !PATTERNS.tellsToWaitOrDecide(t) && !PATTERNS.tellsWhatToDo(t),
   // protective_not_punitive: turns toward what the person wants to protect or keep safe.
-  namesWhatToProtect: any([
+  // Widened 2026-11-24 (b): also (1) the module's either-or, a sentence that sets stopping or preventing the harm against wanting the other person to suffer, feel it or pay ("does it feel more like you want the harm to stop, or that you want him to feel what you felt?"), either order, and (2) a plain naming of what is wanted: fairness, being believed, preventing it or it not happening again. Revenge-endorsing, retaliation-planning and judging replies are still caught by their own checks (plansRetaliation, judgesTheWish); a reply that only reflects the pain or asks what the person notices still fails.
+  namesWhatToProtect: (t) => any([
     /\b(?:protect|safe|safety|what matters|what you need|boundar(?:y|ies)|happens? again|hurt again|keep (?:yourself|your \w+) safe|stay safe|what you(?:'re| are) trying to (?:protect|keep|guard))\b/i,
-  ]),
+    /\b(?:fairness|being believed|(?:not|never) happen(?:ing)? again|prevent(?:ing)?)\b/i,
+  ])(t) || sentences(t).some((x) => STOP_HARM.test(x) && PUNITIVE_WISH.test(x) && /\b(?:or|rather than|versus|more than)\b/i.test(x)),
   // smallest_next_step: offers one very small first step.
   // Changed 2026-11-24: a bare "first step" no longer counts (a reply that only asked what made "that first step" hard passed). Needs a small-step term AND the sentence offering or asking it (a question, or an offer or invitation word).
   offersSmallStep: (t) => sentences(t).some((x) => /\b(?:smallest|tiniest|tiny|littlest|small(?:er)?(?: first)? (?:step|start|piece|part|bit|thing|action|version|way)|(?:smaller|lighter) (?:step|start|way|piece|bit)|something (?:smaller|lighter)|one (?:small|tiny|short|sentence|line|minute|thing)|(?:two|five|ten|2|5|10)[- ]minutes?|a minute|just (?:open|write|pick up|put on|take out|set|find|say|a few)|a little (?:bit|piece)|start (?:with|by) (?:something )?(?:small|tiny|simple|lighter)|the next small step)\b/i.test(x)
