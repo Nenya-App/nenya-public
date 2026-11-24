@@ -24,6 +24,10 @@ import { BOUNDARY_GUARDS, rewritePresence, withNoMemory, withNotDiagnosis } from
 /** The boundary guards (src/lib/boundaryGuard.ts) on the sealed path: a build-time switch, VITE_BOUNDARY_GUARD=on, since this runs in the browser. Off unless set. The relay cannot ask the model again (it cannot read the reply), so a reply that does it has only the offending sentences taken out, or the fixed sentence if nothing is left. */
 export const boundaryGuardOnSealed = (): boolean => import.meta.env?.VITE_BOUNDARY_GUARD === 'on';
 import { echoedNames, withoutNames } from './nameGuard.ts';
+import { repairAddresses } from './addressGuard.ts';
+
+/** The address guard (src/lib/addressGuard.ts) on the sealed path: a build-time switch, VITE_ADDRESS_GUARD=on, since this runs in the browser. Off unless set. Set it together with COACH_ADDRESS_GUARD. */
+export const addressGuardOnSealed = (): boolean => import.meta.env?.VITE_ADDRESS_GUARD === 'on';
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();
@@ -148,6 +152,7 @@ export function guardReply(reply: string, userTexts: string[]): string {
   }
   const names = echoedNames(userTexts, r);
   if (names.length) r = withoutNames(r, names);
+  if (addressGuardOnSealed()) r = repairAddresses(r).reply; // last, so an address that an earlier guard or the name guard left behind is checked too
   return r;
 }
 
