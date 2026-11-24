@@ -117,6 +117,7 @@ if (rescoreFrom) {
   console.log(`Re-scored ${again.length} saved results with today's checks (no model calls): ${s2.pass} passed, ${s2.fail} failed, ${s2.error} errors.`);
   for (const r of again.filter((x) => x.outcome !== 'pass')) console.log(`  ${r.outcome.toUpperCase()} ${r.id}: ${r.failures.join('; ')}`);
   for (const [k, v] of Object.entries(s2.review)) console.log(`  review ${k.padEnd(22)} present in ${v.present} of ${v.of}`);
+  console.log(`  "feel like" before a thought, model-written replies only: ${s2.feelLike?.count ?? 0} of ${s2.feelLike?.of ?? 0}${s2.feelLike?.rate == null ? '' : ` (${(s2.feelLike.rate * 100).toFixed(1)}%)`}`);
   if (jsonOut) writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), partial: false, rescored: true, summary: s2, results: again }, null, 2));
   process.exit(0);
 }
@@ -263,4 +264,5 @@ if (jsonOut) {
   }
 }
 console.log(`Who wrote what the person saw: ${s.sources.card} cards, ${s.sources.model} model replies, ${s.sources.site} site sentences, ${s.sources.notice} notices, ${s.sources.cached} cached (kept from an earlier run). Model-only: ${s.modelOnly.pass} passed, ${s.modelOnly.fail} failed of ${s.modelOnly.of}. ${s.reviewNeeded} pass(es) to read because a guard replaced the reply.`);
+console.log(`"Feel like" before a thought (review only, model-written replies only): ${s.feelLike?.count ?? 0} of ${s.feelLike?.of ?? 0}${s.feelLike?.rate == null ? '' : ` (${(s.feelLike.rate * 100).toFixed(1)}%)`}.`);
 process.exit(s.fail || s.error ? 1 : 0);

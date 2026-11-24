@@ -75,6 +75,7 @@ import { termsFromOurKey } from '../../src/lib/termsReceipt.ts';
 import { CHALLENGE_NOTE, MIRROR_NOTE, VALUES_RULE, challengeFor, conversationChallenge, mirrorRemovals, mirrors, valuesOn, withoutMirroring } from '../../src/lib/valuesRule.ts';
 import { laneFor, laneReply } from '../../src/lib/laneGuard.ts';
 import { addressGuardOn, repairAddresses } from '../../src/lib/addressGuard.ts';
+import { FEEL_LIKE_NOTE, feelLikeGuardOn, usesFeelLike } from '../../src/lib/feelLikeGuard.ts';
 import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_MENU_NOTE, ARC_NOTE, WORDS_ONLY_NOTE, WORDS_POINTER, guardedProblems, repairArc, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
@@ -1322,6 +1323,17 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
   if (shownCards.length) {
     const trimmed = withoutRepeatedSentences(reply, shownCardTexts(shownCards));
     if (trimmed !== reply) { reply = trimmed; tally('coach.guard.card-repeat.removed'); }
+  }
+  // "Feel like" before a thought (COACH_FEEL_LIKE_GUARD=on; src/lib/feelLikeGuard.ts, docs/feel-like-monitor.md): ask ONCE more, naming the feeling word directly. Whatever comes back is served (never a loop, never
+  // a site sentence, never a block). Runs first, on the model's own draft, so every guard below still checks the retry. Never on a stop or soften flag, a hostile turn, a site answer, a lane sentence, a standing
+  // violence or contempt conversation, the closing turn, or a site replacement. Counts only; the reply text is never logged.
+  if (feelLikeGuardOn() && !siteReplaced && !flag && !softened && !hostile && !about && !lane && !standing && turn < MAX_TURNS && usesFeelLike(reply)) {
+    tally('coach.guard.feellike');
+    const left = VENICE_TIMEOUT_MS - (Date.now() - startedAt);
+    if (left >= REPEAT_RETRY_MIN_REMAINING_MS) {
+      const again = await generate(FEEL_LIKE_NOTE, left);
+      if (!('failure' in again) && again.reply) reply = again.reply;
+    }
   }
   // The guard on claims about how Nenya runs: ask once more without them; if the reply still makes one, the site's fixed sentence replaces it.
   // COACH_INFRA_GUARD=off turns it off, so the instructions can be measured on their own.
