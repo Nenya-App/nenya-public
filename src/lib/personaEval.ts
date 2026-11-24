@@ -132,6 +132,8 @@ export interface CaseResult {
   guard?: GuardInfo;
   /** The parts of the answer other than the reply that the checks used, so a saved result can be scored again exactly. */
   sent?: Omit<Sent, 'reply' | 'ticket'>;
+  /** Marked for a person to read whatever the outcome (SimpleSafetyTests cases): a phrase check cannot judge harmfulness. */
+  humanReview?: boolean;
   /** The model that answered (one per run, asserted by assertOneModel). */
   model?: string;
   /** Neurons the case's model calls used (Workers AI runs), added up by the code. */
@@ -150,7 +152,7 @@ export interface JudgeOptions {
 }
 
 export async function runCase(c: PersonaCase, send: Send, o: JudgeOptions = {}): Promise<CaseResult> {
-  const base = { id: c.id, category: c.category, note: c.note };
+  const base = { id: c.id, category: c.category, note: c.note, ...(c.humanReview ? { humanReview: true } : {}) };
   const msgs: Wire[] = [];
   let ticket: string | undefined;
   for (const text of c.lead ?? []) {
@@ -241,7 +243,7 @@ const sourceFor = (r: Sent): Source => {
 function finish(c: PersonaCase, r: Sent, part: Pick<CaseResult, 'outcome' | 'how' | 'failures' | 'review' | 'reply'>): CaseResult {
   const { reply: _reply, ticket: _ticket, ...sent } = r;
   void _reply; void _ticket;
-  const base = { id: c.id, category: c.category, note: c.note };
+  const base = { id: c.id, category: c.category, note: c.note, ...(c.humanReview ? { humanReview: true } : {}) };
   const verdict: CaseResult['verdict'] = part.outcome === 'pass' && r.guard?.replaced ? 'review' : part.outcome;
   return { ...base, ...part, body: bodyFor(r), source: part.outcome === 'error' ? 'none' : sourceFor(r), ...(r.card ? { card: r.card.id } : {}), verdict, ...(r.guard ? { guard: r.guard } : {}), sent: JSON.parse(JSON.stringify(sent)) };
 }
@@ -286,7 +288,7 @@ export function judge(c: PersonaCase, r: Sent, o: JudgeOptions = {}): CaseResult
     failures.push(...cardProblems());
   }
   for (const k of c.must ?? []) if (!present(k, reply)) failures.push(`missing: ${k}`);
-  for (const group of c.mustAny ?? []) if (!group.some((k) => present(k, reply))) failures.push(`missing one of: ${group.join(', ')}`);
+  for (const group of c.mustAny ?? []) if (!(c.okIfFlag && r.flag) && !group.some((k) => present(k, reply))) failures.push(`missing one of: ${group.join(', ')}`);
   for (const k of c.mustNot ?? []) if (present(k, reply)) failures.push(`present (must not be): ${k}`);
   if (c.noNames) { const names = echoedNames([...(c.lead ?? []), c.prompt], reply); if (names.length) failures.push(`repeats a name the person wrote: ${names.join(', ')}`); }
   const review = (c.review ?? []).map((check) => ({ check, present: present(check, reply) }));
@@ -355,6 +357,8 @@ export interface Summary {
   pass: number;
   fail: number;
   error: number;
+  /** Cases marked for a person to read whatever the outcome (SimpleSafetyTests). */
+  humanReview: number;
   /** Passes the guards had to replace, which a person should read even though they passed. */
   reviewNeeded: number;
   byCategory: Record<string, { pass: number; fail: number; error: number }>;
@@ -392,6 +396,7 @@ export function summarize(results: CaseResult[]): Summary {
     fail: results.filter((r) => r.outcome === 'fail').length,
     error: results.filter((r) => r.outcome === 'error').length,
     reviewNeeded: results.filter((r) => r.verdict === 'review').length,
+    humanReview: results.filter((r) => r.humanReview).length,
     byCategory,
     failing: results.filter((r) => r.outcome !== 'pass').map((r) => r.id),
     sources,
