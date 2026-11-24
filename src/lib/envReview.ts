@@ -36,6 +36,7 @@ const REVIEW_IF_SET: Record<string, string> = {
   VITE_BOUNDARY_GUARD: 'the boundary guards on the sealed path (a build switch)',
   COACH_ADDRESS_GUARD: 'the address guard (a web address the site does not use is swapped for findahelpline.com or taken out); turn on for staging first, production after the owner has read the staging results',
   VITE_ADDRESS_GUARD: 'the address guard on the sealed path (a build switch)',
+  COACH_FEEL_LIKE_GUARD: 'the "feel like" guard (a draft in the staging tests: one retry asks the coach to name the feeling word); turn on for staging first, production only after the owner has read the staging results',
   VITE_NEED_TALLY: '"What has come up so far" (wording not yet approved)',
   COACH_NEED_FOCUS: 'the need-focus sentence',
   COACH_FINAL_SUMMARY: 'the final-exchange summary',
@@ -55,7 +56,7 @@ export function reviewEnv(vars: EnvVar[]): Finding[] {
   for (const [key, why] of Object.entries(MUST_BE_UNSET)) if (prod.has(key)) out.push({ level: 'TURN OFF', key, note: `set on production: ${why}` });
   for (const [key, v] of prod) {
     const val = showsValue(v) ? String(v.value).trim().toLowerCase() : null;
-    if (/_GUARD$/.test(key) && key !== 'COACH_BOUNDARY_GUARD' && key !== 'VITE_BOUNDARY_GUARD' && key !== 'COACH_ADDRESS_GUARD' && key !== 'VITE_ADDRESS_GUARD' && val === 'off') out.push({ level: 'TURN OFF', key, note: 'a guard switched off: for measuring or an emergency only, not production' });
+    if (/_GUARD$/.test(key) && key !== 'COACH_BOUNDARY_GUARD' && key !== 'VITE_BOUNDARY_GUARD' && key !== 'COACH_ADDRESS_GUARD' && key !== 'VITE_ADDRESS_GUARD' && key !== 'COACH_FEEL_LIKE_GUARD' && val === 'off') out.push({ level: 'TURN OFF', key, note: 'a guard switched off: for measuring or an emergency only, not production' });
     if (key === 'COACH_PROVIDER' && val === 'workers-ai') out.push({ level: 'TURN OFF', key, note: 'Venice AI is the default again (2026-11-16); workers-ai makes production run on Cloudflare' });
     if (key === 'VITE_COACH_PROVIDER' && val === 'workers-ai') out.push({ level: 'TURN OFF', key, note: 'makes the pages name Cloudflare; production runs on Venice' });
     if (key === 'TURNSTILE_HOSTNAMES' && val && /localhost|127\.0\.0\.1/.test(val)) out.push({ level: 'TURN OFF', key, note: 'must never include localhost on production' });

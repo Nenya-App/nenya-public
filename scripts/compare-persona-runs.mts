@@ -6,7 +6,7 @@
 // The two runs must have the same model and the same case list. A case one run lacks counts as a failure in that run (a missing case is a failure, not a smaller denominator), and the
 // script says plainly that the comparison is not like for like. Pass --force to compare runs of different models anyway (the table is then labelled).
 import { readFileSync } from 'node:fs';
-import { compareRuns, comparableRuns, type CaseResult } from '../src/lib/personaEval.ts';
+import { compareRuns, comparableRuns, summarize, type CaseResult } from '../src/lib/personaEval.ts';
 
 const args = process.argv.slice(2);
 const [fa, fb] = args.filter((a) => !a.startsWith('--'));
@@ -41,5 +41,7 @@ if (!c.changed.length) console.log('  none');
 for (const x of c.changed) console.log(`  ${x.id}: ${x.from} -> ${x.to}${x.failures.length ? '  (' + x.failures.join('; ') + ')' : ''}`);
 console.log('\nReview checks (present in N of M cases that name them):');
 for (const r of c.review) console.log(`  ${r.check.padEnd(22)} A ${String(r.a.present).padStart(3)} of ${String(r.a.of).padEnd(3)}   B ${String(r.b.present).padStart(3)} of ${r.b.of}`);
+const rate = (rs: CaseResult[]) => { const f = summarize(rs).feelLike; return f && f.of ? `${f.count} of ${f.of} model replies (${(100 * f.count / f.of).toFixed(1)}%)` : 'no model replies'; };
+console.log(`\n"Feel like" before a thought (model-written replies only, review only):\n  A ${rate(A.results)}\n  B ${rate(B.results)}`);
 if (c.onlyIn.a.length || c.onlyIn.b.length) console.log(`\nIn one run only (counted as failures in the other): A only ${c.onlyIn.a.length}, B only ${c.onlyIn.b.length}`);
 console.log('\nPass counts are phrase-level. Read the replies in B for the cases that matter, and for tone.');
