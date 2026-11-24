@@ -401,6 +401,7 @@ export function GlobalNavigation({
               cvMode={cvMode}
               onCvModeChange={onCvModeChange}
               compact={compactSettings}
+              technique={technique}
             />
           </DialogContent>
         </Dialog>

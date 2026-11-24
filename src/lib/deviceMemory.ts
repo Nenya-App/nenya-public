@@ -5,6 +5,7 @@ import { snapColourChoice } from './logoColours.ts';
 import { clearKeptPalettes } from './keptPalettes.ts';
 import { DEFAULT_STRENGTH, STRENGTH_MAX, STRENGTH_MIN, strengthFromOldOpacity } from './breathStrength.ts';
 import { deviceProfile } from './deviceProfile.ts';
+import { BREATH_TURN_DENOMINATORS, DEFAULT_BREATH_TURN, DEFAULT_OUTER_RING_BREATH_PACED, DEFAULT_OUTER_RING_SECONDS, DEFAULT_OUTER_RING_TURNING, DEFAULT_RING_DIRECTION, OUTER_RING_MAX_SECONDS, OUTER_RING_MIN_SECONDS, RING_DIRECTIONS, snapBreathTurn, snapOuterRingSeconds, snapRingDirection, type BreathTurnDenominator, type RingDirection } from './outerRing.ts';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 // Everything Nenya may keep on a visitor's device lives behind this one file, so there is a single
@@ -132,6 +133,12 @@ export interface Prefs {
   /** The colours of the breath ring and the gem's tint, and of the sixteen orbs: a choice from src/lib/logoColours.ts ('original' when none was made). Only the choice is kept, never the colours of a palette the visitor made. */
   breathColours?: string;
   orbColours?: string;
+  /** The outer ring's movement (src/lib/outerRing.ts): whether it turns, which way ('ccw' or 'cw'), seconds per turn (30 to 300), and "pace to my breathing" with its fraction of a turn (a denominator: 12, 8, 6 or 4). */
+  outerRingTurning?: boolean;
+  outerRingDirection?: string;
+  outerRingSeconds?: number;
+  outerRingBreathPaced?: boolean;
+  outerRingBreathTurn?: number;
 }
 
 const VISION = ['', 'deuteranopia', 'protanopia', 'tritanopia', 'achromatopsia'];
@@ -163,6 +170,11 @@ const VALID: { [K in keyof Prefs]-?: (v: unknown) => boolean } = {
   previewPercent: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 50 && v <= 200,
   leafSway: isBool,
   motionStopped: isBool,
+  outerRingTurning: isBool,
+  outerRingDirection: (v) => (RING_DIRECTIONS as readonly unknown[]).includes(v),
+  outerRingSeconds: (v) => typeof v === 'number' && Number.isFinite(v) && v >= OUTER_RING_MIN_SECONDS && v <= OUTER_RING_MAX_SECONDS,
+  outerRingBreathPaced: isBool,
+  outerRingBreathTurn: (v) => (BREATH_TURN_DENOMINATORS as readonly unknown[]).includes(v),
   innerOrbs: (v) => (INNER_ORB_MODES as readonly unknown[]).includes(v),
   breathColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
   orbColours: (v) => typeof v === 'string' && snapColourChoice(v) === v,
@@ -540,6 +552,55 @@ export function setMotionStopped(on: boolean): void {
   lookListeners.forEach((l) => l());
 }
 export const useMotionStopped = (): boolean => useSyncExternalStore(subscribeLook, getMotionStopped, () => false);
+
+// The outer ring's movement (owner, 2026-11-24): turning or still, direction, seconds per turn, and "pace to my breathing" with its fraction of a turn. Display settings like the look above: kept only while
+// "Remember on this device" is on, erased by "Forget me" and Emergency Exit (they are all inside nenya.prefs), a stored value that is not offered is dropped, and a value set in code snaps to what is offered.
+// Held still by Stop motion and by reduced motion whatever these say (src/lib/motionStop.ts).
+let ringTurningNow: boolean | null = null;
+let ringDirectionNow: RingDirection | null = null;
+let ringSecondsNow: number | null = null;
+let ringBreathPacedNow: boolean | null = null;
+let ringBreathTurnNow: BreathTurnDenominator | null = null;
+const getRingTurning = (): boolean => (ringTurningNow ??= loadPrefs().outerRingTurning ?? DEFAULT_OUTER_RING_TURNING);
+const getRingDirection = (): RingDirection => (ringDirectionNow ??= snapRingDirection(loadPrefs().outerRingDirection ?? DEFAULT_RING_DIRECTION));
+const getRingSeconds = (): number => (ringSecondsNow ??= snapOuterRingSeconds(loadPrefs().outerRingSeconds ?? DEFAULT_OUTER_RING_SECONDS));
+const getRingBreathPaced = (): boolean => (ringBreathPacedNow ??= loadPrefs().outerRingBreathPaced ?? DEFAULT_OUTER_RING_BREATH_PACED);
+const getRingBreathTurn = (): BreathTurnDenominator => (ringBreathTurnNow ??= snapBreathTurn(loadPrefs().outerRingBreathTurn ?? DEFAULT_BREATH_TURN));
+export const getOuterRingTurning = getRingTurning;
+export const getOuterRingDirection = getRingDirection;
+export const getOuterRingSeconds = getRingSeconds;
+export const getOuterRingBreathPaced = getRingBreathPaced;
+export const getOuterRingBreathTurn = getRingBreathTurn;
+export function setOuterRingTurning(on: boolean): void {
+  ringTurningNow = on === true;
+  savePref('outerRingTurning', ringTurningNow);
+  lookListeners.forEach((l) => l());
+}
+export function setOuterRingDirection(v: RingDirection | string): void {
+  ringDirectionNow = snapRingDirection(v);
+  savePref('outerRingDirection', ringDirectionNow);
+  lookListeners.forEach((l) => l());
+}
+export function setOuterRingSeconds(v: number): void {
+  ringSecondsNow = snapOuterRingSeconds(v);
+  savePref('outerRingSeconds', ringSecondsNow);
+  lookListeners.forEach((l) => l());
+}
+export function setOuterRingBreathPaced(on: boolean): void {
+  ringBreathPacedNow = on === true;
+  savePref('outerRingBreathPaced', ringBreathPacedNow);
+  lookListeners.forEach((l) => l());
+}
+export function setOuterRingBreathTurn(v: number): void {
+  ringBreathTurnNow = snapBreathTurn(v);
+  savePref('outerRingBreathTurn', ringBreathTurnNow);
+  lookListeners.forEach((l) => l());
+}
+export const useOuterRingTurning = (): boolean => useSyncExternalStore(subscribeLook, getRingTurning, () => DEFAULT_OUTER_RING_TURNING);
+export const useOuterRingDirection = (): RingDirection => useSyncExternalStore(subscribeLook, getRingDirection, () => DEFAULT_RING_DIRECTION);
+export const useOuterRingSeconds = (): number => useSyncExternalStore(subscribeLook, getRingSeconds, () => DEFAULT_OUTER_RING_SECONDS);
+export const useOuterRingBreathPaced = (): boolean => useSyncExternalStore(subscribeLook, getRingBreathPaced, () => DEFAULT_OUTER_RING_BREATH_PACED);
+export const useOuterRingBreathTurn = (): BreathTurnDenominator => useSyncExternalStore(subscribeLook, getRingBreathTurn, () => DEFAULT_BREATH_TURN);
 
 /**
  * The breathing strength (percent, 5 to 200, 50 standard): like usePref, but a value kept on the old opacity scale becomes v x 50 when there is no new one, and a visitor who never chose gets 50.

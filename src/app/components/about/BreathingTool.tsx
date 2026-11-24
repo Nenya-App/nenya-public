@@ -34,6 +34,7 @@ const REFERENCES: AboutReference[] = [
   { n: 23, text: "Schmidt N, Woolaway-Bickel K, Trakowski J, Santiago H, Storey J, Koselka M et al. (2000). Dismantling cognitive–behavioral treatment for panic disorder: Questioning the utility of breathing retraining. Journal of Consulting and Clinical Psychology.", href: "https://doi.org/10.1037/0022-006x.68.3.417", linkLabel: "Publisher page (may need payment)" },
   { n: 24, text: "Magnon V, Dutheil F, Vallet G (2021). Benefits from one session of deep and slow breathing on vagal tone and anxiety in young and older adults. Scientific Reports.", href: "https://www.nature.com/articles/s41598-021-98736-9.pdf", linkLabel: "Free full text" },
   { n: 25, text: "Hopper S, Murray S, Ferrara L, Singleton J (2019). Effectiveness of diaphragmatic breathing for reducing physiological and psychological stress in adults: a quantitative systematic review. JBI Database of Systematic Reviews and Implementation Reports.", href: "https://doi.org/10.11124/jbisrir-2017-003848", linkLabel: "Publisher page (may need payment)" },
+  { n: 26, text: "Thanissaro Bhikkhu (translator). Anapanasati Sutta: Mindfulness of Breathing (Majjhima Nikaya 118). Access to Insight. Page read 2026-11-24.", href: "https://accesstoinsight.org/tipitaka/mn/mn.118.than.html", linkLabel: "Free full text" },
 ];
 
 const C = ({ n }: { n: number[] }) => <Cite pageId="breath" n={n} />;
@@ -67,6 +68,13 @@ export default function BreathingTool({ onBack }: BreathingToolProps) {
             minute gave the biggest swings in heart rate. Researchers call this <strong>resonance breathing</strong> <C n={[1, 2, 3]} />.
             In studies from the same research group, the best rate differed from person to person <C n={[1, 4]} />. In one small
             experiment, breathing at a person's own best rate raised positive mood more than breathing one breath a minute faster <C n={[5]} />.
+          </p>
+
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+            Paying attention to the breath is also an old practice. A Buddhist discourse on mindfulness of breathing, the
+            Ānāpānasati Sutta (Majjhima Nikāya 118), teaches watching the in-breath and the out-breath through sixteen numbered
+            practices <C n={[26]} />. That a practice is old does not show that it helps. What studies of slow breathing found, and where
+            that evidence stops, is below.
           </p>
 
           <Card className="bg-card/80 dark:bg-card/50 backdrop-blur-sm border-border p-6 space-y-3" aria-labelledby="breathing-safety">

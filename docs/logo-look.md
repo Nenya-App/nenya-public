@@ -15,6 +15,7 @@ Owner, 2026-11-22: "set the defaults to what is currently set." For a visitor wh
 | Orb colours (`orbColours`) | Original | ~~Night~~ Original again (owner, 2026-11-22: the outer orbs should be the standard colours; the breathing colours stay Night) |
 | Outer glow (`orbHalo`) | Own colour | Orb's palette |
 | Preview size (`previewPercent`) | 100% | 120% (also what Reset returns to) |
+| Outer ring movement (2026-11-24, [outer-ring-movement.md](outer-ring-movement.md)) | turns counter-clockwise, 120 s | turns counter-clockwise at its own 144 s per turn; options for still, direction, pace and pace to the breath |
 | Inner lights (`innerOrbs`), leaves (`logoLeaves`), gem sides (`gemSides`) | Moving, 6, 8 | the same |
 Not changed: theme, text size, colour-blind mode, breathing sound and tones, the breathing pace and the breathing strength (personal and access settings; the strength is on a new scale, below).
 Rules that still hold: a stored value always wins over a default, and "never chose" is told from "chose Original" (a chosen Original is stored as `'original'` and stays Original); Original is one tap away in both colour groups; sway, the kaleidoscope, the lights and the rest of the motion stay still under reduced motion, less data, a light device and pinch zoom (the kaleidoscope's default is off on a light device, and sway needs the checks in `swayAllowed`). Code: the `DEFAULT_*` constants at the end of `src/lib/logoLook.ts`, read in `src/lib/deviceMemory.ts`; tests in `tests/logo-look-storage.test.mts`.
