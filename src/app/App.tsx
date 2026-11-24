@@ -31,6 +31,7 @@ import WelcomePage from './components/pages/WelcomePage';
 import { BodyMapData } from './components/BodyMapAvatar';
 import { BodyMapBrushContext } from './components/BodyMapBrushContext';
 import { MotionStoppedRoot } from './components/MotionStoppedRoot';
+import { MinimalFooter } from './components/MinimalFooter';
 import { brushesFor, cleanStrokes, lensName } from '../lib/bodyMapBrush';
 
 // Everything past the welcome/breathing screen is code-split: a visitor who
@@ -815,7 +816,7 @@ export default function App() {
           )}
 
           {currentScreen === 'session' && (
-            <RegionGate onBack={() => navigateBack('home')} onBreathe={() => handleGlobalNavigation('welcome')}>
+            <RegionGate footer onBack={() => navigateBack('home')} onBreathe={() => handleGlobalNavigation('welcome')}>
             <CoachDemo
               colors={interfaceColors}
               report={gatewayData.length > 0 ? { gatewayData: gatewayData.map((gd) => ({ gateway: gd.gateway, data: gd.data })), bodyMap: reportBodyMap } : undefined}
@@ -855,6 +856,8 @@ export default function App() {
           )}
           </Suspense>
         </div>
+        {/* The screens that have no footer of their own (the colors that name a session, the two partner-practice previews). Every other screen carries AppFooter; tests/forget-me-footers.test.mts. */}
+        {(currentScreen === 'color-selection' || currentScreen === 'cell-creation' || currentScreen === 'cell-interface') && <MinimalFooter />}
 
         {/* Breathing Popout */}
         <BreathingPopout
