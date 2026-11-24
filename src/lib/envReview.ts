@@ -24,7 +24,8 @@ const MUST_BE_UNSET: Record<string, string> = {
 /** Switches that are a decision: fine if the owner chose them, but they were meant to be turned on one at a time after the matching staging test. */
 const REVIEW_IF_SET: Record<string, string> = {
   COACH_SCREEN: 'the screening model (shadow counts only; `on` makes it act)',
-  COACH_ARC: 'the practice arc ("later")',
+  COACH_CANARY_PAID_NEURONS: 'staging only: lets the nightly canary spend money (a cap in Neurons beyond the free allowance); not for production',
+  COACH_ARC:'the practice arc ("later")',
   COACH_STANCES: 'the Learn stance ("later")',
   COACH_SEALED: 'sealed mode ("later")',
   COACH_MODULES: 'the private module set (upload it to production\'s store first)',

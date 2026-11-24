@@ -12,6 +12,10 @@ export interface TaskReport extends Task { conversations: number; pass: number; 
 export interface NightState {
   day: string;
   allowance: number;
+  /** The paid cap in force tonight (COACH_CANARY_PAID_NEURONS after clamping); absent when off. */
+  paidCap?: number;
+  /** What the UTC day had already used when the night began (canary ledger, the owner's manual record, visitor turns): the base for working out paid Neurons. */
+  usedBefore?: number;
   tasks: Task[];
   /** The task, and the case within it, to play next. */
   t: number;
