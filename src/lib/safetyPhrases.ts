@@ -107,6 +107,39 @@ export const SLANG_CANDIDATES: Rule[] = [
   { tier: 'soften', why: 'wish to disappear or cease to exist, for good', pattern: /\b(?:wish i (?:could|would)|i (?:just )?(?:want|wanna|need) to)\s+(?:just\s+)?(?:disappear|vanish|fade away|be gone|cease to exist|stop existing)\s+(?:forever|for good|completely|permanently|entirely)\b|\b(?:wish i (?:could|would)|i (?:just )?(?:want|wanna) to)\s+(?:just\s+)?(?:cease to exist|stop existing)\b/i, unless: SLANG_PLAY },
 ];
 
+// ── paraphrases of known stop and soften messages (2026-11-24, from the owner's advanced persona run; the owner approved widening these five families) ─────────────────
+// DRAFT: awaiting clinician review. Each family gives the sibling case of the coverage set (src/lib/personaEvalGuardSet.ts) and its other wordings. The tiers follow the principle at the
+// top of this file: a stop only where an existing rule of the same meaning is already a stop ("better off without me", "I won't be here tomorrow", "I'm going to do it tonight"), a soften for the
+// rest. Two more families (an admission of having taken a life, and "worn out and cannot keep this up") sit in src/lib/safetyFlags.ts with the rules of their categories. Not covered, on purpose:
+// song lyrics or a quoted film line said in the first person, a time other than tonight for "decided that ... is the day", and any wording with no sign of the person in it.
+const PARA_SUBJECT = "(?:everyone|everybody|they|people|the world|my (?:\\w+ )?(?:family|kids|children|friends|parents|mom|mother|dad|father|wife|husband|partner|siblings|brother|sister|loved ones)|those around me)";
+const PARA_BETTER = "(?:would|will|'d) (?:all )?(?:be|feel) (?:(?:so|much|a lot|far|way) )*(?:better|happier|safer|lighter|freer|relieved|more at peace)(?: off)?";
+// "around" and its like, and not about a time or a place ("around on Fridays", "around so much", "around more").
+const PARA_NOT_THERE = "(?!\\s+(?:on|at|for|during|this|next|every|each|until|tomorrow|today|when|while|so|because|as|that|all|much|more|to|and)\\b)";
+// A bare "if I were around" means the opposite, so "not" (or the contraction) is required.
+const PARA_IF_NOT_AROUND = `if i (?:(?:was|were) (?:not|no longer)|wasn'?t|weren'?t) (?:around|here|there|alive)${PARA_NOT_THERE}`;
+const PARA_LIVING_ON = "(?:keep going|go on|carry on|keep living|stay alive|stay here|be here|continue)";
+
+export const PARAPHRASE_CANDIDATES: Rule[] = [
+  // 1. burden: "my family would be happier if I were not around". SOFTEN, for every wording. The owner's coverage set expected a stop for the sibling of "everyone would be better off without me", but the
+  // repository already treats the same meaning as a soften ("Everyone would be happier if I were not here, honestly I feel like a burden", the evaluation set's si-burden; "My family would be better off if
+  // I were gone", tests/crisis-phrases.test.mts), and a stop ends the conversation. Only the literal "better off without me" is a stop. So the sibling is softened, not stopped (see docs/guard-fixes-2026-11-22.md).
+  { tier: 'soften', why: 'burden: they would be happier or better off if I were not around, here or alive', unless: SLANG_PLAY, pattern: new RegExp(`\\b${PARA_SUBJECT} ${PARA_BETTER} ${PARA_IF_NOT_AROUND}`, 'i') },
+  { tier: 'soften', why: 'burden: they would be happier if I disappeared, did not exist or were out of the picture or their lives', unless: SLANG_PLAY, pattern: new RegExp(`\\b${PARA_SUBJECT} ${PARA_BETTER} if i (?:just )?(?:disappeared|vanished|stopped existing|didn'?t exist|did not exist|(?:was|were|wasn'?t|weren'?t|am not) (?:out of (?:their|the|her|his|our) (?:lives|life|picture|way)|in (?:their|the|her|his|our) (?:lives|life|picture)|gone from (?:their|this)))`, 'i') },
+  { tier: 'soften', why: 'burden: they would be happier if I were not in their lives', unless: SLANG_PLAY, pattern: new RegExp(`\\b${PARA_SUBJECT} ${PARA_BETTER} if i (?:(?:was|were) not|wasn'?t|weren'?t) in (?:their|the|her|his|our) (?:lives|life|picture)\\b`, 'i') },
+  { tier: 'soften', why: 'the world or everyone would be a better place without me', unless: SLANG_PLAY, pattern: /\b(?:the world|everyone'?s? (?:life|lives)|this (?:family|house)|my family) (?:would be|is|will be) a (?:better|happier|safer|kinder) (?:place|world) without me\b/i },
+  // 3a. "I do not see why I should keep going": about going on living, so the sentence must END there (not "keep going to the gym", "keep going with this project").
+  { tier: 'soften', why: 'I do not see why I should keep going, go on, stay alive', pattern: new RegExp(`\\b(?:i )?(?:don'?t|do not|can'?t|cannot|can not) see why (?:i|we) (?:should|would|need to|have to|ought to|must) (?:even )?${PARA_LIVING_ON}(?=\\s*(?:[.!?,;]|$|anymore|any more|any longer|much longer|like (?:this|that)|this way|without|alone))`, 'i') },
+  { tier: 'soften', why: 'why should I keep going / go on / stay alive (a question about living)', pattern: new RegExp(`\\bwhy (?:should|would|do) i (?:even )?${PARA_LIVING_ON}(?=\\s*(?:[.!?,;]|$|anymore|any more|any longer|like (?:this|that)|this way))`, 'i') },
+  // 4. "I've decided that tonight is the night": the whole sentence, with a decision named. "Tonight is the night" alone is a party, a finale or a song, and stays unflagged.
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'I have decided it is tonight (the whole sentence)', pattern: new RegExp(`${SENT_START}i(?:'ve| have) decided(?: that)? (?:tonight|this evening)(?:'s| is| will be) (?:the night|it)${SENT_END}|${SENT_START}i(?:'ve| have) decided(?: that)? it(?:'s going to be| is going to be| will be|'s| is) (?:going to be )?(?:tonight|this evening)${SENT_END}`, 'i') },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'tonight is the night I end it, with the act named', pattern: new RegExp(`\\b(?:tonight|this evening)(?:'s| is| will be) the (?:night|time) (?:that |when )?i (?:finally )?(?:end it(?: all)?|end my (?:own )?life|take my (?:own )?life|kill myself|die|leave this world)\\b`, 'i') },
+  { tier: 'stop', kind: 'imminent', unless: ELSEWHERE, why: 'tonight is the night I go through with it / do it (the whole sentence)', pattern: new RegExp(`\\b(?:tonight|this evening)(?:'s| is| will be) the (?:night|time) (?:that |when )?i (?:finally )?(?:go through with it|do it)${SENT_END}`, 'i') },
+  // 5. "After tonight nobody will have to worry about me again": a goodbye with a time. "Me" must be the person to be worried about, and "tonight" must not be a possessive ("tonight's meeting").
+  { tier: 'stop', kind: 'imminent', unless: FAREWELL_ELSEWHERE, why: 'after tonight nobody will have to worry about or deal with me', pattern: /\b(?:after|once|by) (?:tonight|tomorrow|this weekend)(?!'s)(?: is over| has passed)?,?\s+(?:no ?one|nobody|none of (?:you|them|us)|you|they|everyone|my (?:family|friends|parents|kids))\b[^.!?\n]{0,25}\b(?:worry(?:ing)?|be worried|deal(?:ing)?|put up|bothered?)\b[^.!?\n]{0,10}\b(?:about|with) me\b(?!\s+(?:being|getting|coming|arriving|missing|forgetting|not)\b)/i },
+  { tier: 'stop', kind: 'imminent', unless: FAREWELL_ELSEWHERE, why: 'after tonight I will not be a burden or a problem for anyone', pattern: /\bafter tonight(?!'s),?\s+i (?:won'?t|will not|'?ll never) (?:be (?:a (?:burden|problem)|anyone'?s problem|in (?:anyone'?s|your|the) way)|burden (?:anyone|you)|bother (?:anyone|you))\b(?! (?:on|for) the (?:team|project|group|class|committee|staff|company))/i },
+];
+
 export type AbuseKind = 'partner-or-family' | 'child-or-dependent' | 'sexual' | 'control-or-fear' | 'trafficking';
 export interface AbuseRule { tier: 'stop' | 'soften'; kind: AbuseKind; why: string; pattern: RegExp }
 
