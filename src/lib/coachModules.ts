@@ -317,6 +317,24 @@ export function coercionModuleFor(userTexts: string[], hit: ReadonlySet<string> 
   return null;
 }
 
+// ---- Narrow move wins (owner-approved 2026-11-24; docs/move-overlap-2026-11-24.md). When one of the nine v0.3 moves fires, the older, broader modules below are left out, because the
+// move's own text asks for the opposite of what they ask for (the review of the 36 moves cases showed the extras in the same selection pulling the reply in two directions). Deliberately small:
+// only modules the review showed to contradict the move are listed; nothing from the safety or resource groups, no other v0.3 move, and no lens that a guard reads is ever a target (a test
+// proves it). Applied to the final list, after the lens holds (SUPPRESS), offer_a_smaller_step and the cap, so a freed slot is NOT filled by a module the cap had left out. A message that fires
+// two moves applies both rows (the union of what each removes). The coercion modules return before this runs and are not touched.
+export const MOVE_PRECEDENCE: Record<string, { drops: readonly string[]; why: string }> = {
+  rough_draft_first: { drops: ['open_a_hard_conversation', 'offer_to_play_the_other'], why: 'The move is to hear the rough, unskilled version first; a sample opening line and a rehearsal both ask for the finished version.' },
+  two_intentions: { drops: ['open_a_hard_conversation'], why: 'The move asks which of two aims they want and says nothing is drafted until they choose; a sample opening line drafts before they choose.' },
+  grieve_before_deciding: { drops: ['field_cost', 'guess_then_check'], why: 'The move gives room to feel before any decision; asking what the decision costs others, or guessing a need, is analysis for someone who is raw.' },
+  permission_giving: { drops: ['guess_then_check'], why: 'The move says plainly that it is allowed, with no "but"; a guess at a need after it turns the permission into an analysis.' },
+  // The other five add no extra that contradicts them in the review, so they drop nothing (offer_a_smaller_step has its own, stronger rule: it removes every other move).
+  offer_a_smaller_step: { drops: [], why: 'Has its own rule: it removes every other move.' },
+  name_behavior_neutrally: { drops: [], why: 'The review lists open_a_hard_conversation beside it once (case 1) but does not call it contradictory; kept until the owner decides.' },
+  protective_not_punitive: { drops: [], why: 'The review lists ask_for_what_you_want beside it twice but does not call it contradictory; kept until the owner decides.' },
+  smallest_next_step: { drops: [], why: 'Nothing extra was selected with it.' },
+  ask_one_question: { drops: [], why: 'Fires only when nothing else matches.' },
+};
+
 const CAPS: Record<ModuleGroup, number> = { safety: 1, lens: 2, move: 3, resource: 1 };
 
 export const MODULE_IDS = TRIGGERS.map(([id]) => id);
@@ -356,7 +374,10 @@ export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup
     used[group]++;
     if (out.length >= max) break;
   }
-  return out;
+  // A narrower move wins over the broader modules that contradict it (MOVE_PRECEDENCE above). The moves that fired are read from `hit` (before the cap), and the dropped ids are taken out of the
+  // result AFTER the cap, so nothing is backfilled: the result is exactly what the older rules chose, minus the contradicting extras, and a module the cap had already left out does not appear.
+  const dropped = new Set(Object.keys(MOVE_PRECEDENCE).filter((id) => hit.has(id)).flatMap((id) => MOVE_PRECEDENCE[id].drops));
+  return dropped.size ? out.filter((id) => !dropped.has(id)) : out;
 }
 
 /** Core plus the chosen modules, within a character budget. */
