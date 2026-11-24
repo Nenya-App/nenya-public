@@ -31,6 +31,12 @@ const COMMON: CheckName[] = ['severalQuestions', 'tellsWhatToDo', 'scriptedSpeec
 const THEIR_INTENT: CheckName[] = ['namesTheirIntent'];
 const PASS_IS_A_MATCH = 'A pass is a phrase match, and replies must be read.';
 
+// The stricter two-part checks (2026-11-24) are shown for review, never a gate: they make a half move visible (the behaviour said plainly but a motive added; the hurt named but no room offered).
+const REVIEW: Partial<Record<MoveModule, CheckName[]>> = {
+  name_behavior_neutrally: ['namesBehaviorNeutrally', 'assignsMotiveOrVerdict'],
+  grieve_before_deciding: ['makesRoomWithoutDeciding'],
+};
+
 const mk = (module: MoveModule, n: number, prompt: string, mustNot: CheckName[], mustAny: CheckName[][], note: string): MoveCase => ({
   id: `${module.replace(/_/g, '-')}-${n}`,
   category: module,
@@ -38,6 +44,7 @@ const mk = (module: MoveModule, n: number, prompt: string, mustNot: CheckName[],
   prompt,
   mustNot: [...COMMON, ...mustNot],
   mustAny,
+  ...(REVIEW[module] ? { review: REVIEW[module] } : {}),
   note: `${note} ${PASS_IS_A_MATCH}`,
 });
 
