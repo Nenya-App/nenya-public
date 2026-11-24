@@ -11,7 +11,7 @@
 // Hurting oneself on purpose is the exception to "clear statements stop": it is a ladder (src/lib/selfInjury.ts) worked out from the
 // person's recent messages, so it needs the conversation, not one message: use checkConversation. detectFlag(text) checks one message alone.
 
-import { ABUSE_CANDIDATES, CANDIDATES, IMMINENT_CANDIDATES, SLANG_CANDIDATES } from './safetyPhrases.ts';
+import { ABUSE_CANDIDATES, CANDIDATES, IMMINENT_CANDIDATES, PARAPHRASE_CANDIDATES, SLANG_CANDIDATES } from './safetyPhrases.ts';
 import { evasionVariants } from './safetyNormalize.ts';
 import type { Rule as PhraseRule } from './safetyPhrases.ts';
 import { IMMINENT_LEAD, STOP_LEAD } from './distressText.ts';
@@ -66,6 +66,10 @@ const PARTNER = "my\\s+(?:ex[- ])?(?:wife|husband|partner|girlfriend|boyfriend|s
 const ACCIDENT = /\b(?:by accident|accidentally|an accident|playing|baseball|softball|ball|sport|sports)\b/i;
 const FICTION = /\b(?:game|games|dream|dreamt|dreamed|nightmare|movie|film|novel|screenplay|role-?play|minecraft|fortnite|gta)\b/i;
 
+// Whose life or death, for "I took a man's life" and "I caused a stranger's death" (a stranger or a person named by relation; family only for the life, since a grieving person may say "I caused my mother's death" of an accident they were not at fault for, which a stop would meet with a notice that ends the conversation).
+const LIFE_OWNER = "(?:(?:a|an|the|another)\\s+(?:\\w+\\s+){0,2}?(?:man|woman|person|boy|girl|child|kid|guy|stranger|human|teenager|baby)|someone|somebody|another\\s+person|my\\s+(?:\\w+\\s+)?(?:wife|husband|partner|mother|mom|father|dad|brother|sister|son|daughter|child|friend|boss|neighbou?r|girlfriend|boyfriend|ex|roommate|coworker|teacher))'s";
+const DEATH_OWNER = "(?:(?:a|an|the)\\s+(?:\\w+\\s+){0,2}?(?:man|woman|person|boy|girl|child|kid|guy|stranger|human|teenager)|someone|somebody)'s";
+
 const RULES: Rule[] = [
   // ── stop: suicide or self-harm ──────────────────────────────────────────
   { category: 'self-harm', tier: 'stop', pattern: new RegExp(`\\bkill(?:ing)? myself\\b(?! ${FIGURATIVE_AFTER_KILL})`, 'i') },
@@ -105,6 +109,14 @@ const RULES: Rule[] = [
   // to people (a crisis line, a mental health professional, a lawyer), and the conversation ends. A game, a story, a film or a dream is not an admission.
   { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:(?:think\\s+i|may\\s+have|might\\s+have|probably|maybe|could\\s+have)\\s+)?(?:just\\s+|actually\\s+|really\\s+|recently\\s+|accidentally\\s+)?(?:killed|murdered|stabbed|strangled|suffocated|poisoned|drowned|shot|choked|assaulted|beat(?:en)?\\s+(?:up|to\\s+death))\\s+${PERSON}`, 'i') },
   { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: /\bi(?:'ve|\s+have)?\s+(?:(?:think\s+i|may\s+have|might\s+have|probably|maybe|could\s+have)\s+)?(?:just\s+|actually\s+|really\s+|recently\s+|accidentally\s+)?(?:killed|murdered|stabbed|strangled|suffocated|poisoned|drowned)\s+(?:him|her|them)\b(?!\s+(?:with\s+(?:my|the|a)\s+(?:presentation|performance|joke|jokes|comedy|set|speech|audition|talk|pitch|cooking|outfit|dance)|at\s+the\s+|in\s+the\s+(?:game|match|round)))/i },
+  // Other ways of admitting a death (2026-11-24, from the owner's advanced persona run: "I took a man's life last week" went unflagged). "I took a man's life", "I ended someone's life", "I took a life",
+  // "I caused a stranger's death", "I shot and killed a man". The life must be a person's: "a man's coat", "a life insurance form", "a life drawing class", "my life savings" are not (the words after "life" are checked),
+  // and a game, a film, a dream or a novel in the same sentence makes it play, as for the rules above.
+  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:(?:think\\s+i|may\\s+have|might\\s+have|probably|maybe|could\\s+have)\\s+)?(?:just\\s+|actually\\s+|really\\s+|recently\\s+|accidentally\\s+|finally\\s+)?(?:took|taken|ended)\\s+${LIFE_OWNER}\\s+life\\b(?![\\s-]+(?:insurance|savings|story|stories|lesson|lessons|coach|goal|goals|choice|choices|experience|work|partner|style|support|jacket|vest|raft|drawing|class|course|skills?|of\\b|in\\b|long|time|hack))`, 'i') },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:(?:think\\s+i|may\\s+have|might\\s+have|probably|maybe|could\\s+have)\\s+)?(?:just\\s+|actually\\s+|really\\s+|recently\\s+|accidentally\\s+|finally\\s+)?(?:took|taken|ended)\\s+(?:a|an|the)\\s+(?:(?:innocent|human|young|good|man)\\s+)?life(?:\\s*(?:[.!?,;]|$)|\\s+(?:last|yesterday|tonight|today|ago|and|but|because|\\d+|two|three|a\\s+(?:week|month|year)|years?|months?|weeks?)\\b)`, 'i') },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+(?:just\\s+|accidentally\\s+|finally\\s+)?(?:took|taken|ended)\\s+the\\s+life\\s+of\\s+${PERSON}(?!'s)`, 'i') },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: new RegExp(`\\bi(?:'ve|\\s+have)?\\s+caused\\s+${DEATH_OWNER}\\s+death\\b`, 'i') },
+  { category: 'harm-others', tier: 'stop', kind: 'admitted', unless: FICTION, pattern: new RegExp(`\\bi\\s+(?:\\w+\\s+){0,6}?(?:and|then)\\s+(?:killed|murdered)\\s+${PERSON}(?!'s)`, 'i') },
   { category: 'harm-others', tier: 'stop', kind: 'graphic', unless: FICTION, pattern: /\bi\b[^.!?\n]{0,40}\b(?:fantas(?:y|ies|ize|ise|izing|ising)|imagin(?:e|ing)|picture|picturing|daydream(?:ing)?|visuali[sz](?:e|ing)|dream(?:ing)?\s+(?:of|about))\b[^.!?\n]{0,50}\b(?:killing|murdering|torturing|stabbing|shooting|strangling|raping|mutilating|dismembering|beating|choking|burning|slitting|cutting\s+up)\b[^.!?\n]{0,30}\b(?:him|her|them|someone|somebody|everyone|people|my\s+\w+|a\s+(?:person|man|woman|child))\b/i },
   { category: 'harm-others', tier: 'stop', kind: 'graphic', unless: FICTION, pattern: /\bi\b[^.!?\n]{0,30}\b(?:want|wanna|would\s+love|'d\s+love|need|keep\s+imagining|can'?t\s+stop\s+(?:thinking\s+about|imagining))\b[^.!?\n]{0,30}\b(?:watch(?:ing)?\s+(?:him|her|them|\w+)\s+(?:suffer|bleed|die|beg|scream)|(?:torture|mutilate|dismember|disembowel|behead|decapitate|flay)\b)/i },
   { category: 'harm-others', tier: 'stop', kind: 'graphic', unless: FICTION, pattern: /\b(?:i|we)\s+(?:then\s+)?(?:slit|cut|stabbed|slashed|bashed|smashed|strangled|dismembered|buried|burned)\b[^.!?\n]{0,40}\b(?:his|her|their|the)\s+(?:throat|head|skull|body|neck|face|chest)\b/i },
@@ -125,6 +137,10 @@ const RULES: Rule[] = [
   { category: 'abuse', tier: 'soften', pattern: /\b(?:hit(?! me up\b)|beat(?! me (?:at|to|in|by) )|choked|raped|molested|abused|assaulted) me\b/i },
   { category: 'distress', tier: 'soften', pattern: /\b(?:i'?m|i am|i feel|feel(?:ing)?|it'?s|everything is) (?:so |completely |totally |utterly )?(?:hopeless(?! (?:at|with)\b)|worthless)\b/i },
   { category: 'distress', tier: 'soften', pattern: /\bno way out\b|\bgive up on (?:everything|life)\b|\bnothing matters\b/i },
+  // Worn out and cannot keep this up (2026-11-24, the owner's advanced persona run): a weariness word and "cannot keep this up" in one sentence, in either order, or "cannot keep this up anymore" alone. A soften: it may be tiredness or something more.
+  // "Keep this up with my diet", "for another hour" and "keep up with the news" are not it.
+  { category: 'distress', tier: 'soften', pattern: /\b(?:worn\s+(?:out|down)|exhausted|drained|burn(?:ed|t)\s+out|wiped\s+out|run\s+down|running\s+on\s+empty|at\s+the\s+end\s+of\s+my\s+rope|spent)\b[^.!?\n]{0,40}\bcan(?:'?t|not|\s+not)\s+(?:keep\s+(?:this|it)\s+up(?!\s+(?:with|for|at|in|on|while|when)\b)|hold\s+(?:it|this)\s+together|keep\s+doing\s+this(?=\s*(?:[.!?,;]|$|anymore|any\s+more|any\s+longer))|keep\s+going(?=\s*(?:[.!?,;]|$|anymore|any\s+more|any\s+longer|like\s+(?:this|that)|this\s+way)))/i },
+  { category: 'distress', tier: 'soften', pattern: /\bcan(?:'?t|not|\s+not)\s+keep\s+(?:this|it)\s+up(?:\s+(?:anymore|any\s+more|any\s+longer|much\s+longer)|(?=\s*[.!?,;]?\s*(?:i'?m|i\s+am)\s+(?:so\s+)?(?:worn|exhausted|drained|burn|wiped|spent)))/i },
   // "can't" and "cannot" and "can not" alike. "Go on" counts only at the end of a thought or before "anymore", "like this", "with this"
   // and the like, so "I cannot go on holiday" and "I can't go on a date" are left alone.
   { category: 'distress', tier: 'soften', pattern: new RegExp(`\\bcan(?:'?t|not| not) (?:go on${GO_ON_ENDS}|take (?:it|this) anymore|do this anymore)\\b`, 'i') },
@@ -149,7 +165,7 @@ export interface FlagExplained {
 }
 const cut = (x: string | undefined): string | undefined => (x === undefined ? undefined : x.length > 120 ? x.slice(0, 117) + '...' : x);
 
-const ALL_PHRASES: PhraseRule[] = [...CANDIDATES, ...IMMINENT_CANDIDATES, ...SLANG_CANDIDATES];
+const ALL_PHRASES: PhraseRule[] = [...CANDIDATES, ...IMMINENT_CANDIDATES, ...SLANG_CANDIDATES, ...PARAPHRASE_CANDIDATES];
 
 /** The words a phrase rule matched, or null: a rule's "unless" (another person, a story, sport, a job farewell) in the same sentence cancels it. */
 function phraseHit(r: PhraseRule, t: string): string | null {

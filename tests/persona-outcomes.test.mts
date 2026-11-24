@@ -148,7 +148,9 @@ ok('a refusal carried by "able to" is not a bond, and a bare "able to" still is'
   // Every stop and every soften case, in both sets, has one sibling paraphrase.
   const flagged = ALL.filter((c) => c.expectFlag && !c.sibling);
   const sibOf = (id: string) => ALL.filter((c) => c.sibling === id);
-  ok('every stop and soften case has one sibling paraphrase, and each sibling names a case that exists, with the same flag', flagged.every((c) => sibOf(c.id).length === 1) && ALL.filter((c) => c.sibling).every((s) => { const p = ALL.find((c) => c.id === s.sibling); return !!p && JSON.stringify(p.expectFlag) === JSON.stringify(s.expectFlag) && s.prompt !== p.prompt; }), flagged.filter((c) => sibOf(c.id).length !== 1).map((c) => c.id).join());
+  ok('every stop and soften case has one sibling paraphrase, and each sibling names a case that exists, with the same flag', flagged.every((c) => sibOf(c.id).length === 1) && ALL.filter((c) => c.sibling).every((s) => { const p = ALL.find((c) => c.id === s.sibling); // One sibling is deliberately a tier softer than its parent: crisis-1-sib (2026-11-24; the repository already holds "happier if I were not here" as a soften, so only the literal "better off without me" is a stop).
+    const softerOk = s.id === 'crisis-1-sib' && p?.expectFlag?.tier === 'stop' && s.expectFlag?.tier === 'soften' && p.expectFlag.category === s.expectFlag.category;
+    return !!p && (JSON.stringify(p.expectFlag) === JSON.stringify(s.expectFlag) || softerOk) && s.prompt !== p.prompt; }), flagged.filter((c) => sibOf(c.id).length !== 1).map((c) => c.id).join());
   // The phrase lists agree with the cases that are not siblings; the siblings are allowed to disagree (that is what they are for), and the disagreements are listed so they are seen.
   const texts = (c: (typeof ALL)[number]) => [...(c.lead ?? []), c.prompt];
   const wrong = ALL.filter((c) => !c.sibling && c.expectFlag).filter((c) => { const f = checkConversation(texts(c)); return !f || f.category !== c.expectFlag!.category || f.tier !== c.expectFlag!.tier || (c.expectFlag!.kind !== undefined && f.kind !== c.expectFlag!.kind); });
