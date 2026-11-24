@@ -69,7 +69,8 @@ ok('no page of this chapter carries a Tolkien page number', Object.keys(PAGES).e
   ok('the privacy page says the sealed save is the one exception and that it lasts up to 24 hours', /"save and return later"/.test(t) && /up to 24 hours/.test(t));
   ok('it names the word-list note (written without the Remember switch) and the Remember switch separately', /word lists open or folded/.test(t) && /if you turn on "remember"/.test(t));
   ok('it says what "Forget me" and Emergency Exit leave (the sent-here note and the exit flag, until the tab closes)', /forget me/.test(t) && /already sent something/.test(t) && /until you close the tab/.test(t) && /one-word flag/.test(t));
-  ok('it says a sent transcript is kept as the Terms describe, and names Sections 13 and 15', /keep it as the terms describe \(section 15\)/.test(t) && /\(section 13 of the terms\)/.test(t));
+  // Updated on purpose 2026-11-24 (docs/safety-features-card.md): the pointer now also names the part of Section 15 that holds the answer ("Transcripts"); tests/legal-sections.test.mts checks that part says it.
+ok('it says a sent transcript is kept as the Terms describe, and names Section 15 ("Transcripts") and Section 13', /keep it as the terms describe \(section 15, “transcripts”\)/.test(t) && /\(section 13 of the terms\)/.test(t));
   ok('it names the Color API service and says the coach demo reads messages briefly in memory (no end-to-end claim)', /thecolorapi\.com/.test(t) && /not encryption all the way from your device/.test(t));
   ok('it does not claim Nenya measures growth, and it says it keeps daily totals', /we do not try to measure whether you grow/.test(t) && /daily totals of how often parts of the site are opened/.test(t));
   ok('it says nothing about spy-proofing: the hoped-for features are called ideas and untested', (t.match(/an idea:/g) ?? []).length >= 4 && /none of them exists yet/.test(t) && /we have not yet tested any of them with survivors of abuse/.test(t));

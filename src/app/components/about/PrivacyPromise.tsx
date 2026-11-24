@@ -141,7 +141,7 @@ export default function PrivacyPromise({ onBack, onNavigateToNamePhilosophy }: P
                       We are not there yet. The core reflection tools run entirely in your browser.
                     </p>
                     <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
-                      The optional coach demo sends your messages through our server to {onWorkersAi() ? 'Cloudflare’s Workers AI service, an outside service' : 'Venice AI, an outside service'}. We do not store them. If you choose to send a conversation to us as a separate step, we keep it as the terms describe (Section 15).
+                      The optional coach demo sends your messages through our server to {onWorkersAi() ? 'Cloudflare’s Workers AI service, an outside service' : 'Venice AI, an outside service'}. We do not store them. If you choose to send a conversation to us as a separate step, we keep it as the terms describe (Section 15, “Transcripts”).
                     </p>
                     <p className="text-sm text-emerald-800/80 dark:text-emerald-200/80">
                       {onWorkersAi()
