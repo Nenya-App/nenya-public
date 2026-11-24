@@ -61,7 +61,8 @@ neither('"one timestamp" as the only thing kept is gone', /is one timestamp|only
 both('the word-list note is named in the short version and in Section 16', /a note of whether you left the coach page’s word lists open or folded \(“yes” or “no”\)/);
 both('Save and return later also holds body-map placements and colors, and is erased on the next load after 24 hours', /together with your body-map placements and your interface colors[\s\S]*It is erased the next time the site loads after those 24 hours/);
 both('Forget me and Emergency Exit are described as they behave', /erases what Nenya saved on your device, apart from the short codes the open tab keeps of what it sent[\s\S]*Emergency Exit erases all of it before it leaves the page, then leaves a one-word flag in that tab so that Back does not return you to the page/);
-both('Section 18 names the Emergency Exit destination and the referrer', /The Emergency Exit button takes you to a page on Wikipedia \(en\.wikipedia\.org\); because it leaves from our site, Wikipedia can see that you came from nenya\.biz, though not which page you were on/);
+// Updated on purpose 2026-11-24 (docs/safety-features-card.md): the exit no longer goes to Wikipedia, so Section 18 names the Google home page, an ordinary page that does not mention Nenya. The referrer sentence is kept in the same form.
+both('Section 18 names the Emergency Exit destination and the referrer', /The Emergency Exit button takes you to the Google home page \(www\.google\.com\), an ordinary page whose address does not mention Nenya; because it leaves from our site, Google can see that you came from nenya\.biz, though not which page you were on/);
 
 // Finding 6: the address.
 neither('"in one place only" is gone', /in one place only/);

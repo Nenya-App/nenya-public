@@ -10,7 +10,13 @@
 // other way (typing the address, a link, reload) is a fresh visit: it clears the note and carries on.
 import { wipeDevice } from './deviceMemory.ts';
 
-export const EXIT_URL = 'https://en.wikipedia.org/wiki/Rings_of_Power#Nenya';
+// Where Emergency Exit goes. It must be an ordinary page, and neither the address nor the page may mention Nenya: the browser's
+// history will show it to anyone who looks. Changing it is ONE LINE (this constant), plus the same address in public/exit-guard.js
+// (a plain script that cannot import this file; a test checks the two match) and the sentence in Section 18 of the Terms
+// (src/lib/legalDocument.ts). The owner may pick another ordinary page (2026-11-24: the Google home page was chosen for now).
+export const EXIT_URL = 'https://www.google.com/';
+/** The destination in words, for the exit dialog and for the pages that say where the exit goes. Keep it in step with EXIT_URL. */
+export const EXIT_PAGE_NAME = 'the Google home page (google.com)';
 export const EXIT_NOTE_KEY = 'nenya.exited';
 
 /** True when this page was reached by Back or Forward (or restored from the page cache) after an exit. */

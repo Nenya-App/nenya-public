@@ -7,14 +7,14 @@
     var nav = performance.getEntriesByType('navigation')[0];
     if (nav && nav.type === 'back_forward') {
       document.documentElement.style.visibility = 'hidden';
-      window.location.replace('https://en.wikipedia.org/wiki/Rings_of_Power#Nenya');
+      window.location.replace('https://www.google.com/');
     }
   } catch (e) { /* nothing reachable: the module guard still runs */ }
   window.addEventListener('pageshow', function (e) {
     try {
       if (e.persisted && sessionStorage.getItem('nenya.exited')) {
         document.documentElement.style.visibility = 'hidden';
-        window.location.replace('https://en.wikipedia.org/wiki/Rings_of_Power#Nenya');
+        window.location.replace('https://www.google.com/');
       }
     } catch (x) { /* as above */ }
   });
