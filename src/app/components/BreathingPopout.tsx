@@ -16,6 +16,7 @@ import { setBreathPreviewPercent, useBreathPreviewPercent } from '../../lib/devi
 import { STRENGTH_STANDARD, strengthParts } from '../../lib/breathStrength';
 import { DEFAULT_PREVIEW_PCT, PREVIEW_PCT_MIN, PREVIEW_PCT_STEP, effectivePreviewPercent, previewMaxPercent, previewPixels } from '../../lib/logoLook';
 import { deviceProfile } from '../../lib/deviceProfile';
+import { aboutPath } from '../../lib/aboutRoutes';
 
 interface BreathingPopoutProps {
   isOpen: boolean;
@@ -227,7 +228,11 @@ export function BreathingPopout({
             {/* Footer Note */}
             <div className="px-4 py-2 bg-muted/20 border-t border-border">
               <p className="text-xs text-muted-foreground text-center">
-                This breathing animation persists across all pages to support nervous system regulation
+                Paying attention to the breath is an old practice in contemplative traditions. Small studies of mostly healthy adults suggest
+                slow breathing can change heart-rate patterns. Nenya itself has not been studied.{' '}
+                <a href={aboutPath('breathing-tool')} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                  Sources and limits (opens in a new tab)
+                </a>
               </p>
             </div>
           </m.div>
