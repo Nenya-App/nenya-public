@@ -1,7 +1,7 @@
 // The coercion modules' selection (src/lib/coachModules.ts, docs/coercion-modules-scope.md): which of coercion_name_pattern, coercion_steadiness and coercion_own_behavior fits a conversation,
 // when none may apply (a guard, the distress path, fear or danger, a skilled-person referral), how they never combine, and how they sit beside the existing moves. No model is called.
 import { ok } from './helpers.mts';
-import { selectModules, buildNotes, coercionModuleFor, setCoercionModules, COERCION_IDS, COERCION_GROUPS, MODULE_IDS, MODULE_GROUPS, type ModuleSet } from '../src/lib/coachModules.ts';
+import { selectModules, buildNotes, coercionModuleFor, standDownMore, setCoercionModules, COERCION_IDS, COERCION_GROUPS, MODULE_IDS, MODULE_GROUPS, type ModuleSet } from '../src/lib/coachModules.ts';
 import { checkConversation } from '../src/lib/safetyFlags.ts';
 
 const sel = (...m: string[]) => selectModules(m, 3, [], { coercion: true });
@@ -114,3 +114,38 @@ ok('no text, no module', coercionModuleFor([]) === null && sel('').length >= 0);
 const set: ModuleSet = { core: 'CORE', modules: { [NAME]: 'TEXT-A', [STEADY]: 'TEXT-B', [OWN]: 'TEXT-C' } };
 ok('when switched on, buildNotes adds exactly the chosen module text and nothing else (module text here is a stand-in)', (() => { setCoercionModules(true); const n = buildNotes(set, ['My partner decides who I can see.']); setCoercionModules(false); return n.includes('TEXT-A') && !n.includes('TEXT-B') && !n.includes('TEXT-C'); })());
 ok('a softened conversation (skipModules) gets no coercion text', (() => { setCoercionModules(true); const n = buildNotes(set, ['My partner decides who I can see.'], { skipModules: true }); setCoercionModules(false); return n === 'CORE'; })());
+
+// ---- five more stand-down cases (2026-11-24, from a practitioners' risk-and-danger guide; ideas only): a pet or animal harmed by a partner, pregnancy with violence, fear or control, leaving or
+// separation, escalation, a gun. Each stands down ALL the coercion modules, own behaviour included; the ordinary coach and its guards answer. No model is called.
+const CTRL = 'My partner decides who I can see, and he gets angry when I spend time with my sister.';
+const OWNMSG = "I check my wife's phone every night, and she has started hiding it from me.";
+const none = (...m: string[]) => sel(...m).every((id) => !id.startsWith('coercion_'));
+ok('baselines: the control message selects the pattern module, the own-behaviour message selects its module', sel(CTRL).join() === NAME && sel(OWNMSG).join() === OWN);
+const MORE: Record<string, string[]> = {
+  pets: ['He kicked my dog when he was angry.', 'my husband hurt my cat', 'He killed my pet rabbit.', 'he threatened my pet', 'He threatened to kill my dog.', 'he hurts the animals', 'My dog was kicked by him.', 'my ex hit our dog', 'she poisoned my cat'],
+  pregnancy: ["I'm pregnant and he hits me.", "I'm pregnant and he scares me.", "I'm pregnant and he threatens me.", "I'm pregnant and my husband checks my phone every night.", 'He was violent while I was pregnant.', 'Since I got pregnant he decides who I can see.', "I'm expecting a baby and he gets angry whenever I see my sister.", 'My wife is pregnant and I check her phone every night.'],
+  leaving: ['I left him.', "I'm leaving him.", 'I left my husband last month.', 'I want to leave.', "I'm planning to leave.", 'I am thinking about leaving.', 'If I leave he gets worse.', "Since I told him I'm leaving he has not spoken to me.", "He won't accept it's over.", "He won't accept the breakup.", 'After the breakup he keeps texting me.', "We keep breaking up and getting back together, and he decides who I can see.", 'I want to leave my husband.', 'My wife is leaving me.', 'She moved out last week.', 'My estranged husband still calls.'],
+  escalation: ["It's getting worse.", "It's gotten worse.", "He's getting worse.", 'It happens more and more often.', 'It is escalating.', 'Lately he is much more angry.', "It's worse than before."],
+  guns: ['He has a gun.', 'He owns guns.', 'He keeps a gun in the car.', "There's a gun in the house.", 'He threatened me with a gun.', 'He has a firearm.', 'There are firearms in the house.', 'He has access to a gun.'],
+};
+for (const [kind, list] of Object.entries(MORE)) for (const m of list) {
+  // the control description (or the person's own admission) comes first, so a module would otherwise apply. Escalation stands down the modules only in a conversation about being controlled:
+  // it is not about a partner being harmed, so a person's own admission plus "it's getting worse" still reaches coercion_own_behavior (see the decision in docs/coercion-modules-scope.md).
+  ok(`stands down (${kind}): ${m.slice(0, 50)}`, none(CTRL, m) && (kind === 'escalation' ? sel(OWNMSG, m).join() === OWN : none(OWNMSG, m)), `${sel(CTRL, m).join()} / ${sel(OWNMSG, m).join()}`);
+}
+ok('it works anywhere in the conversation: said first, the control description later', none('There is a gun in the house.', CTRL) && none('My dog was kicked by him.', 'Thank you.', CTRL));
+ok('own behaviour stands down too when the message holds one of the five (the decision: all three modules stand down)', none("I check my wife's phone every night and she is leaving me.") && none("I scare my partner, and she says she is pregnant.") && none('I take all of my wife\'s pay and there is a gun in the house.'));
+ok('"he won\'t let me leave" is caught by the guards already, and stays caught', checkConversation(["He won't let me leave."]) !== null || none(CTRL, "He won't let me leave."));
+// near misses: these must NOT stand the modules down on account of the five (the control description still selects its module)
+const NEAR: string[] = ['My dog is my best friend.', 'I took my dog to the park.', 'He took the dog to the vet.', 'I left my job.', 'I want to leave early.', "I'm leaving for work.", 'I want to leave my job.', "It's getting late.", "I'm getting worse at chess.", 'He has a glue gun.', 'I never left him.', "I'm not leaving him.", 'No pets here.', 'He never hurt my dog.', 'I am not pregnant.'];
+for (const m of NEAR) ok(`near miss does not stand down: ${m}`, sel(m, CTRL).join() === NAME, sel(m, CTRL).join());
+ok('near miss: a control-free message about a dog is no module either way', none('My dog is my best friend.') && none('I left my job.'));
+ok('near miss: escalation words with no control in the conversation are not enough on their own', !standsDownAlone("It's getting worse."), '');
+ok('near miss: a person describing getting worse at their own controlling still reaches own behaviour', sel("I check my wife's phone every night and I am getting worse about it.").join() === OWN);
+ok('negated: "I never left him" and "I am not pregnant" do not count, with a control description beside them', sel('I never left him.', CTRL).join() === NAME && sel('I am not pregnant.', CTRL).join() === NAME);
+ok('a gun collection permit: stated choice is that "he has a gun collection permit" stands down (a partner and a gun)', none('He has a gun collection permit.', CTRL));
+ok('an own-behaviour person who mentions a plain near-miss still gets own behaviour', sel(OWNMSG, 'My dog is my best friend.').join() === OWN && sel(OWNMSG, 'I left my job.').join() === OWN);
+function standsDownAlone(m: string): boolean { return standDownMore(m.toLowerCase()); }
+ok('near miss, alone: pregnancy without violence, fear or control; reunion without control; plain talk of a gun law', ["I'm pregnant and tired.", "I'm pregnant and my husband is excited.", 'We keep breaking up and getting back together.', 'I am not pregnant.'].every((m) => !standsDownAlone(m)));
+ok('with a control description beside it, pregnancy and a reunion pattern DO stand down (that is the rule: pregnancy with control; reunion with control)', none("I'm pregnant and tired.", CTRL) && none('We keep breaking up and getting back together.', CTRL));
+ok('known over-trigger, toward standing down: the older net matches "a gun" in "a gun control rally" (not changed here)', none('We went to a gun control rally.', CTRL));

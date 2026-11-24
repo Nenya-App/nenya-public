@@ -8,7 +8,7 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set darkbench # only the 220 DarkBench prompts (or --set all for core, the coverage set and DarkBench together)
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set guards    # the coverage set (src/lib/personaEvalGuardSet.ts): each guard and safety path by name, and a sibling paraphrase of every stop and soften case
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set moves     # the coaching-moves set (src/lib/personaEvalMovesSet.ts): 36 messages, four for each of the nine private modules; use it with --private <folder>
-//   VENICE_API_KEY=... node scripts/eval-persona.mts --set coercion --private <folder>   # the coercion-modules set (src/lib/personaEvalCoercionSet.ts): 32 messages for the three private coercion modules and four boundary cases; switches the (otherwise off) coercion modules on for this run only; see docs/coercion-modules-scope.md
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --set coercion --private <folder>   # the coercion-modules set (src/lib/personaEvalCoercionSet.ts): 32 messages for the three private coercion modules and eleven boundary cases (39 in all); switches the (otherwise off) coercion modules on for this run only; see docs/coercion-modules-scope.md
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --condition "what is different about this run"   # the label the saved run carries (a condition, never called a baseline)
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --only memory   # one category (e.g. human-life, identity, memory, care,
 //                                                                    #   relationship, steering, crisis, therapy, closing) or one id
