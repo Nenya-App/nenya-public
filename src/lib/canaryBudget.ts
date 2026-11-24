@@ -39,3 +39,49 @@ export const runsThatFit = (unused: number): number => Math.floor(unused / NEURO
 /** The UTC day a ledger entry belongs to (Workers AI's allowance turns over at 00:00 UTC). */
 export const utcDay = (now = new Date()): string => now.toISOString().slice(0, 10);
 
+// Opt-in paid budget (owner, 2026-11-23: Workers is on a paid plan now). COACH_CANARY_PAID_NEURONS is a hard cap, in Neurons, that one night may spend BEYOND the free
+// allowance, so the canary can still run on a night when other work used the free 10,000 up. Unset, empty, zero or invalid means off: exactly the free-allowance-only
+// behaviour above. The price below is from the owner's pasted Cloudflare price list; nothing in the code checks what is actually billed.
+
+/**
+ * The most one night may spend in all (free and paid together), and the most the env value may ask for. A full night (about 150 conversations) uses about 5,200 Neurons, so
+ * 12,000 leaves room for more than twice that, yet bounds a mistake (an extra zero in the variable) to about 0.13 dollars a night.
+ */
+export const PAID_NEURONS_CEILING = 12_000;
+/** Dollars per 1,000 Neurons beyond the free allowance (owner's pasted price list, not verified in code). */
+export const NEURON_USD_PER_1000 = 0.011;
+
+/** The cap from the environment value: a whole number of Neurons, clamped to the ceiling; anything else (unset, empty, 0, negative, decimal, text) is 0 = off. */
+export function parsePaidCap(raw: string | undefined): number {
+  const t = (raw ?? '').trim();
+  if (!/^\d+$/.test(t)) return 0;
+  const n = Number(t);
+  return Number.isSafeInteger(n) && n > 0 ? Math.min(n, PAID_NEURONS_CEILING) : 0;
+}
+
+/** Tonight's allowance: the free part exactly as before, plus the paid cap, never above the ceiling. With no cap it is the free part alone (unchanged). */
+export function nightBudget(i: BudgetInput, rawCap?: string): { free: number; paidCap: number; allowance: number } {
+  const free = canaryAllowance(i);
+  const paidCap = parsePaidCap(rawCap);
+  return { free, paidCap, allowance: paidCap > 0 ? Math.min(free + paidCap, PAID_NEURONS_CEILING) : free };
+}
+
+/**
+ * How much of tonight's `spent` went beyond the day's free allowance. `before` is what the day had already used when the night began (the ledger, the owner's manual record and
+ * the visitor turns); the part of the day's total above the free 10,000 is paid, less whatever was already above it before tonight.
+ */
+export const paidNeurons = (before: number, spent: number, free = FREE_NEURONS_PER_DAY): number =>
+  Math.max(0, Math.round(Math.max(0, before + spent - free) - Math.max(0, before - free)));
+
+/** The night's free/paid split and an approximate cost, for the digest and the ledger. */
+export function paidSummary(paidCap: number, before: number, spent: number): { paidCap: number; freeNeurons: number; paidNeurons: number; approxCostUsd: number; costNote: string } {
+  const paid = Math.min(Math.round(spent), paidNeurons(before, spent));
+  return {
+    paidCap,
+    freeNeurons: Math.round(spent) - paid,
+    paidNeurons: paid,
+    approxCostUsd: Math.round(paid * NEURON_USD_PER_1000 * 1000) / 1_000_000,
+    costNote: `approximate: ${paid.toLocaleString('en-US')} Neurons beyond the free allowance at about ${NEURON_USD_PER_1000} dollars per 1,000 (Cloudflare's price list as the owner copied it; the invoice is the real figure)`,
+  };
+}
+

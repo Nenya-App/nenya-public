@@ -8,7 +8,7 @@
 // The digest holds counts, medians, flags and failed case ids; never a reply. Off unless COACH_CANARY=on, on a site that runs the coach on Workers AI.
 import { getStore } from '@netlify/blobs';
 import { storeNameFrom } from '../../src/lib/originHosts.ts';
-import { MAX_RUNS_A_NIGHT, canaryAllowance, runsThatFit, utcDay } from '../../src/lib/canaryBudget.ts';
+import { MAX_RUNS_A_NIGHT, NEURONS_PER_TURN, nightBudget, paidSummary, runsThatFit, utcDay } from '../../src/lib/canaryBudget.ts';
 import { costSummary } from '../../src/lib/canaryCost.ts';
 import { ERROR_PAUSE_MINUTES, caseOrder, driftFlags, onErrorStreak, planTasks, report, type NightState, type TaskReport } from '../../src/lib/canaryNight.ts';
 import { PERSONA_CASES } from '../../src/lib/personaEvalSet.ts';
@@ -43,10 +43,11 @@ export default async (): Promise<Response> => {
       const visitorTurns = counted ? Number(counted) : 0;
       // What the owner spent by hand today (scripts/record-neurons.mts): the free allowance is shared by every use of the account.
       const manual = (JSON.parse((await store.get('canary/manual', { type: 'text' })) ?? '{}') as Record<string, number>)[day] ?? 0;
-      const allowance = canaryAllowance({ spentToday: (ledger[day] ?? 0) + manual, visitorTurns });
+      // Opt-in paid budget (staging only; unset = free allowance only, as before): the cap may be spent beyond the free allowance, up to the code ceiling.
+      const { allowance, paidCap } = nightBudget({ spentToday: (ledger[day] ?? 0) + manual, visitorTurns }, process.env.COACH_CANARY_PAID_NEURONS);
       const tasks = planTasks(dayNo, process.env.COACH_CANARY_MODEL, Math.min(MAX_RUNS_A_NIGHT, Math.max(3, runsThatFit(allowance))));
-      state = { day, allowance, tasks, t: 0, c: 0, spent: 0, taskSpent: tasks.map(() => 0), compact: tasks.map(() => []), done: false };
-      console.log(`canary: night ${day}, spent ${ledger[day] ?? 0} (canary) + ${manual} (by hand), visitor turns held back ${visitorTurns}, allowance ${allowance}`);
+      state = { day, allowance, ...(paidCap ? { paidCap } : {}), usedBefore: (ledger[day] ?? 0) + manual + visitorTurns * NEURONS_PER_TURN, tasks, t: 0, c: 0, spent: 0, taskSpent: tasks.map(() => 0), compact: tasks.map(() => []), done: false };
+      console.log(`canary: night ${day}, spent ${ledger[day] ?? 0} (canary) + ${manual} (by hand), visitor turns held back ${visitorTurns}, paid cap ${paidCap}, allowance ${allowance}`);
       if (allowance < MIN_CASE_NEURONS) {
         state.done = true;
         state.skipped = 'not enough unused today';
@@ -179,13 +180,22 @@ export default async (): Promise<Response> => {
       const flags = driftFlags(reports.filter((x) => x.name === 'baseline'), past, caseTally);
       // The whole night's two cost signals (send-backs, Neurons per case), over every task played; each task's line carries its own under `cost`.
       const nightCost = (({ sendBacks, sendBackRate, sendBacksByNote, neuronsPerCaseMedian, neuronsPerCaseMean, modelCalls, turns }) => ({ sendBacks, sendBackRate, sendBacksByNote, neuronsPerCaseMedian, neuronsPerCaseMean, modelCalls, turns }))(costSummary(state.compact.flat()));
-      const digest = { day, model: defaultModel || '@cf/google/gemma-4-26b-a4b-it', tasks: reports, spentNeurons: Math.round(state.spent), ...nightCost, flags, ...(state.candidateSkipped ? { candidateSkipped: state.candidateSkipped } : {}), ...(state.errorEpisodes ? { errorEpisodes: state.errorEpisodes } : {}), ...(state.stopped ? { stopped: state.stopped } : {}), reviewed: false };
+      // Free and paid, only on a night with a paid cap or paid spend (a night inside the free allowance reads as before).
+      const split = paidSummary(state.paidCap ?? 0, state.usedBefore ?? 0, state.spent);
+      const paid = state.paidCap || split.paidNeurons ? split : {};
+      const digest = { day, model: defaultModel || '@cf/google/gemma-4-26b-a4b-it', tasks: reports, spentNeurons: Math.round(state.spent), ...paid, ...nightCost, flags, ...(state.candidateSkipped ? { candidateSkipped: state.candidateSkipped } : {}), ...(state.errorEpisodes ? { errorEpisodes: state.errorEpisodes } : {}), ...(state.stopped ? { stopped: state.stopped } : {}), reviewed: false };
       // What the full run was made with, so a later reader can tell one night's replies from another's.
       await store.set(`canary/runs/${day}/meta`, JSON.stringify({ day, model: digest.model, provider: 'workers-ai', build: BUILD_INFO.commit, tasks: state.tasks.map((t, i) => ({ ...t, instructionsFingerprint: state.fingerprints?.[i] ?? null, neurons: Math.round(state.taskSpent[i]) })), spentNeurons: digest.spentNeurons, note: 'Invented cases only. Replies can echo the private notes: read before sharing anything.' }));
       await store.set(`canary/digest-${day}`, JSON.stringify(digest));
       await store.set('canary/cases', JSON.stringify(caseTally));
       ledger[day] = (ledger[day] ?? 0) + Math.round(state.spent);
       await store.set('canary/ledger', JSON.stringify(ledger));
+      if (split.paidNeurons) {
+        // The paid part, kept apart (the total above stays the sum of both, so the free-allowance arithmetic is unchanged).
+        const paidLedger = JSON.parse((await store.get('canary/ledger-paid', { type: 'text' })) ?? '{}') as Record<string, number>;
+        paidLedger[day] = (paidLedger[day] ?? 0) + split.paidNeurons;
+        await store.set('canary/ledger-paid', JSON.stringify(paidLedger));
+      }
       state.done = true;
       console.log(`canary: done; ${reports.map((r) => `${r.name} ${r.pass}/${r.conversations}`).join(', ')}; ${Math.round(state.spent)} Neurons; flags ${flags.length}`);
     }

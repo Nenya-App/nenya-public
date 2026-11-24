@@ -47,3 +47,33 @@ ok('a bigger plan still starts with an alternate and rotates the alternate on', 
   const { isInstructionsVersion } = await import('../src/lib/instructionsVersions.ts');
   ok('the canary accepts v2.2 as a task wording, and the baseline is still v2.1', isInstructionsVersion('v2.2') && report({ name: 'alt', instructions: 'v2.2' }, [mk('a', 'pass', 20, 5.2)], 100).instructions === 'v2.2' && planTasks(0).every((t) => t.instructions !== 'v2.2' && (t.name !== 'baseline' || t.instructions === 'v2.1')));
 }
+
+// Opt-in paid budget (2026-11-23): COACH_CANARY_PAID_NEURONS lets a night go on past the free allowance, to a hard cap. Unset or invalid is exactly the old behaviour.
+{
+  const { PAID_NEURONS_CEILING, NEURON_USD_PER_1000, parsePaidCap, nightBudget, paidNeurons, paidSummary } = await import('../src/lib/canaryBudget.ts');
+  const day = { spentToday: 0, visitorTurns: 0 };
+  const used = { spentToday: 9800, visitorTurns: 0 };
+  for (const raw of [undefined, '', '   ', '0', '-5', 'abc', '1e3', '12.5', '5,000', 'NaN', '0x10']) ok(`paid cap ${JSON.stringify(raw)} is off`, parsePaidCap(raw) === 0);
+  ok('unset or invalid gives exactly the old numbers, whatever the day looks like', [day, used, { spentToday: 2500, visitorTurns: 80 }, { spentToday: 0, visitorTurns: 0, free: 20000 }].every((i) => [undefined, '', '0', 'x'].every((raw) => nightBudget(i, raw).allowance === canaryAllowance(i) && nightBudget(i, raw).paidCap === 0)));
+  ok('a positive whole number is the cap, spaces allowed', parsePaidCap('3000') === 3000 && parsePaidCap(' 3000 ') === 3000);
+  ok('the cap is clamped to the ceiling of 12,000', PAID_NEURONS_CEILING === 12_000 && parsePaidCap('12000') === 12_000 && parsePaidCap('12001') === 12_000 && parsePaidCap('99999999999') === 12_000);
+  ok('with the free allowance used up, the allowance is the paid cap alone', nightBudget(used, '3000').allowance === 3000 && nightBudget({ spentToday: 10_000, visitorTurns: 0 }, '3000').allowance === 3000);
+  ok('with free allowance left, the allowance is the free part plus the cap', nightBudget({ spentToday: 6000, visitorTurns: 0 }, '3000').allowance === canaryAllowance({ spentToday: 6000, visitorTurns: 0 }) + 3000);
+  ok('the night never spends more than the ceiling, whatever the free part and the env value', [day, used, { spentToday: 500, visitorTurns: 0 }].every((i) => ['1', '3000', '12000', '50000'].every((raw) => nightBudget(i, raw).allowance <= PAID_NEURONS_CEILING)) && nightBudget(day, '50000').allowance === PAID_NEURONS_CEILING);
+  ok('the free part is exactly what it is today, so the paid cap never shrinks it', nightBudget(day, '1000').free === canaryAllowance(day) && nightBudget(used, '1000').free === 0);
+  ok('spend below the free part has no paid neurons; the part beyond the free allowance is paid', paidNeurons(0, 5200) === 0 && paidNeurons(9800, 0) === 0 && paidNeurons(9800, 200) === 0 && paidNeurons(9800, 700) === 500 && paidNeurons(0, 12_000) === 2000);
+  ok('when the day was already past the free allowance (the owner by hand), all of the night is paid, and what was paid before is not counted again', paidNeurons(10_500, 1000) === 1000 && paidNeurons(9_000, 2000) === 1000);
+  ok('the day base counts the ledger, the manual record and the visitor turns', paidNeurons(9_000 + 10 * NEURONS_PER_TURN, 1000) === 9_000 + 10 * NEURONS_PER_TURN + 1000 - 10_000);
+  const s = paidSummary(3000, 10_000, 4000);
+  ok('the summary says how many neurons were paid, the free part, and the cap', s.paidNeurons === 4000 && s.freeNeurons === 0 && s.paidCap === 3000);
+  ok('the summary gives the approximate cost at $0.011 per 1,000 neurons', NEURON_USD_PER_1000 === 0.011 && Math.abs(s.approxCostUsd - 0.044) < 1e-9 && Math.abs(paidSummary(12_000, 10_000, 5200).approxCostUsd - 0.0572) < 1e-9);
+  ok('the cost note is labelled approximate and carries the rate', /approximate/i.test(s.costNote) && /0\.011/.test(s.costNote) && /1,000/.test(s.costNote));
+  ok('a night that stays inside the free allowance costs nothing', paidSummary(3000, 0, 5200).paidNeurons === 0 && paidSummary(3000, 0, 5200).approxCostUsd === 0);
+  ok('the free and the paid parts always add up to what was spent', [[0, 5200], [9800, 700], [10_000, 4000], [3000, 11_000]].every(([b, sp]) => { const x = paidSummary(3000, b, sp); return x.freeNeurons + x.paidNeurons === sp; }));
+
+  const night = readFileSync('netlify/functions/canary-nightly.mts', 'utf8');
+  ok('the night reads COACH_CANARY_PAID_NEURONS and plans with the combined allowance; the cap is kept in the state', /COACH_CANARY_PAID_NEURONS/.test(night) && /nightBudget\(/.test(night) && /paidCap/.test(night));
+  ok('the ledger records the paid part separately and the digest carries the paid neurons, the cost and its approximate note', /canary\/ledger-paid/.test(night) && /paidSummary\(/.test(night) && /\.\.\.paid/.test(night));
+  ok('the night still stops on three errors in a row and still keeps no visitor text with the paid cap', /streak === 'end-night'/.test(night) && /onErrorStreak/.test(night) && /allowance - state\.spent < MIN_CASE_NEURONS/.test(night) && !/COACH_CANARY_PAID_NEURONS[^\n]*(messages|visitor text)/.test(night));
+  ok('with no candidate model named (unset or empty) the night runs the three standard tasks, and the plan reads no allowance', ['', undefined].every((m) => planTasks(0, m).map((t) => t.name).join() === 'learn,baseline,baseline') && planTasks.length <= 3);
+}
