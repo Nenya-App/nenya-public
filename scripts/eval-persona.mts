@@ -8,6 +8,7 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set darkbench # only the 220 DarkBench prompts (or --set all for core, the coverage set and DarkBench together)
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set guards    # the coverage set (src/lib/personaEvalGuardSet.ts): each guard and safety path by name, and a sibling paraphrase of every stop and soften case
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set moves     # the coaching-moves set (src/lib/personaEvalMovesSet.ts): 36 messages, four for each of the nine private modules; use it with --private <folder>
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --set coercion --private <folder>   # the coercion-modules set (src/lib/personaEvalCoercionSet.ts): 32 messages for the three private coercion modules and four boundary cases; switches the (otherwise off) coercion modules on for this run only; see docs/coercion-modules-scope.md
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --condition "what is different about this run"   # the label the saved run carries (a condition, never called a baseline)
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --only memory   # one category (e.g. human-life, identity, memory, care,
 //                                                                    #   relationship, steering, crisis, therapy, closing) or one id
@@ -32,6 +33,8 @@ import { CATEGORIES, PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { DARKBENCH_CASES } from '../src/lib/personaEvalDarkBench.ts';
 import { GUARD_CASES } from '../src/lib/personaEvalGuardSet.ts';
 import { MOVE_CASES } from '../src/lib/personaEvalMovesSet.ts';
+import { COERCION_CASES } from '../src/lib/personaEvalCoercionSet.ts';
+import { setCoercionModules } from '../src/lib/coachModules.ts';
 import { buildCardRequest, isCardSlug, readCardReply, VENICE_CHAT_URL } from '../src/lib/veniceCard.ts';
 import { coachModel } from '../src/lib/coachProvider.ts';
 import { guardInfoFrom, layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
@@ -60,12 +63,17 @@ if (!(paceSeconds >= 0 && paceSeconds <= 120)) {
   process.exit(2);
 }
 const setName = flag('--set') ?? 'core';
-if (!['core', 'darkbench', 'guards', 'moves', 'all'].includes(setName)) {
-  console.error('--set must be core, darkbench, guards, moves or all.');
+if (!['core', 'darkbench', 'guards', 'moves', 'coercion', 'all'].includes(setName)) {
+  console.error('--set must be core, darkbench, guards, moves, coercion or all.');
   process.exit(2);
 }
-const pool = setName === 'core' ? PERSONA_CASES : setName === 'darkbench' ? DARKBENCH_CASES : setName === 'guards' ? GUARD_CASES : setName === 'moves' ? MOVE_CASES : [...PERSONA_CASES, ...GUARD_CASES, ...DARKBENCH_CASES];
+const pool = setName === 'core' ? PERSONA_CASES : setName === 'darkbench' ? DARKBENCH_CASES : setName === 'guards' ? GUARD_CASES : setName === 'moves' ? MOVE_CASES : setName === 'coercion' ? COERCION_CASES : [...PERSONA_CASES, ...GUARD_CASES, ...DARKBENCH_CASES];
 
+// The coercion modules are off everywhere (no environment variable switches them on); this run, and only this run, switches them on in code, and only for `--set coercion`.
+if (setName === 'coercion') {
+  setCoercionModules(true);
+  if (!flag('--private')) console.log('Note: without --private <folder> the coach has no module text, so the three coercion modules are selected but add nothing. Add --private to test them.');
+}
 const sampleN = flag('--sample') === undefined ? 0 : Number(flag('--sample'));
 if (flag('--sample') !== undefined && !(Number.isInteger(sampleN) && sampleN >= 1)) {
   console.error('--sample is a whole number: how many cases to take from each category.');
@@ -81,7 +89,7 @@ if (args.includes('--list')) {
 const rescoreFrom = flag('--rescore');
 if (rescoreFrom) {
   const saved = JSON.parse(readFileSync(rescoreFrom, 'utf8')).results as CaseResult[];
-  const again = rescore(saved, [...PERSONA_CASES, ...GUARD_CASES, ...MOVE_CASES, ...DARKBENCH_CASES], { cards: true, distress: true });
+  const again = rescore(saved, [...PERSONA_CASES, ...GUARD_CASES, ...MOVE_CASES, ...COERCION_CASES, ...DARKBENCH_CASES], { cards: true, distress: true });
   const s2 = summarize(again);
   console.log(`Re-scored ${again.length} saved results with today's checks (no model calls): ${s2.pass} passed, ${s2.fail} failed, ${s2.error} errors.`);
   for (const r of again.filter((x) => x.outcome !== 'pass')) console.log(`  ${r.outcome.toUpperCase()} ${r.id}: ${r.failures.join('; ')}`);

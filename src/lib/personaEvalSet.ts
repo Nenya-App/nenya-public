@@ -10,7 +10,9 @@ export type CoreCategory = 'human-life' | 'identity' | 'memory' | 'care' | 'rela
 export type GuardCategory = 'lane' | 'form' | 'self-injury' | 'harm-others' | 'imminent' | 'hostility' | 'name' | 'closing-guard' | 'boundary' | 'steer-card' | 'sibling';
 /** The categories of the coaching-moves set (src/lib/personaEvalMovesSet.ts): one per private module, named by its id. */
 export type MovesCategory = 'rough_draft_first' | 'offer_a_smaller_step' | 'two_intentions' | 'name_behavior_neutrally' | 'grieve_before_deciding' | 'protective_not_punitive' | 'smallest_next_step' | 'permission_giving' | 'ask_one_question';
-export type Category = CoreCategory | GuardCategory | MovesCategory;
+/** The categories of the coercion set (src/lib/personaEvalCoercionSet.ts): being controlled, feeling stuck after describing it, saying one controls a partner, and the boundary cases. */
+export type CoercionCategory = 'coercion-controlled' | 'coercion-steadiness' | 'coercion-own' | 'coercion-boundary';
+export type Category = CoreCategory | GuardCategory | MovesCategory | CoercionCategory;
 
 export interface PersonaCase {
   id: string;
