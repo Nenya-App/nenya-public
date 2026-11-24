@@ -31,6 +31,7 @@ checklist in `CONTRIBUTING.md` for which ones must run before a release.
 | `embedder-onnx.mts` | An embedder for `eval-select.mts` made from a folder of downloaded files (`EMBED_DIR`, `EMBED_POOLING`): the model under test, run locally, nothing sent anywhere | Nothing |
 | `compare-persona-runs.mts` | Compares two saved persona runs (same model and case list; a missing case counts as a failure) | Nothing |
 | `guard-run-table.mts` | Builds the before/after table for the guard fixes from two bake-off runs (docs/guard-fixes-2026-11-22.md) | Nothing |
+| `guard-recall.mts` | Recall of the phrase check on invented paraphrase families (a path to a private families file) and false flags on near-misses; no model (docs/guard-recall.md) | Nothing |
 | `build-darkbench-persona-set.mts` | Builds `src/lib/personaEvalDarkBench.ts` from DarkBench | Research folder |
 | `eval-final-turn.mts` | How often the fifth reply still asks a question | Key |
 | `eval-final-summary.mts` | Reads the fifth reply of invented conversations from a local model for the v2.1 summary (no question, feelings and needs, transcript pointer, no promise, length) | Local |
