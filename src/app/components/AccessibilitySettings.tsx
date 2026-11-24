@@ -20,6 +20,8 @@ import { GEM_SIDE_PRESETS, HALO_STYLES, HALO_WIDTHS, LEAF_PRESETS, LEAF_SETTING_
 import { setGemSidesChoice, setLogoLeaves, setOrbHaloStyle, setOrbHaloWidth, shuffleOrbHalo, useGemSidesChoice, useLogoLeaves, useOrbHaloStyle, useOrbHaloWidth } from '../../lib/deviceMemory';
 import { liveGemSupported } from '../../lib/gemRenderer';
 import { LeafSwaySwitch, ColourChoiceGroup } from './LogoLookExtras';
+import { OuterRingControls } from './OuterRingControls';
+import type { BreathingTechnique } from '../../lib/breathingPresets';
 import { setBreathColourChoice, setOrbColourChoice, useBreathColourChoice, useOrbColourChoice } from '../../lib/deviceMemory';
 import { colourChoiceMessage } from '../../lib/logoColours';
 import { INNER_ORB_MODES, innerOrbHint, innerOrbLabel, innerOrbMessage } from '../../lib/logoLook';
@@ -50,6 +52,8 @@ interface AccessibilitySettingsProps {
   onCvModeChange?: (mode: string) => void;
   /** Theme and text size only, for pages without the breathing animations. */
   compact?: boolean;
+  /** The breathing pace in use, so "Pace to my breathing" can say when its limit applies. */
+  technique?: BreathingTechnique | null;
 }
 
 // Standalone settings content component
@@ -69,6 +73,7 @@ export function AccessibilitySettingsContent({
   onCounterToggle,
   onCvModeChange,
   compact = false,
+  technique = null,
 }: AccessibilitySettingsProps) {
   const { theme, setTheme } = useTheme();
 
@@ -365,6 +370,8 @@ export function AccessibilitySettingsContent({
                 ))}
               </fieldset>
             )}
+            {/* How the outer ring of orbs turns: on or still, direction, its own pace, or paced to the breath. */}
+            {orbitEnabled && <OuterRingControls technique={technique} onMessage={setLookMessage} />}
             {/* The leaves' gentle sway (on by default; the leaves are drawn with the Palette Orbit). */}
             {orbitEnabled && <LeafSwaySwitch breathingEnabled={breathingEnabled} onMessage={setLookMessage} />}
             {/* The colours of the breath ring (and the gem's tint that follows it), and of the sixteen orbs. */}

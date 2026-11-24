@@ -282,7 +282,7 @@ export default function GemBench() {
           <Range label="Pulse length (s)" value={I.pulseSeconds} min={1} max={15} step={0.5} digits={1} onChange={(v) => set('inner', { pulseSeconds: v })} />
           <Range label="Pulse drift per orb (s)" value={I.pulseStep} min={0} max={1} step={0.05} onChange={(v) => set('inner', { pulseStep: v })} hint="Each orb's pulse is this much longer than the one before, so they drift apart." />
           <Range label="Colour cycle (s)" value={I.colorCycle} min={6} max={120} step={1} digits={0} onChange={(v) => set('inner', { colorCycle: v })} hint="Time for each orb to pass through its six colours. The gem's inner colour follows." />
-          <Range label="One turn of the ring (s)" value={I.orbitSeconds} min={20} max={600} step={5} digits={0} onChange={(v) => set('inner', { orbitSeconds: v })} hint="The outer ring turns the other way at the same speed." />
+          <Range label="One turn of the ring (s)" value={I.orbitSeconds} min={20} max={600} step={5} digits={0} onChange={(v) => set('inner', { orbitSeconds: v })} hint="The inner ring only. The outer ring has its own pace (see Outer orbit)." />
           <Range label="Glass: form shading" value={I.form} min={0} max={1} step={0.01} onChange={(v) => set('inner', { form: v })} />
           <Range label="Glass: shine" value={I.shine} min={0} max={1} step={0.01} onChange={(v) => set('inner', { shine: v })} />
           <Range label="Glass: rim light" value={I.rimLight} min={0} max={1} step={0.01} onChange={(v) => set('inner', { rimLight: v })} />
@@ -302,6 +302,11 @@ export default function GemBench() {
           <Range label="Opacity, low" value={O.opacityLow} min={0} max={1} step={0.01} onChange={(v) => set('outer', { opacityLow: v })} />
           <Range label="Opacity, high" value={O.opacityHigh} min={0} max={1} step={0.01} onChange={(v) => set('outer', { opacityHigh: v })} />
           <Choice label="Halo (shared glow, each orb's own colour, or its palette)" value={O.halo} options={['shared', 'own', 'palette', 'random'] as const} onChange={(v) => set('outer', { halo: v })} />
+          <Toggle label="Ring turns" value={O.turn} onChange={(v) => set('outer', { turn: v })} />
+          <Choice label="Ring direction" value={O.direction} options={['ccw', 'cw'] as const} onChange={(v) => set('outer', { direction: v })} />
+          <Range label="One turn of the outer ring (s)" value={O.turnSeconds} min={30} max={300} step={6} digits={0} onChange={(v) => set('outer', { turnSeconds: v })} hint="30 s (2 turns a minute) is the fastest allowed. Not used while paced to the breath." />
+          <Toggle label="Ring paced to the breath" value={O.breathPaced} onChange={(v) => set('outer', { breathPaced: v })} />
+          <Choice label="Fraction of a turn per breath (1/N)" value={String(O.breathTurn)} options={['12', '8', '6', '4'] as const} onChange={(v) => set('outer', { breathTurn: Number(v) })} />
         </Panel>
 
         <Panel title="Live gem: light and material" open onReset={() => reset('light')}>
