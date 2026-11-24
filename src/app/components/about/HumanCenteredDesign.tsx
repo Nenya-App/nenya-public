@@ -1,4 +1,5 @@
 import { ArrowLeft, Users, Heart } from 'lucide-react';
+import { AppFooter } from '../AppFooter';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { useIsMobile } from '../useIsMobile';
@@ -158,6 +159,7 @@ export default function HumanCenteredDesign({ onBack }: HumanCenteredDesignProps
           <ReturnToTop onClick={scrollToTop} />
         </div>
       </div>
+      <AppFooter />
     </div>
   );
 }

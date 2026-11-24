@@ -12,7 +12,7 @@ The words are in `src/lib/safetyFeaturesCard.ts` and nowhere else. `tests/safety
 
 1. **Exit destination** (the owner's decision): "a Wikipedia page" became "the Google home page (google.com)".
 2. **Where the exit button is**: "in the header and the footer of the pages" became "of most pages", with "On the pages that check or open a signed transcript, it floats at the top instead." Those pages (and the partner-cell page) have no header or footer, only the pinned button. "It is red" became "It is rust-colored": the button is `#89452D`.
-3. **Where Forget me is**: "bottom of every page" became "most pages" (the transcript pages have no footer), and "the display settings" became "Accessibility Settings", the window's real title.
+3. **Where Forget me is**: "bottom of every page" became "most pages" (the two static pages, about-nenya.html and why-nenya.html, run no script, so the link cannot work there; see `docs/forget-me-footers.md`), and "the display settings" became "Accessibility Settings", the window's real title.
 4. **What is saved**: "Nenya never saves what you write or draw on your device" gets an exception, only where "Save and return later" is switched on (`VITE_SAVE_REFLECTION`, `on` in `production-env.md`): that option keeps finished gateways, body-map placements and colors for up to 24 hours, locked with a passcode, and Forget me erases it. With the option off, the approved sentence is used as written. (The Terms, Section 16, already say this.)
 5. **"no password or lock"** became "no password or lock on the page": the saved reflection has a passcode, and the sentence is about the page.
 
@@ -43,7 +43,7 @@ Edit `src/lib/safetyFeaturesCard.ts`, add the change to `CHANGES_FROM_APPROVED` 
 | Back to an earlier Nenya page in the tab leaves again, until the tab closes | `emergencyExit.ts` (`guardBackAfterExit`, the note `nenya.exited` in session storage), `public/exit-guard.js` |
 | The exit goes to the Google home page | `EXIT_URL` in `emergencyExit.ts`; Terms Section 18 |
 | Exit button: header (both layouts) and footer; on the coach page through the header; floating at the top on the verify, my-transcript and partner-cell pages and over the loading screen and the first-visit panel | `GlobalNavigation.tsx`, `AppFooter.tsx`, `CoachPage.tsx`, `VerifyPage.tsx`, `MyTranscriptPage.tsx`, `CellPage.tsx`, `App.tsx` |
-| Forget me: footer link on most pages; button under "Remember on this device" in Accessibility Settings | `AppFooter.tsx`, `DeviceMemoryControls.tsx`, `AccessibilitySettings.tsx`, `GlobalNavigation.tsx` (dialog title) |
+| Forget me: footer link on most pages; button under "Remember on this device" in Accessibility Settings | `AppFooter.tsx`, `MinimalFooter.tsx`, `DeviceMemoryControls.tsx`, `AccessibilitySettings.tsx`, `GlobalNavigation.tsx` (dialog title) |
 | Forget me erases what is kept on the device and sends nothing | `deviceMemory.ts` (`forgetMeAndRestart`, `wipeDevice({ keepOwner: true })`) |
 | Nothing a visitor writes or draws is kept, except the optional "Save and return later" | `deviceMemory.ts` ("Never kept"), `savedReflection.ts`, Terms Section 16 |
 | The coach sends messages through our server to an outside AI service; we do not store them | `PrivacyPromise.tsx`, Terms Section 15 |
@@ -53,5 +53,5 @@ Edit `src/lib/safetyFeaturesCard.ts`, add the change to `CHANGES_FROM_APPROVED` 
 
 - Approve the five wording changes above.
 - Terms Section 18 changed with the exit destination. The effective date was **not** moved (as in earlier same-day corrections); decide whether returning visitors should agree again. The outgoing text is `docs/legal/archive/terms-and-privacy-until-2026-11-24-b.md`.
-- Existing text says Forget me is "at the bottom of every page" (Terms Section 16, the privacy page, `DeviceMemoryControls.tsx`, About answers, `public/mind-facts.txt`). The verify, my-transcript and partner-cell pages have no footer. Not changed here, because changing the Terms moves their date; the card says "most pages".
+- Existing text says Forget me is "at the bottom of every page" (Terms Section 16, the privacy page, `DeviceMemoryControls.tsx`, About answers, `public/mind-facts.txt`). As of 2026-11-24 every page of the app carries the link (`MinimalFooter` was added to the transcript pages, the partner-practice page and the coach and app steps that had no footer). The two static pages are the exception (`docs/forget-me-footers.md`), so the card still says "most pages". The Terms were not changed.
 - The Google page is reached with a referrer of `nenya.biz` (the Terms say so, in the same form as before). If the owner picks a page that sets no referrer or a different ordinary page, it is one line.
