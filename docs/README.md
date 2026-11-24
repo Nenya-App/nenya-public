@@ -38,6 +38,7 @@ Two things to know when reading "shipped":
 | [accessibility-audit-checklist.md](accessibility-audit-checklist.md) | A screen-reader listening checklist (Safari and VoiceOver) | Procedure |
 | [accessibility-testing-list.md](accessibility-testing-list.md) | A running list of testing that disabled people still need to do | Row 5 says the long melody is "when built", but it is built (`src/lib/longMelody.ts`). |
 | [coach-testing.md](coach-testing.md) | How the owner tests the coach (the rest period, the owner token) | Current |
+| [guard-recall.md](guard-recall.md) | `scripts/guard-recall.mts`: recall of the phrase check on invented paraphrase families (path to a private families file), false flags on near-misses, a held-out split; no model, no claim of safety | New 2026-11-24. The families file is not in the repository. |
 | [coach-transcripts.md](coach-transcripts.md) | Signed transcripts: what the signature proves, and how to verify one | **Contradicts the code.** It says a sent transcript reaches us by a Netlify form and is not kept. `netlify/functions/report.mts` now keeps it in the private store, with the person's choices (see transcript-consent-scope.md). |
 | [coach-method-notes.md](coach-method-notes.md) | Where the private method notes live (Blobs) and their limits | Current. For the module set, see coach-modules-scope.md. |
 | [dev-testing-checklist.md](dev-testing-checklist.md) | What to check on staging after a push | Procedure |
