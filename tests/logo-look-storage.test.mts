@@ -107,8 +107,8 @@ ok('a stopped state stored on the device is read back, next to a sway setting th
 // The outer ring's movement (docs/outer-ring-movement.md): five display settings, stored like the others inside nenya.prefs.
 const ring0 = await fresh('ring0', null);
 ok('a visitor who has set nothing: the ring turns, counter-clockwise, 144 s a turn, not paced to the breath, 1/12 of a turn', ring0.getOuterRingTurning() === true && ring0.getOuterRingDirection() === 'ccw' && ring0.getOuterRingSeconds() === 144 && ring0.getOuterRingBreathPaced() === false && ring0.getOuterRingBreathTurn() === 12);
-ring0.setOuterRingTurning(false); ring0.setOuterRingDirection('cw'); ring0.setOuterRingSeconds(60); ring0.setOuterRingBreathPaced(true); ring0.setOuterRingBreathTurn(4);
-ok('with Remember off nothing is stored, but the choices apply for the visit', !('nenya.prefs' in store) && ring0.getOuterRingTurning() === false && ring0.getOuterRingDirection() === 'cw' && ring0.getOuterRingSeconds() === 60 && ring0.getOuterRingBreathPaced() === true && ring0.getOuterRingBreathTurn() === 4);
+ring0.setOuterRingTurning(false); ring0.setOuterRingDirection('cw'); ring0.setOuterRingSeconds(60); ring0.setOuterRingBreathPaced(true); ring0.setOuterRingBreathTurn(6);
+ok('with Remember off nothing is stored, but the choices apply for the visit', !('nenya.prefs' in store) && ring0.getOuterRingTurning() === false && ring0.getOuterRingDirection() === 'cw' && ring0.getOuterRingSeconds() === 60 && ring0.getOuterRingBreathPaced() === true && ring0.getOuterRingBreathTurn() === 6);
 ring0.setRemembering(true);
 ring0.setOuterRingTurning(true); ring0.setOuterRingDirection('ccw'); ring0.setOuterRingSeconds(200); ring0.setOuterRingBreathPaced(true); ring0.setOuterRingBreathTurn(8);
 const ringSaved = JSON.parse(store['nenya.prefs']);

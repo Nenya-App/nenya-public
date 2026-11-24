@@ -20,7 +20,7 @@ export const DEFAULT_OUTER_RING_TURNING = true;
 export const DEFAULT_OUTER_RING_BREATH_PACED = false;
 
 /** "Pace to my breathing": the ring turns 1/N of a turn for each full breath. 12 is the default and is the same pace as 144 s per turn at the default 6 s in, 6 s out. */
-export const BREATH_TURN_DENOMINATORS = [12, 8, 6, 4] as const;
+export const BREATH_TURN_DENOMINATORS = [12, 8, 6] as const;
 export type BreathTurnDenominator = (typeof BREATH_TURN_DENOMINATORS)[number];
 export const DEFAULT_BREATH_TURN: BreathTurnDenominator = 12;
 export const breathTurnLabel = (d: number): string => `1/${d} turn`;

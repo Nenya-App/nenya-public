@@ -13,7 +13,7 @@ The ring turns round the logo. Before, it turned counter-clockwise on a CSS anim
 | Direction | `outerRingDirection` (`ccw`, `cw`) | Counter-clockwise |
 | Pace, seconds per turn | `outerRingSeconds` (30 to 300) | 144 s per turn (0.42 rpm). Was 120 s |
 | Pace to my breathing | `outerRingBreathPaced` | Off |
-| Fraction of a turn per breath | `outerRingBreathTurn` (the N of 1/N: 12, 8, 6, 4) | 1/12 turn |
+| Fraction of a turn per breath | `outerRingBreathTurn` (the N of 1/N: 12, 8, 6) | 1/12 turn |
 
 144 s is twelve breaths of 12 s (the default 6 s in, 6 s out), so 1/12 of a turn per breath at the default breath is the same average pace as the steady default.
 `NenyaLogo` with no options looks as the site does; the only change is the outer ring's pace (120 s to 144 s). `OuterOrbitLook` carries the same five fields (`turn`, `direction`, `turnSeconds`, `breathPaced`, `breathTurn`) so the /bench page can set them; a bench prop overrides the visitor's choices.
@@ -23,7 +23,7 @@ Settings, Logo look, a group labelled **Outer ring movement**, shown while Palet
 - **Turning / Still** (two radio buttons).
 - **Direction**: Counter-clockwise (default) or Clockwise.
 - **Pace**: a slider, 30 to 300 seconds per turn in 6 s steps (a real range input, so the arrow keys, Home and End work). Left is faster. Its label always reads like "144 s per turn (0.42 rpm)", and the same text is its `aria-valuetext`. A Reset button returns it to 144 s.
-- **Pace to my breathing**: a switch. When on, the slider is disabled and says why, and four radio buttons choose the fraction: 1/12 (standard), 1/8, 1/6, 1/4 of a turn for each full breath. A line under them gives the average pace for the visitor's breathing pace, and says in words when the limit (below) applies.
+- **Pace to my breathing**: a switch. When on, the slider is disabled and says why, and three radio buttons choose the fraction: 1/12 (standard), 1/8, 1/6 of a turn for each full breath. A line under them gives the average pace for the visitor's breathing pace, and says in words when the limit (below) applies.
 - Changes are announced through the existing polite status line of the Logo look group. The help text is plain words with no claim about benefit. The direction, pace and breath controls are disabled while the ring is set to Still.
 
 ## How the ring moves
@@ -44,3 +44,6 @@ The inner ring (still 120 s, its lights, their behaviour); the orbs' colours and
 
 ## Not verified
 Checked by build, type-check and tests only. The look of the movement was not seen in a browser (by decision). Frame cost of the script loop was not measured.
+
+
+Update 2026-11-24: the 1/4-turn option was dropped on the owner's decision, because it was clamped to the 2 rpm limit even at the default 12 s breath. A stored value of 4 now falls back to the default (1/12).
