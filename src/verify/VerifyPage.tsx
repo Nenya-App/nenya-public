@@ -1,4 +1,5 @@
 import { EmergencyExitDock } from '../app/components/EmergencyExit';
+import { MinimalFooter } from '../app/components/MinimalFooter';
 import TranscriptChecker from './TranscriptChecker';
 
 // A page for checking a signed Nenya coach-demo transcript (the .json file, or the readable .txt copy that carries it).
@@ -31,6 +32,7 @@ export default function VerifyPage() {
           </p>
         </footer>
       </main>
+      <MinimalFooter />
     </div>
   );
 }

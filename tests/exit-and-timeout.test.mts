@@ -19,7 +19,8 @@ ok('so does a page restored from the browser cache', shouldLeaveAgain('navigate'
 ok('a fresh visit (typed address, link, reload) does not', !shouldLeaveAgain('navigate', '1') && !shouldLeaveAgain('reload', '1') && !shouldLeaveAgain(undefined, '1'));
 ok('with no exit note nothing happens', !shouldLeaveAgain('back_forward', null) && !noteIsStale('navigate', null));
 ok('a fresh visit clears a stale note; a Back visit keeps it', noteIsStale('navigate', '1') && !noteIsStale('back_forward', '1') && !noteIsStale('navigate', '1', true));
-ok('the exit goes to a neutral page and uses replace, not a new history entry', /^https:\/\/en\.wikipedia\.org\//.test(EXIT_URL) && /location\.replace\(EXIT_URL\)/.test(src('src/lib/emergencyExit.ts')) && !/location\.href\s*=/.test(src('src/lib/emergencyExit.ts')));
+// Updated on purpose 2026-11-24: the destination is now an ordinary page that does not mention Nenya (see tests/exit-destination.test.mts).
+ok('the exit goes to a neutral page and uses replace, not a new history entry', /^https:\/\/www\.google\.com\/$/.test(EXIT_URL) && /location\.replace\(EXIT_URL\)/.test(src('src/lib/emergencyExit.ts')) && !/location\.href\s*=/.test(src('src/lib/emergencyExit.ts')));
 ok('the note lives in session storage (this tab only) and is set after the wipe', EXIT_NOTE_KEY === 'nenya.exited' && /wipeDevice\([\s\S]*sessionStorage\.setItem\(EXIT_NOTE_KEY/.test(src('src/lib/emergencyExit.ts')));
 ok('every visitor page runs the guard before drawing', ['src/main.tsx', 'src/coach/main.tsx', 'src/verify/main.tsx'].every((f) => src(f).includes('guardBackAfterExit()')));
 ok('both the button and the dialog leave through the one routine', (src('src/app/components/EmergencyExit.tsx').match(/leaveNow\(/g) ?? []).length >= 2 && !/location\.replace/.test(src('src/app/components/EmergencyExit.tsx')));

@@ -75,6 +75,10 @@ td:nth-child(3) { background: var(--accent-soft); }
 .btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 .fine { font-size: 0.9rem; color: var(--muted); }
 footer { font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 20px; }
+.forget-me { margin-top: 12px; color: var(--fg); }
+.forget-me button { font: inherit; color: var(--fg); background: none; border: 0; padding: 4px 2px; margin: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.forget-me button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.forget-me [role="status"] { display: block; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -166,7 +170,13 @@ footer { font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--rul
 
   <footer>
     Nenya is free, open source (AGPL-3.0), and fiscally sponsored by Fractured Atlas. Created by Est&euml;lle. See also <a href="/about-nenya.html">About Nenya</a>. The comparison above describes the chatbot industry in general terms and does not name any company.
+    <p class="forget-me" id="forget-me" hidden>
+      <button type="button" id="forget-me-button">Forget me</button>
+      Erases what Nenya saved in this browser. Nothing is sent to anyone.
+      <span id="forget-me-status" role="status"></span>
+    </p>
   </footer>
 </main>
+<script src="/forget-me.js" defer></script>
 </body>
 </html>

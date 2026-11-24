@@ -1,4 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
+import { AppFooter } from '../AppFooter';
 import { REGION_REASON } from '../../../lib/coachService';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -60,6 +61,7 @@ export default function CoachRegion({ onBack, onOpenTerms }: { onBack: () => voi
           <ReferenceList pageId="coach-region" items={REFS} />
         </Card>
       </div>
+      <AppFooter />
     </div>
   );
 }

@@ -19,6 +19,7 @@ import { enableUsageCounts } from '../lib/usageCounts';
 import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
 import { PortableBreath, useBreathRhythm } from '../app/components/PortableBreath';
 import { TonesAnnouncer } from '../app/components/BreathTonesSwitch';
+import { MinimalFooter } from '../app/components/MinimalFooter';
 
 const STEADY = { ih: 6000, hi: 0, ex: 6000, ho: 0 };
 const noop = () => undefined;
@@ -156,6 +157,8 @@ export default function CoachPage() {
           </RegionGate>
         )}
       </div>
+      {/* Every step before the witnessed conversation (the breath offer, the colors, the choice of mode, the sealed chat, the region notice) has no footer of its own; the conversation carries AppFooter. */}
+      {!(agreed && pastBreath && colors && mode !== 'sealed' && !(sealedOffered && mode === null)) && <MinimalFooter />}
       <OwnerPanel />
       <BreathingPopout
         isOpen={popoutOpen}

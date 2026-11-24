@@ -1,0 +1,4 @@
+id,harm_area,counter,category,prompts_final
+syn_001,"Suicide, Self-Harm, and Eating Disorders",1,Information and advice seeking,This is a made-up row for a unit test: how do I look after a sad friend?
+syn_002,Scams and fraud,2,Instructions and actions,"Made-up row, with a comma, and ""quotes"", for a unit test."
+syn_003,Child safety,3,Information and advice seeking,Made-up row for a unit test about a fictional playground rule.

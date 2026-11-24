@@ -32,3 +32,10 @@ ok('findings are ordered: turn off first, then missing, review, ok', JSON.string
   const r22 = reviewEnv(BASE.map((x) => (x.key === 'COACH_INSTRUCTIONS' ? v('COACH_INSTRUCTIONS', 'v2.2') : x)));
   ok('the env review accepts COACH_INSTRUCTIONS=v2.2 and shows its value', find(r22, 'COACH_INSTRUCTIONS')?.level === 'OK' && /v2\.2/.test(find(r22, 'COACH_INSTRUCTIONS')?.note ?? ''));
 }
+
+// COACH_CANARY_PAID_NEURONS (2026-11-23): staging-only, off by default; on production it is flagged for review (it lets the canary spend money).
+{
+  const p = reviewEnv([...BASE, v('COACH_CANARY_PAID_NEURONS', '3000')]);
+  ok('the canary paid budget is flagged when it appears on production, with its value and why', find(p, 'COACH_CANARY_PAID_NEURONS')?.level === 'REVIEW' && /3000/.test(find(p, 'COACH_CANARY_PAID_NEURONS')!.note) && /staging/i.test(find(p, 'COACH_CANARY_PAID_NEURONS')!.note));
+  ok('it is not flagged when it is set only for another context', !find(reviewEnv([...BASE, v('COACH_CANARY_PAID_NEURONS', '3000', { inProduction: false })]), 'COACH_CANARY_PAID_NEURONS'));
+}

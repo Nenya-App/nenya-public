@@ -8,6 +8,8 @@
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set darkbench # only the 220 DarkBench prompts (or --set all for core, the coverage set and DarkBench together)
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set guards    # the coverage set (src/lib/personaEvalGuardSet.ts): each guard and safety path by name, and a sibling paraphrase of every stop and soften case
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --set moves     # the coaching-moves set (src/lib/personaEvalMovesSet.ts): 36 messages, four for each of the nine private modules; use it with --private <folder>
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --set coercion --private <folder>   # the coercion-modules set (src/lib/personaEvalCoercionSet.ts): 32 messages for the three private coercion modules and eleven boundary cases (39 in all); switches the (otherwise off) coercion modules on for this run only; see docs/coercion-modules-scope.md
+//   VENICE_API_KEY=... node scripts/eval-persona.mts --set sst --sst-file <path> --private <folder> --pace 6 --json out.json   # SimpleSafetyTests (CC BY 4.0), 100 prompts in five harm areas, read from YOUR local copy of the official file (the prompts are not in this repository; without --sst-file the script says how to download it); every case is also marked for you to read; see docs/sst-persona-set.md
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --condition "what is different about this run"   # the label the saved run carries (a condition, never called a baseline)
 //   VENICE_API_KEY=... node scripts/eval-persona.mts --only memory   # one category (e.g. human-life, identity, memory, care,
 //                                                                    #   relationship, steering, crisis, therapy, closing) or one id
@@ -32,9 +34,12 @@ import { CATEGORIES, PERSONA_CASES } from '../src/lib/personaEvalSet.ts';
 import { DARKBENCH_CASES } from '../src/lib/personaEvalDarkBench.ts';
 import { GUARD_CASES } from '../src/lib/personaEvalGuardSet.ts';
 import { MOVE_CASES } from '../src/lib/personaEvalMovesSet.ts';
+import { COERCION_CASES } from '../src/lib/personaEvalCoercionSet.ts';
+import { setCoercionModules } from '../src/lib/coachModules.ts';
 import { buildCardRequest, isCardSlug, readCardReply, VENICE_CHAT_URL } from '../src/lib/veniceCard.ts';
 import { coachModel } from '../src/lib/coachProvider.ts';
 import { guardInfoFrom, layerRecord, summarizeLayers } from '../src/lib/layerTrace.ts';
+import { parseSst, sstCases, sstDownloadHelp, sstSha256, SST_SHA256, SST_SUMMARY_NOTE } from '../src/lib/personaEvalSst.ts';
 import { assertOneModel, checkHeader, pacedSend, planResume, runIncompleteReasons, sampleEvenly, rescore, runCase, summarize, type CaseResult, type RawSent } from '../src/lib/personaEval.ts';
 
 const args = process.argv.slice(2);
@@ -60,12 +65,37 @@ if (!(paceSeconds >= 0 && paceSeconds <= 120)) {
   process.exit(2);
 }
 const setName = flag('--set') ?? 'core';
-if (!['core', 'darkbench', 'guards', 'moves', 'all'].includes(setName)) {
-  console.error('--set must be core, darkbench, guards, moves or all.');
+if (!['core', 'darkbench', 'guards', 'moves', 'coercion', 'sst', 'all'].includes(setName)) {
+  console.error('--set must be core, darkbench, guards, moves, coercion, sst or all.');
   process.exit(2);
 }
-const pool = setName === 'core' ? PERSONA_CASES : setName === 'darkbench' ? DARKBENCH_CASES : setName === 'guards' ? GUARD_CASES : setName === 'moves' ? MOVE_CASES : [...PERSONA_CASES, ...GUARD_CASES, ...DARKBENCH_CASES];
+// SimpleSafetyTests: the prompts are read from a local copy of the official file (never stored in the repository). Without --sst-file the run stops and says how to get it.
+const sstFile = flag('--sst-file');
+let SST_CASES: ReturnType<typeof sstCases> = [];
+let sstInfo: { file: string; sha256: string; matchesPublished: boolean } | undefined;
+if (sstFile !== undefined || setName === 'sst') {
+  if (!sstFile) {
+    console.error(sstDownloadHelp());
+    process.exit(2);
+  }
+  try {
+    const bytes = readFileSync(sstFile);
+    const sha256 = sstSha256(bytes);
+    SST_CASES = sstCases(parseSst(bytes.toString('utf8'), /\.json$/i.test(sstFile) ? 'json' : 'csv'));
+    sstInfo = { file: sstFile.split('/').pop() ?? sstFile, sha256, matchesPublished: sha256 === SST_SHA256 };
+    if (!sstInfo.matchesPublished && /\.csv$/i.test(sstFile)) console.log(`Note: the file's sha256 (${sha256}) is not the one this script was written against (${SST_SHA256}). The file may have changed upstream; the run goes on.`);
+  } catch (e) {
+    console.error(`Could not read the SimpleSafetyTests file ${sstFile}: ${(e as Error).message}\n\n${sstDownloadHelp()}`);
+    process.exit(2);
+  }
+}
+const pool = setName === 'core' ? PERSONA_CASES : setName === 'darkbench' ? DARKBENCH_CASES : setName === 'guards' ? GUARD_CASES : setName === 'moves' ? MOVE_CASES : setName === 'coercion' ? COERCION_CASES : setName === 'sst' ? SST_CASES : [...PERSONA_CASES, ...GUARD_CASES, ...DARKBENCH_CASES];
 
+// The coercion modules are off everywhere (no environment variable switches them on); this run, and only this run, switches them on in code, and only for `--set coercion`.
+if (setName === 'coercion') {
+  setCoercionModules(true);
+  if (!flag('--private')) console.log('Note: without --private <folder> the coach has no module text, so the three coercion modules are selected but add nothing. Add --private to test them.');
+}
 const sampleN = flag('--sample') === undefined ? 0 : Number(flag('--sample'));
 if (flag('--sample') !== undefined && !(Number.isInteger(sampleN) && sampleN >= 1)) {
   console.error('--sample is a whole number: how many cases to take from each category.');
@@ -74,14 +104,15 @@ if (flag('--sample') !== undefined && !(Number.isInteger(sampleN) && sampleN >= 
 const filtered = pool.filter((c) => !only || c.id === only || c.category === only);
 const chosen = sampleN ? sampleEvenly(filtered, sampleN) : filtered;
 if (args.includes('--list')) {
-  for (const c of chosen) console.log(`${c.id.padEnd(16)} ${c.category.padEnd(13)} ${c.prompt.slice(0, 100)}`);
-  console.log(`\n${chosen.length} cases. Categories: ${CATEGORIES.join(', ')}`);
+  // SST cases are listed by id and category only, never by prompt text.
+  for (const c of chosen) console.log(`${c.id.padEnd(16)} ${c.category.padEnd(13)} ${c.humanReview ? '' : c.prompt.slice(0, 100)}`.trimEnd());
+  console.log(`\n${chosen.length} cases. Categories: ${setName === 'sst' ? [...new Set(chosen.map((c) => c.category))].join(', ') : CATEGORIES.join(', ')}`);
   process.exit(0);
 }
 const rescoreFrom = flag('--rescore');
 if (rescoreFrom) {
   const saved = JSON.parse(readFileSync(rescoreFrom, 'utf8')).results as CaseResult[];
-  const again = rescore(saved, [...PERSONA_CASES, ...GUARD_CASES, ...MOVE_CASES, ...DARKBENCH_CASES], { cards: true, distress: true });
+  const again = rescore(saved, [...PERSONA_CASES, ...GUARD_CASES, ...MOVE_CASES, ...COERCION_CASES, ...DARKBENCH_CASES, ...SST_CASES], { cards: true, distress: true });
   const s2 = summarize(again);
   console.log(`Re-scored ${again.length} saved results with today's checks (no model calls): ${s2.pass} passed, ${s2.fail} failed, ${s2.error} errors.`);
   for (const r of again.filter((x) => x.outcome !== 'pass')) console.log(`  ${r.outcome.toUpperCase()} ${r.id}: ${r.failures.join('; ')}`);
@@ -175,6 +206,9 @@ if (resumeFrom) {
   }
 }
 
+if (chosen.some((c) => c.source?.startsWith('sst:'))) {
+  console.log('Includes prompts from SimpleSafetyTests (CC BY 4.0, Bertie Vidgen and colleagues, 2023), loaded unmodified from your local copy of the official file. Credit and licence: ATTRIBUTIONS.md.');
+}
 if (chosen.some((c) => c.source?.startsWith('darkbench:'))) {
   console.log('Includes prompts from DarkBench (MIT, Esben Kran and colleagues, ICLR 2025). Credit and license: ATTRIBUTIONS.md.');
 }
@@ -192,7 +226,7 @@ for (const c of todo) {
   fresh.push(r);
   const mark = r.outcome === 'pass' ? 'PASS' : r.outcome === 'fail' ? 'FAIL' : 'ERROR';
   console.log(`\n${mark}  ${c.id}  [${c.category}]${r.how !== 'reply' ? `  (${r.how})` : ''}`);
-  console.log(`  Person: ${c.prompt}${c.source ? `  [${c.source}]` : ''}`);
+  console.log(c.humanReview ? `  Person: (prompt not shown: ${c.source}; read it in your own copy of the file)` : `  Person: ${c.prompt}${c.source ? `  [${c.source}]` : ''}`);
   if (r.reply) console.log(`  Coach:  ${r.reply.replace(/\n+/g, ' ')}`);
   for (const f of r.failures) console.log(`  !! ${f}`);
   const shown = r.review.filter((x) => x.present).map((x) => x.check);
@@ -214,6 +248,7 @@ const reviewLines = Object.entries(s.review).map(([k, v]) => `  ${k.padEnd(22)} 
 if (reviewLines.length) console.log(`\nReview checks (they never fail a case; they show what the pass/fail checks cannot):\n${reviewLines.join('\n')}`);
 if (s.failing.length) console.log(`\nTo read a failing case in full: --only <id>. Failing: ${s.failing.join(', ')}`);
 console.log('\nA pass means no known failure phrase. Read the replies: tone, warmth and honesty are yours to judge.');
+if (s.humanReview) console.log(`\n${SST_SUMMARY_NOTE} ${s.humanReview} of ${s.total} case(s) are marked for a person to read, including every pass.`);
 if (jsonOut) {
   // What a saved run must carry (Venice's review, 2026-11-22): a fingerprint that is not null, one model for every result, the case list, and whether the run is complete.
   const problems = checkHeader({ condition, instructions, model: modelName, fingerprint, caseIds: chosen.map((x) => x.id) });
@@ -223,7 +258,7 @@ if (jsonOut) {
     console.error(`Not saving ${jsonOut}: ${problems.join('; ')}`);
     process.exitCode = 1;
   } else {
-    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), kind: 'condition', condition, instructions, fingerprint, model: modelName, distressText: process.env.COACH_DISTRESS_TEXT === 'on', caseIds: chosen.map((x) => x.id), partial: false, incomplete: incompleteReasons.length > 0, incompleteReasons, summary: s, results }, null, 2));
+    writeFileSync(jsonOut, JSON.stringify({ ranAt: new Date().toISOString(), kind: 'condition', condition, instructions, fingerprint, model: modelName, distressText: process.env.COACH_DISTRESS_TEXT === 'on', caseIds: chosen.map((x) => x.id), ...(sstInfo ? { sst: { ...sstInfo, note: SST_SUMMARY_NOTE } } : {}), partial: false, incomplete: incompleteReasons.length > 0, incompleteReasons, summary: s, results }, null, 2));
     console.log(`Results written to ${jsonOut}${incompleteReasons.length ? `  (INCOMPLETE: ${incompleteReasons.join('; ')})` : ''}`);
   }
 }

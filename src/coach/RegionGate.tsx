@@ -5,6 +5,7 @@ import { ArrowLeft, Wind } from 'lucide-react';
 import { IpExplainer } from './IpExplainer';
 import { OWNER_TOKEN_KEY } from '../lib/deviceMemory';
 
+import { MinimalFooter } from '../app/components/MinimalFooter';
 import { AboutPageLink } from '../app/components/AboutPageLink';
 // The coach is open only to connections our host places in the United States (src/lib/coachRegion.ts). The page asks the
 // server once; the server enforces it on every message regardless, so a failed check here simply lets the page continue.
@@ -21,7 +22,8 @@ export function countryName(code: string | null): string | null {
   }
 }
 
-export function RegionGate({ children, onBack, onBreathe }: { children: ReactNode; onBack?: () => void; onBreathe?: () => void }) {
+// `footer`: the page that holds the gate has no footer of its own to put under the notice (the app's coach screen), so the notice carries the small one.
+export function RegionGate({ children, onBack, onBreathe, footer = false }: { children: ReactNode; onBack?: () => void; onBreathe?: () => void; footer?: boolean }) {
   const [state, setState] = useState<State>({ kind: 'checking' });
   useEffect(() => {
     let on = true;
@@ -51,12 +53,12 @@ export function RegionGate({ children, onBack, onBreathe }: { children: ReactNod
       </p>
     );
   }
-  if (state.kind === 'denied') return <RegionNotice country={state.country} onBack={onBack} onBreathe={onBreathe} />;
+  if (state.kind === 'denied') return <RegionNotice country={state.country} onBack={onBack} onBreathe={onBreathe} footer={footer} />;
   return <>{children}</>;
 }
 
 /** What a visitor outside the United States sees: why, and what an IP address is and how Nenya uses it. */
-export function RegionNotice({ country, onBack, onBreathe, inline = false }: { country: string | null; onBack?: () => void; onBreathe?: () => void; inline?: boolean }) {
+export function RegionNotice({ country, onBack, onBreathe, inline = false, footer = false }: { country: string | null; onBack?: () => void; onBreathe?: () => void; inline?: boolean; footer?: boolean }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (!inline) headingRef.current?.focus({ preventScroll: true });
@@ -115,6 +117,7 @@ export function RegionNotice({ country, onBack, onBreathe, inline = false }: { c
         )}
       </div>
     </section>
+    {footer && !inline && <MinimalFooter />}
     </Scroll>
   );
 }

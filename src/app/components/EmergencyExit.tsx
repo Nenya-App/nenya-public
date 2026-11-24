@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, ArrowUpRight, X, Info } from 'lucide-react';
 import { Button } from './ui/button';
-import { leaveNow } from '../../lib/emergencyExit';
+import { EXIT_PAGE_NAME, leaveNow } from '../../lib/emergencyExit';
 import { LinkedText } from './ExternalLink';
 
 interface EmergencyExitModalProps {
@@ -16,7 +16,6 @@ const EMERGENCY_COLOR = '#89452D'; // Earthy terracotta/rust color
 
 // Nienna's Chromatic Sigil - The palette of mercy, compassion, and empathy
 const NIENNA_PRIMARY = '#6A5ACD'; // Slate Blue - Compassionate depth
-const NIENNA_WARM = '#BC8F8F'; // Rosy Brown - Gentle warmth
 
 function EmergencyExitModal({ isOpen, onClose, onLeaving }: EmergencyExitModalProps) {
 
@@ -91,7 +90,7 @@ function EmergencyExitModal({ isOpen, onClose, onLeaving }: EmergencyExitModalPr
           {/* Body text */}
           <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
           <p>
-            This action will <strong className="text-foreground">instantly close the application</strong> and redirect your browser to Wikipedia (Rings of Power article).
+            This action will <strong className="text-foreground">instantly close the application</strong> and replace this page with {EXIT_PAGE_NAME}. The address of that page does not mention Nenya.
           </p>
           
           <div 
@@ -108,21 +107,6 @@ function EmergencyExitModal({ isOpen, onClose, onLeaving }: EmergencyExitModalPr
               Your session is purged, anything Nenya saved on this device is erased, and you are redirected instantly.
               Nothing is kept for you to come back to, so if you want a copy of a coach conversation, download it
               before you leave.
-            </p>
-          </div>
-
-          <div 
-            className="rounded-lg p-3 sm:p-4 space-y-2 border"
-            style={{
-              background: `${NIENNA_WARM}08`,
-              borderColor: `${NIENNA_WARM}60`
-            }}
-          >
-            <p className="text-foreground text-xs">
-              <strong>Interface Disguise Feature:</strong>
-            </p>
-            <p className="text-xs leading-relaxed">
-              In the full version, this would completely close the app and require pre-authorization permissions to either open a browser or simulate a browser as a 'decoy' page. The app can be disguised to appear as something innocuous like a text messaging interface, word processing document, or notes app—whatever you've configured for your interface disguise mode.
             </p>
           </div>
 
@@ -233,7 +217,7 @@ export function EmergencyExitButton({
           color: '#FFFFFF', // white on the terracotta: at least 7:1 (WCAG AAA)
           borderColor: EMERGENCY_COLOR
         }}
-        aria-label="Emergency exit - Instant redirect to Wikipedia"
+        aria-label={`Emergency exit - Instant redirect to ${EXIT_PAGE_NAME}`}
       >
         <ArrowUpRight className={`${isHeader ? 'size-3' : 'size-4'} mr-1.5`} />
         Emergency Exit

@@ -43,6 +43,8 @@ const SCREEN_MODEL = import.meta.env?.VITE_SCREEN_MODEL === 'on';
 // November 24, 2026, the retirement of the early Venice character (docs/legal/README.md): Section 15's "Continuing on Venice" is now "No link to another chat", and the sentence in Section 17
 // about the links to Venice AI is gone. This is a material change, so the date moves whatever the switches, and everyone is asked to agree again; the outgoing text is archived in
 // docs/legal/archive/terms-and-privacy-until-2026-11-24.md. The cells-on date stays later than the base date, so it moved to November 25, 2026.
+// Later on November 24, 2026 (effective date unchanged, as in earlier same-day corrections; the owner may decide to move it): Section 18 names the new Emergency Exit destination, the Google home page
+// instead of a Wikipedia article (docs/safety-features-card.md); the outgoing text is archived in docs/legal/archive/terms-and-privacy-until-2026-11-24-b.md.
 const CELLS = import.meta.env?.VITE_CELL_ENABLED === 'on';
 export const LEGAL_EFFECTIVE_DATE = CELLS ? 'November 25, 2026' : 'November 24, 2026';
 
@@ -277,7 +279,7 @@ export const LEGAL_PARTS: LegalPart[] = [
         number: 18,
         heading: 'Links to other sites',
         paragraphs: [
-          'Nenya loads no images, fonts, scripts or other content from other sites, with one exception: before your first coach message, the coach demo loads Cloudflare’s check for automated traffic from challenges.cloudflare.com (Section 15). Everything else is served from nenya.biz. Donation links go to Fractured Atlas’s own pages, where donations are processed under its privacy policy; we never receive your payment details. The Emergency Exit button takes you to a page on Wikipedia (en.wikipedia.org); because it leaves from our site, Wikipedia can see that you came from nenya.biz, though not which page you were on, and its own policy applies. Once you follow a link to another site (such as GitHub), that site’s policy applies.',
+          'Nenya loads no images, fonts, scripts or other content from other sites, with one exception: before your first coach message, the coach demo loads Cloudflare’s check for automated traffic from challenges.cloudflare.com (Section 15). Everything else is served from nenya.biz. Donation links go to Fractured Atlas’s own pages, where donations are processed under its privacy policy; we never receive your payment details. The Emergency Exit button takes you to the Google home page (www.google.com), an ordinary page whose address does not mention Nenya; because it leaves from our site, Google can see that you came from nenya.biz, though not which page you were on, and its own policy applies. Once you follow a link to another site (such as GitHub), that site’s policy applies.',
         ],
       },
       {

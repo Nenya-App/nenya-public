@@ -5,6 +5,8 @@
 // Deterministic phrase matching, like safetyFlags.ts: best effort, never a
 // guarantee, and nothing about the person is sent anywhere to decide.
 
+import { checkConversation } from './safetyFlags.ts';
+
 export interface ModuleSet {
   /** Always included. */
   core: string;
@@ -100,6 +102,239 @@ const SUPPRESS: Record<string, string[]> = {
   harm_named_as_intended: ['empathize_before_asking', 'open_a_hard_conversation', 'ask_for_what_you_want', 'offer_to_play_the_other', 'reaction_as_information', 'reframe_gently', 'closure_check', 'rough_draft_first', 'two_intentions', 'name_behavior_neutrally', 'smallest_next_step'],
 };
 
+
+// ---- Coercion modules (2026-11-24; docs/coercion-modules-scope.md). NOT in TRIGGERS, MODULE_IDS or MODULE_GROUPS, and OFF unless switched on in code
+// (setCoercionModules, called only by the evaluation script for `--set coercion`, or the `coercion` option of selectModules). No environment variable
+// switches them on; production never calls either, so until the owner wires them in, nothing here changes what the coach receives. The module text is private.
+//   coercion_name_pattern  : a person describing being controlled by a partner (the latest message). Reflects the pattern in plain words.
+//   coercion_steadiness    : the same person, after they described it in an earlier message, now asking what to do or saying they feel stuck.
+//   coercion_own_behavior  : a person who says they control, scare, monitor or isolate a partner (anywhere in what they have said).
+// Rules (each is tested in tests/coercion-modules.test.mts):
+//   1. Stand-down. (Five more cases, 2026-11-24: a pet harmed, pregnancy with violence, leaving, escalation, a gun; see standDownMore.) None applies when a site guard or the distress path applies (checkConversation finds any flag, stop or soften, anywhere in the
+//      conversation), when the person says they are afraid, in danger or being hurt, when they say they hurt their partner, or when deep_fear_refer_out applies.
+//   2. Exclusive. At most one coercion module is chosen; when one applies it is the ONLY module returned (no lens, move or resource beside it), because
+//      the crisis lines stay in the distress path and the one resource wording is in the module text.
+//   3. Own behaviour wins. If the person says anywhere that they control, scare, monitor or isolate a partner, the module for being controlled never applies,
+//      even if they also describe being controlled (a person in a conflict may be both; the safe reading of what they said about themselves comes first).
+//   4. Steadiness needs two things: an earlier message described being controlled, and the latest message asks what to do or says they feel stuck.
+//      The same message cannot do both: the pattern is named first.
+//   5. Existing moves: offer_a_smaller_step and grieve_before_deciding win (the coercion modules stand down), because "not going further" and "a decision with
+//      fresh pain" are the owner's gentlest approved moves. Every other move, lens and resource is left out while a coercion module applies. The SUPPRESS hold
+//      carries over: with reserves or care_depleted, steadiness (a question that asks the person to act) stands down; with harm_named_as_intended it stands down
+//      too (the coach never reads a partner's intent). Naming the pattern and the own-behaviour module ask nothing of the person and stay.
+export type CoercionId = 'coercion_name_pattern' | 'coercion_steadiness' | 'coercion_own_behavior';
+export const COERCION_IDS: readonly CoercionId[] = ['coercion_name_pattern', 'coercion_steadiness', 'coercion_own_behavior'];
+/** For the closing phase, which group each would belong to (steadiness asks something, so it counts as a move). */
+export const COERCION_GROUPS: Record<CoercionId, ModuleGroup> = { coercion_name_pattern: 'lens', coercion_steadiness: 'move', coercion_own_behavior: 'lens' };
+
+let coercionOn = false;
+/** Switch the coercion modules on or off for this process. Production never calls this. */
+export function setCoercionModules(on: boolean): void {
+  coercionOn = on;
+}
+
+const PARTNER_WORDS = "(?:partner|wife|husband|girlfriend|boyfriend|spouse|fianc\\w+|ex)";
+const THEY = `(?:he|she|they|my ${PARTNER_WORDS})`;
+const HIM = `(?:him|her|them|my ${PARTNER_WORDS})`;
+const THEIR = `(?:his|her|their|my ${PARTNER_WORDS}'?s)`;
+const THINGS = "(?:phone|messages|texts|e-?mails?|location|whereabouts|accounts?|social media|browser history|bank (?:account|statements?)|spending|receipts|purchases|calls)";
+
+// The person says they control, scare, monitor or isolate a partner. First person, and a partner (or he, she, they after a partner was named) as the one affected.
+// [pattern, negatable]: a negatable pattern stops counting when the same clause says "never", "don't", "not" before it ("I never check her phone").
+const OWN: Array<[RegExp, boolean]> = [
+  [new RegExp(`\\bi (?:(?:always|often|sometimes|secretly|still|keep|kept|have been|'ve been|just) )*(?:check(?:ed|ing)?|read|reading|go(?:ing)? through|went through|track(?:ed|ing)?|monitor(?:ed|ing)?|spy(?:ing)? on|snoop(?:ed|ing)? (?:on|through)) (?:on )?${THEIR} (?:\\w+ ){0,2}?${THINGS}`), true],
+  [new RegExp(`\\bi (?:(?:always|often|sometimes|secretly|still|keep|kept|have been|'ve been|just) )*(?:check(?:ed|ing)?|track(?:ed|ing)?|monitor(?:ed|ing)?|spy(?:ing)? on) (?:on )?${HIM}\\b(?! (?:out|in)\\b)`), true],
+  [new RegExp(`\\bi (?:(?:don'?t|do not|won'?t|will not|never|refuse to|wouldn'?t) (?:let|allow)|forbid|forbade|stop(?:ped)?|prevent(?:ed)?|discourage(?:d)?|block(?:ed)?) ${HIM} (?:from )?(?:\\w+ ){0,2}?(?:see(?:ing)?|talk(?:ing)?|go(?:ing)? out|spend(?:ing)?|work(?:ing)?|leav(?:e|ing)|visit(?:ing)?|call(?:ing)?|us(?:e|ing)|hav(?:e|ing)|speak(?:ing)?|meet(?:ing)?)`), false],
+  [new RegExp(`\\bi (?:make|made|pressure(?:d)?|guilt(?:s|ed)?|push(?:ed)?|force(?:d)?|get|got) ${HIM} (?:to )?(?:stay|stop|cancel|skip|give up|quit|come home|answer|report|check in|ask (?:me )?(?:for )?permission|ask me)`), false],
+  [new RegExp(`\\bi (?:keep|kept) (?:tabs|track) on (?:where )?${HIM}`), true],
+  [new RegExp(`\\bi (?:don'?t|do not) like (?:it when |it if )?${HIM} (?:seeing|talking to|going out|spending time|hanging out|texting|having friends)`), false],
+  [new RegExp(`\\bi (?:make|made) ${HIM} (?:feel )?(?:guilty|afraid|scared|small|stupid|anxious|nervous|worthless)`), false],
+  [new RegExp(`\\bi (?:\\w+ ){0,2}?(?:scare|scares|scared|frighten(?:ed|s)?|intimidate(?:d|s)?|threaten(?:ed|s)?) ${HIM}`), true],
+  [new RegExp(`\\bi (?:\\w+ ){0,2}?(?:yell|shout|scream|snap|rage)(?:ed|s)? at ${HIM}`), true],
+  [new RegExp(`\\bi (?:control|controlled|decide|decided|hold|held|handle|handled|manage|managed|take|took|keep|kept) (?:all )?(?:of )?(?:${THEIR}|the) (?:money|finances|bank|paycheck|pay|cards?|car keys|keys|phone|passport)`), true],
+  [new RegExp(`\\bi (?:control|controlled|isolate|isolated) ${HIM}`), true],
+  [new RegExp(`\\bi (?:give|gave) ${HIM} the silent treatment|\\bi (?:punish|punished) ${HIM} (?:with|by)`), false],
+  [new RegExp(`\\b${THEY} (?:says|said|tells|told|calls|called|thinks|thought|accuses|accused) (?:me )?(?:that )?i(?:'m| am| was) (?:being )?(?:so |too |very |really )?(?:controlling|possessive|scary|intimidating|domineering)`), false],
+  [new RegExp(`\\bi(?:'m| am) (?:so |too |very |really )?(?:controlling|possessive|domineering) (?:with|of|toward|towards|about|when it comes to) ${HIM}`), true],
+  [new RegExp(`\\bi (?:expect|want|need|demand|insist) (?:to know where|${HIM} to (?:check in|ask (?:me )?permission|report|answer (?:right away|immediately|every)|tell me (?:where|who|everything)))`), true],
+];
+
+// Describing being controlled: someone close does it to the person. Third person about a partner (or he/she/they), or "I have to ask permission".
+const CONTROLLED: RegExp[] = [
+  new RegExp(`\\b${THEY} (?:\\w+ ){0,2}?(?:checks?|reads?|goes? through|monitors?|tracks?|questions?|interrogates?|audits?|inspects?) (?:\\w+ ){0,2}?(?:my )(?:\\w+ ){0,2}?${THINGS}|\\b${THEY} (?:\\w+ ){0,2}?(?:checks?|monitors?|tracks?) (?:up )?on (?:me|where i)\\b`),
+  new RegExp(`\\b${THEY} (?:\\w+ ){0,2}?(?:decides?|chooses?|tells? me|controls?|dictates?|picks?) (?:\\w+ ){0,1}?(?:what|who|when|where|how) (?:i|to) (?:\\w+ ){0,3}?(?:wear|eat|see|spend|go|work|talk|text|call|do|can)\\b`),
+  new RegExp(`\\b${THEY} (?:\\w+ ){0,2}?(?:gets?|becomes?|goes?|acts?|turns?) (?:\\w+ ){0,1}?(?:angry|upset|cold|silent|sulky|jealous|furious|distant|moody|mean) (?:when|if|whenever) i (?:\\w+ ){0,2}?(?:see|spend|talk|go|text|call|visit|meet|hang|work|make|buy|spent|saw|went|said)`),
+  new RegExp(`\\b${THEY} (?:\\w+ ){0,2}?(?:criticizes?|criticises?|belittles?|humiliates?|mocks?|ridicules?|puts? me down|corrects? me|talks? down to me) (?:\\w+ ){0,2}?(?:me )?(?:in front of|constantly|all the time|every|whenever|about everything)`),
+  new RegExp(`\\b${THEY} (?:gives?|gave|gives me|uses?) (?:me )?the silent treatment|\\b${THEY} (?:\\w+ ){0,2}?(?:won'?t|will not|refuses? to) (?:speak|talk) to me (?:for|until|when)`),
+  new RegExp(`\\b${THEY} (?:\\w+ ){0,2}?(?:makes?|made) me (?:\\w+ ){0,1}?(?:feel (?:guilty|small|stupid|crazy|worthless|like a child)|ask (?:for )?(?:permission|money)|account for|explain where|report)`),
+  /\bi (?:have to|need to|must|always have to) (?:ask (?:him|her|them|my \w+)(?: for)? (?:permission|money|before)|check in (?:with|every)|account for (?:where|every|my)|explain (?:where|who|every|why i)|report (?:to|where|back))/,
+  /\bi(?:'m| am) (?:not|never) allowed to\b|\bi(?:'m| am) not allowed\b/,
+  new RegExp(`\\b${THEY} (?:\\w+ ){0,2}?(?:wants?|expects?|demands?|insists?(?: on)?) (?:\\w+ ){0,1}?(?:to know|that i (?:answer|check in|report|tell)|me to (?:answer|check in|report|tell him|tell her|tell them|ask permission|stop seeing|cut off))`),
+  new RegExp(`\\b${THEY} (?:\\w+ ){0,2}?(?:controls?|holds?|manages?|handles?) (?:all |all of )?(?:the |our |my )?(?:money|finances|bank|accounts|paycheck|pay)\\b`),
+  new RegExp(`\\b${THEY}(?:'s| is| are|'re) (?:so |very |really |extremely |too )?(?:controlling|possessive|domineering)\\b`),
+  /\bi can'?t (?:see|talk to|spend time with|call|visit|text) (?:my )?(?:friends|family|sister|brother|mom|mum|mother|father|dad|parents|coworkers) without\b/,
+];
+
+// "What do I do?" or "I feel stuck", in the latest message.
+const ASKS_OR_STUCK: RegExp[] = [
+  /\bwhat (?:do|can|should|could|would) i do\b|\bwhat can i do (?:about|with) (?:it|this|him|her|them)\b/,
+  /\bhow (?:do|can|should|could) i (?:cope|handle|deal with|respond|react|manage|stay (?:calm|steady|strong)|keep (?:going|my head)|get through)\b/,
+  /\bi (?:don'?t|do not) know what to do\b|\bi (?:just )?(?:feel|am|'m|feel so|am so|'m so|feel really|feel completely|feel totally) (?:so |really |completely |totally |quite )?(?:stuck|powerless|helpless|lost)\b/,
+  /\bi (?:can'?t|cannot) (?:keep|go on) (?:doing|living) (?:like )?this\b/,
+];
+
+// The net under the guards: a person's own fear or danger, someone hurting them, or them hurting a partner. Any of these anywhere in the conversation, and no coercion module applies.
+const STAND_DOWN: RegExp[] = [
+  /\bi(?:'m| am| have been|'ve been| feel| felt| get| got)? (?:so |really |very |too |quite |getting |becoming |often |always |truly )*(?:afraid|scared|frightened|terrified|fearful|petrified)\b/,
+  /\b(?:afraid|scared|frightened|terrified) (?:for|of what|that (?:he|she|they)|to (?:go|be|say|tell|leave|come|speak|ask|talk))\b/,
+  /\b(?:in danger|not safe|unsafe|my safety|my life|for my life|kill me|kill myself|killing me|hurt me|hurts me|hurting me|hit me|hits me|hitting me|choke[sd]? me|choking me|strangle[sd]? me|push(?:es|ed)? me|shove[sd]? me|grab(?:s|bed)? me|threaten(?:s|ed|ing)? (?:me|to)|follow(?:s|ed|ing) me|stalk\w* me|locks? me|locked me|bruise\w*|injur(?:y|ed|ies)|weapon|a gun|a knife|911|police|restraining order|panic)\b/,
+  new RegExp(`\\bi (?:\\w+ ){0,2}?(?:hit|slap(?:ped)?|punch(?:ed)?|push(?:ed)?|shove[d]?|choke[d]?|strangle[d]?|kick(?:ed)?|hurt|beat|beaten|grab(?:bed)?|throw|threw|smash(?:ed)?|break|broke) ${HIM}\\b`),
+  /\bsuicid\w*|\bself[- ]?harm\b|\bkill(?:ing)? (?:him|her|them|myself)\b|\bhurt(?:ing)? (?:him|her|them|myself)\b/,
+];
+
+const hasMatch = (res: RegExp[], text: string): boolean => res.some((re) => re.test(text));
+const NEGATE = /\b(?:never|don'?t|do not|didn'?t|did not|not|no longer|stopped|used to|wouldn'?t|haven'?t|have not|can'?t|cannot|won'?t|without)\b/;
+/** A negatable own-behaviour pattern does not count when the words before it, in the same clause, hold a negation ("I never check her phone"). */
+function ownBehavior(text: string): boolean {
+  for (const [re, negatable] of OWN) {
+    const g = new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g');
+    for (const m of text.matchAll(g)) {
+      if (!negatable) return true;
+      const before = text.slice(0, m.index ?? 0).split(/[.?!;,\n]|\b(?:but|and|so|though|although)\b/).pop() ?? '';
+      if (!NEGATE.test(before)) return true;
+    }
+  }
+  return false;
+}
+
+// ---- Five more stand-down cases (owner, 2026-11-24), from a practitioners' risk-and-danger guide (ideas only; no wording is taken from it). When any of these appears anywhere in the
+// conversation, NO coercion module applies, own behaviour included, and the ordinary coach (with its guards) answers. The reason own behaviour stands down too: each of the five is about a
+// partner being harmed or threatened (an animal, a pregnant partner, a gun in the home), about leaving (the time around leaving can be the most dangerous, and a phrase match cannot judge it),
+// or about things getting worse; a module written for control without danger is the wrong one for any of them, and a person who says they control a partner AND mentions one of these gets the
+// ordinary coach. Phrase patterns only; English only; best effort; they can miss, and they can misfire toward standing down, which is the safe direction. A plain negation in the match or in the
+// three words before it, in the same clause ("I never...", "no guns", "not pregnant"), does not count.
+//   1. harm to a pet or animal by a partner      2. pregnancy with violence, fear or control      3. leaving, separation, a partner who will not accept it, estrangement, reunion with control
+//   4. escalation, in a conversation that describes control      5. a gun or firearm that a partner has, or that is in the home
+const PET = "(?:dogs?|cats?|pets?|puppy|puppies|kittens?|animals|horses?|birds?|rabbits?|ponies|pony)\\b(?! (?:park|food|walker|show|bed|treats?|sitter))";
+const GUN = "(?:guns?|firearms?|pistols?|handguns?|rifles?|shotguns?|revolvers?)\\b";
+const NOT_TOY = "(?<!glue |water |toy |nail |staple |spray |paint |heat |nerf |caulk |grease |hot )";
+const LOCAL_NEGATE = /\b(?:never|no|not|none|nobody|nothing|don'?t|doesn'?t|didn'?t|do not|does not|did not|no longer|haven'?t|hasn'?t|isn'?t|aren'?t|wasn'?t|wouldn'?t|without)\b/;
+const VERB_HARM = "(?:hurt|hurts|hurting|killed|kills|kill|kicked|kicks|kick|hit|hits|hitting|beat|beats|beating|choked|chokes|strangled|abuses?|abused|poisoned|stabbed|shot|harmed|harms|injured|slapped|punched|starved|tortured|torments?|threw|throws|drowned|got rid of)";
+const SEP_TARGET = `(?:him|her|them|my ${PARTNER_WORDS}|the relationship|my relationship|my marriage|this relationship|this marriage)`;
+const AFTER_TARGET = "(?! (?:a|an|the|my|some|it|his|her|their|with|alone|at)\\b)";
+const NOT_JOB = "(?! (?:my |the |this |our )?(?:job|work|school|college|class|meeting|party|company|team|church|town|city|office|group|club|shift|early|soon|tonight|today|tomorrow)\\b)";
+
+/** [pattern, negatable]: a negatable pattern does not count when the match, or the three words before it in the same clause, hold a negation. */
+const MORE_STAND_DOWN: Array<[RegExp, boolean]> = [
+  // 1. a partner harms or threatens a pet or animal
+  [new RegExp(`\\b${THEY} (?:\\w+ ){0,2}?${VERB_HARM} (?:\\w+ ){0,1}?(?:(?:my|our|the|her|his|their) )?(?:\\w+ ){0,1}?${PET}`), true],
+  [new RegExp(`\\bthreaten(?:s|ed|ing)? (?:to (?:\\w+ ){1,3})?(?:my|our) (?:\\w+ ){0,1}?${PET}`), true],
+  [new RegExp(`\\b(?:my|our) (?:\\w+ ){0,1}?${PET} (?:was|got|has been|were|is being) (?:\\w+ ){0,1}?(?:hurt|kicked|killed|hit|beaten|poisoned|injured|abused) by ${HIM}`), true],
+  // 3. leaving, left, planning, will not accept, after the breakup, estranged
+  [new RegExp(`\\bi (?:(?:have|'ve|already|just|finally|recently|then) )*(?:left|walked out on|moved out on|separated from|broke up with|split up with|divorced|ended things with|ended it with) ${SEP_TARGET}\\b${AFTER_TARGET}`), true],
+  [new RegExp(`\\bi(?:'m| am| was| will be)? (?:\\w+ ){0,2}?(?:leaving|going to leave|about to leave|planning to leave|thinking (?:about|of) leaving|getting ready to leave|ready to leave|trying to leave|working up to leaving) ${SEP_TARGET}\\b${AFTER_TARGET}`), true],
+  [new RegExp(`\\bi(?:'m| am)? (?:really |just |so |finally |secretly |slowly |quietly )*(?:want(?:ed)?|need(?:ed)?|plan(?:ning|ned)?|trying|thinking|decided|ready|going|hoping|wish|'d like|would like|have to|got to|gotta|about) (?:to |about |of )?(?:leave|leaving|get out|get away)\\b${NOT_JOB}(?! (?:the |this )?(?:house|room|store|shop|gym)\\b)`), true],
+  [/\bi(?:'m| am)? (?:\w+ ){0,2}?planning (?:my|an?|the) (?:escape|exit|leaving)\b/, true],
+  [new RegExp(`\\bif i (?:ever |do |try to |tried to |were to |did )?leave(?:s)?\\b${NOT_JOB}(?! (?:early|the (?:house|room|office)))`), true],
+  [new RegExp(`\\bi (?:told|have told|'ve told) ${HIM} (?:that )?(?:i(?:'m| am| want| wanted| need| will|'ll)(?: to)? |it(?:'s| is| was) )(?:\\w+ ){0,1}?(?:leav\\w+|leave|over|done|finished|ending|breaking up|a break|separat\\w+|divorc\\w+)`), true],
+  [new RegExp(`\\b(?:since|after|when|once) i (?:told|tell|said|say) ${HIM} (?:that )?(?:i(?:'m| am| was| want| wanted| will|'ll)|it(?:'s| is| was)) (?:\\w+ ){0,2}?(?:leav\\w+|over|done|finished|ending|break\\w*|separat\\w+|divorc\\w+)`), true],
+  [new RegExp(`\\b${THEY} (?:won'?t|will not|refuses? to|can'?t|cannot|doesn'?t|does not|didn'?t|did not|isn'?t|is not|wouldn'?t|would not) (?:\\w+ ){0,2}?(?:accept|take|believe|understand|admit|get|face|handle) (?:that |it'?s |it is |the |this |no |i |we )?(?:\\w+ ){0,2}?(?:over|ended|done|finished|break-?up|divorce|separat\\w+|no for an answer|leaving|left)`), false],
+  [new RegExp(`\\b${THEY} (?:won'?t|will not|can'?t|cannot|refuses? to|wouldn'?t) (?:\\w+ )?let (?:go|me go|it go|this go)\\b`), false],
+  [new RegExp(`\\b(?:after|since|ever since|following) (?:the |our |we |i |my )?(?:break-?up|broke up|split|separat\\w+|divorce\\w*|left ${HIM})\\b[^.?!]{0,50}?\\b${THEY} (?:\\w+ ){0,1}?(?:keeps?|kept|still|won'?t|continues?|started|calls|texts|shows|follows|comes|appears|watches|harass\\w*|stalk\\w*|contact\\w*|bombard\\w*)`), true],
+  [new RegExp(`\\b(?:my )?estranged ${PARTNER_WORDS}\\b|\\bestranged from (?:my )?${PARTNER_WORDS}\\b`), true],
+  // 3b. the partner is the one leaving or has left (the same time of risk)
+  [new RegExp(`\\b${THEY}(?:'s| is| are|'re| has| have|'ve)? (?:\\w+ ){0,1}?(?:leaving|left|walked out on|abandoned|dumped|divorcing|breaking up with|separating from) (?:me|us)\\b${AFTER_TARGET}`), true],
+  [new RegExp(`\\b${THEY} (?:\\w+ ){0,1}?(?:moved out|filed for (?:a )?(?:divorce|separation)|wants? (?:a )?(?:divorce|separation|to (?:leave|break up|separate|split|end (?:it|things|this)))|asked for (?:a )?(?:divorce|separation)|is (?:going to )?leave|is moving out|ended (?:it|things|the relationship)|broke up with me|is divorcing)`), true],
+  // 5. a gun or firearm a partner has, or that is in the home
+  [new RegExp(`\\b${THEY} (?:\\w+ ){0,2}?(?:has|have|owns?|keeps?|kept|carries|carried|bought|got|collects?|stores?|sleeps? with|brought home|pulled|pointed|showed|waved|cleans?|hid|hides|hidden) (?:\\w+ ){0,3}?${NOT_TOY}${GUN}`), true],
+  [new RegExp(`\\b(?:there(?:'s| is| are)|we have|we keep|we own|i found|there were) (?:\\w+ ){0,2}?${NOT_TOY}${GUN}s? (?:in|at|around|under|inside) (?:the|our|his|her|my|their) (?:house|home|apartment|car|room|bedroom|truck|closet|drawer|safe)`), true],
+  [new RegExp(`\\b${NOT_TOY}${GUN}s? (?:in|at) (?:the|our|his|her|my|their) (?:house|home|apartment|car|truck|bedroom|room)\\b`), true],
+  [new RegExp(`\\baccess to (?:a |the |his |her )?${NOT_TOY}${GUN}`), true],
+  [new RegExp(`\\bthreaten(?:s|ed|ing)? (?:me |us )?with (?:a |his |her |the )?(?:${GUN}|knife|weapon)`), true],
+];
+
+const REUNION = /\b(?:keep|kept|always|have been|'ve been|are|were) (?:\w+ ){0,1}?(?:breaking up|splitting up|separating|going back and forth|getting back together|back and forth)\b|\bon[- ]again,? off[- ]again\b|\b(?:break|broke|split)\w* up and (?:get|got|getting|going|go) back\b|\bback together (?:again and again|over and over)\b/;
+const PREGNANT = /\b(?:pregnan\w+|expecting (?:a |our |his |her )?(?:baby|child)|carrying (?:his|her|our) (?:child|baby)|with child)\b/;
+const NOT_PREGNANT = /\b(?:not|never|isn'?t|aren'?t|wasn'?t|no longer|can'?t be) (?:\w+ )?(?:pregnan\w+)/g;
+const PARTNER_PRESENT = /\b(?:he|she|they|him|her|them|partner|husband|wife|boyfriend|girlfriend|spouse|ex|fianc\w+)\b/;
+const HARM_OR_FEAR = /\b(?:hit|hits|hitting|hurt|hurts|hurting|scare[sd]?|scaring|frighten\w*|threat\w*|push\w*|shov\w*|grab\w*|slap\w*|punch\w*|kick\w*|chok\w*|violen\w*|abus\w*|controll\w*|yell\w*|shout\w*|scream\w*|afraid|fear\w*|won'?t let|not allowed|checks my|monitors my|tracks my)\b/;
+const ESCALATION: RegExp[] = [
+  new RegExp(`\\b(?:it(?:'s| is| has| keeps| got| gets)?|things(?:'re| are| have| keep)?|${THEY}(?:'s| is| has| keeps| got| gets| are|'re)?|(?:the )?(?:situation|control|yelling|fighting|arguments?|anger|jealousy|violence|behaviou?r)(?:'s| is| has| keeps)?) (?:\\w+ ){0,2}?(?:getting|gotten|gets|got|become|becoming|becomes|growing|grown|gone) (?:a lot |much |even |so |way |far |really |just |progressively )?(?:worse|more and more|more (?:controlling|angry|jealous|aggressive|possessive|violent|intense|demanding|frequent|extreme|unpredictable))`),
+  /\bworse than (?:before|ever|it (?:was|used to be)|last (?:year|month|time))\b|\bworse and worse\b|\bmore and more (?:often|frequent\w*|controlling|jealous|angry|aggressive|possessive)\b|\bmore often than (?:before|it used to)\b|\bescalat\w+/,
+  /\blately (?:he|she|they)(?:'s| is| has been| seems| are|'re)? (?:\w+ ){0,2}?much more\b|\b(?:much|a lot) (?:more|worse) (?:\w+ )?(?:lately|recently|these days|than (?:before|it used to be))\b/,
+  /\bworse (?:every|each) (?:day|week|month|year|time)\b|\bgets? worse (?:every|each) time\b/,
+];
+
+function matchedNotNegated(text: string, re: RegExp, negatable: boolean): boolean {
+  const g = new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g');
+  for (const m of text.matchAll(g)) {
+    if (!negatable) return true;
+    if (LOCAL_NEGATE.test(m[0])) continue;
+    const before = (text.slice(0, m.index ?? 0).split(/[.?!;,\n]|\b(?:but|and|so|though|although)\b/).pop() ?? '').trim().split(/\s+/).slice(-3).join(' ');
+    if (!LOCAL_NEGATE.test(before)) return true;
+  }
+  return false;
+}
+
+/** True when the conversation holds any of the five more stand-down cases (see above): an animal harmed by a partner, pregnancy with violence, fear or control, leaving or separation (or a partner
+ * who will not accept it), escalation in a conversation about control, or a gun. Pure phrase matching on the folded whole conversation. */
+export function standDownMore(whole: string): boolean {
+  if (MORE_STAND_DOWN.some(([re, neg]) => matchedNotNegated(whole, re, neg))) return true;
+  const controlled = hasMatch(CONTROLLED, whole);
+  // 2. pregnancy together with violence, fear or control (the partner's, or the person's own over a pregnant partner)
+  const preg = whole.replace(NOT_PREGNANT, ' ');
+  if (PREGNANT.test(preg) && PARTNER_PRESENT.test(preg) && (HARM_OR_FEAR.test(preg) || controlled || ownBehavior(preg))) return true;
+  // 3. reunion patterns, with control
+  if (REUNION.test(whole) && (controlled || ownBehavior(whole) || HARM_OR_FEAR.test(whole))) return true;
+  // 4. escalation, about the other person or the situation (not the person's own admitted behaviour), in a conversation that describes control
+  if (controlled) {
+    for (const s of whole.split(/(?<=[.?!\n])\s*/)) {
+      if (ESCALATION.some((re) => re.test(s)) && !ownBehavior(s) && !/\bi(?:'m| am)? (?:getting|gotten|got) worse\b/.test(s)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Which one coercion module fits this conversation, or null. `hit` is the set of ordinary modules whose triggers matched (before any are left out), used for the
+ * precedence rules above. Pure and deterministic; nothing is sent anywhere.
+ */
+export function coercionModuleFor(userTexts: string[], hit: ReadonlySet<string> = new Set()): CoercionId | null {
+  if (!userTexts.length) return null;
+  const whole = fold(userTexts.join('\n'));
+  const latest = fold(userTexts[userTexts.length - 1]);
+  const earlier = fold(userTexts.slice(0, -1).join('\n'));
+  // 1. Stand-down: a guard, the distress path, the person's own fear or danger, someone hurting, or a skilled-person referral.
+  if (checkConversation(userTexts) || hasMatch(STAND_DOWN, whole) || standDownMore(whole) || hit.has('deep_fear_refer_out')) return null;
+  // 5. The two gentlest approved moves win.
+  if (hit.has('offer_a_smaller_step') || hit.has('grieve_before_deciding')) return null;
+  // 3. What the person says about themselves comes first.
+  if (ownBehavior(whole)) return 'coercion_own_behavior';
+  // 4. Steadiness: described earlier, asking or stuck now; not while depleted, and never reading a partner's intent.
+  const holds = hit.has('reserves') || hit.has('care_depleted') || hit.has('harm_named_as_intended');
+  if (!holds && hasMatch(CONTROLLED, earlier) && hasMatch(ASKS_OR_STUCK, latest)) return 'coercion_steadiness';
+  if (hasMatch(CONTROLLED, latest)) return 'coercion_name_pattern';
+  return null;
+}
+
+// ---- Narrow move wins (owner-approved 2026-11-24; docs/move-overlap-2026-11-24.md). When one of the nine v0.3 moves fires, the older, broader modules below are left out, because the
+// move's own text asks for the opposite of what they ask for (the review of the 36 moves cases showed the extras in the same selection pulling the reply in two directions). Deliberately small:
+// only modules the review showed to contradict the move are listed; nothing from the safety or resource groups, no other v0.3 move, and no lens that a guard reads is ever a target (a test
+// proves it). Applied to the final list, after the lens holds (SUPPRESS), offer_a_smaller_step and the cap, so a freed slot is NOT filled by a module the cap had left out. A message that fires
+// two moves applies both rows (the union of what each removes). The coercion modules return before this runs and are not touched.
+export const MOVE_PRECEDENCE: Record<string, { drops: readonly string[]; why: string }> = {
+  rough_draft_first: { drops: ['open_a_hard_conversation', 'offer_to_play_the_other'], why: 'The move is to hear the rough, unskilled version first; a sample opening line and a rehearsal both ask for the finished version.' },
+  two_intentions: { drops: ['open_a_hard_conversation'], why: 'The move asks which of two aims they want and says nothing is drafted until they choose; a sample opening line drafts before they choose.' },
+  grieve_before_deciding: { drops: ['field_cost', 'guess_then_check'], why: 'The move gives room to feel before any decision; asking what the decision costs others, or guessing a need, is analysis for someone who is raw.' },
+  permission_giving: { drops: ['guess_then_check'], why: 'The move says plainly that it is allowed, with no "but"; a guess at a need after it turns the permission into an analysis.' },
+  // The other five add no extra that contradicts them in the review, so they drop nothing (offer_a_smaller_step has its own, stronger rule: it removes every other move).
+  offer_a_smaller_step: { drops: [], why: 'Has its own rule: it removes every other move.' },
+  name_behavior_neutrally: { drops: [], why: 'The review lists open_a_hard_conversation beside it once (case 1) but does not call it contradictory; kept until the owner decides.' },
+  protective_not_punitive: { drops: [], why: 'The review lists ask_for_what_you_want beside it twice but does not call it contradictory; kept until the owner decides.' },
+  smallest_next_step: { drops: [], why: 'Nothing extra was selected with it.' },
+  ask_one_question: { drops: [], why: 'Fires only when nothing else matches.' },
+};
+
 const CAPS: Record<ModuleGroup, number> = { safety: 1, lens: 2, move: 3, resource: 1 };
 
 export const MODULE_IDS = TRIGGERS.map(([id]) => id);
@@ -109,7 +344,7 @@ const wordCount = (s: string): number => (s.match(/[\p{L}\p{N}]+(?:['-][\p{L}\p{
 const fold = (s: string): string => s.normalize('NFKC').toLowerCase().replace(/[‘’]/g, "'");
 
 /** Ids of the modules that fit this conversation, in order of attention (safety, lenses, moves, resources). `exclude` leaves whole groups out. */
-export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup[] = []): string[] {
+export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup[] = [], opts: { coercion?: boolean } = {}): string[] {
   // Safety and lens modules look at everything the person has said (what is blocking them stays true). The coaching moves and
   // resources look only at the latest message: what they ask for or react to now. Without this, a "how do I say..." from
   // two turns ago kept the "give them words" module on, and the coach offered the same words again.
@@ -119,6 +354,11 @@ export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup
   for (const [id, group, patterns] of TRIGGERS) {
     const text = group === 'safety' || group === 'lens' ? whole : latest;
     if (patterns.some((p) => p.test(text))) hit.add(id);
+  }
+  // The coercion modules (off unless switched on; see above) are exclusive: when one applies it is the only module, and every other trigger is left out.
+  if ((opts.coercion ?? coercionOn) && max >= 1) {
+    const c = coercionModuleFor(userTexts, hit);
+    if (c && !exclude.includes(COERCION_GROUPS[c])) return [c];
   }
   // Leave out moves that pull against a lens that applies.
   for (const lens of Object.keys(SUPPRESS)) if (hit.has(lens)) SUPPRESS[lens].forEach((id) => hit.delete(id));
@@ -134,7 +374,10 @@ export function selectModules(userTexts: string[], max = 3, exclude: ModuleGroup
     used[group]++;
     if (out.length >= max) break;
   }
-  return out;
+  // A narrower move wins over the broader modules that contradict it (MOVE_PRECEDENCE above). The moves that fired are read from `hit` (before the cap), and the dropped ids are taken out of the
+  // result AFTER the cap, so nothing is backfilled: the result is exactly what the older rules chose, minus the contradicting extras, and a module the cap had already left out does not appear.
+  const dropped = new Set(Object.keys(MOVE_PRECEDENCE).filter((id) => hit.has(id)).flatMap((id) => MOVE_PRECEDENCE[id].drops));
+  return dropped.size ? out.filter((id) => !dropped.has(id)) : out;
 }
 
 /** Core plus the chosen modules, within a character budget. */

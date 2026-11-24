@@ -22,7 +22,7 @@
 //   7. Read        what the conversation needs: distress tier, hostility, stance, notes, values/contempt, screening bands, question kind.
 //   8. Site answers  questions about Nenya (aboutNenya.ts) and out-of-lane requests (laneGuard.ts) are answered by the site, not the model.
 //   9. Generate    one model call (encrypted route or plain), retried once if it repeats an earlier reply.
-//  10. Guards      in this order, each "ask once more, then repair": infrastructure, persona, names, closing, practice arc, mirror, care.
+//  10. Guards      in this order, each "ask once more, then repair": infrastructure, persona, names, closing, practice arc, mirror, care; then the address guard (COACH_ADDRESS_GUARD, repair only).
 //  11. Site text   values challenge, apology strip and critique thanks, length trim, distress sentence, answer-first, report-text distress.
 //  12. After       screening shadow count, learning-card offer, counts.
 //  13. Respond     new ticket over the history, proofs of the site's edits, flags.
@@ -74,6 +74,7 @@ import { critiqueTarget, detectHostility, hostileNote, stripApologies, withCriti
 import { termsFromOurKey } from '../../src/lib/termsReceipt.ts';
 import { CHALLENGE_NOTE, MIRROR_NOTE, VALUES_RULE, challengeFor, conversationChallenge, mirrorRemovals, mirrors, valuesOn, withoutMirroring } from '../../src/lib/valuesRule.ts';
 import { laneFor, laneReply } from '../../src/lib/laneGuard.ts';
+import { addressGuardOn, repairAddresses } from '../../src/lib/addressGuard.ts';
 import { ARC_CLOSE, ARC_CORE, ARC_INVITE, ARC_MENU_NOTE, ARC_NOTE, WORDS_ONLY_NOTE, WORDS_POINTER, guardedProblems, repairArc, arcTurnLine, gapText, isStuck, isWordsOnly, namedParts, practiceArcOn } from '../../src/lib/practiceArc.ts';
 import { effectiveStance, layerBlock, parseStance, stanceLayers } from '../../src/lib/stances.ts';
 import { detectSensitiveTopics } from '../../src/lib/sensitiveTopics.ts';
@@ -1452,6 +1453,18 @@ async function handle(req: Request, netlify: { ip?: string; geo?: HostGeo } | un
       if (!('failure' in again) && again.reply) reply = again.reply;
     }
     if (careProblems(reply).length) { const cleaned = withoutCareProblems(reply); reply = cleaned.reply; careRemovedN = cleaned.removed; tally('coach.guard.care.repaired'); }
+  }
+  // The address guard (COACH_ADDRESS_GUARD=on; src/lib/addressGuard.ts): a web address that is not one the site itself uses (the coach writes findahelpline.com wrong from memory) is swapped for
+  // the correct helpline address when its sentence is about finding help, or taken out. Repaired directly: asking again is a new draw, and the repair is exact. Runs on the finished model text
+  // (after the closing, summary and boundary guards, so whatever they drew is checked) and before the site's own distress sentence is added, which is never touched. Counts only; the reply text is never logged.
+  if (addressGuardOn() && !siteReplaced) {
+    const fixed = repairAddresses(reply);
+    if (fixed.changed) {
+      reply = fixed.reply;
+      tally('coach.guard.address');
+      for (let i = 0; i < fixed.swapped; i++) tally('coach.guard.address.swapped');
+      for (let i = 0; i < fixed.removed; i++) tally('coach.guard.address.removed');
+    }
   }
   let siteChallenged = false;
   // Justifying or denying mass violence, or calling for a group to be removed (COACH_VALUES=on): make sure a plain statement of disagreement is there (src/lib/valuesRule.ts).

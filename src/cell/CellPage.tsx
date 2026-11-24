@@ -9,6 +9,7 @@ import { CellClient, type ShareState } from '../lib/cellClient';
 import { normalizeCode, type Opened } from '../lib/cellCrypto';
 import type { SafetyFlag } from '../lib/safetyFlags';
 import { termsAcceptedFor } from '../lib/deviceMemory';
+import { MinimalFooter } from '../app/components/MinimalFooter';
 import { LEGAL_EFFECTIVE_DATE } from '../lib/legalDocument';
 import { MODES } from '../lib/privacyModes';
 
@@ -304,7 +305,7 @@ export default function CellPage() {
                           ? 'You paused the cell. Take the time you need.'
                           : 'The other person paused the cell.'}
                     </p>
-                    {paused.flag && paused.text && <FlagNotice flag={paused.flag} flaggedMessage={paused.text} />}
+                    {paused.flag && paused.text && <FlagNotice flag={paused.flag} flaggedMessage={paused.text} safetyCard={false} />}
                     <Button variant="outline" className="gap-2" onClick={resume}><Play className="size-4" /> Continue the conversation</Button>
                   </Card>
                 )}
@@ -375,6 +376,14 @@ export default function CellPage() {
             </Card>
           )}
         </main>
+        {/* Forget me erases only what this device keeps (the cell keeps nothing here), then reloads the page. A reload closes an open cell for both people (the pagehide handler above), so the page says so beside the link while one is open. */}
+        <MinimalFooter
+          extra={
+            (stage === 'waiting' || stage === 'compare' || stage === 'talk') && (
+              <p>Forget me erases only what this device has saved, not your cell. But it reloads this page, and that closes the cell you have open, for both of you.</p>
+            )
+          }
+        />
       </div>
     </>
   );
