@@ -63,7 +63,7 @@ export function safetyCardSections(saveAndReturnOn: boolean): CardSection[] {
       parts: [
         {
           label: 'Where it is.',
-          text: 'A link at the bottom of most pages, and a button under “Remember on this device” in Accessibility Settings.',
+          text: 'A link at the bottom of every page, and a button under “Remember on this device” in Accessibility Settings.',
         },
         {
           label: 'What it does.',
@@ -125,7 +125,7 @@ export function safetyCardText(saveAndReturnOn = false): string {
 export const CHANGES_FROM_APPROVED: { from: string; to: string; why: string; forced?: boolean }[] = [
   { from: 'It replaces your page with a Wikipedia page.', to: `It replaces your page with ${EXIT_PAGE_NAME}.`, why: 'The owner decided the exit goes to the Google home page (2026-11-24).', forced: true },
   { from: 'A button in the header and the footer of the pages, and on the coach page. It is red and says “Emergency Exit.”', to: 'A button in the header and the footer of most pages, and on the coach page. On the pages that check or open a signed transcript, it floats at the top instead. It is rust-colored and says “Emergency Exit.”', why: 'The check-a-transcript and my-transcript pages have no header or footer, only a floating button; the button is rust-colored (#89452D), not red.' },
-  { from: 'A link at the bottom of every page, and a button under “Remember on this device” in the display settings.', to: 'A link at the bottom of most pages, and a button under “Remember on this device” in Accessibility Settings.', why: 'The two static pages (about-nenya.html and why-nenya.html) run no script, so the link cannot work there (docs/forget-me-footers.md); every other page now has it. The settings window is titled Accessibility Settings.' },
+  { from: 'A link at the bottom of every page, and a button under “Remember on this device” in the display settings.', to: 'A link at the bottom of every page, and a button under “Remember on this device” in Accessibility Settings.', why: 'The approved sentence is kept as written (every page is now true: the app\'s pages have the footer link and the two static pages have it through /forget-me.js; docs/forget-me-footers.md). Only the settings window\'s real title changes: it is Accessibility Settings, not "the display settings".' },
   { from: NEVER_SAVES, to: NEVER_SAVES_WITH_SAVE_RETURN, why: 'Only where “Save and return later” is switched on (VITE_SAVE_REFLECTION, on in the production list): it keeps the parts you finished, the body-map placements and the colors for up to 24 hours, encrypted. The Terms say so in Section 16. With it off, the approved sentence is used as written.' },
   { from: 'no password or lock, and', to: 'no password or lock on the page, and', why: '“Save and return later” has a passcode for the saved reflection; the sentence is about the page, and now says so.' },
 ];

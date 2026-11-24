@@ -109,6 +109,10 @@
   .cta { margin-top: 2.5rem; padding: 1.25rem; border: 1px solid #d8c9a3; border-radius: 8px; background: #f7f0df; }
   .cta a { color: #7a5c2e; font-weight: bold; }
   footer { margin-top: 3rem; font-size: 0.85rem; color: #666; }
+  .forget-me { color: #1a1a1a; }
+  .forget-me button { font: inherit; color: #4a3818; background: none; border: 0; padding: 0.25rem 0.1rem; margin: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .forget-me button:focus-visible { outline: 3px solid #4a3818; outline-offset: 3px; border-radius: 2px; }
+  .forget-me [role="status"] { display: block; margin-top: 0.25rem; }
 </style>
 </head>
 <body>
@@ -268,7 +272,13 @@ plain daily totals of use, with no information about who produced them.</p>
   <p>Nenya is a free digital sanctuary for reflection, emotional regulation, and ethical self-inquiry,
   named for Galadriel's ring in J.R.R. Tolkien's Middle-earth. Free, open source (AGPL-3.0), and built to keep little about the people who use it. Fiscally sponsored by Fractured Atlas, a 501(c)(3) nonprofit.</p>
   <p>Nenya is an independent, free project inspired by J. R. R. Tolkien&rsquo;s books. It is not affiliated with or endorsed by the Tolkien Estate, Middle-earth Enterprises, or any Tolkien licensee.</p>
+  <p class="forget-me" id="forget-me" hidden>
+    <button type="button" id="forget-me-button">Forget me</button>
+    Erases what Nenya saved in this browser. Nothing is sent to anyone.
+    <span id="forget-me-status" role="status"></span>
+  </p>
 </footer>
 
+<script src="/forget-me.js" defer></script>
 </body>
 </html>
