@@ -148,9 +148,9 @@ export const ANSWERS: Answer[] = [
   {
     id: 'n-free', part: 'nenya', title: 'Is it free, and who pays for it',
     asked: ['is this free', 'how much does it cost', 'who pays for this', 'how do you make money', 'is there a paid version'],
-    short: 'Yes, Nenya is provided free, with no advertising. The plan is for the core breathing and reflection tools to stay free. We are exploring subscriptions for extra features and will say so before anything changes. Donations go through our fiscal sponsor, Fractured Atlas, which charges an administrative fee.',
+    short: 'Yes, Nenya is provided free, with no advertising. The plan is for the core breathing and reflection tools to stay free. Donations go through our fiscal sponsor, Fractured Atlas, which charges an administrative fee.',
     full: [
-      'Nenya is provided free of charge, with no advertising. The plan is for the core breathing and reflection tools to stay free indefinitely. We are exploring subscriptions for additional features; nothing like that exists today, and we will say so on the Our Structure page before anything changes.',
+      'Nenya is provided free of charge, with no advertising. The plan is for the core breathing and reflection tools to stay free indefinitely.',
       'Donations go through Fractured Atlas, our fiscal sponsor, and are tax-deductible to the extent permitted by law. Fractured Atlas charges sponsored projects an administrative fee on donations. What is left after the fee is meant for keeping the core tools free and the site running, including servers and the ongoing work on the reflection and coaching tools. Nenya does not publish separate accounts; Fractured Atlas publishes its own Form 990 and audit.',
       'Each coach reply costs real money to produce, which is why the free demo is limited to five exchanges, rests after a conversation, and has daily limits. There is no referral link on the site.',
     ],
@@ -161,12 +161,10 @@ export const ANSWERS: Answer[] = [
       { claim: 'donations are tax-deductible to the extent permitted by law, via Fractured Atlas', file: about('SupportUs'), has: 'tax-deductible to the extent permitted by law' },
       { claim: 'Fractured Atlas charges an administrative fee; what is left is meant for the free tools and the site', file: about('SupportUs'), has: 'What is left after the fee is meant for keeping the core tools free and the site running' },
       { claim: 'Nenya publishes no separate accounts; Fractured Atlas publishes its own Form 990 and audit', file: about('SupportUs'), has: 'Nenya does not publish separate accounts.' },
-      { claim: 'we are exploring subscriptions and will say so before anything changes', file: about('Structure'), has: 'We are exploring subscriptions for extra features, and we will say so here before anything changes.' },
       { claim: 'each reply costs real money', file: TERMS, has: 'Each reply costs real money, so there are limits' },
-      { claim: 'subscriptions for additional features are being considered (paid options for stance layers)', file: "docs/coach-lenses-scope.md", has: 'may become paid options' },
     ],
     status: 'ready',
-    ownerNote: 'Revised 2026-11-22 to match Support Us and Our Structure (About thesis, chapter 6): the administrative fee Fractured Atlas charges is stated, what is left is "meant for" the free tools and the site (not a promise of what it does), Nenya publishes no separate accounts, and subscriptions are only being explored, with a promise to say so first. Earlier: Decided 2026-11-08: say "is provided free", that the plan is for the core breathing and reflection tools to stay free, and that subscriptions for additional features are being explored. DONE 2026-11-09: Our Structure, Support Us, Partner Practice and the public page now say the same.',
+    ownerNote: 'Revised 2026-11-22 to match Support Us and Our Structure (About thesis, chapter 6): the administrative fee Fractured Atlas charges is stated, what is left is "meant for" the free tools and the site (not a promise of what it does), Nenya publishes no separate accounts, and subscriptions are only being explored, with a promise to say so first. Earlier: Decided 2026-11-08: say "is provided free", that the plan is for the core breathing and reflection tools to stay free, and that subscriptions for additional features are being explored. DONE 2026-11-09: Our Structure, Support Us, Partner Practice and the public page now say the same. 2026-11-24: owner removed the subscriptions-being-explored statements (Our Structure twice, this answer short and long, the public page and the facts page); the free-today, no-advertising and core-stays-free statements stay.',
   },
   {
     id: 'n-privacy', part: 'nenya', title: 'Is this private? (the short version)',
