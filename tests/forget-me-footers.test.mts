@@ -32,7 +32,8 @@ const PAGES: Entry[] = [
 ];
 
 // Every html page in the repo (outside the places that are not the site) is in the table.
-const skip = new Set(['node_modules', '.git', '.claude', 'docs', 'scripts', 'dist', 'tests', 'netlify']);
+// `dev` is a git-ignored folder of local preview tools (breath, gem and vector previews) that exists only in some checkouts and is not part of the site or the repo.
+const skip = new Set(['node_modules', '.git', '.claude', 'docs', 'scripts', 'dist', 'tests', 'netlify', 'dev']);
 const found: string[] = [];
 const walk = (dir: string) => {
   for (const name of readdirSync(join(root, dir))) {
