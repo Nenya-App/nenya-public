@@ -25,6 +25,8 @@ Two things to know when reading "shipped":
 
 | Doc | What it is | Status note |
 |---|---|---|
+| [reviewers-guide.md](reviewers-guide.md) | What a reviewer is asked to check, in plain words | New 2026-11-25. Keep it matching the live "no clinician reviewed" and "no study" statements. |
+| [contributing-as-a-professional.md](contributing-as-a-professional.md) | One-page invitation for professionals and NVC practitioners | New 2026-11-25. Says no contributor agreement is in force; update when that changes. |
 | [coach-features.md](coach-features.md) | Each coach feature sorted into tiers: core, shipped, experiment, retire | New 2026-11-15 |
 | [maintenance-plan.md](maintenance-plan.md) | Plan for bringing the repository under control after an outside review | New 2026-11-15. Update its "Where things stand" column as items land. |
 | [mind-facts.md](mind-facts.md) | The generated facts page `public/mind-facts.txt` for AI assistants: what it is, why, how it stays current | New 2026-11-23. `tests/mind-facts.test.mts` fails if it is stale. |
