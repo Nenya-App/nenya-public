@@ -4,7 +4,7 @@
 
 ## 1. Sight, as it is
 **Flow:** three instruction cards ("Welcome to the Sight Gateway", "Two Colors, Two States", "Everything is Optional"), then one selection screen with two stages shown one at a time (`PairStage`: **present**, then **wish**), the body map on the wish stage, then Next (`onComplete`).
-**On the screen:** *Surprise Me* (random colours); *Start from my melody's colors* (if a melody exists); per stage a colour card with a colour picker (the sixteen palettes and the 96 colours, `ValarColorPicker`), a name field with suggestions (`ColorNameSuggest`), a set of **quality** chips, and an **Intensity** slider (Faint to Strong, 0 to 100, with an unset state); an optional **palette** made on the device or from The Color API; the body map.
+**On the screen:** *Surprise Me* (a random colour for the picker you are on only; fixed 2026-11-25, it used to replace both); *Start from my melody's colors* (if a melody exists); per stage a colour card with a colour picker (the sixteen palettes and the 96 colours, `ValarColorPicker`), a name field with suggestions (`ColorNameSuggest`), a set of **quality** chips, and an **Intensity** slider (Faint to Strong, 0 to 100, with an unset state); an optional **palette** made on the device or from The Color API; the body map.
 **What it stores:** `color1`, `color2`, their names (or "random"), qualities, intensities, `generatedPalettes`, gradient direction.
 **What does not respond:** the Intensity slider changes a number and nothing else. It should change what you see.
 
