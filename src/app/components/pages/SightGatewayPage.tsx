@@ -8,6 +8,7 @@ import type { GeneratedPalette } from '../../../lib/colorSchemes';
 import { setKeptPalettes } from '../../../lib/keptPalettes';
 import { Button } from '../ui/button';
 import { unsetSlider, sliderValue } from '../../../lib/optionalSlider';
+import { surprisePatch } from '../../../lib/sightSurprise';
 import { ArrowLeft, Shuffle, Palette, ChevronRight, ArrowRight as ArrowRightIcon } from 'lucide-react';
 import PanelLogo from '../PanelLogo';
 import { ValarColorPicker } from '../ValarColorPicker';
@@ -160,17 +161,20 @@ export default function SightGatewayPage({ onComplete, onBack, currentIndex, tot
   // bodyMapData/onUpdateBodyMap come from props -- shared App-level state
   // accessible from every gateway, not local to Sight.
 
+  // Per picker: it changes only the color on screen (see src/lib/sightSurprise.ts).
   const handleSurpriseMe = () => {
-    const randomColor1 = generateRandomColor();
-    const randomColor2 = generateRandomColor();
-    setColor1(hslToHex(randomColor1));
-    setColor2(hslToHex(randomColor2));
-    setColor1Name('');
-    setColor2Name('');
-    setColor1Qualities([]);
-    setColor2Qualities([]);
-    setColor1Intensity(unsetSlider());
-    setColor2Intensity(unsetSlider());
+    const patch = surprisePatch(stage, hslToHex(generateRandomColor()));
+    if ('color1' in patch) {
+      setColor1(patch.color1);
+      setColor1Name(patch.color1Name);
+      setColor1Qualities(patch.color1Qualities);
+      setColor1Intensity(unsetSlider());
+    } else {
+      setColor2(patch.color2);
+      setColor2Name(patch.color2Name);
+      setColor2Qualities(patch.color2Qualities);
+      setColor2Intensity(unsetSlider());
+    }
     setGeneratedPalettes([]);
   };
 
