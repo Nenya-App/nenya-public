@@ -2,7 +2,9 @@
 
 Thank you for helping. Please read [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) first. If you are a professional who
 wants to review the safety wording, the detection or the learning cards, you do not need to touch the code: start at
-[`docs/README.md`](./docs/README.md) and write to info@nenya.biz.
+[`docs/reviewers-guide.md`](./docs/reviewers-guide.md) (what a reviewer checks, in plain words) and
+[`docs/contributing-as-a-professional.md`](./docs/contributing-as-a-professional.md), then
+[`docs/README.md`](./docs/README.md), and write to info@nenya.biz.
 
 ## Set up
 
