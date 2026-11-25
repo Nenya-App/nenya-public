@@ -107,6 +107,7 @@ Switches with no scope document of their own (see production-env.md and coach-fe
 
 | Doc | What it is | Status note |
 |---|---|---|
+| [simple-mode-scope.md](simple-mode-scope.md) | A Simple mode that draws the breathing animation with fewer moving parts, for older or busy devices | New 2026-11-25. Scope only, nothing built. Builds on the device tiers and Stop motion. |
 | [coach-boundaries-scope.md](coach-boundaries-scope.md) | Dehumanizing language, and a ladder of boundaries | The ladder is not built. The pause screen and quiz are built (`pause.ts`, `PauseScreen.tsx`), but only the owner panel can start a pause. |
 | [coach-instructions-scope.md](coach-instructions-scope.md) | Moving coach instructions out of the code, with a feedback loop | Step 1 is built (`coachIntent.ts`). The rest is not. |
 | [coach-improvement-loop.md](coach-improvement-loop.md) | A working plan for improving the coach | Some of it is built since (runtime guards, counts). It says "nothing built unless it says so", which is stale in places. |
