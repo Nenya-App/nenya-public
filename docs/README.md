@@ -88,7 +88,7 @@ Two things to know when reading "shipped":
 | Doc | What it is | Switch |
 |---|---|---|
 | [coach-practice-arc-scope.md](coach-practice-arc-scope.md) | The coach as practice in naming feelings and needs | `COACH_ARC=practice` |
-| [learning-cards-scope.md](learning-cards-scope.md) | Short educational cards the coach can offer | `COACH_LEARNING_OFFERS=on` (with `COACH_JUDGMENT_CARDS`, `COACH_LEARNING_MIN_SEVERITY`). No cards are approved yet. For dev only: `COACH_CARD_DRAFTS`, `VITE_CARD_DRAFTS`. |
+| [learning-cards-scope.md](learning-cards-scope.md) | Short educational cards the coach can offer | `COACH_LEARNING_OFFERS=on` (with `COACH_JUDGMENT_CARDS`, `COACH_LEARNING_MIN_SEVERITY`). On for the live site; 23 approved cards (checked 2026-11-25). For dev only: `COACH_CARD_DRAFTS`, `VITE_CARD_DRAFTS`. |
 | [coach-modules-scope.md](coach-modules-scope.md) | Private method notes in parts, chosen for each reply | `COACH_MODULES=on`. The status line ("nothing built") is stale: `moduleSet.ts`, `coachModules.ts` and the switch exist. |
 | [coach-lenses-scope.md](coach-lenses-scope.md) | Reflect, Learn and Stretch stances | The Learn layer is built: `COACH_STANCES=learn` on the server, and `VITE_COACH_STANCES=learn` to show the choice. Stretch has no text. The status line, and the header of `stances.ts`, say no layer exists; both are stale. |
 | [coach-screening-flow-scope.md](coach-screening-flow-scope.md) | Live screening with a small hate-speech model | `COACH_SCREEN=shadow` or `on`, with `COACH_SCREEN_SECRET`. The opening "nothing here is built" is stale; see section 14. |
