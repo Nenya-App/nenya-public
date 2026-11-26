@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { allColors } from './ValarBreathingLogo';
+import { useBreathColours } from './ValarBreathingLogo';
 import { breathLengthMs, type BreathTiming } from '../../lib/breathClock';
 import { nextBreathEnd, rgbTriplet } from '../../lib/breathPulse';
 
@@ -24,6 +24,7 @@ interface MoreBelowButtonProps {
 export function MoreBelowButton({ label, ariaLabel, onClick, cycleStart, technique = null, className = '' }: MoreBelowButtonProps) {
   const [pulse, setPulse] = useState<{ n: number; color: string } | null>(null);
   const breathMs = breathLengthMs(technique);
+  const colours = useBreathColours();
 
   useEffect(() => {
     if (cycleStart == null) return;
@@ -33,13 +34,13 @@ export function MoreBelowButton({ label, ariaLabel, onClick, cycleStart, techniq
       const end = nextBreathEnd(Date.now(), cycleStart, breathMs);
       timer = setTimeout(() => {
         // The breath that just ended is the one that was running when this was armed.
-        setPulse({ n: ++n, color: allColors[end.colorIndex] ?? allColors[0] });
+        setPulse({ n: ++n, color: colours[end.index % colours.length] ?? colours[0] });
         arm();
       }, end.delayMs);
     };
     arm();
     return () => clearTimeout(timer);
-  }, [cycleStart, breathMs]);
+  }, [cycleStart, breathMs, colours]);
 
   const rgb = rgbTriplet(pulse?.color ?? '#e8a020');
   return (
