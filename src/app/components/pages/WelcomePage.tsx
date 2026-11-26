@@ -14,6 +14,7 @@ import { MoreBelowButton } from '../MoreBelowButton';
 
 import { L } from '../../../lib/vocabulary';
 import { strengthParts } from '../../../lib/breathStrength';
+import { welcomeLogoSize } from '../../../lib/welcomeLogo';
 interface WelcomePageProps {
   onContinue: () => void;
   breathingEnabled: boolean;
@@ -59,15 +60,7 @@ export default function WelcomePage({
   // Calculate logo size to fill viewport
   useEffect(() => {
     const updateLogoSize = () => {
-      // Use the smaller dimension to ensure logo fits, with some padding
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      // Account for header (64px) and padding, use 85% of smaller dimension
-      const availableHeight = viewportHeight - 64 - 120; // header + padding for text
-      const availableWidth = viewportWidth - 48; // horizontal padding
-      // Reduced to 3/4 of original size: 600px -> 450px cap
-      const size = Math.min(availableWidth, availableHeight, 600) * 0.675;
-      setLogoSize(size);
+      setLogoSize(welcomeLogoSize(window.innerWidth, window.innerHeight));
     };
 
     updateLogoSize();
@@ -81,11 +74,12 @@ export default function WelcomePage({
       <QuickNav onBreathe={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} onReflect={onContinue} />
 
       {/* First Section: Full Viewport with Large Logo */}
-      <div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">
+      <div className="h-screen flex flex-col items-center justify-center px-6 [@media(min-height:600px)]:pb-[12vh] relative snap-start">
         {/* No flex-1 here -- letting this grow-to-fill was pinning the text
             below to the bottom of the viewport on shorter/wider screens,
             leaving a large empty gap above it. The outer section's own
-            justify-center now centers this + the text block as one unit. */}
+            justify-center now centers this + the text block as one unit. The bottom padding lifts that unit a little
+            above the middle (owner, 2026-11-26), except on screens under 600px tall, where lifting would hide the top. */}
         <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`flex items-center justify-center transition-all duration-500`}>
           {/* Clicking the logo opens the breathing and accessibility settings, the same as the small logo in the top left (a button for the keyboard and screen readers, too). Hovering brightens the glow. */}
           <div
