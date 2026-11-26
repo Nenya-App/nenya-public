@@ -48,7 +48,8 @@ const CORRECT = [
   'FindAHelpline.com lists lines in other countries.',
   'The site is nenya.biz, and the page is nenya.biz/about/privacy-promise.',
   'Read nenya.biz/my-transcript, nenya.biz/verify/ or https://nenya.biz/about/six-lenses.',
-  'The directory is at iasp.info/resources/Crisis_Centres.',
+  'The directory is at iasp.info/crisis-centres-helplines.',
+  'See https://www.iasp.info/crisis-centres-helplines/ or iasp.info.',
   'You can report it at report.cybertip.org, or see stopitnow.org.',
   'The code is at github.com/Nenya-App/nenya-public.',
   'See cnvc.org or nvcacademy.com.',
@@ -59,6 +60,7 @@ const CORRECT = [
 ];
 ok('every correct address is left exactly as written, with no change reported', CORRECT.every((c) => { const r = repairAddresses(c); return r.reply === c && !r.changed && r.swapped === 0 && r.removed === 0 && hasOnlyAllowedAddresses(c); }), CORRECT.filter((c) => fix(c) !== c).map(fix).join(' | '));
 ok('a correct address next to a wrong one stays exactly as written', fix('Call 988, or find a helpline at helpaglobal.com or findahelpline.com.') === 'Call 988, or find a helpline at findahelpline.com.' && fix('Try nenya.biz and example.com.').includes('nenya.biz'));
+ok('the old IASP address, which no longer shows a directory, is not on the list, so in a help sentence it is swapped', fix(HELP + 'iasp.info/resources/Crisis_Centres.') === HELP + 'findahelpline.com.');
 
 // ---- near misses: things that are not web addresses
 const NEAR = [

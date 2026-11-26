@@ -20,7 +20,7 @@ Full URLs (`http://`, `https://`, any ending), `www.` forms, bare names ending i
 | Address | Why |
 | --- | --- |
 | `findahelpline.com` | the coach's instructions and the distress text |
-| `iasp.info`, `iasp.info/resources/Crisis_Centres` | the distress text, "Outside the US and Canada" |
+| `iasp.info`, `iasp.info/crisis-centres-helplines` | the distress text, "Outside the US and Canada" |
 | `stopitnow.org` | the site's resource list (people worried about their own thoughts about children) |
 | `report.cybertip.org` | the distress text for reporting images of children |
 | `nenya.biz`, and its pages: `/about`, every About page (`/about/<id>` from `src/lib/aboutRoutes.ts`, and the old `/about/six-gateways`), `/my-transcript`, `/verify`, `/guestbook`, `/coach`, `/why-nenya` | the site itself |

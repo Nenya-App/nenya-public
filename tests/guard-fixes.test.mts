@@ -144,8 +144,9 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex').slice(0,
 }
 
 // ---- left alone: the notices, the stop and care text, the fixed sentences, the lists (held by hashes of the text as it was)
+// The resource-list hash was updated 2026-11-25 for one approved change: the IASP address in "Outside the US and Canada" now points at its current directory page.
 {
   const h = (o: unknown) => sha(JSON.stringify(o));
   ok('STOP_LEAD, IMMINENT_LEAD, the approved appended sentences and the care fallback are unchanged', sha(STOP_LEAD) === '9084f4eb763221b6' && sha(IMMINENT_LEAD) === '66b6e207e907a1d3' && h(DISTRESS_APPEND) === '515e611d1ec7bbfa' && h(SELF_INJURY_APPEND) === '610d0b3d7c411cd2' && sha(CARE_FALLBACK) === 'c1988a7badf4269f');
-  ok('the persona fallback, the form notices, the resource lists and the other notices are unchanged', sha(PERSONA_FALLBACK) === 'c625d739714d378d' && sha(SHORT_NOTICE) === 'd342b0a1b66e3952' && sha(UNCLEAR_NOTICE) === '6e6b1809f1bce85b' && h(['self-harm', 'self-injury', 'harm-others', 'abuse', 'distress'].map((c) => resourcesFor(c as any))) === 'afded0648c353a4c' && h([['self-injury', 'ends'], ['self-injury', 'emergency'], ['harm-others', 'admitted'], ['harm-others', 'graphic'], ['harm-others', 'child-attraction']].map(([c, k]) => noticeIntro({ category: c as any, tier: 'stop', label: '', kind: k }))) === 'a20d5d92a8d4c6a7');
+  ok('the persona fallback, the form notices, the resource lists and the other notices are unchanged', sha(PERSONA_FALLBACK) === 'c625d739714d378d' && sha(SHORT_NOTICE) === 'd342b0a1b66e3952' && sha(UNCLEAR_NOTICE) === '6e6b1809f1bce85b' && h(['self-harm', 'self-injury', 'harm-others', 'abuse', 'distress'].map((c) => resourcesFor(c as any))) === '252146cd831909a9' && h([['self-injury', 'ends'], ['self-injury', 'emergency'], ['harm-others', 'admitted'], ['harm-others', 'graphic'], ['harm-others', 'child-attraction']].map(([c, k]) => noticeIntro({ category: c as any, tier: 'stop', label: '', kind: k }))) === 'a20d5d92a8d4c6a7');
 }

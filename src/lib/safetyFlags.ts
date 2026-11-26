@@ -389,7 +389,7 @@ export function resourcesFor(category: FlagCategory, kind?: string): Resource[] 
     }
   }
   const emergency: Resource = { name: 'Immediate danger', detail: 'Call your local emergency number (911 in the US and Canada)', href: 'tel:911' };
-  const outside: Resource = { name: 'Outside the US and Canada', detail: 'findahelpline.com or iasp.info/resources/Crisis_Centres' };
+  const outside: Resource = { name: 'Outside the US and Canada', detail: 'findahelpline.com or iasp.info/crisis-centres-helplines' };
   if (category === 'abuse' && kind === 'trafficking') list.push(...TRAFFICKING_LINES);
   // For an admitted act or graphic violence the emergency number comes first: someone may need help now. Then the lines for the kind of harm, for people who want to stop and for the people harmed.
   if (category === 'harm-others' && kind && HARM_LINES[kind]) {

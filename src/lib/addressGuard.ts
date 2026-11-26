@@ -49,7 +49,7 @@ const NENYA_PATHS: readonly string[] = [
 /**
  * The allow-list. Every entry is an address the site already shows a person:
  *   findahelpline.com            the coach's instructions and the site's own crisis text (safetyFlags.ts, "Outside the US and Canada")
- *   iasp.info/resources/Crisis_Centres   the same line (safetyFlags.ts); the bare iasp.info is allowed too
+ *   iasp.info/crisis-centres-helplines   the same line (safetyFlags.ts); the bare iasp.info is allowed too
  *   stopitnow.org                the resource for people worried about their own thoughts about children (externalLinks.ts, the site's resource list)
  *   report.cybertip.org          NCMEC's report page, in the site's own text for reporting images of children (safetyFlags.ts)
  *   nenya.biz and its pages      the site: the home page and every About page (src/lib/aboutRoutes.ts), my-transcript, verify, guestbook, coach, why-nenya
@@ -62,7 +62,7 @@ const NENYA_PATHS: readonly string[] = [
  */
 export const ALLOWED_ADDRESSES: readonly AllowedAddress[] = [
   { host: HELPLINE_ADDRESS, paths: [''], why: 'the helpline finder named in the coach instructions and the distress text' },
-  { host: 'iasp.info', paths: ['', '/resources/crisis_centres'], why: 'the crisis-centre directory in the distress text' },
+  { host: 'iasp.info', paths: ['', '/crisis-centres-helplines'], why: 'the crisis-centre directory in the distress text' },
   { host: 'stopitnow.org', paths: [''], why: 'a resource in the distress text (people worried about their own thoughts about children)' },
   { host: 'report.cybertip.org', paths: [''], why: 'the reporting page in the distress text' },
   { host: 'nenya.biz', paths: NENYA_PATHS, why: 'the site itself and its pages' },

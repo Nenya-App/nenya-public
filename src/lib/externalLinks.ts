@@ -8,7 +8,7 @@
 /** Web addresses written without https:// that the site already lists (src/lib/safetyFlags.ts, the emergency exit, the Terms). Matched without regard to case. */
 export const KNOWN_RESOURCE_DOMAINS: readonly string[] = [
   'findahelpline.com',
-  'iasp.info/resources/Crisis_Centres',
+  'iasp.info/crisis-centres-helplines',
   'stopitnow.org',
   'report.cybertip.org',
   'github.com/Nenya-App/nenya-public',
