@@ -550,6 +550,1325 @@ export const SMITHY_GUIDES: Guide[] = [
     ]
   },
   {
+    "number": 3,
+    "slug": "workshop-tour",
+    "title": "A tour of the workshop",
+    "summary": "Find the file that holds the thing you want to change.",
+    "status": "approved",
+    "files": [
+      "README.md",
+      "src/app/App.tsx",
+      "src/lib",
+      "src/app/components",
+      "src/styles/globals.css",
+      "public",
+      "netlify/functions",
+      "docs/README.md"
+    ],
+    "blocks": [
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "The main folders"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Open your project folder. These are the places you will use most."
+          }
+        ]
+      },
+      {
+        "k": "table",
+        "head": [
+          [
+            {
+              "t": "text",
+              "s": "Folder or file"
+            }
+          ],
+          [
+            {
+              "t": "text",
+              "s": "What is in it"
+            }
+          ]
+        ],
+        "rows": [
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/app/App.tsx"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The front door. It picks which screen to show."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/app/components"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The screens and buttons you see."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/app/components/pages"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The welcome screen, the Lenses and the report."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/lib"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The shared rules: sounds, breath paces, saved settings, the report."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/styles/globals.css"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The colors and the look."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "public"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "Pictures, icons, fonts and plain files."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "netlify/functions"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "Server code. Your private copy does not run it."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "docs"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "Notes on how and why parts were made."
+              }
+            ]
+          ]
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "How to find a thing"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Say you see some words on the screen and want to change them. Search the whole "
+          },
+          {
+            "t": "code",
+            "s": "src"
+          },
+          {
+            "t": "text",
+            "s": " folder for those words."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "bold",
+            "s": "Mac and Linux:"
+          },
+          {
+            "t": "text",
+            "s": " in the command window, inside your project folder, type:"
+          }
+        ]
+      },
+      {
+        "k": "code",
+        "lang": "bash",
+        "code": "grep -rn \"Take a Moment to Breathe\" src index.html"
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "bold",
+            "s": "Windows:"
+          },
+          {
+            "t": "text",
+            "s": " in Command Prompt, inside your project folder, type:"
+          }
+        ]
+      },
+      {
+        "k": "code",
+        "lang": "bash",
+        "code": "findstr /s /n /c:\"Take a Moment to Breathe\" src\\* index.html"
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Each line of the answer shows a file name and a line number. Open that file in your editor and go to that line."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Notes at the top of files"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Most files start with a short note that says what the file does and what it keeps. Read it before you change anything."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Where to read more"
+          }
+        ]
+      },
+      {
+        "k": "list",
+        "ordered": false,
+        "items": [
+          [
+            {
+              "t": "link",
+              "s": "README.md",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/README.md"
+            },
+            {
+              "t": "text",
+              "s": " has a \"Project layout\" list."
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "docs/README.md",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/docs/README.md"
+            },
+            {
+              "t": "text",
+              "s": " is the list of all the notes."
+            }
+          ]
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "You can also browse "
+          },
+          {
+            "t": "link",
+            "s": "src/app/App.tsx",
+            "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/app/App.tsx"
+          },
+          {
+            "t": "text",
+            "s": ", "
+          },
+          {
+            "t": "link",
+            "s": "src/app/components",
+            "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/app/components"
+          },
+          {
+            "t": "text",
+            "s": " and "
+          },
+          {
+            "t": "link",
+            "s": "src/lib",
+            "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/lib"
+          },
+          {
+            "t": "text",
+            "s": " on GitHub."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "number": 4,
+    "slug": "make-it-yours",
+    "title": "Make it yours",
+    "summary": "Change the words, colors, breath pace and the shape of the logo.",
+    "status": "approved",
+    "files": [
+      "src/app/components/pages/WelcomePage.tsx",
+      "src/styles/globals.css",
+      "src/app/components/PortableBreath.tsx",
+      "src/lib/breathingPresets.ts",
+      "src/lib/logoLook.ts",
+      "src/lib/logoColours.ts",
+      "src/app/components/NenyaLogo.tsx"
+    ],
+    "blocks": [
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Before you change anything"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Keep your copy running with "
+          },
+          {
+            "t": "code",
+            "s": "npm run dev"
+          },
+          {
+            "t": "text",
+            "s": ", as in the second guide. Open it in your browser. When you save a file, the page updates by itself."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Use a plain text editor. On a Mac, in TextEdit, turn off smart quotes first: choose Edit, then Substitutions, and switch off Smart Quotes. Curly quotes break code. On Windows, Notepad works."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "If you saved settings in your browser with \"Remember on this device\", press \"Forget me\" at the bottom of the page. Saved settings hide your new starting values."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Change one thing at a time. If the page breaks, undo your last change and save again."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Change the words"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Open "
+          },
+          {
+            "t": "code",
+            "s": "src/app/components/pages/WelcomePage.tsx"
+          },
+          {
+            "t": "text",
+            "s": ". Find the line that says "
+          },
+          {
+            "t": "code",
+            "s": "Take a Moment to Breathe"
+          },
+          {
+            "t": "text",
+            "s": ". Type your own words in its place. Save."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Change the colors"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Open "
+          },
+          {
+            "t": "code",
+            "s": "src/styles/globals.css"
+          },
+          {
+            "t": "text",
+            "s": ". There are two sets of colors, one for the light theme and one for the dark theme. To change the dark background, find this line:"
+          }
+        ]
+      },
+      {
+        "k": "code",
+        "lang": "css",
+        "code": "--background: #1A1512;"
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Change the code after the colon to a color of your own, such as "
+          },
+          {
+            "t": "code",
+            "s": "#101820"
+          },
+          {
+            "t": "text",
+            "s": ". Keep the "
+          },
+          {
+            "t": "code",
+            "s": "#"
+          },
+          {
+            "t": "text",
+            "s": " and the semicolon. The main gold color is on a line that starts with "
+          },
+          {
+            "t": "code",
+            "s": "--nenya-gold"
+          },
+          {
+            "t": "text",
+            "s": "."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Make sure your words are still easy to read against the new color."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Change the breath pace"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The pace your copy starts with is in "
+          },
+          {
+            "t": "code",
+            "s": "src/app/components/PortableBreath.tsx"
+          },
+          {
+            "t": "text",
+            "s": ". Find this line:"
+          }
+        ]
+      },
+      {
+        "k": "code",
+        "lang": "ts",
+        "code": "export const STEADY: BreathingTechnique = { ih: 6000, hi: 0, ex: 6000, ho: 0 };"
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The numbers are in thousandths of a second. "
+          },
+          {
+            "t": "code",
+            "s": "ih"
+          },
+          {
+            "t": "text",
+            "s": " is the breath in, "
+          },
+          {
+            "t": "code",
+            "s": "hi"
+          },
+          {
+            "t": "text",
+            "s": " is the hold after it, "
+          },
+          {
+            "t": "code",
+            "s": "ex"
+          },
+          {
+            "t": "text",
+            "s": " is the breath out, and "
+          },
+          {
+            "t": "code",
+            "s": "ho"
+          },
+          {
+            "t": "text",
+            "s": " is the hold after that. For five seconds in and five out, use "
+          },
+          {
+            "t": "code",
+            "s": "5000"
+          },
+          {
+            "t": "text",
+            "s": " for both "
+          },
+          {
+            "t": "code",
+            "s": "ih"
+          },
+          {
+            "t": "text",
+            "s": " and "
+          },
+          {
+            "t": "code",
+            "s": "ex"
+          },
+          {
+            "t": "text",
+            "s": "."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The list of paces you can pick from is in "
+          },
+          {
+            "t": "code",
+            "s": "src/lib/breathingPresets.ts"
+          },
+          {
+            "t": "text",
+            "s": ". The first screen offers that list, so change the entry called Steady there too, so the two match. Take care with long breaths and holds. If a pace feels hard, choose a shorter one."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Change the logo's shape"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Open "
+          },
+          {
+            "t": "code",
+            "s": "src/lib/logoLook.ts"
+          },
+          {
+            "t": "text",
+            "s": "."
+          }
+        ]
+      },
+      {
+        "k": "list",
+        "ordered": false,
+        "items": [
+          [
+            {
+              "t": "code",
+              "s": "DEFAULT_LOGO_LEAVES"
+            },
+            {
+              "t": "text",
+              "s": " is the number of leaves. It may be 6, 8, 10 or 12."
+            }
+          ],
+          [
+            {
+              "t": "code",
+              "s": "DEFAULT_GEM_CHOICE"
+            },
+            {
+              "t": "text",
+              "s": " is the number of sides on the gem. It may be 6, 8 or 10."
+            }
+          ],
+          [
+            {
+              "t": "code",
+              "s": "DEFAULT_BREATH_COLOURS"
+            },
+            {
+              "t": "text",
+              "s": " picks the colors of the breathing glow. Try "
+            },
+            {
+              "t": "code",
+              "s": "'preset:warm'"
+            },
+            {
+              "t": "text",
+              "s": " or "
+            },
+            {
+              "t": "code",
+              "s": "'preset:cool'"
+            },
+            {
+              "t": "text",
+              "s": "."
+            }
+          ]
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The color sets are listed in "
+          },
+          {
+            "t": "code",
+            "s": "src/lib/logoColours.ts"
+          },
+          {
+            "t": "text",
+            "s": ". The drawing of the logo itself is in "
+          },
+          {
+            "t": "code",
+            "s": "src/app/components/NenyaLogo.tsx"
+          },
+          {
+            "t": "text",
+            "s": "."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Lighter animation levels"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Two lighter levels, Minimal and Simple, are planned for older or busy computers. They are not built yet. For now, the Stop motion button holds most of the movement still."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Check your work"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Stop the page, then run "
+          },
+          {
+            "t": "code",
+            "s": "npm run build"
+          },
+          {
+            "t": "text",
+            "s": ". If it finishes without errors, your changes are sound enough to keep."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The files are here on GitHub:"
+          }
+        ]
+      },
+      {
+        "k": "list",
+        "ordered": false,
+        "items": [
+          [
+            {
+              "t": "link",
+              "s": "src/app/components/pages/WelcomePage.tsx",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/app/components/pages/WelcomePage.tsx"
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "src/styles/globals.css",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/styles/globals.css"
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "src/app/components/PortableBreath.tsx",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/app/components/PortableBreath.tsx"
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "src/lib/breathingPresets.ts",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/lib/breathingPresets.ts"
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "src/lib/logoLook.ts",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/lib/logoLook.ts"
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "src/lib/logoColours.ts",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/lib/logoColours.ts"
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "src/app/components/NenyaLogo.tsx",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/app/components/NenyaLogo.tsx"
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "number": 5,
+    "slug": "your-own-name",
+    "title": "Give it your own name and mark",
+    "summary": "Swap the name, logo, icons and contact address for yours.",
+    "status": "approved",
+    "files": [
+      "TRADEMARK.md",
+      "src/app/components/GlobalNavigation.tsx",
+      "src/app/components/OnboardingFlow.tsx",
+      "index.html",
+      "public/manifest.json",
+      "public/icons",
+      "src/assets/nenya-logo.webp",
+      "src/assets/nenya-logo-small.webp",
+      "src/lib/aboutRoutes.ts",
+      "src/app/components/ShareNenya.tsx",
+      "src/app/components/AppFooter.tsx",
+      "src/lib/legalDocument.ts",
+      "src/lib/tolkienNotice.ts",
+      "public/llms.txt",
+      "public/mind-facts.txt",
+      "public/sitemap.xml"
+    ],
+    "blocks": [
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Why"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The code is shared, but the name and the logo are not. If you give your copy to anyone, or put it online, it must not use the name Nenya or its logo. The rules are in "
+          },
+          {
+            "t": "link",
+            "s": "TRADEMARK.md",
+            "href": "https://github.com/Nenya-App/nenya-public/blob/main/TRADEMARK.md"
+          },
+          {
+            "t": "text",
+            "s": ". For a copy that stays on your own computer, you may still want your own name."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Start with these places"
+          }
+        ]
+      },
+      {
+        "k": "table",
+        "head": [
+          [
+            {
+              "t": "text",
+              "s": "Place"
+            }
+          ],
+          [
+            {
+              "t": "text",
+              "s": "What to change"
+            }
+          ]
+        ],
+        "rows": [
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/app/components/GlobalNavigation.tsx"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The name at the top of every page. It appears twice."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/app/components/OnboardingFlow.tsx"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The words \"Welcome to Nenya\" on the first screen."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "index.html"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The page title and the lines that name the site."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "public/manifest.json"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The name, short name and description."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "public/icons"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The icon pictures. Keep the same file names and sizes."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/assets/nenya-logo.webp"
+              },
+              {
+                "t": "text",
+                "s": " and "
+              },
+              {
+                "t": "code",
+                "s": "src/assets/nenya-logo-small.webp"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The logo pictures."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/lib/aboutRoutes.ts"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The line that starts with "
+              },
+              {
+                "t": "code",
+                "s": "SITE_TITLE"
+              },
+              {
+                "t": "text",
+                "s": "."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/app/components/ShareNenya.tsx"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The web address and words used by the Share button."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/app/components/AppFooter.tsx"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The name, the year line and the email link at the foot of the page."
+              }
+            ]
+          ]
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Change the contact address"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The address "
+          },
+          {
+            "t": "code",
+            "s": "info@nenya.biz"
+          },
+          {
+            "t": "text",
+            "s": " appears many times. Replace every one with your own, or remove the link. If you skip this, messages from your copy would go to the people who run nenya.biz."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "bold",
+            "s": "Mac and Linux:"
+          }
+        ]
+      },
+      {
+        "k": "code",
+        "lang": "bash",
+        "code": "grep -rn \"info@nenya.biz\" src public index.html"
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "bold",
+            "s": "Windows:"
+          }
+        ]
+      },
+      {
+        "k": "code",
+        "lang": "bash",
+        "code": "findstr /s /n /c:\"info@nenya.biz\" src\\* public\\* index.html"
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Find the rest of the name"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Search for the word to see what is left. There will be many results, and many are notes inside the code that no one sees."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "bold",
+            "s": "Mac and Linux:"
+          }
+        ]
+      },
+      {
+        "k": "code",
+        "lang": "bash",
+        "code": "grep -rn \"Nenya\" src/app index.html public"
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "bold",
+            "s": "Windows:"
+          }
+        ]
+      },
+      {
+        "k": "code",
+        "lang": "bash",
+        "code": "findstr /s /n /i \"nenya\" src\\app\\* public\\* index.html"
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Text that is only true for nenya.biz"
+          }
+        ]
+      },
+      {
+        "k": "list",
+        "ordered": false,
+        "items": [
+          [
+            {
+              "t": "code",
+              "s": "src/lib/legalDocument.ts"
+            },
+            {
+              "t": "text",
+              "s": " holds the Terms and Privacy Policy. They speak for nenya.biz. Do not show them as yours. Write your own or remove them before others use your copy."
+            }
+          ],
+          [
+            {
+              "t": "code",
+              "s": "src/lib/tolkienNotice.ts"
+            },
+            {
+              "t": "text",
+              "s": " holds a line about the books the name comes from. Keep it only if it is still true for you."
+            }
+          ],
+          [
+            {
+              "t": "code",
+              "s": "public/llms.txt"
+            },
+            {
+              "t": "text",
+              "s": ", "
+            },
+            {
+              "t": "code",
+              "s": "public/mind-facts.txt"
+            },
+            {
+              "t": "text",
+              "s": " and "
+            },
+            {
+              "t": "code",
+              "s": "public/sitemap.xml"
+            },
+            {
+              "t": "text",
+              "s": " describe nenya.biz. Delete them or rewrite them."
+            }
+          ]
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Check it"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Run "
+          },
+          {
+            "t": "code",
+            "s": "npm run build"
+          },
+          {
+            "t": "text",
+            "s": ", then open your copy as in the sixth guide. Look at the top of the page, the footer, the browser tab and the About pages."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "This is not legal advice."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The files are here on GitHub:"
+          }
+        ]
+      },
+      {
+        "k": "list",
+        "ordered": false,
+        "items": [
+          [
+            {
+              "t": "link",
+              "s": "index.html",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/index.html"
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "public/manifest.json",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/public/manifest.json"
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "src/app/components/ShareNenya.tsx",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/app/components/ShareNenya.tsx"
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "src/app/components/AppFooter.tsx",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/app/components/AppFooter.tsx"
+            }
+          ],
+          [
+            {
+              "t": "link",
+              "s": "src/lib/legalDocument.ts",
+              "href": "https://github.com/Nenya-App/nenya-public/blob/main/src/lib/legalDocument.ts"
+            }
+          ]
+        ]
+      }
+    ]
+  },
+  {
     "number": 6,
     "slug": "private-and-offline",
     "title": "Keep it private and use it offline",
@@ -852,6 +2171,197 @@ export const SMITHY_GUIDES: Guide[] = [
             "t": "text",
             "s": "."
           }
+        ]
+      }
+    ]
+  },
+  {
+    "number": 7,
+    "slug": "if-you-share",
+    "title": "If you ever share it",
+    "summary": "What the license and the name rules ask before others use your copy.",
+    "status": "approved",
+    "files": [
+      "LICENSE",
+      "TRADEMARK.md"
+    ],
+    "blocks": [
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "A copy just for you"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "You may read, run and change the code on your own computer."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "If others will use it"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "This guide is a plain summary. It is not legal advice. Read the license itself, and ask a lawyer if it matters."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The code is under the AGPL-3.0 license. In short:"
+          }
+        ]
+      },
+      {
+        "k": "list",
+        "ordered": false,
+        "items": [
+          [
+            {
+              "t": "text",
+              "s": "If you give your changed copy to other people, they must get it under the same license, with the source code."
+            }
+          ],
+          [
+            {
+              "t": "text",
+              "s": "If you run a changed copy on a server and people use it over a network, you must offer them its source code."
+            }
+          ],
+          [
+            {
+              "t": "text",
+              "s": "Keep the license file and the notices about who wrote the code."
+            }
+          ],
+          [
+            {
+              "t": "text",
+              "s": "There is no warranty."
+            }
+          ]
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The full text is in "
+          },
+          {
+            "t": "link",
+            "s": "LICENSE",
+            "href": "https://github.com/Nenya-App/nenya-public/blob/main/LICENSE"
+          },
+          {
+            "t": "text",
+            "s": ". The people who wrote the license explain it at "
+          },
+          {
+            "t": "link",
+            "s": "gnu.org",
+            "href": "https://www.gnu.org/licenses/agpl-3.0.html"
+          },
+          {
+            "t": "text",
+            "s": "."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "The name and the logo"
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "The license does not give you the name Nenya, the way it is written, or the logo. Do not use them for your copy, and do not suggest that nenya.biz made or approves it. The rules are in "
+          },
+          {
+            "t": "link",
+            "s": "TRADEMARK.md",
+            "href": "https://github.com/Nenya-App/nenya-public/blob/main/TRADEMARK.md"
+          },
+          {
+            "t": "text",
+            "s": "."
+          }
+        ]
+      },
+      {
+        "k": "h",
+        "level": 2,
+        "text": [
+          {
+            "t": "text",
+            "s": "Before you share, check"
+          }
+        ]
+      },
+      {
+        "k": "list",
+        "ordered": true,
+        "items": [
+          [
+            {
+              "t": "text",
+              "s": "You changed the name, logo, icons and contact address, as in the fifth guide."
+            }
+          ],
+          [
+            {
+              "t": "text",
+              "s": "You replaced the Terms and Privacy Policy with your own, and they are true for your copy."
+            }
+          ],
+          [
+            {
+              "t": "text",
+              "s": "Your source code is available to the people who use it."
+            }
+          ],
+          [
+            {
+              "t": "text",
+              "s": "You say plainly what your copy is. If it touches how people feel, say that it is not therapy and not a crisis service."
+            }
+          ],
+          [
+            {
+              "t": "text",
+              "s": "You tested what it sends, as in the sixth guide. A copy on the internet behaves differently from one on your computer."
+            }
+          ]
         ]
       }
     ]

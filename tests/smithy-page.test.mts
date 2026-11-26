@@ -23,3 +23,4 @@ ok('tap targets are at least 44 px', /min-h-11/.test(blocks) && /min-h-11/.test(
 ok('outside links open safely', /rel="noopener noreferrer"/.test(blocks) && /target="_blank"/.test(blocks));
 ok('tables have header cells', /<th scope="col"/.test(blocks));
 ok('long Previous and Next titles wrap on a phone', (page.match(/max-w-full shrink/g) ?? []).length === 2);
+ok('with all seven guides in, the page no longer says more are coming', !/More guides are being written/.test(page));

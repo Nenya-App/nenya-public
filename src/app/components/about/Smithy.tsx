@@ -75,7 +75,6 @@ export default function Smithy({ onBack }: { onBack: () => void }) {
               <p className="text-base text-foreground">
                 Plain guides to building your own copy of this site on your own computer. No developer experience is needed. The AI coach is not part of it.
               </p>
-              <p className="text-base text-foreground">More guides are being written.</p>
             </header>
             <ol className="space-y-3">
               {SMITHY_GUIDES.map((g) => (

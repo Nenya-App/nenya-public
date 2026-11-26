@@ -3,7 +3,7 @@ number: 4
 slug: make-it-yours
 title: Make it yours
 summary: Change the words, colors, breath pace and the shape of the logo.
-status: draft
+status: approved
 files: src/app/components/pages/WelcomePage.tsx, src/styles/globals.css, src/app/components/PortableBreath.tsx, src/lib/breathingPresets.ts, src/lib/logoLook.ts, src/lib/logoColours.ts, src/app/components/NenyaLogo.tsx
 ---
 

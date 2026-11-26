@@ -3,7 +3,7 @@ number: 3
 slug: workshop-tour
 title: A tour of the workshop
 summary: Find the file that holds the thing you want to change.
-status: draft
+status: approved
 files: README.md, src/app/App.tsx, src/lib, src/app/components, src/styles/globals.css, public, netlify/functions, docs/README.md
 ---
 

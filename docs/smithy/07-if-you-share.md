@@ -3,7 +3,7 @@ number: 7
 slug: if-you-share
 title: If you ever share it
 summary: What the license and the name rules ask before others use your copy.
-status: draft
+status: approved
 files: LICENSE, TRADEMARK.md
 ---
 

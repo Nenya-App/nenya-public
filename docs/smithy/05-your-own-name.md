@@ -3,7 +3,7 @@ number: 5
 slug: your-own-name
 title: Give it your own name and mark
 summary: Swap the name, logo, icons and contact address for yours.
-status: draft
+status: approved
 files: TRADEMARK.md, src/app/components/GlobalNavigation.tsx, src/app/components/OnboardingFlow.tsx, index.html, public/manifest.json, public/icons, src/assets/nenya-logo.webp, src/assets/nenya-logo-small.webp, src/lib/aboutRoutes.ts, src/app/components/ShareNenya.tsx, src/app/components/AppFooter.tsx, src/lib/legalDocument.ts, src/lib/tolkienNotice.ts, public/llms.txt, public/mind-facts.txt, public/sitemap.xml
 ---
 
