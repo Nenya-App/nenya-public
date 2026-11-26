@@ -12,9 +12,9 @@ import NenyaLogo from './NenyaLogo';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
 import { useIsMobile } from './useIsMobile';
 import { useEffect, useMemo, useState } from 'react';
-import { setBreathPreviewPercent, useBreathPreviewPercent } from '../../lib/deviceMemory';
+import { setAnimationSize, useAnimationSize } from '../../lib/deviceMemory';
 import { STRENGTH_STANDARD, strengthParts } from '../../lib/breathStrength';
-import { DEFAULT_PREVIEW_PCT, PREVIEW_PCT_MIN, PREVIEW_PCT_STEP, effectivePreviewPercent, previewMaxPercent, previewPixels } from '../../lib/logoLook';
+import { ANIMATION_SIZES, animationSizeLabel, previewPixels } from '../../lib/logoLook';
 import { deviceProfile } from '../../lib/deviceProfile';
 import { aboutPath } from '../../lib/aboutRoutes';
 
@@ -63,10 +63,8 @@ export function BreathingPopout({
   onTechniqueChange,
   cycleStart,
 }: BreathingPopoutProps) {
-  // The preview's size is the visitor's to set. On a narrow screen it is held to what fits.
-  // The size is a percentage of the standard preview. How high it can go depends on the device (the light-device rules) and on the width of the screen, so the panel never scrolls sideways;
-  // a stored choice above that is held to it for now and kept as it was.
-  const previewChoice = useBreathPreviewPercent();
+  // The animation's size is the visitor's to choose: it sizes the front page and this preview. The preview is held to what the screen can take.
+  const animationSize = useAnimationSize();
   const narrow = useIsMobile();
   const [viewport, setViewport] = useState(() => (typeof window === 'undefined' ? 1024 : window.innerWidth));
   useEffect(() => {
@@ -76,11 +74,10 @@ export function BreathingPopout({
     return () => window.removeEventListener('resize', on);
   }, []);
   const tier = useMemo(() => deviceProfile().tier, []);
-  const previewMax = previewMaxPercent(tier, viewport);
-  const previewPercent = effectivePreviewPercent(previewChoice, tier, viewport);
-  const previewSize = previewPixels(previewChoice, tier, viewport);
-  // The logo block is its size plus the breathing ring's room (64 or 96px) and the column's own padding (48px).
-  const leftWidth = previewSize + (viewport < 640 ? 64 : 96) + 48;
+  const previewSize = previewPixels(animationSize, tier, viewport);
+  // The logo block is its size plus the breathing ring's room (64 or 96px) and the column's own padding (48px). The panel keeps
+  // the width of the largest preview whichever size is chosen.
+  const leftWidth = previewPixels('large', tier, viewport) + (viewport < 640 ? 64 : 96) + 48;
   const cycleSeconds = breathLengthMs(technique) / 1000;
   return (
     <AnimatePresence>
@@ -126,7 +123,23 @@ export function BreathingPopout({
             {/* Content - Two Columns */}
             <div className="grid grid-cols-1 divide-y md:divide-y-0 md:divide-x divide-border" style={narrow ? undefined : { gridTemplateColumns: `${leftWidth}px minmax(0, 1fr)` }}>
               {/* Left: Breathing Animation */}
-              <div className="flex flex-col items-center justify-center p-6 bg-background">
+              <div className="flex flex-col items-center justify-center p-6 bg-background overflow-x-clip">
+                <div role="group" aria-label="Animation size" className="mb-2 space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground text-center">Animation size, here and on the front page</p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {ANIMATION_SIZES.map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        aria-pressed={animationSize === size}
+                        onClick={() => setAnimationSize(size)}
+                        className={`min-h-11 rounded-full border px-4 text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${animationSize === size ? 'border-primary bg-primary/15 font-medium' : 'border-border hover:bg-muted'}`}
+                      >
+                        {animationSizeLabel(size)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div>
                   <ValarBreathingLogo
                     enabled={breathingEnabled}
@@ -149,22 +162,6 @@ export function BreathingPopout({
                       />
                     </div>
                   </ValarBreathingLogo>
-                </div>
-                <div className="mt-2 flex w-full max-w-xs flex-wrap items-center gap-x-3 gap-y-1">
-                  <label htmlFor="preview-size" className="shrink-0 text-xs text-muted-foreground">Preview size</label>
-                  <span aria-hidden="true" className="shrink-0 text-xs text-foreground">{previewPercent}%</span>
-                  <input
-                    id="preview-size"
-                    type="range"
-                    min={PREVIEW_PCT_MIN}
-                    max={previewMax}
-                    step={PREVIEW_PCT_STEP}
-                    value={previewPercent}
-                    onChange={(e) => setBreathPreviewPercent(Number(e.target.value))}
-                    aria-valuetext={`${previewPercent} percent`}
-                    className="h-11 min-w-0 flex-1"
-                  />
-                  <button type="button" onClick={() => setBreathPreviewPercent(DEFAULT_PREVIEW_PCT)} className="shrink-0 rounded-md border border-border px-2 text-xs min-h-11">Reset</button>
                 </div>
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   {Number.isInteger(cycleSeconds) ? cycleSeconds : cycleSeconds.toFixed(1)}-second breathing cycle

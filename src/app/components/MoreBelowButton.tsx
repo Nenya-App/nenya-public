@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { allColors } from './ValarBreathingLogo';
+import { useBreathColours } from './ValarBreathingLogo';
 import { breathLengthMs, type BreathTiming } from '../../lib/breathClock';
 import { nextBreathEnd, rgbTriplet } from '../../lib/breathPulse';
 
@@ -24,6 +24,10 @@ interface MoreBelowButtonProps {
 export function MoreBelowButton({ label, ariaLabel, onClick, cycleStart, technique = null, className = '' }: MoreBelowButtonProps) {
   const [pulse, setPulse] = useState<{ n: number; color: string } | null>(null);
   const breathMs = breathLengthMs(technique);
+  const coloursFor = useBreathColours();
+  // Read when a breath ends, so a change of colours does not restart the wait.
+  const coloursForRef = useRef(coloursFor);
+  coloursForRef.current = coloursFor;
 
   useEffect(() => {
     if (cycleStart == null) return;
@@ -33,7 +37,8 @@ export function MoreBelowButton({ label, ariaLabel, onClick, cycleStart, techniq
       const end = nextBreathEnd(Date.now(), cycleStart, breathMs);
       timer = setTimeout(() => {
         // The breath that just ended is the one that was running when this was armed.
-        setPulse({ n: ++n, color: allColors[end.colorIndex] ?? allColors[0] });
+        const list = coloursForRef.current(cycleStart + end.index * breathMs);
+        setPulse({ n: ++n, color: list[end.index % list.length] });
         arm();
       }, end.delayMs);
     };
@@ -47,7 +52,7 @@ export function MoreBelowButton({ label, ariaLabel, onClick, cycleStart, techniq
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className={`nenya-more-below relative inline-flex cursor-pointer flex-col items-center gap-0.5 rounded-full border border-nenya-accent-warm/60 bg-background/40 px-6 py-2 text-muted-foreground ${className}`}
+      className={`nenya-more-below relative inline-flex cursor-pointer flex-col items-center gap-0.5 rounded-full border border-nenya-gold-text/70 dark:border-nenya-accent-warm/60 bg-background/40 px-6 py-2 text-muted-foreground ${className}`}
       style={{ ['--mb-rgb' as string]: rgb }}
     >
       {/* The glow is its own layer, so restarting it each breath never touches the button (or where keyboard focus is). */}

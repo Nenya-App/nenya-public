@@ -83,9 +83,9 @@ ok('the tones play on every screen and on /coach once the terms are accepted, wh
   && /<PortableBreath\s+ready=\{entryUnlocked\}/.test(src('src/app/App.tsx')) && !/currentScreen === 'welcome' && entryUnlocked && \(/.test(src('src/app/App.tsx'))
   && /<PortableBreath\s+ready=\{agreed\}/.test(src('src/coach/CoachPage.tsx')) && /<TonesAnnouncer \/>/.test(src('src/coach/CoachPage.tsx'))
   && /visibilitychange/.test(sw) && /if \(!on \|\| !active\) return/.test(sw));
-ok('one pace for the whole page: the coach page\'s panel offers the paces, and the header logo breathes with the same clock',
-  /onTechniqueChange=\{setTechnique\}/.test(src('src/coach/CoachPage.tsx')) && /<NenyaLogo size=\{40\} technique=\{technique\} cycleStart=\{cycleStart\}/.test(src('src/app/components/GlobalNavigation.tsx'))
-  && /technique=\{breathingTechnique\}\s+cycleStart=\{breathingCycleStart\}/.test(src('src/app/App.tsx')));
+ok('one pace for the whole page: the coach page\'s panel offers the paces, and the app hands the same clock on',
+  /onTechniqueChange=\{setTechnique\}/.test(src('src/coach/CoachPage.tsx'))
+  && /<PortableBreath[\s\S]{0,400}cycleStart=\{breathingCycleStart\}/.test(src('src/app/App.tsx')) && /<BreathingPopout[\s\S]{0,1200}cycleStart=\{breathingCycleStart\}/.test(src('src/app/App.tsx')));
 ok('the counter\'s ticking number and word are hidden from screen readers', /<div aria-hidden="true">\s*<div\s+style=\{\{\s*fontSize: '11px'/.test(src('src/app/components/BreathingCounter.tsx')));
 ok('notes are scheduled on the audio clock ahead of time, not with a timer per note', /c\.currentTime \+ Math\.max\(0, e\.at - now\) \/ 1000/.test(src('src/lib/breathTones.ts')));
 ok('the setting is one of the remembered display settings, and is checked as a boolean', /breathingTones\?: boolean/.test(src('src/lib/deviceMemory.ts')) && /breathingTones: isBool/.test(src('src/lib/deviceMemory.ts')));

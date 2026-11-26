@@ -2,7 +2,7 @@ import PanelLogo from './PanelLogo';
 import { EmergencyExitButton } from './EmergencyExit';
 import { ShareNenya } from './ShareNenya';
 import { ForgetMeLink } from './DeviceMemoryControls';
-import { NenyaMark, nameMarkOn } from './NenyaMark';
+import { NenyaMark } from './NenyaMark';
 import { NON_AFFILIATION } from '../../lib/tolkienNotice';
 
 interface AppFooterProps {
@@ -24,16 +24,16 @@ export function AppFooter({ className = '' }: AppFooterProps) {
           <div className="flex items-center gap-3 order-2 md:order-2">
             <PanelLogo size={32} />
             <div className="flex flex-col">
-              {/* The mark (nənya.biz, VITE_NAME_MARK=on) or, until it is approved, the plain name. */}
-              {nameMarkOn() ? <NenyaMark face="body" className="text-sm font-medium" /> : <span className="text-sm font-medium">Nenya</span>}
+              {/* The mark: nənya.biz (src/app/components/NenyaMark.tsx). */}
+              <NenyaMark face="body" className="text-sm font-medium" />
               <span className="text-xs text-muted-foreground">A free place to pause and reflect</span>
             </div>
           </div>
 
           {/* Copyright (Right) */}
           <div className="text-xs text-muted-foreground text-center md:text-right order-3 md:order-3">
-            {/* Owner, 2026-11-15: 2025 is the right year, and the name is just "Nenya" or "nenya.biz", with no suffix. */}
-            <p>© 2025 Nenya</p>
+            {/* The first year (2025) and the latest (owner, 2026-11-26). The name is just "Nenya" or "nenya.biz", with no suffix. */}
+            <p>© 2025–2026 Nenya</p>
             <p>Public infrastructure for emotional literacy</p>
           </div>
         </div>

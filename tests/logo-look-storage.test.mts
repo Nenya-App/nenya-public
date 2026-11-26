@@ -37,20 +37,17 @@ ok('a width set in code snaps to a preset', [3.4, 5, 7].includes(M.getOrbHaloWid
 M.setOrbHaloStyle('palette');
 ok('a style set in code is kept', M.getOrbHaloStyle() === 'palette');
 
-// The preview size is a percentage, stored like the other display settings; an older size in pixels is converted.
-store['nenya.prefs'] = JSON.stringify({ previewPercent: 150 });
-ok('a stored preview percentage is read back', M.loadPrefs().previewPercent === 150);
-store['nenya.prefs'] = JSON.stringify({ previewPercent: 5000 });
-ok('a preview percentage outside the limits is dropped', M.loadPrefs().previewPercent === undefined);
-M.setBreathPreviewPercent(133);
-ok('a percentage set in code snaps to a step', M.getBreathPreviewPercent() === 130 && JSON.parse(store['nenya.prefs']).previewPercent === 130);
-ok('the older pixel key is not written any more', JSON.parse(store['nenya.prefs']).previewSize === undefined);
-store['nenya.prefs'] = JSON.stringify({ previewSize: 300 });
-ok('an older stored size in pixels is still accepted when read', M.loadPrefs().previewSize === 300 && M.loadPrefs().previewPercent === undefined);
+// The animation's size is one of three presets, stored like the other display settings; the earlier preview percentage and pixel size are no longer read.
+store['nenya.prefs'] = JSON.stringify({ animationSize: 'large' });
+ok('a stored animation size is read back', M.loadPrefs().animationSize === 'large');
+store['nenya.prefs'] = JSON.stringify({ animationSize: 'huge', previewPercent: 150, previewSize: 300 });
+ok('a size that is not offered, and the earlier preview keys, are dropped when read', JSON.stringify(M.loadPrefs()) === '{}');
+M.setAnimationSize('small');
+ok('a size set in code is kept', M.getAnimationSize() === 'small' && JSON.parse(store['nenya.prefs']).animationSize === 'small');
 
 // The leaves' sway and the colour choices: off and original unless chosen; only the choice is kept; a hand-edited value is dropped.
 const K = await import('../src/lib/keptPalettes.ts');
-ok('before anything is chosen: sway on, the breath in the Night colours and the outer orbs in the standard (Original) colours (the owner\'s defaults, 2026-11-22)', M.getLeafSway() === true && M.getBreathColourChoice() === 'preset:night' && M.getOrbColourChoice() === 'original');
+ok('before anything is chosen: sway on, the breath and the outer orbs in the standard (Original) colours (the owner\'s defaults, 2026-11-22 and 11-26)', M.getLeafSway() === true && M.getBreathColourChoice() === 'original' && M.getOrbColourChoice() === 'original');
 M.setLeafSway(true);
 M.setBreathColourChoice('preset:cool');
 M.setOrbColourChoice('palette:Tide');
@@ -87,11 +84,11 @@ const fresh = async (tag: string, prefs: Record<string, unknown> | null) => {
   return (await import(`../src/lib/deviceMemory.ts?${tag}`)) as typeof M;
 };
 const none = await fresh('none', null);
-ok('a visitor who has set nothing: sway on, Night breathing colours, standard orb colours, palette glow, Lively and following the breath, 120% preview, moving lights, six leaves, eight-sided gem', none.getLeafSway() === true && none.getBreathColourChoice() === 'preset:night' && none.getOrbColourChoice() === 'original' && none.getOrbHaloStyle() === 'palette' && none.getBreathPreviewPercent() === 120 && none.getInnerOrbMode() === 'moving' && none.getLogoLeaves() === 6 && none.getGemSidesChoice() === 8);
-const chose = await fresh('chose', { breathColours: 'original', orbColours: 'original', leafSway: false, orbHalo: 'own', innerOrbs: 'still', previewPercent: 100, gemKaleidoscope: false, gemKaleidoscopeLook: 'calm', gemKaleidoscopeBreath: false, logoLeaves: 8, gemSides: 10 });
-ok('a stored choice always wins, "Original" included: someone who chose it stays on Original, and an off stays off', chose.getBreathColourChoice() === 'original' && chose.getOrbColourChoice() === 'original' && chose.getLeafSway() === false && chose.getOrbHaloStyle() === 'own' && chose.getInnerOrbMode() === 'still' && chose.getBreathPreviewPercent() === 100 && chose.getGemKaleidoscope() === false && chose.getLogoLeaves() === 8 && chose.getGemSidesChoice() === 10);
+ok('a visitor who has set nothing: sway on, standard breathing and orb colours, palette glow, Lively and following the breath, Standard size, moving lights, six leaves, eight-sided gem', none.getLeafSway() === true && none.getBreathColourChoice() === 'original' && none.getOrbColourChoice() === 'original' && none.getOrbHaloStyle() === 'palette' && none.getAnimationSize() === 'standard' && none.getInnerOrbMode() === 'moving' && none.getLogoLeaves() === 6 && none.getGemSidesChoice() === 8);
+const chose = await fresh('chose', { breathColours: 'preset:night', orbColours: 'original', leafSway: false, orbHalo: 'own', innerOrbs: 'still', animationSize: 'small', gemKaleidoscope: false, gemKaleidoscopeLook: 'calm', gemKaleidoscopeBreath: false, logoLeaves: 8, gemSides: 10 });
+ok('a stored choice always wins, a chosen set included: someone who chose Night stays on Night, and an off stays off', chose.getBreathColourChoice() === 'preset:night' && chose.getOrbColourChoice() === 'original' && chose.getLeafSway() === false && chose.getOrbHaloStyle() === 'own' && chose.getInnerOrbMode() === 'still' && chose.getAnimationSize() === 'small' && chose.getGemKaleidoscope() === false && chose.getLogoLeaves() === 8 && chose.getGemSidesChoice() === 10);
 const odd = await fresh('odd', { breathColours: 'neon' });
-ok('a stored value that is not offered is dropped, so the default applies', odd.getBreathColourChoice() === 'preset:night');
+ok('a stored value that is not offered is dropped, so the default applies', odd.getBreathColourChoice() === 'original');
 
 // Stop motion is stored like the other display settings and is off unless pressed.
 const still = await fresh('still', null);

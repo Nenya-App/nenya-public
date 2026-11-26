@@ -67,25 +67,18 @@ export function randomHaloColors(seed: number, index: number, all: readonly stri
   });
 }
 
-// The size of the animated preview in the breathing and accessibility panel: a percentage of the standard preview (220 px), 50% to 200% in steps of
-// 10%, 100% by default. How far up it can go depends on the device and on the width of the panel (previewMaxPercent), so it never costs a light device
-// more than it can draw and never makes the panel scroll sideways.
-/** The standard preview's side in px: 100%. */
-export const DEFAULT_PREVIEW_SIZE = 220;
-export const PREVIEW_PCT_MIN = 50;
-export const PREVIEW_PCT_MAX = 200;
-export const PREVIEW_PCT_STEP = 10;
-/** The preview's default size (owner, 2026-11-22: what she has set, about 120%). 100% is the standard 220 px. */
-export const DEFAULT_PREVIEW_PCT = 120;
-/** A percentage the panel may use: rounded to a step and kept between the limits; anything unreadable becomes the default (120%). */
-export const snapPreviewPercent = (v: unknown): number =>
-  typeof v === 'number' && Number.isFinite(v) ? Math.min(PREVIEW_PCT_MAX, Math.max(PREVIEW_PCT_MIN, Math.round(v / PREVIEW_PCT_STEP) * PREVIEW_PCT_STEP)) : DEFAULT_PREVIEW_PCT;
-/** A size the panel kept in pixels before it was a percentage (120 to 400), as a percentage of the standard 220 px (so 220 px is 100%, 400 px is 180%). Unreadable or out of range is 100%. */
-export const percentFromOldPixels = (px: unknown): number =>
-  typeof px === 'number' && Number.isFinite(px) && px >= 120 && px <= 400 ? snapPreviewPercent((px / DEFAULT_PREVIEW_SIZE) * 100) : DEFAULT_PREVIEW_PCT;
+// The size of the breathing animation: three presets chosen in the breathing and accessibility panel (owner, 2026-11-26: presets in place of the
+// preview slider, and the choice sizes the front page too, so nobody has to zoom). The front page's own rule is in src/lib/welcomeLogo.ts.
+export const ANIMATION_SIZES = ['small', 'standard', 'large'] as const;
+export type AnimationSize = (typeof ANIMATION_SIZES)[number];
+export const DEFAULT_ANIMATION_SIZE: AnimationSize = 'standard';
+export const snapAnimationSize = (v: unknown): AnimationSize => ((ANIMATION_SIZES as readonly unknown[]).includes(v) ? (v as AnimationSize) : DEFAULT_ANIMATION_SIZE);
+export const animationSizeLabel = (s: AnimationSize): string => ({ small: 'Small', standard: 'Standard', large: 'Large' })[s];
 
-/** The most a device is asked to draw, as a percentage: a light device (the site's own "lite" tier: little memory, few cores, Save-Data, slow connection) 125%, an ordinary one 175%, a capable one 200%. */
-export const previewCapForTier = (tier: 'lite' | 'standard' | 'capable'): number => (tier === 'lite' ? 125 : tier === 'capable' ? 200 : 175);
+// The panel's preview: the largest is 308 px (275 on a light device, the site's own "lite" tier: little memory, few cores, Save-Data, slow
+// connection), lowered to what fits the screen; Small and Standard are shares of that, so the three differ on every screen. On a wide screen
+// that makes 220, 264 (the size the owner had set) and 308.
+const PREVIEW_SHARE: Record<AnimationSize, number> = { small: 5 / 7, standard: 6 / 7, large: 1 };
 /** The panel's own padding round the preview, in px: the panel's margin (2 x 16), the column's padding (2 x 24) and the ring's room (2 x 32 below 640 wide, 2 x 48 above). */
 const RING_ROOM = (viewport: number): number => (viewport < 640 ? 64 : 96);
 /** The most room the preview can have in px at this viewport width, with no sideways scroll: one column under 768, otherwise the right column keeps at least 300 px. */
@@ -93,15 +86,9 @@ export function availablePreviewPx(viewport: number): number {
   const v = Number.isFinite(viewport) && viewport > 0 ? viewport : 375;
   return Math.max(0, v < 768 ? v - 32 - 48 - RING_ROOM(v) : v - 32 - 300 - 48 - RING_ROOM(v));
 }
-/** The highest percentage the slider offers on this device at this width: the device's cap, lowered to what fits, never below 50%. */
-export function previewMaxPercent(tier: 'lite' | 'standard' | 'capable', viewport: number): number {
-  const fits = Math.floor(((availablePreviewPx(viewport) / DEFAULT_PREVIEW_SIZE) * 100) / PREVIEW_PCT_STEP) * PREVIEW_PCT_STEP;
-  return Math.max(PREVIEW_PCT_MIN, Math.min(previewCapForTier(tier), fits));
-}
-/** The percentage in effect: the stored choice, held to this device's and this width's maximum (the stored choice itself is not changed). */
-export const effectivePreviewPercent = (choice: number, tier: 'lite' | 'standard' | 'capable', viewport: number): number => Math.min(snapPreviewPercent(choice), previewMaxPercent(tier, viewport));
-/** The preview's side in px for a stored choice. */
-export const previewPixels = (choice: number, tier: 'lite' | 'standard' | 'capable', viewport: number): number => Math.round((DEFAULT_PREVIEW_SIZE * effectivePreviewPercent(choice, tier, viewport)) / 100);
+/** The preview's side in px for a chosen size on this device at this width. */
+export const previewPixels = (size: AnimationSize, tier: 'lite' | 'standard' | 'capable', viewport: number): number =>
+  Math.round(Math.min(tier === 'lite' ? 275 : 308, availablePreviewPx(viewport)) * PREVIEW_SHARE[size]);
 
 // The inner ring of lights behind the gem (owner, 2026-11-22: too much movement behind the gem, and "lights instead of solid orbs"). Three choices, kept like the
 // other display settings. The stored key (innerOrbs) and values are the ones from when they were orbs, so nothing stored breaks.
@@ -130,6 +117,6 @@ export const DEFAULT_KALEIDOSCOPE_LOOK = 'lively' as const;
 export const DEFAULT_KALEIDOSCOPE_BREATH = true;
 /** The gem's kaleidoscope is on by default except on a light device (the site's "lite" tier), where it stays off until the visitor turns it on. */
 export const defaultKaleidoscopeOn = (tier: 'lite' | 'standard' | 'capable'): boolean => tier !== 'lite';
-/** The breath ring's default colours: the Night set ('original' is one tap away in Settings). The outer orbs' default is the standard colours, each orb in its own palette (owner, 2026-11-22: "they should be the standard one"). */
-export const DEFAULT_BREATH_COLOURS = 'preset:night';
+/** The breath ring's default colours: the original ones (owner, 2026-11-26; it was the Night set). The outer orbs' default is the standard colours, each orb in its own palette (owner, 2026-11-22: "they should be the standard one"). */
+export const DEFAULT_BREATH_COLOURS = 'original';
 export const DEFAULT_ORB_COLOURS = 'original';

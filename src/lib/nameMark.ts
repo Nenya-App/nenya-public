@@ -2,11 +2,9 @@
 // See src/app/components/NenyaMark.tsx and docs/brand/mark-settings-2026-11-17.md.
 //
 // The mark is nenya.biz with four e's stacked in one letter space: the white (page ink) e, a gold e that turns half a circle and rests upside down (so it reads
-// nənya.biz, "nunya biz"), and two more. It is a visual form of the session ID: the colours come from the session's two colours (src/lib/savedReflection.ts: the
-// visitor's own pair, or a random "shadow" pair), and which of the extra e's rest upside down comes from the ID too. A recognisable signature, a cryptography
+// nənya.biz, "nunya biz"), and two more. It is a visual form of the session ID: which of the extra e's rest upside down, and which colour each takes, come from
+// the ID (src/lib/savedReflection.ts); the colours themselves are the breathing ring's (owner, 2026-11-26). A recognisable signature, a cryptography
 // demonstration, nothing to do with security: the picture proves nothing and the ID is not secret.
-
-export const nameMarkOn = (): boolean => import.meta.env?.VITE_NAME_MARK === 'on';
 
 export type MarkFace = 'body' | 'lyric';
 
@@ -72,10 +70,12 @@ export function readableOn(hex: string, bg: Rgb, min = MARK_MIN_CONTRAST): strin
   for (let t = 0.05; t <= 1; t += 0.05) { const m: Rgb = [0, 1, 2].map((i) => Math.round(c[i] + (target[i] - c[i]) * t)) as Rgb; if (contrastOf(m, bg) >= min) return rgbToHex(m); }
   return rgbToHex(target);
 }
-/** The four colours the mark draws from: the session's two colours and two between them, each made readable against the page. */
-export function markPalette(id: string, bg: Rgb): string[] {
-  const [a, b] = pairFromId(id) ?? ['#c9a88a', '#7a9b9e'];
-  return [a, blendHex(a, b, 1 / 3), blendHex(a, b, 2 / 3), b].map((c) => readableOn(c, bg));
+/**
+ * The colours the mark's e's draw from (owner, 2026-11-26: the approved palettes): the breathing ring's own list for the theme, each kept readable
+ * against the page, with no doubles. An empty list gives the page's gold.
+ */
+export function markColours(list: readonly string[], bg: Rgb): string[] {
+  return [...new Set((list.length ? list : ['#c9a88a']).map((c) => readableOn(c, bg)))];
 }
 
 /** A small seeded random generator: the same seed always gives the same run of numbers. */
@@ -91,20 +91,20 @@ export function markArrangement(id: string, face: MarkFace): boolean[] {
   const rng = seededRng(`${id}|${face}|arrangement`);
   return [false, true, rng() < 0.5, rng() < 0.5];
 }
-/** The colour (an index into markPalette) each e takes at rest: the extras from the ID, so two sessions with the same colours can still differ. */
-export function markColourIndexes(id: string, face: MarkFace): number[] {
+/** The colour (an index into markColours) each e takes at rest, from the ID, so two sessions can differ. */
+export function markColourIndexes(id: string, face: MarkFace, colours = 4): number[] {
   const rng = seededRng(`${id}|${face}|colours`);
-  return [0, 1, 2, 3].map(() => Math.floor(rng() * 4));
+  return [0, 1, 2, 3].map(() => Math.floor(rng() * colours));
 }
 
 export interface FidgetStep { layer: number; way: 1 | -1; colour: number }
 /** The turns of one fidget: for each step, which e turns, which way, and which palette colour it takes. `rng` is Math.random on the site (seed off). */
-export function fidgetPlan(face: MarkFace, rng: () => number = Math.random, first: 1 | -1 = 1): FidgetStep[] {
+export function fidgetPlan(face: MarkFace, rng: () => number = Math.random, first: 1 | -1 = 1, colours = 4): FidgetStep[] {
   const f = MARK_FIDGET[face];
   const plan: FidgetStep[] = [];
   for (let i = 0; i < f.steps; i++) {
     const way: 1 | -1 = f.ways === 'alternate' ? ((i % 2 === 0 ? first : -first) as 1 | -1) : rng() < 0.5 ? 1 : -1;
-    plan.push({ layer: Math.floor(rng() * MARK_LAYERS), way, colour: Math.floor(rng() * 4) });
+    plan.push({ layer: Math.floor(rng() * MARK_LAYERS), way, colour: Math.floor(rng() * colours) });
   }
   return plan;
 }

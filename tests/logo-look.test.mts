@@ -28,22 +28,20 @@ ok('the same seed gives the same colours (a reload does not reshuffle)', randomH
 ok('another seed or another orb gives different colours', randomHaloColors(3, 4, sample).join() !== randomHaloColors(4, 4, sample).join() && randomHaloColors(3, 4, sample).join() !== randomHaloColors(3, 5, sample).join());
 ok('every style has a label', HALO_STYLES.every((s) => haloStyleLabel(s).length > 0));
 
-// The preview's size in the breathing panel is a percentage of the standard preview, held to what the device and the screen can take.
-import { DEFAULT_PREVIEW_PCT, DEFAULT_PREVIEW_SIZE, PREVIEW_PCT_MAX, PREVIEW_PCT_MIN, PREVIEW_PCT_STEP, availablePreviewPx, effectivePreviewPercent, percentFromOldPixels, previewCapForTier, previewMaxPercent, previewPixels, snapPreviewPercent } from '../src/lib/logoLook.ts';
-ok('the preview size runs 50% to 200% in steps of 10%, the default is 120% (what the owner has set), and 100% is the standard 220 px', PREVIEW_PCT_MIN === 50 && PREVIEW_PCT_MAX === 200 && PREVIEW_PCT_STEP === 10 && (DEFAULT_PREVIEW_PCT as number) === 120 && DEFAULT_PREVIEW_SIZE === 220 && previewPixels(100, 'capable', 1600) === 220 && previewPixels(200, 'capable', 1600) === 440 && previewPixels(50, 'capable', 1600) === 110);
-ok('a percentage is rounded to a step and kept between the limits', snapPreviewPercent(133) === 130 && snapPreviewPercent(5) === 50 && snapPreviewPercent(999) === 200 && snapPreviewPercent(145) === 150);
-ok('an unreadable percentage becomes the default, 120%', snapPreviewPercent('big') === 120 && snapPreviewPercent(NaN) === 120 && snapPreviewPercent(null) === 120 && snapPreviewPercent(undefined) === 120);
-ok('device caps: a light device 125%, an ordinary one 175%, a capable one 200%', previewCapForTier('lite') === 125 && previewCapForTier('standard') === 175 && previewCapForTier('capable') === 200);
-ok('on a wide screen the cap is the device\'s', previewMaxPercent('lite', 1600) === 125 && previewMaxPercent('standard', 1600) === 175 && previewMaxPercent('capable', 1600) === 200);
-ok('the maximum is a multiple of 10 where it can be, at most the cap, and never below 50%', [320, 375, 414, 600, 768, 900, 1024, 1440, 2560].every((w) => (['lite', 'standard', 'capable'] as const).every((t) => { const m = previewMaxPercent(t, w); return m >= 50 && m <= previewCapForTier(t) && (m % 10 === 0 || m === previewCapForTier(t)); })));
-ok('the preview never needs more room than the screen has: at every width and tier the preview plus the panel\'s padding fits (no sideways scroll)', [320, 375, 414, 600, 700, 768, 900, 1024, 1440].every((w) => (['lite', 'standard', 'capable'] as const).every((t) => { const px = previewPixels(200, t, w); return px <= Math.max(availablePreviewPx(w), 110);})));
+// The animation's size, chosen as one of three presets in the breathing panel: it sizes the front page (tests/welcome-logo.test.mts) and the panel's preview.
+import { ANIMATION_SIZES, DEFAULT_ANIMATION_SIZE, animationSizeLabel, availablePreviewPx, previewPixels, snapAnimationSize } from '../src/lib/logoLook.ts';
+ok('three presets, Small, Standard and Large, and Standard by default', ANIMATION_SIZES.join() === 'small,standard,large' && DEFAULT_ANIMATION_SIZE === 'standard' && ANIMATION_SIZES.map(animationSizeLabel).join() === 'Small,Standard,Large');
+ok('anything unreadable becomes Standard', ['huge', 120, null, undefined, ''].every((v) => snapAnimationSize(v) === 'standard') && snapAnimationSize('large') === 'large');
+ok('on a wide screen the preview is 220, 264 and 308 px: Standard is the size the owner had set', ANIMATION_SIZES.map((s) => previewPixels(s, 'capable', 1600)).join() === '220,264,308');
+ok('a light device is asked to draw no more than 275 px', previewPixels('large', 'lite', 1600) === 275);
+ok('the preview never needs more room than the screen has, and the three sizes differ on every screen', [320, 375, 414, 600, 700, 768, 900, 1024, 1440].every((w) => (['lite', 'standard', 'capable'] as const).every((t) => { const [a, b, c] = ANIMATION_SIZES.map((s) => previewPixels(s, t, w)); return c <= availablePreviewPx(w) && a < b && b < c; })));
 ok('the room grows with the screen', availablePreviewPx(375) < availablePreviewPx(700) && availablePreviewPx(800) < availablePreviewPx(1400) && availablePreviewPx(0) >= 0);
-ok('a stored choice above this device\'s maximum is used at the maximum, and the choice itself is untouched', effectivePreviewPercent(200, 'lite', 1600) === 125 && snapPreviewPercent(200) === 200);
-ok('a stored choice below the maximum is used as it is', effectivePreviewPercent(80, 'standard', 1600) === 80);
-ok('a size kept in pixels by the older version is converted: 220 px is 100%, 120 px about 50%, 400 px 180%', percentFromOldPixels(220) === 100 && percentFromOldPixels(120) === 50 && percentFromOldPixels(400) === 180 && percentFromOldPixels(300) === 140);
-ok('an unreadable or out-of-range old size becomes the default, 120%', percentFromOldPixels(5000) === 120 && percentFromOldPixels(10) === 120 && percentFromOldPixels('x') === 120 && percentFromOldPixels(NaN) === 120);
 
 import { readFileSync } from 'node:fs';
 const popout = readFileSync('src/app/components/BreathingPopout.tsx', 'utf8');
-ok('the popout shows the percentage beside the label, takes the slider\'s top from the device and the width, and has a Reset to 100%', /\{previewPercent\}%/.test(popout) && /max=\{previewMax\}/.test(popout) && /previewMaxPercent\(tier, viewport\)/.test(popout) && /deviceProfile\(\)\.tier/.test(popout) && /setBreathPreviewPercent\(DEFAULT_PREVIEW_PCT\)/.test(popout) && /min=\{PREVIEW_PCT_MIN\}/.test(popout) && /step=\{PREVIEW_PCT_STEP\}/.test(popout));
-ok('the stored choice is never overwritten by the cap (the cap is applied when drawing, not when saving)', !/setBreathPreviewPercent\(previewPercent\)|setBreathPreviewPercent\(previewMax\)/.test(popout));
+ok('the popout offers the presets as pressed buttons at least 44px tall, and no slider', /ANIMATION_SIZES\.map/.test(popout) && /aria-pressed=\{animationSize === size\}/.test(popout) && /setAnimationSize\(size\)/.test(popout) && /min-h-11/.test(popout) && !/type="range"|preview-size|Preview size/.test(popout));
+ok('it says what the size changes', popout.includes('Animation size, here and on the front page'));
+ok('the preview follows the choice, the device and the width', /previewPixels\(animationSize, tier, viewport\)/.test(popout) && /deviceProfile\(\)\.tier/.test(popout));
+ok('the panel keeps one width whichever preset is chosen', /const leftWidth = previewPixels\('large', tier, viewport\) \+ \(viewport < 640 \? 64 : 96\) \+ 48;/.test(popout));
+ok('the size buttons sit above the preview, so they stay under the pointer as it grows and shrinks, with no empty space held for it', popout.indexOf('aria-label="Animation size"') < popout.indexOf('<ValarBreathingLogo') && !/minHeight: largestPreview/.test(popout));
+ok('the logo\'s wide glow is clipped in the panel, so a phone never scrolls it sideways', popout.includes('flex flex-col items-center justify-center p-6 bg-background overflow-x-clip'));

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect } from 'react';
 import { usePref } from '../../lib/deviceMemory';
+import { setRingTheme } from '../../lib/ringTheme';
 
 type Theme = 'dark' | 'light';
 
@@ -31,6 +32,9 @@ export function ThemeProvider({
   // device", in which case usePref restores and saves the choice. Every other
   // visit starts from `defaultTheme`.
   const [theme, setTheme] = usePref('theme', defaultTheme);
+
+  // The breathing colours follow the theme from the next breath (src/lib/ringTheme.ts).
+  useEffect(() => { setRingTheme(theme); }, [theme]);
 
   // One-time cleanup: a visitor who used the app before this was made
   // ephemeral may still have the old persisted value sitting in their

@@ -3,6 +3,8 @@ import { usePref } from '../../lib/deviceMemory';
 import type { BreathingTechnique } from '../../lib/breathingPresets';
 import { BreathingCounter } from './BreathingCounter';
 import { BreathTonesPlayer } from './BreathTonesSwitch';
+import { setRingClock } from '../../lib/ringTheme';
+import { breathLengthMs } from '../../lib/breathClock';
 
 // The breathing pace, counter and tones, portable (owner, 2026-11-15: "the counter and pacer basically portable", and the tones heard whenever they are
 // switched on in the panel). One pace and one clock per page, shared by the counter, the tones, the panel's ring and the header logo, on every screen of
@@ -18,6 +20,9 @@ export function useBreathRhythm() {
   useEffect(() => {
     setCycleStart(Date.now());
   }, [technique]);
+  useEffect(() => {
+    setRingClock(cycleStart, breathLengthMs(technique));
+  }, [cycleStart, technique]);
   return { technique, setTechnique, cycleStart } as const;
 }
 

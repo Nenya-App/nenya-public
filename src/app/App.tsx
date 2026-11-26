@@ -648,7 +648,6 @@ export default function App() {
           onBreathingPopoutToggle={toggleBreathingPanel}
           onTutorialReplay={handleStartTutorial}
           technique={breathingTechnique}
-          cycleStart={breathingCycleStart}
         />
 
         {/* The counter and the tones on every screen once the terms are accepted (portable, owner 2026-11-15). The tour points at it on the front page. */}

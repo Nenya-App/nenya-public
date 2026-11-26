@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, useSyncExternalStore } from 'react';
 import { useFadeSwitch } from '../../lib/useFadeSwitch';
 import { ringCorrection } from '../../lib/breathClock';
 import { useBreathColourChoice, useOrbColourChoice } from '../../lib/deviceMemory';
@@ -6,6 +6,9 @@ import { useKeptPalettes } from '../../lib/keptPalettes';
 import { breathSequence, orbVectors, resolveColours } from '../../lib/logoColours';
 import { DEFAULT_OUTER_ORBIT } from '../../lib/orbitLook';
 import { ringAlphas, ringEdgeStart } from '../../lib/breathStrength';
+import { EDGE_COLOUR, EDGE_GLOW, EDGE_WIDTH, visibleRing } from '../../lib/ringVisibility';
+import { getRingTheme, subscribeRingTheme, themeForBreath } from '../../lib/ringTheme';
+import { useTheme } from './ThemeProvider';
 
 /**
  * The breathing ring grows to the middle of the ring of outer orbs and no further: its full-size diameter is the orb ring's diameter (2 x the orbs' radius, a fraction of the logo's size,
@@ -127,19 +130,28 @@ export const valarColors = [
   },
 ];
 
-// All 96 colours (16 Valar x 6 colours each) in breath order. Shared with the gem, which tints to the
-// same colour as the ring.
+// All 96 colours (16 Valar x 6 colours each), palette by palette. The ring takes its own list from useBreathColours below.
 export const allColors: string[] = valarColors.flatMap((valar) => valar.vector);
 const originalOrbVectors: string[][] = valarColors.map((valar) => valar.vector);
 
 /**
- * The colours of the breath ring and of the gem's tint, one a breath: the original 96 unless the visitor chose another set in Settings
- * (src/lib/logoColours.ts). The same array every time while the choice and the palettes they kept stay as they are.
+ * The colours of the breath ring, of the gem's tint and of the "more below" button's pulse, one a breath: the visitor's choice in Settings
+ * (src/lib/logoColours.ts; all sixteen palettes for the original), keeping the colours that can be seen on the page's background
+ * (src/lib/ringVisibility.ts). Ask for the list by the time a breath started: after a change of theme, the breath under way keeps the old
+ * theme's list (src/lib/ringTheme.ts). The same function while the choice, the theme and the palettes they kept stay as they are.
  */
-export function useBreathColours(): string[] {
+export function useBreathColours(): (breathStartMs: number) => string[] {
   const choice = useBreathColourChoice();
   const kept = useKeptPalettes();
-  return useMemo(() => (choice === 'original' ? allColors : breathSequence(resolveColours(choice, valarColors, kept))), [choice, kept]);
+  const { theme } = useTheme();
+  const stored = useSyncExternalStore(subscribeRingTheme, getRingTheme, () => null);
+  // Before the page has said its theme (the first frame), the theme itself.
+  const held = useMemo(() => stored ?? { before: theme, after: theme, switchAt: 0 }, [stored, theme]);
+  const lists = useMemo(() => {
+    const chosen = resolveColours(choice, valarColors, kept);
+    return { dark: breathSequence(visibleRing(chosen, 'dark')), light: breathSequence(visibleRing(chosen, 'light')) };
+  }, [choice, kept]);
+  return useCallback((breathStartMs: number) => lists[themeForBreath(held, breathStartMs)], [lists, held]);
 }
 
 /** The six-colour vector of each of the sixteen orbs: each palette's own unless the visitor chose another set in Settings. */
@@ -211,11 +223,9 @@ export function ValarBreathingLogo({
   const { applied, style: fadeStyle } = useFadeSwitch({ tech: technique, cycleDur: cycleDuration, start: cycleStart }, shapeKey);
   const { tech, cycleDur, start } = applied;
 
-  // The ring's colours, one a breath: all 96 unless the visitor chose another set (Settings, Logo look, Breathing colours).
-  const colours = useBreathColours();
-
-  // Total animation cycle = every colour (96 by default) × cycleDuration seconds each
-  const totalDuration = colours.length * cycleDur;
+  // The ring's colours, one a breath: the set chosen in Settings (Logo look, Breathing colours), as far as it can be seen on the theme.
+  const coloursFor = useBreathColours();
+  const { theme } = useTheme();
 
   // Derive the breath's expand/hold/contract/hold shape from the technique's phase
   // fractions (ih/hi/ex/ho in ms); falls back to an even 4-phase split when none is set.
@@ -252,35 +262,32 @@ export function ValarBreathingLogo({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [start, cycleDur, ringsEpochKey]);
 
-  // Only one ring is ever visually active at a time -- the breath cycles
-  // sequentially through all 96 colors, one fully faded out before the next
-  // fades in. Previously all 96 were mounted and animating simultaneously,
-  // each holding its own compositor layer, which is what was making the
-  // pulse stutter on less powerful displays. A single ring, swapped on a
-  // schedule, produces the identical visual sequence for a fraction of the
-  // cost. This scheduler only ever writes `activeIndex` (a plain
-  // `background` style, not part of the `animation` shorthand), so it can
-  // never perturb the CSS animation set up above.
-  const [activeIndex, setActiveIndex] = useState(0);
+  // Only one ring is ever visually active at a time -- the breath goes through the colours one a breath, one fully faded
+  // out before the next fades in. Previously all 96 were mounted and animating simultaneously, each holding its own
+  // compositor layer, which is what was making the pulse stutter on less powerful displays. A single ring, swapped on a
+  // schedule, produces the identical visual sequence for a fraction of the cost. This scheduler only ever writes the
+  // active colour (a plain `background` style, not part of the `animation` shorthand), so it can never perturb the CSS
+  // animation set up above.
+  const [activeColor, setActiveColor] = useState(() => coloursFor(Date.now())[0]);
 
   useEffect(() => {
-    if (!enabled || start == null) return;
+    if (!enabled || start == null) {
+      setActiveColor(coloursFor(Date.now())[0]);
+      return;
+    }
     let timeoutId: ReturnType<typeof setTimeout>;
     const scheduleNext = () => {
-      const elapsed = (Date.now() - start) / 1000;
-      const cyclePos = ((elapsed % totalDuration) + totalDuration) % totalDuration;
-      const idx = Math.floor(cyclePos / cycleDur) % colours.length;
-      const phaseIntoRing = cyclePos - idx * cycleDur;
-      setActiveIndex(idx);
-      const msUntilNext = (cycleDur - phaseIntoRing) * 1000;
-      timeoutId = setTimeout(scheduleNext, Math.max(msUntilNext, 16));
+      const breath = Math.floor(Math.max(0, Date.now() - start) / (cycleDur * 1000));
+      const breathStart = start + breath * cycleDur * 1000;
+      const list = coloursFor(breathStart);
+      setActiveColor(list[breath % list.length]);
+      timeoutId = setTimeout(scheduleNext, Math.max(breathStart + cycleDur * 1000 - Date.now(), 16));
     };
     scheduleNext();
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, start, cycleDur, totalDuration, colours, ringsEpochKey]);
+  }, [enabled, start, cycleDur, coloursFor, ringsEpochKey]);
 
-  const activeColor = colours[activeIndex % colours.length] ?? colours[0];
   // The ring's soft gradient for the chosen strength: at standard (boost 1) exactly the old alphas and edge; above it brighter and wider.
   const alphas = ringAlphas({ opacity, boost });
   const ringEdge = ringEdgeStart({ opacity, boost });
@@ -359,6 +366,9 @@ export function ValarBreathingLogo({
               // This prevents square corner artifacts when the box is scaled/transformed
               background: `radial-gradient(circle closest-side, transparent 0%, transparent ${ringEdge}%, ${hexToRgba(activeColor, alphas[0])} 50%, ${hexToRgba(activeColor, alphas[1])} 70%, ${hexToRgba(activeColor, alphas[2])} 90%, ${hexToRgba(activeColor, alphas[3])} 99%, transparent 100%)`,
               borderRadius: '50%',
+              // The soft edge line (src/lib/ringVisibility.ts): it changes with the page at once, unlike the breath's colour.
+              border: `${EDGE_WIDTH}px solid ${EDGE_COLOUR[theme]}`,
+              boxShadow: `0 0 5px ${EDGE_GLOW[theme]}, inset 0 0 5px ${EDGE_GLOW[theme]}`,
               zIndex: 1,
               animation: `${ringAnimName} ${cycleDur}s linear infinite`,
               animationDelay: `${ringDelay}s`,

@@ -190,6 +190,9 @@ interface EmergencyExitButtonProps {
   onEmergencyExit?: () => void;
 }
 
+/** The size of the header's round buttons: the information button here, and the logo across the header (HeaderLogo.tsx), so the two always match. */
+export const HEADER_ROUND_SIZE = 'size-8 min-[400px]:size-11';
+
 export function EmergencyExitButton({ 
   variant = 'header', 
   className = '',
@@ -226,7 +229,7 @@ export function EmergencyExitButton({
       <Button
         onClick={() => setInfoModalOpen(true)}
         className={`
-          ${isHeader ? 'p-1 size-8 min-[400px]:size-11' : 'p-1.5 size-11'}
+          ${isHeader ? `p-1 ${HEADER_ROUND_SIZE}` : 'p-1.5 size-11'}
           rounded-full
           border shadow-sm hover:shadow-md
           transition-all duration-200
