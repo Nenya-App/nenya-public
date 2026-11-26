@@ -64,7 +64,7 @@ ok('the space after the stack moves only the letters after it; the nudge and ris
 ok('the colours are kept readable against the page the mark sits on, and come from the session ID', /markPalette\(id, pageColour\(mark\)\)/.test(src) && /useSyncExternalStore\(subscribeSessionMark, getSessionMarkId/.test(src));
 const footer = readFileSync('src/app/components/AppFooter.tsx', 'utf8');
 ok('the footer shows the mark only with VITE_NAME_MARK=on, and the plain name otherwise', /nameMarkOn\(\) \? <NenyaMark face="body"/.test(footer) && /: <span className="text-sm font-medium">Nenya<\/span>/.test(footer));
-ok('the copyright line keeps the plain name', /<p>© 2025 Nenya<\/p>/.test(footer));
+ok('the copyright line keeps the plain name', /<p>© 2025–2026 Nenya<\/p>/.test(footer));
 ok('the main app and the coach tell the mark which session ID to use', /setSessionMarkId\(sessionId( \|\| null)?\)/.test(readFileSync('src/app/App.tsx', 'utf8')) && /setSessionMarkId\(colors \? sessionIdFrom\(colors\.color1, colors\.color2\) : null\)/.test(readFileSync('src/coach/CoachPage.tsx', 'utf8')));
 
 // Owner, 2026-11-18: the animation is back, with the pivot fixed (verified in Chrome and Firefox against the layout engine's baseline and the glyph's outline: docs/brand/mark-settings-2026-11-17.md).
