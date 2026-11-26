@@ -133,9 +133,9 @@ export default function WelcomePage({
             Take a Moment to Breathe
           </p>
 
-          {/* The "Look into the Mirror?" button (it was "Enter"): glows, and pulses once at the end of each breath in that breath's colour */}
+          {/* The "Explore Your Senses" button (owner, 2026-11-26; it was "Look into the Mirror?", and before that "Enter"): glows, and pulses once at the end of each breath in that breath's colour */}
           <div className="flex justify-center pt-3">
-            <MoreBelowButton label="Look into the Mirror?" ariaLabel="Look into the Mirror?" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
+            <MoreBelowButton label="Explore Your Senses" ariaLabel="Explore Your Senses" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
           </div>
         </div>
       </div>
