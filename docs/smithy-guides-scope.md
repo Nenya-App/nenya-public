@@ -1,6 +1,6 @@
 # Scope: the "make your own" guides
 
-Status: Proposed. Design written 2026-11-25 for the owner's approval; nothing built.
+Status: Proposed. Design written and approved by the owner 2026-11-25; nothing built. Build plan: [smithy-guides-plan.md](smithy-guides-plan.md).
 
 ## What this is and why
 A plain-language guide series that covers the technical side of the whole project, with links to the exact files in the repository, offered as its own page in About.
