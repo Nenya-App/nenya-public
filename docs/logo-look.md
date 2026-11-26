@@ -14,7 +14,7 @@ Owner, 2026-11-22: "set the defaults to what is currently set." For a visitor wh
 | Breathing colours (`breathColours`) | Original | Night |
 | Orb colours (`orbColours`) | Original | ~~Night~~ Original again (owner, 2026-11-22: the outer orbs should be the standard colours; the breathing colours stay Night) |
 | Outer glow (`orbHalo`) | Own colour | Orb's palette |
-| Preview size (`previewPercent`) | 100% | 120% (also what Reset returns to) |
+| Animation size (`animationSize`; replaced the preview slider on 2026-11-26, see below) | preview 120% | Standard |
 | Outer ring movement (2026-11-24, [outer-ring-movement.md](outer-ring-movement.md)) | turns counter-clockwise, 120 s | turns counter-clockwise at its own 144 s per turn; options for still, direction, pace and pace to the breath |
 | Inner lights (`innerOrbs`), leaves (`logoLeaves`), gem sides (`gemSides`) | Moving, 6, 8 | the same |
 Not changed: theme, text size, colour-blind mode, breathing sound and tones, the breathing pace and the breathing strength (personal and access settings; the strength is on a new scale, below).
@@ -97,12 +97,11 @@ A visitor "saves" a palette by pressing *Keep this palette in my report* in the 
 
 Tests: `tests/logo-colours.test.mts`, `tests/leaf-sway.test.mts`, `tests/logo-look-storage.test.mts`.
 
-## Preview size
-The animated preview in the breathing and accessibility panel has a **Preview size** slider and a Reset button. It is a percentage of the standard preview (220 pixels): **50% to 200% in steps of 10%, 100% by default**, shown as "100%" beside the label (2026-11-22; before that it was 120 to 400 pixels in steps of 20, which reached only about half of what was wanted). Kept as `previewPercent` like the other display settings. Code: `src/app/components/BreathingPopout.tsx`; the rules are pure and tested in `src/lib/logoLook.ts`.
-- **Device cap** (`previewCapForTier`, from the site's own device tiers in `src/lib/deviceProfile.ts`): a light device (the "lite" tier: 2 GB of memory or less, 2 cores or fewer, Save-Data, or a slow connection) tops out at 125%, an ordinary one at 175%, a capable one (WebGPU, 8 GB, 8 cores) at 200%.
-- **Width cap** (`availablePreviewPx`, `previewMaxPercent`): the slider's top is also lowered so the preview and the panel's padding fit the screen, with no sideways scroll at any width or browser zoom (zoom changes the width in CSS pixels, and the panel reads it as it changes). Under 768 pixels wide the panel is one column; above, the right-hand column keeps at least 300 pixels. The lowest it ever goes is 50%.
-- **A stored value above the cap** is used at the cap, and the stored choice is not changed or erased: on a wider screen or another device it applies in full.
-- **Older stored sizes** (`previewSize`, in pixels, 120 to 400) are converted when there is no `previewPercent` yet: the pixel size divided by 220, rounded to a step (220 px becomes 100%, 300 px 140%, 400 px 180%). The old key is no longer written.
+## Animation size
+The breathing and accessibility panel has three presets, **Small, Standard and Large** (2026-11-26; before that, a "Preview size" slider that changed only the panel's preview). The choice sizes the animation on the front page and the panel's preview. Kept as `animationSize` like the other display settings; the earlier `previewPercent` and `previewSize` values are no longer read. Code: `src/app/components/BreathingPopout.tsx`, `src/lib/logoLook.ts` (the presets and the preview) and `src/lib/welcomeLogo.ts` (the front page).
+- **Front page:** Standard is the size from `welcomeLogoSize`; Small is three quarters of it; Large is up to a quarter larger, as far as the width allows and while both gaps and the button stay on the screen. On a very short screen (a phone on its side) Large is the same as Standard.
+- **Equal gaps:** the first screen is the space under the header. The gap above the animation and the gap between it and "Explore Your Senses" share the spare height equally.
+- **Preview:** 220, 264 and 308 pixels on a wide screen (Large is 275 on a light device), less where the screen is narrow, with no sideways scroll. The buttons sit above the preview and the panel keeps one width, so they do not move when one is picked.
 
 ## Storage
 Both choices are display settings like the others (`logoLeaves`, `gemSides` in `nenya.prefs`, `src/lib/deviceMemory.ts`). They are

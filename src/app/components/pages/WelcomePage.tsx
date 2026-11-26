@@ -15,6 +15,7 @@ import { MoreBelowButton } from '../MoreBelowButton';
 import { L } from '../../../lib/vocabulary';
 import { strengthParts } from '../../../lib/breathStrength';
 import { welcomeLogoSize } from '../../../lib/welcomeLogo';
+import { useAnimationSize } from '../../../lib/deviceMemory';
 interface WelcomePageProps {
   onContinue: () => void;
   breathingEnabled: boolean;
@@ -42,6 +43,7 @@ export default function WelcomePage({
   onLogoClick,
 }: WelcomePageProps) {
   const [logoSize, setLogoSize] = useState(400);
+  const animationSize = useAnimationSize();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Advances by one screen's worth of this page's own scroll container
@@ -60,26 +62,27 @@ export default function WelcomePage({
   // Calculate logo size to fill viewport
   useEffect(() => {
     const updateLogoSize = () => {
-      setLogoSize(welcomeLogoSize(window.innerWidth, window.innerHeight));
+      setLogoSize(welcomeLogoSize(window.innerWidth, window.innerHeight, animationSize));
     };
 
     updateLogoSize();
     window.addEventListener('resize', updateLogoSize);
     return () => window.removeEventListener('resize', updateLogoSize);
-  }, []);
+  }, [animationSize]);
 
   return (
     <div ref={scrollContainerRef} className="size-full relative overflow-y-auto snap-y snap-proximity">
       {/* Quick navigation, bottom right: Breathe (home), Reflect (the gateways), Coach. It replaces the welcome message the sparkle used to reopen. */}
       <QuickNav onBreathe={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} onReflect={onContinue} />
 
-      {/* First Section: Full Viewport with Large Logo */}
-      <div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">
-        {/* No flex-1 here -- letting this grow-to-fill was pinning the text
-            below to the bottom of the viewport on shorter/wider screens,
-            leaving a large empty gap above it. The outer section's own
-            justify-center now centers this + the text block as one unit. */}
-        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`flex items-center justify-center transition-all duration-500`}>
+      {/* First Section: the space under the header, with the large logo */}
+      {/* The gap from the header to the top of the logo equals the gap from the logo to the button (owner, 2026-11-26): the spaces
+          above and below the logo share the spare height equally, each at least 3.5rem. The tagline sits in the middle of the lower
+          one. On a short screen the column grows and scrolls. Sideways, the logo's wide glow is clipped at the screen's edges. */}
+      <div className="min-h-full flex flex-col items-center px-6 relative snap-start overflow-x-clip">
+        <div aria-hidden="true" className="grow shrink-0 basis-0 min-h-14" />
+        {/* The negative margin keeps the breathing ring's padding from adding to either gap. */}
+        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className="-my-8 sm:-my-12 flex items-center justify-center transition-all duration-500">
           {/* Clicking the logo opens the breathing and accessibility settings, the same as the small logo in the top left (a button for the keyboard and screen readers, too). Hovering brightens the glow. */}
           <div
             id="tutorial-logo"
@@ -126,17 +129,19 @@ export default function WelcomePage({
           </div>
         </div>
 
-        {/* Breathing Text with Scroll Indicator */}
-        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`pb-8 mt-5 sm:mt-8 space-y-6 transition-opacity duration-500`}>
-          <p className="text-xl md:text-2xl text-center text-muted-foreground">
-            Take a Moment to Breathe
-          </p>
-
-          {/* The "Explore Your Senses" button (owner, 2026-11-26; it was "Look into the Mirror?", and before that "Enter"): glows, and pulses once at the end of each breath in that breath's colour */}
-          <div className="flex justify-center pt-3">
-            <MoreBelowButton label="Explore Your Senses" ariaLabel="Explore Your Senses" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
+        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className="grow shrink-0 basis-0 flex flex-col items-center justify-center">
+          <div className="min-h-14 flex items-center pt-3">
+            <p className="text-xl md:text-2xl text-center text-muted-foreground">
+              Take a Moment to Breathe
+            </p>
           </div>
         </div>
+
+        {/* The "Explore Your Senses" button (owner, 2026-11-26; it was "Look into the Mirror?", and before that "Enter"): glows, and pulses once at the end of each breath in that breath's colour */}
+        <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className="flex justify-center">
+          <MoreBelowButton label="Explore Your Senses" ariaLabel="Explore Your Senses" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
+        </div>
+        <div aria-hidden="true" className="grow shrink-0 basis-0 min-h-3" />
       </div>
 
       {/* Second Section: Welcome Text and CTA */}
