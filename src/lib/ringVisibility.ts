@@ -68,3 +68,7 @@ export function visibleColours(palette: readonly string[], theme: RingTheme): st
 /** A colour choice (src/lib/logoColours.ts) as the ring uses it on this page. */
 export const visibleRing = (r: ResolvedColours, theme: RingTheme): ResolvedColours => ({ choice: r.choice, palettes: r.palettes.map((p) => visibleColours(p, theme)) });
 
+// Being tried (owner, 2026-11-26): a thin line at the ring's edge that is at least 3:1 against the page at the top of a breath. It is not part of the
+// built site: it shows only in the local development copy, and only when the address ends in ?ringedge=on.
+export const EDGE_COLOUR: Record<RingTheme, string> = { dark: '#FAF8F5', light: '#2A2623' };
+export const ringEdgeWanted = (development: boolean, search: string): boolean => development && /[?&]ringedge=on(&|$)/.test(search);

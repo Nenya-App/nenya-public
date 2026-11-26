@@ -6,8 +6,11 @@ import { useKeptPalettes } from '../../lib/keptPalettes';
 import { breathSequence, orbVectors, resolveColours } from '../../lib/logoColours';
 import { DEFAULT_OUTER_ORBIT } from '../../lib/orbitLook';
 import { ringAlphas, ringEdgeStart } from '../../lib/breathStrength';
-import { visibleRing } from '../../lib/ringVisibility';
+import { EDGE_COLOUR, ringEdgeWanted, visibleRing } from '../../lib/ringVisibility';
 import { useTheme } from './ThemeProvider';
+
+// Being tried: a thin edge line on the ring, in the local development copy only (src/lib/ringVisibility.ts).
+const EDGE_PREVIEW = ringEdgeWanted(import.meta.env.DEV, typeof window === 'undefined' ? '' : window.location?.search ?? '');
 
 /**
  * The breathing ring grows to the middle of the ring of outer orbs and no further: its full-size diameter is the orb ring's diameter (2 x the orbs' radius, a fraction of the logo's size,
@@ -216,6 +219,7 @@ export function ValarBreathingLogo({
 
   // The ring's colours, one a breath: the set chosen in Settings (Logo look, Breathing colours), as far as it can be seen on this theme.
   const colours = useBreathColours();
+  const { theme } = useTheme();
 
   // Total animation cycle = every colour (96 by default) × cycleDuration seconds each
   const totalDuration = colours.length * cycleDur;
@@ -362,6 +366,7 @@ export function ValarBreathingLogo({
               // This prevents square corner artifacts when the box is scaled/transformed
               background: `radial-gradient(circle closest-side, transparent 0%, transparent ${ringEdge}%, ${hexToRgba(activeColor, alphas[0])} 50%, ${hexToRgba(activeColor, alphas[1])} 70%, ${hexToRgba(activeColor, alphas[2])} 90%, ${hexToRgba(activeColor, alphas[3])} 99%, transparent 100%)`,
               borderRadius: '50%',
+              ...(EDGE_PREVIEW ? { border: `2px solid ${EDGE_COLOUR[theme]}` } : {}),
               zIndex: 1,
               animation: `${ringAnimName} ${cycleDur}s linear infinite`,
               animationDelay: `${ringDelay}s`,

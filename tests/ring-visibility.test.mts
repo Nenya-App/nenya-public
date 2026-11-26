@@ -1,8 +1,8 @@
 // Every breath can be seen (owner, 2026-11-26): the ring uses only colours that stand out from the page it is on, each palette keeps at least three,
-// and the button's pulse and the gem take the same list.
+// and the button's pulse and the gem take the same list. Also the edge line being tried in the local preview.
 import { readFileSync } from 'node:fs';
 import { ok } from './helpers.mts';
-import { MIN_COLOURS, MIN_DIFFERENCE, PAGE_BACKGROUND, RIM_ALPHA, RING_PEAK_OPACITY, ringDifference, visibleColours, visibleRing } from '../src/lib/ringVisibility.ts';
+import { EDGE_COLOUR, MIN_COLOURS, MIN_DIFFERENCE, PAGE_BACKGROUND, RIM_ALPHA, RING_PEAK_OPACITY, ringDifference, visibleColours, visibleRing, ringEdgeWanted } from '../src/lib/ringVisibility.ts';
 import { RING_STOPS } from '../src/lib/breathStrength.ts';
 import { PRESETS, breathSequence, resolveColours } from '../src/lib/logoColours.ts';
 
@@ -37,3 +37,12 @@ ok('the ring, and so the gem, reads the list for the page it is on', /const \{ t
 const button = src('src/app/components/MoreBelowButton.tsx');
 ok('the button\'s pulse takes the ring\'s list, so it matches the breath just ended', /const colours = useBreathColours\(\);/.test(button) && /colours\[end\.index % colours\.length\]/.test(button) && !/allColors/.test(button));
 
+// The edge line is only being tried: the local development copy, and only when the address asks for it.
+ok('the edge line shows only in the development copy with ?ringedge=on', ringEdgeWanted(true, '?ringedge=on') && ringEdgeWanted(true, '?a=1&ringedge=on') && !ringEdgeWanted(false, '?ringedge=on') && !ringEdgeWanted(true, '') && !ringEdgeWanted(true, '?ringedge=off'));
+for (const theme of ['dark', 'light'] as const) {
+  const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const shown = '#' + rgb(EDGE_COLOUR[theme]).map((v, i) => Math.round(v * 0.6 + rgb(PAGE_BACKGROUND[theme])[i] * 0.4).toString(16).padStart(2, '0')).join('');
+  const r = (Math.max(lum(shown), lum(PAGE_BACKGROUND[theme])) + 0.05) / (Math.min(lum(shown), lum(PAGE_BACKGROUND[theme])) + 0.05);
+  ok(`${theme}: the edge line is at least 3:1 on the page at the ring's peak`, r >= 3, r.toFixed(2));
+}
+ok('the ring draws the line only when asked, from the build\'s own development flag', /const EDGE_PREVIEW = ringEdgeWanted\(import\.meta\.env\.DEV, typeof window === 'undefined' \? '' : window\.location\?\.search \?\? ''\);/.test(ring) && /EDGE_PREVIEW \? \{ border: `2px solid \$\{EDGE_COLOUR\[theme\]\}` \} : \{\}/.test(ring));

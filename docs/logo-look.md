@@ -36,6 +36,8 @@ The old **Breathing opacity** (0 to 100%, default 100%) is now **Breathing stren
 ## Which colours the ring uses (2026-11-26)
 The ring was often invisible because many palette colours are close to the page's background, in one theme or the other. It now takes, from each palette in the visitor's choice, the colours that stand out on the current theme's background: a colour difference (CIE76) of at least 10 between the page and the ring's outer edge at standard strength. A palette with fewer than three such colours is topped up with its next-nearest ones, made darker (light theme) or lighter (dark theme) with the hue kept. The gem's tint and the "Explore Your Senses" button's pulse use the same list. This is a rule of ours for being able to see the breath, not an accessibility standard: the soft ring does not reach 3:1 against the page. The cut is measured against the plain background, not the logo's own glow, and the colour-blind filters are not part of it. Code: `src/lib/ringVisibility.ts`; test: `tests/ring-visibility.test.mts`.
 
+A thin edge line (at least 3:1) is being tried: in the local development copy only, with `?ringedge=on` at the end of the address. It is not part of the built site.
+
 ## What a visitor can change
 Under **Logo look** in the accessibility panel (`AccessibilitySettings.tsx`), as radio buttons (no sliders), applied at once with no
 motion, and announced politely ("The gem now has 8 sides."). Targets are at least 44 px.
