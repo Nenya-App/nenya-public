@@ -1,4 +1,4 @@
-import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Crown, User, MessageCircle, Mail, Wind, Globe } from 'lucide-react';
+import { ArrowLeft, Sparkles, Palette, MessageSquare, Shield, Building2, FileText, Users, Network, Play, Heart, Scroll, Eye, Crown, User, MessageCircle, Mail, Wind, Globe, Hammer } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import nenyaLogo from '../../../assets/nenya-logo.webp';
@@ -17,6 +17,7 @@ export const ABOUT_SECTIONS: { key: string; title: string; blurb: string; ids: s
   { key: 'ideas', title: 'Ideas Behind It', blurb: 'The research and thinking that shaped the design.', ids: ['bio-social-design', 'evolved-leader'] },
   { key: 'coach', title: 'The Coach and What Is Planned', blurb: 'The optional AI coach demo, how it is checked, and what we hope to build next.', ids: ['about-coach', 'how-checks-work', 'coach-region', 'venice-chat', 'witnessed', 'pii-scrubbing', 'partner-practice'] },
   { key: 'trust', title: 'Privacy, Safety and Where We Stand', blurb: 'What we collect, what we promise, and the lines we will not cross.', ids: ['privacy-promise', 'where-we-stand', 'terms'] },
+  { key: 'smithy', title: 'The Smithy', blurb: 'Make your own, on your own device.', ids: ['smithy'] },
 ];
 
 export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }: AboutMenuProps) {
@@ -152,6 +153,12 @@ export default function AboutMenu({ onBack, onRestartDemo, onNavigateToSection }
       title: 'Support Us',
       description: 'Support free, non-extractive contemplative technology — fiscally sponsored by Fractured Atlas',
       icon: Heart,
+    },
+    {
+      id: 'smithy',
+      title: 'The Smithy',
+      description: 'Make your own, on your own device',
+      icon: Hammer,
     },
     {
       id: 'terms',
