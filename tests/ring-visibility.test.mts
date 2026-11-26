@@ -1,8 +1,8 @@
 // Every breath can be seen (owner, 2026-11-26): the ring uses only colours that stand out from the page it is on, each palette keeps at least three,
-// and the button's pulse and the gem take the same list. Also the edge line being tried in the local preview.
+// and the button's pulse and the gem take the same list. Also the soft edge line.
 import { readFileSync } from 'node:fs';
 import { ok } from './helpers.mts';
-import { EDGE_COLOUR, MIN_COLOURS, MIN_DIFFERENCE, PAGE_BACKGROUND, RIM_ALPHA, RING_PEAK_OPACITY, ringDifference, visibleColours, visibleRing, ringEdgeWanted } from '../src/lib/ringVisibility.ts';
+import { EDGE_COLOUR, EDGE_GLOW, EDGE_WIDTH, MIN_COLOURS, MIN_DIFFERENCE, PAGE_BACKGROUND, RIM_ALPHA, RING_PEAK_OPACITY, ringDifference, visibleColours, visibleRing } from '../src/lib/ringVisibility.ts';
 import { RING_STOPS } from '../src/lib/breathStrength.ts';
 import { PRESETS, breathSequence, resolveColours } from '../src/lib/logoColours.ts';
 
@@ -33,16 +33,17 @@ for (const theme of ['dark', 'light'] as const) {
 }
 ok('a kept palette of two faint colours stays two, both made to stand out', (() => { const got = visibleColours([PAGE_BACKGROUND.light, '#E0DCD8'], 'light'); return got.length === 2 && got.every((h) => ringDifference(h, 'light') >= 10); })());
 
-ok('the ring, and so the gem, reads the list for the page it is on', /const \{ theme \} = useTheme\(\);/.test(ring) && /breathSequence\(visibleRing\(resolveColours\(choice, valarColors, kept\), theme\)\)/.test(ring) && /\[choice, kept, theme\]/.test(ring));
-const button = src('src/app/components/MoreBelowButton.tsx');
-ok('the button\'s pulse takes the ring\'s list, so it matches the breath just ended', /const colours = useBreathColours\(\);/.test(button) && /colours\[end\.index % colours\.length\]/.test(button) && !/allColors/.test(button));
+ok('the ring, the gem and the button read the lists made for each theme', /dark: breathSequence\(visibleRing\(chosen, 'dark'\)\), light: breathSequence\(visibleRing\(chosen, 'light'\)\)/.test(ring) && /useBreathColours\(\)/.test(src('src/app/components/MoreBelowButton.tsx')) && /useBreathColours\(\)/.test(src('src/app/components/SpectralGem.tsx')) && !/allColors/.test(src('src/app/components/MoreBelowButton.tsx')));
 
-// The edge line is only being tried: the local development copy, and only when the address asks for it.
-ok('the edge line shows only in the development copy with ?ringedge=on', ringEdgeWanted(true, '?ringedge=on') && ringEdgeWanted(true, '?a=1&ringedge=on') && !ringEdgeWanted(false, '?ringedge=on') && !ringEdgeWanted(true, '') && !ringEdgeWanted(true, '?ringedge=off'));
+// The edge line (owner, 2026-11-26: "I like the border line, but I'd like it slightly softer"): thinner than the first try, partly see-through, with a faint glow,
+// and still at least 3:1 against the page at the top of a breath.
+ok('the line is 1.5px with a faint glow, and is part of the site', EDGE_WIDTH === 1.5 && !/ringedge|EDGE_PREVIEW|import\.meta\.env\.DEV/.test(ring + src('src/lib/ringVisibility.ts')));
 for (const theme of ['dark', 'light'] as const) {
+  const parts = /^rgba\((\d+), (\d+), (\d+), ([\d.]+)\)$/.exec(EDGE_COLOUR[theme])!.slice(1).map(Number);
   const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-  const shown = '#' + rgb(EDGE_COLOUR[theme]).map((v, i) => Math.round(v * 0.6 + rgb(PAGE_BACKGROUND[theme])[i] * 0.4).toString(16).padStart(2, '0')).join('');
+  const shown = '#' + parts.slice(0, 3).map((v, i) => Math.round(v * parts[3] * 0.6 + rgb(PAGE_BACKGROUND[theme])[i] * (1 - parts[3] * 0.6)).toString(16).padStart(2, '0')).join('');
   const r = (Math.max(lum(shown), lum(PAGE_BACKGROUND[theme])) + 0.05) / (Math.min(lum(shown), lum(PAGE_BACKGROUND[theme])) + 0.05);
-  ok(`${theme}: the edge line is at least 3:1 on the page at the ring's peak`, r >= 3, r.toFixed(2));
+  ok(`${theme}: the line is softer than solid but at least 3:1 on the page at the ring's peak`, parts[3] < 1 && r >= 3 && r < (theme === 'dark' ? 4 : 3.3), r.toFixed(2));
+  ok(`${theme}: its glow is fainter than the line`, Number(/([\d.]+)\)$/.exec(EDGE_GLOW[theme])![1]) < parts[3] / 2);
 }
-ok('the ring draws the line only when asked, from the build\'s own development flag', /const EDGE_PREVIEW = ringEdgeWanted\(import\.meta\.env\.DEV, typeof window === 'undefined' \? '' : window\.location\?\.search \?\? ''\);/.test(ring) && /EDGE_PREVIEW \? \{ border: `2px solid \$\{EDGE_COLOUR\[theme\]\}` \} : \{\}/.test(ring));
+ok('the ring draws the line and its glow for the page it is on, changing with the page', /border: `\$\{EDGE_WIDTH\}px solid \$\{EDGE_COLOUR\[theme\]\}`,/.test(ring) && /boxShadow: `0 0 5px \$\{EDGE_GLOW\[theme\]\}, inset 0 0 5px \$\{EDGE_GLOW\[theme\]\}`,/.test(ring));

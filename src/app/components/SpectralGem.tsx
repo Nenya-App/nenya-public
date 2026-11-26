@@ -350,7 +350,13 @@ export default function SpectralGem({
           octx.globalAlpha = 1;
         }
       }
-      const [r, g, b] = gemMultiplyColor(breathColoursRef.current, tintIndex(c.idx, liveRef.current?.breathColors, breathColoursRef.current.length), c.p, f, breathingEnabled ? tint : 0, !reduced);
+      // This breath's colour easing toward the next one's, each from the list of the breath it belongs to (a change of theme starts with a new breath).
+      const breath = Math.floor(Math.max(0, elapsed) / breathMs);
+      const breathStart = (anchor ?? mountTime.current) + breath * breathMs;
+      const thisList = breathColoursRef.current(breathStart), nextList = breathColoursRef.current(breathStart + breathMs);
+      const at = tintIndex(breath, liveRef.current?.breathColors, thisList.length);
+      const pair = [thisList[at % thisList.length], nextList[(at + 1) % nextList.length]];
+      const [r, g, b] = gemMultiplyColor(pair, 0, c.p, f, breathingEnabled ? tint : 0, !reduced);
       bctx.globalCompositeOperation = 'source-over';
       bctx.globalAlpha = 1;
       bctx.clearRect(0, 0, px, px);
