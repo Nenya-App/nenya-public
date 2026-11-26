@@ -16,6 +16,7 @@ and `NETLIFY_API_TOKEN`. Check the site id first, because the repo folder is lin
 | `write-build-info.mjs` | Writes `src/generated/build-info.ts` (version, commit, branch). It runs before build, test, typecheck and dev | Nothing |
 | `footprint.mjs` | `npm run footprint`, run after a build: what the built site sends, by scenario | Nothing |
 | `indexnow.mjs` | `npm run indexnow`: tells IndexNow search engines which public pages changed | Network |
+| `build-smithy.mts` | `npm run smithy`: puts the owner-approved guides from `docs/smithy/` into the site (`src/lib/smithyData.ts`) | Nothing |
 | `smithy-offline-check.mts` | After `npm run build`: serves the built site to this computer only, drives Chrome through it, and lists any request that leaves the computer | Google Chrome, `puppeteer-core` |
 | `verify-transcript.mjs` | Checks a signed coach transcript from the command line (`docs/coach-transcripts.md`) | Nothing |
 

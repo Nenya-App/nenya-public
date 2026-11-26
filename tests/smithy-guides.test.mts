@@ -76,3 +76,12 @@ for (const { f, g: one, text } of guides) {
   const heads = one.blocks.flatMap((b) => (b.k === 'h' ? [b.text.map((p) => p.s).join('')] : []));
   ok(`commands that differ are shown for both systems: ${f}`, /(^|\n)py /.test(one.blocks.flatMap((b) => (b.k === 'code' ? [b.code] : [])).join('\n')) && heads.some((h) => h.includes('Mac')) && heads.some((h) => h.includes('Windows')));
 }
+
+// ---- the generated site data (Task 4)
+const { smithyDataSource } = await import('../src/lib/smithyGuide.ts');
+const { SMITHY_GUIDES } = await import('../src/lib/smithyData.ts');
+const approved = guides.map((x) => x.g).filter((x) => x.status === 'approved');
+ok('data is current (run `npm run smithy`)', smithyDataSource(approved) === readFileSync(join(root, 'src/lib/smithyData.ts'), 'utf8'));
+ok('only approved guides ship', SMITHY_GUIDES.length === approved.length && SMITHY_GUIDES.every((x) => x.status === 'approved'));
+const data = readFileSync(join(root, 'src/lib/smithyData.ts'), 'utf8');
+ok('no draft slug appears in the data file', guides.filter((x) => x.g.status !== 'approved').every((x) => !data.includes(`"slug": "${x.g.slug}"`)));
