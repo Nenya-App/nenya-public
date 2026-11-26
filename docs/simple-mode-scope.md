@@ -1,62 +1,86 @@
-# Scope: a Simple mode for the breathing animation
+# Scope: three animation levels (Full, Simple, Minimal)
 
-Status: scoping only, nothing built. Written 2026-11-25 from the owner's note: older devices and busy machines drop frames, so there should be a ready-made, much quieter way to draw the logo, one that holds or removes the orbs, the extra glows and the kaleidoscope.
+Status: scoping only, nothing built. Written 2026-11-25; updated the same day with the owner's decisions. The note behind it: older devices and busy machines drop frames, so there should be ready-made, much quieter ways to draw the logo.
 
 ## The idea in one line
-One switch, "Simple mode", that draws the logo with the fewest moving and blurred parts while the breathing ring and everything about the breath stay exactly as they are.
+Three levels for how the logo is drawn. **Full** is what exists today and stays the default for devices that can handle it. **Simple** is the middle level. **Minimal** is the bottom level, drawn as flat shapes. At every level the breath keeps its pace and its cue.
+
+## Decisions made (owner, 2026-11-25)
+1. **Two lighter levels,** with Minimal first and Simple second. (Read here as: build Minimal first, then Simple.)
+2. **A lighter level is offered, never switched on by itself.**
+3. **Yes to the "looks choppy" offer.**
+4. **Names:** Minimal (bottom), Simple (middle), Full (top, and the default for devices that can handle it).
+5. **In Minimal, the gem and as many other parts as realistically can become flat shapes.**
 
 ## Why
-On 2026-11-25 a recording of the default animation on a Mac dropped frames (a quarter of the frame gaps were 50 ms or longer) while the machine was busy with other work. The same page ran at a steady 60 fps on a quiet machine. The animation stacks several layers: soft glows around sixteen orbs, inner lights, the gem with its kaleidoscope, swaying leaves and a turning ring. When graphics are short on time, those layers are what slip. Slowing the processor changed nothing, so the cost is in drawing and blending, not in the page's code.
+On 2026-11-25 a recording of the default animation on a Mac dropped frames (a quarter of the frame gaps were 50 ms or longer) while the machine was probably busy with other work. The same page ran at a steady 60 fps on a quiet machine. The animation stacks several layers: soft glows around sixteen orbs, inner lights, the gem with its kaleidoscope, swaying leaves and a turning ring. When graphics are short on time, those layers are the likely thing to slip. Slowing the processor changed nothing, which points to drawing and blending rather than the page's code. Which layer costs most has not been measured.
 
-## What already exists (so this is mostly a bundle, not new code)
+## What already exists
 - **Device tiers** (`src/lib/deviceProfile.ts`): `lite`, `standard`, `capable`. On `lite` the gem is held still at the low setting, the kaleidoscope is off by default, the gem is capped at 8 sides and the preview is smaller. The gem also times its own first frames and steps down if they are slow.
-- **Stop motion** (`src/lib/motionStop.ts`): holds the leaves, the inner lights, the gem's kaleidoscope, the outer orbs' pulse and turn, the ring of orbs' turning and the glow's swell. The breath ring keeps its rhythm. It wins over each motion setting without changing them, so resuming restores what the visitor had. The device's own "reduce motion" request does the same.
-- **Individual settings:** Palette Orbit off (removes the outer orbs, inner lights and the Palette Orbit drawing of the leaves), Breathing Emanation off, Logo look: outer glow style (shared glow is the lightest), glow width (Soft is the lightest), inner lights (Hidden), leaves sway, kaleidoscope, outer ring still.
+- **Stop motion** (`src/lib/motionStop.ts`): holds the decorative movement while the breath ring keeps its rhythm. It wins over each motion setting without changing them. The device's "reduce motion" request does the same.
+- **Individual settings:** Palette Orbit, Breathing Emanation, outer glow style and width, inner lights, leaf sway, kaleidoscope, outer ring movement.
 
-## What Simple mode would do
-Turned on, it draws:
-- the breath ring and everything about the breath as usual (the pace, the counter, the tones, the ring's colour);
-- the gem still, with the kaleidoscope off;
-- the leaves still;
-- the **inner lights hidden**;
-- the **outer orbs still** (drawn, not pulsing or turning);
-- the **outer glow set to the shared, soft style** (one glow, narrow), not a separate glow per orb;
-- no halo swell.
+The device tier names (`lite`, `standard`, `capable`) describe the **device**. The new levels (Minimal, Simple, Full) describe the **picture**. Keep the two apart in code and in words.
 
-A further step, **Minimal**, would also switch Palette Orbit off (no orbs at all), for the oldest devices. Whether to offer both steps or only one is an open decision below.
+## The three levels
 
-Like Stop motion, it would **win over the individual settings without changing them**, so turning it off returns the visitor to exactly what they had chosen. Nothing new is stored beyond one display setting, `simpleMode`, kept only while "Remember on this device" is on and erased by "Forget me" and Emergency Exit like the others.
+| Part | Full (default) | Simple | Minimal |
+|---|---|---|---|
+| Breath ring | As today | As today | A flat circle (one solid colour, hard edge), still growing and fading with the breath |
+| Gem | As the visitor chose | Still, kaleidoscope off | A flat polygon, one solid fill, no facets, no live drawing |
+| Leaves | As the visitor chose | Still, drawn as today | Flat outlines in one colour: no metal finish, glow or shadow |
+| Outer orbs | As the visitor chose | Still (no pulse or turn) | Flat circles in their colours: no shading, glow or movement |
+| Outer glow | As the visitor chose | One shared soft glow | None |
+| Inner lights | As the visitor chose | Hidden | Hidden |
+| Glow swell | As the visitor chose | Off | Off |
+| Page background effect behind the logo | As today | Still | A flat background |
+| Colour changes | As the visitor chose | Slow fades, as Stop motion keeps them | Held on one colour per breath, with no cross-fade |
+| Pace, counter, tones | As the visitor chose | Unchanged | Unchanged |
 
-## When it turns on
-1. **By the visitor:** a switch at the top of the Breathing Animation panel, next to Stop motion.
-2. **Automatically on the `lite` tier,** with a plain line saying so and a way to turn it off ("We switched to a simpler picture because this device looks like it might struggle. Turn it off").
-3. **Offered when frames drop:** if the page measures a run of slow frames, show a quiet one-line offer ("The animation looks choppy. Try Simple mode?"). It never switches on by itself without a message, and never nags: once dismissed, not again that visit.
+Notes on the table:
+- In Minimal nothing should need WebGL, blur, filters or layered gradients. Flat vector shapes that change only size, position or opacity are the aim.
+- The orbs stay in Minimal as flat circles, so the mark is still recognisable. Palette Orbit remains the visitor's own switch.
+- The inner lights are blurred light with no useful flat form, so they are hidden rather than flattened.
+
+Like Stop motion, a level **wins over the individual settings without changing them**. Going back to Full returns exactly what the visitor had chosen.
+
+## How a visitor gets a level
+1. **Chooses it:** a three-way control at the top of the Breathing Animation panel: Full, Simple, Minimal.
+2. **Is offered it on a `lite` device:** one quiet line, for example "This device may find the full picture heavy. Try Minimal?" Nothing changes unless the visitor accepts.
+3. **Is offered it when frames drop:** if the page measures a run of slow frames, one quiet line, for example "The animation looks choppy. Try Simple?" Proposed: step down one level at a time (Full to Simple, Simple to Minimal). Once dismissed, it does not come back in that visit.
+
+Full is the default. No level is ever switched on without the visitor choosing it.
+
+The one exception is what already happens today and stays: a device that asks for reduced motion gets Stop motion's behaviour, and a `lite` device keeps its existing lighter gem settings.
 
 ## What it must not do
-- Never change, slow or hide the breath ring, the counter or the pace. Simple mode is about decoration, not the cue.
-- Never claim a benefit. The label is "Simple mode" and the help line says it "draws the picture with fewer moving parts, for older or busy devices".
-- Never make a setting unavailable that was available before (the individual settings stay, greyed with a note while Simple mode is on, as Stop motion does for the ones it holds).
-- Keep every part at least AAA for contrast, as the rest of the animation is.
+- Never change, stop or hide the pace, the counter or the breath cue. In Minimal the ring is drawn flat but keeps its timing.
+- Never claim a benefit. The help line says what it does: "draws the picture with fewer and flatter parts, for older or busy devices".
+- Never remove a setting. Controls a level overrides stay visible, greyed with a note, as Stop motion does.
+- Never lose contrast: flat shapes keep AAA contrast against their background, in both themes and all vision modes.
+- Never store or send frame timings.
 
 ## How we would know it works
-- On this Mac, measure the page's frame intervals with and without Simple mode while the graphics are busy (several animated windows open). Count frames over 25 ms in a fixed 400-frame run. The target is no worse than the default on a quiet machine.
-- On a real older device or phone, run the same count with the default and with Simple mode. Until that is done, the claim "it helps" is unproven. On 2026-11-25 the quiet-machine tests were all clean, so they cannot show a difference.
-- Check the picture by eye: the ring, gem and leaves should still read as the Nenya mark, and the screen recording of Simple mode should look steady.
+- On this Mac, count frames over 25 ms in a fixed 400-frame run at each level while the graphics are busy. Minimal should be clearly better than Full under the same load.
+- On a real older device or phone, run the same count at each level. **Until that is done, the claim that a level helps is unproven.** The quiet-machine tests on 2026-11-25 were all clean, so they cannot show a difference. An attempt to load the graphics with extra windows did not finish.
+- Look at each level by eye, in both themes: the mark should still read as Nenya.
+
+## Build order
+1. **Minimal:** the flat drawing, the panel control (Full and Minimal at first), and its test.
+2. **Simple:** the middle level, mostly a bundle of settings that exist.
+3. **The offers:** on `lite` devices, then the choppy-frames offer.
 
 ## Where the pieces would go
-- `src/lib/simpleMode.ts`: a pure function (like `motionStop.ts`) that takes the visitor's settings and the switch and returns what is drawn.
-- `src/lib/deviceMemory.ts`: the `simpleMode` display setting, with the usual rules.
-- The Breathing Animation panel (`AccessibilitySettings.tsx`): the switch and its help line.
-- `NenyaLogo.tsx` and the gem: read the plan from `simpleMode.ts`.
-- A test for the pure function (every combination of switch and settings) and a docs row.
+- `src/lib/animationLevel.ts`: a pure function (like `motionStop.ts`) that takes the visitor's settings and the level and returns what is drawn.
+- `src/lib/deviceMemory.ts`: one display setting, `animationLevel` (`full`, `simple`, `minimal`), kept only while "Remember on this device" is on and erased by "Forget me" and Emergency Exit.
+- The Breathing Animation panel (`AccessibilitySettings.tsx`): the control and its help line.
+- `NenyaLogo.tsx`, the ring, the gem and the page background: read the plan. Minimal needs its own flat drawing for the gem, leaves, orbs and ring.
+- Tests for the pure function (every level against the settings) and a docs row.
 
-## Open decisions for the owner
-1. **One step or two** (Simple, and Minimal with no orbs)?
-2. **Automatic on `lite` devices,** or only offered?
-3. **The "choppy" offer:** wanted at all?
-4. **Name:** "Simple mode", "Light mode" (confusing next to the light theme) or something else?
-5. **Does the gem stay lit** (a still gem with its colours) or become a plain flat shape in Minimal?
+## Still open
+- What counts as "a run of slow frames" (how many, how slow, how soon after loading). It needs a measurement that stores and sends nothing.
+- Whether an accepted level is remembered only with "Remember on this device" (proposed: yes, like other settings).
+- Which colour the flat gem uses (proposed: the current breath colour).
 
 ## Not done
 - Nothing is built. No device has been tested beyond one Mac on one day.
-- The frame-drop offer needs a way to measure slow frames that does not store or send anything. That has not been designed.
