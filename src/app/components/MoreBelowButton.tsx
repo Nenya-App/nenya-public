@@ -52,7 +52,7 @@ export function MoreBelowButton({ label, ariaLabel, onClick, cycleStart, techniq
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className={`nenya-more-below relative inline-flex cursor-pointer flex-col items-center gap-0.5 rounded-full border border-nenya-accent-warm/60 bg-background/40 px-6 py-2 text-muted-foreground ${className}`}
+      className={`nenya-more-below relative inline-flex cursor-pointer flex-col items-center gap-0.5 rounded-full border border-nenya-gold-text/70 dark:border-nenya-accent-warm/60 bg-background/40 px-6 py-2 text-muted-foreground ${className}`}
       style={{ ['--mb-rgb' as string]: rgb }}
     >
       {/* The glow is its own layer, so restarting it each breath never touches the button (or where keyboard focus is). */}

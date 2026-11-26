@@ -2,7 +2,7 @@ import { Home, BookOpen, Menu, X, ChevronDown, Settings, HelpCircle, Heart } fro
 import { ShareNenya } from './ShareNenya';
 import { Button } from './ui/button';
 import { useState } from 'react';
-import NenyaLogo from './NenyaLogo';
+import { HeaderLogo } from './HeaderLogo';
 import type { BreathingTechnique } from '../../lib/breathingPresets';
 import { ThemeToggle } from './ThemeToggle';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
@@ -119,7 +119,7 @@ export function GlobalNavigation({
                 aria-label="Open breathing animation"
                 title="Open breathing animation & accessibility settings"
               >
-                <NenyaLogo size={40} technique={technique} cycleStart={cycleStart} />
+                <HeaderLogo size={40} technique={technique} cycleStart={cycleStart} />
               </button>
               <button
                 onClick={handleNenyaTextClick}
@@ -253,7 +253,7 @@ export function GlobalNavigation({
               aria-label="Open breathing animation"
               title="Open breathing animation & accessibility settings"
             >
-              <NenyaLogo size={32} technique={technique} cycleStart={cycleStart} />
+              <HeaderLogo size={32} technique={technique} cycleStart={cycleStart} />
             </button>
             <button
               onClick={handleNenyaTextClick}
