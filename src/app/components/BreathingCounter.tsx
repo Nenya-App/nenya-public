@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { breathCounter, breathPhaseProgress } from '../../lib/breathClock';
 import * as m from 'motion/react-m';
 import { ChevronDown, GripHorizontal, Minus, Square, X } from 'lucide-react';
 
 import { PRESETS, type BreathingTechnique } from '../../lib/breathingPresets';
 import { BreathTonesSwitch } from './BreathTonesSwitch';
+import { setBreathingPanel } from '../../lib/breathingPanel';
+
+// Text colors in the list of paces, each at least 7:1 on the counter's box (tests/counter-size.test.mts).
+const PACE_NAME = '#F4C56A';
+const PACE_TEXT = '#E8D3AA';
 
 interface BreathingCounterProps {
   enabled: boolean;
@@ -45,6 +50,13 @@ export function BreathingCounter({
   // Fully collapsed: just the word "breathe", no numbers or pattern list.
   // Plain view state, so it resets whenever the counter remounts.
   const [collapsed, setCollapsed] = useState(false);
+  // Set while the counter is being dragged, so letting go does not count as a click on the circle.
+  const dragged = useRef(false);
+  // A press inside the list of paces scrolls it and must not drag the whole counter. The drag listens on the element
+  // itself, so this has to be a native listener (React's own handlers run too late to stop it).
+  const keepPressInList = useCallback((el: HTMLDivElement | null) => {
+    el?.addEventListener('pointerdown', (e) => e.stopPropagation());
+  }, []);
 
   useEffect(() => {
     if (!enabled || !show) return;
@@ -67,10 +79,18 @@ export function BreathingCounter({
   const pulseAnim = isEntryPulse ? 'bcd' : 'bcs';
   const phaseLabel = phase === 'i' ? 'inhale' : phase === 'e' ? 'exhale' : 'hold';
 
+  // A click on the circle itself opens and closes the list of paces (owner, 2026-11-26), the same as the small button in the corner.
+  const toggleList = () => {
+    if (dragged.current) return;
+    if (onMinimizedChange) onMinimizedChange(!minimized);
+  };
+
   return (
     <m.div
       id={id}
       drag
+      onDragStart={() => { dragged.current = true; }}
+      onPointerDownCapture={() => { dragged.current = false; }}
       dragMomentum={false}
       dragElastic={0.06}
       whileDrag={{ scale: 1.03, boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
@@ -86,8 +106,8 @@ export function BreathingCounter({
         borderRadius: '14px',
         backdropFilter: 'blur(10px)',
         boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-        width: collapsed ? '132px' : '212px',
-        overflow: 'hidden',
+        // About three quarters of the earlier size (owner, 2026-11-26); full width only when the list of paces is open.
+        width: collapsed ? '112px' : minimized ? '160px' : '212px',
       }}
     >
       {/* Drag handle, with the minimize/maximize toggle in the corner */}
@@ -96,7 +116,8 @@ export function BreathingCounter({
           position: 'relative',
           display: 'flex',
           justifyContent: 'center',
-          padding: '4px 0 0',
+          // Open, the row holds three 44px buttons (one left, two right) with the drag handle between them.
+          ...(collapsed ? { padding: '4px 0 0' } : { alignItems: 'center', height: '44px', padding: '0 88px 0 44px' }),
           cursor: 'grab',
           touchAction: 'none',
         }}
@@ -110,9 +131,13 @@ export function BreathingCounter({
             title="Collapse"
             style={{
               position: 'absolute',
-              top: '2px',
-              left: '4px',
-              padding: '3px',
+              top: 0,
+              left: 0,
+              width: '44px',
+              height: '44px',
+              padding: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
@@ -132,9 +157,13 @@ export function BreathingCounter({
             title={minimized ? 'Maximize' : 'Minimize'}
             style={{
               position: 'absolute',
-              top: '2px',
-              right: '4px',
-              padding: '3px',
+              top: 0,
+              right: 0,
+              width: '44px',
+              height: '44px',
+              padding: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
@@ -173,7 +202,25 @@ export function BreathingCounter({
           <ChevronDown size={12} />
         </button>
       ) : (
-      <div style={{ padding: '4px 16px 10px' }}>
+      <div
+        {...(onMinimizedChange
+          ? {
+              role: 'button',
+              tabIndex: 0,
+              'aria-expanded': !minimized,
+              'aria-label': minimized ? 'Show the breathing paces' : 'Hide the breathing paces',
+              onClick: toggleList,
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  dragged.current = false;
+                  toggleList();
+                }
+              },
+            }
+          : {})}
+        style={{ padding: '2px 12px 8px', cursor: onMinimizedChange ? 'pointer' : undefined }}
+      >
         {/* The number and word change every second, so they are hidden from screen readers (which would otherwise meet a
             different number each time they looked); the breathing tones and the controls are what they use instead. */}
         <span className="sr-only">Breathing counter, a circle that shows the count and the phase. Use the breathing tones switch to follow the breath by sound.</span>
@@ -185,16 +232,16 @@ export function BreathingCounter({
             textTransform: 'uppercase',
             color: 'rgba(232,160,32,0.85)',
             fontFamily: "'Manrope',sans-serif",
-            marginBottom: '5px',
+            marginBottom: '3px',
           }}
         >
           breathe
         </div>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <div className="bc-circle" style={{ position: 'relative', width: '112px', height: '112px' }}>
+          <div className="bc-circle" style={{ position: 'relative', width: '84px', height: '84px' }}>
             {/* The circle: a faint full ring, an arc that fills across the current phase, and a disc behind the number.
                 With reduced motion the arc is hidden and the circle, number and word stay. */}
-            <svg viewBox="0 0 112 112" width="112" height="112" style={{ position: 'absolute', inset: 0 }}>
+            <svg viewBox="0 0 112 112" width="84" height="84" style={{ position: 'absolute', inset: 0 }}>
               <circle cx="56" cy="56" r="52" fill="rgba(232,160,32,0.08)" stroke="rgba(232,160,32,0.55)" strokeWidth="2" />
               <circle
                 className="bc-arc"
@@ -217,7 +264,7 @@ export function BreathingCounter({
                 className="bc-digit"
                 style={{
                   fontFamily: "'Cinzel',serif",
-                  fontSize: '2.75rem',
+                  fontSize: '2.1rem',
                   fontWeight: 400,
                   color: 'rgba(232,160,32,0.96)',
                   lineHeight: 1,
@@ -228,8 +275,8 @@ export function BreathingCounter({
               </div>
               <div
                 style={{
-                  marginTop: '4px',
-                  fontSize: '14px',
+                  marginTop: '2px',
+                  fontSize: '12px',
                   color: 'rgba(232,160,32,0.9)',
                   fontFamily: "'Manrope',sans-serif",
                   letterSpacing: '0.08em',
@@ -246,7 +293,9 @@ export function BreathingCounter({
       {!collapsed && !minimized && (
         <>
           <div style={{ height: '1px', background: 'rgba(232,160,32,0.14)', margin: '0 16px' }} />
-          <div style={{ padding: '6px 0 10px' }}>
+          {/* On a short screen the list scrolls by itself, so the circle and the corner buttons stay in view below the site
+              header. 6rem is the header (5rem) and the gap under the counter; 162px is everything above the list. */}
+          <div ref={keepPressInList} style={{ padding: '6px 0 10px', maxHeight: 'max(120px, calc(100dvh - 6rem - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 162px))', overflowY: 'auto', touchAction: 'pan-y', cursor: 'auto' }}>
             {PRESETS.map((preset) => {
           const active = preset.ih === IH && (preset.hi || 0) === HI && preset.ex === EX && (preset.ho || 0) === HO;
           return (
@@ -281,20 +330,20 @@ export function BreathingCounter({
                     style={{
                       fontFamily: "'Manrope',sans-serif",
                       fontSize: '13px',
-                      color: active ? 'rgba(232,160,32,0.96)' : 'rgba(232,160,32,0.65)',
+                      color: PACE_NAME,
                       fontWeight: active ? 600 : 400,
                     }}
                   >
                     {preset.lb}
                   </span>
-                  <span style={{ fontSize: '10px', color: 'rgba(232,160,32,0.75)', fontFamily: "'Manrope',sans-serif" }}>
+                  <span style={{ fontSize: '10px', color: PACE_TEXT, fontFamily: "'Manrope',sans-serif" }}>
                     {preset.lb === 'Box' ? '4·4·4·4' : preset.lb === '4-7-8' ? 'no hold-out' : ''}
                   </span>
                 </div>
                 <div
                   style={{
                     fontSize: '11px',
-                    color: active ? 'rgba(232,160,32,0.6)' : 'rgba(232,160,32,0.35)',
+                    color: PACE_TEXT,
                     fontFamily: "'Manrope',sans-serif",
                     lineHeight: 1.3,
                     marginTop: '1px',
@@ -307,10 +356,34 @@ export function BreathingCounter({
               );
             })}
             {!PRESETS.some((p) => p.ih === IH && (p.hi || 0) === HI && p.ex === EX && (p.ho || 0) === HO) && (
-              <div style={{ padding: '6px 16px', fontFamily: "'Manrope',sans-serif", fontSize: '13px', color: 'rgba(232,160,32,0.96)', fontWeight: 600 }}>
+              <div style={{ padding: '6px 16px', fontFamily: "'Manrope',sans-serif", fontSize: '13px', color: PACE_NAME, fontWeight: 600 }}>
                 Your own pace: {IH / 1000}·{HI / 1000}·{EX / 1000}·{HO / 1000}
               </div>
             )}
+            {/* A custom pace is set in the settings panel, near its top; this opens it (owner, 2026-11-26). */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onMinimizedChange) onMinimizedChange(true);
+                setBreathingPanel(true);
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
+              style={{
+                display: 'block',
+                width: '100%',
+                minHeight: '44px',
+                padding: '6px 16px',
+                background: 'none',
+                border: 'none',
+                borderTop: '1px solid rgba(232,160,32,0.14)',
+                cursor: 'pointer',
+                textAlign: 'left',
+                fontFamily: "'Manrope',sans-serif",
+              }}
+            >
+              <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: PACE_NAME, textDecoration: 'underline' }}>Set Custom</span>
+              <span style={{ display: 'block', fontSize: '12px', color: PACE_TEXT, lineHeight: 1.4 }}>Opens the settings panel. Your own pace is near the top.</span>
+            </button>
           </div>
         </>
       )}

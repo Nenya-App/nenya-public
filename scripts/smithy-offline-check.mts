@@ -48,13 +48,15 @@ const missed: string[] = [];
 const done: string[] = [];
 
 /** Clicks the first visible button or link whose label contains `label`. */
-async function click(label: string, step: string): Promise<boolean> {
-  const hit = await page.evaluate((want: string) => {
-    const el = [...document.querySelectorAll('button, a, [role="button"]')].find((e) => ((e.getAttribute('aria-label') || '') + ' ' + (e.textContent || '')).replace(/\s+/g, ' ').includes(want) && (e as HTMLElement).offsetParent !== null && !(e as HTMLButtonElement).disabled);
+async function click(label: string, step: string, last = false): Promise<boolean> {
+  const hit = await page.evaluate((want: string, fromEnd: boolean) => {
+    const all = [...document.querySelectorAll('button, a, [role="button"]')];
+    if (fromEnd) all.reverse();
+    const el = all.find((e) => ((e.getAttribute('aria-label') || '') + ' ' + (e.textContent || '')).replace(/\s+/g, ' ').includes(want) && (e as HTMLElement).offsetParent !== null && !(e as HTMLButtonElement).disabled);
     if (!el) return false;
     (el as HTMLElement).click();
     return true;
-  }, label);
+  }, label, last);
   await sleep(1500);
   (hit ? done : missed).push(step);
   if (explore) await page.screenshot({ path: `.superpowers/sdd/smithy-guides-plan/shot-${done.length + missed.length}.png` });
@@ -71,7 +73,9 @@ await click('Agree, Enter', 'agree to the Terms');
 await click('Skip for now', 'skip the tour');
 await click('Open breathing animation', 'open the breathing panel');
 await click('Close the breathing panel', 'close the breathing panel');
-await click('Explore Your Senses', 'open the Lenses');
+// The first screen's button has the same words and only scrolls down; the one that opens the Lenses is the last.
+await click('Explore Your Senses', 'move down from the first screen');
+await click('Explore Your Senses', 'open the Lenses', true);
 // One whole lens (Sight), through to the report and its download.
 for (const [label, step] of [
   ['Sight', 'pick the Sight lens'], ['Begin Journey', 'begin'], ['Next', 'read the first card'], ['Next', 'read the second card'],

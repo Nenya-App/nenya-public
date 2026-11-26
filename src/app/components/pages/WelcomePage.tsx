@@ -74,7 +74,7 @@ export default function WelcomePage({
       <QuickNav onBreathe={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} onReflect={onContinue} />
 
       {/* First Section: Full Viewport with Large Logo */}
-      <div className="h-screen flex flex-col items-center justify-center px-6 [@media(min-height:600px)]:pb-[12vh] relative snap-start">
+      <div className="h-screen flex flex-col items-center justify-center px-6 [@media(min-height:600px)]:pb-[4vh] relative snap-start">
         {/* No flex-1 here -- letting this grow-to-fill was pinning the text
             below to the bottom of the viewport on shorter/wider screens,
             leaving a large empty gap above it. The outer section's own
@@ -133,9 +133,9 @@ export default function WelcomePage({
             Take a Moment to Breathe
           </p>
 
-          {/* The "Look into the Mirror?" button (it was "Enter"): glows, and pulses once at the end of each breath in that breath's colour */}
+          {/* The "Explore Your Senses" button (owner, 2026-11-26; it was "Look into the Mirror?", and before that "Enter"): glows, and pulses once at the end of each breath in that breath's colour */}
           <div className="flex justify-center pt-3">
-            <MoreBelowButton label="Look into the Mirror?" ariaLabel="Look into the Mirror?" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
+            <MoreBelowButton label="Explore Your Senses" ariaLabel="Explore Your Senses" onClick={scrollToNextSection} cycleStart={cycleStart} technique={technique} />
           </div>
         </div>
       </div>
