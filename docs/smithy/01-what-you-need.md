@@ -3,7 +3,7 @@ number: 1
 slug: what-you-need
 title: What you will make, and what you need
 summary: See what you can build, and check you have what it takes.
-status: draft
+status: approved
 files: README.md, package.json, LICENSE
 ---
 

@@ -3,7 +3,7 @@ number: 6
 slug: private-and-offline
 title: Keep it private and use it offline
 summary: Build your copy, open it only on your own computer, and know what can leave it.
-status: draft
+status: approved
 files: README.md, src/lib/deviceMemory.ts, src/lib/usageCounts.ts, scripts/smithy-offline-check.mts, netlify.toml
 ---
 

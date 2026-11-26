@@ -3,7 +3,7 @@ number: 2
 slug: get-the-code
 title: Get the code and light it up
 summary: Download your copy, set it up, and open it in your browser.
-status: draft
+status: approved
 files: README.md, package.json
 ---
 

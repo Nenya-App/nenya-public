@@ -47,7 +47,7 @@ A plain-language guide series that covers the technical side of the whole projec
 The three animation levels (`simple-mode-scope.md`) are not built. Guide 4 mentions them only as planned until they are.
 
 ## Rules every guide follows
-- **One computer, private by default.** Any local server command binds to the reader's own machine only. For example, the README's `python3 -m http.server` listens to the whole network unless `--bind 127.0.0.1` is added; the guide adds it.
+- **One computer, private by default.** Any local server command listens on the reader's own machine only. The guides use `npx vite preview` for the built copy (owner, 2026-11-25), which does so by default and is the same on every system; a command that opens to the network, such as `python3 -m http.server` without `--bind 127.0.0.1`, or any `--host`, is refused by the tests.
 - **Checked, not assumed.** "Nothing leaves your computer" is written only after the built copy has been run offline and its network requests watched. The result and the date go in the guide. Known things to check: the usage counts (`usageCounts.ts`), forms that call server functions, and links that open other sites.
 - **Contact addresses.** Guide 5 tells the reader to replace `info@nenya.biz`, so messages from their copy do not come to Nenya.
 - **License and name.** Plain statements pointing to `LICENSE` and `TRADEMARK.md`, with "this is not legal advice".
