@@ -26,6 +26,7 @@ export const ABOUT_TITLES: Record<string, string> = {
   structure: 'Our Structure',
   'support-us': 'Support Us',
   terms: 'Terms of Use & Privacy Policy',
+  smithy: 'The Smithy',
 };
 
 export const ABOUT_IDS = Object.keys(ABOUT_TITLES);
@@ -42,6 +43,7 @@ export function aboutPath(section?: string | null): string {
 
 /** The section named by an address: null when the address is not an About page, '' for the menu. Understands /about/<id> and the old ?about=<id>. */
 export function aboutSectionFromLocation(pathname: string, search = ''): string | null {
+  if (smithySlugFromPath(pathname) !== null) return 'smithy';
   const m = /^\/about(?:\/([a-z0-9-]+))?\/?$/i.exec(pathname);
   if (m) { const id = m[1] ? (ID_AT[m[1].toLowerCase()] ?? m[1].toLowerCase()) : ''; return id && ABOUT_IDS.includes(id) ? id : ''; }
   try {
@@ -55,3 +57,12 @@ export function aboutSectionFromLocation(pathname: string, search = ''): string 
 }
 
 export const aboutTitle = (section?: string | null): string => (section && ABOUT_TITLES[section] ? `${ABOUT_TITLES[section]} — Nenya` : section === '' || section === 'menu' ? 'About Nenya' : SITE_TITLE);
+
+/** The address of the Smithy (the "make your own" guides) or of one guide in it. A name that is not a plain slug gives the list. */
+export const smithyPath = (slug?: string | null): string => (slug && /^[a-z0-9-]+$/.test(slug) ? `/about/smithy/${slug}` : '/about/smithy');
+
+/** The guide named by a Smithy address: its slug, '' for the list, null when the address is not in the Smithy. */
+export function smithySlugFromPath(pathname: string): string | null {
+  const m = /^\/about\/smithy(?:\/([a-z0-9-]+))?\/?$/i.exec(pathname);
+  return m ? (m[1] ?? '').toLowerCase() : null;
+}

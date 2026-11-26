@@ -11,6 +11,7 @@
     "prebuild": "node scripts/write-build-info.mjs",
     "build": "vite build && node scripts/apply-lens-copy.mts",
     "mind-facts": "node scripts/build-mind-facts.mts",
+    "smithy": "node scripts/build-smithy.mts",
     "indexnow": "node scripts/indexnow.mjs",
     "footprint": "node scripts/footprint.mjs",
     "pretypecheck": "node scripts/write-build-info.mjs",

@@ -52,14 +52,16 @@ type AboutSection =
   | 'partner-practice'
   | 'structure' 
   | 'support-us'
-  | 'terms';
+  | 'terms'
+  | 'smithy';
 
 import WitnessedConversations from './about/WitnessedConversations';
 import WhereWeStand from './about/WhereWeStand';
 import HowChecksWork from './about/HowChecksWork';
 import CoachRegion from './about/CoachRegion';
 import AboutCoach from './about/AboutCoach';
-import { aboutPath, aboutSectionFromLocation, aboutTitle } from '../../lib/aboutRoutes';
+import { aboutPath, aboutSectionFromLocation, aboutTitle, smithySlugFromPath } from '../../lib/aboutRoutes';
+import Smithy from './about/Smithy';
 
 export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOpenPartnerPreview }: AboutNenyaProps) {
   const [currentSection, setCurrentSection] = useState<AboutSection>(
@@ -80,6 +82,8 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOp
 
   // The address follows the page: /about for the menu, /about/<section> for a page. A new address is a history entry, so the browser's back button works.
   useEffect(() => {
+    // A guide inside the Smithy has its own address and title, set by the Smithy page itself.
+    if (currentSection === 'smithy' && smithySlugFromPath(window.location.pathname)) return;
     const path = aboutPath(currentSection === 'menu' ? '' : currentSection);
     if (window.location.pathname !== path) {
       // Moving between About addresses is a new history entry; arriving by the old ?about= form or from another address replaces it.
@@ -200,6 +204,9 @@ export default function AboutNenya({ onBack, onRestartDemo, initialSection, onOp
       )}
       {currentSection === 'support-us' && (
         <SupportUs onBack={handleBackToMenu} />
+      )}
+      {currentSection === 'smithy' && (
+        <Smithy onBack={handleBackToMenu} />
       )}
       {currentSection === 'terms' && (
         <TermsOfService onBack={handleBackToMenu} />

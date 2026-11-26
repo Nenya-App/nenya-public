@@ -125,7 +125,7 @@ function EmergencyExitModal({ isOpen, onClose, onLeaving }: EmergencyExitModalPr
             </p>
             <div className="space-y-2 text-xs">
               <div>
-                <strong className="text-foreground">National Suicide Prevention Lifeline:</strong>
+                <strong className="text-foreground">988 Suicide & Crisis Lifeline:</strong>
                 <div className="text-muted-foreground">Call or text 988 (US)</div>
               </div>
               <div>
@@ -146,7 +146,7 @@ function EmergencyExitModal({ isOpen, onClose, onLeaving }: EmergencyExitModalPr
               </div>
               <div>
                 <strong className="text-foreground">Other countries:</strong>
-                <div className="text-muted-foreground"><LinkedText text="findahelpline.com or iasp.info/resources/Crisis_Centres" className="underline underline-offset-4 hover:text-foreground" /></div>
+                <div className="text-muted-foreground"><LinkedText text="findahelpline.com or iasp.info/crisis-centres-helplines" className="underline underline-offset-4 hover:text-foreground" /></div>
               </div>
             </div>
           </div>

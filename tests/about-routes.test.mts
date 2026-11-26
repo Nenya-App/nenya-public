@@ -21,3 +21,12 @@ const sitemap = readFileSync(new URL('../public/sitemap.xml', import.meta.url), 
 ok('the host rewrites every other path to the app', /from = "\/\*"\s*\n\s*to = "\/index.html"/.test(toml));
 ok('the sitemap lists the About menu and each page', sitemap.includes('https://nenya.biz/about</loc>') && ABOUT_IDS.every((id) => sitemap.includes(`https://nenya.biz/about/${aboutPath(id).slice('/about/'.length)}</loc>`)));
 ok('the Six Lenses page has the address /about/six-lenses, and the old /about/six-gateways still opens it', aboutPath('six-gateways') === '/about/six-lenses' && aboutSectionFromLocation('/about/six-lenses') === 'six-gateways' && aboutSectionFromLocation('/about/six-gateways') === 'six-gateways' && aboutSectionFromLocation('/?about=six-gateways'.split('?')[0], '?about=six-gateways') === 'six-gateways');
+
+// "The Smithy": one page, with an address for each guide.
+const { smithyPath, smithySlugFromPath, ABOUT_TITLES } = await import('../src/lib/aboutRoutes.ts');
+const { SMITHY_GUIDES } = await import('../src/lib/smithyData.ts');
+ok('the Smithy list and each guide have addresses', smithyPath() === '/about/smithy' && smithyPath('get-the-code') === '/about/smithy/get-the-code' && smithyPath('../x') === '/about/smithy' && smithyPath(null) === '/about/smithy');
+ok('a guide address is read back', smithySlugFromPath('/about/smithy/get-the-code') === 'get-the-code' && smithySlugFromPath('/about/smithy') === '' && smithySlugFromPath('/about/smithy/') === '' && smithySlugFromPath('/about/terms') === null && smithySlugFromPath('/about/smithy/a/b') === null);
+ok('a guide address opens the Smithy page, and no other page takes a second part', aboutSectionFromLocation('/about/smithy/get-the-code') === 'smithy' && aboutSectionFromLocation('/about/smithy') === 'smithy' && aboutSectionFromLocation('/about/terms/x') === null);
+ok('the Smithy has its title', ABOUT_TITLES.smithy === 'The Smithy' && aboutTitle('smithy') === 'The Smithy — Nenya');
+ok('the sitemap lists every approved guide', SMITHY_GUIDES.length >= 3 && SMITHY_GUIDES.every((g) => sitemap.includes(`https://nenya.biz/about/smithy/${g.slug}</loc>`)));

@@ -25,8 +25,8 @@ ok('linkifying keeps every character in order', joined('Visit https://www.exampl
 ok('a trailing full stop is not part of the address', links('See https://example.com/a.')[0]?.text === 'https://example.com/a');
 ok('a closing bracket around an address is left to the sentence', links('(see https://example.com/a)')[0]?.text === 'https://example.com/a');
 ok('every known bare domain becomes a https link', KNOWN_RESOURCE_DOMAINS.every((d) => links(`Try ${d}.`)[0]?.href === new URL(`https://${d}`).href));
-ok('a known domain is found in any case and linked with its real path', links('try IASP.info/resources/crisis_centres')[0]?.href === 'https://iasp.info/resources/Crisis_Centres');
-ok('the emergency exit line gives two links', links('findahelpline.com or iasp.info/resources/Crisis_Centres').length === 2);
+ok('a known domain is found in any case and linked with its real path', links('try IASP.info/Crisis-Centres-Helplines')[0]?.href === 'https://iasp.info/crisis-centres-helplines');
+ok('the emergency exit line gives two links', links('findahelpline.com or iasp.info/crisis-centres-helplines').length === 2);
 ok('a bare domain that is not on the list is not linked', links('Try example.com or evil.org/help').length === 0);
 ok('a known domain inside an email address or a longer name is not linked', links('write to me@findahelpline.com or notfindahelpline.com or findahelpline.com.evil.net').length === 0);
 ok('javascript: and data: addresses are never links', links('click javascript:alert(1) or data:text/html;base64,AAAA').length === 0);
@@ -39,7 +39,13 @@ ok('a very long address is refused', safeExternalHref('https://example.com/' + '
 
 // The site's own resource list: every web address on it is linkable
 const flags = read('src/lib/safetyFlags.ts');
-for (const d of ['stopitnow.org', 'report.cybertip.org', 'findahelpline.com', 'iasp.info/resources/Crisis_Centres']) ok(`${d} is on the resource list and in the known list`, flags.includes(d) && KNOWN_RESOURCE_DOMAINS.includes(d));
+for (const d of ['stopitnow.org', 'report.cybertip.org', 'findahelpline.com', 'iasp.info/crisis-centres-helplines']) ok(`${d} is on the resource list and in the known list`, flags.includes(d) && KNOWN_RESOURCE_DOMAINS.includes(d));
+
+// Outdated crisis-resource wording, checked on the official pages 2026-11-25 (988lifeline.org, iasp.info): the US line's current name, and IASP's current directory page.
+const exit = read('src/app/components/EmergencyExit.tsx');
+ok('the emergency exit names the US line "988 Suicide & Crisis Lifeline", with the same number', exit.includes('988 Suicide & Crisis Lifeline:</strong>') && exit.includes('Call or text 988 (US)'));
+ok('the emergency exit line for other countries is the two current addresses', exit.includes('text="findahelpline.com or iasp.info/crisis-centres-helplines"'));
+ok('the old service name and the old directory address are gone from the crisis text and the link list', [exit, flags, read('src/lib/externalLinks.ts'), read('src/lib/addressGuard.ts')].every((s) => !/National Suicide Prevention Lifeline|resources\/crisis_centres/i.test(s)));
 
 // The words around About and Terms links
 const w = pageLinkWords('privacy-promise', 'Our Privacy Promise')!;

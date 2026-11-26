@@ -117,9 +117,9 @@ export function BreathingPopout({
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="size-8"
+                aria-label="Close the breathing panel"
               >
-                <X className="size-4" />
+                <X className="size-4" aria-hidden="true" />
               </Button>
             </div>
 
