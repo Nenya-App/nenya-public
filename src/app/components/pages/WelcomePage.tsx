@@ -74,7 +74,7 @@ export default function WelcomePage({
       <QuickNav onBreathe={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} onReflect={onContinue} />
 
       {/* First Section: Full Viewport with Large Logo */}
-      <div className="h-screen flex flex-col items-center justify-center px-6 [@media(min-height:600px)]:pb-[12vh] relative snap-start">
+      <div className="h-screen flex flex-col items-center justify-center px-6 [@media(min-height:600px)]:pb-[4vh] relative snap-start">
         {/* No flex-1 here -- letting this grow-to-fill was pinning the text
             below to the bottom of the viewport on shorter/wider screens,
             leaving a large empty gap above it. The outer section's own
