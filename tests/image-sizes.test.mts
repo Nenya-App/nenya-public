@@ -1,6 +1,6 @@
 // The site's pictures are the sizes they say they are (owner, 2026-11-26): icons and the social picture match what is declared, the header badge is sharp
 // enough on dense screens, and pictures drawn at a set size keep their shape.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { ok } from './helpers.mts';
 
 function size(path: string): [number, number] {
@@ -39,3 +39,5 @@ for (const [where, file] of [['src/app/components/AppFooter.tsx', '/badges/netli
   const [w, h] = attrs(src(where), file), [nw, nh] = size('public' + file);
   ok(`${file}: has its width and height set, in its own shape (within a pixel)`, w > 0 && h > 0 && Math.abs(w - (h * nw) / nh) <= 1, `${w}x${h} for ${nw}x${nh}`);
 }
+// The review pictures gathered on 2026-08-25 were never used by the site, so they are not published (removed 2026-11-26; they are in git history).
+ok('no unused review pictures are published', !existsSync('public/pdf-assets/visual-aids-review') && !/visual-aids-review/.test(src('public/pdf-assets/ATTRIBUTIONS.md')));

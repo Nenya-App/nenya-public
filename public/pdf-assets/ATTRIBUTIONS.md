@@ -25,42 +25,7 @@ per-use credit:
 
 ## Attribution-required assets in use
 
-Sourced 2026-08-25 via the [Openverse](https://openverse.org) API (which
-aggregates CC-licensed works from Flickr and other providers) for the
-lens visual-aid review pass. These are all CC BY 2.0 — Openverse's own
-license fields, not verified against the original Flickr listing yet, so
-double-check the source URL before shipping any of these. If a candidate
-gets swapped for something else during visual review, remove its row here
-and add the replacement instead (or delete the row entirely if the
-replacement comes from a no-attribution source above).
-
-Credit format per CC BY 2.0: `"Title" by Creator is licensed under CC BY 2.0`,
-linking Creator to their profile and "CC BY 2.0" to the license URL.
-
-| Represents | File | Title | Creator | License | Source |
-|---|---|---|---|---|---|
-| Essence — Taste: Bitter | `visual-aids-review/essence-taste/bitter--openverse.jpg` | Coffee beans | [jphilipg](https://www.flickr.com/photos/15708236@N07) | CC BY 2.0 | [Flickr](https://www.flickr.com/photos/15708236@N07/3577941255) |
-| Essence — Taste: Sweet | `visual-aids-review/essence-taste/sweet--openverse.jpg` | honey drizzle | [missy & the universe](https://www.flickr.com/photos/33598632@N00) | CC BY 2.0 | [Flickr](https://www.flickr.com/photos/33598632@N00/3022958272) |
-| Essence — Taste: Salty | `visual-aids-review/essence-taste/salty--openverse.jpg` | Crystal Heart | [geishaboy500](https://www.flickr.com/photos/49503154413@N01) | CC BY 2.0 | [Flickr](https://www.flickr.com/photos/49503154413@N01/133100456) |
-| Essence — Taste: Umami | `visual-aids-review/essence-taste/umami--openverse.jpg` | making soy sauce the traditional way 生醤油 | [spinster cardigan](https://www.flickr.com/photos/84906483@N08) | CC BY 2.0 | [Flickr](https://www.flickr.com/photos/84906483@N08/8661806567) |
-| Essence — Taste: Astringent | `visual-aids-review/essence-taste/astringent--openverse.jpg` | Red Wine Glass #dailyshoot | [Leshaines123](https://www.flickr.com/photos/46018453@N06) | CC BY 2.0 | [Flickr](https://www.flickr.com/photos/46018453@N06/9031746040) |
-| Essence — Taste: Pungent | `visual-aids-review/essence-taste/pungent--openverse.jpg` | India - Koyambedu Market - Chili Peppers 01 | [mckaysavage](https://www.flickr.com/photos/56796376@N00) | CC BY 2.0 | [Flickr](https://www.flickr.com/photos/56796376@N00/3986954258) |
-| Essence — Scent: Earthy | `visual-aids-review/essence-scent/earthy--openverse.jpg` | Nurse Log | [Nicholas_T](https://www.flickr.com/photos/14922165@N00) | CC BY 2.0 | [Flickr](https://www.flickr.com/photos/14922165@N00/7458324304) |
-| Essence — Scent: Smoky | `visual-aids-review/essence-scent/smoky--openverse.jpg` | Green Smoke | [Jordan McCullough](https://www.flickr.com/photos/27752256@N05) | CC BY 2.0 | [Flickr](https://www.flickr.com/photos/27752256@N05/3380819757) |
-| Essence — Scent: Spicy | `visual-aids-review/essence-scent/spicy--openverse.jpg` | Line caught ling cod tacos... (ancho chili spiced) | [ppacificvancouver](https://www.flickr.com/photos/46246687@N05) | CC BY 2.0 | [Flickr](https://www.flickr.com/photos/46246687@N05/35765839116) |
-| Essence — Scent: Herbal | `visual-aids-review/essence-scent/herbal--openverse.jpg` | ~dried and bundled~ | [uteart](https://www.flickr.com/photos/47346831@N00) | CC BY 2.0 | [Flickr](https://www.flickr.com/photos/47346831@N00/4309590712) |
-
-Three more Openverse photos came back **CC0 / public domain** (no
-attribution needed, listed here only for traceability, not because credit
-is required): "Lemon slices" by Thad Zajdowicz (Taste: Sour), "Silver coin
-of Neapolis..." by Carlo Raso (Taste: Metallic, PDM), and "Figured flask |
-Kensington Glass Works" by museado (Scent: Musky).
-
-Everything else (all Movement, Pattern, and Sound entries, plus Floral/
-Citrus/Woody/Fresh/Sweet(scent)/Sharp/Ocean in Essence — Scent) came from
-Lucide or Phosphor — no attribution required. Full per-item sourcing detail
-(including the exact search query used for every asset) is in
-`visual-aids-review/_manifest.json`.
+None. The candidate pictures gathered on 2026-08-25 for a visual review were never used by the site and were removed on 2026-11-26; they and their credits are in the repository's history.
 
 ## How to add an entry
 
