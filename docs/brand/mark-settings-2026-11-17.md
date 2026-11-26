@@ -1,5 +1,7 @@
 # The nənya.biz mark: the owner's settings "for now" (2026-11-17)
 
+**2026-11-26 (owner):** the mark is now on the site, in the header and the footer ("nənya.biz" where ".biz" shows; "Nənya", with a capital, on phones and tablets in the header), without the `VITE_NAME_MARK` switch. The e's take the **breathing ring's colors** for the theme (the visitor's breathing choice, the original palettes by default, only those that can be seen), each kept at least 3:1 against the page; this replaces the session's color pair below. The session ID still decides which e's rest turned and which color each takes. Stop motion holds it still, as reduced motion does.
+
 Copied from the editor (`Nenya Marketing/press-kit/nenya-name-forms.html`, "Copy settings"). **Built into the site behind `VITE_NAME_MARK=on` on 2026-11-17** (`src/lib/nameMark.ts`, `src/lib/sessionMarkStore.ts`, `src/app/components/NenyaMark.tsx`; tests in `tests/name-mark.test.mts`). Off, the footer shows the plain name "Nenya".
 
 ```

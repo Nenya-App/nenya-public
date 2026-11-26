@@ -3,6 +3,7 @@ import { ShareNenya } from './ShareNenya';
 import { Button } from './ui/button';
 import { useState } from 'react';
 import { HeaderLogo } from './HeaderLogo';
+import { NenyaMark } from './NenyaMark';
 import type { BreathingTechnique } from '../../lib/breathingPresets';
 import { ThemeToggle } from './ThemeToggle';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
@@ -124,12 +125,10 @@ export function GlobalNavigation({
               <button
                 onClick={handleNenyaTextClick}
                 className="hover:opacity-80 transition-opacity"
-                aria-label="Return to Welcome"
+                aria-label="Nenya: return to Welcome"
                 title="Return to Welcome page"
               >
-                <span className="text-xl bg-gradient-to-r from-nenya-accent-secondary via-nenya-accent-primary to-nenya-accent-metallic bg-clip-text text-transparent">
-                  Nenya
-                </span>
+                <NenyaMark face="body" compactBelowDesktop playButton={false} className="text-xl font-medium text-foreground" />
               </button>
             </div>
 
@@ -258,12 +257,10 @@ export function GlobalNavigation({
             <button
               onClick={handleNenyaTextClick}
               className="hover:opacity-80 transition-opacity"
-              aria-label="Return to Welcome"
+              aria-label="Nenya: return to Welcome"
               title="Return to Welcome page"
             >
-              <span className="bg-gradient-to-r from-nenya-accent-secondary via-nenya-accent-primary to-nenya-accent-metallic bg-clip-text text-transparent">
-                Nenya
-              </span>
+              <NenyaMark face="body" short playButton={false} className="font-medium text-foreground" />
             </button>
           </div>
 
