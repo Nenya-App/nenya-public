@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { breathCounter, breathPhaseProgress } from '../../lib/breathClock';
 import * as m from 'motion/react-m';
 import { ChevronDown, GripHorizontal, Minus, Square, X } from 'lucide-react';
@@ -45,6 +45,8 @@ export function BreathingCounter({
   // Fully collapsed: just the word "breathe", no numbers or pattern list.
   // Plain view state, so it resets whenever the counter remounts.
   const [collapsed, setCollapsed] = useState(false);
+  // Set while the counter is being dragged, so letting go does not count as a click on the circle.
+  const dragged = useRef(false);
 
   useEffect(() => {
     if (!enabled || !show) return;
@@ -67,10 +69,18 @@ export function BreathingCounter({
   const pulseAnim = isEntryPulse ? 'bcd' : 'bcs';
   const phaseLabel = phase === 'i' ? 'inhale' : phase === 'e' ? 'exhale' : 'hold';
 
+  // A click on the circle itself opens and closes the list of paces (owner, 2026-11-26), the same as the small button in the corner.
+  const toggleList = () => {
+    if (dragged.current) return;
+    if (onMinimizedChange) onMinimizedChange(!minimized);
+  };
+
   return (
     <m.div
       id={id}
       drag
+      onDragStart={() => { dragged.current = true; }}
+      onPointerDownCapture={() => { dragged.current = false; }}
       dragMomentum={false}
       dragElastic={0.06}
       whileDrag={{ scale: 1.03, boxShadow: '0 8px 32px rgba(0,0,0,0.55)' }}
@@ -86,7 +96,8 @@ export function BreathingCounter({
         borderRadius: '14px',
         backdropFilter: 'blur(10px)',
         boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-        width: collapsed ? '132px' : '212px',
+        // About three quarters of the earlier size (owner, 2026-11-26); full width only when the list of paces is open.
+        width: collapsed ? '112px' : minimized ? '160px' : '212px',
         overflow: 'hidden',
       }}
     >
@@ -173,7 +184,25 @@ export function BreathingCounter({
           <ChevronDown size={12} />
         </button>
       ) : (
-      <div style={{ padding: '4px 16px 10px' }}>
+      <div
+        {...(onMinimizedChange
+          ? {
+              role: 'button',
+              tabIndex: 0,
+              'aria-expanded': !minimized,
+              'aria-label': minimized ? 'Show the breathing paces' : 'Hide the breathing paces',
+              onClick: toggleList,
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  dragged.current = false;
+                  toggleList();
+                }
+              },
+            }
+          : {})}
+        style={{ padding: '2px 12px 8px', cursor: onMinimizedChange ? 'pointer' : undefined }}
+      >
         {/* The number and word change every second, so they are hidden from screen readers (which would otherwise meet a
             different number each time they looked); the breathing tones and the controls are what they use instead. */}
         <span className="sr-only">Breathing counter, a circle that shows the count and the phase. Use the breathing tones switch to follow the breath by sound.</span>
@@ -185,16 +214,16 @@ export function BreathingCounter({
             textTransform: 'uppercase',
             color: 'rgba(232,160,32,0.85)',
             fontFamily: "'Manrope',sans-serif",
-            marginBottom: '5px',
+            marginBottom: '3px',
           }}
         >
           breathe
         </div>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <div className="bc-circle" style={{ position: 'relative', width: '112px', height: '112px' }}>
+          <div className="bc-circle" style={{ position: 'relative', width: '84px', height: '84px' }}>
             {/* The circle: a faint full ring, an arc that fills across the current phase, and a disc behind the number.
                 With reduced motion the arc is hidden and the circle, number and word stay. */}
-            <svg viewBox="0 0 112 112" width="112" height="112" style={{ position: 'absolute', inset: 0 }}>
+            <svg viewBox="0 0 112 112" width="84" height="84" style={{ position: 'absolute', inset: 0 }}>
               <circle cx="56" cy="56" r="52" fill="rgba(232,160,32,0.08)" stroke="rgba(232,160,32,0.55)" strokeWidth="2" />
               <circle
                 className="bc-arc"
@@ -217,7 +246,7 @@ export function BreathingCounter({
                 className="bc-digit"
                 style={{
                   fontFamily: "'Cinzel',serif",
-                  fontSize: '2.75rem',
+                  fontSize: '2.1rem',
                   fontWeight: 400,
                   color: 'rgba(232,160,32,0.96)',
                   lineHeight: 1,
@@ -228,8 +257,8 @@ export function BreathingCounter({
               </div>
               <div
                 style={{
-                  marginTop: '4px',
-                  fontSize: '14px',
+                  marginTop: '2px',
+                  fontSize: '12px',
                   color: 'rgba(232,160,32,0.9)',
                   fontFamily: "'Manrope',sans-serif",
                   letterSpacing: '0.08em',
