@@ -57,13 +57,11 @@ interface NenyaMarkProps {
   className?: string;
   /** "Nənya" without ".biz", for narrow screens. */
   short?: boolean;
-  /** For the wide header: ".biz" (and so the small n) only at desktop widths, "Nənya" below them. */
-  compactBelowDesktop?: boolean;
   /** The keyboard's "Play the mark" button. Off where the mark sits inside another button. */
   playButton?: boolean;
 }
 
-export function NenyaMark({ face = 'body', className = '', short = false, compactBelowDesktop = false, playButton = true }: NenyaMarkProps) {
+export function NenyaMark({ face = 'body', className = '', short = false, playButton = true }: NenyaMarkProps) {
   const id = useSyncExternalStore(subscribeSessionMark, getSessionMarkId, getSessionMarkId);
   const stopped = useMotionStopped();
   const { theme } = useTheme();
@@ -223,7 +221,7 @@ export function NenyaMark({ face = 'body', className = '', short = false, compac
         style={face === 'lyric' ? { fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic' } : undefined}
       >
         {/* A name takes a capital; the address with ".biz" stays in lower case (owner, 2026-11-26). */}
-        {short ? 'N' : compactBelowDesktop ? <><span className="lg:hidden">N</span><span className="hidden lg:inline">n</span></> : 'n'}
+        {short ? 'N' : 'n'}
         <span aria-hidden="true" className="relative inline-grid leading-none" style={{ marginRight: `${MARK_SETTINGS[face].after}em` }}>
           {Z.map((z, i) => (
             <span key={i} ref={(el) => { layers.current[i] = el; }} className="relative inline-block leading-none" style={{ gridArea: '1 / 1', zIndex: z }}>
@@ -232,7 +230,7 @@ export function NenyaMark({ face = 'body', className = '', short = false, compac
           ))}
         </span>
         nya
-        {!short && <span className={compactBelowDesktop ? 'hidden lg:inline' : undefined}>.biz</span>}
+        {!short && '.biz'}
       </span>
       {canPlay && playButton && (
         <button

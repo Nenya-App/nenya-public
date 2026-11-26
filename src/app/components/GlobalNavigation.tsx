@@ -104,9 +104,9 @@ export function GlobalNavigation({
 
   return (
     <>
-      {/* Desktop Navigation */}
+      {/* Desktop Navigation: it needs about 920px, so it starts at the desktop width (2026-11-26) */}
       <nav 
-        className="hidden md:flex relative shrink-0 z-50 bg-background border-b border-border shadow-sm pt-[env(safe-area-inset-top)]"
+        className="hidden lg:flex relative shrink-0 z-50 bg-background border-b border-border shadow-sm pt-[env(safe-area-inset-top)]"
         aria-label="Main navigation"
         role="navigation"
       >
@@ -128,7 +128,7 @@ export function GlobalNavigation({
                 aria-label="Nenya: return to Welcome"
                 title="Return to Welcome page"
               >
-                <NenyaMark face="body" compactBelowDesktop playButton={false} className="text-xl font-medium text-foreground" />
+                <NenyaMark face="body" playButton={false} className="text-xl font-medium text-foreground" />
               </button>
             </div>
 
@@ -239,13 +239,13 @@ export function GlobalNavigation({
 
       {/* Mobile Navigation */}
       <nav 
-        className="md:hidden relative shrink-0 z-50 bg-background border-b border-border shadow-sm pt-[env(safe-area-inset-top)]"
+        className="lg:hidden relative shrink-0 z-50 bg-background border-b border-border shadow-sm pt-[env(safe-area-inset-top)]"
         aria-label="Main navigation"
         role="navigation"
       >
-        <div className="flex items-center justify-between h-14 px-2 min-[360px]:px-3 min-[400px]:px-4">
+        <div className="flex flex-wrap items-center justify-between gap-y-1 min-h-14 px-2 min-[360px]:px-3 min-[400px]:px-4">
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 min-[400px]:gap-2">
             <button
               onClick={handleLogoClick}
               className="hover:opacity-80 transition-opacity"
@@ -265,7 +265,7 @@ export function GlobalNavigation({
           </div>
 
           {/* Mobile Menu Controls */}
-          <div id="tutorial-header-tools-mobile" className="flex items-center gap-0.5 min-[400px]:gap-1.5">
+          <div id="tutorial-header-tools-mobile" className="ml-auto flex items-center gap-0.5 min-[400px]:gap-1.5">
             {/* Theme Toggle */}
             <ThemeToggle />
 
@@ -281,7 +281,8 @@ export function GlobalNavigation({
             </Button>
 
             {/* Emergency Exit Button */}
-            <EmergencyExitButton variant="header" className="text-xs px-1.5 sm:px-2 py-1" onEmergencyExit={onEmergencyExit} />
+            {/* On narrow phones the words may take two lines (and the arrow makes way), so the header and its information button fit. */}
+            <EmergencyExitButton variant="header" className="text-xs px-1.5 sm:px-2 py-1 max-[439px]:max-w-[6.5rem] max-[439px]:whitespace-normal max-[439px]:text-left max-[439px]:leading-tight max-[439px]:has-[>svg]:px-2 max-[399px]:[&_svg]:hidden" onEmergencyExit={onEmergencyExit} />
           </div>
         </div>
 
@@ -296,7 +297,7 @@ export function GlobalNavigation({
             />
             
             {/* Menu Content */}
-            <div className="absolute top-[calc(3.5rem+env(safe-area-inset-top))] left-0 right-0 bg-background border-b border-border shadow-lg z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 bg-background border-b border-border shadow-lg z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto">
               <div className="flex flex-col p-2">
                 <button
                   onClick={() => handleNavigate('intro')}
