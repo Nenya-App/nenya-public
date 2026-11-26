@@ -7,6 +7,10 @@ import { PRESETS, type BreathingTechnique } from '../../lib/breathingPresets';
 import { BreathTonesSwitch } from './BreathTonesSwitch';
 import { setBreathingPanel } from '../../lib/breathingPanel';
 
+// Text colors in the list of paces, each at least 7:1 on the counter's box (tests/counter-size.test.mts).
+const PACE_NAME = '#F4C56A';
+const PACE_TEXT = '#E8D3AA';
+
 interface BreathingCounterProps {
   enabled: boolean;
   show: boolean;
@@ -326,20 +330,20 @@ export function BreathingCounter({
                     style={{
                       fontFamily: "'Manrope',sans-serif",
                       fontSize: '13px',
-                      color: active ? 'rgba(232,160,32,0.96)' : 'rgba(232,160,32,0.65)',
+                      color: PACE_NAME,
                       fontWeight: active ? 600 : 400,
                     }}
                   >
                     {preset.lb}
                   </span>
-                  <span style={{ fontSize: '10px', color: 'rgba(232,160,32,0.75)', fontFamily: "'Manrope',sans-serif" }}>
+                  <span style={{ fontSize: '10px', color: PACE_TEXT, fontFamily: "'Manrope',sans-serif" }}>
                     {preset.lb === 'Box' ? '4·4·4·4' : preset.lb === '4-7-8' ? 'no hold-out' : ''}
                   </span>
                 </div>
                 <div
                   style={{
                     fontSize: '11px',
-                    color: active ? 'rgba(232,160,32,0.6)' : 'rgba(232,160,32,0.35)',
+                    color: PACE_TEXT,
                     fontFamily: "'Manrope',sans-serif",
                     lineHeight: 1.3,
                     marginTop: '1px',
@@ -352,7 +356,7 @@ export function BreathingCounter({
               );
             })}
             {!PRESETS.some((p) => p.ih === IH && (p.hi || 0) === HI && p.ex === EX && (p.ho || 0) === HO) && (
-              <div style={{ padding: '6px 16px', fontFamily: "'Manrope',sans-serif", fontSize: '13px', color: 'rgba(232,160,32,0.96)', fontWeight: 600 }}>
+              <div style={{ padding: '6px 16px', fontFamily: "'Manrope',sans-serif", fontSize: '13px', color: PACE_NAME, fontWeight: 600 }}>
                 Your own pace: {IH / 1000}·{HI / 1000}·{EX / 1000}·{HO / 1000}
               </div>
             )}
@@ -377,8 +381,8 @@ export function BreathingCounter({
                 fontFamily: "'Manrope',sans-serif",
               }}
             >
-              <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'rgba(232,160,32,0.96)', textDecoration: 'underline' }}>Set Custom</span>
-              <span style={{ display: 'block', fontSize: '12px', color: 'rgba(232,160,32,0.9)', lineHeight: 1.4 }}>Opens the settings panel. Your own pace is near the top.</span>
+              <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: PACE_NAME, textDecoration: 'underline' }}>Set Custom</span>
+              <span style={{ display: 'block', fontSize: '12px', color: PACE_TEXT, lineHeight: 1.4 }}>Opens the settings panel. Your own pace is near the top.</span>
             </button>
           </div>
         </>
