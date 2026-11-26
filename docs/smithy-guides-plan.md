@@ -1,6 +1,6 @@
 # The Smithy Guides Implementation Plan
 
-Status: Proposed. Written 2026-11-25. Nothing built.
+Status: Shipped. Carried out 2026-11-25.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
