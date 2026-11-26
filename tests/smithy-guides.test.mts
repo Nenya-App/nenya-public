@@ -1,4 +1,7 @@
 // The "make your own" guides (docs/smithy-guides-scope.md): how a guide file is read, and the rules every guide must keep.
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { ok } from './helpers.mts';
 import { parseGuide, readingGrade, guideProblems, REPO_BLOB } from '../src/lib/smithyGuide.ts';
 
@@ -47,3 +50,29 @@ const hard = 'Subsequently, comprehensive configuration necessitates considerabl
 ok('reading grade: hard prose is a problem', readingGrade(parseGuide(sample(hard))) > 9.5 && problems(hard).some((p) => /reading/i.test(p)));
 ok('reading grade: the plain sample is at or below 9.5', readingGrade(g) <= 9.5, String(readingGrade(g)));
 ok('reading grade: code is left out', readingGrade(parseGuide(sample(PLAIN + '\n\n```text\n' + hard + '\n```'))) === readingGrade(g));
+
+// ---- the guides themselves, and the offline check (Task 2)
+const { outwardRequests } = await import('../src/lib/smithyOffline.ts');
+ok('outward requests: only what leaves this origin', outwardRequests(['http://127.0.0.1:8000/a', 'data:x', 'blob:y', 'https://example.com/z', 'http://localhost:9/q'], 'http://127.0.0.1:8000').join() === 'https://example.com/z,http://localhost:9/q');
+
+const dir = fileURLToPath(new URL('../docs/smithy/', import.meta.url));
+const root = fileURLToPath(new URL('..', import.meta.url));
+const files = readdirSync(dir).filter((f) => f.endsWith('.md')).sort();
+const guides = files.map((f) => ({ f, g: parseGuide(readFileSync(join(dir, f), 'utf8')), text: readFileSync(join(dir, f), 'utf8') }));
+ok('guides 1, 2 and 6 are written', [1, 2, 6].every((n) => guides.some((x) => x.g.number === n)));
+ok('each file is named NN-<slug>.md', guides.every((x) => x.f === `${String(x.g.number).padStart(2, '0')}-${x.g.slug}.md`), files.join(' '));
+for (const { f, g: one } of guides) {
+  const p = guideProblems(one, (path) => existsSync(join(root, path)));
+  ok(`no problems: ${f}`, p.length === 0, p.join('; '));
+}
+
+const two = guides.find((x) => x.g.number === 2)!;
+const codes = two.g.blocks.flatMap((b) => (b.k === 'code' ? [b.code] : []));
+const firstNode = codes.findIndex((c) => /\bnode\b/.test(c));
+ok('guide 2 checks Node first', codes[firstNode]?.includes('node --version') === true && firstNode < codes.findIndex((c) => c.includes('npm install')));
+ok('guide 2 names version 24', /\b24\b/.test(two.text));
+for (const { f, g: one, text } of guides) {
+  if (!/\bpython3\b/.test(text)) continue;
+  const heads = one.blocks.flatMap((b) => (b.k === 'h' ? [b.text.map((p) => p.s).join('')] : []));
+  ok(`commands that differ are shown for both systems: ${f}`, /(^|\n)py /.test(one.blocks.flatMap((b) => (b.k === 'code' ? [b.code] : [])).join('\n')) && heads.some((h) => h.includes('Mac')) && heads.some((h) => h.includes('Windows')));
+}
