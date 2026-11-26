@@ -256,6 +256,14 @@ try {
   const startBtn = startAt > 0 ? h.slice(h.lastIndexOf('<button', startAt), startAt) : '';
   ok('coach start screen: "I understand, start" is enabled without playing the sound', typeof h === 'string' && startBtn !== '' && !/\sdisabled=""/.test(startBtn), h.error ?? '');
 
+  // The breathing and accessibility panel: its close button shows only an X, so it needs a name (WCAG 2.2 4.1.2), and it keeps the 44px target size (2.5.5).
+  const { BreathingPopout } = await vite.ssrLoadModule('/src/app/components/BreathingPopout.tsx');
+  h = render(BreathingPopout, { isOpen: true, onClose: noop });
+  const closeTag = typeof h === 'string' ? (h.match(/Breathing Animation &amp; Accessibility<\/h3>(<button[^>]*>)/) ?? ['', ''])[1] : '';
+  const closeClasses = (closeTag.match(/\sclass="([^"]*)"/) ?? ['', ''])[1].split(/\s+/);
+  ok('breathing panel: the icon-only close button has an accessible name', /\saria-label="Close the breathing panel"/.test(closeTag), h.error ?? closeTag.slice(0, 80));
+  ok('breathing panel: the close button is 44px by 44px (the shared icon size, not shrunk)', closeClasses.includes('size-11') && !closeClasses.some((c) => /^(?:size|h|w)-(?:[1-9]|10)$/.test(c)), closeClasses.filter((c) => /^(?:min-)?(?:size|h|w)-/.test(c)).join(' '));
+
   // The public verifier page: a way to choose a file or paste one, and a plain promise that nothing is uploaded.
   const { default: VerifyPage } = await vite.ssrLoadModule('/src/verify/VerifyPage.tsx');
   h = render(VerifyPage, {});
