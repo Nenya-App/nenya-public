@@ -118,6 +118,8 @@ export default function Structure({ onBack }: StructureProps) {
                         <img
                           alt="Donate now at Fractured Atlas!"
                           src="/badges/fractured-atlas-donate.png"
+                          width="120"
+                          height="40"
                           style={{ height: '40px', width: 'auto' }}
                         />
                       </a>
