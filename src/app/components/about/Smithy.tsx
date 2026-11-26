@@ -1,6 +1,6 @@
 // About, "The Smithy": the "make your own" guides, a list and one guide at a time, each with its own address (/about/smithy/<slug>).
 // The text is the owner-approved Markdown in docs/smithy/, built into src/lib/smithyData.ts (docs/smithy-guides-scope.md). Keeps and sends nothing.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { AppFooter } from '../AppFooter';
@@ -12,6 +12,8 @@ export default function Smithy({ onBack }: { onBack: () => void }) {
   const [slug, setSlug] = useState(() => smithySlugFromPath(window.location.pathname) ?? '');
   const at = SMITHY_GUIDES.findIndex((g) => g.slug === slug);
   const guide = at >= 0 ? SMITHY_GUIDES[at] : undefined;
+  const heading = useRef<HTMLHeadingElement>(null);
+  const shown = useRef(slug);
 
   const open = (next: string) => {
     window.history.pushState(null, '', smithyPath(next));
@@ -33,6 +35,14 @@ export default function Smithy({ onBack }: { onBack: () => void }) {
     document.querySelectorAll('.scroll-container').forEach((el) => el.scrollTo({ top: 0, behavior: 'instant' }));
   }, [guide]);
 
+  // Opening another guide (or the list) moves focus to its heading, so a screen reader says where the reader is. Not on first arrival.
+  useEffect(() => {
+    if (shown.current !== slug) {
+      shown.current = slug;
+      heading.current?.focus({ preventScroll: true });
+    }
+  }, [slug]);
+
   return (
     <div className="size-full overflow-y-auto scroll-container bg-background">
       <div className="sticky top-0 z-10 flex flex-wrap gap-2 border-b border-border bg-background px-4 py-3">
@@ -50,7 +60,7 @@ export default function Smithy({ onBack }: { onBack: () => void }) {
           <article className="space-y-6">
             <header className="space-y-2">
               <p className="text-sm text-foreground">The Smithy, guide {guide.number}</p>
-              <h1 className="text-3xl text-foreground">{guide.title}</h1>
+              <h1 ref={heading} tabIndex={-1} className="text-3xl text-foreground">{guide.title}</h1>
               <p className="text-base text-foreground">{guide.summary}</p>
             </header>
             <SmithyBlocks blocks={guide.blocks} />
@@ -70,7 +80,7 @@ export default function Smithy({ onBack }: { onBack: () => void }) {
         ) : (
           <>
             <header className="space-y-3">
-              <h1 className="text-3xl text-foreground">The Smithy</h1>
+              <h1 ref={heading} tabIndex={-1} className="text-3xl text-foreground">The Smithy</h1>
               <p className="text-lg text-foreground">Make your own, on your own device.</p>
               <p className="text-base text-foreground">
                 Plain guides to building your own copy of this site on your own computer. No developer experience is needed. The AI coach is not part of it.

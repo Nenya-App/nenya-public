@@ -24,3 +24,4 @@ ok('outside links open safely', /rel="noopener noreferrer"/.test(blocks) && /tar
 ok('tables have header cells', /<th scope="col"/.test(blocks));
 ok('long Previous and Next titles wrap on a phone', (page.match(/max-w-full shrink/g) ?? []).length === 2);
 ok('with all seven guides in, the page no longer says more are coming', !/More guides are being written/.test(page));
+ok('opening another guide moves focus to its heading, but not on first load', (page.match(/<h1 ref=\{heading\} tabIndex=\{-1\}/g) ?? []).length === 2 && /if \(shown\.current !== slug\)/.test(page) && /heading\.current\?\.focus\(/.test(page));
