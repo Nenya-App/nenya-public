@@ -6,6 +6,8 @@ import { useKeptPalettes } from '../../lib/keptPalettes';
 import { breathSequence, orbVectors, resolveColours } from '../../lib/logoColours';
 import { DEFAULT_OUTER_ORBIT } from '../../lib/orbitLook';
 import { ringAlphas, ringEdgeStart } from '../../lib/breathStrength';
+import { visibleRing } from '../../lib/ringVisibility';
+import { useTheme } from './ThemeProvider';
 
 /**
  * The breathing ring grows to the middle of the ring of outer orbs and no further: its full-size diameter is the orb ring's diameter (2 x the orbs' radius, a fraction of the logo's size,
@@ -127,19 +129,20 @@ export const valarColors = [
   },
 ];
 
-// All 96 colours (16 Valar x 6 colours each) in breath order. Shared with the gem, which tints to the
-// same colour as the ring.
+// All 96 colours (16 Valar x 6 colours each), palette by palette. The ring takes its own list from useBreathColours below.
 export const allColors: string[] = valarColors.flatMap((valar) => valar.vector);
 const originalOrbVectors: string[][] = valarColors.map((valar) => valar.vector);
 
 /**
- * The colours of the breath ring and of the gem's tint, one a breath: the original 96 unless the visitor chose another set in Settings
- * (src/lib/logoColours.ts). The same array every time while the choice and the palettes they kept stay as they are.
+ * The colours of the breath ring, of the gem's tint and of the "more below" button's pulse, one a breath: the visitor's choice in Settings
+ * (src/lib/logoColours.ts; all sixteen palettes for the original), keeping the colours that can be seen on this page's background
+ * (src/lib/ringVisibility.ts). The same array every time while the choice, the theme and the palettes they kept stay as they are.
  */
 export function useBreathColours(): string[] {
   const choice = useBreathColourChoice();
   const kept = useKeptPalettes();
-  return useMemo(() => (choice === 'original' ? allColors : breathSequence(resolveColours(choice, valarColors, kept))), [choice, kept]);
+  const { theme } = useTheme();
+  return useMemo(() => breathSequence(visibleRing(resolveColours(choice, valarColors, kept), theme)), [choice, kept, theme]);
 }
 
 /** The six-colour vector of each of the sixteen orbs: each palette's own unless the visitor chose another set in Settings. */
@@ -211,7 +214,7 @@ export function ValarBreathingLogo({
   const { applied, style: fadeStyle } = useFadeSwitch({ tech: technique, cycleDur: cycleDuration, start: cycleStart }, shapeKey);
   const { tech, cycleDur, start } = applied;
 
-  // The ring's colours, one a breath: all 96 unless the visitor chose another set (Settings, Logo look, Breathing colours).
+  // The ring's colours, one a breath: the set chosen in Settings (Logo look, Breathing colours), as far as it can be seen on this theme.
   const colours = useBreathColours();
 
   // Total animation cycle = every colour (96 by default) × cycleDuration seconds each

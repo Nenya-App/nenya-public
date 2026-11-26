@@ -1,5 +1,6 @@
 // The breathing animation's strength (owner, 2026-11-22). It replaces the old Breathing opacity (0 to 1, default 1) with a scale in which the old 100% is shown as 50%:
-// the scale runs 5% to 200%, 50% is the standard strength and the default, and at 50% the breath ring looks exactly as it did at the old 100%.
+// the scale runs 5% to 200%, 50% is the standard strength and the default. Since 2026-11-26 the standard ring is drawn 1.5 times as strong as the old
+// maximum, because it was often too faint to see (src/lib/ringVisibility.ts chooses its colours).
 //   below 50%   the ring fades as it did before (new 25% = old 50%): its opacity is strength / 50.
 //   above 50%   opacity cannot pass 1, so the ring is drawn stronger instead: the colour of its glow is brighter (every step of its soft gradient is multiplied, up to twice at 200%)
 //               and the soft edge starts further in, so the ring is wider as well as brighter. Never faster, never flashing: the timing, the growing and fading and the colours are
@@ -8,7 +9,7 @@
 export const STRENGTH_MIN = 5;
 export const STRENGTH_MAX = 200;
 export const STRENGTH_STEP = 5;
-/** The standard strength: what the old 100% was. */
+/** The standard strength: where the old 100% sits on this scale. */
 export const STRENGTH_STANDARD = 50;
 export const DEFAULT_STRENGTH = STRENGTH_STANDARD;
 
@@ -31,8 +32,8 @@ export function strengthParts(strength: number): StrengthParts {
   return { opacity: clamp(s / STRENGTH_STANDARD, 0.1, 1), boost: s > STRENGTH_STANDARD ? 1 + (s - STRENGTH_STANDARD) / (STRENGTH_MAX - STRENGTH_STANDARD) : 1 };
 }
 
-/** The ring's soft gradient for a strength: the alpha at each stop (as the ring has always had them, times opacity, times boost, never above 1) and where the soft edge begins (30% of the radius at standard, moving in to 15% at 200%). */
-export const RING_STOPS = [0.08, 0.15, 0.25, 0.4] as const;
+/** The ring's soft gradient for a strength: the alpha at each stop (1.5 times the first design's 0.08, 0.15, 0.25 and 0.4, times opacity, times boost, never above 1) and where the soft edge begins (30% of the radius at standard, moving in to 15% at 200%). */
+export const RING_STOPS = [0.12, 0.225, 0.375, 0.6] as const;
 export function ringAlphas(parts: StrengthParts): number[] {
   return RING_STOPS.map((a) => Math.min(1, a * parts.opacity * parts.boost));
 }
