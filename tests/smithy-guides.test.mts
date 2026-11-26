@@ -99,7 +99,7 @@ ok('all seven guides are written', [1, 2, 3, 4, 5, 6, 7].every((n) => guides.som
 ok('guide 5 names the header and welcome screen too', ['src/app/components/GlobalNavigation.tsx', 'src/app/components/OnboardingFlow.tsx'].every((f) => text(5).includes(f)));
 
 // ---- from the branch review (2026-11-25)
-ok('guide 5 searches all of src, for the name and the address', ['grep -rn "Nenya" src index.html public', 'grep -rn "nenya.biz" src index.html public', 'findstr /s /n /i "nenya" src\\* public\\* index.html'].every((c) => text(5).includes(c)));
+ok('guide 5 searches all of src, for the name and the address', ['grep -rni "nenya" src index.html public', 'findstr /s /n /i "nenya" src\\* public\\*', 'findstr /n /i "nenya" index.html'].every((c) => text(5).includes(c)));
 ok('guide 5 names the saved report and the answers text', ['src/lib/nenyaPdfReport.ts', 'src/lib/aboutNenya.ts', 'src/lib/smithyData.ts'].every((f) => text(5).includes(f)));
 ok('guide 6 shows how to run the check off a Mac', text(6).includes('set "CHROME=') && text(6).includes('CHROME=/usr/bin/google-chrome node scripts/smithy-offline-check.mts') && /have not been tried/.test(text(6)));
 

@@ -43,6 +43,8 @@ If you type the address yourself and it has spaces in it, put quote marks around
 cd "My Forge/nenya-public-main"
 ```
 
+On Windows, if your folder is on another drive, such as D, type `cd /d` in place of `cd`.
+
 ## Get the parts
 
 This step needs the internet. It downloads the parts the site is built from. It can take a few minutes.
@@ -65,6 +67,6 @@ The address works only on your own computer.
 
 ## Stop it
 
-Go back to the command window. Hold the Control key and press C. The site stops. To start it again, go into the folder and run `npm run dev` once more.
+Go back to the command window. Hold the Control key and press C. On Windows, it may ask "Terminate batch job (Y/N)?" Type Y and press Return. The site stops. To start it again, go into the folder and run `npm run dev` once more.
 
 The same steps are in [`README.md`](https://github.com/Nenya-App/nenya-public/blob/main/README.md), under "Running it locally". The list of parts is in [`package.json`](https://github.com/Nenya-App/nenya-public/blob/main/package.json).

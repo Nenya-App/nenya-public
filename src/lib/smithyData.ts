@@ -420,6 +420,31 @@ export const SMITHY_GUIDES: Guide[] = [
         "code": "cd \"My Forge/nenya-public-main\""
       },
       {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "On Windows, if your folder is on another drive, such as D, type "
+          },
+          {
+            "t": "code",
+            "s": "cd /d"
+          },
+          {
+            "t": "text",
+            "s": " in place of "
+          },
+          {
+            "t": "code",
+            "s": "cd"
+          },
+          {
+            "t": "text",
+            "s": "."
+          }
+        ]
+      },
+      {
         "k": "h",
         "level": 2,
         "text": [
@@ -508,7 +533,7 @@ export const SMITHY_GUIDES: Guide[] = [
         "text": [
           {
             "t": "text",
-            "s": "Go back to the command window. Hold the Control key and press C. The site stops. To start it again, go into the folder and run "
+            "s": "Go back to the command window. Hold the Control key and press C. On Windows, it may ask \"Terminate batch job (Y/N)?\" Type Y and press Return. The site stops. To start it again, go into the folder and run "
           },
           {
             "t": "code",
@@ -777,7 +802,24 @@ export const SMITHY_GUIDES: Guide[] = [
       {
         "k": "code",
         "lang": "bash",
-        "code": "findstr /s /n /c:\"Take a Moment to Breathe\" src\\* index.html"
+        "code": "findstr /s /n /c:\"Take a Moment to Breathe\" src\\*\nfindstr /n /c:\"Take a Moment to Breathe\" index.html"
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "Skip any answer in "
+          },
+          {
+            "t": "code",
+            "s": "src/lib/smithyData.ts"
+          },
+          {
+            "t": "text",
+            "s": ". That file holds these guides."
+          }
+        ]
       },
       {
         "k": "p",
@@ -931,7 +973,7 @@ export const SMITHY_GUIDES: Guide[] = [
         "text": [
           {
             "t": "text",
-            "s": "Use a plain text editor. On a Mac, in TextEdit, turn off smart quotes first: choose Edit, then Substitutions, and switch off Smart Quotes. Curly quotes break code. On Windows, Notepad works."
+            "s": "Use a plain text editor. Curly quotes break code. On a Mac, in TextEdit, open Settings, then New Document, and untick Smart quotes and Smart dashes. For a file that is already open, also check Edit, then Substitutions. On Windows, Notepad works."
           }
         ]
       },
@@ -1172,7 +1214,15 @@ export const SMITHY_GUIDES: Guide[] = [
           },
           {
             "t": "text",
-            "s": ". The first screen offers that list, so change the entry called Steady there too, so the two match. Take care with long breaths and holds. If a pace feels hard, choose a shorter one."
+            "s": ". The first screen offers that list, so change the entry called Steady there too: its numbers, its short label such as "
+          },
+          {
+            "t": "code",
+            "s": "6·6"
+          },
+          {
+            "t": "text",
+            "s": ", and its description. Five in and five out is already in the list under the name Even. Take care with long breaths and holds. If a pace feels hard, choose a shorter one."
           }
         ]
       },
@@ -1692,6 +1742,23 @@ export const SMITHY_GUIDES: Guide[] = [
         "k": "p",
         "text": [
           {
+            "t": "text",
+            "s": "Skip "
+          },
+          {
+            "t": "code",
+            "s": "src/lib/smithyData.ts"
+          },
+          {
+            "t": "text",
+            "s": " in the answers."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
             "t": "bold",
             "s": "Windows:"
           }
@@ -1700,7 +1767,7 @@ export const SMITHY_GUIDES: Guide[] = [
       {
         "k": "code",
         "lang": "bash",
-        "code": "findstr /s /n /c:\"info@nenya.biz\" src\\* public\\* index.html"
+        "code": "findstr /s /n /c:\"info@nenya.biz\" src\\* public\\*\nfindstr /n /c:\"info@nenya.biz\" index.html"
       },
       {
         "k": "h",
@@ -1741,7 +1808,7 @@ export const SMITHY_GUIDES: Guide[] = [
       {
         "k": "code",
         "lang": "bash",
-        "code": "grep -rn \"Nenya\" src index.html public\ngrep -rn \"nenya.biz\" src index.html public"
+        "code": "grep -rni \"nenya\" src index.html public"
       },
       {
         "k": "p",
@@ -1755,7 +1822,7 @@ export const SMITHY_GUIDES: Guide[] = [
       {
         "k": "code",
         "lang": "bash",
-        "code": "findstr /s /n /i \"nenya\" src\\* public\\* index.html"
+        "code": "findstr /s /n /i \"nenya\" src\\* public\\*\nfindstr /n /i \"nenya\" index.html"
       },
       {
         "k": "h",
@@ -2027,7 +2094,15 @@ export const SMITHY_GUIDES: Guide[] = [
         "text": [
           {
             "t": "text",
-            "s": "On 25 November 2026, a copy built this way was opened on a Mac, with a program watching every request. It agreed to the terms, opened the breathing panel, used one Lens, saved the report as a file, and opened three About pages. "
+            "s": "On 25 November 2026, a copy was built with "
+          },
+          {
+            "t": "code",
+            "s": "npm run build"
+          },
+          {
+            "t": "text",
+            "s": " on a Mac. A check program served it to that computer only and watched every request. It agreed to the terms, opened and closed the breathing panel, used one Lens, saved the report as a file, and opened three About pages. "
           },
           {
             "t": "bold",

@@ -35,8 +35,11 @@ grep -rn "Take a Moment to Breathe" src index.html
 **Windows:** in Command Prompt, inside your project folder, type:
 
 ```bash
-findstr /s /n /c:"Take a Moment to Breathe" src\* index.html
+findstr /s /n /c:"Take a Moment to Breathe" src\*
+findstr /n /c:"Take a Moment to Breathe" index.html
 ```
+
+Skip any answer in `src/lib/smithyData.ts`. That file holds these guides.
 
 Each line of the answer shows a file name and a line number. Open that file in your editor and go to that line.
 

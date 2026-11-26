@@ -11,7 +11,7 @@ files: src/app/components/pages/WelcomePage.tsx, src/styles/globals.css, src/app
 
 Keep your copy running with `npm run dev`, as in the second guide. Open it in your browser. When you save a file, the page updates by itself.
 
-Use a plain text editor. On a Mac, in TextEdit, turn off smart quotes first: choose Edit, then Substitutions, and switch off Smart Quotes. Curly quotes break code. On Windows, Notepad works.
+Use a plain text editor. Curly quotes break code. On a Mac, in TextEdit, open Settings, then New Document, and untick Smart quotes and Smart dashes. For a file that is already open, also check Edit, then Substitutions. On Windows, Notepad works.
 
 If you saved settings in your browser with "Remember on this device", press "Forget me" at the bottom of the page. Saved settings hide your new starting values.
 
@@ -43,7 +43,7 @@ export const STEADY: BreathingTechnique = { ih: 6000, hi: 0, ex: 6000, ho: 0 };
 
 The numbers are in thousandths of a second. `ih` is the breath in, `hi` is the hold after it, `ex` is the breath out, and `ho` is the hold after that. For five seconds in and five out, use `5000` for both `ih` and `ex`.
 
-The list of paces you can pick from is in `src/lib/breathingPresets.ts`. The first screen offers that list, so change the entry called Steady there too, so the two match. Take care with long breaths and holds. If a pace feels hard, choose a shorter one.
+The list of paces you can pick from is in `src/lib/breathingPresets.ts`. The first screen offers that list, so change the entry called Steady there too: its numbers, its short label such as `6·6`, and its description. Five in and five out is already in the list under the name Even. Take care with long breaths and holds. If a pace feels hard, choose a shorter one.
 
 ## Change the logo's shape
 

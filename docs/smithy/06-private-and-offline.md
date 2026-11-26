@@ -29,7 +29,7 @@ You can now turn off your internet. The breathing tool, the Lenses, the sound an
 
 ## What we checked
 
-On 25 November 2026, a copy built this way was opened on a Mac, with a program watching every request. It agreed to the terms, opened the breathing panel, used one Lens, saved the report as a file, and opened three About pages. **Nothing was sent off the computer.**
+On 25 November 2026, a copy was built with `npm run build` on a Mac. A check program served it to that computer only and watched every request. It agreed to the terms, opened and closed the breathing panel, used one Lens, saved the report as a file, and opened three About pages. **Nothing was sent off the computer.**
 
 The check does not cover every button or every page. It was not run on Windows or Linux.
 

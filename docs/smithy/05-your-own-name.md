@@ -37,10 +37,13 @@ The address `info@nenya.biz` appears many times. Replace every one with your own
 grep -rn "info@nenya.biz" src public index.html
 ```
 
+Skip `src/lib/smithyData.ts` in the answers.
+
 **Windows:**
 
 ```bash
-findstr /s /n /c:"info@nenya.biz" src\* public\* index.html
+findstr /s /n /c:"info@nenya.biz" src\* public\*
+findstr /n /c:"info@nenya.biz" index.html
 ```
 
 ## Find the rest of the name
@@ -50,14 +53,14 @@ Search for the name and the web address to see what is left. There will be many 
 **Mac and Linux:**
 
 ```bash
-grep -rn "Nenya" src index.html public
-grep -rn "nenya.biz" src index.html public
+grep -rni "nenya" src index.html public
 ```
 
 **Windows:**
 
 ```bash
-findstr /s /n /i "nenya" src\* public\* index.html
+findstr /s /n /i "nenya" src\* public\*
+findstr /n /i "nenya" index.html
 ```
 
 ## Text that is only true for nenya.biz
