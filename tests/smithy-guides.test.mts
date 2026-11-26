@@ -85,3 +85,15 @@ ok('data is current (run `npm run smithy`)', smithyDataSource(approved) === read
 ok('only approved guides ship', SMITHY_GUIDES.length === approved.length && SMITHY_GUIDES.every((x) => x.status === 'approved'));
 const data = readFileSync(join(root, 'src/lib/smithyData.ts'), 'utf8');
 ok('no draft slug appears in the data file', guides.filter((x) => x.g.status !== 'approved').every((x) => !data.includes(`"slug": "${x.g.slug}"`)));
+
+// ---- guides 3, 4, 5 and 7 (Task 6)
+const text = (n: number) => guides.find((x) => x.g.number === n)?.text ?? '';
+ok('guide 3 shows where things live', ['README.md', 'src/app/App.tsx', 'src/lib'].every((f) => text(3).includes(f)));
+ok('guide 4 names its files', ['src/styles/globals.css', 'src/lib/breathingPresets.ts', 'src/lib/logoLook.ts', 'src/lib/logoColours.ts', 'src/app/components/NenyaLogo.tsx'].every((f) => text(4).includes(f)));
+ok('guide 4 says the lighter animation levels are only planned', /planned/i.test(text(4)) && /not built/i.test(text(4)));
+ok('guide 4 warns about curly quotes', /curly quotes/i.test(text(4)));
+ok('guide 5 names every place to start with', ['info@nenya.biz', 'TRADEMARK.md', 'index.html', 'public/manifest.json', 'public/icons'].every((f) => text(5).includes(f)));
+ok('guide 5 gives a search for both systems', text(5).includes('grep -rn') && text(5).includes('findstr'));
+ok('guide 7 says what it is not, and names the license and the name rules', ['not legal advice', 'AGPL-3.0', 'TRADEMARK.md', 'LICENSE'].every((f) => text(7).includes(f)));
+ok('all seven guides are written', [1, 2, 3, 4, 5, 6, 7].every((n) => guides.some((x) => x.g.number === n)));
+ok('guide 5 names the header and welcome screen too', ['src/app/components/GlobalNavigation.tsx', 'src/app/components/OnboardingFlow.tsx'].every((f) => text(5).includes(f)));

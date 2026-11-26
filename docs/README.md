@@ -110,7 +110,7 @@ Switches with no scope document of their own (see production-env.md and coach-fe
 | [simple-mode-scope.md](simple-mode-scope.md) | Three animation levels (Full, Simple, Minimal) for older or busy devices | New 2026-11-25. Scope only, nothing built. Owner decisions recorded: lighter levels are offered, never switched on alone; Minimal is flat shapes and is built first. |
 | [smithy-guides-scope.md](smithy-guides-scope.md) | A plain-language "make your own" guide series, shown as its own About section | Design approved by the owner 2026-11-25; nothing built. |
 | [smithy-guides-plan.md](smithy-guides-plan.md) | The build plan for those guides, in six tasks | New 2026-11-25. Awaiting the owner's review. |
-| [smithy/](smithy/) | The guide texts themselves, one file each; only those marked approved reach the site | Guides 1, 2 and 6 approved by the owner 2026-11-25. |
+| [smithy/](smithy/) | The guide texts themselves, one file each; only those marked approved reach the site | Guides 1, 2 and 6 approved 2026-11-25; 3, 4, 5 and 7 drafted, awaiting the owner. |
 | [coach-boundaries-scope.md](coach-boundaries-scope.md) | Dehumanizing language, and a ladder of boundaries | The ladder is not built. The pause screen and quiz are built (`pause.ts`, `PauseScreen.tsx`), but only the owner panel can start a pause. |
 | [coach-instructions-scope.md](coach-instructions-scope.md) | Moving coach instructions out of the code, with a feedback loop | Step 1 is built (`coachIntent.ts`). The rest is not. |
 | [coach-improvement-loop.md](coach-improvement-loop.md) | A working plan for improving the coach | Some of it is built since (runtime guards, counts). It says "nothing built unless it says so", which is stale in places. |
