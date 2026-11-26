@@ -4,7 +4,7 @@ slug: your-own-name
 title: Give it your own name and mark
 summary: Swap the name, logo, icons and contact address for yours.
 status: approved
-files: TRADEMARK.md, src/app/components/GlobalNavigation.tsx, src/app/components/OnboardingFlow.tsx, index.html, public/manifest.json, public/icons, src/assets/nenya-logo.webp, src/assets/nenya-logo-small.webp, src/lib/aboutRoutes.ts, src/app/components/ShareNenya.tsx, src/app/components/AppFooter.tsx, src/lib/legalDocument.ts, src/lib/tolkienNotice.ts, public/llms.txt, public/mind-facts.txt, public/sitemap.xml
+files: TRADEMARK.md, src/app/components/GlobalNavigation.tsx, src/app/components/OnboardingFlow.tsx, index.html, public/manifest.json, public/icons, src/assets/nenya-logo.webp, src/assets/nenya-logo-small.webp, src/lib/aboutRoutes.ts, src/app/components/ShareNenya.tsx, src/app/components/AppFooter.tsx, src/lib/legalDocument.ts, src/lib/tolkienNotice.ts, src/lib/nenyaPdfReport.ts, src/lib/aboutNenya.ts, src/lib/smithyData.ts, public/llms.txt, public/mind-facts.txt, public/sitemap.xml
 ---
 
 ## Why
@@ -24,6 +24,8 @@ The code is shared, but the name and the logo are not. If you give your copy to 
 | `src/lib/aboutRoutes.ts` | The line that starts with `SITE_TITLE`. |
 | `src/app/components/ShareNenya.tsx` | The web address and words used by the Share button. |
 | `src/app/components/AppFooter.tsx` | The name, the year line and the email link at the foot of the page. |
+| `src/lib/nenyaPdfReport.ts` | The line at the foot of every saved report, which names Nenya and nenya.biz. |
+| `src/lib/aboutNenya.ts` | The answers about the site. They describe Nenya. Rewrite or remove them. |
 
 ## Change the contact address
 
@@ -43,18 +45,19 @@ findstr /s /n /c:"info@nenya.biz" src\* public\* index.html
 
 ## Find the rest of the name
 
-Search for the word to see what is left. There will be many results, and many are notes inside the code that no one sees.
+Search for the name and the web address to see what is left. There will be many results, and many are notes inside the code that no one sees. Skip `src/lib/smithyData.ts`: it holds these guides.
 
 **Mac and Linux:**
 
 ```bash
-grep -rn "Nenya" src/app index.html public
+grep -rn "Nenya" src index.html public
+grep -rn "nenya.biz" src index.html public
 ```
 
 **Windows:**
 
 ```bash
-findstr /s /n /i "nenya" src\app\* public\* index.html
+findstr /s /n /i "nenya" src\* public\* index.html
 ```
 
 ## Text that is only true for nenya.biz

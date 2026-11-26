@@ -1412,6 +1412,9 @@ export const SMITHY_GUIDES: Guide[] = [
       "src/app/components/AppFooter.tsx",
       "src/lib/legalDocument.ts",
       "src/lib/tolkienNotice.ts",
+      "src/lib/nenyaPdfReport.ts",
+      "src/lib/aboutNenya.ts",
+      "src/lib/smithyData.ts",
       "public/llms.txt",
       "public/mind-facts.txt",
       "public/sitemap.xml"
@@ -1613,6 +1616,34 @@ export const SMITHY_GUIDES: Guide[] = [
                 "s": "The name, the year line and the email link at the foot of the page."
               }
             ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/lib/nenyaPdfReport.ts"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The line at the foot of every saved report, which names Nenya and nenya.biz."
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "t": "code",
+                "s": "src/lib/aboutNenya.ts"
+              }
+            ],
+            [
+              {
+                "t": "text",
+                "s": "The answers about the site. They describe Nenya. Rewrite or remove them."
+              }
+            ]
           ]
         ]
       },
@@ -1686,7 +1717,15 @@ export const SMITHY_GUIDES: Guide[] = [
         "text": [
           {
             "t": "text",
-            "s": "Search for the word to see what is left. There will be many results, and many are notes inside the code that no one sees."
+            "s": "Search for the name and the web address to see what is left. There will be many results, and many are notes inside the code that no one sees. Skip "
+          },
+          {
+            "t": "code",
+            "s": "src/lib/smithyData.ts"
+          },
+          {
+            "t": "text",
+            "s": ": it holds these guides."
           }
         ]
       },
@@ -1702,7 +1741,7 @@ export const SMITHY_GUIDES: Guide[] = [
       {
         "k": "code",
         "lang": "bash",
-        "code": "grep -rn \"Nenya\" src/app index.html public"
+        "code": "grep -rn \"Nenya\" src index.html public\ngrep -rn \"nenya.biz\" src index.html public"
       },
       {
         "k": "p",
@@ -1716,7 +1755,7 @@ export const SMITHY_GUIDES: Guide[] = [
       {
         "k": "code",
         "lang": "bash",
-        "code": "findstr /s /n /i \"nenya\" src\\app\\* public\\* index.html"
+        "code": "findstr /s /n /i \"nenya\" src\\* public\\* index.html"
       },
       {
         "k": "h",
@@ -2010,7 +2049,7 @@ export const SMITHY_GUIDES: Guide[] = [
         "text": [
           {
             "t": "text",
-            "s": "You can run the same check yourself. It needs Google Chrome:"
+            "s": "You can run the same check yourself. It needs Google Chrome. On a Mac:"
           }
         ]
       },
@@ -2018,6 +2057,47 @@ export const SMITHY_GUIDES: Guide[] = [
         "k": "code",
         "lang": "bash",
         "code": "npm i --no-save puppeteer-core\nnpm run build\nnode scripts/smithy-offline-check.mts"
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "text",
+            "s": "On Windows or Linux, first tell the check where Chrome is. These two have not been tried. Your Chrome may be in another place."
+          }
+        ]
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "bold",
+            "s": "Windows,"
+          },
+          {
+            "t": "text",
+            "s": " in Command Prompt:"
+          }
+        ]
+      },
+      {
+        "k": "code",
+        "lang": "bash",
+        "code": "npm i --no-save puppeteer-core\nnpm run build\nset \"CHROME=C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\"\nnode scripts/smithy-offline-check.mts"
+      },
+      {
+        "k": "p",
+        "text": [
+          {
+            "t": "bold",
+            "s": "Linux:"
+          }
+        ]
+      },
+      {
+        "k": "code",
+        "lang": "bash",
+        "code": "npm i --no-save puppeteer-core\nnpm run build\nCHROME=/usr/bin/google-chrome node scripts/smithy-offline-check.mts"
       },
       {
         "k": "p",

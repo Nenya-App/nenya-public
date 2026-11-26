@@ -33,12 +33,31 @@ On 25 November 2026, a copy built this way was opened on a Mac, with a program w
 
 The check does not cover every button or every page. It was not run on Windows or Linux.
 
-You can run the same check yourself. It needs Google Chrome:
+You can run the same check yourself. It needs Google Chrome. On a Mac:
 
 ```bash
 npm i --no-save puppeteer-core
 npm run build
 node scripts/smithy-offline-check.mts
+```
+
+On Windows or Linux, first tell the check where Chrome is. These two have not been tried. Your Chrome may be in another place.
+
+**Windows,** in Command Prompt:
+
+```bash
+npm i --no-save puppeteer-core
+npm run build
+set "CHROME=C:\Program Files\Google\Chrome\Application\chrome.exe"
+node scripts/smithy-offline-check.mts
+```
+
+**Linux:**
+
+```bash
+npm i --no-save puppeteer-core
+npm run build
+CHROME=/usr/bin/google-chrome node scripts/smithy-offline-check.mts
 ```
 
 Look for the line `outward requests: 0`. The program is [`scripts/smithy-offline-check.mts`](https://github.com/Nenya-App/nenya-public/blob/main/scripts/smithy-offline-check.mts).
