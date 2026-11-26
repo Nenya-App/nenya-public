@@ -30,6 +30,14 @@ export default function Smithy({ onBack }: { onBack: () => void }) {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
+  // A guide address that names no guide shows the list, and the address says so too.
+  useEffect(() => {
+    if (slug && !guide) {
+      window.history.replaceState(null, '', smithyPath());
+      setSlug('');
+    }
+  }, [slug, guide]);
+
   useEffect(() => {
     document.title = `${guide ? guide.title : 'The Smithy'} — Nenya`;
     document.querySelectorAll('.scroll-container').forEach((el) => el.scrollTo({ top: 0, behavior: 'instant' }));

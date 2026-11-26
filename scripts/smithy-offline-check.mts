@@ -70,9 +70,7 @@ await sleep(800);
 await click('Agree, Enter', 'agree to the Terms');
 await click('Skip for now', 'skip the tour');
 await click('Open breathing animation', 'open the breathing panel');
-// The panel's close button has no label of its own, so it is found beside the panel's heading.
-await page.evaluate(() => { const h = [...document.querySelectorAll('h3')].find((e) => e.textContent?.includes('Breathing Animation')); (h?.parentElement?.querySelector('button') as HTMLElement | null)?.click(); });
-await sleep(1000);
+await click('Close the breathing panel', 'close the breathing panel');
 await click('Explore Your Senses', 'open the Lenses');
 // One whole lens (Sight), through to the report and its download.
 for (const [label, step] of [

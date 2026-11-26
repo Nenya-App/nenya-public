@@ -102,3 +102,15 @@ ok('guide 5 names the header and welcome screen too', ['src/app/components/Globa
 ok('guide 5 searches all of src, for the name and the address', ['grep -rn "Nenya" src index.html public', 'grep -rn "nenya.biz" src index.html public', 'findstr /s /n /i "nenya" src\\* public\\* index.html'].every((c) => text(5).includes(c)));
 ok('guide 5 names the saved report and the answers text', ['src/lib/nenyaPdfReport.ts', 'src/lib/aboutNenya.ts', 'src/lib/smithyData.ts'].every((f) => text(5).includes(f)));
 ok('guide 6 shows how to run the check off a Mac', text(6).includes('set "CHROME=') && text(6).includes('CHROME=/usr/bin/google-chrome node scripts/smithy-offline-check.mts') && /have not been tried/.test(text(6)));
+
+// formats the reader would see wrongly are refused, not passed through
+for (const [name, body] of [
+  ['a quote', '> quoted words'], ['a ~~~ fence', '~~~\nx\n~~~'], ['a rule', 'Words.\n\n---'], ['underscore italics', 'This is _very_ good.'], ['star italics', 'This is *very* good.'],
+  ['an HTML entity', 'Fish &amp; chips.'], ['a list starting at 3', '3. Third thing.'], ['a list line carried on without indent', '- First item\nand more of it'], ['a link inside bold', '**see [this](https://nodejs.org)**'],
+] as const) {
+  ok(`refused: ${name}`, throwsWith(sample(body), /line \d+/));
+}
+ok('code keeps all of those literally', parseGuide(sample('Run.\n\n```text\n> a\n~~~\n---\n_x_ &amp; *y*\n```')).blocks.some((b) => b.k === 'code' && b.code.includes('_x_ &amp; *y*')));
+ok('inline code may hold underscores and stars', parseGuide(sample('Open `DEFAULT_LOGO_LEAVES` and `src/*` now.')).blocks.length === 1);
+const offline = readFileSync(join(root, 'scripts/smithy-offline-check.mts'), 'utf8');
+ok('the offline check closes the panel by its name, and counts it if it cannot', offline.includes("click('Close the breathing panel', 'close the breathing panel')"));

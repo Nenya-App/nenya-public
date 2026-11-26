@@ -27,6 +27,8 @@ function Words({ parts }: { parts: Inline[] }) {
 function CodeBlock({ code, lang }: { code: string; lang: string }) {
   const [said, setSaid] = useState('');
   const copy = async () => {
+    // Emptied first, so a second copy is announced again.
+    setSaid('');
     try {
       await navigator.clipboard.writeText(code);
       setSaid('Copied.');
@@ -35,11 +37,12 @@ function CodeBlock({ code, lang }: { code: string; lang: string }) {
     }
   };
   const first = code.split('\n')[0] ?? '';
+  const kind = ['bash', 'sh'].includes(lang) ? 'command' : 'code';
   return (
     <div className="space-y-1">
       <pre tabIndex={0} data-lang={lang} className="overflow-x-auto rounded-md border border-border bg-muted p-3 text-sm text-foreground"><code>{code}</code></pre>
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="outline" onClick={copy} className="min-h-11" aria-label={`Copy the command: ${first}`}>Copy</Button>
+        <Button variant="outline" onClick={copy} className="min-h-11" aria-label={`Copy the ${kind}: ${first}`}>Copy</Button>
         <span aria-live="polite" className="text-sm text-foreground">{said}</span>
       </div>
     </div>

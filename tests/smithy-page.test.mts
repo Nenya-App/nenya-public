@@ -25,3 +25,6 @@ ok('tables have header cells', /<th scope="col"/.test(blocks));
 ok('long Previous and Next titles wrap on a phone', (page.match(/max-w-full shrink/g) ?? []).length === 2);
 ok('with all seven guides in, the page no longer says more are coming', !/More guides are being written/.test(page));
 ok('opening another guide moves focus to its heading, but not on first load', (page.match(/<h1 ref=\{heading\} tabIndex=\{-1\}/g) ?? []).length === 2 && /if \(shown\.current !== slug\)/.test(page) && /heading\.current\?\.focus\(/.test(page));
+ok('the Copy button says whether it copies a command or code', /Copy the \$\{kind\}: /.test(blocks) && /\['bash', 'sh'\]\.includes\(lang\) \? 'command' : 'code'/.test(blocks));
+ok('copying a second time is announced again', /setSaid\(''\);\s*\n\s*try \{/.test(blocks));
+ok('an unknown guide address is replaced by the list address', /replaceState\(null, '', smithyPath\(\)\)/.test(page));

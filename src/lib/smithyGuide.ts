@@ -25,13 +25,18 @@ function inline(s: string, line: number): Inline[] {
   const plain = (t: string) => {
     if (!t) return;
     if (/<[a-zA-Z!/]/.test(t)) throw new Error(`line ${line}: raw HTML is not allowed outside code`);
+    if (/&(#\d+|[a-zA-Z]+);/.test(t)) throw new Error(`line ${line}: write the character itself, not an HTML entity`);
+    if (/(^|[\s(])([_*])(?=\S)[^_*]*[^\s_*]\2(?=$|[\s).,!?:;])/.test(t)) throw new Error(`line ${line}: italics are not supported`);
     out.push({ t: 'text', s: t });
   };
   let at = 0;
   for (const m of s.matchAll(INLINE)) {
     plain(s.slice(at, m.index));
     if (m[1] !== undefined) out.push({ t: 'code', s: m[1] });
-    else if (m[2] !== undefined) out.push({ t: 'bold', s: m[2] });
+    else if (m[2] !== undefined) {
+      if (m[2].includes('](')) throw new Error(`line ${line}: put a link outside the bold marks`);
+      out.push({ t: 'bold', s: m[2] });
+    }
     else out.push({ t: 'link', s: m[3]!.replace(/`/g, ''), href: m[4]! });
     at = m.index! + m[0].length;
   }
@@ -75,6 +80,7 @@ export function parseGuide(md: string): Guide {
     const line = lines[i]!;
     const n = i + 1;
     if (!line.trim()) { i++; continue; }
+    if (line.startsWith('>') || line.startsWith('~~~') || /^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) throw new Error(`line ${n}: quotes, ~~~ blocks and divider lines are not supported`);
     if (line.startsWith('```')) {
       const lang = line.slice(3).trim();
       const body: string[] = [];
@@ -104,6 +110,7 @@ export function parseGuide(md: string): Guide {
     const item = /^(- |\d+\. )(.*)$/.exec(line);
     if (item) {
       const ordered = item[1] !== '- ';
+      if (ordered && item[1] !== '1. ') throw new Error(`line ${n}: a numbered list must start at 1`);
       const items: string[] = [];
       for (; i < lines.length; i++) {
         const l = lines[i]!;
@@ -113,6 +120,7 @@ export function parseGuide(md: string): Guide {
         else if (/^\s+(- |\d+\. |```)/.test(l)) throw new Error(`line ${i + 1}: lists and code cannot sit inside a list item`);
         else break;
       }
+      if (i < lines.length && lines[i]!.trim() && !startsBlock(lines[i]!)) throw new Error(`line ${i + 1}: leave a blank line after a list, or indent the line to continue the item`);
       blocks.push({ k: 'list', ordered, items: items.map((t) => inline(t, n)) });
       continue;
     }
