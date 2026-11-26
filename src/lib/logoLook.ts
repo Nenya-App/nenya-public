@@ -117,6 +117,6 @@ export const DEFAULT_KALEIDOSCOPE_LOOK = 'lively' as const;
 export const DEFAULT_KALEIDOSCOPE_BREATH = true;
 /** The gem's kaleidoscope is on by default except on a light device (the site's "lite" tier), where it stays off until the visitor turns it on. */
 export const defaultKaleidoscopeOn = (tier: 'lite' | 'standard' | 'capable'): boolean => tier !== 'lite';
-/** The breath ring's default colours: the Night set ('original' is one tap away in Settings). The outer orbs' default is the standard colours, each orb in its own palette (owner, 2026-11-22: "they should be the standard one"). */
-export const DEFAULT_BREATH_COLOURS = 'preset:night';
+/** The breath ring's default colours: the original ones (owner, 2026-11-26; it was the Night set). The outer orbs' default is the standard colours, each orb in its own palette (owner, 2026-11-22: "they should be the standard one"). */
+export const DEFAULT_BREATH_COLOURS = 'original';
 export const DEFAULT_ORB_COLOURS = 'original';

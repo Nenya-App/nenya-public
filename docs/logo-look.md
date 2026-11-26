@@ -11,8 +11,8 @@ Owner, 2026-11-22: "set the defaults to what is currently set." For a visitor wh
 | Gem kaleidoscope (`gemKaleidoscope`) | off | on (off on a light device) |
 | Kaleidoscope look (`gemKaleidoscopeLook`) | Gentle | Lively |
 | Kaleidoscope moves with the breath (`gemKaleidoscopeBreath`) | off | on |
-| Breathing colours (`breathColours`) | Original | Night |
-| Orb colours (`orbColours`) | Original | ~~Night~~ Original again (owner, 2026-11-22: the outer orbs should be the standard colours; the breathing colours stay Night) |
+| Breathing colours (`breathColours`) | Original | ~~Night~~ Original again (owner, 2026-11-26) |
+| Orb colours (`orbColours`) | Original | ~~Night~~ Original again (owner, 2026-11-22: the outer orbs should be the standard colours) |
 | Outer glow (`orbHalo`) | Own colour | Orb's palette |
 | Animation size (`animationSize`; replaced the preview slider on 2026-11-26, see below) | preview 120% | Standard |
 | Outer ring movement (2026-11-24, [outer-ring-movement.md](outer-ring-movement.md)) | turns counter-clockwise, 120 s | turns counter-clockwise at its own 144 s per turn; options for still, direction, pace and pace to the breath |

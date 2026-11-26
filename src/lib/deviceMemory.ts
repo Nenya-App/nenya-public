@@ -492,7 +492,7 @@ export function setAnimationSize(size: AnimationSize): void {
 }
 export const useAnimationSize = (): AnimationSize => useSyncExternalStore(subscribeLook, getAnimationSize, () => DEFAULT_ANIMATION_SIZE);
 
-// The leaves' sway and the colour choices (src/lib/logoColours.ts): the same rules as the look above. Sway is on and the colours are the Night set unless the visitor chose otherwise (owner, 2026-11-22; src/lib/logoLook.ts).
+// The leaves' sway and the colour choices (src/lib/logoColours.ts): the same rules as the look above. Sway is on and the colours are the original ones unless the visitor chose otherwise (owner, 2026-11-22 and 11-26; src/lib/logoLook.ts).
 // The choice is all that is kept: a palette the visitor made is held in memory for the visit only (src/lib/keptPalettes.ts), so if it is gone next time the choice reads as the original.
 let swayNow: boolean | null = null;
 let breathColoursNow: string | null = null;
