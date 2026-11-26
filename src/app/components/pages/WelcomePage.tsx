@@ -74,12 +74,11 @@ export default function WelcomePage({
       <QuickNav onBreathe={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} onReflect={onContinue} />
 
       {/* First Section: Full Viewport with Large Logo */}
-      <div className="h-screen flex flex-col items-center justify-center px-6 [@media(min-height:600px)]:pb-[4vh] relative snap-start">
+      <div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">
         {/* No flex-1 here -- letting this grow-to-fill was pinning the text
             below to the bottom of the viewport on shorter/wider screens,
             leaving a large empty gap above it. The outer section's own
-            justify-center now centers this + the text block as one unit. The bottom padding lifts that unit a little
-            above the middle (owner, 2026-11-26), except on screens under 600px tall, where lifting would hide the top. */}
+            justify-center now centers this + the text block as one unit. */}
         <div style={{ animation: 'nenya-bg-reveal 0.5s ease 0s both' }} className={`flex items-center justify-center transition-all duration-500`}>
           {/* Clicking the logo opens the breathing and accessibility settings, the same as the small logo in the top left (a button for the keyboard and screen readers, too). Hovering brightens the glow. */}
           <div

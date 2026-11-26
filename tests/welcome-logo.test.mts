@@ -1,4 +1,4 @@
-// The front page's breathing animation (owner, 2026-11-26: slightly larger and slightly nearer the top, on every screen; then scaled back the same day to 5% larger and 2% higher).
+// The front page's breathing animation (owner, 2026-11-26: 5% larger on every screen, kept; the lift toward the top was tried and then removed the same day, so it sits where it did before).
 import { readFileSync } from 'node:fs';
 import { ok } from './helpers.mts';
 import { welcomeLogoSize } from '../src/lib/welcomeLogo.ts';
@@ -13,4 +13,4 @@ for (const [name, w, h] of screens) {
 }
 const page = readFileSync('src/app/components/pages/WelcomePage.tsx', 'utf8');
 ok('the front page takes its size from the one rule', /setLogoSize\(welcomeLogoSize\(window\.innerWidth, window\.innerHeight\)\)/.test(page));
-ok('the first screen sits a little above the middle, except on very short screens where it would cut off the top', page.includes('h-screen flex flex-col items-center justify-center px-6 [@media(min-height:600px)]:pb-[4vh] relative snap-start'));
+ok('the first screen centres the animation and the words, in their earlier place, with no lift', page.includes('<div className="h-screen flex flex-col items-center justify-center px-6 relative snap-start">') && !/min-height:600px\)\]:pb-/.test(page));
