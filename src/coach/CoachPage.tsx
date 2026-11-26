@@ -128,7 +128,6 @@ export default function CoachPage() {
         onLogoVisibleToggle={setLogoVisible}
         onStrengthChange={setOpacity}
         technique={technique}
-        cycleStart={cycleStart}
       />
       <PortableBreath
         ready={agreed}

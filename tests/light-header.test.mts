@@ -1,4 +1,4 @@
-// The light theme's pale spots (owner, 2026-11-26): the front page button's outline, and the header's logo, which uses the round badge on a dark background.
+// The light theme's pale spots (owner, 2026-11-26): the front page button's outline, and the header's logo, which uses the round badge on a dark background. Either way the logo is the size of the round Emergency Exit information button across the header.
 import { readFileSync, statSync } from 'node:fs';
 import { ok } from './helpers.mts';
 
@@ -17,7 +17,9 @@ const dark = ratio(token(/^\.dark\s*\{/m, 'nenya-accent-warm'), token(/^\.dark\s
 ok('the outline is at least 3:1 against the page in both themes', light >= 3 && dark >= 3, `light ${light.toFixed(2)}, dark ${dark.toFixed(2)}`);
 
 const logo = src('src/app/components/HeaderLogo.tsx');
-ok('the header shows the badge on the light theme and the living logo on the dark one', /const \{ theme \} = useTheme\(\);/.test(logo) && /if \(theme === 'light'\) return <img src=\{badge\} alt="" width=\{size\} height=\{size\}/.test(logo) && /return <NenyaLogo size=\{size\} technique=\{technique\} cycleStart=\{cycleStart\} \/>;/.test(logo));
-ok('the badge is the round badge on a dark background, small enough for a header', /import badge from '\.\.\/\.\.\/assets\/nenya-badge\.webp';/.test(logo) && statSync('src/assets/nenya-badge.webp').size < 12000);
+ok('the header shows the badge on the light theme and the mark on the dark one', /const \{ theme \} = useTheme\(\);/.test(logo) && /src=\{theme === 'light' \? badge : mark\} alt=""/.test(logo));
+ok('the badge is the round badge on a dark background, and both pictures are small enough for a header', /import badge from '\.\.\/\.\.\/assets\/nenya-badge\.webp';/.test(logo) && /import mark from '\.\.\/\.\.\/assets\/nenya-header-mark\.webp';/.test(logo) && statSync('src/assets/nenya-badge.webp').size < 16000 && statSync('src/assets/nenya-header-mark.webp').size < 24000);
+const exit = src('src/app/components/EmergencyExit.tsx');
+ok('the logo and the information button take their size from the same place, so they match at every width and text size', /export const HEADER_ROUND_SIZE = 'size-8 min-\[400px\]:size-11';/.test(exit) && /isHeader \? `p-1 \$\{HEADER_ROUND_SIZE\}` : 'p-1\.5 size-11'/.test(exit) && /className=\{`block \$\{HEADER_ROUND_SIZE\}`\}/.test(logo));
 const nav = src('src/app/components/GlobalNavigation.tsx');
-ok('both headers, wide and narrow, use it', /<HeaderLogo size=\{40\} technique=\{technique\} cycleStart=\{cycleStart\} \/>/.test(nav) && /<HeaderLogo size=\{32\} technique=\{technique\} cycleStart=\{cycleStart\} \/>/.test(nav) && !/<NenyaLogo/.test(nav));
+ok('both headers, wide and narrow, use it', (nav.match(/<HeaderLogo \/>/g) ?? []).length === 2 && !/<NenyaLogo/.test(nav));

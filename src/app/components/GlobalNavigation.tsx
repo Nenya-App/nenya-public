@@ -42,9 +42,8 @@ interface GlobalNavigationProps {
   onTutorialReplay?: () => void;
   /** Accessibility dialog shows theme and text size only. */
   compactSettings?: boolean;
-  /** The page's pace and clock, so the header logo breathes in phase with the counter and the tones. */
+  /** The page's pace, for the accessibility settings' description of the breath. */
   technique?: BreathingTechnique | null;
-  cycleStart?: number;
 }
 
 export function GlobalNavigation({
@@ -70,7 +69,6 @@ export function GlobalNavigation({
   onTutorialReplay,
   compactSettings = false,
   technique = null,
-  cycleStart,
 }: GlobalNavigationProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accessibilityOpen, setAccessibilityOpen] = useState(false);
@@ -120,7 +118,7 @@ export function GlobalNavigation({
                 aria-label="Open breathing animation"
                 title="Open breathing animation & accessibility settings"
               >
-                <HeaderLogo size={40} technique={technique} cycleStart={cycleStart} />
+                <HeaderLogo />
               </button>
               <button
                 onClick={handleNenyaTextClick}
@@ -252,7 +250,7 @@ export function GlobalNavigation({
               aria-label="Open breathing animation"
               title="Open breathing animation & accessibility settings"
             >
-              <HeaderLogo size={32} technique={technique} cycleStart={cycleStart} />
+              <HeaderLogo />
             </button>
             <button
               onClick={handleNenyaTextClick}

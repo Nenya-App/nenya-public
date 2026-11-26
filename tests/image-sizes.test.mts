@@ -31,7 +31,8 @@ ok('the browser-tab icons are the sizes the page says', [32, 48].every((n) => in
 ok('the home-screen icon for Apple devices is 180 square', is('public/icons/apple-touch-icon.png', 180, 180));
 ok('the link preview picture is 1200 by 630, as declared', is('public/og-image.jpg', 1200, 630) && index.includes('og:image:width" content="1200"') && index.includes('og:image:height" content="630"'));
 const [bw, bh] = size('src/assets/nenya-badge.webp');
-ok('the header badge is square and at least three times its largest size on screen (40px), without being much larger', bw === bh && bw >= 40 * 3 && bw <= 160, `${bw}x${bh}`);
+ok('the header badge is square and at least three times its size on screen (44px), without being much larger', bw === bh && bw >= 44 * 3 && bw <= 168, `${bw}x${bh}`);
+ok('so is the dark theme\'s header mark', is('src/assets/nenya-header-mark.webp', bw, bh));
 ok('the small logo covers its largest use (48px) at least twice over', size('src/assets/nenya-logo-small.webp')[0] >= 96);
 
 const attrs = (text: string, file: string): [number, number] => { const at = text.indexOf(`src="${file}"`); const tag = text.slice(text.lastIndexOf('<img', at), text.indexOf('/>', at)); return [Number(/\swidth="(\d+)"/.exec(tag)?.[1] ?? 0), Number(/\sheight="(\d+)"/.exec(tag)?.[1] ?? 0)]; };
