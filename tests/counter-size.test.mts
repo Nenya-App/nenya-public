@@ -14,3 +14,15 @@ ok('a click, Enter or Space toggles it', /onClick: toggleList,/.test(c) && /e\.k
 ok('letting go after dragging the counter does not toggle it', /onDragStart=\{\(\) => \{ dragged\.current = true; \}\}/.test(c) && /onPointerDownCapture=\{\(\) => \{ dragged\.current = false; \}\}/.test(c) && /if \(dragged\.current\) return;/.test(c));
 const check = readFileSync('scripts/smithy-offline-check.mts', 'utf8');
 ok('the offline check presses the lower "Explore Your Senses" button, the one that opens the Lenses', /await click\('Explore Your Senses', 'open the Lenses', true\);/.test(check));
+
+// The corner buttons are full touch targets (owner, 2026-11-26), and the list of paces ends with "Set Custom", which opens the settings panel.
+const sw = readFileSync('src/app/components/BreathTonesSwitch.tsx', 'utf8');
+const corner = /width: '44px',\s*\n\s*height: '44px',/g;
+ok('the close and minimize buttons are 44 by 44', (c.match(corner) ?? []).length === 2);
+ok('the tones button on the counter is 44 by 44 and sits beside the minimize button without overlapping it', (sw.match(corner) ?? []).length === 1 && /top: 0,\s*\n\s*right: '44px',/.test(sw) && /top: 0,\s*\n\s*right: 0,/.test(c) && /top: 0,\s*\n\s*left: 0,/.test(c));
+ok('the top row is tall enough for them, with the drag handle between the buttons', c.includes("...(collapsed ? { padding: '4px 0 0' } : { alignItems: 'center', height: '44px', padding: '0 88px 0 44px' }),"));
+ok('"Set Custom" opens the settings panel and says where the custom pace is', /Set Custom/.test(c) && /Opens the settings panel\. Your own pace is near the top\./.test(c) && /setBreathingPanel\(true\);/.test(c) && /minHeight: '44px'/.test(c));
+ok('it closes the list first, so the list does not cover the panel', /if \(onMinimizedChange\) onMinimizedChange\(true\);\s*\n\s*setBreathingPanel\(true\);/.test(c));
+// On a short screen the list scrolls by itself, so the circle and the corner buttons stay put and every pace stays reachable.
+ok('the open counter stays below the site header: the list scrolls instead of growing', c.includes("maxHeight: 'max(120px, calc(100dvh - 6rem - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 162px))',") && c.includes("overflowY: 'auto',"));
+ok('a swipe on the list scrolls it instead of dragging the counter', c.includes("touchAction: 'pan-y',") && /el\?\.addEventListener\('pointerdown', \(e\) => e\.stopPropagation\(\)\);/.test(c) && /<div ref=\{keepPressInList\}/.test(c));

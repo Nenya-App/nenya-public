@@ -75,9 +75,13 @@ export function BreathTonesSwitch({ variant }: { variant: 'skip' | 'panel' | 'co
           onPointerDown={(e) => e.stopPropagation()}
           style={{
             position: 'absolute',
-            top: '2px',
-            right: '26px',
-            padding: '3px',
+            top: 0,
+            right: '44px',
+            width: '44px',
+            height: '44px',
+            padding: 0,
+            alignItems: 'center',
+            justifyContent: 'center',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
