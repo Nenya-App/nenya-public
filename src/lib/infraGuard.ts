@@ -10,6 +10,8 @@ export const INFRA_PATTERNS: RegExp[] = [
   // what you said" or "that is a meta question" is not read as a claim about hosting.
   /\b(?:we|nenya|this (?:site|app|tool))(?:'re| are)?\b[^.?!]{0,40}\b(?:run|runs|running|host|hosted|hosts|use|uses|using|store|stores|stored|built|powered|trained)\b[^.?!]{0,40}\b(?:aws|amazon|google|gcp|azure|microsoft|openai|chatgpt|gpt-?\d\w*|anthropic|claude|gemini|llama|mistral|deepseek|meta ai|meta platforms|facebook)\b/i,
   /\bi(?:'m| am)\b[^.?!]{0,40}\b(?:running|hosted|built|powered|trained)\b[^.?!]{0,40}\b(?:aws|amazon|google|gcp|azure|microsoft|openai|chatgpt|gpt-?\d\w*|anthropic|claude|gemini|llama|mistral|deepseek|meta ai|meta platforms|facebook)\b|\bi (?:run|am run|'m run) (?:on|by)\b[^.?!]{0,30}\b(?:aws|amazon|google|gcp|azure|microsoft|openai|chatgpt|gpt-?\d\w*|anthropic|claude|gemini|llama|mistral|deepseek|meta ai|meta platforms|facebook)\b/i,
+  // the past tense (found 2026-11-26): "I was built by OpenAI", "I've been trained by Google"; "by", "on" and the like are required, so "I was not sure what you meant about Google" stands
+  /\bi(?: was|'ve been| have been)\s+(?:\w+\s+){0,2}?(?:built|powered|trained|hosted|made|created|developed)\s+(?:by|on|at|with|using)\s+(?:\w+\s+){0,2}?(?:aws|amazon|google|gcp|azure|microsoft|openai|chatgpt|gpt-?\d\w*|anthropic|claude|gemini|llama|mistral|deepseek|meta ai|meta platforms|facebook)\b/i,
   /\bend[- ]to[- ]end\b/i,
   // who can see or read the conversation (the coach cannot know what is read, stored or watched)
   /\b(?:no ?one|nobody|no humans?|no (?:real )?person)\s+(?:(?:is|are|can|will|could|would|ever|else)\s+)*(?:reading|reads?|seeing|sees?|watching|watches|listening|monitoring|reviewing|looking)\b/i,
@@ -25,6 +27,8 @@ export const INFRA_PATTERNS: RegExp[] = [
   /\b(?:completely |totally |fully |100% )?(?:anonymous|confidential)\b/i,
   /\bsafe with me\b|\bwill always be free\b|\balways (?:be )?free\b|\bfree (?:and|&) always\b|\bfree forever\b|\bwill always (?:be )?free\b/i,
   /\b(?:we|nenya|i)\s+(?:immediately |automatically |always )?(?:delete|erase|wipe|discard|destroy)s?\s+(?:everything|all|it|your|the)\b/i,
+  // "your details" with nothing after it, said by the coach or about Nenya; "details of ..." and what the person does with their own details are left alone
+  /\b(?:we|nenya|i)\s+(?:(?:will|would)\s+)?(?:never|don'?t|do not|doesn'?t|does not|won'?t|will not)\s+(?:ever\s+)?(?:share|sell|store|keep|save|collect|retain|log|record)s?\s+your\s+details\b(?!\s+(?:of|about|from))/i,
   // promises to pass things on
   /\b(?:i|we)(?: will|'ll| can| may|'m going to| am going to)? (?:pass|forward|share|send|report|escalate)(?: this| that| it| what you(?:'ve| have)? (?:said|written|shared))?(?: on)? to (?:the |our |a )?(?:team|developers?|staff|humans?|someone|moderators?|creators?|nenya)\b/i,
 ];
