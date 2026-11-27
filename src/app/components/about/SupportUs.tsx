@@ -46,7 +46,7 @@ export default function SupportUs({ onBack }: SupportUsProps) {
                   The breathing interface, the six lenses and the guided reflection are meant to help you pause and notice. We have not measured whether they do. Studies of mental health apps in general find small effects on average <Cite pageId="support" n={[1]} />, and one large review found no convincing evidence of benefit <Cite pageId="support" n={[2]} />.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  It is provided free, with no advertising and no profiles of visitors. The plan is for the core breathing and reflection tools to stay free, and people who choose to support it help make that possible. We are exploring subscriptions for additional features.
+                  It is provided free, with no advertising and no profiles of visitors. The plan is for the core breathing and reflection tools to stay free, and people who choose to support it help make that possible.
                 </p>
               </div>
             </Card>
