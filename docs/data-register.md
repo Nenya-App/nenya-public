@@ -5,11 +5,11 @@ Everything Nenya keeps, where, for how long, and what deletes it. **Keep this cu
 | What | Where | Kept | Deleted by | Who can read it |
 |---|---|---|---|---|
 | Reports, reflection summaries, contact messages (`submissions/<hash of the code>`) | private Blobs store | 90 days | `submission-expiry` (daily); the sender with the deletion code (`/my-transcript`); the owner on the admin page | the owner (admin page) |
-| Report alerts (`submission-alert` form: kind and dates only, no text) | Netlify Forms and the owner's inbox | until deleted by hand | the owner (habit: delete after acting, at most 90 days) | the owner |
+| Report alerts (`submission-alert` form: kind and dates only, no text) | Netlify Forms and the owner's inbox | emailed copy: 30 days (mail filter set up 2026-11-27; first deletion not yet seen). The form service's list: until deleted by hand | emailed copy: a delete-after-30-days filter in the owner's mail. The list: the owner (habit: delete after acting, at most 90 days) | the owner |
 | Coach per-connection daily codes (`c/<day>/<code>`) | private store | about 1.5 days | `coach-cleanup` (daily) | nobody (codes only) |
 | Receipt fingerprints (signed transcripts) | private store | 30 days | `coach-cleanup` (daily) | the owner, as fingerprints |
 | Transcripts people chose to send | private store | the keeping time they chose | `transcript-expiry` (daily); the person with the signed file | the owner |
-| Transcript alerts (`verified-transcript` form: fingerprint and choices only) | Netlify Forms and the owner's inbox | until deleted by hand | the owner (same habit) | the owner |
+| Transcript alerts (`verified-transcript` form: fingerprint and choices only) | Netlify Forms and the owner's inbox | as report alerts | as report alerts | the owner |
 | Duplicate markers for reports and messages (`submission-dup/<one-way code of kind, text and comments>`; holds only its end date and the key of its submission, never the text) | private Blobs store | the same 90 days as the submission it guards | with the submission, by every route: the sender's code, the owner on the admin page, `submission-expiry` (which also sweeps any marker whose submission is gone) | nobody (a code only) |
 | Which choices were sent for a signed transcript (`sentChoices` in the existing `transcript/<fingerprint>` record: plain choices such as "evaluate / 90d", no text) | private store | as the transcript record | as the record | the owner |
 | "Already sent in this tab" (`nenya.sent-here` in `sessionStorage`: up to 20 SHA-256 codes of what this tab sent, never the text) | the visitor's own browser tab | until the tab closes | the browser, when the tab closes | the visitor's browser only |
@@ -41,10 +41,11 @@ Everything Nenya keeps, where, for how long, and what deletes it. **Keep this cu
 ## Quarterly review (15 minutes)
 1. This table matches the code (new store keys, new forms, new browser storage).
 2. The jobs ran: the stats page shows `submission.deleted.expired` and the cleanup counts moving.
-3. Nothing is kept past its time: the admin page's oldest report is under 90 days old; the inbox holds no alerts older than 90 days.
+3. Nothing is kept past its time: the admin page's oldest report is under 90 days old; the inbox, its folders and Trash hold no alert emails older than 30 days (the mail filter still exists); the form service's list holds none older than 90 days.
 4. Owner-side copies trimmed to what is still needed.
 5. Note the date of the review at the bottom of this file.
 
 ## Reviews
 - 2026-11-15: register started.
 - 2026-11-22: terms audit (docs/terms-accuracy-fixes-2026-11-22.md). Palette and word look-up daily codes added as rows (they were never cleaned until `coach-cleanup` also took the `p/` and `w/` prefixes), and the old "proposed rows" block (live since 2026-11-19) moved into the main table.
+- 2026-11-27: the owner set up a delete-after-30-days mail filter for the emailed form notices. To check from 2026-12-28 that the first notice it caught is gone. Not yet checked: whether the mail provider keeps recoverable or archived copies longer.
