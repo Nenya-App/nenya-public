@@ -54,6 +54,8 @@ export class CellClient {
   readonly role: Role;
   session: CellSession | null = null;
   private hs: Handshake | null = null;
+  /** This browser's seat key: random, kept in memory only, sent with every request so no one else can act for this seat. */
+  private readonly seat = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
   private readonly endpoint: string;
   private readonly fetchImpl: typeof fetch;
   private readonly schedule: (fn: () => void, ms: number) => unknown;
@@ -91,7 +93,7 @@ export class CellClient {
   }
 
   private async post(body: Record<string, unknown>): Promise<Record<string, unknown>> {
-    const res = await this.fetchImpl(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ box: this.hs?.ids.box, role: this.role, ...body }) });
+    const res = await this.fetchImpl(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ box: this.hs?.ids.box, role: this.role, seat: this.seat, ...body }) });
     const j = (await res.json().catch(() => ({}))) as Record<string, unknown>;
     if (res.status === 410 || (res.status === 404 && body.action !== 'hello')) {
       this.stop();

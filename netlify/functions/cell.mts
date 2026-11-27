@@ -4,6 +4,12 @@
 // It keeps them only while the cell is open: either person can close it, and nothing outlives CELL_MAX_AGE (3 hours),
 // enforced here and by the hourly cleanup (cell-cleanup.mts). Off unless CELL_ENABLED=true.
 //
+// Each browser makes a random seat key and sends it with every request. The mailbox keeps only a one-way code of it, and
+// refuses any action for a seat without the matching key, so holding the cell's code is not enough to act for the other
+// person (in particular, to agree to sharing for them). LIMIT: someone who takes BOTH seats themselves can do both
+// sides' actions; there is then no second person in the cell.
+//
+//   Every POST below also carries `seat`, that browser's seat key.
 //   POST {action:'hello', box, role, hello:{pub,tag}}   leave this side's half of the key exchange (once per side)
 //   POST {action:'peer', box, role}                      the other side's half, or null while they have not joined
 //   POST {action:'send', box, role, env:{seq,iv,ct,commit}}  add the next message (sequence numbers must follow on)
@@ -15,7 +21,7 @@
 //                                                        characters). Refused unless BOTH people agreed to this request, and only once per request; kept
 //                                                        unverified for 90 days, then deleted; the mailbox name is not kept with it
 import { getStore } from '@netlify/blobs';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { hostAllowed, storeNameFrom } from '../../src/lib/originHosts.ts';
 import type { CounterStore } from '../../src/lib/dailyCap.ts';
 import { addCount as tallyCount } from '../../src/lib/counters.ts';
@@ -36,6 +42,8 @@ export const MAX_REPORT_BODY = 1_300_000;
 const POLL_MAX = 50;
 const BOX = /^[0-9a-f]{32}$/;
 const B64 = /^[A-Za-z0-9+/]+={0,2}$/;
+const SEAT = /^[0-9a-f]{32}$/;
+const seatCode = (seat: string): string => createHash('sha256').update(seat).digest('hex');
 
 type Store = ReturnType<typeof getStore>;
 let storeOverride: Store | null = null;
@@ -68,6 +76,12 @@ function shareView(sh: Share | null, now: number): { req: string; by: Role; stat
 
 interface Meta {
   created: number;
+}
+/** One side's half of the key exchange, with the one-way code of its seat key (never sent back out). */
+interface Hello {
+  pub: string;
+  tag: string;
+  seat?: string;
 }
 const keys = (box: string) => ({
   meta: `cell/${box}/meta`,
@@ -126,6 +140,7 @@ export default async (req: Request): Promise<Response> => {
   const box = typeof body.box === 'string' && BOX.test(body.box) ? body.box : '';
   const role = body.role;
   if (!box || !isRole(role)) return json(400, { error: 'cell' });
+  const seatKey = typeof body.seat === 'string' && SEAT.test(body.seat) ? body.seat : '';
   const peer: Role = role === 'a' ? 'b' : 'a';
   const k = keys(box);
   const s = cells();
@@ -140,7 +155,7 @@ export default async (req: Request): Promise<Response> => {
 
     if (body.action === 'hello') {
       const h = body.hello as { pub?: unknown; tag?: unknown } | undefined;
-      if (!h || !short(h.pub, 120) || !short(h.tag, 64)) return json(400, { error: 'hello' });
+      if (!h || !short(h.pub, 120) || !short(h.tag, 64) || !seatKey) return json(400, { error: 'hello' });
       // Only the person who made the code opens a cell; the other can only join one that is open.
       if (!meta && role === 'b') return json(404, { error: 'no cell' });
       // Two people, once each: a second "hello" for a side is refused, so no third person can take a seat. Both writes
@@ -155,16 +170,23 @@ export default async (req: Request): Promise<Response> => {
           }
         }
       }
-      const seat = await s.setJSON(k.hello(role), { pub: h.pub, tag: h.tag }, { onlyIfNew: true });
+      const seat = await s.setJSON(k.hello(role), { pub: h.pub, tag: h.tag, seat: seatCode(seatKey) } satisfies Hello, { onlyIfNew: true });
       if (!seat.modified) return json(409, { error: 'taken' });
       return json(200, { ok: true, expiresAt: (meta?.created ?? now) + CELL_MAX_AGE_MS });
     }
     if (!meta) return json(404, { error: 'no cell' });
 
-    if (body.action === 'peer') return json(200, { hello: (await s.get(k.hello(peer), { type: 'json' })) ?? null });
+    // Everything else is done for a seat, and only with that seat's key.
+    const own = (await s.get(k.hello(role), { type: 'json' })) as Hello | null;
+    if (!own) return json(409, { error: 'no hello' });
+    if (!seatKey || own.seat !== seatCode(seatKey)) return json(403, { error: 'seat' });
+
+    if (body.action === 'peer') {
+      const theirs = (await s.get(k.hello(peer), { type: 'json' })) as Hello | null;
+      return json(200, { hello: theirs ? { pub: theirs.pub, tag: theirs.tag } : null });
+    }
 
     if (body.action === 'send') {
-      if (!(await s.get(k.hello(role)))) return json(409, { error: 'no hello' });
       if (!envelopeOk(body.env)) return json(400, { error: 'envelope' });
       const log = ((await s.get(k.log(role), { type: 'json' })) as Envelope[] | null) ?? [];
       if (log.length >= MAX_MESSAGES) return json(429, { error: 'full' });
