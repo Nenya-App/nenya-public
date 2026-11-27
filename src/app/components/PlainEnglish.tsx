@@ -1,6 +1,6 @@
 import { PLAIN_ENGLISH, PLAIN_INTRO } from '../../lib/plainEnglish';
 
-/** "Nenya in plain English": static text, nothing loaded or sent. Shown inside the Terms panel and on the decline page. */
+/** "Nenya in plain English": static text, nothing loaded or sent. Shown inside the Terms panel. */
 export function PlainEnglish({ headingLevel = 2 }: { headingLevel?: 2 | 3 }) {
   const H = `h${headingLevel}` as 'h2' | 'h3';
   const Item = headingLevel === 2 ? 'h3' : 'h4';

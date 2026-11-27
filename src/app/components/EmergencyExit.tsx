@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, ArrowUpRight, X, Info } from 'lucide-react';
 import { Button } from './ui/button';
@@ -188,7 +188,13 @@ interface EmergencyExitButtonProps {
   variant?: 'header' | 'footer';
   className?: string;
   onEmergencyExit?: () => void;
+  /** Set on a page header's own Exit: the place the pinned one covers while it shows (EmergencyExitDock). */
+  home?: 'desktop' | 'mobile';
 }
+
+// The narrow header's Exit (GlobalNavigation.tsx), also worn by the pinned one when it covers that place. On narrow phones the words may take two lines
+// (and the arrow makes way), so the header and its information button fit.
+export const MOBILE_HEADER_EXIT_CLASS = 'text-xs px-1.5 sm:px-2 py-1 max-[439px]:max-w-[6.5rem] max-[439px]:whitespace-normal max-[439px]:text-left max-[439px]:leading-tight max-[439px]:has-[>svg]:px-2 max-[399px]:[&_svg]:hidden';
 
 /** The size of the header's round buttons: the information button here, and the logo across the header (HeaderLogo.tsx), so the two always match. */
 export const HEADER_ROUND_SIZE = 'size-8 min-[400px]:size-11';
@@ -196,7 +202,8 @@ export const HEADER_ROUND_SIZE = 'size-8 min-[400px]:size-11';
 export function EmergencyExitButton({ 
   variant = 'header', 
   className = '',
-  onEmergencyExit
+  onEmergencyExit,
+  home
 }: EmergencyExitButtonProps) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
 
@@ -205,7 +212,7 @@ export function EmergencyExitButton({
   const handleEmergencyExit = () => leaveNow(onEmergencyExit);
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1.5" data-exit-home={home}>
       <Button
         onClick={handleEmergencyExit}
         className={`
@@ -253,19 +260,74 @@ export function EmergencyExitButton({
   );
 }
 
-// A copy of the Exit button pinned to the top corner, above every overlay. The header's own button is out of reach while
-// the loading screen, the first-visit panel (rhythm choice and terms), the tour offer or the tour is up, so the page
-// shows this one in those moments. It comes first in the page so that keyboard and screen-reader users meet it first.
-export function EmergencyExitDock({ show, onEmergencyExit }: { show: boolean; onEmergencyExit?: () => void }) {
+// A copy of the Exit button pinned above every overlay. The header's own button is out of reach while the loading screen, the first-visit panel
+// (rhythm choice and terms), the tour offer or the tour is up, so the page shows this one in those moments. It comes first in the page so that keyboard
+// and screen-reader users meet it first. It lies exactly over the header's own Exit, which is hidden meanwhile, so only one is ever seen; where the
+// page shows no header Exit it sits in the top corner.
+type Place = { top: number; left: number; home: string };
+
+/** Where the page's header Exit is while the pinned one is up (hiding it meanwhile), or null where none is laid out. */
+function useHeaderExitPlace(active: boolean): Place | null {
+  const [place, setPlace] = useState<Place | null>(null);
+  useLayoutEffect(() => {
+    if (!active) {
+      setPlace(null);
+      return;
+    }
+    const hidden = new Set<HTMLElement>();
+    const sizes = typeof ResizeObserver === 'function' ? new ResizeObserver(() => look()) : null;
+    function look() {
+      let found: Place | null = null;
+      document.querySelectorAll<HTMLElement>('[data-exit-home]').forEach((el) => {
+        if (!hidden.has(el)) {
+          hidden.add(el);
+          sizes?.observe(el.closest('nav') ?? el);
+        }
+        el.style.visibility = 'hidden';
+        const r = el.getBoundingClientRect();
+        if (r.width > 0) found = { top: r.top, left: r.left, home: el.dataset.exitHome ?? '' };
+      });
+      const next = found as Place | null;
+      setPlace((was) => (was && next && was.top === next.top && was.left === next.left && was.home === next.home ? was : next));
+    }
+    look();
+    // The header can appear or move later: a window or text size change, a second row on a narrow screen, fonts arriving.
+    window.addEventListener('resize', look);
+    const added = new MutationObserver(look);
+    added.observe(document.body, { childList: true, subtree: true });
+    void document.fonts?.ready.then(() => { if (hidden.size) look(); });
+    return () => {
+      window.removeEventListener('resize', look);
+      added.disconnect();
+      sizes?.disconnect();
+      hidden.forEach((el) => { el.style.visibility = ''; });
+      hidden.clear();
+    };
+  }, [active]);
+  return place;
+}
+
+/** `phoneHidden`: on a phone the screen holds its own Exit (PanelExit), so the pinned one is not drawn there. */
+export function EmergencyExitDock({ show, onEmergencyExit, phoneHidden = false }: { show: boolean; onEmergencyExit?: () => void; phoneHidden?: boolean }) {
+  const place = useHeaderExitPlace(show);
   if (!show) return null;
   return (
     <div
-      className="fixed right-2 z-[300]"
-      style={{ top: 'calc(0.5rem + env(safe-area-inset-top))' }}
+      className={`fixed z-[300] ${place ? '' : 'right-2'} ${phoneHidden ? 'max-sm:hidden' : ''}`}
+      style={place ? { top: place.top, left: place.left } : { top: 'calc(0.5rem + env(safe-area-inset-top))' }}
       role="region"
       aria-label="Emergency exit"
     >
-      <EmergencyExitButton variant="header" onEmergencyExit={onEmergencyExit} />
+      <EmergencyExitButton variant="header" className={place?.home === 'mobile' ? MOBILE_HEADER_EXIT_CLASS : ''} onEmergencyExit={onEmergencyExit} />
+    </div>
+  );
+}
+
+/** The Exit inside the first agreement screen, for phones, where the pinned one would cover the heading (owner, 2026-11-27). */
+export function PanelExit({ onEmergencyExit, className = '' }: { onEmergencyExit?: () => void; className?: string }) {
+  return (
+    <div className={`flex shrink-0 justify-center sm:hidden ${className}`} role="region" aria-label="Emergency exit">
+      <EmergencyExitButton variant="footer" className="min-h-11" onEmergencyExit={onEmergencyExit} />
     </div>
   );
 }

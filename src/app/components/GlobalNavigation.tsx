@@ -8,7 +8,7 @@ import type { BreathingTechnique } from '../../lib/breathingPresets';
 import { ThemeToggle } from './ThemeToggle';
 import { AccessibilitySettingsContent } from './AccessibilitySettings';
 import { STRENGTH_STANDARD } from '../../lib/breathStrength';
-import { EmergencyExitButton } from './EmergencyExit';
+import { EmergencyExitButton, MOBILE_HEADER_EXIT_CLASS } from './EmergencyExit';
 import { AddToHomeScreen } from './AddToHomeScreen';
 import {
   Dialog,
@@ -229,7 +229,7 @@ export function GlobalNavigation({
               </div>
 
               {/* Emergency Exit Button */}
-              <EmergencyExitButton variant="header" onEmergencyExit={onEmergencyExit} />
+              <EmergencyExitButton variant="header" home="desktop" onEmergencyExit={onEmergencyExit} />
             </div>
           </div>
         </div>
@@ -279,8 +279,8 @@ export function GlobalNavigation({
             </Button>
 
             {/* Emergency Exit Button */}
-            {/* On narrow phones the words may take two lines (and the arrow makes way), so the header and its information button fit. */}
-            <EmergencyExitButton variant="header" className="text-xs px-1.5 sm:px-2 py-1 max-[439px]:max-w-[6.5rem] max-[439px]:whitespace-normal max-[439px]:text-left max-[439px]:leading-tight max-[439px]:has-[>svg]:px-2 max-[399px]:[&_svg]:hidden" onEmergencyExit={onEmergencyExit} />
+            {/* On narrow phones the words may take two lines (MOBILE_HEADER_EXIT_CLASS), so the header and its information button fit. */}
+            <EmergencyExitButton variant="header" home="mobile" className={MOBILE_HEADER_EXIT_CLASS} onEmergencyExit={onEmergencyExit} />
           </div>
         </div>
 
