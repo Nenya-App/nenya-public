@@ -8,7 +8,7 @@ import { DownloadLegalPdfButton } from './DownloadLegalPdfButton';
 import { LEGAL_EFFECTIVE_DATE } from '../../lib/legalDocument';
 import { rememberTerms, setRemembering } from '../../lib/deviceMemory';
 import { agreeToTerms } from '../../lib/visitConsent';
-import { PRESETS, sameTechnique, type BreathingTechnique } from '../../lib/breathingPresets';
+import { PRESETS, firstScreenPaces, sameTechnique, type BreathingPreset, type BreathingTechnique } from '../../lib/breathingPresets';
 import { PlainEnglish } from './PlainEnglish';
 import { DeclinePopout } from './DeclinePopout';
 import { termsFirstOn } from '../../lib/shadowSession';
@@ -16,20 +16,8 @@ import { termsFirstOn } from '../../lib/shadowSession';
 export type OnboardingStep = 'rhythm' | 'terms';
 const STEPS: OnboardingStep[] = ['rhythm', 'terms'];
 
-// Friendly names for the picker. The first four are the ones most people want (three hold-free, and Box); the rest
-// sit behind "More options".
-const RHYTHM_INFO: Record<string, { name: string; blurb: string }> = {
-  '6·6': { name: 'Steady', blurb: 'Even breaths, about five a minute. A good place to begin.' },
-  '5·5': { name: 'Even', blurb: 'Even breaths, about six a minute.' },
-  '4·6': { name: 'Long exhale', blurb: 'In for four, out for six.' },
-  '3·3': { name: 'Quick', blurb: 'Quicker, lighter breaths: in for three, out for three.' },
-  '4·8': { name: 'Longer exhale', blurb: 'In for four, out for eight.' },
-  Box: { name: 'Box', blurb: 'In, hold, out, hold, all the same length.' },
-  '4-7-8': { name: '4-7-8', blurb: 'A long hold between breaths. Skip it if holding your breath is uncomfortable.' },
-};
-const MAIN_LABELS = ['6·6', '4·6', '3·3', 'Box'];
-const MORE_LABELS = ['5·5', '4·8', '4-7-8'];
-const presetByLabel = (lb: string) => PRESETS.find((p) => p.lb === lb)!;
+// The first four paces are the ones most people want (three hold-free, and Box); the rest sit behind "More options". Names and sentences live with the presets.
+const { main: MAIN_PACES, more: MORE_PACES } = firstScreenPaces(PRESETS);
 
 interface OnboardingFlowProps {
   technique: BreathingTechnique;
@@ -120,13 +108,11 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
 
   const isTerms = step === 'terms';
 
-  const renderRhythmRow = (lb: string) => {
-    const preset = presetByLabel(lb);
-    const info = RHYTHM_INFO[lb];
+  const renderRhythmRow = (preset: BreathingPreset) => {
     const selected = sameTechnique(technique, preset);
     return (
       <button
-        key={lb}
+        key={`${preset.lb} ${preset.name}`}
         type="button"
         role="radio"
         aria-checked={selected}
@@ -142,11 +128,11 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
             selected ? 'border-nenya-accent-warm text-nenya-gold-text dark:text-nenya-accent-warm' : 'border-border text-muted-foreground'
           }`}
         >
-          {lb}
+          {preset.lb}
         </span>
         <span className="flex-1">
-          <span className="block text-sm">{info.name}</span>
-          <span className="block text-xs leading-snug text-muted-foreground">{info.blurb}</span>
+          <span className="block text-sm">{preset.name}</span>
+          <span className="block text-xs leading-snug text-muted-foreground">{preset.blurb}</span>
         </span>
         {selected && <Check className="size-4 shrink-0 text-nenya-gold-text dark:text-nenya-accent-warm" />}
       </button>
@@ -214,8 +200,8 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                     Choose a rhythm. The glow follows it, and you can change it any time. Not choosing is fine: Steady is already selected.
                   </p>
                   <div role="radiogroup" aria-label="Breathing rhythm" className="space-y-2">
-                    {MAIN_LABELS.map(renderRhythmRow)}
-                    {showMore && MORE_LABELS.map(renderRhythmRow)}
+                    {MAIN_PACES.map(renderRhythmRow)}
+                    {showMore && MORE_PACES.map(renderRhythmRow)}
                   </div>
                   <button
                     type="button"
