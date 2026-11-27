@@ -153,7 +153,7 @@ export default function WelcomePage({
               Find Your Center Through Your Senses
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground">
-              Begin with a moment to breathe. Everything else can wait.
+              Begin with a moment to breathe.
             </p>
           </div>
 

@@ -99,8 +99,8 @@ export default function CoachPage() {
       <SkipLink />
       <TonesAnnouncer />
       {/* First in the page, above the panel: the header's Exit is covered while the terms panel or the breathing panel is open. */}
-      <EmergencyExitDock show={popoutOpen || !agreed} onEmergencyExit={() => { exiting.current = true; }} />
-      {!agreed && <OnboardingFlow skipRhythm technique={STEADY} onTechniqueChange={noop} onFinish={() => setAgreed(true)} />}
+      <EmergencyExitDock show={popoutOpen || !agreed} phoneHidden={!agreed} onEmergencyExit={() => { exiting.current = true; }} />
+      {!agreed && <OnboardingFlow skipRhythm technique={STEADY} onTechniqueChange={noop} onFinish={() => setAgreed(true)} onEmergencyExit={() => { exiting.current = true; }} />}
     <div className="size-full flex flex-col bg-background" {...(!agreed ? ({ inert: '' } as Record<string, string>) : {})}>
       <GlobalNavigation
         onNavigate={(screen) => goToApp(screen === 'about' ? '' : undefined)}

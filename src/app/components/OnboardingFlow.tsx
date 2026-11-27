@@ -8,28 +8,16 @@ import { DownloadLegalPdfButton } from './DownloadLegalPdfButton';
 import { LEGAL_EFFECTIVE_DATE } from '../../lib/legalDocument';
 import { rememberTerms, setRemembering } from '../../lib/deviceMemory';
 import { agreeToTerms } from '../../lib/visitConsent';
-import { PRESETS, sameTechnique, type BreathingTechnique } from '../../lib/breathingPresets';
+import { PRESETS, firstScreenPaces, sameTechnique, type BreathingPreset, type BreathingTechnique } from '../../lib/breathingPresets';
 import { PlainEnglish } from './PlainEnglish';
-import { DeclinePopout } from './DeclinePopout';
+import { PanelExit } from './EmergencyExit';
 import { termsFirstOn } from '../../lib/shadowSession';
 
 export type OnboardingStep = 'rhythm' | 'terms';
 const STEPS: OnboardingStep[] = ['rhythm', 'terms'];
 
-// Friendly names for the picker. The first four are the ones most people want (three hold-free, and Box); the rest
-// sit behind "More options".
-const RHYTHM_INFO: Record<string, { name: string; blurb: string }> = {
-  '6·6': { name: 'Steady', blurb: 'Even breaths, about five a minute. A good place to begin.' },
-  '5·5': { name: 'Even', blurb: 'Even breaths, about six a minute.' },
-  '4·6': { name: 'Long exhale', blurb: 'In for four, out for six.' },
-  '3·3': { name: 'Quick', blurb: 'Quicker, lighter breaths: in for three, out for three.' },
-  '4·8': { name: 'Longer exhale', blurb: 'In for four, out for eight.' },
-  Box: { name: 'Box', blurb: 'In, hold, out, hold, all the same length.' },
-  '4-7-8': { name: '4-7-8', blurb: 'A long hold between breaths. Skip it if holding your breath is uncomfortable.' },
-};
-const MAIN_LABELS = ['6·6', '4·6', '3·3', 'Box'];
-const MORE_LABELS = ['5·5', '4·8', '4-7-8'];
-const presetByLabel = (lb: string) => PRESETS.find((p) => p.lb === lb)!;
+// The first four paces are the ones most people want (three hold-free, and Box); the rest sit behind "More options". Names and sentences live with the presets.
+const { main: MAIN_PACES, more: MORE_PACES } = firstScreenPaces(PRESETS);
 
 interface OnboardingFlowProps {
   technique: BreathingTechnique;
@@ -50,6 +38,8 @@ interface OnboardingFlowProps {
    * The rhythm stays the default (Steady) and can be changed later from the breathing counter.
    */
   skipRhythm?: boolean;
+  /** Told when the person leaves from the panel: by Decline, or by its own Emergency Exit (shown on phones on the agreement step). */
+  onEmergencyExit?: () => void;
 }
 
 function RhythmOrb({ t }: { t: BreathingTechnique }) {
@@ -74,12 +64,11 @@ function RhythmOrb({ t }: { t: BreathingTechnique }) {
   );
 }
 
-export default function OnboardingFlow({ technique, onTechniqueChange, onStepChange, onFinish, veilGone = true, skipRhythm = false }: OnboardingFlowProps) {
-  // Terms first (VITE_TERMS_FIRST): the Terms are the only step. The rhythm leaves the panel (it is chosen at the breathing counter, Steady by default), and Decline
-  // opens a popout instead of leaving the page. Nothing is counted, sent or stored for a decline. (The start chooser, three rings to pick where to begin, was removed
-  // on 2026-11-18 at the owner's direction; the quick nav does that job.)
+export default function OnboardingFlow({ technique, onTechniqueChange, onStepChange, onFinish, veilGone = true, skipRhythm = false, onEmergencyExit }: OnboardingFlowProps) {
+  // Terms first (VITE_TERMS_FIRST): the Terms are the only step. The rhythm leaves the panel (it is chosen at the breathing counter, Steady by default). Decline leaves
+  // the page in both builds (owner, 2026-11-27; the popup that used to follow it is gone), and nothing is counted, sent or stored for it. (The start chooser, three
+  // rings to pick where to begin, was removed on 2026-11-18 at the owner's direction; the quick nav does that job.)
   const termsFirst = termsFirstOn();
-  const [showDecline, setShowDecline] = useState(false);
   const [showPlain, setShowPlain] = useState(false);
   const [step, setStep] = useState<OnboardingStep>(skipRhythm || termsFirst ? 'terms' : 'rhythm');
   const [showMore, setShowMore] = useState(false);
@@ -118,15 +107,27 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
     setTimeout(() => onFinish(agreement), 700);
   };
 
+  const handleDecline = () => {
+    onEmergencyExit?.();
+    try {
+      window.close();
+    } catch { /* only a window a script opened can be closed */ }
+    window.location.replace('about:blank');
+  };
+
+  // The plain-English summary and back, from the top of the panel or the bottom; either way it opens at its beginning.
+  const togglePlain = () => {
+    setShowPlain((v) => !v);
+    scrollRef.current?.scrollTo({ top: 0 });
+  };
+
   const isTerms = step === 'terms';
 
-  const renderRhythmRow = (lb: string) => {
-    const preset = presetByLabel(lb);
-    const info = RHYTHM_INFO[lb];
+  const renderRhythmRow = (preset: BreathingPreset) => {
     const selected = sameTechnique(technique, preset);
     return (
       <button
-        key={lb}
+        key={`${preset.lb} ${preset.name}`}
         type="button"
         role="radio"
         aria-checked={selected}
@@ -142,11 +143,11 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
             selected ? 'border-nenya-accent-warm text-nenya-gold-text dark:text-nenya-accent-warm' : 'border-border text-muted-foreground'
           }`}
         >
-          {lb}
+          {preset.lb}
         </span>
         <span className="flex-1">
-          <span className="block text-sm">{info.name}</span>
-          <span className="block text-xs leading-snug text-muted-foreground">{info.blurb}</span>
+          <span className="block text-sm">{preset.name}</span>
+          <span className="block text-xs leading-snug text-muted-foreground">{preset.blurb}</span>
         </span>
         {selected && <Check className="size-4 shrink-0 text-nenya-gold-text dark:text-nenya-accent-warm" />}
       </button>
@@ -214,8 +215,8 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                     Choose a rhythm. The glow follows it, and you can change it any time. Not choosing is fine: Steady is already selected.
                   </p>
                   <div role="radiogroup" aria-label="Breathing rhythm" className="space-y-2">
-                    {MAIN_LABELS.map(renderRhythmRow)}
-                    {showMore && MORE_LABELS.map(renderRhythmRow)}
+                    {MAIN_PACES.map(renderRhythmRow)}
+                    {showMore && MORE_PACES.map(renderRhythmRow)}
                   </div>
                   <button
                     type="button"
@@ -243,18 +244,20 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                       </p>
                       <DownloadLegalPdfButton />
                       {termsFirst && (
-                        <button type="button" onClick={() => setShowPlain((v) => !v)} aria-expanded={showPlain} className="flex min-h-11 items-center text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground">
+                        <button type="button" onClick={togglePlain} aria-expanded={showPlain} className="flex min-h-11 items-center text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground [@media(max-height:700px)]:hidden">
                           {showPlain ? 'Back to the Terms' : 'In plain English'}
                         </button>
                       )}
                     </div>
                   </div>
-                  <div
-                    ref={scrollRef}
-                    className="scroll-container relative min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6"
-                  >
-                    {termsFirst && showPlain ? <PlainEnglish /> : <LegalDocumentBody compact />}
-                    <ScrollIndicator containerRef={scrollRef} hideThreshold={50} />
+                  <div className="relative flex min-h-0 flex-1 flex-col">
+                    <div
+                      ref={scrollRef}
+                      className="scroll-container relative min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6"
+                    >
+                      {termsFirst && showPlain ? <PlainEnglish /> : <LegalDocumentBody compact />}
+                    </div>
+                    <ScrollIndicator containerRef={scrollRef} hideThreshold={50} className="absolute! bottom-1!" />
                   </div>
                   <label className="flex shrink-0 items-start gap-2 border-t border-border bg-background/50 px-4 pt-3 text-xs text-muted-foreground sm:px-6">
                     <input
@@ -269,8 +272,7 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                     </span>
                   </label>
                   <div
-                    className="grid shrink-0 grid-cols-2 gap-2 bg-background/50 px-4 py-3 sm:gap-3 sm:px-6"
-                    style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+                    className="grid shrink-0 grid-cols-2 gap-2 bg-background/50 px-4 pt-3 pb-2 sm:gap-3 sm:px-6 sm:pb-[max(0.75rem,env(safe-area-inset-bottom))]"
                   >
                     <Button size="lg" onClick={handleAgree} className="min-h-[44px] text-xs sm:text-sm">
                       Agree, Enter
@@ -278,28 +280,23 @@ export default function OnboardingFlow({ technique, onTechniqueChange, onStepCha
                     <Button
                       size="lg"
                       variant="outline"
-                      onClick={() => {
-                        if (termsFirst) { setShowDecline(true); return; }
-                        try {
-                          window.close();
-                        } catch (e) {}
-                        window.location.replace('about:blank');
-                      }}
+                      onClick={handleDecline}
                       className="min-h-[44px] text-xs sm:text-sm"
                     >
                       {termsFirst ? 'Decline' : 'Disagree, Exit'}
                     </Button>
                   </div>
+                  <div className="flex shrink-0 flex-wrap items-center justify-center gap-x-4 bg-background/50 px-4 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:px-6">
+                    {termsFirst && (
+                      <button type="button" onClick={togglePlain} aria-expanded={showPlain} className="flex min-h-11 items-center text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground">
+                        {showPlain ? 'Back to the Terms' : 'In plain English'}
+                      </button>
+                    )}
+                    <PanelExit onEmergencyExit={onEmergencyExit} />
+                  </div>
                 </>
               )}
           </div>
-
-          {termsFirst && showDecline && (
-            <DeclinePopout
-              onReadTerms={() => { setShowDecline(false); setShowPlain(false); }}
-              onReadFullTerms={() => { setShowDecline(false); setShowPlain(false); scrollRef.current?.scrollTo({ top: 0 }); }}
-            />
-          )}
 
           {/* Progress dots */}
           <div className="flex shrink-0 items-center justify-center gap-1.5 pb-3" aria-hidden="true">

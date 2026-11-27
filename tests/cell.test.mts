@@ -73,8 +73,11 @@ ok('franking: the revealed text and key check out; an edited text does not', (aw
 
 // ── The mailbox ──
 const post = (body: unknown, origin = 'https://nenya.biz') => handler(new Request('https://nenya.biz/api/cell', { method: 'POST', headers: { 'content-type': 'application/json', origin }, body: JSON.stringify(body) }));
-const fetchImpl = (async (_url: string, init: RequestInit) => post(JSON.parse(String(init.body)))) as unknown as typeof fetch;
-let r = await post({ action: 'hello', box: 'f'.repeat(32), role: 'b', hello: hb.hello });
+// Each browser's seat key, noted from its own "hello" so a test can act for that browser by hand.
+const seats = new Map<string, string>();
+const fetchImpl = (async (_url: string, init: RequestInit) => { const b = JSON.parse(String(init.body)); if (b.action === 'hello') seats.set(`${b.box}/${b.role}`, seats.get(`${b.box}/${b.role}`) ?? b.seat); return post(b); }) as unknown as typeof fetch;
+const someSeat = '0123456789abcdef'.repeat(2);
+let r = await post({ action: 'hello', box: 'f'.repeat(32), role: 'b', hello: hb.hello, seat: someSeat });
 ok('no one can join a cell that has not been opened', r.status === 404);
 r = await post({ action: 'peer', box: 'f'.repeat(32), role: 'a' }, 'https://evil.example');
 ok('a foreign site is refused', r.status === 403);
@@ -86,7 +89,7 @@ ok('making a cell opens a mailbox and counts it, with nothing about who', [...ce
 ok('before the other person joins there is no session', (await A.connect()) === null);
 const B = await CellClient.join(A.code.toLowerCase(), opts);
 const third = await startHandshake(A.code, 'b');
-r = await post({ action: 'hello', box: third.ids.box, role: 'b', hello: third.hello });
+r = await post({ action: 'hello', box: third.ids.box, role: 'b', hello: third.hello, seat: someSeat });
 ok('a third person with the code cannot take a seat', r.status === 409);
 const colorsA = await A.connect();
 const colorsB = await B.connect();
@@ -101,7 +104,7 @@ await new Promise((res) => setTimeout(res, 20));
 ok('messages travel through the mailbox and arrive in order', gotB.join('|') === 'Hello, I am here.|I want to kill myself.', gotB.join('|'));
 ok('a crisis message is caught on the reader’s device', flagged.includes('self-harm'));
 ok('the mailbox never held readable text', [...cells.m.values()].every((v) => !v.includes('kill') && !v.includes('Hello')));
-r = await post({ action: 'send', box: third.ids.box, role: 'a', env: { seq: 0, iv: 'AAAA', ct: 'AAAA', commit: 'AAAA' } });
+r = await post({ action: 'send', box: third.ids.box, role: 'a', seat: seats.get(`${third.ids.box}/a`), env: { seq: 0, iv: 'AAAA', ct: 'AAAA', commit: 'AAAA' } });
 ok('a message out of sequence is refused', r.status === 409 && (await r.json()).next === 2);
 
 // Sharing the whole conversation with Nenya needs BOTH people: either asks, the other answers, and only then is it sent, once.
@@ -123,7 +126,7 @@ await C.send({ kind: 'text', text: 'I know. I am sorry.', at: 3000 });
 await pump(() => heard.D.length === 2);
 const filedAll = () => [...priv.m.entries()].filter(([k]) => k.startsWith('cell-report/'));
 const shareKey = () => [...cells.m.keys()].find((k) => k.endsWith('/share'));
-const direct = (role: 'a' | 'b', body: Record<string, unknown>) => post({ box: D.session!.box, role, ...body });
+const direct = (role: 'a' | 'b', body: Record<string, unknown>) => post({ box: D.session!.box, role, seat: seats.get(`${D.session!.box}/${role}`), ...body });
 const line = (i: number, len = 1000, extra: Record<string, unknown> = {}) => ({ by: i % 2 ? 'b' : 'a', text: 'x'.repeat(len), at: 1700000000000 + i, ...extra });
 const reqId = (n: number) => n.toString(16).padStart(16, '0');
 // Agrees a request by hand (the asker asks, the other says yes) without the clients' own polling, so a test can send a custom report.
@@ -191,6 +194,19 @@ const after = await D.askToShare();
 ok('a lapsed request is replaced by a new one, and consent is per request', after !== asked3 && (await direct('b', { action: 'report', req: asked3, transcript: [line(0, 10)] })).status === 403);
 await direct('a', { action: 'share-answer', req: after, agree: false });
 
+// 3b. The seat is proved, not taken on the request's word (found 2026-11-26): holding the code is not enough to act for the other person.
+const cellBox = D.session!.box, mySeat = seats.get(`${cellBox}/b`)!, theirSeat = seats.get(`${cellBox}/a`)!;
+const mine = await D.askToShare();
+const asOther = async (seat: string | undefined) => (await post({ action: 'share-answer', box: cellBox, role: 'a', req: mine, agree: true, ...(seat ? { seat } : {}) })).status;
+ok('one person cannot answer yes for the other seat, with no seat key or with their own', (await asOther(undefined)) === 403 && (await asOther(mySeat)) === 403 && (await asOther(someSeat)) === 403);
+ok('so a request answered by nobody else sends nothing', (await direct('b', { action: 'report', req: mine, transcript: [line(0, 10)] })).status === 403 && filedAll().length === 1);
+const wrong = await Promise.all(['peer', 'send', 'poll', 'close', 'share-ask', 'share-answer', 'report'].map(async (action) => (await post({ action, box: cellBox, role: 'a', seat: mySeat, req: mine, agree: true, after: 0, env: { seq: 0, iv: 'AAAA', ct: 'AAAA', commit: 'AAAA' }, transcript: [line(0, 10)] })).status));
+ok('every action for a seat is refused without that seat\'s key, and the cell is left open', wrong.every((s) => s === 403) && cells.m.has(`cell/${cellBox}/meta`), wrong.join());
+ok('a seat cannot be taken without a seat key', (await post({ action: 'hello', box: 'd'.repeat(32), role: 'a', hello: hb.hello })).status === 400 && !cells.m.has(`cell/${'d'.repeat(32)}/meta`));
+const shown = await (await direct('b', { action: 'peer' })).text();
+ok('the mailbox keeps only a one-way code of each seat key, and never shows it to the other person', /^[0-9a-f]{32}$/.test(theirSeat) && mySeat !== theirSeat && [...cells.m.values()].every((v) => !v.includes(mySeat) && !v.includes(theirSeat)) && !/seat/.test(shown));
+await direct('a', { action: 'share-answer', req: mine, agree: false });
+
 // 4. Limits on what a request can carry (the request must be agreed first).
 const fileReport = async (transcript: unknown, extra: Record<string, unknown> = {}, asker: 'a' | 'b' = 'b') => direct(asker, { action: 'report', req: await agreedRequest(asker), transcript, ...extra });
 const before = filedAll().length;
@@ -244,7 +260,7 @@ ok('a closed cell is gone for the other person too', r.status === 404);
 const old = [...cells.m.keys()].find((k) => k.endsWith('/meta'))!;
 cells.m.set(old, JSON.stringify({ created: Date.now() - CELL_MAX_AGE_MS - 1000 }));
 const box = old.split('/')[1];
-r = await post({ action: 'poll', box, role: 'a', after: 0 });
+r = await post({ action: 'poll', box, role: 'a', after: 0, seat: seats.get(`${box}/a`) });
 ok('a cell past its three hours is closed and refused', r.status === 410 && ![...cells.m.keys()].some((k) => k.includes(box)));
 cells.m.set('cell/' + 'e'.repeat(32) + '/a/hello', '{}');
 const E = await CellClient.create(opts);

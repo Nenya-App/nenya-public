@@ -1,7 +1,7 @@
 NENYA SITE FACTS
 Address: https://nenya.biz/mind-facts.txt
 As of: 2026-11-24
-Terms of Use & Privacy Policy in force: effective November 24, 2026
+Terms of Use & Privacy Policy in force: effective November 27, 2026
 
 What this file is: a plain-text description of how the Nenya website works, written for AI assistants and for a person to read from top to bottom. It is generated from the same checked sources as the fixed answers on the site, and is rebuilt whenever those change. It is long (several tens of thousands of characters) but short enough to read in one go.
 
@@ -17,7 +17,7 @@ STANDING STATEMENTS
 - To contact Nenya: info@nenya.biz
 
 THE TERMS
-The Terms of Use & Privacy Policy are at https://nenya.biz/about/terms (effective November 24, 2026). The Terms govern. Their text is not copied here. Their sections are:
+The Terms of Use & Privacy Policy are at https://nenya.biz/about/terms (effective November 27, 2026). The Terms govern. Their text is not copied here. Their sections are:
 Part One: Terms of Use
   Section 1: What Nenya is, and is not
   Section 2: Who may use Nenya
@@ -387,7 +387,7 @@ Read more:
 
 ## What version this is
 
-Short answer: This is Nenya version whose number is shown on the site. The exact code it was built from is public, so you can read precisely what this version is. The Terms of Use & Privacy Policy you agreed to are dated November 24, 2026.
+Short answer: This is Nenya version whose number is shown on the site. The exact code it was built from is public, so you can read precisely what this version is. The Terms of Use & Privacy Policy you agreed to are dated November 27, 2026.
 
 Full answer:
 

@@ -22,6 +22,7 @@ import { enableUsageCounts, countEvents, countEvent, countPageView } from '../li
 import { PRESETS, sameTechnique } from '../lib/breathingPresets';
 import { setBreathingPanel, toggleBreathingPanel, useBreathingPanel } from '../lib/breathingPanel';
 import OnboardingFlow from './components/OnboardingFlow';
+import type { OnboardingStep } from './components/OnboardingFlow';
 import { SECTION_PATHS, sectionOfPath, sectionOfScreen, sectionsOn } from '../lib/sections';
 import { guestbookOn } from '../lib/guestbook';
 import { SaveReflectionContext, type SaveReflectionApi } from './components/SaveReflection';
@@ -220,6 +221,8 @@ export default function App() {
   // shown, behind a short loading screen, so the logo does not pop in piece by piece.
   const [assetsReady, setAssetsReady] = useState(false);
   const [veilGone, setVeilGone] = useState(false);
+  // Which step the first-visit panel is on: on a phone its agreement step holds its own Emergency Exit.
+  const [onboardingStep, setOnboardingStep] = useState<OnboardingStep | null>(null);
   useEffect(() => {
     // On the welcome screen with the gem showing, also wait for the gem's first frame to be drawn.
     preloadLogoAssets(undefined, currentScreen === 'welcome' && orbitEnabled && logoVisible).then(() => setAssetsReady(true));
@@ -578,6 +581,7 @@ export default function App() {
       {/* First in the page, above every overlay: the header's Exit is out of reach behind the loading screen, the first-visit panel and the tour. */}
       <EmergencyExitDock
         show={!veilGone || !termsAgreed || tourOffered || tutorialActive}
+        phoneHidden={veilGone && !termsAgreed && onboardingStep === 'terms'}
         onEmergencyExit={() => { isEmergencyExiting.current = true; }}
       />
       <TonesAnnouncer />
@@ -590,6 +594,8 @@ export default function App() {
           technique={breathingTechnique}
           onTechniqueChange={setBreathingTechnique}
           onFinish={handleOnboardingFinish}
+          onStepChange={setOnboardingStep}
+          onEmergencyExit={() => { isEmergencyExiting.current = true; }}
         />
       )}
       {tourOffered && (

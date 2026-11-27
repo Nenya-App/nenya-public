@@ -16,7 +16,7 @@ Consequences, which decide most hard cases:
 
 ## Tone and public posture
 - **Plain, warm, accurate.** No hype, no satire, no jabs, no naming individuals or organizations to criticize. Accurate observation only. Nenya aims to stay low-profile and inconsequential rather than loud.
-- **Names:** "Nenya" or "nenya.biz" in text, never "Nenya Project". Copyright "© 2025–2026 Nenya" (updated 2026-11-26). The turned-e (schwa) is used only in the animated footer mark (nənya.biz, which reads as "nunya biz": a wink about privacy), nowhere else.
+- **Names:** "Nenya" or "nenya.biz" in text, never "Nenya Project". Copyright "© 2025–2026 Nenya" (updated 2026-11-26). The turned-e (schwa) is used only in the animated wordmark, in the header and the footer (updated 2026-11-27): "nənya.biz" (which reads as "nunya biz": a wink about privacy) in the wide header and the footer, "Nənya" in the narrow header. It is used nowhere else.
 - **Tolkien references are fine.** "Nenya" and the Valar-based color palettes are codenames and an homage; do not flag or remove them. The palettes are described as images and rough guesses at feelings, never as a measurement or medical instrument.
 - **No claims of authority.** Not affiliated with CNVC or the NVC movement beyond crediting the Feelings and Needs Inventory (linked). Not a scientific or medical instrument.
 

@@ -144,6 +144,9 @@ const mustNot: Record<string, string[]> = {
     "I have to tell my sister about the party, and I'm excited.",
     "I'm planning to confront my fear of flying.",
     "I'm furious, but I don't want to go there or talk about it.",
+    // the refusal comes first, with everything the move looks for after it (found 2026-11-26)
+    "I don't want to talk about it. I'm furious and I have to confront him.",
+    "I do not want to talk about it. I am so angry and I need to tell my boss, but it is a hard conversation.",
     "There is rage in the song's lyrics.",
     "I want to scream at the referee.",
     "We had a big talk, and it went well.",

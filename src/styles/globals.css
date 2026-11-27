@@ -836,45 +836,6 @@
     text-size-adjust: 100%;
   }
 
-  /* Hide any "Skip to Main Content" links that might be injected by hosting platforms or browser extensions */
-  a[href="#main"],
-  a[href="#content"],
-  a[href="#main-content"],
-  a[href^="#skip"],
-  a[href*="skip"],
-  .skip-link,
-  .skip-to-content,
-  .skip-navigation,
-  [class*="skip"],
-  [id*="skip"],
-  [aria-label*="skip" i],
-  [aria-label*="Skip" i],
-  [title*="skip" i] {
-    position: absolute !important;
-    left: -9999px !important;
-    top: -9999px !important;
-    width: 1px !important;
-    height: 1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    clip-path: inset(50%) !important;
-    white-space: nowrap !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    display: none !important;
-  }
-
-  /* Target any link at the very top of the body that might be a skip link */
-  body > a:first-child,
-  body > div:first-child > a:first-child {
-    position: absolute !important;
-    left: -9999px !important;
-    clip: rect(0, 0, 0, 0) !important;
-    visibility: hidden !important;
-    display: none !important;
-  }
-
   body {
     @apply bg-background text-foreground;
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
